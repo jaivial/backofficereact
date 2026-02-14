@@ -1,0 +1,30 @@
+{
+  "name": "villacarmen-backoffice",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development bun --watch server/index.ts",
+    "build": "vike build",
+    "start": "NODE_ENV=production bun server/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "jotai": "^2.14.0",
+    "lucide-react": "^0.542.0",
+    "motion": "^12.23.12",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "vike": "^0.4.252",
+    "vike-react": "^0.6.19"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}
+

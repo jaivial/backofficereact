@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Activity Chart</title>
+    <link rel="stylesheet" href="./bo.css" />
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 980px; height: 520px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <section class="bo-panel" aria-label="Activity panel">
+              <div class="bo-panelHead">
+                <div class="bo-panelTitle">Activity</div>
+                <div class="bo-panelMeta">Last year</div>
+              </div>
+              <div class="bo-panelBody">
+                <div class="bo-chart" role="img" aria-label="Bar chart: income vs spent by month">
+                  <div class="bo-chartTicks" aria-hidden="true">
+                    <div>100K</div>
+                    <div>50K</div>
+                    <div>10K</div>
+                    <div>0K</div>
+                  </div>
+                  <div class="bo-chartPlot">
+                    <div class="bo-chartGrid" aria-hidden="true"></div>
+                    <div class="bo-months">
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 66"></div>
+                          <div class="bo-bar spent" style="--h: 42"></div>
+                        </div>
+                        <div class="bo-monthLabel">JAN</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 38"></div>
+                          <div class="bo-bar spent" style="--h: 22"></div>
+                        </div>
+                        <div class="bo-monthLabel">FEB</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 28"></div>
+                          <div class="bo-bar spent" style="--h: 34"></div>
+                        </div>
+                        <div class="bo-monthLabel">MAR</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 64"></div>
+                          <div class="bo-bar spent" style="--h: 46"></div>
+                        </div>
+                        <div class="bo-monthLabel">APR</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 30"></div>
+                          <div class="bo-bar spent" style="--h: 34"></div>
+                        </div>
+                        <div class="bo-monthLabel">MAY</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 44"></div>
+                          <div class="bo-bar spent" style="--h: 26"></div>
+                        </div>
+                        <div class="bo-monthLabel">JUN</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 54"></div>
+                          <div class="bo-bar spent" style="--h: 72"></div>
+                        </div>
+                        <div class="bo-monthLabel">JUL</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 14"></div>
+                          <div class="bo-bar spent" style="--h: 28"></div>
+                        </div>
+                        <div class="bo-monthLabel">AUG</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 32"></div>
+                          <div class="bo-bar spent" style="--h: 46"></div>
+                        </div>
+                        <div class="bo-monthLabel">SEP</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 28"></div>
+                          <div class="bo-bar spent" style="--h: 72"></div>
+                        </div>
+                        <div class="bo-monthLabel">OCT</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 16"></div>
+                          <div class="bo-bar spent" style="--h: 46"></div>
+                        </div>
+                        <div class="bo-monthLabel">NOV</div>
+                      </div>
+                      <div class="bo-month">
+                        <div class="bo-bars">
+                          <div class="bo-bar income" style="--h: 20"></div>
+                          <div class="bo-bar spent" style="--h: 30"></div>
+                        </div>
+                        <div class="bo-monthLabel">DEC</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bo-legend" aria-label="Legend">
+                  <div><span class="bo-dot income"></span>Income</div>
+                  <div><span class="bo-dot spent"></span>Spent</div>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

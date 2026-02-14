@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Backoffice Dashboard (vanilla)</title>
+    <link rel="stylesheet" href="./bo.css" />
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window">
+        <div class="bo-app">
+          <aside class="bo-sidebar" aria-label="Sidebar">
+            <div class="bo-brand" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <path d="M2 9l5-5 5 5-5 5-5-5Z" fill="#b9a8ff" />
+                <path d="M8 9l5-5 3 3-5 5-3-3Z" fill="#eef0f6" opacity="0.92" />
+              </svg>
+            </div>
+
+            <nav class="bo-nav" aria-label="Navigation">
+              <button class="bo-navBtn is-active" type="button" aria-label="Dashboard">
+                <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h7v7H4z" />
+                  <path d="M13 4h7v4h-7z" />
+                  <path d="M13 10h7v10h-7z" />
+                  <path d="M4 13h7v7H4z" />
+                </svg>
+              </button>
+              <button class="bo-navBtn" type="button" aria-label="Documents">
+                <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z" />
+                  <path d="M14 2v5h5" />
+                  <path d="M8 13h8" />
+                  <path d="M8 17h6" />
+                </svg>
+              </button>
+              <button class="bo-navBtn" type="button" aria-label="Analytics">
+                <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19V5" />
+                  <path d="M4 19h16" />
+                  <path d="M8 16v-5" />
+                  <path d="M12 16V8" />
+                  <path d="M16 16v-9" />
+                </svg>
+              </button>
+              <button class="bo-navBtn" type="button" aria-label="Chat">
+                <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a4 4 0 0 1-4 4H8l-5 3 1.6-4.8A4 4 0 0 1 3 15V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+                </svg>
+              </button>
+              <button class="bo-navBtn" type="button" aria-label="Files">
+                <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7h6l2 2h10v10a2 2 0 0 1-2 2H3z" />
+                  <path d="M3 7V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+              <button class="bo-navBtn" type="button" aria-label="Media">
+                <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 5h16v14H4z" />
+                  <path d="M8 13l2.4-2.6 3 3.2 2-2.2 3.6 3.6" />
+                  <path d="M9 9h.01" />
+                </svg>
+              </button>
+            </nav>
+
+            <div class="bo-sidebarSpacer" aria-hidden="true"></div>
+
+            <button class="bo-navBtn bo-power" type="button" aria-label="Power">
+              <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v10" />
+                <path d="M7.5 4.5A8 8 0 1 0 16.5 4.5" />
+              </svg>
+            </button>
+          </aside>
+
+          <main class="bo-main">
+            <header class="bo-topbar">
+              <div class="bo-title">Dashboard</div>
+              <div class="bo-actions">
+                <button class="bo-actionBtn" type="button" aria-label="Search">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.2-4.2" />
+                  </svg>
+                </button>
+                <button class="bo-actionBtn" type="button" aria-label="Apps">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 7h4v4H7z" />
+                    <path d="M13 7h4v4h-4z" />
+                    <path d="M7 13h4v4H7z" />
+                    <path d="M13 13h4v4h-4z" />
+                  </svg>
+                </button>
+                <button class="bo-actionBtn" type="button" aria-label="Notifications">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
+                    <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                  </svg>
+                </button>
+                <div class="bo-avatar" aria-label="Profile">J</div>
+              </div>
+            </header>
+
+            <section class="bo-cardsRow" aria-label="KPIs">
+              <div class="bo-card">
+                <div class="bo-statTop">
+                  <div class="bo-statIcon" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 1v22" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                  </div>
+                  <div class="bo-statLabel">Currency income</div>
+                </div>
+                <div class="bo-statValue">$2700</div>
+              </div>
+
+              <div class="bo-card">
+                <div class="bo-statTop">
+                  <div class="bo-statIcon" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z" />
+                      <path d="M14 2v5h5" />
+                      <path d="M8 13h8" />
+                      <path d="M8 17h6" />
+                    </svg>
+                  </div>
+                  <div class="bo-statLabel">Bills</div>
+                </div>
+                <div class="bo-statValue">$1250</div>
+              </div>
+
+              <div class="bo-card">
+                <div class="bo-statTop">
+                  <div class="bo-statIcon" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3v18" />
+                      <path d="M5 7h14" />
+                      <path d="M6.5 17h11" />
+                      <path d="M9 7c0 6-3 6-3 10" />
+                      <path d="M15 7c0 6 3 6 3 10" />
+                    </svg>
+                  </div>
+                  <div class="bo-statLabel">Balance</div>
+                </div>
+                <div class="bo-statValue">$1450</div>
+              </div>
+
+              <div class="bo-card">
+                <div class="bo-statTop">
+                  <div class="bo-statIcon" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 7H4" />
+                      <path d="M20 11H4" />
+                      <path d="M20 15H4" />
+                      <path d="M7 7v8" />
+                      <path d="M17 11v4" />
+                    </svg>
+                  </div>
+                  <div class="bo-statLabel">Pending payment</div>
+                </div>
+                <div class="bo-statValue">$3428</div>
+              </div>
+
+              <div class="bo-card bo-cardOb">
+                <div class="bo-cardObHead">
+                  <div class="bo-statLabel">Upcoming obligations</div>
+                  <div class="bo-cardObIcon" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 7h8" />
+                      <path d="M8 11h6" />
+                      <path d="M7 3h8l3 3v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="bo-cardObTitle">VAT declaration</div>
+                <div class="bo-cardObBody">
+                  Yet you have <strong>27</strong> days left to submit the documentation
+                </div>
+              </div>
+            </section>
+
+            <section class="bo-grid" aria-label="Content">
+              <div class="bo-stack">
+                <section class="bo-panel" aria-label="Activity panel">
+                  <div class="bo-panelHead">
+                    <div class="bo-panelTitle">Activity</div>
+                    <div class="bo-panelMeta">Last year</div>
+                  </div>
+                  <div class="bo-panelBody">
+                    <div class="bo-chart" role="img" aria-label="Bar chart: income vs spent by month">
+                      <div class="bo-chartTicks" aria-hidden="true">
+                        <div>100K</div>
+                        <div>50K</div>
+                        <div>10K</div>
+                        <div>0K</div>
+                      </div>
+                      <div class="bo-chartPlot">
+                        <div class="bo-chartGrid" aria-hidden="true"></div>
+                        <div class="bo-months">
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 66"></div>
+                              <div class="bo-bar spent" style="--h: 42"></div>
+                            </div>
+                            <div class="bo-monthLabel">JAN</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 38"></div>
+                              <div class="bo-bar spent" style="--h: 22"></div>
+                            </div>
+                            <div class="bo-monthLabel">FEB</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 28"></div>
+                              <div class="bo-bar spent" style="--h: 34"></div>
+                            </div>
+                            <div class="bo-monthLabel">MAR</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 64"></div>
+                              <div class="bo-bar spent" style="--h: 46"></div>
+                            </div>
+                            <div class="bo-monthLabel">APR</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 30"></div>
+                              <div class="bo-bar spent" style="--h: 34"></div>
+                            </div>
+                            <div class="bo-monthLabel">MAY</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 44"></div>
+                              <div class="bo-bar spent" style="--h: 26"></div>
+                            </div>
+                            <div class="bo-monthLabel">JUN</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 54"></div>
+                              <div class="bo-bar spent" style="--h: 72"></div>
+                            </div>
+                            <div class="bo-monthLabel">JUL</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 14"></div>
+                              <div class="bo-bar spent" style="--h: 28"></div>
+                            </div>
+                            <div class="bo-monthLabel">AUG</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 32"></div>
+                              <div class="bo-bar spent" style="--h: 46"></div>
+                            </div>
+                            <div class="bo-monthLabel">SEP</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 28"></div>
+                              <div class="bo-bar spent" style="--h: 72"></div>
+                            </div>
+                            <div class="bo-monthLabel">OCT</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 16"></div>
+                              <div class="bo-bar spent" style="--h: 46"></div>
+                            </div>
+                            <div class="bo-monthLabel">NOV</div>
+                          </div>
+                          <div class="bo-month">
+                            <div class="bo-bars">
+                              <div class="bo-bar income" style="--h: 20"></div>
+                              <div class="bo-bar spent" style="--h: 30"></div>
+                            </div>
+                            <div class="bo-monthLabel">DEC</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bo-legend" aria-label="Legend">
+                      <div><span class="bo-dot income"></span>Income</div>
+                      <div><span class="bo-dot spent"></span>Spent</div>
+                    </div>
+                  </div>
+                </section>
+
+                <section aria-label="Customers section">
+                  <h2 class="bo-sectionTitle">Customers</h2>
+                  <div class="bo-tableWrap">
+                    <table class="bo-table" aria-label="Customers table">
+                      <thead>
+                        <tr>
+                          <th>Company</th>
+                          <th>Register</th>
+                          <th class="num">Billing</th>
+                          <th class="num">Burden</th>
+                          <th>Last contact</th>
+                          <th class="end"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Arquetiopo Influence</td>
+                          <td>14/04/2022</td>
+                          <td class="num">$1200</td>
+                          <td class="num">2</td>
+                          <td>2 days</td>
+                          <td class="end"><span class="bo-pill" aria-hidden="true"></span></td>
+                        </tr>
+                        <tr>
+                          <td>Everis</td>
+                          <td>21/01/2022</td>
+                          <td class="num">$2060</td>
+                          <td class="num">1</td>
+                          <td>4 days</td>
+                          <td class="end"><span class="bo-pill" aria-hidden="true"></span></td>
+                        </tr>
+                        <tr>
+                          <td>Cecotec</td>
+                          <td>03/01/2022</td>
+                          <td class="num">$980</td>
+                          <td class="num">1</td>
+                          <td>1 week</td>
+                          <td class="end"><span class="bo-pill" aria-hidden="true"></span></td>
+                        </tr>
+                        <tr>
+                          <td>Luatop Technics</td>
+                          <td>09/12/2021</td>
+                          <td class="num">$1560</td>
+                          <td class="num">5</td>
+                          <td>1 month</td>
+                          <td class="end"><span class="bo-pill" aria-hidden="true"></span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+
+              <div class="bo-stack">
+                <section aria-label="Agenda section">
+                  <h2 class="bo-rightTitle">Agenda</h2>
+                  <div class="bo-calDows" aria-hidden="true">
+                    <div>L</div>
+                    <div>M</div>
+                    <div>M</div>
+                    <div>J</div>
+                    <div>V</div>
+                    <div>S</div>
+                    <div>D</div>
+                  </div>
+                  <div class="bo-calGrid" aria-label="Calendar">
+                    <div class="bo-calDay">1</div>
+                    <div class="bo-calDay">2</div>
+                    <div class="bo-calDay">3</div>
+                    <div class="bo-calDay">4</div>
+                    <div class="bo-calDay">5</div>
+                    <div class="bo-calDay">6</div>
+                    <div class="bo-calDay">7</div>
+                    <div class="bo-calDay">8</div>
+                    <div class="bo-calDay">9</div>
+                    <div class="bo-calDay is-selected">10</div>
+                    <div class="bo-calDay">11</div>
+                    <div class="bo-calDay">12</div>
+                    <div class="bo-calDay">13</div>
+                    <div class="bo-calDay">14</div>
+                    <div class="bo-calDay">15</div>
+                    <div class="bo-calDay">16</div>
+                    <div class="bo-calDay">17</div>
+                    <div class="bo-calDay">18</div>
+                    <div class="bo-calDay">19</div>
+                    <div class="bo-calDay">20</div>
+                    <div class="bo-calDay">21</div>
+                    <div class="bo-calDay">22</div>
+                    <div class="bo-calDay">23</div>
+                    <div class="bo-calDay">24</div>
+                    <div class="bo-calDay">25</div>
+                    <div class="bo-calDay">26</div>
+                    <div class="bo-calDay">27</div>
+                    <div class="bo-calDay">28</div>
+                  </div>
+
+                  <div class="bo-miniCard" role="group" aria-label="Meeting card">
+                    <div class="bo-miniLeft">
+                      <div class="bo-miniIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M15 10l4-2v8l-4-2v-4Z" />
+                          <path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="bo-miniTitle">Meeting with Everis</div>
+                        <div class="bo-miniSub">Zoom meeting</div>
+                      </div>
+                    </div>
+                    <div class="bo-miniTime">9:00</div>
+                  </div>
+                </section>
+
+                <section class="bo-panel" aria-label="Monthly billing panel">
+                  <div class="bo-panelHead">
+                    <div class="bo-panelTitle">Monthly billing</div>
+                    <div></div>
+                  </div>
+                  <div class="bo-tabs" role="tablist" aria-label="Billing tabs">
+                    <button class="bo-tab is-active" type="button" role="tab" aria-selected="true">Issued</button>
+                    <button class="bo-tab" type="button" role="tab" aria-selected="false">Received</button>
+                  </div>
+                  <div class="bo-donutWrap">
+                    <div class="bo-donut" style="--bo-charge: 74; --bo-pending: 26" role="img" aria-label="Donut chart: charged vs pending">
+                      <div class="bo-donutCenter">
+                        <div>
+                          <div class="bo-donutLabel">Total</div>
+                          <div class="bo-donutValue">$1450</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bo-legend bo-legend--billing" aria-label="Legend">
+                      <div><span class="bo-dot income"></span>Charged</div>
+                      <div><span class="bo-dot spent"></span>Pending</div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

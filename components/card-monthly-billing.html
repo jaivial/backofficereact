@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Monthly Billing</title>
+    <link rel="stylesheet" href="./bo.css" />
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 520px; height: 600px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <section class="bo-panel" aria-label="Monthly billing panel">
+              <div class="bo-panelHead">
+                <div class="bo-panelTitle">Monthly billing</div>
+                <div></div>
+              </div>
+              <div class="bo-tabs" role="tablist" aria-label="Billing tabs">
+                <button class="bo-tab is-active" type="button" role="tab" aria-selected="true">Issued</button>
+                <button class="bo-tab" type="button" role="tab" aria-selected="false">Received</button>
+              </div>
+              <div class="bo-donutWrap">
+                <div class="bo-donut" style="--bo-charge: 74; --bo-pending: 26" role="img" aria-label="Donut chart: charged vs pending">
+                  <div class="bo-donutCenter">
+                    <div>
+                      <div class="bo-donutLabel">Total</div>
+                      <div class="bo-donutValue">$1450</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bo-legend bo-legend--billing" aria-label="Legend">
+                  <div><span class="bo-dot income"></span>Charged</div>
+                  <div><span class="bo-dot spent"></span>Pending</div>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
