@@ -40,27 +40,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [session.activeRestaurantId]);
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window">
-        <div className="bo-app">
-          <Sidebar pathname={pathname} />
-          <main className="bo-main">
-            <Topbar title={title} />
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={pathname}
-                initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-                transition={reduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeOut" }}
-                style={{ display: "contents" }}
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
-          </main>
-        </div>
-      </div>
+    <div className="bo-app bo-app--page">
+      <Sidebar pathname={pathname} />
+      <main className="bo-main">
+        <Topbar title={title} />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={pathname}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeOut" }}
+            style={{ display: "contents" }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

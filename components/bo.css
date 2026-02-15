@@ -112,6 +112,18 @@ button {
   height: 100%;
   display: grid;
   grid-template-columns: 78px 1fr;
+  min-width: 0;
+  min-height: 0;
+}
+
+.bo-app--page {
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.10)),
+    var(--bo-shell);
+  overflow: hidden;
 }
 
 .bo-sidebar {
@@ -124,6 +136,8 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 18px;
+  min-height: 0;
+  overflow: auto;
 }
 
 .bo-brand {
@@ -185,6 +199,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-width: 0;
+  min-height: 0;
 }
 
 .bo-topbar {
@@ -1249,6 +1265,40 @@ tr.is-inactive {
   background: rgba(147, 239, 231, 0.72);
 }
 
+@media (min-aspect-ratio: 16/9) and (min-width: 1200px) {
+  .bo-app--page {
+    background:
+      radial-gradient(1200px 700px at 12% -10%, rgba(185, 168, 255, 0.10), transparent 60%),
+      radial-gradient(1000px 700px at 88% 10%, rgba(147, 239, 231, 0.07), transparent 55%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.10)),
+      var(--bo-shell);
+  }
+
+  .bo-app--page .bo-main {
+    padding: 26px 30px 30px;
+  }
+
+  .bo-app--page .bo-grid {
+    grid-template-columns: 1fr 360px;
+  }
+
+  .bo-app--page .bo-grid > :last-child {
+    position: sticky;
+    top: 18px;
+    align-self: start;
+  }
+}
+
+@media (max-width: 1180px) {
+  .bo-app--page .bo-cardsRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bo-app--page .bo-cardOb {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 980px) {
   .bo-window {
     height: auto;
@@ -1259,7 +1309,83 @@ tr.is-inactive {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .bo-app--page .bo-cardOb {
+    grid-column: 1 / -1;
+  }
+
   .bo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px), (max-aspect-ratio: 9/16) {
+  .bo-app--page {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .bo-app--page .bo-main {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 18px 16px 16px;
+  }
+
+  .bo-app--page .bo-cardsRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bo-app--page .bo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-app--page .bo-topbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .bo-app--page .bo-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .bo-app--page .bo-selectLabel {
+    max-width: 160px;
+  }
+
+  .bo-app--page .bo-sidebar {
+    grid-column: 1;
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-top: 1px solid var(--bo-border);
+    overflow: hidden;
+  }
+
+  .bo-app--page .bo-brand,
+  .bo-app--page .bo-sidebarSpacer,
+  .bo-app--page .bo-power {
+    display: none;
+  }
+
+  .bo-app--page .bo-nav {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 0;
+  }
+
+  .bo-app--page .bo-navBtn.is-active {
+    box-shadow: 0 10px 24px rgba(185, 168, 255, 0.16);
+  }
+}
+
+@media (max-width: 620px) {
+  .bo-app--page .bo-cardsRow {
     grid-template-columns: 1fr;
   }
 }

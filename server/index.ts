@@ -83,8 +83,10 @@ async function start() {
 
   const app = express();
 
-  // Proxy `/api/*` to the Go backend to keep a single origin for Secure cookies.
-  app.use("/api", async (req, res) => {
+  // Proxy only the admin API to the Go backend.
+  // Important: Vite serves modules under "/<path-from-root>", and we have "backoffice/api/*".
+  // If we proxied "/api/*" we'd shadow Vite modules like "/api/client.ts".
+  app.use("/api/admin", async (req, res) => {
     const upstreamURL = new URL(req.originalUrl, backendOrigin);
     const headers = new Headers();
     for (const [k, v] of Object.entries(req.headers)) {
@@ -128,9 +130,19 @@ async function start() {
   // Dev: attach Vite dev server middlewares for HMR.
   let vite: Awaited<ReturnType<typeof createViteServer>> | null = null;
   if (!isProd) {
+    const certPath = process.env.TLS_CERT_PATH ?? "";
+    const keyPath = process.env.TLS_KEY_PATH ?? "";
+    if (!certPath || !keyPath) {
+      throw new Error("TLS_CERT_PATH and TLS_KEY_PATH are required in development for Secure cookies.");
+    }
+    const cert = readTLSFile(certPath);
+    const key = readTLSFile(keyPath);
+
     vite = await createViteServer({
       root: process.cwd(),
-      server: { middlewareMode: true },
+      // In middleware mode Vite runs its HMR websocket server on a separate port.
+      // When the page is served over HTTPS the client uses `wss://...`, so we need TLS here too.
+      server: { middlewareMode: true, https: { cert, key } },
       appType: "custom",
     });
     app.use(vite.middlewares);
@@ -192,16 +204,10 @@ async function start() {
     return;
   }
 
-  const certPath = process.env.TLS_CERT_PATH ?? "";
-  const keyPath = process.env.TLS_KEY_PATH ?? "";
-  if (!certPath || !keyPath) {
-    throw new Error("TLS_CERT_PATH and TLS_KEY_PATH are required in development for Secure cookies.");
-  }
-
   const server = https.createServer(
     {
-      cert: readTLSFile(certPath),
-      key: readTLSFile(keyPath),
+      cert: readTLSFile(process.env.TLS_CERT_PATH ?? ""),
+      key: readTLSFile(process.env.TLS_KEY_PATH ?? ""),
     },
     app,
   );
