@@ -66,3 +66,16 @@ export function formatArrozShort(typesRaw: string | null, servingsRaw: string | 
   return parts.join(", ");
 }
 
+function onlyDigits(s: string): string {
+  return String(s || "").replace(/[^0-9]/g, "");
+}
+
+export function formatPhone(countryCode: string | null | undefined, national: string | null | undefined): string {
+  const cc = onlyDigits(countryCode || "") || "34";
+  const num = onlyDigits(national || "");
+  if (!num) return "";
+
+  // Spanish: 9-digit grouping.
+  const grouped = num.length === 9 ? num.replace(/^(\d{3})(\d{3})(\d{3})$/, "$1 $2 $3") : num;
+  return `+${cc} ${grouped}`;
+}

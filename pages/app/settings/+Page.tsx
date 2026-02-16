@@ -4,7 +4,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
 import type { RestaurantBranding, RestaurantIntegrations } from "../../../api/types";
 import type { Data } from "./+data";
-import { InlineAlert } from "../../../ui/feedback/InlineAlert";
+import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { Select } from "../../../ui/inputs/Select";
 
@@ -71,6 +71,7 @@ export default function Page() {
   const [branding, setBranding] = useState<RestaurantBranding>(() => data.branding ?? defaultBranding());
   const [eventsMode, setEventsMode] = useState<"all" | "custom">(() => (integrations.enabledEvents.length ? "custom" : "all"));
   const [recipientsText, setRecipientsText] = useState(() => joinRecipients(integrations.restaurantWhatsappNumbers));
+  useErrorToast(error);
 
   const eventsModeOptions = useMemo(
     () => [
@@ -190,8 +191,6 @@ export default function Page() {
           <div className="bo-mutedText">{busy ? "Guardando..." : ""}</div>
         </div>
       </div>
-
-      {error ? <InlineAlert kind="error" title="Error" message={error} /> : null}
 
       <div className="bo-stack">
         <div className="bo-panel" aria-label="Integraciones">

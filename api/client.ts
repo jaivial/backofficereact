@@ -3,22 +3,41 @@ import type {
   APISuccess,
   Booking,
   BOSession,
+  ConfigDefaults,
   ConfigDailyLimit,
   ConfigDayStatus,
   ConfigMesasDeDos,
+  ConfigMesasDeTres,
+  ConfigFloor,
   ConfigOpeningHours,
   ConfigSalonCondesa,
   DashboardMetrics,
+  CalendarDay,
+  DishCatalogItem,
   GroupMenu,
+  GroupMenuV2,
+  GroupMenuV2Dish,
+  GroupMenuV2Section,
+  GroupMenuV2Summary,
   GroupMenuSummary,
+  HorarioMonthPoint,
+  FichajeSchedule,
+  FichajeState,
+  Member,
+  MemberStats,
+  MemberTimeBalance,
   MenuDish,
   MenuTable,
   MenuVisibilityItem,
   Postre,
+  RoleCatalogItem,
+  RoleCurrentUser,
+  RoleUserItem,
   RestaurantBranding,
   RestaurantIntegrations,
   Vino,
 } from "./types";
+import type { BORole } from "../lib/rbac";
 
 type ClientOpts = {
   baseUrl: string;
@@ -89,7 +108,9 @@ export function createClient(opts: ClientOpts) {
       async me(): Promise<APISuccess<{ session: BOSession }> | APIError> {
         return json("/api/admin/me", { method: "GET" });
       },
-      async setActiveRestaurant(restaurantId: number): Promise<APISuccess<{ activeRestaurantId: number }> | APIError> {
+      async setActiveRestaurant(
+        restaurantId: number,
+      ): Promise<APISuccess<{ activeRestaurantId: number; role: BORole; roleImportance: number; sectionAccess: string[] }> | APIError> {
         return json("/api/admin/active-restaurant", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -103,20 +124,32 @@ export function createClient(opts: ClientOpts) {
         return json(`/api/admin/dashboard/metrics?${q.toString()}`, { method: "GET" });
       },
     },
+    calendar: {
+      async getMonth(params: { year: number; month: number }): Promise<APISuccess<{ data: CalendarDay[] }> | APIError> {
+        const q = new URLSearchParams({ year: String(params.year), month: String(params.month) });
+        return json(`/api/admin/calendar?${q.toString()}`, { method: "GET" });
+      },
+    },
     reservas: {
       async list(params: {
         date: string;
         status?: string;
         q?: string;
-        limit?: number;
-        offset?: number;
-      }): Promise<APISuccess<{ bookings: Booking[]; total: number }> | APIError> {
+        page?: number;
+        count?: number;
+        sort?: "reservation_time" | "added_date";
+        dir?: "asc" | "desc";
+      }): Promise<
+        APISuccess<{ bookings: Booking[]; total_count: number; total: number; page: number; count: number }> | APIError
+      > {
         const q = new URLSearchParams();
         q.set("date", params.date);
         if (params.status) q.set("status", params.status);
         if (params.q) q.set("q", params.q);
-        if (params.limit !== undefined) q.set("limit", String(params.limit));
-        if (params.offset !== undefined) q.set("offset", String(params.offset));
+        if (params.page !== undefined) q.set("page", String(params.page));
+        if (params.count !== undefined) q.set("count", String(params.count));
+        if (params.sort) q.set("sort", params.sort);
+        if (params.dir) q.set("dir", params.dir);
         return json(`/api/admin/bookings?${q.toString()}`, { method: "GET" });
       },
       async cancel(id: number): Promise<APISuccess | APIError> {
@@ -125,6 +158,32 @@ export function createClient(opts: ClientOpts) {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({}),
         });
+      },
+      async exportDay(date: string): Promise<APISuccess<{ bookings: Booking[] }> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/bookings/export?${q.toString()}`, { method: "GET" });
+      },
+      async get(id: number): Promise<APISuccess<{ booking: Booking }> | APIError> {
+        return json(`/api/admin/bookings/${id}`, { method: "GET" });
+      },
+      async create(input: any): Promise<APISuccess<{ booking: Booking }> | APIError> {
+        return json(`/api/admin/bookings`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async patch(id: number, patch: any): Promise<APISuccess<{ booking: Booking }> | APIError> {
+        return json(`/api/admin/bookings/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+      },
+    },
+    arrozTypes: {
+      async list(): Promise<string[]> {
+        return json(`/api/admin/arroz-types`, { method: "GET" });
       },
     },
     settings: {
@@ -146,6 +205,139 @@ export function createClient(opts: ClientOpts) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(branding),
+        });
+      },
+    },
+    members: {
+      async list(): Promise<APISuccess<{ members: Member[] }> | APIError> {
+        return json("/api/admin/members", { method: "GET" });
+      },
+      async create(input: {
+        firstName: string;
+        lastName: string;
+        email?: string | null;
+        dni?: string | null;
+        bankAccount?: string | null;
+        phone?: string | null;
+        photoUrl?: string | null;
+        weeklyContractHours?: number;
+      }): Promise<APISuccess<{ member: Member }> | APIError> {
+        return json("/api/admin/members", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async get(id: number): Promise<APISuccess<{ member: Member }> | APIError> {
+        return json(`/api/admin/members/${id}`, { method: "GET" });
+      },
+      async patch(
+        id: number,
+        patch: Partial<{
+          firstName: string;
+          lastName: string;
+          email: string | null;
+          dni: string | null;
+          bankAccount: string | null;
+          phone: string | null;
+          photoUrl: string | null;
+          weeklyContractHours: number;
+        }>,
+      ): Promise<APISuccess<{ member: Member }> | APIError> {
+        return json(`/api/admin/members/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+      },
+      async uploadAvatar(id: number, file: File | Blob): Promise<APISuccess<{ member: Member; avatarUrl: string }> | APIError> {
+        const form = new FormData();
+        const filename = file instanceof File && file.name ? file.name : "avatar.webp";
+        form.append("avatar", file, filename);
+        return json(`/api/admin/members/${id}/avatar`, {
+          method: "POST",
+          body: form,
+        });
+      },
+      async getStats(
+        id: number,
+        params: { view: "weekly" | "monthly" | "quarterly"; date: string },
+      ): Promise<APISuccess<MemberStats> | APIError> {
+        const q = new URLSearchParams({ view: params.view, date: params.date });
+        return json(`/api/admin/members/${id}/stats?${q.toString()}`, { method: "GET" });
+      },
+      async getTimeBalance(id: number, date: string): Promise<APISuccess<MemberTimeBalance> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/members/${id}/time-balance?${q.toString()}`, { method: "GET" });
+      },
+    },
+    roles: {
+      async list(): Promise<APISuccess<{ roles: RoleCatalogItem[]; users: RoleUserItem[]; currentUser: RoleCurrentUser }> | APIError> {
+        return json("/api/admin/roles", { method: "GET" });
+      },
+      async ensureMemberUser(
+        memberId: number,
+      ): Promise<APISuccess<{ user: { id: number; email: string; name: string; created: boolean }; member: { id: number; boUserId: number } }> | APIError> {
+        return json(`/api/admin/members/${memberId}/ensure-user`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
+      async create(input: {
+        label: string;
+        slug?: string;
+        importance: number;
+        iconKey: string;
+        permissions: string[];
+      }): Promise<APISuccess<{ role: RoleCatalogItem }> | APIError> {
+        return json(`/api/admin/roles`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async setUserRole(userId: number, role: BORole): Promise<APISuccess<{ user: { id: number; role: BORole; roleImportance: number } }> | APIError> {
+        return json(`/api/admin/users/${userId}/role`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ role }),
+        });
+      },
+    },
+    fichaje: {
+      async getState(): Promise<APISuccess<{ state: FichajeState }> | APIError> {
+        return json("/api/admin/fichaje/state", { method: "GET" });
+      },
+      async start(input: { dni: string; password: string }): Promise<APISuccess<{ state: FichajeState }> | APIError> {
+        return json("/api/admin/fichaje/start", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async stop(): Promise<APISuccess<{ state: FichajeState }> | APIError> {
+        return json("/api/admin/fichaje/stop", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
+    },
+    horarios: {
+      async list(date: string): Promise<APISuccess<{ date: string; schedules: FichajeSchedule[] }> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/horarios?${q.toString()}`, { method: "GET" });
+      },
+      async month(params: { year: number; month: number }): Promise<APISuccess<{ year: number; month: number; days: HorarioMonthPoint[] }> | APIError> {
+        const q = new URLSearchParams({ year: String(params.year), month: String(params.month) });
+        return json(`/api/admin/horarios/month?${q.toString()}`, { method: "GET" });
+      },
+      async assign(input: { date: string; memberId: number; startTime: string; endTime: string }): Promise<APISuccess<{ schedule: FichajeSchedule }> | APIError> {
+        return json("/api/admin/horarios", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
         });
       },
     },
@@ -336,8 +528,139 @@ export function createClient(opts: ClientOpts) {
           return json(`/api/admin/group-menus/${id}`, { method: "DELETE" });
         },
       },
+      gruposV2: {
+        async list(includeDrafts = true): Promise<APISuccess<{ menus: GroupMenuV2Summary[]; count: number }> | APIError> {
+          const q = new URLSearchParams();
+          q.set("includeDrafts", includeDrafts ? "1" : "0");
+          return json(`/api/admin/group-menus-v2?${q.toString()}`, { method: "GET" });
+        },
+        async createDraft(input: { menu_type: string }): Promise<APISuccess<{ menu_id: number }> | APIError> {
+          return json("/api/admin/group-menus-v2/drafts", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async get(id: number): Promise<APISuccess<{ menu: GroupMenuV2 }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}`, { method: "GET" });
+        },
+        async patchBasics(
+          id: number,
+          input: Partial<{
+            menu_title: string;
+            price: number;
+            active: boolean;
+            is_draft: boolean;
+            menu_type: string;
+            menu_subtitle: string[];
+            beverage: {
+              type: string;
+              price_per_person?: number | null;
+              has_supplement?: boolean;
+              supplement_price?: number | null;
+            };
+            comments: string[];
+            min_party_size: number;
+            main_dishes_limit: boolean;
+            main_dishes_limit_number: number;
+            included_coffee: boolean;
+          }>,
+        ): Promise<APISuccess | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/basics`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async putSections(
+          id: number,
+          sections: Array<{ id?: number; title: string; kind: string; position?: number }>,
+        ): Promise<APISuccess<{ sections: GroupMenuV2Section[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ sections }),
+          });
+        },
+        async putSectionDishes(
+          id: number,
+          sectionId: number,
+          dishes: Array<{
+            id?: number;
+            catalog_dish_id?: number | null;
+            title: string;
+            description: string;
+            allergens: string[];
+            supplement_enabled: boolean;
+            supplement_price: number | null;
+            active?: boolean;
+          }>,
+        ): Promise<APISuccess<{ dishes: GroupMenuV2Dish[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dishes`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ dishes }),
+          });
+        },
+        async publish(id: number): Promise<APISuccess | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/publish`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({}),
+          });
+        },
+        async toggleActive(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/toggle-active`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({}),
+          });
+        },
+        async delete(id: number): Promise<APISuccess | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}`, { method: "DELETE" });
+        },
+      },
+      dishesCatalog: {
+        async search(q: string, limit = 12): Promise<APISuccess<{ items: DishCatalogItem[] }> | APIError> {
+          const sp = new URLSearchParams();
+          sp.set("q", q);
+          sp.set("limit", String(limit));
+          return json(`/api/admin/dishes-catalog/search?${sp.toString()}`, { method: "GET" });
+        },
+        async upsert(input: {
+          id?: number;
+          title: string;
+          description: string;
+          allergens: string[];
+          default_supplement_enabled: boolean;
+          default_supplement_price: number | null;
+        }): Promise<APISuccess<{ dish: DishCatalogItem }> | APIError> {
+          return json(`/api/admin/dishes-catalog/upsert`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+      },
     },
     config: {
+      async getDefaults(): Promise<APISuccess<ConfigDefaults> | APIError> {
+        return json("/api/admin/config/defaults", { method: "GET" });
+      },
+      async setDefaults(input: Partial<{
+        openingMode: "morning" | "night" | "both";
+        morningHours: string[];
+        nightHours: string[];
+        dailyLimit: number;
+        mesasDeDosLimit: string;
+        mesasDeTresLimit: string;
+      }>): Promise<APISuccess<ConfigDefaults> | APIError> {
+        return json("/api/admin/config/defaults", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
       async getDay(date: string): Promise<APISuccess<ConfigDayStatus> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/day?${q.toString()}`, { method: "GET" });
@@ -353,11 +676,22 @@ export function createClient(opts: ClientOpts) {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/opening-hours?${q.toString()}`, { method: "GET" });
       },
-      async setOpeningHours(date: string, hours: string[]): Promise<APISuccess<ConfigOpeningHours> | APIError> {
+      async setOpeningHours(
+        date: string,
+        input:
+          | string[]
+          | Partial<{
+              openingMode: "morning" | "night" | "both";
+              morningHours: string[];
+              nightHours: string[];
+              hours: string[];
+            }>,
+      ): Promise<APISuccess<ConfigOpeningHours> | APIError> {
+        const body = Array.isArray(input) ? { date, hours: input } : { date, ...input };
         return json("/api/admin/config/opening-hours", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ date, hours }),
+          body: JSON.stringify(body),
         });
       },
       async getMesasDeDos(date: string): Promise<APISuccess<ConfigMesasDeDos> | APIError> {
@@ -366,6 +700,17 @@ export function createClient(opts: ClientOpts) {
       },
       async setMesasDeDos(date: string, limit: string): Promise<APISuccess<ConfigMesasDeDos> | APIError> {
         return json("/api/admin/config/mesas-de-dos", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date, limit }),
+        });
+      },
+      async getMesasDeTres(date: string): Promise<APISuccess<ConfigMesasDeTres> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/mesas-de-tres?${q.toString()}`, { method: "GET" });
+      },
+      async setMesasDeTres(date: string, limit: string): Promise<APISuccess<ConfigMesasDeTres> | APIError> {
+        return json("/api/admin/config/mesas-de-tres", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ date, limit }),
@@ -380,6 +725,27 @@ export function createClient(opts: ClientOpts) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ date, state }),
+        });
+      },
+      async getDefaultFloors(): Promise<APISuccess<{ floors: ConfigFloor[] }> | APIError> {
+        return json("/api/admin/config/floors/defaults", { method: "GET" });
+      },
+      async setDefaultFloors(input: { count?: number; floorNumber?: number; active?: boolean }): Promise<APISuccess<{ floors: ConfigFloor[] }> | APIError> {
+        return json("/api/admin/config/floors/defaults", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async getFloors(date: string): Promise<APISuccess<{ date: string; floors: ConfigFloor[] }> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/floors?${q.toString()}`, { method: "GET" });
+      },
+      async setFloor(date: string, floorNumber: number, active: boolean): Promise<APISuccess<{ date: string; floors: ConfigFloor[] }> | APIError> {
+        return json("/api/admin/config/floors", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date, floorNumber, active }),
         });
       },
       async getDailyLimit(date: string): Promise<APISuccess<ConfigDailyLimit> | APIError> {

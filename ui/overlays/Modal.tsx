@@ -23,11 +23,15 @@ export function Modal({
   title,
   onClose,
   children,
+  widthPx,
+  className,
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  widthPx?: number;
+  className?: string;
 }) {
   useFocusRestore(open);
   const reduceMotion = useReducedMotion();
@@ -60,9 +64,14 @@ export function Modal({
           }}
         >
           <motion.div
-            className="bo-modal"
+            className={["bo-modal", className].filter(Boolean).join(" ")}
             role="dialog"
             aria-label={title}
+            style={
+              widthPx
+                ? ({ ["--bo-modal-w" as any]: `${widthPx}px` } as React.CSSProperties)
+                : undefined
+            }
             initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}

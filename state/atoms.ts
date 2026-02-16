@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { BOSession } from "../api/types";
+import type { BOSession, FichajeActiveEntry, FichajeMemberRef, FichajeSchedule } from "../api/types";
 
 export type ThemeMode = "dark" | "light";
 
@@ -18,3 +18,24 @@ export type Toast = {
 
 export const toastsAtom = atom<Toast[]>([]);
 
+export type FichajeRealtimeState = {
+  wsConnected: boolean;
+  wsConnecting: boolean;
+  restaurantId: number | null;
+  lastSyncAt: number | null;
+  member: FichajeMemberRef | null;
+  activeEntriesByMember: Record<number, FichajeActiveEntry>;
+  activeEntry: FichajeActiveEntry | null;
+  scheduleToday: FichajeSchedule | null;
+};
+
+export const fichajeRealtimeAtom = atom<FichajeRealtimeState>({
+  wsConnected: false,
+  wsConnecting: false,
+  restaurantId: null,
+  lastSyncAt: null,
+  member: null,
+  activeEntriesByMember: {},
+  activeEntry: null,
+  scheduleToday: null,
+});

@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-type Option = { value: string; label: string };
+type Option = { value: string; label: string; icon?: React.ReactNode };
 type Pos = { top: number; left: number; width: number };
 
 function portalEl(): HTMLElement | null {
@@ -20,12 +20,20 @@ export function Select({
   options,
   size,
   ariaLabel,
+  className,
+  style,
+  disabled,
+  listMaxHeightPx,
 }: {
   value: string;
   onChange: (value: string) => void;
   options: Option[];
   size?: "sm" | "md";
   ariaLabel?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  disabled?: boolean;
+  listMaxHeightPx?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -40,7 +48,14 @@ export function Select({
   const btnClass = size === "sm" ? "bo-selectBtn bo-selectBtn--sm" : "bo-selectBtn";
 
   const close = useCallback(() => setOpen(false), []);
-  const toggle = useCallback(() => setOpen((v) => !v), []);
+  const toggle = useCallback(() => {
+    if (disabled) return;
+    setOpen((v) => !v);
+  }, [disabled]);
+
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -58,7 +73,7 @@ export function Select({
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (ev: MouseEvent) => {
+    const onDown = (ev: PointerEvent) => {
       const t = ev.target as Node | null;
       if (!t) return;
       if (btnRef.current?.contains(t)) return;
@@ -68,22 +83,23 @@ export function Select({
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") close();
     };
-    window.addEventListener("mousedown", onDown);
+    window.addEventListener("pointerdown", onDown);
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("keydown", onKey);
     };
   }, [close, open]);
 
   const onBtnKey = useCallback(
     (ev: React.KeyboardEvent) => {
+      if (disabled) return;
       if (ev.key === "ArrowDown" || ev.key === "Enter" || ev.key === " ") {
         ev.preventDefault();
         setOpen(true);
       }
     },
-    [],
+    [disabled],
   );
 
   const onListKey = useCallback(
@@ -128,7 +144,14 @@ export function Select({
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
-          style={{ top: pos.top, left: pos.left, width: pos.width }}
+          style={{
+            top: pos.top,
+            left: pos.left,
+            width: pos.width,
+            maxHeight: typeof listMaxHeightPx === "number" ? `${listMaxHeightPx}px` : undefined,
+            overflowY: typeof listMaxHeightPx === "number" ? "scroll" : undefined,
+            overflowX: typeof listMaxHeightPx === "number" ? "hidden" : undefined,
+          }}
         >
           {options.map((o, idx) => {
             const isSel = o.value === value;
@@ -149,7 +172,12 @@ export function Select({
                   btnRef.current?.focus();
                 }}
               >
-                {o.label}
+                {o.icon ? (
+                  <span className="bo-selectItemIcon" aria-hidden="true">
+                    {o.icon}
+                  </span>
+                ) : null}
+                <span>{o.label}</span>
               </button>
             );
           })}
@@ -163,15 +191,24 @@ export function Select({
     <>
       <button
         ref={btnRef}
-        className={btnClass}
+        className={[btnClass, className].filter(Boolean).join(" ")}
         type="button"
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
+        disabled={disabled}
+        style={style}
         onClick={toggle}
         onKeyDown={onBtnKey}
       >
-        <span className="bo-selectLabel">{selected?.label ?? ""}</span>
+        <span className="bo-selectLabelWrap">
+          {selected?.icon ? (
+            <span className="bo-selectIcon" aria-hidden="true">
+              {selected.icon}
+            </span>
+          ) : null}
+          <span className="bo-selectLabel">{selected?.label ?? ""}</span>
+        </span>
         <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
       </button>
       {list}

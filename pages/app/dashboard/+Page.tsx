@@ -3,15 +3,13 @@ import { usePageContext } from "vike-react/usePageContext";
 
 import type { DashboardMetrics } from "../../../api/types";
 import { StatCard } from "../../../ui/widgets/StatCard";
-import { InlineAlert } from "../../../ui/feedback/InlineAlert";
+import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 
 export default function Page() {
   const pageContext = usePageContext();
   const data = pageContext.data as { date: string; metrics: DashboardMetrics | null; error: string | null };
+  useErrorToast(data.error);
 
-  if (data.error) {
-    return <InlineAlert kind="error" title="Error" message={data.error} />;
-  }
   if (!data.metrics) return null;
 
   const m = data.metrics;
@@ -35,4 +33,3 @@ export default function Page() {
     </section>
   );
 }
-

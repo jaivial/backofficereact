@@ -3,28 +3,44 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development bun --watch server/index.ts",
-    "build": "vike build",
+    "dev": "bun --env-file .env.local server/index.ts",
+    "dev:watch": "bun --env-file .env.local --watch server/index.ts",
+    "build": "NODE_ENV=production vike build",
     "start": "NODE_ENV=production bun server/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "autoprefixer": "^10.4.24",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "express": "^5.1.0",
     "jotai": "^2.14.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.26",
     "lucide-react": "^0.542.0",
     "motion": "^12.23.12",
+    "postcss": "^8.5.6",
     "react": "^19.2.0",
+    "react-country-flag": "^3.1.0",
     "react-dom": "^19.2.0",
+    "recharts": "^3.7.0",
+    "tailwind-merge": "^3.4.1",
+    "tailwindcss": "^3.4.17",
     "vike": "^0.4.252",
-    "vike-react": "^0.6.19"
+    "vike-react": "^0.6.19",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.1.2",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }
 }
-

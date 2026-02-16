@@ -2,8 +2,9 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 
 import { createClient } from "../../api/client";
+import { firstAllowedPath } from "../../lib/rbac";
 import { sessionAtom } from "../../state/atoms";
-import { InlineAlert } from "../../ui/feedback/InlineAlert";
+import { useErrorToast } from "../../ui/feedback/useErrorToast";
 
 export default function Page() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
@@ -13,6 +14,7 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useErrorToast(error);
 
   const onSubmit = useCallback(
     async (ev: React.FormEvent) => {
@@ -26,7 +28,7 @@ export default function Page() {
           return;
         }
         setSession(res.session);
-        window.location.href = "/app/dashboard";
+        window.location.href = firstAllowedPath(res.session.user.role, res.session.user.sectionAccess, res.session.user.roleImportance);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Login failed");
       } finally {
@@ -42,8 +44,6 @@ export default function Page() {
         <div className="bo-authCard" role="main" aria-label="Login">
           <div className="bo-title">Backoffice</div>
           <div className="bo-authSub">Accede con tu cuenta</div>
-
-          {error ? <InlineAlert kind="error" title="Error" message={error} /> : null}
 
           <form onSubmit={onSubmit} className="bo-form">
             <label className="bo-field">
@@ -79,4 +79,3 @@ export default function Page() {
     </div>
   );
 }
-

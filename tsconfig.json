@@ -5,9 +5,10 @@
     "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
+    "types": ["vite/client"],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["pages", "server", "ui", "api", "state"]
+  "include": ["pages", "server", "ui", "api", "state", "lib"]
 }

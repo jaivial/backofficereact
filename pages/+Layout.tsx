@@ -3,9 +3,11 @@ import { Provider as JotaiProvider, createStore } from "jotai";
 import { useHydrateAtoms } from "jotai/utils";
 import { usePageContext } from "vike-react/usePageContext";
 
+import "../ui/styles/shadcn.css";
 import "../components/bo.css";
 import type { BOSession } from "../api/types";
 import { ToastStack } from "../ui/feedback/ToastStack";
+import { FichajeRealtimeBridge } from "../ui/fichaje/FichajeRealtimeBridge";
 import { ThemeSync } from "../ui/theme/ThemeSync";
 import { sessionAtom, themeAtom, type ThemeMode } from "../state/atoms";
 
@@ -29,6 +31,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <JotaiProvider store={store}>
       <Hydrate theme={initialTheme} session={initialSession} />
       <ThemeSync />
+      <FichajeRealtimeBridge />
       <ToastStack />
       <div id="bo-portal" />
       {children}

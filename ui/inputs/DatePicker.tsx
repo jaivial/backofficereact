@@ -6,6 +6,11 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { formatISODate, parseISODate } from "../lib/format";
 
 type Pos = { top: number; left: number };
+type DatePickerProps = {
+  value: string;
+  onChange: (iso: string) => void;
+  popoverOffsetX?: number;
+};
 
 function portalEl(): HTMLElement | null {
   return document.getElementById("bo-portal") || document.body;
@@ -34,7 +39,7 @@ function buildMonthGrid(year: number, month0: number) {
   return cells;
 }
 
-export function DatePicker({ value, onChange }: { value: string; onChange: (iso: string) => void }) {
+export function DatePicker({ value, onChange, popoverOffsetX = 0 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -59,9 +64,9 @@ export function DatePicker({ value, onChange }: { value: string; onChange: (iso:
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
     const top = r.bottom + 8;
-    const left = clamp(r.left, 8, vw - 280 - 8);
+    const left = clamp(r.left + popoverOffsetX, 8, vw - 280 - 8);
     setPos({ top, left });
-  }, [open]);
+  }, [open, popoverOffsetX]);
 
   const close = useCallback(() => setOpen(false), []);
   const toggle = useCallback(() => setOpen((v) => !v), []);

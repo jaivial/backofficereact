@@ -1,18 +1,33 @@
-import React, { useCallback, useMemo } from "react";
-import { useAtom } from "jotai";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useAtom, useAtomValue } from "jotai";
 import { LogOut } from "lucide-react";
 
 import { createClient } from "../../api/client";
-import { sessionAtom } from "../../state/atoms";
+import type { BOSection } from "../../lib/rbac";
+import { fichajeRealtimeAtom, sessionAtom } from "../../state/atoms";
 import { DropdownMenu } from "../inputs/DropdownMenu";
 import { Select } from "../inputs/Select";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { useToasts } from "../feedback/useToasts";
 
+function isBOSection(value: string): value is BOSection {
+  return value === "reservas" || value === "menus" || value === "ajustes" || value === "miembros" || value === "fichaje" || value === "horarios";
+}
+
+function formatElapsed(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export function Topbar({ title }: { title: string }) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const [session, setSession] = useAtom(sessionAtom);
+  const fichaje = useAtomValue(fichajeRealtimeAtom);
+  const [tick, setTick] = useState(() => Date.now());
 
   const restaurantOptions = useMemo(() => {
     const list = session?.restaurants ?? [];
@@ -28,7 +43,16 @@ export function Topbar({ title }: { title: string }) {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo cambiar restaurante" });
         return;
       }
-      setSession({ ...session, activeRestaurantId: res.activeRestaurantId });
+      setSession({
+        ...session,
+        activeRestaurantId: res.activeRestaurantId,
+        user: {
+          ...session.user,
+          role: res.role ?? session.user.role,
+          roleImportance: typeof res.roleImportance === "number" ? res.roleImportance : session.user.roleImportance,
+          sectionAccess: Array.isArray(res.sectionAccess) ? res.sectionAccess.filter((value): value is BOSection => isBOSection(value)) : session.user.sectionAccess,
+        },
+      });
     },
     [api, pushToast, session, setSession],
   );
@@ -49,6 +73,19 @@ export function Topbar({ title }: { title: string }) {
     const b = parts[1]?.[0] ?? "";
     return (a + b).toUpperCase();
   }, [session?.user?.email, session?.user?.name]);
+
+  useEffect(() => {
+    if (!fichaje.activeEntry) return;
+    const timer = window.setInterval(() => setTick(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [fichaje.activeEntry?.id, fichaje.activeEntry?.startAtIso]);
+
+  const fichajeElapsed = useMemo(() => {
+    if (!fichaje.activeEntry?.startAtIso) return "";
+    const startMs = Date.parse(fichaje.activeEntry.startAtIso);
+    if (!Number.isFinite(startMs)) return "";
+    return formatElapsed((tick - startMs) / 1000);
+  }, [fichaje.activeEntry?.startAtIso, tick]);
 
   return (
     <header className="bo-topbar" aria-label="Topbar">
@@ -79,8 +116,14 @@ export function Topbar({ title }: { title: string }) {
             },
           ]}
         />
+
+        {fichaje.activeEntry ? (
+          <div className={`bo-fichajeTopbarChip${fichaje.wsConnected ? " is-live" : ""}`} aria-live="polite">
+            <span className="bo-fichajeTopbarDot" aria-hidden="true" />
+            <span className="bo-fichajeTopbarTime">{fichajeElapsed || "--:--:--"}</span>
+          </div>
+        ) : null}
       </div>
     </header>
   );
 }
-

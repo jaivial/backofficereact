@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 224 21% 10%;
+    --foreground: 225 20% 94%;
+    --card: 230 18% 15%;
+    --card-foreground: 225 20% 94%;
+    --popover: 230 18% 15%;
+    --popover-foreground: 225 20% 94%;
+    --primary: 252 100% 83%;
+    --primary-foreground: 240 40% 12%;
+    --secondary: 230 15% 22%;
+    --secondary-foreground: 225 20% 94%;
+    --muted: 229 13% 23%;
+    --muted-foreground: 225 12% 68%;
+    --accent: 180 68% 76%;
+    --accent-foreground: 205 52% 12%;
+    --destructive: 0 76% 58%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 230 16% 28%;
+    --input: 230 16% 28%;
+    --ring: 252 100% 83%;
+    --radius: 0.9rem;
+  }
+
+  :root[data-theme="light"] {
+    --background: 228 40% 98%;
+    --foreground: 226 22% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 226 22% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 226 22% 12%;
+    --primary: 250 88% 63%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 22% 94%;
+    --secondary-foreground: 226 22% 12%;
+    --muted: 230 22% 94%;
+    --muted-foreground: 226 12% 42%;
+    --accent: 178 62% 85%;
+    --accent-foreground: 185 45% 18%;
+    --destructive: 0 72% 52%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 228 16% 84%;
+    --input: 228 16% 84%;
+    --ring: 250 88% 63%;
+  }
+}
+
+@layer utilities {
+  .bo-content-grid {
+    @apply grid gap-4 md:gap-5;
+  }
+}

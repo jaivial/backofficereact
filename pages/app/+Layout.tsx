@@ -11,8 +11,12 @@ function titleForPath(pathname: string): string {
   if (pathname.startsWith("/app/reservas")) return "Reservas";
   if (pathname.startsWith("/app/menus")) return "Menus";
   if (pathname.startsWith("/app/config")) return "Configuracion";
+  if (pathname.startsWith("/app/comsit")) return "Configuracion";
   if (pathname.startsWith("/app/settings")) return "Ajustes";
-  return "Dashboard";
+  if (pathname.startsWith("/app/miembros")) return "Miembros";
+  if (pathname.startsWith("/app/horarios")) return "Horarios";
+  if (pathname.startsWith("/app/fichaje")) return "Fichaje";
+  return "Backoffice";
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -41,10 +45,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="bo-app bo-app--page">
-      <Sidebar pathname={pathname} />
+      <Sidebar
+        pathname={pathname}
+        role={session.user.role}
+        sectionAccess={session.user.sectionAccess}
+        roleImportance={session.user.roleImportance}
+      />
       <main className="bo-main">
         <Topbar title={title} />
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
             initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}

@@ -1,7 +1,12 @@
+import type { BORole, BOSection } from "../lib/rbac";
+
 export type BOUser = {
   id: number;
   email: string;
   name: string;
+  role: BORole;
+  roleImportance: number;
+  sectionAccess: BOSection[];
 };
 
 export type BORestaurant = {
@@ -34,12 +39,26 @@ export type Booking = {
   reservation_time: string;
   party_size: number;
   contact_phone: string | null;
+  contact_phone_country_code: string | null;
   status: string | null;
   arroz_type: string | null;
   arroz_servings: string | null;
+  commentary: string | null;
   babyStrollers: number | null;
   highChairs: number | null;
   table_number: string | null;
+  added_date: string | null;
+  special_menu: boolean;
+  menu_de_grupo_id: number | null;
+  principales_json: string | null;
+};
+
+export type CalendarDay = {
+  date: string;
+  booking_count: number;
+  total_people: number;
+  limit: number;
+  is_open: boolean;
 };
 
 export type DashboardMetrics = {
@@ -123,19 +142,100 @@ export type GroupMenu = {
   modified_at?: string;
 };
 
+export type GroupMenuV2Summary = {
+  id: number;
+  menu_title: string;
+  price: string;
+  active: boolean;
+  is_draft: boolean;
+  menu_type: string;
+  created_at?: string;
+  modified_at?: string;
+};
+
+export type GroupMenuV2Dish = {
+  id: number;
+  section_id: number;
+  catalog_dish_id?: number | null;
+  title: string;
+  description: string;
+  allergens: string[];
+  supplement_enabled: boolean;
+  supplement_price: number | null;
+  active: boolean;
+  position: number;
+};
+
+export type GroupMenuV2Section = {
+  id: number;
+  title: string;
+  kind: string;
+  position: number;
+  dishes: GroupMenuV2Dish[];
+};
+
+export type GroupMenuV2Settings = {
+  included_coffee: boolean;
+  beverage: {
+    type: string;
+    price_per_person?: number | null;
+    has_supplement?: boolean;
+    supplement_price?: number | null;
+  };
+  comments: string[];
+  min_party_size: number;
+  main_dishes_limit: boolean;
+  main_dishes_limit_number: number;
+};
+
+export type GroupMenuV2 = {
+  id: number;
+  menu_title: string;
+  price: string;
+  active: boolean;
+  is_draft: boolean;
+  menu_type: string;
+  menu_subtitle: string[];
+  settings: GroupMenuV2Settings;
+  sections: GroupMenuV2Section[];
+};
+
+export type DishCatalogItem = {
+  id: number;
+  title: string;
+  description: string;
+  allergens: string[];
+  default_supplement_enabled: boolean;
+  default_supplement_price: number | null;
+  updated_at?: string;
+};
+
 export type ConfigDayStatus = {
   date: string;
   isOpen: boolean;
 };
 
+export type OpeningMode = "morning" | "night" | "both";
+
 export type ConfigOpeningHours = {
   date: string;
+  openingMode: OpeningMode;
+  morningHours: string[];
+  nightHours: string[];
   hours: string[];
+  source?: "default" | "override";
 };
 
 export type ConfigMesasDeDos = {
   date: string;
   limit: string;
+  source?: "default" | "override";
+};
+
+export type ConfigMesasDeTres = {
+  date: string;
+  limit: string;
+  source?: "default" | "override";
 };
 
 export type ConfigSalonCondesa = {
@@ -148,6 +248,25 @@ export type ConfigDailyLimit = {
   limit: number;
   totalPeople: number;
   freeBookingSeats: number;
+  source?: "default" | "override";
+};
+
+export type ConfigDefaults = {
+  openingMode: OpeningMode;
+  morningHours: string[];
+  nightHours: string[];
+  hours: string[];
+  dailyLimit: number;
+  mesasDeDosLimit: string;
+  mesasDeTresLimit: string;
+};
+
+export type ConfigFloor = {
+  id: number;
+  floorNumber: number;
+  name: string;
+  isGround: boolean;
+  active: boolean;
 };
 
 export type RestaurantIntegrations = {
@@ -165,4 +284,117 @@ export type RestaurantBranding = {
   accentColor: string;
   emailFromName: string;
   emailFromAddress: string;
+};
+
+export type Member = {
+  id: number;
+  boUserId: number | null;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  dni: string | null;
+  bankAccount: string | null;
+  phone: string | null;
+  photoUrl: string | null;
+  weeklyContractHours: number;
+  isCurrentUser?: boolean;
+};
+
+export type MemberStatsPoint = {
+  date: string;
+  label: string;
+  hours: number;
+};
+
+export type MemberStatsSummary = {
+  workedHours: number;
+  expectedHours: number;
+  progressPercent: number;
+  weeklyWorkedHours: number;
+  weeklyContractHours: number;
+  weeklyProgressPercent: number;
+};
+
+export type MemberStats = {
+  view: "weekly" | "monthly" | "quarterly";
+  date: string;
+  startDate: string;
+  endDate: string;
+  points: MemberStatsPoint[];
+  summary: MemberStatsSummary;
+};
+
+export type MemberTimeBalance = {
+  quarter: {
+    startDate: string;
+    endDate: string;
+    cutoffDate: string;
+    label: string;
+  };
+  weeklyContractHours: number;
+  workedHours: number;
+  expectedHours: number;
+  balanceHours: number;
+};
+
+export type RoleCatalogItem = {
+  slug: BORole;
+  label: string;
+  sortOrder: number;
+  importance: number;
+  iconKey: string;
+  isSystem: boolean;
+  permissions: string[];
+};
+
+export type RoleUserItem = {
+  id: number;
+  email: string;
+  name: string;
+  role: BORole;
+  roleImportance: number;
+};
+
+export type RoleCurrentUser = {
+  id: number;
+  role: BORole;
+  roleImportance: number;
+};
+
+export type FichajeMemberRef = {
+  id: number;
+  fullName: string;
+  dni: string | null;
+};
+
+export type FichajeActiveEntry = {
+  id: number;
+  memberId: number;
+  memberName: string;
+  workDate: string;
+  startTime: string;
+  startAtIso: string;
+};
+
+export type FichajeSchedule = {
+  id: number;
+  memberId: number;
+  memberName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  updatedAt: string;
+};
+
+export type FichajeState = {
+  now: string;
+  member: FichajeMemberRef | null;
+  activeEntry: FichajeActiveEntry | null;
+  activeEntries: FichajeActiveEntry[];
+  scheduleToday: FichajeSchedule | null;
+};
+
+export type HorarioMonthPoint = {
+  date: string;
+  assignedCount: number;
 };
