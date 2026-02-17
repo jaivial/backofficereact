@@ -427,6 +427,62 @@ async function start() {
     }
   });
 
+  // Error handler middleware - render error page instead of default Express error
+  app.use(async (err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error("[backoffice] error handler:", err);
+
+    const statusCode = (err as any)?.statusCode ?? (err as any)?.status ?? 500;
+    const isHttpError = typeof statusCode === "number" && statusCode >= 400 && statusCode < 600;
+
+    if (!isHttpError) {
+      // For non-HTTP errors (like SSR exceptions), render the error page via vike
+      try {
+        const pageContextInit: any = {
+          urlOriginal: req.originalUrl,
+          headersOriginal: req.headers,
+          bo: { theme: "dark", session: null },
+          boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
+          is404: false,
+          is500: true,
+          errorInfo: err,
+        };
+
+        const pageContext = await renderPage(pageContextInit);
+        const httpResponse = pageContext.httpResponse;
+        if (httpResponse) {
+          const { body, contentType, headers } = httpResponse;
+          res.status(500);
+          res.type(contentType);
+          for (const [k, v] of Object.entries(headers ?? {})) {
+            res.setHeader(k, v as any);
+          }
+          res.send(body);
+          return;
+        }
+      } catch {
+        // Fall back to simple error response
+      }
+    }
+
+    // Default: simple error response
+    const message = isHttpError ? (err as any)?.message ?? "Error" : "Internal Server Error";
+    res.status(isHttpError ? statusCode : 500);
+    res.type("text/html");
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>${statusCode} - Error</title></head>
+      <body style="font-family: system-ui; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #111218; color: #eef0f6;">
+        <div style="text-align: center;">
+          <div style="font-size: 72px; opacity: 0.15;">${statusCode}</div>
+          <h1 style="font-size: 20px;">${message || "Error"}</h1>
+          <a href="/app" style="color: #b9a8ff;">Volver al inicio</a>
+        </div>
+      </body>
+      </html>
+    `);
+  });
+
   if (isProd) {
     const server = app.listen(port, () => {
       // eslint-disable-next-line no-console

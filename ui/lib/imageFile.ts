@@ -83,3 +83,50 @@ export async function imageToWebpMax200KB(file: File): Promise<File> {
   if (!bestBlob) throw new Error("No se pudo convertir la imagen");
   throw new Error("No se pudo reducir la imagen por debajo de 200KB");
 }
+
+export async function imageToWebpMax50KB(file: File): Promise<File> {
+  if (!file || !file.type.startsWith("image/")) {
+    throw new Error("Selecciona un archivo de imagen");
+  }
+  if (file.size > 15 * 1024 * 1024) {
+    throw new Error("La imagen es demasiado grande (max 15MB)");
+  }
+
+  const img = await loadImage(file);
+  const maxBytes = 50 * 1024;
+  const maxSide = 800;
+  const qualitySteps = [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3];
+
+  let scale = Math.min(1, maxSide / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
+  let bestBlob: Blob | null = null;
+
+  for (let dimensionAttempt = 0; dimensionAttempt < 8; dimensionAttempt++) {
+    const width = Math.max(1, Math.round((img.naturalWidth || 1) * scale));
+    const height = Math.max(1, Math.round((img.naturalHeight || 1) * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("No se pudo preparar el procesamiento de imagen");
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+
+    for (const quality of qualitySteps) {
+      const blob = await canvasToBlob(canvas, "image/webp", quality);
+      bestBlob = blob;
+      if (blob.size <= maxBytes) {
+        return new File([blob], `${baseName(file.name)}.webp`, { type: "image/webp" });
+      }
+    }
+
+    scale *= 0.75;
+  }
+
+  if (!bestBlob) throw new Error("No se pudo convertir la imagen");
+  throw new Error("No se pudo reducir la imagen por debajo de 50KB");
+}

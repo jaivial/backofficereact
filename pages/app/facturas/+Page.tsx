@@ -1,0 +1,305 @@
+import React, { useCallback, useMemo, useState } from "react";
+import { usePageContext } from "vike-react/usePageContext";
+import { createClient } from "../../../api/client";
+import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput, InvoiceResponse, ReservationSearchResult } from "../../../api/types";
+import { useErrorToast } from "../../../ui/feedback/useErrorToast";
+import { useToasts } from "../../../ui/feedback/useToasts";
+import { SimpleTabs, SimpleTabsContent } from "../../../ui/nav/SimpleTabs";
+import { InvoiceFilters } from "./_components/InvoiceFilters";
+import { InvoiceTable } from "./_components/InvoiceTable";
+import { InvoiceForm } from "./_components/InvoiceForm";
+
+type PageData = {
+  invoices: Invoice[];
+  total: number;
+  page: number;
+  limit: number;
+  error: string | null;
+};
+
+const INVOICE_STATUS_OPTIONS: { value: InvoiceStatus | ""; label: string }[] = [
+  { value: "", label: "Todos" },
+  { value: "borrador", label: "Borrador" },
+  { value: "solicitada", label: "Solicitada" },
+  { value: "pendiente", label: "Pendiente" },
+  { value: "enviada", label: "Enviada" },
+];
+
+const INVOICE_SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: "date_desc", label: "Fecha mas reciente" },
+  { value: "date_asc", label: "Fecha mas antigua" },
+  { value: "amount_desc", label: "Importe mayor" },
+  { value: "amount_asc", label: "Importe menor" },
+];
+
+function normalizedSearchValue(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+export default function Page() {
+  const pageContext = usePageContext();
+  const data = pageContext.data as PageData;
+  const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const { pushToast } = useToasts();
+
+  const error = data.error;
+  const [invoices, setInvoices] = useState<Invoice[]>(data.invoices || []);
+  const [total, setTotal] = useState(data.total);
+  const [page, setPage] = useState(data.page);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("resumen");
+
+  // Filters state
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | "">("");
+  const [dateType, setDateType] = useState<"invoice_date" | "reservation_date">("invoice_date");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [isReservation, setIsReservation] = useState<boolean | null>(null);
+  const [sortBy, setSortBy] = useState<"amount_asc" | "amount_desc" | "date_asc" | "date_desc">("date_desc");
+
+  // Editing invoice state
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+
+  useErrorToast(error);
+
+  // Fetch invoices with filters
+  const fetchInvoices = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: InvoiceListParams = {
+        search: searchText || undefined,
+        status: statusFilter || undefined,
+        date_type: dateType,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
+        is_reservation: isReservation ?? undefined,
+        sort: sortBy,
+        page: page,
+        limit: data.limit,
+      };
+
+      const res = await api.invoices.list(params);
+      if (res.success) {
+        setInvoices(res.invoices);
+        setTotal(res.total);
+      } else {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudieron cargar las facturas" });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [api, searchText, statusFilter, dateType, dateFrom, dateTo, isReservation, sortBy, page, data.limit, pushToast]);
+
+  const resetFilters = useCallback(() => {
+    setSearchText("");
+    setStatusFilter("");
+    setDateType("invoice_date");
+    setDateFrom("");
+    setDateTo("");
+    setIsReservation(null);
+    setSortBy("date_desc");
+    setPage(1);
+  }, []);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchText(value);
+    setPage(1);
+  }, []);
+
+  const handleStatusFilterChange = useCallback((value: InvoiceStatus | "") => {
+    setStatusFilter(value);
+    setPage(1);
+  }, []);
+
+  const handleDateTypeChange = useCallback((value: "invoice_date" | "reservation_date") => {
+    setDateType(value);
+    setPage(1);
+  }, []);
+
+  const handleDateFromChange = useCallback((value: string) => {
+    setDateFrom(value);
+    setPage(1);
+  }, []);
+
+  const handleDateToChange = useCallback((value: string) => {
+    setDateTo(value);
+    setPage(1);
+  }, []);
+
+  const handleIsReservationChange = useCallback((value: boolean | null) => {
+    setIsReservation(value);
+    setPage(1);
+  }, []);
+
+  const handleSortByChange = useCallback((value: string) => {
+    setSortBy(value as "amount_asc" | "amount_desc" | "date_asc" | "date_desc");
+    setPage(1);
+  }, []);
+
+  const hasFilters = useMemo(
+    () =>
+      searchText.trim().length > 0 ||
+      statusFilter !== "" ||
+      dateFrom !== "" ||
+      dateTo !== "" ||
+      isReservation !== null ||
+      sortBy !== "date_desc",
+    [searchText, statusFilter, dateFrom, dateTo, isReservation, sortBy],
+  );
+
+  const summaryText = useMemo(() => `${invoices.length} de ${total} facturas`, [invoices.length, total]);
+
+  const totalPages = useMemo(() => Math.ceil(total / data.limit), [total, data.limit]);
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+  }, []);
+
+  // Handle create new invoice
+  const handleCreateNew = useCallback(() => {
+    setEditingInvoice(null);
+    setIsCreatingNew(true);
+  }, []);
+
+  // Handle edit existing invoice
+  const handleEditInvoice = useCallback((invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setIsCreatingNew(true);
+  }, []);
+
+  // Handle cancel edit
+  const handleCancelEdit = useCallback(() => {
+    setEditingInvoice(null);
+    setIsCreatingNew(false);
+  }, []);
+
+  // Handle save invoice
+  const handleSaveInvoice = useCallback(
+    async (input: InvoiceInput, shouldSend: boolean = false) => {
+      try {
+        let res;
+        let invoiceId: number | undefined;
+        
+        if (editingInvoice) {
+          res = await api.invoices.update(editingInvoice.id, input);
+          invoiceId = editingInvoice.id;
+        } else {
+          res = await api.invoices.create(input);
+          if (!res.success) {
+            pushToast({ kind: "error", title: "Error", message: "No se pudo crear la factura" });
+            return;
+          }
+          invoiceId = "id" in res ? res.id : undefined;
+        }
+
+        if (res.success) {
+          if (shouldSend && invoiceId) {
+            const sendRes = await api.invoices.send(invoiceId);
+            if (sendRes.success) {
+              pushToast({ kind: "success", title: "Factura enviada", message: "La factura ha sido enviada correctamente" });
+            } else {
+              pushToast({ kind: "error", title: "Error", message: "No se pudo enviar la factura" });
+            }
+          } else {
+            pushToast({ kind: "success", title: "Guardado", message: shouldSend ? "Factura enviada correctamente" : "Factura guardada correctamente" });
+          }
+        } else {
+          pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la factura" });
+        }
+
+        setEditingInvoice(null);
+        setIsCreatingNew(false);
+        fetchInvoices();
+      } catch (e) {
+        pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error desconocido" });
+      }
+    },
+    [api, editingInvoice, pushToast, fetchInvoices],
+  );
+
+  // Search reservations for auto-fill
+  const searchReservations = useCallback(
+    async (params: { date_from?: string; date_to?: string; name?: string; phone?: string; party_size?: number; time?: string }) => {
+      const res = await api.invoices.searchReservations(params);
+      if (res.success) {
+        return res.reservations;
+      }
+      return [];
+    },
+    [api],
+  );
+
+  // Filtered/sorted invoices (client-side is handled by API, just display)
+  const filteredInvoices = useMemo(() => {
+    return invoices;
+  }, [invoices]);
+
+  const TABS = [
+    { id: "resumen", label: "Resumen" },
+    { id: "añadir", label: "Añadir" },
+  ];
+
+  const handleTabChange = useCallback((id: string) => {
+    if (id === "añadir") {
+      handleCreateNew();
+    }
+    setActiveTab(id);
+  }, [handleCreateNew]);
+
+  return (
+    <div className="bo-facturasPage">
+      <SimpleTabs
+        items={TABS}
+        activeId={activeTab}
+        onChange={handleTabChange}
+        aria-label="Facturas"
+      />
+
+      <SimpleTabsContent id="resumen" activeId={activeTab}>
+        <InvoiceFilters
+          searchText={searchText}
+          statusFilter={statusFilter}
+          dateType={dateType}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          isReservation={isReservation}
+          sortBy={sortBy}
+          hasFilters={hasFilters}
+          summaryText={summaryText}
+          statusOptions={INVOICE_STATUS_OPTIONS}
+          sortOptions={INVOICE_SORT_OPTIONS}
+          onSearchChange={handleSearchChange}
+          onStatusFilterChange={handleStatusFilterChange}
+          onDateTypeChange={handleDateTypeChange}
+          onDateFromChange={handleDateFromChange}
+          onDateToChange={handleDateToChange}
+          onIsReservationChange={handleIsReservationChange}
+          onSortByChange={handleSortByChange}
+          onResetFilters={resetFilters}
+          onApplyFilters={fetchInvoices}
+        />
+
+        <InvoiceTable
+          invoices={filteredInvoices}
+          loading={loading}
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          onEdit={handleEditInvoice}
+          onPageChange={handlePageChange}
+        />
+      </SimpleTabsContent>
+
+      <SimpleTabsContent id="añadir" activeId={activeTab}>
+        <InvoiceForm
+          invoice={editingInvoice}
+          onSave={handleSaveInvoice}
+          onCancel={handleCancelEdit}
+          searchReservations={searchReservations}
+        />
+      </SimpleTabsContent>
+    </div>
+  );
+}

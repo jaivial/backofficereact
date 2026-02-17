@@ -1,11 +1,11 @@
 export type BORole = string;
 
-export type BOSection = "reservas" | "menus" | "ajustes" | "miembros" | "fichaje" | "horarios";
+export type BOSection = "reservas" | "menus" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas";
 
 export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
-  root: ["reservas", "menus", "miembros", "horarios", "ajustes", "fichaje"],
-  admin: ["reservas", "menus", "miembros", "horarios", "ajustes", "fichaje"],
-  metre: ["reservas", "menus", "fichaje"],
+  root: ["reservas", "menus", "miembros", "horarios", "ajustes", "fichaje", "facturas"],
+  admin: ["reservas", "menus", "miembros", "horarios", "ajustes", "fichaje", "facturas"],
+  metre: ["reservas", "menus", "fichaje", "facturas"],
   jefe_cocina: ["reservas", "menus", "fichaje"],
   arrocero: ["fichaje"],
   pinche_cocina: ["fichaje"],
@@ -33,6 +33,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "horarios", href: "/app/horarios", label: "Horarios" },
   { key: "ajustes", href: "/app/settings", label: "Ajustes" },
   { key: "fichaje", href: "/app/fichaje", label: "Fichaje" },
+  { key: "facturas", href: "/app/facturas", label: "Facturas" },
 ];
 
 const SECTION_HOME: Record<BOSection, string> = {
@@ -42,9 +43,10 @@ const SECTION_HOME: Record<BOSection, string> = {
   miembros: "/app/miembros",
   horarios: "/app/horarios",
   fichaje: "/app/fichaje",
+  facturas: "/app/facturas",
 };
 
-const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "miembros", "horarios", "ajustes", "fichaje"];
+const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "miembros", "horarios", "ajustes", "fichaje", "facturas"];
 
 const ROLE_LABELS: Record<string, string> = {
   root: "Root",
@@ -63,7 +65,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 function isSection(value: string): value is BOSection {
-  return value === "reservas" || value === "menus" || value === "ajustes" || value === "miembros" || value === "fichaje" || value === "horarios";
+  return value === "reservas" || value === "menus" || value === "ajustes" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas";
 }
 
 function normalizeSectionAccess(sectionAccessRaw: string[] | null | undefined): BOSection[] {
@@ -116,6 +118,7 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/miembros")) return "miembros";
   if (pathname.startsWith("/app/horarios")) return "horarios";
   if (pathname.startsWith("/app/fichaje")) return "fichaje";
+  if (pathname.startsWith("/app/facturas")) return "facturas";
   return null;
 }
 

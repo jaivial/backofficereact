@@ -1,5 +1,5 @@
 import React from "react";
-import CountryFlag from "react-country-flag";
+import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 
 export type PhoneCodeOption = {
   value: string;

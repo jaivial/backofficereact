@@ -342,6 +342,7 @@ export type RoleCatalogItem = {
   label: string;
   sortOrder: number;
   importance: number;
+  level: number;
   iconKey: string;
   isSystem: boolean;
   permissions: string[];
@@ -386,6 +387,17 @@ export type FichajeSchedule = {
   updatedAt: string;
 };
 
+export type TimeEntry = {
+  id: number;
+  memberId: number;
+  memberName: string;
+  workDate: string;
+  startTime: string;
+  endTime: string | null;
+  minutesWorked: number;
+  source: string;
+};
+
 export type FichajeState = {
   now: string;
   member: FichajeMemberRef | null;
@@ -397,4 +409,109 @@ export type FichajeState = {
 export type HorarioMonthPoint = {
   date: string;
   assignedCount: number;
+};
+
+export type InvoiceStatus = "borrador" | "solicitada" | "pendiente" | "enviada";
+export type PaymentMethod = "efectivo" | "tarjeta" | "transferencia" | "bizum" | "cheque";
+
+export type InvoiceAddress = {
+  street?: string;
+  number?: string;
+  postal_code?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+};
+
+export type Invoice = {
+  id: number;
+  restaurant_id: number;
+  customer_name: string;
+  customer_surname?: string;
+  customer_email: string;
+  customer_dni_cif?: string;
+  customer_phone?: string;
+  customer_address_street?: string;
+  customer_address_number?: string;
+  customer_address_postal_code?: string;
+  customer_address_city?: string;
+  customer_address_province?: string;
+  customer_address_country?: string;
+  amount: number;
+  payment_method?: PaymentMethod;
+  account_image_url?: string;
+  invoice_date: string;
+  payment_date?: string;
+  status: InvoiceStatus;
+  is_reservation: boolean;
+  reservation_id?: number;
+  reservation_date?: string;
+  reservation_customer_name?: string;
+  reservation_party_size?: number;
+  pdf_url?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InvoiceListParams = {
+  search?: string;
+  status?: InvoiceStatus;
+  date_type?: "invoice_date" | "reservation_date";
+  date_from?: string;
+  date_to?: string;
+  is_reservation?: boolean;
+  sort?: "amount_asc" | "amount_desc" | "date_asc" | "date_desc";
+  page?: number;
+  limit?: number;
+};
+
+export type InvoiceInput = {
+  customer_name: string;
+  customer_surname?: string;
+  customer_email: string;
+  customer_dni_cif?: string;
+  customer_phone?: string;
+  customer_address_street?: string;
+  customer_address_number?: string;
+  customer_address_postal_code?: string;
+  customer_address_city?: string;
+  customer_address_province?: string;
+  customer_address_country?: string;
+  amount: number;
+  payment_method?: PaymentMethod;
+  account_image_url?: string;
+  invoice_date: string;
+  payment_date?: string;
+  status: InvoiceStatus;
+  is_reservation: boolean;
+  reservation_id?: number;
+  reservation_date?: string;
+  reservation_customer_name?: string;
+  reservation_party_size?: number;
+};
+
+export type ReservationSearchResult = {
+  id: number;
+  customer_name: string;
+  contact_email: string;
+  contact_phone: string;
+  reservation_date: string;
+  reservation_time: string;
+  party_size: number;
+};
+
+export type InvoiceListResponse = {
+  success: boolean;
+  invoices: Invoice[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export type InvoiceResponse = {
+  success: boolean;
+  invoice?: Invoice;
+  message?: string;
+  id?: number;
+  pdf_url?: string;
 };

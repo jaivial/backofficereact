@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Minus, Plus } from "lucide-react";
-import CountryFlag from "react-country-flag";
+import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 
 import { createClient } from "../../../../api/client";
 import type { GroupMenu, GroupMenuSummary } from "../../../../api/types";

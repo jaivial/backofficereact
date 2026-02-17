@@ -81,6 +81,10 @@ function normalizeTableNumber(v: string): string {
   return String(v || "").trim();
 }
 
+function normalizeBookings(v: unknown): Booking[] {
+  return Array.isArray(v) ? (v as Booking[]) : [];
+}
+
 export default function Page() {
   const pageContext = usePageContext();
   const data = pageContext.data as PageData;
@@ -110,7 +114,7 @@ export default function Page() {
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);
 
-  const [rows, setRows] = useState<Booking[]>(data.bookings || []);
+  const [rows, setRows] = useState<Booking[]>(normalizeBookings(data.bookings));
   const [totalCount, setTotalCount] = useState<number>(data.total_count || 0);
 
   const [confirm, setConfirm] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
@@ -172,7 +176,7 @@ export default function Page() {
           setError(res.message || "Error cargando reservas");
           return;
         }
-        setRows(res.bookings);
+        setRows(normalizeBookings(res.bookings));
         setTotalCount(res.total_count || res.total || 0);
         setPage(res.page || next.page);
         setCount(res.count || next.count);
@@ -299,7 +303,7 @@ export default function Page() {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo exportar" });
         return;
       }
-      await downloadReservationsPDF({ dateISO: date, bookings: res.bookings, logoUrl });
+      await downloadReservationsPDF({ dateISO: date, bookings: normalizeBookings(res.bookings), logoUrl });
     } catch (e) {
       pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error generando PDF" });
     } finally {
@@ -399,7 +403,7 @@ export default function Page() {
           return false;
         }
         // Optimistic update for the row.
-        setRows((prev) => prev.map((x) => (x.id === b.id ? { ...x, table_number: v || null } : x)));
+        setRows((prev) => normalizeBookings(prev).map((x) => (x.id === b.id ? { ...x, table_number: v || null } : x)));
         return true;
       } finally {
         setBusy(false);

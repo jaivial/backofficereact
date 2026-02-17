@@ -101,7 +101,12 @@ export default function Page() {
         {members.map((member) => {
           const roleMeta = memberRoleMeta(member);
           return (
-            <a key={member.id} href={`/app/miembros/${member.id}`} className="bo-memberCard">
+            <button
+              key={member.id}
+              type="button"
+              className="bo-memberCard"
+              onClick={() => window.location.assign(`/app/miembros/${member.id}`)}
+            >
               <div className="bo-memberCardTop">
                 <Avatar className="bo-memberAvatar">
                   {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
@@ -130,7 +135,7 @@ export default function Page() {
                 <span className="bo-memberMeta">Contrato semanal</span>
                 <span className="bo-badge bo-memberHours">{member.weeklyContractHours.toFixed(2)} h</span>
               </div>
-            </a>
+            </button>
           );
         })}
 

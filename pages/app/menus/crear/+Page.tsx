@@ -366,6 +366,7 @@ export default function Page() {
   const [hydrated, setHydrated] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
   const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(true);
+  const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
   const [previewOrigin, setPreviewOrigin] = useState<string>((import.meta as any).env?.VITE_PREVIEW_WEB_ORIGIN || "http://localhost:5173");
 
   const [allergenModal, setAllergenModal] = useState<{ open: boolean; sectionClientId: string; dishClientId: string } | null>(null);
@@ -373,6 +374,7 @@ export default function Page() {
   const [searchResults, setSearchResults] = useState<Record<string, DishCatalogItem[]>>({});
 
   const searchTimerRef = useRef<Record<string, number>>({});
+  const previewDockTimerRef = useRef<number | null>(null);
   const syncTimerRef = useRef<number | null>(null);
   const basicsTimerRef = useRef<number | null>(null);
   const lastSavedBasicsRef = useRef<string>("");
@@ -421,6 +423,16 @@ export default function Page() {
   const sectionsFingerprint = useMemo(() => getSectionsFingerprint(sections), [sections]);
   const shouldReduceMotion = useReducedMotion();
   const sectionOrder = useMemo(() => sections.map((sec) => sec.clientId), [sections]);
+  const paneLayoutTransition = useMemo(
+    () =>
+      shouldReduceMotion
+        ? { duration: 0 }
+        : {
+            duration: 0.6,
+            ease: [0.22, 1, 0.36, 1] as const,
+          },
+    [shouldReduceMotion],
+  );
   const reorderTransition = useMemo(
     () =>
       shouldReduceMotion
@@ -498,6 +510,32 @@ export default function Page() {
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (previewDockTimerRef.current) {
+      window.clearTimeout(previewDockTimerRef.current);
+      previewDockTimerRef.current = null;
+    }
+
+    if (desktopPreviewOpen) {
+      setDesktopPreviewDocked(true);
+      return;
+    }
+
+    // Keep the preview docked while it fades out, then collapse the layout.
+    setDesktopPreviewDocked(true);
+    previewDockTimerRef.current = window.setTimeout(() => {
+      setDesktopPreviewDocked(false);
+      previewDockTimerRef.current = null;
+    }, 600);
+
+    return () => {
+      if (previewDockTimerRef.current) {
+        window.clearTimeout(previewDockTimerRef.current);
+        previewDockTimerRef.current = null;
+      }
+    };
+  }, [desktopPreviewOpen]);
 
   const previewUrl = useMemo(() => {
     const q = new URLSearchParams();
@@ -1083,7 +1121,15 @@ export default function Page() {
       ) : null}
 
       {step === 3 ? (
-        <div className={`bo-menuWizardFinal ${desktopPreviewOpen ? "" : "is-previewCollapsed"}`}>
+        <div
+          className={[
+            "bo-menuWizardFinal",
+            desktopPreviewOpen ? "" : "is-previewHidden",
+            desktopPreviewDocked ? "" : "is-previewUndocked",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div className="bo-previewDesktopSwitch">
             <span className="bo-previewDesktopSwitchLabel">
               <Eye size={14} aria-hidden="true" />
@@ -1107,8 +1153,8 @@ export default function Page() {
             </button>
           </div>
 
-          <div className={`bo-editorPane ${mobileTab === "editor" ? "is-mobileActive" : ""}`}>
-            <div className="bo-panel bo-menuEditorHead">
+          <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane ${mobileTab === "editor" ? "is-mobileActive" : ""}`}>
+            <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead">
               <div className="bo-panelHead">
                 <div>
                   <div className="bo-panelTitle">Editor de menu</div>
@@ -1155,7 +1201,7 @@ export default function Page() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsEditor bo-reorderGroup">
               {sections.map((sec, secIdx) => (
@@ -1370,7 +1416,7 @@ export default function Page() {
               ))}
             </Reorder.Group>
 
-            <div className="bo-panel bo-settingsPanel">
+            <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
               <div className="bo-panelHead">
                 <div className="bo-panelTitle">
                   <Settings2 size={15} /> Configuracion
@@ -1469,17 +1515,17 @@ export default function Page() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bo-menuWizardActions bo-menuWizardActions--final">
+            <motion.div layout transition={paneLayoutTransition} className="bo-menuWizardActions bo-menuWizardActions--final">
               <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(2)} disabled={busy}>
                 Volver
               </button>
               <button className="bo-btn bo-btn--primary" type="button" onClick={() => void onPublish()} disabled={busy}>
                 <Check size={16} /> Añadir
               </button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           <aside className={`bo-previewPane ${mobileTab === "preview" ? "is-mobileActive" : ""}`}>
             <div className="bo-previewHead">

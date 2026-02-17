@@ -21,8 +21,10 @@ import type {
   GroupMenuV2Summary,
   GroupMenuSummary,
   HorarioMonthPoint,
+  FichajeActiveEntry,
   FichajeSchedule,
   FichajeState,
+  TimeEntry,
   Member,
   MemberStats,
   MemberTimeBalance,
@@ -323,6 +325,33 @@ export function createClient(opts: ClientOpts) {
           body: JSON.stringify({}),
         });
       },
+      async adminStart(memberId: number): Promise<APISuccess<{ activeEntry: FichajeActiveEntry | null }> | APIError> {
+        return json("/api/admin/fichaje/admin/start", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ memberId }),
+        });
+      },
+      async adminStop(memberId: number): Promise<APISuccess<{ activeEntry: FichajeActiveEntry | null }> | APIError> {
+        return json("/api/admin/fichaje/admin/stop", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ memberId }),
+        });
+      },
+      entries: {
+        async list(params: { date: string; memberId: number }): Promise<APISuccess<{ date: string; memberId: number; entries: TimeEntry[] }> | APIError> {
+          const q = new URLSearchParams({ date: params.date, memberId: String(params.memberId) });
+          return json(`/api/admin/fichaje/entries?${q.toString()}`, { method: "GET" });
+        },
+        async patch(id: number, input: { startTime?: string; endTime?: string }): Promise<APISuccess<{ entry: TimeEntry }> | APIError> {
+          return json(`/api/admin/fichaje/entries/${id}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+      },
     },
     horarios: {
       async list(date: string): Promise<APISuccess<{ date: string; schedules: FichajeSchedule[] }> | APIError> {
@@ -339,6 +368,16 @@ export function createClient(opts: ClientOpts) {
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
         });
+      },
+      async update(id: number, input: { startTime: string; endTime: string }): Promise<APISuccess<{ schedule: FichajeSchedule }> | APIError> {
+        return json(`/api/admin/horarios/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/horarios/${id}`, { method: "DELETE" });
       },
     },
     menus: {
@@ -758,6 +797,92 @@ export function createClient(opts: ClientOpts) {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ date, limit }),
         });
+      },
+    },
+
+    invoices: {
+      async list(params?: {
+        search?: string;
+        status?: string;
+        date_type?: string;
+        date_from?: string;
+        date_to?: string;
+        is_reservation?: boolean;
+        sort?: string;
+        page?: number;
+        limit?: number;
+      }): Promise<APISuccess<{ invoices: import("./types").Invoice[]; total: number; page: number; limit: number }> | APIError> {
+        const q = new URLSearchParams();
+        if (params?.search) q.set("search", params.search);
+        if (params?.status) q.set("status", params.status);
+        if (params?.date_type) q.set("date_type", params.date_type);
+        if (params?.date_from) q.set("date_from", params.date_from);
+        if (params?.date_to) q.set("date_to", params.date_to);
+        if (params?.is_reservation !== undefined) q.set("is_reservation", String(params.is_reservation));
+        if (params?.sort) q.set("sort", params.sort);
+        if (params?.page) q.set("page", String(params.page));
+        if (params?.limit) q.set("limit", String(params.limit));
+        return json(`/api/admin/invoices?${q.toString()}`, { method: "GET" });
+      },
+
+      async get(id: number): Promise<APISuccess<{ invoice: import("./types").Invoice }> | APIError> {
+        return json(`/api/admin/invoices/${id}`, { method: "GET" });
+      },
+
+      async create(input: import("./types").InvoiceInput): Promise<APISuccess<{ id: number }> | APIError> {
+        return json("/api/admin/invoices", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async update(id: number, input: import("./types").InvoiceInput): Promise<APISuccess | APIError> {
+        return json(`/api/admin/invoices/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/invoices/${id}`, {
+          method: "DELETE",
+        });
+      },
+
+      async send(id: number): Promise<APISuccess<{ pdf_url: string }> | APIError> {
+        return json(`/api/admin/invoices/${id}/send`, {
+          method: "POST",
+        });
+      },
+
+      async searchReservations(params: {
+        date_from?: string;
+        date_to?: string;
+        name?: string;
+        phone?: string;
+        party_size?: number;
+        time?: string;
+      }): Promise<{ success: boolean; reservations: import("./types").ReservationSearchResult[] } | import("./types").APIError> {
+        const q = new URLSearchParams();
+        if (params?.date_from) q.set("date_from", params.date_from);
+        if (params?.date_to) q.set("date_to", params.date_to);
+        if (params?.name) q.set("name", params.name);
+        if (params?.phone) q.set("phone", params.phone);
+        if (params?.party_size) q.set("party_size", String(params.party_size));
+        if (params?.time) q.set("time", params.time);
+        return json(`/api/admin/invoices/search-reservation?${q.toString()}`, { method: "GET" });
+      },
+
+      async uploadImage(id: number, file: File): Promise<{ success: boolean; url?: string } | import("./types").APIError> {
+        const formData = new FormData();
+        formData.append("image", file);
+        const res = await fetchImpl(baseUrl + `/api/admin/invoices/${id}/upload-image`, {
+          method: "POST",
+          body: formData,
+        });
+        return readJSON(res);
       },
     },
   };

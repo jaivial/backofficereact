@@ -35,3 +35,28 @@ Scope: todo lo que cuelga de `backoffice/`.
 - Botones con `aria-label` cuando solo hay icono.
 - Respeta `prefers-reduced-motion`: sin transforms ni transiciones fuertes.
 
+## Componentes reutilizables (React)
+- Navegación:
+  - `ui/nav/Tabs.tsx` (tabs de ruta)
+  - `ui/nav/NavLink.tsx` (items sidebar)
+- Calendario / fechas:
+  - `ui/widgets/MonthCalendar.tsx`
+  - `ui/inputs/DatePicker.tsx`
+- Métricas / tarjetas:
+  - `ui/widgets/StatCard.tsx`
+- Modales / overlays:
+  - `ui/overlays/Modal.tsx`
+  - `ui/overlays/ConfirmDialog.tsx`
+- Feedback:
+  - `ui/feedback/ToastStack.tsx`
+  - `ui/feedback/InlineAlert.tsx`
+- Miembros / turnos:
+  - `ui/widgets/MemberPicker.tsx`
+  - `ui/widgets/TimeAdjust.tsx`
+  - `ui/widgets/TimeAdjustCounter.tsx`
+  - `ui/widgets/TimeEntriesEditor.tsx`
+  - `ui/widgets/MemberShiftModal.tsx`
+
+## Regla de extracción
+- Si un patrón visual/funcional aparece en 2 o más páginas, extraerlo a `ui/widgets/`.
+- No duplicar tokens visuales fuera de `components/bo.css`.

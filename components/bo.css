@@ -1172,6 +1172,144 @@ tr.is-inactive {
   margin-top: 14px;
 }
 
+/* ShiftModal */
+.bo-shiftModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 4px;
+}
+
+.bo-shiftModalError {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--bo-radius-md);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #fca5a5;
+}
+
+.bo-shiftModalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-shiftModalLabel {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bo-muted);
+}
+
+.bo-shiftModalTimeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.bo-shiftModalTimeBlock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-shiftModalTime {
+  font-size: 18px;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+  min-width: 56px;
+  text-align: center;
+}
+
+.bo-shiftModalSeparator {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--bo-muted);
+}
+
+.bo-shiftModalActions {
+  display: flex;
+  gap: 10px;
+}
+
+.bo-shiftModalActions .bo-btn {
+  flex: 1;
+}
+
+.bo-shiftModalActiveBadge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.bo-shiftModalActiveTime {
+  font-size: 14px;
+  color: var(--bo-muted);
+}
+
+.bo-shiftModalAssignForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.bo-shiftModalSpinWheels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.bo-shiftModalSpinWheelCol {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.bo-shiftModalSpinWheel {
+  --wheel-w: 52px;
+}
+
+.bo-shiftModalSpinWheel .bo-spinWheelViewport {
+  width: var(--wheel-w);
+  height: 152px;
+}
+
+.bo-shiftModalSpinWheel .bo-spinWheelTrack {
+  gap: 0;
+}
+
+.bo-shiftModalSpinWheelColon {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bo-muted);
+  margin: 0 2px;
+}
+
+.bo-shiftModalWarning {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: var(--bo-radius-md);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #fde047;
+  text-align: center;
+}
+
+.bo-shiftModalAddShift {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bo-border);
+}
+
 /* Alerts */
 .bo-alert {
   margin-top: 12px;
@@ -1584,6 +1722,12 @@ tr.is-inactive {
   overflow-x: visible;
 }
 
+.bo-tabs--horarios {
+  min-width: max-content;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
 .bo-tabs::-webkit-scrollbar {
   height: 0;
 }
@@ -1660,6 +1804,26 @@ tr.is-inactive {
   }
 
   .bo-tabs--reservas .bo-tabLabel {
+    display: none;
+  }
+
+  .bo-tabs--horarios {
+    min-width: 0;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .bo-tabs--horarios .bo-tab {
+    padding: 11px;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .bo-tabs--horarios .bo-tabInner {
+    gap: 0;
+  }
+
+  .bo-tabs--horarios .bo-tabLabel {
     display: none;
   }
 }
@@ -3259,17 +3423,19 @@ tr.is-inactive {
     padding: 8px 12px;
   }
 
-  .bo-menuWizardFinal.is-previewCollapsed {
-    grid-template-columns: minmax(0, 1fr) 0fr;
-    gap: 0;
-    transition: grid-template-columns 0ms linear 600ms, gap 0ms linear 600ms;
-  }
-
-  .bo-menuWizardFinal.is-previewCollapsed .bo-previewPane {
+  .bo-menuWizardFinal.is-previewHidden .bo-previewPane {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 600ms ease, visibility 0s linear 600ms;
+  }
+
+  .bo-menuWizardFinal.is-previewUndocked {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bo-menuWizardFinal.is-previewUndocked .bo-previewPane {
+    display: none;
   }
 }
 
@@ -3614,6 +3780,10 @@ tr.is-inactive {
     display: grid;
   }
 
+  .bo-editorPane.is-mobileActive {
+    margin-top: 2rem;
+  }
+
   .bo-previewFrame {
     min-height: 72vh;
   }
@@ -3942,7 +4112,7 @@ tr.is-inactive {
 .bo-memberAvatarFallback {
   border-radius: inherit;
   background: linear-gradient(135deg, rgba(185, 168, 255, 0.36), rgba(147, 239, 231, 0.26));
-  color: rgba(16, 16, 20, 0.92);
+  color: var(--bo-text);
   font-size: 14px;
   font-weight: 780;
 }
@@ -3962,6 +4132,7 @@ tr.is-inactive {
   font-size: 14px;
   font-weight: 760;
   letter-spacing: 0.01em;
+  color: var(--bo-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4002,6 +4173,7 @@ tr.is-inactive {
 .bo-memberHours {
   font-size: 11px;
   font-weight: 760;
+  color: var(--bo-text);
 }
 
 .bo-roleBadge {
@@ -4157,6 +4329,15 @@ tr.is-inactive {
   font-size: 12px;
   color: var(--bo-muted);
   font-weight: 720;
+}
+.bo-roleCardLevel {
+  font-size: 11px;
+  font-weight: 780;
+  color: var(--bo-accent);
+  background: rgba(185, 168, 255, 0.12);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
 }
 
 .bo-roleModalTitleIcon {
@@ -4872,6 +5053,58 @@ tr.is-inactive {
   margin-top: 4px;
 }
 
+.bo-fichajeAdminPanel {
+  width: min(1100px, 100%);
+  margin-inline: auto;
+}
+
+.bo-fichajeAdminBody {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  align-items: start;
+}
+
+.bo-fichajeAdminPage .bo-memberPicker {
+  max-height: 50vh;
+}
+
+.bo-fichajeAdminWork {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 14px;
+}
+
+.bo-fichajeAdminMember {
+  display: grid;
+  gap: 4px;
+}
+
+.bo-fichajeAdminIdle {
+  display: grid;
+  justify-items: start;
+}
+
+.bo-fichajeAdminSchedule {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-fichajeAdminScheduleTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-fichajeAdminScheduleGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .bo-horariosPage {
   display: grid;
   gap: 14px;
@@ -5021,9 +5254,41 @@ tr.is-inactive {
 }
 
 .bo-horariosCalendarPanel .bo-mcalCell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: clamp(32px, 7vw, 44px);
   border-radius: clamp(8px, 1.8vw, 12px);
   padding: clamp(3px, 1vw, 6px) clamp(3px, 1vw, 6px) clamp(2px, 0.8vw, 4px);
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  background: transparent;
+  transition: opacity 160ms ease, background 160ms ease;
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell.is-selected {
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  box-shadow:
+    var(--bo-shadow-soft),
+    0 0 0 1px color-mix(in srgb, var(--bo-accent) 34%, transparent);
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell.is-selected::before {
+  background: color-mix(in srgb, var(--bo-accent) 78%, transparent);
+  opacity: 0.5;
 }
 
 .bo-horariosCalendarPanel .bo-mcalNum {
@@ -5349,6 +5614,381 @@ tr.is-inactive {
   font-weight: 720;
 }
 
+.bo-horariosPreviewPage,
+.bo-turnosPage {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.bo-horariosPreviewActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-horariosPreviewBody {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-horariosPreviewCounters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-horariosPreviewCounter {
+  min-height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bo-horariosPreviewGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-horariosPreviewBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-horariosPreviewCards {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.bo-horariosPreviewCards .bo-memberCard {
+  cursor: pointer;
+}
+
+.bo-memberCard--live {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 35%, var(--bo-border));
+  box-shadow:
+    var(--bo-shadow-soft),
+    0 0 0 1px color-mix(in srgb, var(--bo-accent-2) 26%, transparent);
+}
+
+.bo-memberCard--assigned {
+  border-color: color-mix(in srgb, var(--bo-accent) 28%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(185, 168, 255, 0.06), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+}
+
+.bo-horariosPreviewBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-horariosPreviewBadge {
+  font-size: 11px;
+  font-weight: 730;
+}
+
+.bo-horariosPreviewBadge--live {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 44%, transparent);
+  background: color-mix(in srgb, var(--bo-accent-2) 18%, transparent);
+}
+
+.bo-horariosPreviewBadge.is-assigned {
+  border-color: color-mix(in srgb, var(--bo-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+}
+
+.bo-horariosPreviewBadge.is-unassigned {
+  border-color: var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--bo-muted);
+}
+
+.bo-turnosBody {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 280px minmax(0, 1fr);
+  align-items: start;
+}
+
+.bo-memberPicker {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  max-height: 60vh;
+}
+
+.bo-memberPickerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-memberPickerCount {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 20%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.bo-memberPickerSearch {
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--bo-muted);
+}
+
+.bo-memberPickerSearchInput {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 13px;
+}
+
+.bo-memberPickerSearchInput::placeholder {
+  color: var(--bo-muted);
+}
+
+.bo-memberPickerList {
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  gap: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bo-memberPickerList::-webkit-scrollbar {
+  display: none;
+}
+
+.bo-memberPickerBtn {
+  appearance: none;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-text);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+}
+
+.bo-memberPickerBtn:hover {
+  border-color: var(--bo-border-2);
+}
+
+.bo-memberPickerBtn.is-active {
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+}
+
+.bo-memberPickerName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bo-memberPickerMeta {
+  color: var(--bo-muted);
+  font-size: 12px;
+}
+
+.bo-memberPickerEmpty {
+  padding: 12px;
+}
+
+.bo-turnosEditor {
+  min-width: 0;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 10px;
+}
+
+.bo-turnosEditorHead {
+  display: grid;
+  gap: 4px;
+}
+
+.bo-turnosEditorMeta {
+  color: var(--bo-muted);
+  font-size: 12px;
+}
+
+.bo-timeEntriesList {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-timeEntriesEmpty {
+  padding: 10px;
+  text-align: center;
+}
+
+.bo-timeEntryCard {
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 10px;
+}
+
+.bo-timeEntryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-timeEntryHeadLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 740;
+  color: var(--bo-muted);
+}
+
+.bo-timeEntryHeadRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-timeEntrySource {
+  text-transform: lowercase;
+}
+
+.bo-timeEntrySource.is-warning {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 45%, transparent);
+  background: color-mix(in srgb, var(--bo-accent-2) 18%, transparent);
+}
+
+.bo-timeEntryLive {
+  border-color: color-mix(in srgb, var(--bo-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+}
+
+.bo-timeEntryBody {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-timeAdjust {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-timeAdjustLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-timeAdjustCtrls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-timeAdjustValue {
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.bo-timeEntryLiveActions {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-timeEntryFoot {
+  color: var(--bo-muted);
+  font-size: 12px;
+}
+
+.bo-turnosTotal {
+  color: var(--bo-text);
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.bo-turnosFichajeSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-turnosFichajeSection--active {
+  border-color: rgba(147, 239, 231, 0.28);
+  background: rgba(147, 239, 231, 0.08);
+}
+
+.bo-turnosFichajeActive {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.bo-btn--fit {
+  width: fit-content;
+}
+
 @media (max-width: 1024px) {
   .bo-horariosCalendarPanel .bo-mcal {
     width: min(100%, 720px);
@@ -5356,8 +5996,28 @@ tr.is-inactive {
 }
 
 @media (max-width: 920px) {
+  .bo-fichajeAdminBody {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-fichajeAdminScheduleGrid {
+    grid-template-columns: 1fr;
+  }
+
   .bo-horariosWheels {
     grid-template-columns: 1fr;
+  }
+
+  .bo-horariosPreviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-turnosBody {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-memberPicker {
+    max-height: 320px;
   }
 }
 
@@ -5379,6 +6039,10 @@ tr.is-inactive {
 
   .bo-horariosCalendarTabs .bo-tabLabel {
     display: none;
+  }
+
+  .bo-timeEntryBody {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -5539,4 +6203,612 @@ tr.is-inactive {
   .bo-memberRefreshIcon.is-spinning {
     animation: none;
   }
+}
+
+/* Member Shift Modal */
+.bo-shiftModal {
+  display: grid;
+  gap: 16px;
+}
+
+.bo-shiftModalDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--bo-muted);
+  font-weight: 600;
+}
+
+.bo-shiftModalLoading {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.bo-spinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--bo-border);
+  border-top-color: var(--bo-accent);
+  animation: bo-spin 700ms linear infinite;
+}
+
+.bo-shiftModalSection {
+  display: grid;
+  gap: 12px;
+}
+
+.bo-shiftModalLabel {
+  font-size: 11px;
+  font-weight: 780;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-shiftModalTimes {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-shiftModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-shiftModalActions .bo-btn {
+  flex: 1 1 0;
+}
+
+.bo-shiftModalActive {
+  border-radius: var(--bo-radius-md);
+  border: 1px solid rgba(147, 239, 231, 0.28);
+  background: rgba(147, 239, 231, 0.08);
+  padding: 12px;
+}
+
+.bo-shiftModalActiveInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-shiftModalActiveTime {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-shiftModalAssign {
+  border-top: 1px solid var(--bo-border);
+  padding-top: 16px;
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.bo-shiftModalWheels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-shiftModalWheel {
+  height: 190px;
+}
+
+.bo-shiftModalAddBtn {
+  margin-top: 8px;
+}
+
+.bo-badge--success {
+  border-color: rgba(147, 239, 231, 0.30);
+  background: rgba(147, 239, 231, 0.14);
+  color: rgba(147, 239, 231, 0.95);
+}
+
+.bo-btn--danger {
+  border-color: rgba(255, 166, 166, 0.28);
+  background: rgba(255, 166, 166, 0.10);
+  color: rgba(255, 166, 166, 0.95);
+}
+
+.bo-btn--danger:hover:not(:disabled) {
+  border-color: rgba(255, 166, 166, 0.45);
+  background: rgba(255, 166, 166, 0.18);
+}
+
+/* Facturas Page */
+.bo-facturasPage {
+  position: relative;
+  padding-bottom: 98px;
+  display: grid;
+  gap: 14px;
+}
+
+.bo-facturasTabs {
+  display: grid;
+  gap: 14px;
+}
+
+/* Invoice Filters */
+.bo-invoiceFilters {
+  margin-bottom: 0;
+  padding: 12px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.14)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  display: grid;
+  gap: 10px;
+}
+
+.bo-invoiceFiltersHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bo-invoiceFiltersTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 650;
+  color: var(--bo-text);
+}
+
+.bo-invoiceFiltersToggle {
+  color: var(--bo-faint);
+}
+
+.bo-invoiceFiltersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.bo-invoiceFilter--search {
+  grid-column: span 2;
+}
+
+.bo-invoiceFiltersFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-invoiceFiltersCount {
+  font-size: 13px;
+}
+
+.bo-invoiceClearBtn {
+  color: var(--bo-muted);
+}
+
+.bo-invoiceClearBtn.is-hidden {
+  display: none;
+}
+
+/* Invoice Table - uses bo-table classes */
+.bo-table--facturas th.col-customer_name,
+.bo-table--facturas td.col-customer_name {
+  min-width: 200px;
+}
+.bo-table--facturas th.col-customer_email,
+.bo-table--facturas td.col-customer_email {
+  min-width: 180px;
+}
+.bo-table--facturas th.col-amount,
+.bo-table--facturas td.col-amount {
+  width: 100px;
+  text-align: right;
+}
+.bo-table--facturas th.col-invoice_date,
+.bo-table--facturas td.col-invoice_date {
+  width: 100px;
+}
+.bo-table--facturas th.col-status,
+.bo-table--facturas td.col-status {
+  width: 100px;
+}
+.bo-table--facturas th.col-is_reservation,
+.bo-table--facturas td.col-is_reservation {
+  width: 100px;
+}
+.bo-table--facturas th.col-attachment,
+.bo-table--facturas td.col-attachment {
+  width: 40px;
+  text-align: center;
+}
+.bo-table--facturas th.col-actions,
+.bo-table--facturas td.col-actions {
+  width: 50px;
+  text-align: right;
+}
+.bo-tableCustomer {
+  display: flex;
+  flex-direction: column;
+}
+.bo-tableCustomerName {
+  font-weight: 600;
+}
+.bo-tableCustomerSurname {
+  font-weight: 400;
+  color: var(--bo-muted);
+}
+.bo-tableAttachment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bo-accent-2);
+}
+.bo-tableLoading,
+.bo-tableEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--bo-muted);
+  gap: 12px;
+}
+
+/* Invoice Form */
+.bo-invoiceForm {
+  display: grid;
+  gap: 16px;
+}
+
+.bo-invoiceFormHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-invoiceFormTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-invoiceFormGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.bo-invoiceFormSection {
+  display: grid;
+  gap: 12px;
+}
+
+.bo-invoiceFormSectionTitle {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--bo-text);
+  margin-bottom: 4px;
+}
+
+.bo-invoiceFormRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.bo-invoiceFormRow--dni {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.bo-invoiceFormRow--dni .bo-field--switch {
+  padding-bottom: 8px;
+}
+
+.bo-invoiceFormRow--reservation {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.bo-field--number {
+  max-width: 100px;
+}
+
+.bo-field--switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-invoiceImageUpload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
+.bo-invoiceImagePreview {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: var(--bo-radius-md);
+  overflow: hidden;
+}
+
+.bo-invoiceImagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bo-invoiceImageRemove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-invoiceImageDrop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 120px;
+  border: 2px dashed var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  color: var(--bo-muted);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.bo-invoiceImageDrop:hover {
+  border-color: var(--bo-accent);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-invoiceFormActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bo-border);
+}
+
+/* Reservation Modal */
+.bo-reservationModal {
+  max-width: 600px;
+}
+
+.bo-reservationFilters {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bo-reservationFiltersRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.bo-reservationResults {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+}
+
+.bo-reservationLoading,
+.bo-reservationEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--bo-muted);
+  gap: 12px;
+}
+
+.bo-reservationList {
+  display: grid;
+}
+
+.bo-reservationItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: none;
+  border-bottom: 1px solid var(--bo-border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: background 120ms ease;
+}
+
+.bo-reservationItem:hover {
+  background: var(--bo-surface);
+}
+
+.bo-reservationItem:last-child {
+  border-bottom: none;
+}
+
+.bo-reservationItemMain {
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-reservationItemName {
+  font-weight: 600;
+  color: var(--bo-text);
+}
+
+.bo-reservationItemEmail {
+  font-size: 13px;
+  color: var(--bo-muted);
+}
+
+.bo-reservationItemMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-reservationItemMeta > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .bo-invoiceFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-invoiceFormRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-invoiceFormRow--reservation {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* TimeAdjustCounter */
+.bo-timeAdjustCounter {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-timeAdjustCounterLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-timeAdjustCounterCtrls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-timeAdjustCounterValue {
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 740;
+}
+
+/* Shift Modal Wheels */
+.bo-shiftModalWheels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.bo-shiftModalWheelGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-shiftModalWheelLabel {
+  font-size: 12px;
+  color: var(--bo-faint);
+  font-weight: 600;
+}
+
+.bo-shiftModalWheelRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.bo-shiftModalWheelSpin {
+  width: 100%;
+}
+
+/* Error Page */
+.bo-errorPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.bo-errorPage__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+}
+
+.bo-errorPage__icon {
+  color: var(--bo-accent);
+  margin-bottom: 16px;
+}
+
+.bo-errorPage__status {
+  font-size: 72px;
+  font-weight: 780;
+  line-height: 1;
+  color: var(--bo-text);
+  opacity: 0.15;
+  margin-bottom: -8px;
+}
+
+.bo-errorPage__title {
+  font-size: 20px;
+  font-weight: 760;
+  color: var(--bo-text);
+  margin: 0 0 8px;
+}
+
+.bo-errorPage__message {
+  font-size: 14px;
+  color: var(--bo-muted);
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.bo-errorPage__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
