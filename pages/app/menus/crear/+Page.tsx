@@ -12,6 +12,7 @@ import {
   Settings2,
   Sparkles,
   Trash2,
+  Upload,
 } from "lucide-react";
 import { motion, Reorder, useDragControls, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
@@ -38,6 +39,7 @@ type EditorDish = {
   allergens: string[];
   supplement_enabled: boolean;
   supplement_price: number | null;
+  price: number | null;
   active: boolean;
   position: number;
 };
@@ -101,10 +103,10 @@ type BasicsPayload = {
 
 const MENU_TYPES = [
   { value: "closed_conventional", label: "Menu cerrado convencional", enabled: true },
-  { value: "closed_group", label: "Menu cerrado de grupo", enabled: false },
-  { value: "a_la_carte", label: "A la carta convencional", enabled: false },
-  { value: "a_la_carte_time", label: "A la carta tiempo", enabled: false },
-  { value: "special", label: "Menu especial", enabled: false },
+  { value: "closed_group", label: "Menu cerrado de grupo", enabled: true },
+  { value: "a_la_carte", label: "A la carta convencional", enabled: true },
+  { value: "a_la_carte_group", label: "A la carta grupo", enabled: true },
+  { value: "special", label: "Menu especial", enabled: true },
 ] as const;
 
 const DEFAULT_BEVERAGE = {
@@ -260,6 +262,7 @@ function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
     allergens: d.allergens || [],
     supplement_enabled: !!d.supplement_enabled,
     supplement_price: d.supplement_price ?? null,
+    price: d.price ?? null,
     active: d.active !== false,
     position: d.position || 0,
   };
@@ -360,6 +363,7 @@ export default function Page() {
   const [mainLimit, setMainLimit] = useState<boolean>(false);
   const [mainLimitNum, setMainLimitNum] = useState<string>("1");
   const [comments, setComments] = useState<string[]>([""]);
+  const [specialMenuImage, setSpecialMenuImage] = useState<string | null>(null);
 
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [busy, setBusy] = useState(false);
@@ -383,6 +387,9 @@ export default function Page() {
   const inFlightSectionsRef = useRef<string | null>(null);
 
   const steps = [0, 1, 2, 3];
+
+  const isALaCarte = menuType === "a_la_carte" || menuType === "a_la_carte_group";
+  const isSpecial = menuType === "special";
 
   const basicsDraft = useMemo<BasicsDraft>(
     () => ({
@@ -623,6 +630,7 @@ export default function Page() {
             allergens: string[];
             supplement_enabled: boolean;
             supplement_price: number | null;
+            price: number | null;
             active: boolean;
           }> = [];
 
@@ -653,6 +661,7 @@ export default function Page() {
               allergens: dish.allergens,
               supplement_enabled: dish.supplement_enabled,
               supplement_price: dish.supplement_price,
+              price: isALaCarte ? dish.price : null,
               active: dish.active,
             });
           }
@@ -827,13 +836,14 @@ export default function Page() {
           allergens: fromCatalog?.allergens || [],
           supplement_enabled: fromCatalog?.default_supplement_enabled || false,
           supplement_price: fromCatalog?.default_supplement_price ?? null,
+          price: isALaCarte ? 0 : null,
           active: true,
           position: sec.dishes.length,
         };
         return { ...sec, dishes: [...sec.dishes, dish] };
       }),
     );
-  }, []);
+  }, [isALaCarte]);
 
   const updateDish = useCallback((sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => {
     setSections((prev) =>
@@ -946,7 +956,7 @@ export default function Page() {
             ))}
           </div>
           <div className="bo-menuWizardActions">
-            <button className="bo-btn bo-btn--primary" type="button" disabled={busy || menuType !== "closed_conventional"} onClick={() => void createDraftAndContinue()}>
+            <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void createDraftAndContinue()}>
               Continuar
             </button>
           </div>
@@ -962,46 +972,67 @@ export default function Page() {
               <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
             </div>
 
-            <div className="bo-field">
-              <div className="bo-label">Precio</div>
-              <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
-            </div>
+            {!isALaCarte && !isSpecial ? (
+              <div className="bo-field">
+                <div className="bo-label">Precio</div>
+                <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+              </div>
+            ) : null}
+
+            {isSpecial ? (
+              <div className="bo-field">
+                <div className="bo-label">¿Tiene precio fijo?</div>
+                <Switch checked={!!Number(price)} onCheckedChange={(checked) => setPrice(checked ? "0" : "")} />
+                {Number(price) > 0 && (
+                  <input
+                    className="bo-input"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    inputMode="decimal"
+                    placeholder="Precio"
+                    style={{ marginTop: 8 }}
+                  />
+                )}
+              </div>
+            ) : null}
 
             <div className="bo-field">
               <div className="bo-label">Activo</div>
               <Switch checked={active} onCheckedChange={setActive} />
             </div>
 
-            <div className="bo-field bo-field--full">
-              <div className="bo-label">Subtitulos</div>
-              <div className="bo-stackFields">
-                {subtitles.map((line, idx) => (
-                  <div key={`subtitle-${idx}`} className="bo-inlineField">
-                    <input
-                      className="bo-input"
-                      value={line}
-                      onChange={(e) => {
-                        const next = [...subtitles];
-                        next[idx] = e.target.value;
-                        setSubtitles(next);
-                      }}
-                    />
-                    <button
-                      className="bo-btn bo-btn--ghost"
-                      type="button"
-                      aria-label={`Eliminar subtitulo ${idx + 1}`}
-                      disabled={subtitles.length <= 1}
-                      onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-                <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
-                  <Plus size={14} /> Añadir subtitulo
-                </button>
+            {!isSpecial ? (
+              <div className="bo-field bo-field--full">
+                <div className="bo-label">Subtitulos</div>
+                <div className="bo-stackFields">
+                  {subtitles.map((line, idx) => (
+                    <div key={`subtitle-${idx}`} className="bo-inlineField">
+                      <input
+                        className="bo-input"
+                        value={line}
+                        onChange={(e) => {
+                          const next = [...subtitles];
+                          next[idx] = e.target.value;
+                          setSubtitles(next);
+                        }}
+                      />
+                      <button
+                        className="bo-btn bo-btn--ghost"
+                        type="button"
+                        aria-label={`Eliminar subtitulo ${idx + 1}`}
+                        disabled={subtitles.length <= 1}
+                        onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
+                    <Plus size={14} /> Añadir subtitulo
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
 
           <div className="bo-menuWizardActions">
@@ -1016,7 +1047,11 @@ export default function Page() {
                   pushToast({ kind: "error", title: "Titulo", message: "El titulo es obligatorio" });
                   return;
                 }
-                setStep(2);
+                if (isSpecial) {
+                  setStep(4);
+                } else {
+                  setStep(2);
+                }
               }}
             >
               Continuar
@@ -1081,14 +1116,16 @@ export default function Page() {
                       </button>
                     </div>
                     <input className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} />
-                    <Select
-                      className="bo-sectionKindSelect"
-                      value={sec.kind}
-                      onChange={(value) => updateSection(sec.clientId, { kind: value })}
-                      options={sectionKindOptions}
-                      size="sm"
-                      ariaLabel={`Tipo de seccion ${sec.title || idx + 1}`}
-                    />
+                    {!isALaCarte ? (
+                      <Select
+                        className="bo-sectionKindSelect"
+                        value={sec.kind}
+                        onChange={(value) => updateSection(sec.clientId, { kind: value })}
+                        options={sectionKindOptions}
+                        size="sm"
+                        ariaLabel={`Tipo de seccion ${sec.title || idx + 1}`}
+                      />
+                    ) : null}
                     <button
                       className="bo-btn bo-btn--ghost"
                       type="button"
@@ -1315,6 +1352,23 @@ export default function Page() {
                                         onChange={(e) => updateDish(sec.clientId, dish.clientId, { description: e.target.value })}
                                         placeholder="Descripcion"
                                       />
+
+                                      {isALaCarte ? (
+                                        <div className="bo-dishPriceRow">
+                                          <label className="bo-label">Precio</label>
+                                          <input
+                                            className="bo-input bo-priceInput"
+                                            inputMode="decimal"
+                                            value={dish.price == null ? "" : String(dish.price)}
+                                            onChange={(e) =>
+                                              updateDish(sec.clientId, dish.clientId, {
+                                                price: toNumOrNull(e.target.value),
+                                              })
+                                            }
+                                            placeholder="0.00"
+                                          />
+                                        </div>
+                                      ) : null}
 
                                       <div className="bo-dishRow">
                                         <label className="bo-checkRow">
@@ -1591,6 +1645,56 @@ export default function Page() {
           </div>
         </div>
       </Modal>
+
+      {step === 4 && isSpecial ? (
+        <div className="bo-menuWizardPanel">
+          <h2 className="bo-sectionTitle">Imagen del menu</h2>
+          <p className="bo-mutedText" style={{ marginBottom: 16 }}>
+            Sube una imagen del menu especial (PDF, Word, imagen)
+          </p>
+
+          <div className="bo-specialImageUpload">
+            {specialMenuImage ? (
+              <div className="bo-specialImagePreview">
+                <img src={specialMenuImage} alt="Menu especial" />
+                <button
+                  className="bo-btn bo-btn--ghost bo-btn--danger"
+                  type="button"
+                  onClick={() => setSpecialMenuImage(null)}
+                >
+                  <Trash2 size={14} /> Eliminar
+                </button>
+              </div>
+            ) : (
+              <div className="bo-specialImageDropzone">
+                <Upload size={48} />
+                <p>Arrastra una imagen o haz clic para seleccionar</p>
+                <p className="bo-mutedText">PDF, Word, PNG, JPG hasta 10MB</p>
+                <input
+                  type="file"
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      // TODO: Handle file upload
+                      setSpecialMenuImage(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="bo-menuWizardActions">
+            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)}>
+              Volver
+            </button>
+            <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)}>
+              Continuar al editor
+            </button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

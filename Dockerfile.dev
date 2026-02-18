@@ -1,0 +1,15 @@
+FROM oven/bun:1-alpine
+WORKDIR /app
+
+COPY backoffice/package.json backoffice/package-lock.json ./
+RUN bun install
+
+COPY backoffice .
+
+# Copy environment file
+COPY backoffice/.env.local .env.local
+
+ENV NODE_ENV=development
+EXPOSE 3001
+
+CMD ["bun", "server/index.ts"]

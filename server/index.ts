@@ -566,9 +566,9 @@ async function start() {
   });
 
   if (isProd) {
-    const server = app.listen(port, () => {
+    const server = app.listen(port, "0.0.0.0", () => {
       // eslint-disable-next-line no-console
-      console.log(`[backoffice] listening on http://127.0.0.1:${port} (prod) backend=${backendOrigin}`);
+      console.log(`[backoffice] listening on http://0.0.0.0:${port} (prod) backend=${backendOrigin}`);
     });
     attachFichajeWSProxy(server, backendOrigin);
     return;
@@ -583,9 +583,9 @@ async function start() {
   );
   attachFichajeWSProxy(server, backendOrigin);
 
-  server.listen(port, () => {
+  server.listen(port, "0.0.0.0", () => {
     // eslint-disable-next-line no-console
-    console.log(`[backoffice] listening on https://127.0.0.1:${port} (dev) backend=${backendOrigin}`);
+    console.log(`[backoffice] listening on https://0.0.0.0:${port} (dev) backend=${backendOrigin}`);
   });
 }
 

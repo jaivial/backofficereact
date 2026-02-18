@@ -16,22 +16,94 @@ Scope: todo lo que cuelga de `backoffice/`.
 - Prefijo de clases: `bo-` (evita colisiones).
 - Componentes: 1 ficheo `.html` por componente; todos linkean `./bo.css`.
 - Iconos: siempre inline SVG (stroke `currentColor`, `stroke-width: 1.8`, caps/joins redondeados).
+- **NUNCA hardcodear colores, spacing, border-radius o transiciones** - usar siempre tokens CSS.
+- **NUNCA usar `transition: all`** - especificar propiedades.
 
 ## Tokens (no hardcodear)
 - Colores, radios y sombras se consumen desde `:root` en `backoffice/components/bo.css`.
 - Superficies: usar `--bo-surface*` con overlays `linear-gradient(...)` para profundidad.
 - Acentos: `--bo-accent` (lila), `--bo-accent-2` (cian), `--bo-accent-3` (card clara).
 
+### Tokens de tipografía
+```css
+:root {
+  /* Font sizes - escala base 4px */
+  --bo-text-xs: 10px;    /* etiquetas pequeñas, metadata */
+  --bo-text-sm: 12px;    /* secundario, etiquetas */
+  --bo-text-base: 14px;  /* cuerpo de texto */
+  --bo-text-lg: 16px;    /* subtítulos */
+  --bo-text-xl: 20px;    /* títulos de página */
+  --bo-text-2xl: 24px;   /* encabezados de sección */
+  --bo-text-3xl: 32px;   /* números destacados */
+
+  /* Font weights - solo 4 opciones */
+  --bo-weight-normal: 400;
+  --bo-weight-medium: 500;
+  --bo-weight-semibold: 600;
+  --bo-weight-bold: 700;
+
+  /* Line heights */
+  --bo-leading-tight: 1.25;
+  --bo-leading-normal: 1.4;
+  --bo-leading-relaxed: 1.6;
+}
+```
+
+### Tokens de spacing
+```css
+:root {
+  /* Spacing scale */
+  --bo-space-1: 4px;
+  --bo-space-2: 8px;
+  --bo-space-3: 12px;
+  --bo-space-4: 16px;
+  --bo-space-5: 24px;
+  --bo-space-6: 32px;
+  --bo-space-8: 48px;
+}
+```
+
+### Tokens de border radius
+```css
+:root {
+  --bo-radius-sm: 8px;    /* botones, inputs */
+  --bo-radius-md: 12px;   /* cards */
+  --bo-radius-lg: 16px;   /* panels, modals */
+  --bo-radius-full: 9999px; /* pills, avatares circulares */
+}
+```
+
+### Tokens de transiciones
+```css
+:root {
+  /* Duraciones estandarizadas - usar solo estas */
+  --bo-transition-fast: 120ms;
+  --bo-transition-base: 150ms;
+  --bo-transition-slow: 300ms;
+
+  /* Easing */
+  --bo-ease: ease;
+  --bo-ease-out: ease-out;
+  --bo-ease-in-out: ease-in-out;
+}
+```
+
 ## Layout y componentes
-- Sidebar: 78px, botones 44x44 con `border-radius: 16px`, estado activo con fondo lila translúcido.
-- Cards métricas: `--bo-radius-md`, borde sutil (`--bo-border`), `box-shadow: --bo-shadow-soft`.
-- Panels: `--bo-radius-lg` y padding interno consistente (`16-18px`).
+- Sidebar: 78px, botones 44x44 con `border-radius: var(--bo-radius-md)`, estado activo con fondo lila translúcido.
+- Cards métricas: `border-radius: var(--bo-radius-md)`, borde sutil (`--bo-border`), `box-shadow: var(--bo-shadow-soft)`.
+- Panels: `border-radius: var(--bo-radius-lg)` y padding interno consistente (`16-18px`).
 - Tablas: `border-collapse`, separadores muy finos, hover discreto.
+- **Botones**: altura 40px, `border-radius: var(--bo-radius-sm)`, padding horizontal 14px.
+- **Inputs**: altura 40px, `border-radius: var(--bo-radius-sm)`.
+- **Action buttons**: 36x36px, `border-radius: var(--bo-radius-md)`.
 
 ## Tipografía y espaciado
-- Fuente: stack del sistema (`--bo-font`), pesos 650-780 según jerarquía.
-- Texto secundario: `--bo-muted` / `--bo-faint` (no bajar opacidad a ojo).
-- Espaciado: usa la misma escala ya usada en `bo.css` (8/10/12/14/16/18/24).
+- Fuente: stack del sistema (`--bo-font`).
+- **Usar tokens de tipografía**: `--bo-text-xs`, `--bo-text-sm`, `--bo-text-base`, etc.
+- **Pesos simplificados**: usar solo `--bo-weight-normal` (400), `--bo-weight-medium` (500), `--bo-weight-semibold` (600), `--bo-weight-bold` (700).
+- **Line heights**: usar `--bo-leading-tight` (1.25), `--bo-leading-normal` (1.4), `--bo-leading-relaxed` (1.6).
+- Texto secundario: `--bo-muted` / `--bo-faint` (no hardcodear opacidad).
+- Espaciado: usar tokens `--bo-space-*` (4/8/12/16/24/32/48px).
 
 ## Temas (Dark/Light)
 Todos los componentes deben soportar ambos temas:
@@ -43,9 +115,16 @@ Todos los componentes deben soportar ambos temas:
   --bo-shell: #1a1b22;
   --bo-surface: #22232b;
   --bo-surface-2: #2a2b34;
+  --bo-surface-3: #16171d;
+  --bo-sidebar: #14151b;
+  --bo-border: rgba(255, 255, 255, 0.06);
+  --bo-border-2: rgba(255, 255, 255, 0.09);
   --bo-text: #eef0f6;
   --bo-muted: rgba(238, 240, 246, 0.64);
-  --bo-faint: rgba(238, 240, 246, 0.42);
+  --bo-faint: rgba(238, 240, 246, 0.52); /* WCAG AA: 4.5:1 mínimo */
+  --bo-accent: #b9a8ff;
+  --bo-accent-2: #93efe7;
+  --bo-accent-3: #cfeff0;
 }
 ```
 
@@ -56,9 +135,31 @@ Todos los componentes deben soportar ambos temas:
   --bo-shell: #ffffff;
   --bo-surface: #ffffff;
   --bo-surface-2: #fbfcff;
+  --bo-surface-3: #f2f4fb;
+  --bo-sidebar: #ffffff;
+  --bo-border: rgba(0, 0, 0, 0.08);
+  --bo-border-2: rgba(0, 0, 0, 0.12);
   --bo-text: rgba(20, 21, 26, 0.95);
   --bo-muted: rgba(20, 21, 26, 0.62);
   --bo-faint: rgba(20, 21, 26, 0.46);
+  /* IMPORTANTE: overrides de acentos para mejor contraste en light */
+  --bo-accent: #7c5ce7;      /* más oscuro que #b9a8ff para light */
+  --bo-accent-2: #0d9488;    /* más oscuro que #93efe7 para light */
+  --bo-accent-3: #5eead4;
+}
+```
+
+### Variables de estado (definir en :root)
+```css
+:root {
+  --bo-color-success: #16a34a;
+  --bo-color-warning: #d97706;
+  --bo-color-danger: #dc2626;
+  --bo-color-info: #0284c7;
+  --bo-text-success: #16a34a;
+  --bo-text-warning: #d97706;
+  --bo-text-danger: #dc2626;
+  --bo-border-color: var(--bo-border);
 }
 ```
 
@@ -77,13 +178,36 @@ Todos los componentes deben soportar ambos temas:
 - Contraste mínimo 4.5:1 para texto normal, 3:1 para texto grande.
 - Objetos táctiles mínimos 44x44px en móvil.
 
-### Estados de focus
+### Estados de focus (OBLIGATORIOS en todos los elementos interactivos)
 ```css
 :focus-visible {
   outline: 2px solid var(--bo-accent);
   outline-offset: 2px;
 }
+
+/* Todos los elementos interactivos deben tener focus visible */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.bo-checkboxContainer:focus-visible,
+.bo-radioGroup:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+/* Tema claro: outline más visible */
+:root[data-theme="light"] :focus-visible {
+  outline-color: rgba(124, 92, 231, 0.9); /* --bo-accent más oscuro */
+}
 ```
+
+### Estados de hover (REQUERIDOS en elementos interactivos)
+- Todo elemento con `:hover` debe tener también `:focus-visible`
+- Usar transiciones de `--bo-transition-base` (150ms)
+- **NUNCA usar `transition: all`** - especificar propiedades explícitamente
 
 ### Reduced motion
 ```css
@@ -119,6 +243,13 @@ Todos los componentes deben soportar ambos temas:
 - `form-checkboxes.html` - Checkboxes y radios
 - `form-toggle.html` - Toggles/switches
 - `button-variants.html` - Variantes de botones
+
+### Reglas de formularios
+- Inputs y selects: misma altura (40px) y border-radius (var(--bo-radius-sm))
+- Labels: siempre asociados con `for`/`id`
+- Error states: border color + background tint + mensaje de error
+- Disabled: `opacity: 0.62`, `cursor: not-allowed`
+- Focus states: obligatorio en checkboxes y radios (no depender solo del global)
 
 ### Navegación
 - `tabs.html` - Tabs con indicador
@@ -175,12 +306,20 @@ Todos los componentes deben soportar ambos temas:
 - No duplicar tokens visuales fuera de `components/bo.css`.
 
 ## Colores de estado (para badges, alerts, etc.)
+**IMPORTANTE**: Usar siempre variables CSS, no hardcodear colores.
+
 - `--bo-accent` / Lila: #b9a8ff (primario)
 - `--bo-accent-2` / Cyan: #93efe7 (secundario)
-- Success / Verde: #28a745
-- Warning / Amarillo: #ffc107
-- Danger / Rojo: #dc3545
-- Info / Azul: #0dcaf0
+- `--bo-color-success` / Verde: #16a34a
+- `--bo-color-warning` / Amarillo: #d97706
+- `--bo-color-danger` / Rojo: #dc2626
+- `--bo-color-info` / Azul: #0284c7
+
+### Colores en light theme
+Los colores de estado deben mantener contraste WCAG AA en ambos temas:
+- Usar `--bo-color-*` para backgrounds/borders
+- Usar `--bo-text-*` para texto sobre fondos claros
+- En light theme: considerar versiones más oscuras de los colores
 
 ## Guía de uso de componentes
 
@@ -203,3 +342,13 @@ Todos los componentes deben soportar ambos temas:
 2. Usar mismas clases CSS (`bo-` prefix)
 3. Soportar prop `theme?: 'light' | 'dark' | 'system'`
 4. Testear en ambos temas
+5. **Usar `cn()` utility** para combinar clases (no string concatenation):
+   ```tsx
+   import { cn } from "../shadcn/utils";
+
+   // BIEN
+   className={cn("bo-btn", variant && `bo-btn--${variant}`, className)}
+
+   // MAL
+   className={"bo-btn " + (variant ? "bo-btn--" + variant : "") + " " + className}
+   ```

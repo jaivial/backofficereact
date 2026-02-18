@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Filter, FilterX, PencilLine, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Filter, FilterX, PencilLine, Plus, Trash2, BookOpen, Lock, Users, UtensilsCrossed, UsersRound, Star } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 
@@ -19,7 +19,15 @@ type PageData = {
 type MenuStatusFilter = "all" | "active" | "inactive";
 type MenuSortOption = "created_desc" | "created_asc" | "price_asc" | "price_desc";
 
-const ORDERED_MENU_TYPES: string[] = ["closed_conventional", "closed_group", "a_la_carte", "a_la_carte_time", "special"];
+const ORDERED_MENU_TYPES: string[] = ["closed_conventional", "closed_group", "a_la_carte", "a_la_carte_group", "special"];
+
+const MENU_TYPE_PANELS = [
+  { value: "closed_conventional", label: "Menu cerrado convencional", icon: Lock, description: "Menu fijo con precio cerrado" },
+  { value: "closed_group", label: "Menu cerrado grupo", icon: Users, description: "Menu fijo para grupos" },
+  { value: "a_la_carte", label: "A la carta convencional", icon: UtensilsCrossed, description: "Carta con platos a elegir" },
+  { value: "a_la_carte_group", label: "A la carta grupo", icon: UsersRound, description: "Carta para grupos" },
+  { value: "special", label: "Menu especial", icon: Star, description: "Menu especial con imagen" },
+] as const;
 const MENU_STATUS_FILTER_OPTIONS: { value: MenuStatusFilter; label: string }[] = [
   { value: "all", label: "Todos" },
   { value: "active", label: "Activos" },
@@ -58,7 +66,7 @@ function menuPriceNumber(menu: Pick<GroupMenuV2Summary, "price">): number {
 function menuTypeLabel(kind: string): string {
   if (kind === "closed_group") return "Cerrado grupo";
   if (kind === "a_la_carte") return "A la carta";
-  if (kind === "a_la_carte_time") return "A la carta tiempo";
+  if (kind === "a_la_carte_group") return "A la carta grupo";
   if (kind === "special") return "Especial";
   return "Cerrado convencional";
 }
@@ -287,6 +295,7 @@ export default function Page() {
   const [menus, setMenus] = useState<GroupMenuV2Summary[]>(data.menus || []);
   const [confirmDel, setConfirmDel] = useState<{ open: boolean; menu: GroupMenuV2Summary | null }>({ open: false, menu: null });
   const [searchText, setSearchText] = useState("");
+  const [showTypeSelector, setShowTypeSelector] = useState(true);
   const [statusFilter, setStatusFilter] = useState<MenuStatusFilter>("all");
   const [menuTypeFilter, setMenuTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState<MenuSortOption>("created_desc");
@@ -409,23 +418,65 @@ export default function Page() {
     [confirmDel.menu],
   );
 
+  const handleTypePanelClick = useCallback((type: string) => {
+    setShowTypeSelector(false);
+    setMenuTypeFilter(type);
+  }, []);
+
+  const handleBackToPanels = useCallback(() => {
+    setShowTypeSelector(true);
+    resetFilters();
+  }, [resetFilters]);
+
   return (
     <section aria-label="Menus" className="bo-menuV2Page">
-      <MenuFilters
-        searchText={searchText}
-        statusFilter={statusFilter}
-        menuTypeFilter={menuTypeFilter}
-        sortBy={sortBy}
-        menuTypeOptions={menuTypeOptions}
-        hasFilters={hasFilters}
-        summaryText={summaryText}
-        disableActions={disableGlobalActions}
-        onSearchChange={handleSearchChange}
-        onStatusFilterChange={handleStatusFilterChange}
-        onMenuTypeFilterChange={handleMenuTypeFilterChange}
-        onSortByChange={handleSortByChange}
-        onResetFilters={resetFilters}
-      />
+      {showTypeSelector && menus.length > 0 ? (
+        <div className="bo-menuTypePanels">
+          <div className="bo-menuTypePanelsGrid">
+            {MENU_TYPE_PANELS.map((panel) => {
+              const Icon = panel.icon;
+              const count = menus.filter((m) => (m.menu_type || "closed_conventional") === panel.value).length;
+              return (
+                <button
+                  key={panel.value}
+                  className="bo-menuTypePanel"
+                  type="button"
+                  onClick={() => handleTypePanelClick(panel.value)}
+                >
+                  <div className="bo-menuTypePanelIcon">
+                    <Icon size={28} />
+                  </div>
+                  <div className="bo-menuTypePanelLabel">{panel.label}</div>
+                  <div className="bo-menuTypePanelDesc">{panel.description}</div>
+                  {count > 0 && <div className="bo-menuTypePanelCount">{count} menu{count !== 1 ? "s" : ""}</div>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <MenuFilters
+          searchText={searchText}
+          statusFilter={statusFilter}
+          menuTypeFilter={menuTypeFilter}
+          sortBy={sortBy}
+          menuTypeOptions={menuTypeOptions}
+          hasFilters={hasFilters}
+          summaryText={summaryText}
+          disableActions={disableGlobalActions}
+          onSearchChange={handleSearchChange}
+          onStatusFilterChange={handleStatusFilterChange}
+          onMenuTypeFilterChange={handleMenuTypeFilterChange}
+          onSortByChange={handleSortByChange}
+          onResetFilters={resetFilters}
+        />
+      )}
+
+      {!showTypeSelector && (
+        <button className="bo-btn bo-btn--ghost bo-menuBackBtn" type="button" onClick={handleBackToPanels}>
+          <ChevronUp size={16} /> Volver a tipos de menu
+        </button>
+      )}
 
       <div className="bo-menuV2Grid" role="list" aria-label="Lista de menus">
         {filteredMenus.map((menu) => (
