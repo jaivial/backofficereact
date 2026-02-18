@@ -10,14 +10,16 @@ import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
 import { Select } from "../../../../../ui/inputs/Select";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
 import { applyLiveToBalance, applyLiveToStats, maxHours, useMemberLive } from "../_shared/realtime";
+import { StatsTable } from "./_components/StatsTable";
 
-type StatsView = "weekly" | "monthly" | "quarterly";
+type StatsView = "weekly" | "monthly" | "quarterly" | "yearly";
 type ChartType = "bar" | "linear";
 
 const statsViewOptions: { value: string; label: string }[] = [
   { value: "weekly", label: "Semanal" },
   { value: "monthly", label: "Mensual" },
   { value: "quarterly", label: "Trimestral" },
+  { value: "yearly", label: "Anual" },
 ];
 
 const chartTypeOptions: { value: string; label: string }[] = [
@@ -28,6 +30,7 @@ const chartTypeOptions: { value: string; label: string }[] = [
 function parseStatsView(v: string): StatsView {
   if (v === "monthly") return "monthly";
   if (v === "quarterly") return "quarterly";
+  if (v === "yearly") return "yearly";
   return "weekly";
 }
 
@@ -253,6 +256,23 @@ export default function Page() {
           <div className="bo-memberQuarterNote">
             Bolsa trimestral: {balanceLive?.quarter.startDate ?? "-"} {"->"} {balanceLive?.quarter.cutoffDate ?? "-"} (trimestre natural).
           </div>
+        </div>
+      </div>
+
+      {/* Stats Table Section */}
+      <div className="bo-panel bo-statsTablePanel">
+        <div className="bo-panelHead">
+          <div>
+            <div className="bo-panelTitle">Tabla de Estadisticas</div>
+            <div className="bo-panelMeta">Datos detallados por período completo del año.</div>
+          </div>
+        </div>
+        <div className="bo-panelBody">
+          {data.memberId > 0 ? (
+            <StatsTable memberId={data.memberId} />
+          ) : (
+            <div className="bo-mutedText">Selecciona un miembro para ver las estadísticas.</div>
+          )}
         </div>
       </div>
     </section>

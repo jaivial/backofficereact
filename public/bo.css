@@ -13692,3 +13692,61 @@ tr.is-inactive {
   font-style: italic;
   margin-top: 4px;
 }
+
+/* Real-time pending indicator */
+.bo-pendingDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  margin-left: 8px;
+  animation: bo-pendingPulse 2s infinite;
+}
+
+@keyframes bo-pendingPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Stats Table Component */
+.bo-statsTable {
+  margin-top: 16px;
+}
+
+.bo-statsTableControls {
+  margin-bottom: 16px;
+}
+
+.bo-statsTableFilters {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.bo-statsTableCustomRange {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bo-bg-subtle);
+  border-radius: var(--bo-radius);
+}
+
+.bo-table--stats .bo-positive {
+  color: #22c55e;
+}
+
+.bo-table--stats .bo-negative {
+  color: #ef4444;
+}
+
+.bo-statsTablePanel .bo-panelBody {
+  padding: 16px;
+}

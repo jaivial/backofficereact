@@ -50,6 +50,7 @@ export function FichajeRealtimeBridge() {
         activeEntriesByMember: {},
         activeEntry: null,
         scheduleToday: null,
+        pendingScheduleUpdates: false,
       });
       return;
     }
@@ -80,7 +81,7 @@ export function FichajeRealtimeBridge() {
         if (!prev.member) return prev;
         if (schedule.memberId !== prev.member.id) return prev;
         if (schedule.date !== todayISO()) return prev;
-        return { ...prev, scheduleToday: schedule, lastSyncAt: Date.now() };
+        return { ...prev, scheduleToday: schedule, pendingScheduleUpdates: true, lastSyncAt: Date.now() };
       });
     };
 
@@ -172,6 +173,20 @@ export function FichajeRealtimeBridge() {
             });
           } else if (type === "schedule_updated") {
             applyScheduleUpdate(msg.schedule as FichajeSchedule | null | undefined);
+          } else if (type === "schedule_created") {
+            applyScheduleUpdate(msg.schedule as FichajeSchedule | null | undefined);
+          } else if (type === "schedule_deleted") {
+            // When a schedule is deleted, clear the scheduleToday if it matches
+            const deletedSchedule = msg.schedule as FichajeSchedule | null | undefined;
+            if (deletedSchedule) {
+              setState((prev) => {
+                if (!prev.member) return prev;
+                if (deletedSchedule.memberId !== prev.member.id) return prev;
+                if (deletedSchedule.date !== todayISO()) return prev;
+                // Clear schedule when deleted and mark as pending
+                return { ...prev, scheduleToday: null, pendingScheduleUpdates: true, lastSyncAt: Date.now() };
+              });
+            }
           }
         } catch {
           // Ignore malformed realtime payloads.

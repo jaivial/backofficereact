@@ -183,6 +183,7 @@ export type GroupMenuV2Dish = {
   allergens: string[];
   supplement_enabled: boolean;
   supplement_price: number | null;
+  price: number | null;
   active: boolean;
   position: number;
 };
@@ -356,6 +357,24 @@ export type MemberTimeBalance = {
   workedHours: number;
   expectedHours: number;
   balanceHours: number;
+};
+
+export type MemberStatsTableRow = {
+  date: string;
+  label: string;
+  workedHours: number;
+  expectedHours: number;
+  difference: number;
+};
+
+export type MemberYearStats = {
+  year: number;
+  totalWorkedHours: number;
+  totalExpectedHours: number;
+  balance: number;
+  months: MemberStatsTableRow[];
+  quarters: MemberStatsTableRow[];
+  weeks: MemberStatsTableRow[];
 };
 
 export type RoleCatalogItem = {

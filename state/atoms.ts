@@ -27,6 +27,7 @@ export type FichajeRealtimeState = {
   activeEntriesByMember: Record<number, FichajeActiveEntry>;
   activeEntry: FichajeActiveEntry | null;
   scheduleToday: FichajeSchedule | null;
+  pendingScheduleUpdates: boolean;
 };
 
 export const fichajeRealtimeAtom = atom<FichajeRealtimeState>({
@@ -38,4 +39,5 @@ export const fichajeRealtimeAtom = atom<FichajeRealtimeState>({
   activeEntriesByMember: {},
   activeEntry: null,
   scheduleToday: null,
+  pendingScheduleUpdates: false,
 });

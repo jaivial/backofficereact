@@ -1,8 +1,8 @@
 import React from "react";
-import { CalendarClock, CalendarDays, ClipboardCheck, FileText, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt } from "lucide-react";
+import { CalendarClock, CalendarDays, ClipboardCheck, FileText, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Clock3 } from "lucide-react";
 
 import type { SidebarItemKey } from "../../lib/rbac";
-import { sidebarItemsForRole } from "../../lib/rbac";
+import { sidebarItemsForRole, canManageHorarios } from "../../lib/rbac";
 import { NavLink } from "../nav/NavLink";
 
 function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
@@ -43,6 +43,8 @@ export function Sidebar({
 }) {
   const iconProps = { size: 18, strokeWidth: 1.8 } as const;
   const items = sidebarItemsForRole(role, sectionAccess, roleImportance);
+  const showMiHorario = !canManageHorarios(role, roleImportance);
+
   return (
     <aside className="bo-sidebar" aria-label="Sidebar">
       <div className="bo-brand" aria-label="Backoffice">
@@ -58,6 +60,16 @@ export function Sidebar({
             </NavLink>
           );
         })}
+        {/* Show "Mi Horario" for non-admin users who can view their schedule */}
+        {showMiHorario && (
+          <NavLink
+            href="/app/miembros/mi-horario"
+            active={pathname === "/app/miembros/mi-horario"}
+            label="Mi Horario"
+          >
+            <Clock3 size={iconProps.size} strokeWidth={iconProps.strokeWidth} />
+          </NavLink>
+        )}
       </nav>
 
       <div className="bo-sidebarSpacer" aria-hidden="true" />

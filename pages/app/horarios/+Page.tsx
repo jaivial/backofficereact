@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CalendarClock, CalendarDays, Clock3, UserRoundPlus, Users } from "lucide-react";
@@ -98,7 +98,16 @@ export default function Page() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const realtime = useAtomValue(fichajeRealtimeAtom);
+  const setRealtime = useSetAtom(fichajeRealtimeAtom);
   const reduceMotion = useReducedMotion();
+
+  // Dismiss pending updates when user loads schedule data
+  useEffect(() => {
+    if (realtime.pendingScheduleUpdates && !busy) {
+      // User has viewed the data, dismiss the indicator
+      setRealtime((prev) => ({ ...prev, pendingScheduleUpdates: false }));
+    }
+  }, [realtime.pendingScheduleUpdates, busy, setRealtime]);
 
   const [selectedDate, setSelectedDate] = useState(data.date);
   const [year, setYear] = useState(data.year);
@@ -369,6 +378,9 @@ export default function Page() {
               <div className="bo-panelTitle bo-horariosTitle">
                 <CalendarClock size={16} strokeWidth={1.8} />
                 Horarios
+                {realtime.pendingScheduleUpdates && (
+                  <span className="bo-pendingDot" title="Hay cambios sin ver" />
+                )}
               </div>
               <div className="bo-panelMeta">Selecciona una fecha y asigna turnos al equipo.</div>
             </div>

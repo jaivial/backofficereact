@@ -27,7 +27,9 @@ import type {
   TimeEntry,
   Member,
   MemberStats,
+  MemberStatsTableRow,
   MemberTimeBalance,
+  MemberYearStats,
   MenuDish,
   MenuTable,
   MenuVisibilityItem,
@@ -290,6 +292,27 @@ export function createClient(opts: ClientOpts) {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/members/${id}/time-balance?${q.toString()}`, { method: "GET" });
       },
+      async getYearStats(
+        id: number,
+        year: number,
+      ): Promise<APISuccess<MemberYearStats> | APIError> {
+        const q = new URLSearchParams({ year: String(year) });
+        return json(`/api/admin/members/${id}/stats-year?${q.toString()}`, { method: "GET" });
+      },
+      async getStatsRange(
+        id: number,
+        params: { from: string; to: string },
+      ): Promise<APISuccess<{ rows: MemberStatsTableRow[] }> | APIError> {
+        const q = new URLSearchParams({ from: params.from, to: params.to });
+        return json(`/api/admin/members/${id}/stats-range?${q.toString()}`, { method: "GET" });
+      },
+      async getTableData(
+        id: number,
+        params: { view: "weekly" | "monthly" | "quarterly" | "yearly"; year: number },
+      ): Promise<APISuccess<{ rows: MemberStatsTableRow[] }> | APIError> {
+        const q = new URLSearchParams({ view: params.view, year: String(params.year) });
+        return json(`/api/admin/members/${id}/table-data?${q.toString()}`, { method: "GET" });
+      },
     },
     roles: {
       async list(): Promise<APISuccess<{ roles: RoleCatalogItem[]; users: RoleUserItem[]; currentUser: RoleCurrentUser }> | APIError> {
@@ -396,6 +419,12 @@ export function createClient(opts: ClientOpts) {
       },
       async delete(id: number): Promise<APISuccess | APIError> {
         return json(`/api/admin/horarios/${id}`, { method: "DELETE" });
+      },
+      async getMySchedule(params?: { from?: string; to?: string }): Promise<APISuccess<{ schedules: FichajeSchedule[] }> | APIError> {
+        const q = new URLSearchParams();
+        if (params?.from) q.set("from", params.from);
+        if (params?.to) q.set("to", params.to);
+        return json(`/api/admin/horarios/my-schedule?${q.toString()}`, { method: "GET" });
       },
     },
     menus: {
@@ -834,6 +863,17 @@ export function createClient(opts: ClientOpts) {
         },
         async delete(id: number): Promise<APISuccess | APIError> {
           return json(`/api/admin/group-menus-v2/${id}`, { method: "DELETE" });
+        },
+        async uploadSpecialMenuImage(
+          menuId: number,
+          file: File,
+        ): Promise<APISuccess<{ imageUrl: string }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || "menu-special.jpg");
+          return json(`/api/admin/group-menus-v2/${menuId}/special-image`, {
+            method: "POST",
+            body: form,
+          });
         },
       },
       dishesCatalog: {

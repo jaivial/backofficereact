@@ -123,6 +123,8 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/comida")) return "comida";
   if (pathname.startsWith("/app/settings")) return "ajustes";
   if (pathname.startsWith("/app/miembros")) return "miembros";
+  // /app/miembros/mi-horario is a special route for viewing own schedule
+  if (pathname === "/app/miembros/mi-horario") return "horarios";
   if (pathname.startsWith("/app/horarios")) return "horarios";
   if (pathname.startsWith("/app/fichaje")) return "fichaje";
   if (pathname.startsWith("/app/facturas")) return "facturas";
@@ -170,4 +172,38 @@ export function roleLabel(roleRaw: string | null | undefined): string {
     .filter(Boolean)
     .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+// Role importance levels for access control
+export const ROLE_IMPORTANCE: Record<BORole, number> = {
+  root: 100,
+  admin: 90,
+  metre: 70,
+  jefe_cocina: 60,
+  arrocero: 30,
+  pinche_cocina: 20,
+  fregaplatos: 10,
+  ayudante_cocina: 25,
+  camarero: 40,
+  responsable_sala: 50,
+  ayudante_camarero: 35,
+  runner: 15,
+  barista: 20,
+};
+
+// Check if user can manage (create/edit/delete) horarios
+// Admin roles (importance >= 70) can manage all schedules
+// Non-admin users can only view their own schedule
+export function canManageHorarios(roleRaw: string | null | undefined, roleImportanceRaw?: number | null): boolean {
+  const role = normalizeRole(roleRaw);
+  const importance = typeof roleImportanceRaw === "number" ? roleImportanceRaw : ROLE_IMPORTANCE[role] ?? 0;
+  // Users with importance >= 70 can manage all schedules
+  return importance >= 70;
+}
+
+// Check if user can view their own schedule (even if they can't manage)
+export function canViewOwnSchedule(roleRaw: string | null | undefined): boolean {
+  // All users with a role can view their own schedule
+  const role = normalizeRole(roleRaw);
+  return role !== "" && role !== null;
 }
