@@ -1,0 +1,80 @@
+-- Backend Implementation Notes for Invoice History
+-- ==============================================
+--
+-- The frontend has been updated to display invoice history.
+-- The backend needs to implement the following:
+--
+-- 1. API Endpoint:
+--    GET /api/admin/invoices/:id/history
+--    Returns a list of InvoiceHistory records for the given invoice
+--
+-- 2. Automatic History Recording:
+--    The backend should automatically record history entries when:
+--    - Invoice is created (action: 'created')
+--    - Invoice is updated (action: 'updated', with field_name, old_value, new_value)
+--    - Invoice status changes (action: 'status_changed', with old_value, new_value)
+--    - Invoice is deleted (action: 'deleted')
+--    - Invoice is sent (action: 'sent')
+--    - Invoice is duplicated (action: 'duplicated')
+--
+-- 3. User Information:
+--    The backend should capture the current user from the session
+--    and store user_id, user_name, and user_email with each history entry.
+--
+-- 4. Example Implementation (Go):
+--
+-- func (s *Server) handleGetInvoiceHistory(w http.ResponseWriter, r *http.Request) {
+--     invoiceID, err := strconv.Atoi(chi.URLParam(r, "id"))
+--     if err != nil {
+--         http.Error(w, "invalid invoice ID", http.StatusBadRequest)
+--         return
+--     }
+--
+--     rows, err := s.db.Query(`
+--         SELECT id, invoice_id, action, field_name, old_value, new_value,
+--                user_id, user_name, user_email, created_at
+--         FROM invoice_history
+--         WHERE invoice_id = $1
+--         ORDER BY created_at DESC
+--     `, invoiceID)
+--     if err != nil {
+--         http.Error(w, err.Error(), http.StatusInternalServerError)
+--         return
+--     }
+--     defer rows.Close()
+--
+--     var history []InvoiceHistory
+--     for rows.Next() {
+--         var h InvoiceHistory
+--         rows.Scan(&h.ID, &h.InvoiceID, &h.Action, &h.FieldName,
+--                   &h.OldValue, &h.NewValue, &h.UserID, &h.UserName,
+--                   &h.UserEmail, &h.CreatedAt)
+--         history = append(history, h)
+--     }
+--
+--     respondJSON(w, map[string]interface{}{
+--         "success": true,
+--         "history":  history,
+--         "total":    len(history),
+--     })
+-- }
+--
+-- 5. Recording History Helper:
+--
+-- func (s *Server) recordInvoiceHistory(db *sqlx.DB, invoiceID int, action string,
+--     fieldName, oldValue, newValue string, user *User) error {
+--
+--     _, err := db.Exec(`
+--         INSERT INTO invoice_history
+--         (invoice_id, action, field_name, old_value, new_value, user_id, user_name, user_email)
+--         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+--     `, invoiceID, action, fieldName, oldValue, newValue,
+--         user.ID, user.Name, user.Email)
+--
+--     return err
+-- }
+--
+-- Call recordInvoiceHistory in your invoice update handler:
+--   - Before updating: fetch current values
+--   - After updating: compare and record each changed field
+--   - Record status changes separately with action = 'status_changed'

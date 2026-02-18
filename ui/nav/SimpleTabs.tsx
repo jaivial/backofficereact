@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 export type SimpleTabItem = {
   id: string;
   label: string;
+  title?: string;
 };
 
 export function SimpleTabs({
@@ -42,6 +43,7 @@ export function SimpleTabs({
             id={`tab-${item.id}`}
             onClick={() => onChange(item.id)}
             type="button"
+            title={item.title}
           >
             {active ? (
               mounted ? (

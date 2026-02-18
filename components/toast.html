@@ -1,0 +1,82 @@
+<!-- Toast Components -->
+<!-- Container for stacked toasts with proper accessibility -->
+<div class="bo-toastWrap" aria-live="polite" aria-atomic="true">
+
+  <!-- Success Toast -->
+  <div class="bo-toast bo-toast--success">
+    <div class="bo-toastTitle">Success</div>
+    <div class="bo-toastMsg">Your changes have been saved successfully.</div>
+    <button class="bo-toastX" aria-label="Close notification" type="button">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Error Toast -->
+  <div class="bo-toast bo-toast--error">
+    <div class="bo-toastTitle">Error</div>
+    <div class="bo-toastMsg">Failed to save changes. Please try again.</div>
+    <button class="bo-toastX" aria-label="Close notification" type="button">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Warning Toast -->
+  <div class="bo-toast" style="border-color: rgba(255, 193, 7, 0.46); background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.14)), linear-gradient(135deg, rgba(255, 193, 7, 0.22), rgba(136, 123, 23, 0.26)), var(--bo-surface-2);">
+    <div class="bo-toastTitle" style="color: var(--bo-text);">Warning</div>
+    <div class="bo-toastMsg" style="color: var(--bo-muted);">Your session will expire in 5 minutes.</div>
+    <button class="bo-toastX" aria-label="Close notification" type="button">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Info Toast -->
+  <div class="bo-toast" style="border-color: rgba(13, 110, 253, 0.46); background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.14)), linear-gradient(135deg, rgba(13, 110, 253, 0.22), rgba(13, 60, 136, 0.26)), var(--bo-surface-2);">
+    <div class="bo-toastTitle" style="color: var(--bo-text);">Info</div>
+    <div class="bo-toastMsg" style="color: var(--bo-muted);">A new update is available for download.</div>
+    <button class="bo-toastX" aria-label="Close notification" type="button">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Toast with Action Button -->
+  <div class="bo-toast bo-toast--success">
+    <div class="bo-toastTitle">Update Available</div>
+    <div class="bo-toastMsg">A new version is ready to install.</div>
+    <div style="margin-top: 10px; display: flex; gap: 8px;">
+      <button class="bo-btn bo-btn--primary bo-btn--sm" type="button">Update Now</button>
+      <button class="bo-btn bo-btn--ghost bo-btn--sm" type="button">Later</button>
+    </div>
+    <button class="bo-toastX" aria-label="Close notification" type="button" style="position: absolute; top: 8px; right: 8px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Multiple Toasts Stacked Example -->
+  <!-- This demonstrates proper stacking with multiple toasts in the container above -->
+
+</div>
+
+<!-- Light Theme Example (toggle data-theme="light" on html element to test) -->
+<!--
+<div class="bo-toastWrap" aria-live="polite" aria-atomic="true">
+  <div class="bo-toast bo-toast--success">
+    <div class="bo-toastTitle">Success</div>
+    <div class="bo-toastMsg">Operation completed successfully.</div>
+    <button class="bo-toastX" aria-label="Close notification" type="button">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+</div>
+-->

@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Form Toggle</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Toggle/Switch wrapper for proper alignment */
+      .bo-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .bo-toggle input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 44px;
+        height: 24px;
+        border-radius: 999px;
+        border: 1px solid var(--bo-border-2);
+        background: rgba(255, 255, 255, 0.08);
+        position: relative;
+        padding: 0;
+        cursor: pointer;
+        transition: background 160ms ease, border-color 160ms ease;
+        flex-shrink: 0;
+      }
+
+      .bo-toggle input[type="checkbox"]::before {
+        content: '';
+        display: block;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.32);
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transform: translateX(0);
+        transition: transform 160ms ease;
+        will-change: transform;
+      }
+
+      .bo-toggle input[type="checkbox"]:checked {
+        background: rgba(185, 168, 255, 0.24);
+        border-color: rgba(185, 168, 255, 0.5);
+      }
+
+      .bo-toggle input[type="checkbox"]:checked::before {
+        transform: translateX(20px);
+      }
+
+      .bo-toggle input[type="checkbox"]:hover {
+        border-color: rgba(185, 168, 255, 0.4);
+      }
+
+      .bo-toggle input[type="checkbox"]:focus-visible {
+        outline: none;
+        border-color: rgba(185, 168, 255, 0.5);
+        box-shadow: 0 0 0 3px rgba(185, 168, 255, 0.15);
+      }
+
+      .bo-toggle input[type="checkbox"]:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .bo-toggleLabel {
+        font-size: 14px;
+        color: var(--bo-text);
+        line-height: 1.4;
+      }
+
+      /* Small toggle */
+      .bo-toggle--sm input[type="checkbox"] {
+        width: 36px;
+        height: 20px;
+      }
+
+      .bo-toggle--sm input[type="checkbox"]::before {
+        width: 14px;
+        height: 14px;
+      }
+
+      .bo-toggle--sm input[type="checkbox"]:checked::before {
+        transform: translateX(16px);
+      }
+
+      .bo-toggle--sm .bo-toggleLabel {
+        font-size: 12px;
+      }
+
+      /* Large toggle */
+      .bo-toggle--lg input[type="checkbox"] {
+        width: 52px;
+        height: 28px;
+      }
+
+      .bo-toggle--lg input[type="checkbox"]::before {
+        width: 22px;
+        height: 22px;
+      }
+
+      .bo-toggle--lg input[type="checkbox"]:checked::before {
+        transform: translateX(24px);
+      }
+
+      /* Toggle row */
+      .bo-toggleRow {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .bo-toggleRow--inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+      }
+
+      /* With description */
+      .bo-toggleDesc {
+        font-size: 12px;
+        color: var(--bo-muted);
+        margin-top: 2px;
+      }
+
+      .bo-toggleWrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      /* Dark mode toggle variant */
+      .bo-toggle--dark input[type="checkbox"] {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      /* Success state */
+      .bo-toggle--success input[type="checkbox"]:checked {
+        background: rgba(34, 197, 94, 0.24);
+        border-color: rgba(34, 197, 94, 0.5);
+      }
+
+      /* Warning state */
+      .bo-toggle--warning input[type="checkbox"]:checked {
+        background: rgba(251, 191, 36, 0.24);
+        border-color: rgba(251, 191, 36, 0.5);
+      }
+
+      /* Danger state */
+      .bo-toggle--danger input[type="checkbox"]:checked {
+        background: rgba(220, 53, 69, 0.24);
+        border-color: rgba(220, 53, 69, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 560px; height: 640px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-card" aria-label="Toggle switches showcase">
+              <div class="bo-cardHead">
+                <div class="bo-cardTitle">Form Toggle</div>
+                <div class="bo-cardDesc">Toggle switches for on/off states</div>
+              </div>
+
+              <!-- Default Toggles -->
+              <div class="bo-field">
+                <div class="bo-label">Account Settings</div>
+                <div class="bo-toggleRow">
+                  <div class="bo-toggleWrap">
+                    <label class="bo-toggle">
+                      <input
+                        type="checkbox"
+                        id="toggle-profile"
+                        checked
+                        role="switch"
+                        aria-checked="true"
+                      />
+                      <span class="bo-toggleLabel">Public Profile</span>
+                    </label>
+                    <span class="bo-toggleDesc">Allow others to view your profile</span>
+                  </div>
+
+                  <label class="bo-toggle">
+                    <input
+                      type="checkbox"
+                      id="toggle-activity"
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Show Activity Status</span>
+                  </label>
+
+                  <label class="bo-toggle">
+                    <input
+                      type="checkbox"
+                      id="toggle-newsletter"
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Subscribe to Newsletter</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Small Toggles -->
+              <div class="bo-field">
+                <div class="bo-label">Quick Options</div>
+                <div class="bo-toggleRow--inline">
+                  <label class="bo-toggle bo-toggle--sm">
+                    <input
+                      type="checkbox"
+                      id="toggle-sm1"
+                      checked
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Option A</span>
+                  </label>
+                  <label class="bo-toggle bo-toggle--sm">
+                    <input
+                      type="checkbox"
+                      id="toggle-sm2"
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Option B</span>
+                  </label>
+                  <label class="bo-toggle bo-toggle--sm">
+                    <input
+                      type="checkbox"
+                      id="toggle-sm3"
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Option C</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Large Toggles -->
+              <div class="bo-field">
+                <div class="bo-label">Prominent Settings</div>
+                <div class="bo-toggleRow">
+                  <label class="bo-toggle bo-toggle--lg">
+                    <input
+                      type="checkbox"
+                      id="toggle-lg1"
+                      checked
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Enable Dark Mode</span>
+                  </label>
+
+                  <label class="bo-toggle bo-toggle--lg">
+                    <input
+                      type="checkbox"
+                      id="toggle-lg2"
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Maintenance Mode</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Disabled Toggles -->
+              <div class="bo-field">
+                <div class="bo-label">Disabled States</div>
+                <div class="bo-toggleRow--inline">
+                  <label class="bo-toggle">
+                    <input
+                      type="checkbox"
+                      id="toggle-disabled-on"
+                      checked
+                      disabled
+                      aria-disabled="true"
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Enabled (disabled)</span>
+                  </label>
+
+                  <label class="bo-toggle">
+                    <input
+                      type="checkbox"
+                      id="toggle-disabled-off"
+                      disabled
+                      aria-disabled="true"
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Disabled (disabled)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Color Variants -->
+              <div class="bo-field">
+                <div class="bo-label">Color Variants</div>
+                <div class="bo-toggleRow--inline">
+                  <label class="bo-toggle bo-toggle--success">
+                    <input
+                      type="checkbox"
+                      id="toggle-success"
+                      checked
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Success</span>
+                  </label>
+
+                  <label class="bo-toggle bo-toggle--warning">
+                    <input
+                      type="checkbox"
+                      id="toggle-warning"
+                      checked
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Warning</span>
+                  </label>
+
+                  <label class="bo-toggle bo-toggle--danger">
+                    <input
+                      type="checkbox"
+                      id="toggle-danger"
+                      checked
+                      role="switch"
+                    />
+                    <span class="bo-toggleLabel">Danger</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Toggle with Icon -->
+              <div class="bo-field">
+                <div class="bo-label">With Icons</div>
+                <div class="bo-toggleRow">
+                  <label class="bo-toggle">
+                    <input
+                      type="checkbox"
+                      id="toggle-wifi"
+                      checked
+                      role="switch"
+                      aria-label="WiFi connection"
+                    />
+                    <svg class="bo-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                      <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+                      <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+                      <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+                      <circle cx="12" cy="20" r="1" />
+                    </svg>
+                    <span class="bo-toggleLabel">WiFi</span>
+                  </label>
+
+                  <label class="bo-toggle">
+                    <input
+                      type="checkbox"
+                      id="toggle-bluetooth"
+                      role="switch"
+                      aria-label="Bluetooth connection"
+                    />
+                    <svg class="bo-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                      <path d="M6.5 6.5 17.5 17.5" />
+                      <path d="M6.5 17.5 17.5 6.5" />
+                      <path d="M12 2a10 10 0 0 1 10 10" />
+                      <path d="M12 12 2 2" />
+                      <path d="M12 12 22 22" />
+                    </svg>
+                    <span class="bo-toggleLabel">Bluetooth</span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

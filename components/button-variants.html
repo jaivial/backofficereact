@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Button Variants</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Button variants demonstration styles */
+      .bo-btn--lg {
+        height: 48px;
+        padding: 0 20px;
+        font-size: 15px;
+        border-radius: 14px;
+      }
+
+      /* Focus-visible states for WCAG compliance */
+      .bo-btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px var(--bo-accent);
+      }
+
+      .bo-btn--primary:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px var(--bo-accent);
+      }
+
+      .bo-btn--ghost:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px var(--bo-accent);
+      }
+
+      .bo-btn--danger:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px rgba(220, 53, 69, 0.6);
+      }
+
+      /* Dark theme focus adjustments */
+      :root:not([data-theme="light"]) .bo-btn:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+
+      :root:not([data-theme="light"]) .bo-btn--danger:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px rgba(220, 53, 69, 0.7);
+      }
+
+      /* Light theme focus adjustments */
+      :root[data-theme="light"] .bo-btn:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+
+      :root[data-theme="light"] .bo-btn--danger:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px rgba(220, 53, 69, 0.5);
+      }
+
+      /* Loading state */
+      .bo-btn--loading {
+        position: relative;
+        color: transparent !important;
+        pointer-events: none;
+      }
+
+      .bo-btn--loading .bo-spinner {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-width: 2px;
+      }
+
+      /* Light theme spinner for loading state */
+      :root[data-theme="light"] .bo-btn--loading .bo-spinner {
+        border-color: rgba(0, 0, 0, 0.1);
+        border-top-color: var(--bo-accent);
+      }
+
+      /* Dark theme spinner for loading state */
+      :root:not([data-theme="light"]) .bo-btn--loading .bo-spinner {
+        border-color: rgba(255, 255, 255, 0.1);
+        border-top-color: var(--bo-accent);
+      }
+
+      /* Demo layout styles */
+      .bo-demo-section {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .bo-demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .bo-demo-label {
+        font-size: 11px;
+        font-weight: 780;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+      }
+
+      .bo-demo-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .bo-demo-dark,
+      .bo-demo-light {
+        padding: 20px;
+        border-radius: var(--bo-radius-md);
+      }
+
+      .bo-demo-dark {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-light {
+        background: var(--bo-surface-2);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .bo-demo-title {
+        font-size: 18px;
+        font-weight: 720;
+        color: var(--bo-text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 680px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-demo-header">
+              <div class="bo-demo-title">Button Variants</div>
+            </div>
+
+            <!-- Dark Theme Section -->
+            <div class="bo-demo-dark" data-theme="dark">
+              <div class="bo-demo-section">
+                <!-- Primary Button -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Primary Button (Lila Accent)</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary" type="button">
+                      Primary Button
+                    </button>
+                    <button class="bo-btn bo-btn--primary bo-btn--sm" type="button">
+                      Small
+                    </button>
+                    <button class="bo-btn bo-btn--primary bo-btn--lg" type="button">
+                      Large
+                    </button>
+                    <button class="bo-btn bo-btn--primary" type="button" disabled>
+                      Disabled
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Secondary / Ghost Button -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Secondary Button (Ghost)</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--ghost" type="button">
+                      Secondary Button
+                    </button>
+                    <button class="bo-btn bo-btn--ghost bo-btn--sm" type="button">
+                      Small
+                    </button>
+                    <button class="bo-btn bo-btn--ghost bo-btn--lg" type="button">
+                      Large
+                    </button>
+                    <button class="bo-btn bo-btn--ghost" type="button" disabled>
+                      Disabled
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Danger Button -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Danger Button (Red)</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--danger" type="button">
+                      Danger Button
+                    </button>
+                    <button class="bo-btn bo-btn--danger bo-btn--sm" type="button">
+                      Small
+                    </button>
+                    <button class="bo-btn bo-btn--danger bo-btn--lg" type="button">
+                      Large
+                    </button>
+                    <button class="bo-btn bo-btn--danger" type="button" disabled>
+                      Disabled
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Button with Icon -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Button with Icon</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary" type="button">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      Add New
+                    </button>
+                    <button class="bo-btn bo-btn--ghost" type="button">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                      </svg>
+                      Download
+                    </button>
+                    <button class="bo-btn bo-btn--danger" type="button">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Loading State</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary bo-btn--loading" type="button">
+                      <span class="bo-spinner" aria-hidden="true"></span>
+                      Saving...
+                    </button>
+                    <button class="bo-btn bo-btn--ghost bo-btn--loading" type="button">
+                      <span class="bo-spinner" aria-hidden="true"></span>
+                      Loading
+                    </button>
+                    <button class="bo-btn bo-btn--danger bo-btn--loading" type="button">
+                      <span class="bo-spinner" aria-hidden="true"></span>
+                      Deleting...
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Button Fit -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Button Fit</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary bo-btn--fit" type="button">
+                      Fit Content
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Light Theme Section -->
+            <div class="bo-demo-light" data-theme="light">
+              <div class="bo-demo-section">
+                <div class="bo-demo-label" style="margin-bottom: 16px">Light Theme</div>
+
+                <!-- Primary Button -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Primary Button (Lila Accent)</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary" type="button">
+                      Primary Button
+                    </button>
+                    <button class="bo-btn bo-btn--primary bo-btn--sm" type="button">
+                      Small
+                    </button>
+                    <button class="bo-btn bo-btn--primary bo-btn--lg" type="button">
+                      Large
+                    </button>
+                    <button class="bo-btn bo-btn--primary" type="button" disabled>
+                      Disabled
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Secondary / Ghost Button -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Secondary Button (Ghost)</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--ghost" type="button">
+                      Secondary Button
+                    </button>
+                    <button class="bo-btn bo-btn--ghost bo-btn--sm" type="button">
+                      Small
+                    </button>
+                    <button class="bo-btn bo-btn--ghost bo-btn--lg" type="button">
+                      Large
+                    </button>
+                    <button class="bo-btn bo-btn--ghost" type="button" disabled>
+                      Disabled
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Danger Button -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Danger Button (Red)</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--danger" type="button">
+                      Danger Button
+                    </button>
+                    <button class="bo-btn bo-btn--danger bo-btn--sm" type="button">
+                      Small
+                    </button>
+                    <button class="bo-btn bo-btn--danger bo-btn--lg" type="button">
+                      Large
+                    </button>
+                    <button class="bo-btn bo-btn--danger" type="button" disabled>
+                      Disabled
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Button with Icon -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Button with Icon</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary" type="button">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      Add New
+                    </button>
+                    <button class="bo-btn bo-btn--ghost" type="button">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                      </svg>
+                      Download
+                    </button>
+                    <button class="bo-btn bo-btn--danger" type="button">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Loading State</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary bo-btn--loading" type="button">
+                      <span class="bo-spinner" aria-hidden="true"></span>
+                      Saving...
+                    </button>
+                    <button class="bo-btn bo-btn--ghost bo-btn--loading" type="button">
+                      <span class="bo-spinner" aria-hidden="true"></span>
+                      Loading
+                    </button>
+                    <button class="bo-btn bo-btn--danger bo-btn--loading" type="button">
+                      <span class="bo-spinner" aria-hidden="true"></span>
+                      Deleting...
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Button Fit -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Button Fit</div>
+                  <div class="bo-demo-row">
+                    <button class="bo-btn bo-btn--primary bo-btn--fit" type="button">
+                      Fit Content
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

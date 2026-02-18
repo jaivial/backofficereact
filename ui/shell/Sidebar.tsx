@@ -1,5 +1,5 @@
 import React from "react";
-import { CalendarClock, CalendarDays, ClipboardCheck, FileText, Link, Settings, ShieldUser, UtensilsCrossed } from "lucide-react";
+import { CalendarClock, CalendarDays, ClipboardCheck, FileText, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt } from "lucide-react";
 
 import type { SidebarItemKey } from "../../lib/rbac";
 import { sidebarItemsForRole } from "../../lib/rbac";
@@ -21,6 +21,10 @@ function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
       return <CalendarClock size={size} strokeWidth={strokeWidth} />;
     case "facturas":
       return <FileText size={size} strokeWidth={strokeWidth} />;
+    case "reportes":
+      return <BarChart3 size={size} strokeWidth={strokeWidth} />;
+    case "estado_cuenta":
+      return <Receipt size={size} strokeWidth={strokeWidth} />;
     default:
       return <Settings size={size} strokeWidth={strokeWidth} />;
   }

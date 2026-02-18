@@ -13,7 +13,7 @@ import { ImageDropInput } from "../../../../ui/inputs/ImageDropInput";
 import { PhoneInput } from "../../../../ui/inputs/PhoneInput";
 import { imageToWebpMax200KB } from "../../../../ui/lib/imageFile";
 import { composePhoneE164, splitStoredPhone } from "../../../../ui/lib/phone";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shadcn/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
 import { formatElapsedHHMMSS, useMemberLive } from "./_shared/realtime";
 
 function initials(member: Member | null): string {

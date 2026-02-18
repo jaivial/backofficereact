@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Avatars</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Additional avatar styles for this component demo */
+      .demo-section {
+        margin-bottom: 28px;
+      }
+
+      .demo-title {
+        font-size: 11px;
+        font-weight: 760;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bo-muted);
+        margin-bottom: 12px;
+      }
+
+      .demo-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .demo-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .demo-label {
+        font-size: 12px;
+        color: var(--bo-muted);
+        min-width: 80px;
+      }
+
+      .demo-block {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+
+      .demo-blockTitle {
+        font-size: 14px;
+        font-weight: 760;
+        color: var(--bo-text);
+        margin-bottom: 16px;
+      }
+
+      /* Avatar Size Variants (already defined in bo.css, but demonstrating here) */
+      .bo-avatar--xs {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+        border-radius: 8px;
+      }
+
+      .bo-avatar--sm {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+        border-radius: 10px;
+      }
+
+      .bo-avatar--md {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+        border-radius: 14px;
+      }
+
+      .bo-avatar--lg {
+        width: 48px;
+        height: 48px;
+        font-size: 16px;
+        border-radius: 16px;
+      }
+
+      .bo-avatar--xl {
+        width: 64px;
+        height: 64px;
+        font-size: 20px;
+        border-radius: 20px;
+      }
+
+      /* Avatar Image */
+      .bo-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: inherit;
+      }
+
+      /* Avatar Status Indicator */
+      .bo-avatar-status {
+        position: relative;
+        display: inline-block;
+      }
+
+      .bo-avatar-status .bo-avatar {
+        position: relative;
+      }
+
+      .bo-avatar-status .bo-statusDot {
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid var(--bo-surface);
+      }
+
+      .bo-avatar--xs + .bo-statusDot {
+        width: 6px;
+        height: 6px;
+      }
+
+      .bo-avatar--sm + .bo-statusDot {
+        width: 8px;
+        height: 8px;
+      }
+
+      .bo-avatar--lg + .bo-statusDot {
+        width: 12px;
+        height: 12px;
+      }
+
+      .bo-avatar--xl + .bo-statusDot {
+        width: 14px;
+        height: 14px;
+      }
+
+      .bo-statusDot--online {
+        background: #22c55e;
+      }
+
+      .bo-statusDot--offline {
+        background: #6b7280;
+      }
+
+      .bo-statusDot--busy {
+        background: #ef4444;
+      }
+
+      .bo-statusDot--away {
+        background: #f59e0b;
+      }
+
+      /* Avatar Group */
+      .bo-avatarGroup {
+        display: flex;
+        align-items: center;
+      }
+
+      .bo-avatarGroup .bo-avatar {
+        border: 2px solid var(--bo-surface);
+        margin-left: -8px;
+      }
+
+      .bo-avatarGroup .bo-avatar:first-child {
+        margin-left: 0;
+      }
+
+      .bo-avatarGroup .bo-avatar-more {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bo-surface-2);
+        color: var(--bo-muted);
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: -8px;
+        border: 2px solid var(--bo-surface);
+      }
+
+      /* Avatar with Notification Badge */
+      .bo-avatar-badge {
+        position: relative;
+        display: inline-block;
+      }
+
+      .bo-avatar-badge .bo-badgeCount {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        background: #ef4444;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--bo-surface);
+      }
+
+      .bo-badgeCount--sm {
+        min-width: 14px;
+        height: 14px;
+        font-size: 8px;
+        border-radius: 7px;
+      }
+
+      .bo-badgeCount--lg {
+        min-width: 22px;
+        height: 22px;
+        font-size: 12px;
+        border-radius: 11px;
+      }
+
+      /* Avatar Fallback */
+      .bo-avatar--fallback {
+        background: var(--bo-surface-2);
+        color: var(--bo-muted);
+      }
+
+      /* Avatar Button */
+      .bo-avatarBtn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        border-radius: inherit;
+      }
+
+      .bo-avatarBtn:hover {
+        opacity: 0.85;
+      }
+
+      /* Avatar Colors */
+      .bo-avatar--purple {
+        background: linear-gradient(135deg, rgba(185, 168, 255, 0.4), rgba(147, 125, 255, 0.2));
+      }
+
+      .bo-avatar--cyan {
+        background: linear-gradient(135deg, rgba(147, 239, 231, 0.4), rgba(99, 230, 217, 0.2));
+      }
+
+      .bo-avatar--green {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(22, 163, 74, 0.15));
+      }
+
+      .bo-avatar--red {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.15));
+      }
+
+      .bo-avatar--orange {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(234, 88, 12, 0.15));
+      }
+
+      /* Dark/Light Theme Variations */
+      :root[data-theme="light"] .bo-statusDot {
+        border-color: var(--bo-surface);
+      }
+
+      :root[data-theme="light"] .bo-avatarGroup .bo-avatar,
+      :root[data-theme="light"] .bo-avatarGroup .bo-avatar-more {
+        border-color: var(--bo-surface);
+      }
+
+      :root[data-theme="light"] .bo-avatar-badge .bo-badgeCount {
+        border-color: var(--bo-surface);
+      }
+
+      :root[data-theme="light"] .bo-avatar--fallback {
+        background: var(--bo-surface-2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 980px; height: auto; min-height: 800px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main" style="padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 22px; font-weight: 760; margin: 0 0 24px; color: var(--bo-text);">Avatars</h1>
+
+            <!-- Avatar Sizes -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Avatar Sizes (--xs, --sm, --md, --lg, --xl)</div>
+              <div class="demo-grid">
+                <div class="demo-row">
+                  <span class="demo-label">Extra Small</span>
+                  <div class="bo-avatar bo-avatar--xs" aria-label="Avatar extra pequeno">JD</div>
+                </div>
+                <div class="demo-row">
+                  <span class="demo-label">Small</span>
+                  <div class="bo-avatar bo-avatar--sm" aria-label="Avatar pequeno">AB</div>
+                </div>
+                <div class="demo-row">
+                  <span class="demo-label">Medium</span>
+                  <div class="bo-avatar bo-avatar--md" aria-label="Avatar medio">MJ</div>
+                </div>
+                <div class="demo-row">
+                  <span class="demo-label">Large</span>
+                  <div class="bo-avatar bo-avatar--lg" aria-label="Avatar grande">RK</div>
+                </div>
+                <div class="demo-row">
+                  <span class="demo-label">Extra Large</span>
+                  <div class="bo-avatar bo-avatar--xl" aria-label="Avatar extra grande">SP</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Avatar Initials with Colors -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Initials Avatar with Colors</div>
+              <div class="demo-grid">
+                <div class="bo-avatar bo-avatar--md bo-avatar--purple" aria-label="Avatar color purpura">JD</div>
+                <div class="bo-avatar bo-avatar--md bo-avatar--cyan" aria-label="Avatar color cian">AB</div>
+                <div class="bo-avatar bo-avatar--md bo-avatar--green" aria-label="Avatar color verde">MJ</div>
+                <div class="bo-avatar bo-avatar--md bo-avatar--red" aria-label="Avatar color rojo">RK</div>
+                <div class="bo-avatar bo-avatar--md bo-avatar--orange" aria-label="Avatar color naranja">SP</div>
+              </div>
+            </div>
+
+            <!-- Image Avatar -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Image Avatar</div>
+              <div class="demo-grid">
+                <div class="bo-avatar bo-avatar--md">
+                  <img src="https://i.pravatar.cc/150?img=1" alt="Foto de perfil de Maria Garcia" />
+                </div>
+                <div class="bo-avatar bo-avatar--sm">
+                  <img src="https://i.pravatar.cc/150?img=2" alt="Foto de perfil de Juan Rodriguez" />
+                </div>
+                <div class="bo-avatar bo-avatar--lg">
+                  <img src="https://i.pravatar.cc/150?img=3" alt="Foto de perfil de Sofia Martinez" />
+                </div>
+                <div class="bo-avatar bo-avatar--xl">
+                  <img src="https://i.pravatar.cc/150?img=4" alt="Foto de perfil de Carlos Lopez" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Avatar with Status Indicator -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Avatar with Status Indicator</div>
+              <div class="demo-grid">
+                <div class="bo-avatar-status" role="status" aria-label="Usuario en linea">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=5" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-statusDot bo-statusDot--online" aria-hidden="true"></span>
+                </div>
+                <div class="bo-avatar-status" role="status" aria-label="Usuario fuera de linea">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=6" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-statusDot bo-statusDot--offline" aria-hidden="true"></span>
+                </div>
+                <div class="bo-avatar-status" role="status" aria-label="Usuario ocupado">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=7" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-statusDot bo-statusDot--busy" aria-hidden="true"></span>
+                </div>
+                <div class="bo-avatar-status" role="status" aria-label="Usuario ausente">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=8" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-statusDot bo-statusDot--away" aria-hidden="true"></span>
+                </div>
+              </div>
+              <p style="font-size: 11px; color: var(--bo-muted); margin-top: 12px; margin-bottom: 0;">
+                Status indicators: Online (green), Offline (gray), Busy (red), Away (yellow)
+              </p>
+            </div>
+
+            <!-- Avatar Group -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Avatar Group (Multiple Stacked Avatars)</div>
+              <div class="demo-grid">
+                <div class="bo-avatarGroup" role="group" aria-label="Grupo de 3 usuarios">
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=10" alt="Foto de usuario 1" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="Foto de usuario 2" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=12" alt="Foto de usuario 3" />
+                  </div>
+                </div>
+                <div class="bo-avatarGroup" role="group" aria-label="Grupo de 4 usuarios">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=13" alt="Foto de usuario 1" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=14" alt="Foto de usuario 2" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=15" alt="Foto de usuario 3" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=16" alt="Foto de usuario 4" />
+                  </div>
+                </div>
+                <div class="bo-avatarGroup" role="group" aria-label="Grupo de 5 usuarios con contador">
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=17" alt="Foto de usuario 1" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=18" alt="Foto de usuario 2" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=19" alt="Foto de usuario 3" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=20" alt="Foto de usuario 4" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm bo-avatar-more" aria-label="3 usuarios mas">+3</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Avatar with Fallback -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Avatar with Fallback</div>
+              <div class="demo-grid">
+                <div class="bo-avatar bo-avatar--md bo-avatar--fallback" aria-label="Usuario sin foto de perfil">?</div>
+                <div class="bo-avatar bo-avatar--sm bo-avatar--fallback" aria-label="Usuario sin foto de perfil">?</div>
+                <div class="bo-avatar bo-avatar--lg bo-avatar--fallback" aria-label="Usuario sin foto de perfil">?</div>
+                <div class="bo-avatar-status" role="status" aria-label="Usuario sin foto de perfil, en linea">
+                  <div class="bo-avatar bo-avatar--md bo-avatar--fallback">?</div>
+                  <span class="bo-statusDot bo-statusDot--online" aria-hidden="true"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Avatar with Notification Badge -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Avatar with Notification Badge</div>
+              <div class="demo-grid">
+                <div class="bo-avatar-badge" role="alert" aria-label="Tienes 3 notificaciones">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=21" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-badgeCount" aria-hidden="true">3</span>
+                </div>
+                <div class="bo-avatar-badge" role="alert" aria-label="Tienes 1 notificacion">
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=22" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-badgeCount bo-badgeCount--sm" aria-hidden="true">1</span>
+                </div>
+                <div class="bo-avatar-badge" role="alert" aria-label="Tienes 99+ notificaciones">
+                  <div class="bo-avatar bo-avatar--lg">
+                    <img src="https://i.pravatar.cc/150?img=23" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-badgeCount bo-badgeCount--lg" aria-hidden="true">99+</span>
+                </div>
+                <div class="bo-avatar-badge" role="alert" aria-label="Nuevo mensaje">
+                  <div class="bo-avatar bo-avatar--md bo-avatar--purple" aria-label="Iniciales del usuario">MJ</div>
+                  <span class="bo-badgeCount" aria-hidden="true">1</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Avatar as Button -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Avatar as Button</div>
+              <div class="demo-grid">
+                <button class="bo-avatarBtn" aria-label="Abrir menu de usuario">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=24" alt="Foto de perfil de usuario" />
+                  </div>
+                </button>
+                <button class="bo-avatarBtn" aria-label="Ver perfil de Maria Garcia">
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=25" alt="Foto de perfil de Maria" />
+                  </div>
+                </button>
+                <button class="bo-avatarBtn" aria-label="Ver perfil de Juan">
+                  <div class="bo-avatar bo-avatar--lg bo-avatar--cyan" aria-label="JR">JR</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Combined: Status + Badge -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Combined: Status + Notification Badge</div>
+              <div class="demo-grid">
+                <div class="bo-avatar-status" role="status" aria-label="Usuario en linea con notificacion">
+                  <div class="bo-avatar-badge" role="alert" aria-label="2 mensajes nuevos">
+                    <div class="bo-avatar bo-avatar--md">
+                      <img src="https://i.pravatar.cc/150?img=26" alt="Foto de perfil" />
+                    </div>
+                    <span class="bo-badgeCount" aria-hidden="true">2</span>
+                  </div>
+                  <span class="bo-statusDot bo-statusDot--online" aria-hidden="true" style="bottom: 0; right: 0;"></span>
+                </div>
+                <div class="bo-avatar-status" role="status" aria-label="Usuario ocupado sin notificaciones">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=27" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-statusDot bo-statusDot--busy" aria-hidden="true"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Light Theme Preview -->
+            <div class="demo-block" data-theme="light" style="background: var(--bo-surface-2); padding: 20px; border-radius: 14px;">
+              <div class="demo-blockTitle" style="margin-bottom: 12px;">Light Theme Preview</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">Avatars are designed to maintain proper contrast in both light and dark themes.</p>
+              <div class="demo-grid">
+                <div class="bo-avatar bo-avatar--md" aria-label="Avatar en tema claro">JD</div>
+                <div class="bo-avatar bo-avatar--md bo-avatar--purple" aria-label="Avatar color purpura">AB</div>
+                <div class="bo-avatar bo-avatar--md">
+                  <img src="https://i.pravatar.cc/150?img=28" alt="Foto de perfil en tema claro" />
+                </div>
+                <div class="bo-avatar-status" role="status" aria-label="Usuario en linea en tema claro">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=29" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-statusDot bo-statusDot--online" aria-hidden="true"></span>
+                </div>
+                <div class="bo-avatarGroup" role="group" aria-label="Grupo de avatares en tema claro">
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=30" alt="Usuario 1" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=31" alt="Usuario 2" />
+                  </div>
+                  <div class="bo-avatar bo-avatar--sm">
+                    <img src="https://i.pravatar.cc/150?img=32" alt="Usuario 3" />
+                  </div>
+                </div>
+                <div class="bo-avatar-badge" role="alert" aria-label="Notificacion en tema claro">
+                  <div class="bo-avatar bo-avatar--md">
+                    <img src="https://i.pravatar.cc/150?img=33" alt="Foto de perfil" />
+                  </div>
+                  <span class="bo-badgeCount" aria-hidden="true">5</span>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

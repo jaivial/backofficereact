@@ -1,13 +1,18 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "../../../state/atoms";
 import { createClient } from "../../../api/client";
-import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput, InvoiceResponse, ReservationSearchResult } from "../../../api/types";
+import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput } from "../../../api/types";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { SimpleTabs, SimpleTabsContent } from "../../../ui/nav/SimpleTabs";
 import { InvoiceFilters } from "./_components/InvoiceFilters";
 import { InvoiceTable } from "./_components/InvoiceTable";
 import { InvoiceForm } from "./_components/InvoiceForm";
+import { SendEmailModal } from "./_components/SendEmailModal";
+import { SendWhatsAppModal } from "./_components/SendWhatsAppModal";
+import { BatchSendModal } from "./_components/BatchSendModal";
 
 type PageData = {
   invoices: Invoice[];
@@ -41,6 +46,8 @@ export default function Page() {
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
+  const session = useAtomValue(sessionAtom);
+  const currentUserId = session?.user?.id;
 
   const error = data.error;
   const [invoices, setInvoices] = useState<Invoice[]>(data.invoices || []);
@@ -61,6 +68,16 @@ export default function Page() {
   // Editing invoice state
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+
+  // Send email modal state
+  const [emailInvoice, setEmailInvoice] = useState<Invoice | null>(null);
+
+  // Send WhatsApp modal state
+  const [whatsappInvoice, setWhatsappInvoice] = useState<Invoice | null>(null);
+
+  // Batch send modal state
+  const [batchSendInvoices, setBatchSendInvoices] = useState<Invoice[]>([]);
+  const [batchSendOpen, setBatchSendOpen] = useState(false);
 
   useErrorToast(error);
 
@@ -231,6 +248,67 @@ export default function Page() {
     [api],
   );
 
+  // Handle send email - opens the send email modal
+  const handleSendEmail = useCallback((invoice: Invoice) => {
+    setEmailInvoice(invoice);
+  }, []);
+
+  // Handle email sent - updates the invoice in the list
+  const handleEmailSent = useCallback((updatedInvoice: Invoice) => {
+    setInvoices((prev) =>
+      prev.map((inv) => (inv.id === updatedInvoice.id ? { ...inv, status: updatedInvoice.status } : inv))
+    );
+    setEmailInvoice(null);
+  }, []);
+
+  // Handle close email modal
+  const handleCloseEmail = useCallback(() => {
+    setEmailInvoice(null);
+  }, []);
+
+  // Handle send WhatsApp - opens the send WhatsApp modal
+  const handleSendWhatsApp = useCallback((invoice: Invoice) => {
+    setWhatsappInvoice(invoice);
+  }, []);
+
+  // Handle WhatsApp sent - updates the invoice in the list
+  const handleWhatsAppSent = useCallback((updatedInvoice: Invoice) => {
+    setInvoices((prev) =>
+      prev.map((inv) => (inv.id === updatedInvoice.id ? { ...inv, status: updatedInvoice.status } : inv))
+    );
+    setWhatsappInvoice(null);
+  }, []);
+
+  // Handle close WhatsApp modal
+  const handleCloseWhatsApp = useCallback(() => {
+    setWhatsappInvoice(null);
+  }, []);
+
+  // Handle bulk send email - opens the batch send modal
+  const handleBulkSendEmail = useCallback((invoices: Invoice[]) => {
+    setBatchSendInvoices(invoices);
+    setBatchSendOpen(true);
+  }, []);
+
+  // Handle batch email sent - updates invoices in the list
+  const handleBatchEmailSent = useCallback((updatedInvoices: Invoice[]) => {
+    setInvoices((prev) =>
+      prev.map((inv) => {
+        const updated = updatedInvoices.find((u) => u.id === inv.id);
+        if (updated) {
+          return { ...inv, status: updated.status };
+        }
+        return inv;
+      })
+    );
+  }, []);
+
+  // Handle close batch send modal
+  const handleCloseBatchSend = useCallback(() => {
+    setBatchSendOpen(false);
+    setBatchSendInvoices([]);
+  }, []);
+
   // Filtered/sorted invoices (client-side is handled by API, just display)
   const filteredInvoices = useMemo(() => {
     return invoices;
@@ -287,8 +365,34 @@ export default function Page() {
           page={page}
           totalPages={totalPages}
           total={total}
+          sortField={null}
+          sortDirection="desc"
+          onSort={() => {}}
+          hasFilters={hasFilters}
+          onCreateNew={handleCreateNew}
           onEdit={handleEditInvoice}
+          onDuplicate={() => {}}
+          onSplit={() => {}}
+          onDelete={() => {}}
+          onDownloadPdf={() => {}}
+          onSendEmail={handleSendEmail}
+          onSendWhatsApp={handleSendWhatsApp}
           onPageChange={handlePageChange}
+          onStatusChange={() => {}}
+          onBulkStatusChange={() => {}}
+          onBulkDelete={() => {}}
+          onBulkPrint={() => {}}
+          onBulkMerge={() => {}}
+          onBulkSendEmail={handleBulkSendEmail}
+          onPrintAllVisible={() => {}}
+          onPreview={() => {}}
+          onViewCustomerHistory={() => {}}
+          onShowHistory={() => {}}
+          onViewNotes={() => {}}
+          onRegisterPayment={() => {}}
+          onSendReminder={() => {}}
+          onShowReminderHistory={() => {}}
+          onManageTemplates={() => {}}
         />
       </SimpleTabsContent>
 
@@ -298,8 +402,33 @@ export default function Page() {
           onSave={handleSaveInvoice}
           onCancel={handleCancelEdit}
           searchReservations={searchReservations}
+          currentUserId={currentUserId}
         />
       </SimpleTabsContent>
+
+      {/* Send Email Modal */}
+      <SendEmailModal
+        open={!!emailInvoice}
+        invoice={emailInvoice}
+        onClose={handleCloseEmail}
+        onSent={handleEmailSent}
+      />
+
+      {/* Send WhatsApp Modal */}
+      <SendWhatsAppModal
+        open={!!whatsappInvoice}
+        invoice={whatsappInvoice}
+        onClose={handleCloseWhatsApp}
+        onSent={handleWhatsAppSent}
+      />
+
+      {/* Batch Send Modal */}
+      <BatchSendModal
+        open={batchSendOpen}
+        invoices={batchSendInvoices}
+        onClose={handleCloseBatchSend}
+        onSent={handleBatchEmailSent}
+      />
     </div>
   );
 }

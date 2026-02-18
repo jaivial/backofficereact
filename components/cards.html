@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Enhanced Cards</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* ============================================
+         Demo Page Styles
+         ============================================ */
+
+      .demo-section {
+        margin-bottom: 32px;
+      }
+
+      .demo-title {
+        font-size: 11px;
+        font-weight: 760;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bo-muted);
+        margin-bottom: 12px;
+      }
+
+      .demo-description {
+        font-size: 12px;
+        color: var(--bo-muted);
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+
+      .demo-block {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+
+      .demo-blockTitle {
+        font-size: 14px;
+        font-weight: 760;
+        color: var(--bo-text);
+        margin-bottom: 16px;
+      }
+
+      /* Grid Layouts */
+      .demo-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .demo-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .demo-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+
+      /* ============================================
+         Enhanced Card Styles
+         ============================================ */
+
+      /* Card Header */
+      .bo-cardHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px 12px;
+        border-bottom: 1px solid var(--bo-border);
+      }
+
+      .bo-cardHeader-title {
+        font-size: 14px;
+        font-weight: 760;
+        color: var(--bo-text);
+      }
+
+      .bo-cardHeader-subtitle {
+        font-size: 12px;
+        color: var(--bo-muted);
+        margin-top: 2px;
+      }
+
+      .bo-cardHeader-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Card Body */
+      .bo-cardBody {
+        padding: 16px;
+      }
+
+      .bo-cardBody--noPadding {
+        padding: 0;
+      }
+
+      /* Card Footer */
+      .bo-cardFooter {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--bo-border);
+      }
+
+      .bo-cardFooter--spaced {
+        justify-content: space-between;
+      }
+
+      .bo-cardFooter-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .bo-cardFooter-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Card Image */
+      .bo-cardImage {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        border-radius: var(--bo-radius-md) var(--bo-radius-md) 0 0;
+      }
+
+      .bo-cardImage--cover {
+        object-fit: cover;
+      }
+
+      .bo-cardImage--contain {
+        object-fit: contain;
+        background: var(--bo-surface-2);
+      }
+
+      /* Card with Image Container */
+      .bo-card--imageTop .bo-cardImage {
+        border-radius: var(--bo-radius-md) var(--bo-radius-md) 0 0;
+      }
+
+      /* Card Icon Header */
+      .bo-cardIconHeader {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+      }
+
+      .bo-cardIcon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+
+      .bo-cardIcon--purple {
+        background: rgba(185, 168, 255, 0.16);
+        border: 1px solid rgba(185, 168, 255, 0.25);
+        color: rgba(185, 168, 255, 0.92);
+      }
+
+      .bo-cardIcon--cyan {
+        background: rgba(147, 239, 231, 0.14);
+        border: 1px solid rgba(147, 239, 231, 0.25);
+        color: rgba(147, 239, 231, 0.92);
+      }
+
+      .bo-cardIcon--green {
+        background: rgba(34, 197, 94, 0.14);
+        border: 1px solid rgba(34, 197, 94, 0.25);
+        color: rgba(74, 222, 128, 0.92);
+      }
+
+      .bo-cardIcon--red {
+        background: rgba(248, 113, 113, 0.14);
+        border: 1px solid rgba(248, 113, 113, 0.25);
+        color: rgba(252, 165, 165, 0.92);
+      }
+
+      .bo-cardIconContent {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .bo-cardIconTitle {
+        font-size: 14px;
+        font-weight: 760;
+        color: var(--bo-text);
+      }
+
+      .bo-cardIconSubtitle {
+        font-size: 12px;
+        color: var(--bo-muted);
+        margin-top: 2px;
+      }
+
+      /* Hoverable Card */
+      .bo-card--hoverable {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+
+      .bo-card--hoverable:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+        border-color: rgba(185, 168, 255, 0.25);
+      }
+
+      /* Selectable Card */
+      .bo-card--selectable {
+        cursor: pointer;
+        position: relative;
+        transition: border-color 0.2s ease, background 0.2s ease;
+      }
+
+      .bo-card--selectable::before {
+        content: '';
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--bo-border);
+        background: transparent;
+        transition: all 0.2s ease;
+      }
+
+      .bo-card--selectable.bo-card--selected::before {
+        border-color: var(--bo-accent);
+        background: var(--bo-accent);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1b22' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+        background-size: 12px;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .bo-card--selectable:hover {
+        border-color: rgba(185, 168, 255, 0.35);
+      }
+
+      .bo-card--selectable.bo-card--selected {
+        border-color: rgba(185, 168, 255, 0.45);
+        background:
+          linear-gradient(180deg, rgba(185, 168, 255, 0.08), rgba(185, 168, 255, 0.04)),
+          var(--bo-surface-2);
+      }
+
+      /* Card with Badge */
+      .bo-cardBadge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+      }
+
+      .bo-card--hasBadge {
+        position: relative;
+      }
+
+      /* Card Click Overlay */
+      .bo-cardClickOverlay {
+        position: absolute;
+        inset: 0;
+        border-radius: var(--bo-radius-md);
+      }
+
+      /* Card Body Text Styles */
+      .bo-cardText {
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--bo-muted);
+      }
+
+      .bo-cardText--primary {
+        color: var(--bo-text);
+      }
+
+      .bo-cardText + .bo-cardText {
+        margin-top: 8px;
+      }
+
+      /* Card Meta */
+      .bo-cardMeta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+        font-size: 11px;
+        color: var(--bo-faint);
+      }
+
+      .bo-cardMeta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* ============================================
+         Light Theme Adjustments
+         ============================================ */
+
+      :root[data-theme="light"] .bo-card--hoverable:hover {
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
+        border-color: rgba(142, 122, 214, 0.35);
+      }
+
+      :root[data-theme="light"] .bo-card--selectable:hover {
+        border-color: rgba(142, 122, 214, 0.35);
+      }
+
+      :root[data-theme="light"] .bo-card--selectable.bo-card--selected {
+        border-color: rgba(142, 122, 214, 0.5);
+        background:
+          linear-gradient(180deg, rgba(142, 122, 214, 0.06), rgba(142, 122, 214, 0.03)),
+          var(--bo-surface-2);
+      }
+
+      :root[data-theme="light"] .bo-card--selectable::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+      }
+
+      :root[data-theme="light"] .bo-cardIcon--purple {
+        background: rgba(142, 122, 214, 0.12);
+        border-color: rgba(142, 122, 214, 0.30);
+        color: rgba(74, 54, 141, 0.92);
+      }
+
+      :root[data-theme="light"] .bo-cardIcon--cyan {
+        background: rgba(16, 185, 165, 0.10);
+        border-color: rgba(16, 185, 165, 0.30);
+        color: rgba(4, 120, 105, 0.92);
+      }
+
+      :root[data-theme="light"] .bo-cardIcon--green {
+        background: rgba(22, 163, 74, 0.10);
+        border-color: rgba(22, 163, 74, 0.30);
+        color: rgba(21, 128, 61, 0.92);
+      }
+
+      :root[data-theme="light"] .bo-cardIcon--red {
+        background: rgba(220, 38, 38, 0.10);
+        border-color: rgba(220, 38, 38, 0.30);
+        color: rgba(185, 28, 28, 0.92);
+      }
+
+      :root[data-theme="light"] .bo-card--imageTop .bo-cardImage {
+        border-radius: var(--bo-radius-md) var(--bo-radius-md) 0 0;
+      }
+
+      :root[data-theme="light"] .bo-cardImage--contain {
+        background: var(--bo-surface-3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 1100px; height: auto; min-height: 900px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main" style="padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 22px; font-weight: 760; margin: 0 0 8px; color: var(--bo-text);">Enhanced Cards</h1>
+            <p style="font-size: 13px; color: var(--bo-muted); margin: 0 0 24px;">Collection of enhanced card components with headers, footers, images, icons, and interactive states.</p>
+
+            <!-- Basic Card with Header and Body -->
+            <div class="demo-section">
+              <div class="demo-title">1. Basic Card with Header and Body</div>
+              <p class="demo-description">A standard card with a header containing title and optional actions, plus body content.</p>
+              <div class="demo-block">
+                <div class="bo-card">
+                  <div class="bo-cardHeader">
+                    <div>
+                      <div class="bo-cardHeader-title">Card Title</div>
+                      <div class="bo-cardHeader-subtitle">Optional subtitle text</div>
+                    </div>
+                    <div class="bo-cardHeader-actions">
+                      <button class="bo-btn bo-btn--sm bo-btn--ghost" aria-label="More options">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                          <circle cx="12" cy="12" r="1"/>
+                          <circle cx="12" cy="5" r="1"/>
+                          <circle cx="12" cy="19" r="1"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText">This is the card body content. You can add any content here including text, images, or other components.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card with Footer Actions -->
+            <div class="demo-section">
+              <div class="demo-title">2. Card with Footer Actions</div>
+              <p class="demo-description">Card with footer containing action buttons. Supports left-aligned (e.g., metadata) and right-aligned (e.g., buttons) content.</p>
+              <div class="demo-block">
+                <div class="bo-card">
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Card with Footer Actions</p>
+                    <p class="bo-cardText">This card demonstrates footer actions with buttons on the right side.</p>
+                  </div>
+                  <div class="bo-cardFooter">
+                    <button class="bo-btn bo-btn--sm bo-btn--ghost">Cancel</button>
+                    <button class="bo-btn bo-btn--sm bo-btn--primary">Save</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-block" style="margin-top: 16px;">
+                <div class="bo-card">
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Card with Spaced Footer</p>
+                    <p class="bo-cardText">This card has a spaced footer with metadata on the left and actions on the right.</p>
+                  </div>
+                  <div class="bo-cardFooter bo-cardFooter--spaced">
+                    <div class="bo-cardFooter-left">
+                      <span class="bo-badge bo-badge--sm bo-badge--cyan">Active</span>
+                    </div>
+                    <div class="bo-cardFooter-right">
+                      <button class="bo-btn bo-btn--sm bo-btn--ghost">Edit</button>
+                      <button class="bo-btn bo-btn--sm bo-btn--primary">View</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card with Image Header -->
+            <div class="demo-section">
+              <div class="demo-title">3. Card with Image Header</div>
+              <p class="demo-description">Cards with images at the top. Use --cover for cover fit or --contain for contain fit.</p>
+              <div class="demo-grid-2">
+                <div class="bo-card bo-card--imageTop">
+                  <img class="bo-cardImage" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=200&fit=crop" alt="City building" />
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Image Card</p>
+                    <p class="bo-cardText">Card with an image header using cover fit.</p>
+                  </div>
+                </div>
+
+                <div class="bo-card bo-card--imageTop">
+                  <img class="bo-cardImage bo-cardImage--contain" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=200&fit=crop" alt="Analytics dashboard" />
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Contained Image</p>
+                    <p class="bo-cardText">Card with an image header using contain fit.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card with Icon Header -->
+            <div class="demo-section">
+              <div class="demo-title">4. Card with Icon Header</div>
+              <p class="demo-description">Cards featuring an icon in the header area with colored backgrounds.</p>
+              <div class="demo-grid-2">
+                <div class="bo-card">
+                  <div class="bo-cardIconHeader">
+                    <div class="bo-cardIcon bo-cardIcon--purple" aria-hidden="true">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                        <path d="M12 1v22"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+                      </svg>
+                    </div>
+                    <div class="bo-cardIconContent">
+                      <div class="bo-cardIconTitle">Revenue</div>
+                      <div class="bo-cardIconSubtitle">Monthly income</div>
+                    </div>
+                  </div>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 22px; font-weight: 720;">$12,450</p>
+                    <div class="bo-cardMeta">
+                      <span class="bo-cardMeta-item">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;">
+                          <path d="M18 15l-6-6-6 6"/>
+                        </svg>
+                        +12%
+                      </span>
+                      <span>vs last month</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-card">
+                  <div class="bo-cardIconHeader">
+                    <div class="bo-cardIcon bo-cardIcon--cyan" aria-hidden="true">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                      </svg>
+                    </div>
+                    <div class="bo-cardIconContent">
+                      <div class="bo-cardIconTitle">Users</div>
+                      <div class="bo-cardIconSubtitle">Active accounts</div>
+                    </div>
+                  </div>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 22px; font-weight: 720;">1,284</p>
+                    <div class="bo-cardMeta">
+                      <span class="bo-cardMeta-item">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;">
+                          <path d="M18 15l-6-6-6 6"/>
+                        </svg>
+                        +8%
+                      </span>
+                      <span>vs last month</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-card">
+                  <div class="bo-cardIconHeader">
+                    <div class="bo-cardIcon bo-cardIcon--green" aria-hidden="true">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                      </svg>
+                    </div>
+                    <div class="bo-cardIconContent">
+                      <div class="bo-cardIconTitle">Completed</div>
+                      <div class="bo-cardIconSubtitle">Tasks finished</div>
+                    </div>
+                  </div>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 22px; font-weight: 720;">89%</p>
+                    <div class="bo-cardMeta">
+                      <span class="bo-cardMeta-item">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;">
+                          <path d="M18 15l-6-6-6 6"/>
+                        </svg>
+                        +5%
+                      </span>
+                      <span>vs last week</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-card">
+                  <div class="bo-cardIconHeader">
+                    <div class="bo-cardIcon bo-cardIcon--red" aria-hidden="true">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                    </div>
+                    <div class="bo-cardIconContent">
+                      <div class="bo-cardIconTitle">Alerts</div>
+                      <div class="bo-cardIconSubtitle">Pending issues</div>
+                    </div>
+                  </div>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 22px; font-weight: 720;">3</p>
+                    <div class="bo-cardMeta">
+                      <span class="bo-cardMeta-item" style="color: rgba(252, 165, 165, 0.92);">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                        -2
+                      </span>
+                      <span>vs yesterday</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hoverable/Clickable Card -->
+            <div class="demo-section">
+              <div class="demo-title">5. Hoverable / Clickable Card</div>
+              <p class="demo-description">Cards that respond to hover and click interactions. Use --hoverable class and wrap in a button or anchor.</p>
+              <div class="demo-grid-2">
+                <button class="bo-card bo-card--hoverable" style="border: none; text-align: left; width: 100%;">
+                  <div class="bo-cardHeader">
+                    <div>
+                      <div class="bo-cardHeader-title">Hover Me</div>
+                      <div class="bo-cardHeader-subtitle">Click to interact</div>
+                    </div>
+                  </div>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText">This card lifts up on hover with a subtle shadow effect. Try hovering over it!</p>
+                  </div>
+                </button>
+
+                <a href="#" class="bo-card bo-card--hoverable" style="display: block; text-decoration: none;">
+                  <div class="bo-cardHeader">
+                    <div>
+                      <div class="bo-cardHeader-title">Link Card</div>
+                      <div class="bo-cardHeader-subtitle">Acts as a link</div>
+                    </div>
+                  </div>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText">This card is wrapped in an anchor tag and behaves like a clickable link.</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <!-- Selectable Card -->
+            <div class="demo-section">
+              <div class="demo-title">6. Selectable Card</div>
+              <p class="demo-description">Cards that can be selected with a visual checkbox indicator. Use --selectable and --selected classes.</p>
+              <div class="demo-grid-3">
+                <div class="bo-card bo-card--selectable" tabindex="0" role="checkbox" aria-checked="false">
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Option A</p>
+                    <p class="bo-cardText">Click to select this card option.</p>
+                  </div>
+                </div>
+
+                <div class="bo-card bo-card--selectable bo-card--selected" tabindex="0" role="checkbox" aria-checked="true">
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Option B</p>
+                    <p class="bo-cardText">This card is currently selected.</p>
+                  </div>
+                </div>
+
+                <div class="bo-card bo-card--selectable" tabindex="0" role="checkbox" aria-checked="false">
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Option C</p>
+                    <p class="bo-cardText">Click to select this card option.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card with Badge -->
+            <div class="demo-section">
+              <div class="demo-title">7. Card with Badge</div>
+              <p class="demo-description">Cards with status badges positioned in the top-right corner.</p>
+              <div class="demo-grid-3">
+                <div class="bo-card bo-card--hasBadge">
+                  <span class="bo-cardBadge bo-badge bo-badge--green">New</span>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">New Feature</p>
+                    <p class="bo-cardText">Card with a "New" badge.</p>
+                  </div>
+                </div>
+
+                <div class="bo-card bo-card--hasBadge">
+                  <span class="bo-cardBadge bo-badge bo-badge--lila">Pro</span>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Premium</p>
+                    <p class="bo-cardText">Card with a "Pro" badge.</p>
+                  </div>
+                </div>
+
+                <div class="bo-card bo-card--hasBadge">
+                  <span class="bo-cardBadge bo-badge bo-badge--red">Urgent</span>
+                  <div class="bo-cardBody">
+                    <p class="bo-cardText bo-cardText--primary" style="font-size: 14px; font-weight: 760; margin-bottom: 8px;">Important</p>
+                    <p class="bo-cardText">Card with an "Urgent" badge.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Grid Layout -->
+            <div class="demo-section">
+              <div class="demo-title">8. Card Grid Layout</div>
+              <p class="demo-description">Responsive grid layouts using CSS grid. Cards automatically adjust to container width.</p>
+              <div class="demo-block">
+                <p class="demo-title" style="margin-bottom: 16px;">4-Column Grid (Best for KPI cards)</p>
+                <div class="demo-grid-4">
+                  <div class="bo-card">
+                    <div class="bo-cardIconHeader" style="padding: 10px 12px;">
+                      <div class="bo-cardIcon bo-cardIcon--purple" style="width: 32px; height: 32px;" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 16px; height: 16px;">
+                          <path d="M12 1v22"/>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle" style="font-size: 12px;">Sales</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody" style="padding-top: 0;">
+                      <p class="bo-cardText bo-cardText--primary" style="font-size: 20px; font-weight: 720; margin: 0;">$8,240</p>
+                    </div>
+                  </div>
+
+                  <div class="bo-card">
+                    <div class="bo-cardIconHeader" style="padding: 10px 12px;">
+                      <div class="bo-cardIcon bo-cardIcon--cyan" style="width: 32px; height: 32px;" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 16px; height: 16px;">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle" style="font-size: 12px;">Users</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody" style="padding-top: 0;">
+                      <p class="bo-cardText bo-cardText--primary" style="font-size: 20px; font-weight: 720; margin: 0;">1,284</p>
+                    </div>
+                  </div>
+
+                  <div class="bo-card">
+                    <div class="bo-cardIconHeader" style="padding: 10px 12px;">
+                      <div class="bo-cardIcon bo-cardIcon--green" style="width: 32px; height: 32px;" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 16px; height: 16px;">
+                          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                          <polyline points="17 6 23 6 23 12"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle" style="font-size: 12px;">Growth</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody" style="padding-top: 0;">
+                      <p class="bo-cardText bo-cardText--primary" style="font-size: 20px; font-weight: 720; margin: 0;">+24%</p>
+                    </div>
+                  </div>
+
+                  <div class="bo-card">
+                    <div class="bo-cardIconHeader" style="padding: 10px 12px;">
+                      <div class="bo-cardIcon bo-cardIcon--red" style="width: 32px; height: 32px;" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 16px; height: 16px;">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle" style="font-size: 12px;">Issues</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody" style="padding-top: 0;">
+                      <p class="bo-cardText bo-cardText--primary" style="font-size: 20px; font-weight: 720; margin: 0;">3</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-block" style="margin-top: 16px;">
+                <p class="demo-title" style="margin-bottom: 16px;">3-Column Grid (Best for feature cards)</p>
+                <div class="demo-grid-3">
+                  <div class="bo-card">
+                    <div class="bo-cardIconHeader">
+                      <div class="bo-cardIcon bo-cardIcon--purple" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                          <polyline points="2 17 12 22 22 17"/>
+                          <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle">Analytics</div>
+                        <div class="bo-cardIconSubtitle">Track metrics</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody">
+                      <p class="bo-cardText">Get detailed insights into your business performance with real-time analytics.</p>
+                    </div>
+                    <div class="bo-cardFooter">
+                      <button class="bo-btn bo-btn--sm bo-btn--ghost">Learn more</button>
+                    </div>
+                  </div>
+
+                  <div class="bo-card">
+                    <div class="bo-cardIconHeader">
+                      <div class="bo-cardIcon bo-cardIcon--cyan" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle">Security</div>
+                        <div class="bo-cardIconSubtitle">Data protection</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody">
+                      <p class="bo-cardText">Keep your data safe with enterprise-grade security and encryption.</p>
+                    </div>
+                    <div class="bo-cardFooter">
+                      <button class="bo-btn bo-btn--sm bo-btn--ghost">Learn more</button>
+                    </div>
+                  </div>
+
+                  <div class="bo-card">
+                    <div class="bo-cardIconHeader">
+                      <div class="bo-cardIcon bo-cardIcon--green" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle">Automation</div>
+                        <div class="bo-cardIconSubtitle">Save time</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody">
+                      <p class="bo-cardText">Automate repetitive tasks and focus on what matters most to your business.</p>
+                    </div>
+                    <div class="bo-cardFooter">
+                      <button class="bo-btn bo-btn--sm bo-btn--ghost">Learn more</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Light Theme Preview -->
+            <div class="demo-section">
+              <div class="demo-title">Light Theme Preview</div>
+              <p class="demo-description">Cards in light theme mode to verify contrast and visibility.</p>
+              <div class="demo-block" data-theme="light" style="background: var(--bo-surface-2); padding: 20px; border-radius: 14px;">
+                <div class="demo-grid-2">
+                  <div class="bo-card">
+                    <div class="bo-cardHeader">
+                      <div>
+                        <div class="bo-cardHeader-title">Light Theme Card</div>
+                        <div class="bo-cardHeader-subtitle">With header and actions</div>
+                      </div>
+                      <div class="bo-cardHeader-actions">
+                        <button class="bo-btn bo-btn--sm bo-btn--ghost" aria-label="More options">
+                          <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                            <circle cx="12" cy="12" r="1"/>
+                            <circle cx="12" cy="5" r="1"/>
+                            <circle cx="12" cy="19" r="1"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody">
+                      <p class="bo-cardText">This card demonstrates proper contrast in light theme mode.</p>
+                    </div>
+                    <div class="bo-cardFooter bo-cardFooter--spaced">
+                      <div class="bo-cardFooter-left">
+                        <span class="bo-badge bo-badge--sm bo-badge--cyan">Active</span>
+                      </div>
+                      <div class="bo-cardFooter-right">
+                        <button class="bo-btn bo-btn--sm bo-btn--ghost">Edit</button>
+                        <button class="bo-btn bo-btn--sm bo-btn--primary">View</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bo-card bo-card--hoverable">
+                    <div class="bo-cardIconHeader">
+                      <div class="bo-cardIcon bo-cardIcon--purple" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                          <path d="M12 1v22"/>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                      </div>
+                      <div class="bo-cardIconContent">
+                        <div class="bo-cardIconTitle">Revenue</div>
+                        <div class="bo-cardIconSubtitle">Monthly income</div>
+                      </div>
+                    </div>
+                    <div class="bo-cardBody">
+                      <p class="bo-cardText bo-cardText--primary" style="font-size: 22px; font-weight: 720;">$12,450</p>
+                      <div class="bo-cardMeta">
+                        <span class="bo-cardMeta-item">
+                          <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;">
+                            <path d="M18 15l-6-6-6 6"/>
+                          </svg>
+                          +12%
+                        </span>
+                        <span>vs last month</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

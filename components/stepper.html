@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Stepper</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      .bo-demoSection {
+        padding: 20px;
+      }
+      .bo-demoTitle {
+        font-size: 13px;
+        font-weight: 760;
+        color: rgba(238, 240, 246, 0.42);
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .bo-demoGap {
+        margin-bottom: 32px;
+      }
+      /* Stepper content panel styling */
+      .bo-stepperPanel {
+        padding: 20px;
+        border-radius: 14px;
+        border: 1px solid var(--bo-border);
+        background: rgba(255, 255, 255, 0.02);
+        min-height: 120px;
+        margin-top: 16px;
+      }
+      .bo-stepperPanel[hidden] {
+        display: none;
+      }
+      .bo-stepperPanelTitle {
+        font-size: 16px;
+        font-weight: 720;
+        margin-bottom: 8px;
+      }
+      .bo-stepperPanelText {
+        color: var(--bo-muted);
+        font-size: 14px;
+      }
+      /* Stepper demo container */
+      .bo-stepperDemo {
+        margin-bottom: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 800px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <!-- Demo 1: Horizontal stepper with numbered steps -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Horizontal stepper with numbered steps</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper" role="navigation" aria-label="Numbered stepper example">
+                  <div class="bo-stepperItem is-completed" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 1</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger">
+                      <span class="bo-stepperIndicator">2</span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 2</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger">
+                      <span class="bo-stepperIndicator">3</span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 3</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger">
+                      <span class="bo-stepperIndicator">4</span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 4</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 2: Stepper with icons instead of numbers -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Stepper with icons instead of numbers</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper" role="navigation" aria-label="Icon stepper example">
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed - Account">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                          <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Account</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Current - Profile">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Profile</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Payment">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                          <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Payment</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Confirm">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Confirm</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 3: Stepper with descriptions -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Stepper with descriptions</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper" role="navigation" aria-label="Stepper with descriptions example">
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed - Personal Info">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Personal Info</span>
+                      <span class="bo-stepperDescription">Name and email</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Current - Address">
+                      <span class="bo-stepperIndicator">2</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Address</span>
+                      <span class="bo-stepperDescription">Shipping details</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Preferences">
+                      <span class="bo-stepperIndicator">3</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Preferences</span>
+                      <span class="bo-stepperDescription">Customize options</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Review">
+                      <span class="bo-stepperIndicator">4</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Review</span>
+                      <span class="bo-stepperDescription">Confirm details</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 4: Stepper completed states -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Stepper completed states</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper" role="navigation" aria-label="Stepper showing all completed states">
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Completed</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Completed">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Completed</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Completed">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Completed</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Current - In Progress">
+                      <span class="bo-stepperIndicator">4</span>
+                    </button>
+                    <span class="bo-stepperLabel">In Progress</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 5: Pending">
+                      <span class="bo-stepperIndicator">5</span>
+                    </button>
+                    <span class="bo-stepperLabel">Pending</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 5: Stepper with disabled steps -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Stepper with disabled steps</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper" role="navigation" aria-label="Stepper with disabled steps">
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 1</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Current">
+                      <span class="bo-stepperIndicator">2</span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 2</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-disabled">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Disabled" disabled>
+                      <span class="bo-stepperIndicator">3</span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 3</span>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-disabled">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Disabled" disabled>
+                      <span class="bo-stepperIndicator">4</span>
+                    </button>
+                    <span class="bo-stepperLabel">Step 4</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 6: Stepper with content panels -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Stepper with content panels</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper" role="navigation" aria-label="Stepper with content panels" id="stepper-with-panels">
+                  <div class="bo-stepperItem is-completed" data-step="panel-content-1">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed - Basic Details">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Basic Details</span>
+                      <span class="bo-stepperDescription">Personal information</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" data-step="panel-content-2" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Current - Contact Info">
+                      <span class="bo-stepperIndicator">2</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Contact Info</span>
+                      <span class="bo-stepperDescription">Address and phone</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem" data-step="panel-content-3">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Verification">
+                      <span class="bo-stepperIndicator">3</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Verification</span>
+                      <span class="bo-stepperDescription">Identity confirmation</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem" data-step="panel-content-4">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Complete">
+                      <span class="bo-stepperIndicator">4</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Complete</span>
+                      <span class="bo-stepperDescription">Final review</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-stepperPanel" role="tabpanel" id="panel-content-1">
+                  <div class="bo-stepperPanelTitle">Basic Details</div>
+                  <div class="bo-stepperPanelText">This step is completed. You can click on completed steps to go back and review your information.</div>
+                </div>
+                <div class="bo-stepperPanel" role="tabpanel" id="panel-content-2">
+                  <div class="bo-stepperPanelTitle">Contact Info</div>
+                  <div class="bo-stepperPanelText">This is the current step. Please provide your contact details including address and phone number.</div>
+                </div>
+                <div class="bo-stepperPanel" role="tabpanel" id="panel-content-3" hidden>
+                  <div class="bo-stepperPanelTitle">Verification</div>
+                  <div class="bo-stepperPanelText">Verify your identity by providing required documents. This step ensures account security.</div>
+                </div>
+                <div class="bo-stepperPanel" role="tabpanel" id="panel-content-4" hidden>
+                  <div class="bo-stepperPanelTitle">Complete</div>
+                  <div class="bo-stepperPanelText">Review all your information before final submission. Click Complete to finish the process.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 7: Vertical stepper -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Vertical stepper variant</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper bo-stepper--vertical" role="navigation" aria-label="Vertical stepper example">
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed - Planning">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Planning</span>
+                      <span class="bo-stepperDescription">Define project goals and scope</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Current - Design">
+                      <span class="bo-stepperIndicator">2</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Design</span>
+                      <span class="bo-stepperDescription">Create wireframes and mockups</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Development">
+                      <span class="bo-stepperIndicator">3</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Development</span>
+                      <span class="bo-stepperDescription">Build the application</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Testing">
+                      <span class="bo-stepperIndicator">4</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Testing</span>
+                      <span class="bo-stepperDescription">Verify functionality and quality</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 5: Deployment">
+                      <span class="bo-stepperIndicator">5</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Deployment</span>
+                      <span class="bo-stepperDescription">Launch to production</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light theme version -->
+    <div class="bo-stage" style="margin-top: 20px">
+      <div class="bo-window" style="width: 800px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Stepper with icons and descriptions</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper" role="navigation" aria-label="Light theme stepper example">
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed - Cart">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Cart</span>
+                      <span class="bo-stepperDescription">Review items</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Current - Shipping">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="1" y="3" width="15" height="13"/>
+                          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                          <circle cx="5.5" cy="18.5" r="2.5"/>
+                          <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Shipping</span>
+                      <span class="bo-stepperDescription">Delivery address</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Payment">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                          <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Payment</span>
+                      <span class="bo-stepperDescription">Payment method</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Review">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Review</span>
+                      <span class="bo-stepperDescription">Confirm order</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Vertical stepper</div>
+              <div class="bo-demoGap">
+                <div class="bo-stepper bo-stepper--vertical" role="navigation" aria-label="Light theme vertical stepper">
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 1: Completed - Order Placed">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Order Placed</span>
+                      <span class="bo-stepperDescription">Your order has been received</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-completed">
+                    <button class="bo-stepperTrigger" aria-label="Step 2: Completed - Processing">
+                      <span class="bo-stepperIndicator">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Processing</span>
+                      <span class="bo-stepperDescription">Order is being prepared</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem is-active" aria-current="step">
+                    <button class="bo-stepperTrigger" aria-label="Step 3: Current - Shipped">
+                      <span class="bo-stepperIndicator">3</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Shipped</span>
+                      <span class="bo-stepperDescription">On its way to you</span>
+                    </div>
+                  </div>
+                  <div class="bo-stepperDivider" aria-hidden="true"></div>
+                  <div class="bo-stepperItem">
+                    <button class="bo-stepperTrigger" aria-label="Step 4: Delivered">
+                      <span class="bo-stepperIndicator">4</span>
+                    </button>
+                    <div class="bo-stepperContent">
+                      <span class="bo-stepperLabel">Delivered</span>
+                      <span class="bo-stepperDescription">Package delivered</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Apply light theme to the second demo
+      document.querySelectorAll('body > .bo-stage')[1].setAttribute('data-theme', 'light');
+
+      // Stepper panel switching logic
+      document.addEventListener('DOMContentLoaded', function() {
+        // Find the stepper with content panels
+        var stepperWithPanels = document.getElementById('stepper-with-panels');
+        if (!stepperWithPanels) return;
+
+        var steps = stepperWithPanels.querySelectorAll('.bo-stepperItem');
+        var panels = document.querySelectorAll('.bo-stepperPanel');
+
+        function showPanel(panelId) {
+          panels.forEach(function(panel) {
+            if (panel.id === panelId) {
+              panel.hidden = false;
+            } else {
+              panel.hidden = true;
+            }
+          });
+        }
+
+        steps.forEach(function(step) {
+          var trigger = step.querySelector('.bo-stepperTrigger');
+          if (!trigger) return;
+
+          trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            var stepPanelId = step.getAttribute('data-step');
+            if (!stepPanelId) return;
+
+            // Update stepper state
+            steps.forEach(function(s) {
+              s.classList.remove('is-active');
+              s.removeAttribute('aria-current');
+            });
+            step.classList.add('is-active');
+            step.setAttribute('aria-current', 'step');
+
+            // Show corresponding panel
+            showPanel(stepPanelId);
+          });
+        });
+
+        // Handle keyboard navigation
+        stepperWithPanels.addEventListener('keydown', function(e) {
+          var focusedStep = document.activeElement.closest('.bo-stepperItem');
+          if (!focusedStep) return;
+
+          var stepItems = Array.from(stepperWithPanels.querySelectorAll('.bo-stepperItem:not(.is-disabled)'));
+          var index = stepItems.indexOf(focusedStep);
+          var newIndex;
+
+          switch(e.key) {
+            case 'ArrowRight':
+              e.preventDefault();
+              newIndex = (index + 1) % stepItems.length;
+              stepItems[newIndex].querySelector('.bo-stepperTrigger').focus();
+              stepItems[newIndex].querySelector('.bo-stepperTrigger').click();
+              break;
+            case 'ArrowLeft':
+              e.preventDefault();
+              newIndex = (index - 1 + stepItems.length) % stepItems.length;
+              stepItems[newIndex].querySelector('.bo-stepperTrigger').focus();
+              stepItems[newIndex].querySelector('.bo-stepperTrigger').click();
+              break;
+            case 'Home':
+              e.preventDefault();
+              stepItems[0].querySelector('.bo-stepperTrigger').focus();
+              stepItems[0].querySelector('.bo-stepperTrigger').click();
+              break;
+            case 'End':
+              e.preventDefault();
+              stepItems[stepItems.length - 1].querySelector('.bo-stepperTrigger').focus();
+              stepItems[stepItems.length - 1].querySelector('.bo-stepperTrigger').click();
+              break;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

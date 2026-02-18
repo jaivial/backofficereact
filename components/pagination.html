@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Pagination</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Demo layout styles */
+      .bo-demo-section {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .bo-demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .bo-demo-label {
+        font-size: 11px;
+        font-weight: 780;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 12px;
+      }
+
+      .bo-demo-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .bo-demo-dark,
+      .bo-demo-light {
+        padding: 20px;
+        border-radius: var(--bo-radius-md);
+      }
+
+      .bo-demo-dark {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-light {
+        background: var(--bo-surface-2);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .bo-demo-title {
+        font-size: 18px;
+        font-weight: 720;
+        color: var(--bo-text);
+      }
+
+      /* ============================================
+         PAGINATION COMPONENT STYLES
+         ============================================ */
+
+      /* Pagination container */
+      .bo-pagination {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        font-weight: 720;
+        color: var(--bo-text);
+      }
+
+      /* Pagination info (total count, page size selector) */
+      .bo-paginationInfo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-right: 16px;
+        color: var(--bo-muted);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .bo-paginationInfo--right {
+        margin-left: auto;
+        margin-right: 0;
+      }
+
+      .bo-paginationInfo select {
+        background: var(--bo-surface-2);
+        border: 1px solid var(--bo-border);
+        border-radius: 8px;
+        color: var(--bo-text);
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 720;
+        cursor: pointer;
+        outline: none;
+      }
+
+      .bo-paginationInfo select:focus {
+        border-color: rgba(185, 168, 255, 0.5);
+        box-shadow: 0 0 0 3px rgba(185, 168, 255, 0.15);
+      }
+
+      /* Page buttons */
+      .bo-pageBtn {
+        min-width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--bo-border);
+        background: transparent;
+        color: var(--bo-text);
+        cursor: pointer;
+        padding: 0 10px;
+        font-weight: 720;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+      }
+
+      .bo-pageBtn:hover:not(:disabled):not(.bo-pageBtn--active) {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--bo-border-2);
+      }
+
+      .bo-pageBtn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px var(--bo-accent);
+      }
+
+      /* Light theme focus adjustments */
+      :root[data-theme="light"] .bo-pageBtn:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+
+      /* Dark theme focus adjustments */
+      :root:not([data-theme="light"]) .bo-pageBtn:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+
+      /* Active page state */
+      .bo-pageBtn--active {
+        background: rgba(185, 168, 255, 0.18);
+        border-color: rgba(185, 168, 255, 0.35);
+        color: var(--bo-accent);
+        cursor: default;
+      }
+
+      /* Disabled state */
+      .bo-pageBtn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* Ellipsis */
+      .bo-pageEllipsis {
+        min-width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bo-faint);
+        font-size: 14px;
+        padding: 0 4px;
+        user-select: none;
+      }
+
+      /* Navigation buttons (prev/next) */
+      .bo-pageNav {
+        min-width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--bo-border);
+        background: transparent;
+        color: var(--bo-text);
+        cursor: pointer;
+        padding: 0 10px;
+        font-weight: 720;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+      }
+
+      .bo-pageNav:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--bo-border-2);
+      }
+
+      .bo-pageNav:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px var(--bo-accent);
+      }
+
+      :root[data-theme="light"] .bo-pageNav:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+
+      :root:not([data-theme="light"]) .bo-pageNav:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+
+      .bo-pageNav:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* Icon styles */
+      .bo-pageIcon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+
+      /* Compact pagination variant */
+      .bo-pagination--compact .bo-pageBtn {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 6px;
+      }
+
+      .bo-pagination--compact .bo-pageNav {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 6px;
+      }
+
+      .bo-pagination--compact .bo-pageEllipsis {
+        min-width: 32px;
+        height: 32px;
+      }
+
+      /* Small pagination variant */
+      .bo-pagination--sm .bo-pageBtn {
+        min-width: 28px;
+        height: 28px;
+        padding: 0 6px;
+        font-size: 11px;
+        border-radius: 8px;
+      }
+
+      .bo-pagination--sm .bo-pageNav {
+        min-width: 28px;
+        height: 28px;
+        padding: 0 6px;
+        font-size: 11px;
+        border-radius: 8px;
+      }
+
+      .bo-pagination--sm .bo-pageEllipsis {
+        min-width: 28px;
+        height: 28px;
+        font-size: 12px;
+      }
+
+      .bo-pagination--sm .bo-paginationInfo {
+        font-size: 11px;
+      }
+
+      .bo-pagination--sm .bo-paginationInfo select {
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 6px;
+      }
+
+      /* Large pagination variant */
+      .bo-pagination--lg .bo-pageBtn {
+        min-width: 44px;
+        height: 44px;
+        padding: 0 14px;
+        font-size: 14px;
+        border-radius: 12px;
+      }
+
+      .bo-pagination--lg .bo-pageNav {
+        min-width: 44px;
+        height: 44px;
+        padding: 0 14px;
+        font-size: 14px;
+        border-radius: 12px;
+      }
+
+      .bo-pagination--lg .bo-pageEllipsis {
+        min-width: 44px;
+        height: 44px;
+        font-size: 16px;
+      }
+
+      /* ============================================
+         KEYBOARD NAVIGATION
+         ============================================ */
+
+      /* Keyboard focus indicator */
+      .bo-pagination[data-keyboard-nav="true"] .bo-pageBtn:focus-visible,
+      .bo-pagination[data-keyboard-nav="true"] .bo-pageNav:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px var(--bo-accent);
+      }
+
+      /* Visual indicator for keyboard navigation mode */
+      .bo-pagination-keyboard-hint {
+        display: none;
+        font-size: 11px;
+        color: var(--bo-muted);
+        margin-top: 8px;
+      }
+
+      .bo-pagination[data-keyboard-nav="true"] .bo-pagination-keyboard-hint {
+        display: block;
+      }
+
+      /* Hide default outline when using keyboard navigation */
+      .bo-pagination[data-keyboard-nav="true"] .bo-pageBtn:focus,
+      .bo-pagination[data-keyboard-nav="true"] .bo-pageNav:focus {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 900px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-demo-header">
+              <div class="bo-demo-title">Pagination</div>
+            </div>
+
+            <!-- ============================================
+                 DARK THEME (DEFAULT)
+                 ============================================ -->
+            <div class="bo-demo-dark" data-theme="dark">
+              <div class="bo-demo-section">
+
+                <!-- 1. Basic Pagination -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">1. Basic Pagination (prev, numbers, next)</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion">
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 2. Pagination with Ellipsis -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">2. Pagination with Ellipsis</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion con ellipsis">
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <span class="bo-pageEllipsis" aria-hidden="true">...</span>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 10">10</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 3. Pagination with Page Size Selector -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">3. Pagination with Page Size Selector</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion con selector de tamano">
+                    <div class="bo-paginationInfo">
+                      <span>Mostrar</span>
+                      <select aria-label="Filas por pagina">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                      </select>
+                      <span>filas</span>
+                    </div>
+                    <div style="margin-left: auto;"></div>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 4. Pagination with Total Count -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">4. Pagination with Total Count</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion con total">
+                    <div class="bo-paginationInfo">
+                      <span>Mostrando 1-10 de 156 resultados</span>
+                    </div>
+                    <div style="margin-left: auto;"></div>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <span class="bo-pageEllipsis" aria-hidden="true">...</span>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 16">16</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 5. Compact Pagination -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">5. Compact Pagination (arrows only)</div>
+                  <nav class="bo-pagination bo-pagination--compact" role="navigation" aria-label="Paginacion compacta">
+                    <button class="bo-pageNav" type="button" aria-label="Primera pagina" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageNav" type="button" aria-label="Ultima pagina">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M13 17l5-5-5-5M6 17l5-5-5-5"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 6. Disabled States -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">6. Disabled States (first page)</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion deshabilitada">
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page" disabled>1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2" disabled>2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3" disabled>3</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 7. Middle Page Active -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">7. Active Page Indicator (middle page)</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion con pagina activa">
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 1">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 3, pagina actual" aria-current="page">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 8. Size Variants -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">8. Size Variants</div>
+                  <div class="bo-demo-row">
+                    <nav class="bo-pagination bo-pagination--sm" role="navigation" aria-label="Paginacion pequena">
+                      <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                      <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                    <nav class="bo-pagination" role="navigation" aria-label="Paginacion normal">
+                      <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                      <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                    <nav class="bo-pagination bo-pagination--lg" role="navigation" aria-label="Paginacion grande">
+                      <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                      <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+
+                <!-- 9. Keyboard Navigation Demo -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">9. Keyboard Navigation</div>
+                  <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 8px;">
+                    Use Left/Right arrow keys to navigate between pages when focused. Tab to move between buttons.
+                  </p>
+                  <nav class="bo-pagination" data-keyboard-nav="true" id="keyboardPagination" role="navigation" aria-label="Paginacion con teclado">
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 1">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 3" aria-current="page">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                  <div class="bo-pagination-keyboard-hint">
+                    Teclado activado: Use las flechas izquierda/derecha para navegar
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ============================================
+                 LIGHT THEME
+                 ============================================ -->
+            <div class="bo-demo-light" data-theme="light">
+              <div class="bo-demo-section">
+
+                <div class="bo-demo-label" style="margin-bottom: 20px">Light Theme</div>
+
+                <!-- 1. Basic Pagination -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">1. Basic Pagination</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion">
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior" disabled>
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 2. Pagination with Ellipsis -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">2. Pagination with Ellipsis</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion con ellipsis">
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <span class="bo-pageEllipsis" aria-hidden="true">...</span>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 10">10</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 3. Pagination with Page Size and Total -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">3. Pagination with Page Size and Total</div>
+                  <nav class="bo-pagination" role="navigation" aria-label="Paginacion completa">
+                    <div class="bo-paginationInfo">
+                      <span>Mostrando 1-10 de 156 resultados</span>
+                    </div>
+                    <div style="margin-left: auto;"></div>
+                    <select style="margin-right: 12px;" aria-label="Filas por pagina">
+                      <option value="10">10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <span class="bo-pageEllipsis" aria-hidden="true">...</span>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 16">16</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 4. Compact Pagination -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">4. Compact Pagination</div>
+                  <nav class="bo-pagination bo-pagination--compact" role="navigation" aria-label="Paginacion compacta">
+                    <button class="bo-pageNav" type="button" aria-label="Primera pagina">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 4">4</button>
+                    <button class="bo-pageBtn" type="button" aria-label="Pagina 5">5</button>
+                    <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </button>
+                    <button class="bo-pageNav" type="button" aria-label="Ultima pagina">
+                      <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M13 17l5-5-5-5M6 17l5-5-5-5"/>
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+
+                <!-- 5. Size Variants -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">5. Size Variants</div>
+                  <div class="bo-demo-row">
+                    <nav class="bo-pagination bo-pagination--sm" role="navigation" aria-label="Paginacion pequena">
+                      <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                      <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                    <nav class="bo-pagination" role="navigation" aria-label="Paginacion normal">
+                      <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                      <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                    <nav class="bo-pagination bo-pagination--lg" role="navigation" aria-label="Paginacion grande">
+                      <button class="bo-pageNav" type="button" aria-label="Pagina anterior">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Pagina 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Pagina 3">3</button>
+                      <button class="bo-pageNav" type="button" aria-label="Pagina siguiente">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard Navigation Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Enable keyboard navigation on all pagination components
+        const paginationNavs = document.querySelectorAll('.bo-pagination[data-keyboard-nav="true"]');
+
+        paginationNavs.forEach(function(pagination) {
+          const buttons = Array.from(pagination.querySelectorAll('.bo-pageBtn, .bo-pageNav'));
+
+          pagination.addEventListener('keydown', function(e) {
+            const currentIndex = buttons.indexOf(document.activeElement);
+
+            if (e.key === 'ArrowRight') {
+              e.preventDefault();
+              const nextIndex = Math.min(currentIndex + 1, buttons.length - 1);
+              buttons[nextIndex].focus();
+            } else if (e.key === 'ArrowLeft') {
+              e.preventDefault();
+              const prevIndex = Math.max(currentIndex - 1, 0);
+              buttons[prevIndex].focus();
+            } else if (e.key === 'Home') {
+              e.preventDefault();
+              buttons[0].focus();
+            } else if (e.key === 'End') {
+              e.preventDefault();
+              buttons[buttons.length - 1].focus();
+            }
+          });
+        });
+
+        // Click handlers for demo purposes
+        const allPageButtons = document.querySelectorAll('.bo-pageBtn:not([disabled])');
+        allPageButtons.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            // Remove active class from all buttons in the same pagination
+            const pagination = this.closest('.bo-pagination');
+            pagination.querySelectorAll('.bo-pageBtn').forEach(function(b) {
+              b.classList.remove('bo-pageBtn--active');
+              b.removeAttribute('aria-current');
+            });
+            // Add active class to clicked button
+            this.classList.add('bo-pageBtn--active');
+            this.setAttribute('aria-current', 'page');
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Lists</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Additional list styles for this component demo */
+      .demo-section {
+        margin-bottom: 28px;
+      }
+
+      .demo-title {
+        font-size: 11px;
+        font-weight: 760;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bo-muted);
+        margin-bottom: 12px;
+      }
+
+      .demo-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .demo-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .demo-label {
+        font-size: 12px;
+        color: var(--bo-muted);
+        min-width: 80px;
+      }
+
+      .demo-block {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+
+      .demo-blockTitle {
+        font-size: 14px;
+        font-weight: 760;
+        color: var(--bo-text);
+        margin-bottom: 16px;
+      }
+
+      /* Base List Styles */
+      .bo-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .bo-list-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: var(--bo-radius-sm);
+        transition: background-color 0.15s ease;
+      }
+
+      /* List with simple items */
+      .bo-list--simple .bo-list-item {
+        color: var(--bo-text);
+        font-size: 14px;
+      }
+
+      /* List with avatars */
+      .bo-list-item-avatar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .bo-list-item-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .bo-list-item-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--bo-text);
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .bo-list-item-subtitle {
+        font-size: 12px;
+        color: var(--bo-muted);
+        margin: 2px 0 0;
+        line-height: 1.3;
+      }
+
+      /* List with icons */
+      .bo-list-item-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: var(--bo-surface-2);
+        color: var(--bo-muted);
+      }
+
+      .bo-list-item-icon .bo-ico {
+        width: 18px;
+        height: 18px;
+      }
+
+      .bo-list-item-icon--lila {
+        background: rgba(185, 168, 255, 0.15);
+        color: var(--bo-accent);
+      }
+
+      .bo-list-item-icon--cyan {
+        background: rgba(147, 239, 231, 0.15);
+        color: var(--bo-accent-2);
+      }
+
+      .bo-list-item-icon--green {
+        background: rgba(72, 199, 142, 0.15);
+        color: #48c78e;
+      }
+
+      .bo-list-item-icon--red {
+        background: rgba(255, 126, 121, 0.15);
+        color: #ff7e79;
+      }
+
+      /* List with badges */
+      .bo-list-item-badge {
+        margin-left: auto;
+      }
+
+      /* List with dividers */
+      .bo-list--dividers .bo-list-item {
+        border-bottom: 1px solid var(--bo-border);
+      }
+
+      .bo-list--dividers .bo-list-item:last-child {
+        border-bottom: none;
+      }
+
+      /* List with actions */
+      .bo-list-item-actions {
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+
+      .bo-list-item:hover .bo-list-item-actions {
+        opacity: 1;
+      }
+
+      .bo-list-item-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--bo-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .bo-list-item-action:hover {
+        background: var(--bo-surface-2);
+        color: var(--bo-text);
+      }
+
+      .bo-list-item-action--delete:hover {
+        background: rgba(255, 126, 121, 0.15);
+        color: #ff7e79;
+      }
+
+      .bo-list-item-action .bo-ico {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* List hoverable */
+      .bo-list--hoverable .bo-list-item:hover {
+        background: var(--bo-surface-2);
+        cursor: pointer;
+      }
+
+      /* List nested */
+      .bo-list-nested {
+        margin-top: 8px;
+        padding-left: 20px;
+        border-left: 2px solid var(--bo-border);
+      }
+
+      .bo-list-nested .bo-list-item {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+
+      /* Avatar in list */
+      .bo-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--bo-surface-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bo-muted);
+        font-weight: 600;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      .bo-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: inherit;
+      }
+
+      /* List density variants */
+      .bo-list--dense .bo-list-item {
+        padding: 8px 12px;
+      }
+
+      .bo-list--spacious .bo-list-item {
+        padding: 16px 20px;
+      }
+
+      /* Compact list variant */
+      .bo-list--compact {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .bo-list--compact .bo-list-item {
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+
+      /* Responsive utilities */
+      .demo-blocks-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 1100px; height: auto; min-height: 690px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main" style="padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 22px; font-weight: 760; margin: 0 0 24px; color: var(--bo-text);">Lists</h1>
+
+            <!-- Simple List -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Simple List (role="list")</div>
+              <ul class="bo-list bo-list--simple" role="list">
+                <li class="bo-list-item">First list item</li>
+                <li class="bo-list-item">Second list item</li>
+                <li class="bo-list-item">Third list item</li>
+                <li class="bo-list-item">Fourth list item</li>
+              </ul>
+            </div>
+
+            <!-- List with Avatars -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">List with Avatars</div>
+              <ul class="bo-list" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true">JD</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">John Doe</p>
+                      <p class="bo-list-item-subtitle">john.doe@example.com</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(147, 239, 231, 0.15); color: var(--bo-accent-2);">AS</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Ana Smith</p>
+                      <p class="bo-list-item-subtitle">ana.smith@example.com</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(185, 168, 255, 0.15); color: var(--bo-accent);">MR</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Maria Rodriguez</p>
+                      <p class="bo-list-item-subtitle">maria.r@example.com</p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- List with Icons -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">List with Icons</div>
+              <ul class="bo-list" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-icon bo-list-item-icon--lila" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                      <path d="M2 17l10 5 10-5"/>
+                      <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                  </div>
+                  <div class="bo-list-item-content">
+                    <p class="bo-list-item-title">Dashboard</p>
+                    <p class="bo-list-item-subtitle">View your analytics</p>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-icon bo-list-item-icon--cyan" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                  </div>
+                  <div class="bo-list-item-content">
+                    <p class="bo-list-item-title">Team Members</p>
+                    <p class="bo-list-item-subtitle">Manage your team</p>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-icon bo-list-item-icon--green" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </div>
+                  <div class="bo-list-item-content">
+                    <p class="bo-list-item-title">Settings</p>
+                    <p class="bo-list-item-subtitle">Configure preferences</p>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-icon bo-list-item-icon--red" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                  </div>
+                  <div class="bo-list-item-content">
+                    <p class="bo-list-item-title">Notifications</p>
+                    <p class="bo-list-item-subtitle">View alerts and updates</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- List with Badges -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">List with Badges</div>
+              <ul class="bo-list" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true">JD</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">John Doe</p>
+                      <p class="bo-list-item-subtitle">john.doe@example.com</p>
+                    </div>
+                  </div>
+                  <div class="bo-list-item-badge">
+                    <span class="bo-badge bo-badge--lila bo-badge--sm">Admin</span>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(147, 239, 231, 0.15); color: var(--bo-accent-2);">AS</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Ana Smith</p>
+                      <p class="bo-list-item-subtitle">ana.smith@example.com</p>
+                    </div>
+                  </div>
+                  <div class="bo-list-item-badge">
+                    <span class="bo-badge bo-badge--green bo-badge--sm">Active</span>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(185, 168, 255, 0.15); color: var(--bo-accent);">MR</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Maria Rodriguez</p>
+                      <p class="bo-list-item-subtitle">maria.r@example.com</p>
+                    </div>
+                  </div>
+                  <div class="bo-list-item-badge">
+                    <span class="bo-badge bo-badge--yellow bo-badge--sm">Pending</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- List with Dividers -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">List with Dividers</div>
+              <ul class="bo-list bo-list--dividers" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true">JD</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">John Doe</p>
+                      <p class="bo-list-item-subtitle">john.doe@example.com</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(147, 239, 231, 0.15); color: var(--bo-accent-2);">AS</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Ana Smith</p>
+                      <p class="bo-list-item-subtitle">ana.smith@example.com</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(185, 168, 255, 0.15); color: var(--bo-accent);">MR</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Maria Rodriguez</p>
+                      <p class="bo-list-item-subtitle">maria.r@example.com</p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- List with Actions -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">List with Actions (Edit, Delete)</div>
+              <ul class="bo-list" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true">JD</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">John Doe</p>
+                      <p class="bo-list-item-subtitle">john.doe@example.com</p>
+                    </div>
+                  </div>
+                  <div class="bo-list-item-actions">
+                    <button class="bo-list-item-action" aria-label="Edit John Doe">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="bo-list-item-action bo-list-item-action--delete" aria-label="Delete John Doe">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(147, 239, 231, 0.15); color: var(--bo-accent-2);">AS</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Ana Smith</p>
+                      <p class="bo-list-item-subtitle">ana.smith@example.com</p>
+                    </div>
+                  </div>
+                  <div class="bo-list-item-actions">
+                    <button class="bo-list-item-action" aria-label="Edit Ana Smith">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="bo-list-item-action bo-list-item-action--delete" aria-label="Delete Ana Smith">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(185, 168, 255, 0.15); color: var(--bo-accent);">MR</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Maria Rodriguez</p>
+                      <p class="bo-list-item-subtitle">maria.r@example.com</p>
+                    </div>
+                  </div>
+                  <div class="bo-list-item-actions">
+                    <button class="bo-list-item-action" aria-label="Edit Maria Rodriguez">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="bo-list-item-action bo-list-item-action--delete" aria-label="Delete Maria Rodriguez">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Hoverable List -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Hoverable List</div>
+              <ul class="bo-list bo-list--hoverable" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true">JD</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">John Doe</p>
+                      <p class="bo-list-item-subtitle">john.doe@example.com</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(147, 239, 231, 0.15); color: var(--bo-accent-2);">AS</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Ana Smith</p>
+                      <p class="bo-list-item-subtitle">ana.smith@example.com</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(185, 168, 255, 0.15); color: var(--bo-accent);">MR</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Maria Rodriguez</p>
+                      <p class="bo-list-item-subtitle">maria.r@example.com</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(72, 199, 142, 0.15); color: #48c78e;">CP</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Carlos Perez</p>
+                      <p class="bo-list-item-subtitle">carlos.p@example.com</p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Nested List -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">List with Nested Items</div>
+              <ul class="bo-list bo-list--hoverable" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-icon bo-list-item-icon--lila" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </div>
+                  <div class="bo-list-item-content">
+                    <p class="bo-list-item-title">Projects</p>
+                    <ul class="bo-list bo-list-nested" role="list">
+                      <li class="bo-list-item">Website Redesign</li>
+                      <li class="bo-list-item">Mobile App</li>
+                      <li class="bo-list-item">API Integration</li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-icon bo-list-item-icon--cyan" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                  <div class="bo-list-item-content">
+                    <p class="bo-list-item-title">Team</p>
+                    <ul class="bo-list bo-list-nested" role="list">
+                      <li class="bo-list-item">Administrators</li>
+                      <li class="bo-list-item">Developers</li>
+                      <li class="bo-list-item">Designers</li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-icon bo-list-item-icon--green" aria-hidden="true">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                  </div>
+                  <div class="bo-list-item-content">
+                    <p class="bo-list-item-title">Settings</p>
+                    <ul class="bo-list bo-list-nested" role="list">
+                      <li class="bo-list-item">General</li>
+                      <li class="bo-list-item">Security</li>
+                      <li class="bo-list-item">Notifications</li>
+                    </ul>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Combined Example -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Combined: Hoverable with Actions and Badges</div>
+              <ul class="bo-list bo-list--hoverable" role="list">
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true">JD</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">John Doe</p>
+                      <p class="bo-list-item-subtitle">john.doe@example.com</p>
+                    </div>
+                  </div>
+                  <span class="bo-badge bo-badge--lila bo-badge--sm">Admin</span>
+                  <div class="bo-list-item-actions" style="margin-left: 12px; opacity: 1;">
+                    <button class="bo-list-item-action" aria-label="Edit">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="bo-list-item-action bo-list-item-action--delete" aria-label="Delete">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(147, 239, 231, 0.15); color: var(--bo-accent-2);">AS</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Ana Smith</p>
+                      <p class="bo-list-item-subtitle">ana.smith@example.com</p>
+                    </div>
+                  </div>
+                  <span class="bo-badge bo-badge--green bo-badge--sm">Active</span>
+                  <div class="bo-list-item-actions" style="margin-left: 12px; opacity: 1;">
+                    <button class="bo-list-item-action" aria-label="Edit">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="bo-list-item-action bo-list-item-action--delete" aria-label="Delete">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="bo-list-item">
+                  <div class="bo-list-item-avatar">
+                    <div class="bo-avatar" aria-hidden="true" style="background: rgba(185, 168, 255, 0.15); color: var(--bo-accent);">MR</div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Maria Rodriguez</p>
+                      <p class="bo-list-item-subtitle">maria.r@example.com</p>
+                    </div>
+                  </div>
+                  <span class="bo-badge bo-badge--yellow bo-badge--sm">Pending</span>
+                  <div class="bo-list-item-actions" style="margin-left: 12px; opacity: 1;">
+                    <button class="bo-list-item-action" aria-label="Edit">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="bo-list-item-action bo-list-item-action--delete" aria-label="Delete">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Light Theme Preview -->
+            <div class="demo-block" data-theme="light" style="background: var(--bo-surface-2); padding: 20px; border-radius: 14px;">
+              <div class="demo-blockTitle" style="margin-bottom: 12px;">Light Theme Preview</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">Lists are designed to maintain proper contrast ratios in both light and dark themes.</p>
+
+              <!-- Simple List - Light -->
+              <div style="margin-bottom: 16px;">
+                <div style="font-size: 11px; font-weight: 760; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bo-muted); margin-bottom: 8px;">Simple List</div>
+                <ul class="bo-list bo-list--simple" role="list" style="background: var(--bo-surface); border-radius: 12px; border: 1px solid var(--bo-border);">
+                  <li class="bo-list-item">First list item</li>
+                  <li class="bo-list-item">Second list item</li>
+                  <li class="bo-list-item">Third list item</li>
+                </ul>
+              </div>
+
+              <!-- With Avatars - Light -->
+              <div style="margin-bottom: 16px;">
+                <div style="font-size: 11px; font-weight: 760; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bo-muted); margin-bottom: 8px;">With Avatars</div>
+                <ul class="bo-list bo-list--hoverable" role="list" style="background: var(--bo-surface); border-radius: 12px; border: 1px solid var(--bo-border);">
+                  <li class="bo-list-item">
+                    <div class="bo-list-item-avatar">
+                      <div class="bo-avatar" aria-hidden="true">JD</div>
+                      <div class="bo-list-item-content">
+                        <p class="bo-list-item-title">John Doe</p>
+                        <p class="bo-list-item-subtitle">john.doe@example.com</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="bo-list-item">
+                    <div class="bo-list-item-avatar">
+                      <div class="bo-avatar" aria-hidden="true" style="background: rgba(147, 239, 231, 0.15); color: var(--bo-accent-2);">AS</div>
+                      <div class="bo-list-item-content">
+                        <p class="bo-list-item-title">Ana Smith</p>
+                        <p class="bo-list-item-subtitle">ana.smith@example.com</p>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- With Icons - Light -->
+              <div>
+                <div style="font-size: 11px; font-weight: 760; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bo-muted); margin-bottom: 8px;">With Icons</div>
+                <ul class="bo-list" role="list" style="background: var(--bo-surface); border-radius: 12px; border: 1px solid var(--bo-border);">
+                  <li class="bo-list-item">
+                    <div class="bo-list-item-icon bo-list-item-icon--lila" aria-hidden="true">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                      </svg>
+                    </div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Dashboard</p>
+                      <p class="bo-list-item-subtitle">View your analytics</p>
+                    </div>
+                  </li>
+                  <li class="bo-list-item">
+                    <div class="bo-list-item-icon bo-list-item-icon--cyan" aria-hidden="true">
+                      <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                      </svg>
+                    </div>
+                    <div class="bo-list-item-content">
+                      <p class="bo-list-item-title">Team Members</p>
+                      <p class="bo-list-item-subtitle">Manage your team</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

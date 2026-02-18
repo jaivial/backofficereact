@@ -1,0 +1,1294 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Data Tables</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Demo layout styles */
+      .bo-demo-section {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+
+      .bo-demo-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .bo-demo-label {
+        font-size: 11px;
+        font-weight: 780;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+      }
+
+      .bo-demo-dark,
+      .bo-demo-light {
+        padding: 20px;
+        border-radius: var(--bo-radius-md);
+      }
+
+      .bo-demo-dark {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-light {
+        background: var(--bo-surface-2);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .bo-demo-title {
+        font-size: 18px;
+        font-weight: 720;
+        color: var(--bo-text);
+      }
+
+      /* ============================================
+         ENHANCED TABLE STYLES
+         ============================================ */
+
+      /* --- Sorting --- */
+      .bo-table thead th.bo-tableSort {
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.15s ease;
+      }
+
+      .bo-table thead th.bo-tableSort:hover {
+        color: var(--bo-accent);
+      }
+
+      .bo-tableSortIcon {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 4px;
+        opacity: 0.4;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      .bo-table thead th.bo-tableSort:hover .bo-tableSortIcon {
+        opacity: 0.7;
+      }
+
+      /* Ascending sort */
+      .bo-table thead th[aria-sort="ascending"] .bo-tableSortIcon {
+        opacity: 1;
+        transform: rotate(180deg);
+      }
+
+      /* Descending sort (default for sorted column) */
+      .bo-table thead th[aria-sort="descending"] .bo-tableSortIcon {
+        opacity: 1;
+      }
+
+      /* --- Row Selection --- */
+      .bo-table tbody tr.bo-tableRow--selected {
+        background: rgba(185, 168, 255, 0.08) !important;
+      }
+
+      .bo-table tbody tr.bo-tableRow--selected:hover {
+        background: rgba(185, 168, 255, 0.12) !important;
+      }
+
+      /* --- Striped Rows --- */
+      .bo-table--striped tbody tr:nth-child(odd) {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      /* Light theme stripe */
+      :root[data-theme="light"] .bo-table--striped tbody tr:nth-child(odd) {
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      /* --- Hoverable Rows --- */
+      .bo-table--hover tbody tr {
+        transition: background 0.12s ease;
+      }
+
+      .bo-table--hover tbody tr:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      :root[data-theme="light"] .bo-table--hover tbody tr:hover {
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      /* --- Inline Actions --- */
+      .bo-tableInlineActions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .bo-tableInlineActions .bo-btn {
+        opacity: 0.6;
+        transition: opacity 0.15s ease;
+      }
+
+      .bo-table tbody tr:hover .bo-tableInlineActions .bo-btn {
+        opacity: 1;
+      }
+
+      .bo-tableInlineActions .bo-btn--icon {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border-radius: 8px;
+      }
+
+      .bo-tableInlineActions .bo-btn--icon svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* --- Checkbox Column --- */
+      .bo-table thead th.bo-tableCheckbox,
+      .bo-table tbody td.bo-tableCheckbox {
+        width: 48px;
+        padding-left: 16px;
+        padding-right: 8px;
+      }
+
+      .bo-tableCheckbox .bo-checkbox {
+        gap: 8px;
+      }
+
+      .bo-tableCheckbox .bo-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* --- Compact Table --- */
+      .bo-table--compact .bo-table thead th,
+      .bo-table--compact .bo-table tbody td {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .bo-table--compact .bo-table thead th {
+        font-size: 11px;
+      }
+
+      /* --- Small Table --- */
+      .bo-table--sm .bo-table thead th,
+      .bo-table--sm .bo-table tbody td {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+
+      .bo-table--sm .bo-table thead th {
+        font-size: 10px;
+      }
+
+      /* --- Large Table --- */
+      .bo-table--lg .bo-table thead th,
+      .bo-table--lg .bo-table tbody td {
+        padding: 16px 20px;
+        font-size: 14px;
+      }
+
+      .bo-table--lg .bo-table thead th {
+        font-size: 13px;
+      }
+
+      /* --- Responsive Table Wrapper --- */
+      .bo-tableResponsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: var(--bo-radius-lg);
+      }
+
+      .bo-tableResponsive .bo-table {
+        min-width: 600px;
+      }
+
+      /* --- Table with Footer --- */
+      .bo-tableWrap .bo-tableFooter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid var(--bo-border);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      :root[data-theme="light"] .bo-tableWrap .bo-tableFooter {
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      .bo-tableFooterInfo {
+        font-size: 12px;
+        color: var(--bo-muted);
+      }
+
+      /* --- Empty State --- */
+      .bo-tableEmpty {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--bo-faint);
+      }
+
+      .bo-tableEmptyIcon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 16px;
+        opacity: 0.4;
+      }
+
+      .bo-tableEmptyText {
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .bo-tableEmptyHint {
+        font-size: 12px;
+        color: var(--bo-faint);
+      }
+
+      /* --- Loading State --- */
+      .bo-tableLoading {
+        text-align: center;
+        padding: 48px 24px;
+      }
+
+      .bo-tableLoading .bo-spinner {
+        margin: 0 auto 16px;
+      }
+
+      /* --- Column Widths --- */
+      .bo-table th.col-checkbox,
+      .bo-table td.col-checkbox {
+        width: 48px;
+      }
+
+      .bo-table th.col-actions,
+      .bo-table td.col-actions {
+        width: 120px;
+        text-align: right;
+      }
+
+      .bo-table th.col-sm,
+      .bo-table td.col-sm {
+        width: 80px;
+      }
+
+      .bo-table th.col-md,
+      .bo-table td.col-md {
+        width: 140px;
+      }
+
+      .bo-table th.col-lg,
+      .bo-table td.col-lg {
+        width: 200px;
+      }
+
+      .bo-table th.col-num,
+      .bo-table td.col-num {
+        text-align: right;
+      }
+
+      .bo-table th.col-center,
+      .bo-table td.col-center {
+        text-align: center;
+      }
+
+      /* --- Table with Toolbar --- */
+      .bo-tableToolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+
+      .bo-tableToolbarLeft {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .bo-tableToolbarRight {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .bo-tableSearch {
+        position: relative;
+      }
+
+      .bo-tableSearchIcon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        color: var(--bo-faint);
+        pointer-events: none;
+      }
+
+      .bo-tableSearch input {
+        height: 36px;
+        padding: 0 12px 0 38px;
+        border-radius: 10px;
+        border: 1px solid var(--bo-border);
+        background: var(--bo-surface-2);
+        color: var(--bo-text);
+        font-size: 13px;
+        width: 220px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .bo-tableSearch input:focus {
+        border-color: rgba(185, 168, 255, 0.5);
+        box-shadow: 0 0 0 3px rgba(185, 168, 255, 0.15);
+      }
+
+      .bo-tableSearch input::placeholder {
+        color: var(--bo-faint);
+      }
+
+      /* --- Row Click --- */
+      .bo-table tbody tr.bo-tableRow--clickable {
+        cursor: pointer;
+      }
+
+      /* --- Checkbox in header for bulk selection --- */
+      .bo-tableSelectAll {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .bo-tableSelectAllText {
+        font-size: 11px;
+        color: var(--bo-faint);
+        margin-left: 4px;
+      }
+
+      /* ============================================
+         THEME: LIGHT MODE ADJUSTMENTS
+         ============================================ */
+      :root[data-theme="light"] .bo-table tbody tr:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      :root[data-theme="light"] .bo-table tbody tr.bo-tableRow--selected {
+        background: rgba(185, 168, 255, 0.1) !important;
+      }
+
+      :root[data-theme="light"] .bo-table tbody tr.bo-tableRow--selected:hover {
+        background: rgba(185, 168, 255, 0.15) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 1000px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-demo-header">
+              <div class="bo-demo-title">Data Tables</div>
+            </div>
+
+            <!-- ============================================
+                 DARK THEME (DEFAULT)
+                 ============================================ -->
+            <div class="bo-demo-dark">
+
+              <!-- 1. Basic Data Table -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">1. Basic Data Table</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Basic data table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th class="col-num">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Administrator</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                      <tr>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>Editor</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                      <tr>
+                        <td>Bob Wilson</td>
+                        <td>bob@example.com</td>
+                        <td>Viewer</td>
+                        <td class="col-num">Inactive</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 2. Table with Sorting Indicators -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">2. Table with Sorting (aria-sort)</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Sortable data table">
+                    <thead>
+                      <tr>
+                        <th class="bo-tableSort" aria-sort="descending" role="columnheader" aria-label="Name, sorted descending">
+                          Name
+                          <span class="bo-tableSortIcon" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 5v14M19 12l-7 7-7-7"/>
+                            </svg>
+                          </span>
+                        </th>
+                        <th class="bo-tableSort" role="columnheader" aria-label="Email, sortable">
+                          Email
+                          <span class="bo-tableSortIcon" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 5v14M19 12l-7 7-7-7"/>
+                            </svg>
+                          </span>
+                        </th>
+                        <th class="bo-tableSort col-num" role="columnheader" aria-label="Date, sortable">
+                          Date
+                          <span class="bo-tableSortIcon" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 5v14M19 12l-7 7-7-7"/>
+                            </svg>
+                          </span>
+                        </th>
+                        <th class="bo-tableSort col-num" aria-sort="none" role="columnheader" aria-label="Amount, sortable">
+                          Amount
+                          <span class="bo-tableSortIcon" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 5v14M19 12l-7 7-7-7"/>
+                            </svg>
+                          </span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Sarah Connor</td>
+                        <td>sarah@example.com</td>
+                        <td class="col-num">2024-01-15</td>
+                        <td class="col-num">$1,250</td>
+                      </tr>
+                      <tr>
+                        <td>Michael Brown</td>
+                        <td>michael@example.com</td>
+                        <td class="col-num">2024-01-14</td>
+                        <td class="col-num">$890</td>
+                      </tr>
+                      <tr>
+                        <td>Emily Davis</td>
+                        <td>emily@example.com</td>
+                        <td class="col-num">2024-01-13</td>
+                        <td class="col-num">$2,100</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 3. Table with Row Selection -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">3. Table with Row Selection</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Selectable rows table">
+                    <thead>
+                      <tr>
+                        <th>Selected</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="bo-tableRow--selected">
+                        <td><input type="checkbox" checked aria-label="Select row" /></td>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Administrator</td>
+                      </tr>
+                      <tr>
+                        <td><input type="checkbox" aria-label="Select row" /></td>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>Editor</td>
+                      </tr>
+                      <tr>
+                        <td><input type="checkbox" aria-label="Select row" /></td>
+                        <td>Bob Wilson</td>
+                        <td>bob@example.com</td>
+                        <td>Viewer</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 4. Table with Inline Actions -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">4. Table with Inline Actions</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Table with actions">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th class="col-actions">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Administrator</td>
+                        <td class="col-actions">
+                          <div class="bo-tableInlineActions">
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="View details">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            </button>
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Edit">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </button>
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger" aria-label="Delete">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>Editor</td>
+                        <td class="col-actions">
+                          <div class="bo-tableInlineActions">
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="View details">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            </button>
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Edit">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </button>
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger" aria-label="Delete">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 5. Table with Pagination -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">5. Table with Pagination</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Paginated table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th class="col-num">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Active</td>
+                        <td class="col-num">$1,250</td>
+                      </tr>
+                      <tr>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>Active</td>
+                        <td class="col-num">$890</td>
+                      </tr>
+                      <tr>
+                        <td>Bob Wilson</td>
+                        <td>bob@example.com</td>
+                        <td>Inactive</td>
+                        <td class="col-num">$450</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="bo-tableFooter">
+                    <div class="bo-tableFooterInfo">Showing 1-3 of 24 results</div>
+                    <nav class="bo-pagination" role="navigation" aria-label="Table pagination">
+                      <button class="bo-pageNav" type="button" aria-label="Previous page" disabled>
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Page 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 3">3</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 4">4</button>
+                      <button class="bo-pageNav" type="button" aria-label="Next page">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6. Table Striped Rows -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">6. Table with Striped Rows (bo-table--striped)</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table bo-table--striped" aria-label="Striped table">
+                    <thead>
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th class="col-num">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>#ORD-001</td>
+                        <td>John Doe</td>
+                        <td>2024-01-15</td>
+                        <td class="col-num">$1,250</td>
+                      </tr>
+                      <tr>
+                        <td>#ORD-002</td>
+                        <td>Jane Smith</td>
+                        <td>2024-01-14</td>
+                        <td class="col-num">$890</td>
+                      </tr>
+                      <tr>
+                        <td>#ORD-003</td>
+                        <td>Bob Wilson</td>
+                        <td>2024-01-13</td>
+                        <td class="col-num">$450</td>
+                      </tr>
+                      <tr>
+                        <td>#ORD-004</td>
+                        <td>Emily Davis</td>
+                        <td>2024-01-12</td>
+                        <td class="col-num">$1,780</td>
+                      </tr>
+                      <tr>
+                        <td>#ORD-005</td>
+                        <td>Michael Brown</td>
+                        <td>2024-01-11</td>
+                        <td class="col-num">$320</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 7. Table Hoverable Rows -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">7. Table with Hoverable Rows (bo-table--hover)</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table bo-table--hover" aria-label="Hoverable table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th class="col-num">Stock</th>
+                        <th class="col-num">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Laptop Pro</td>
+                        <td>Electronics</td>
+                        <td class="col-num">45</td>
+                        <td class="col-num">$1,299</td>
+                      </tr>
+                      <tr>
+                        <td>Wireless Mouse</td>
+                        <td>Accessories</td>
+                        <td class="col-num">128</td>
+                        <td class="col-num">$49</td>
+                      </tr>
+                      <tr>
+                        <td>USB-C Cable</td>
+                        <td>Accessories</td>
+                        <td class="col-num">256</td>
+                        <td class="col-num">$19</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 8. Table Responsive (Scrollable) -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">8. Table Responsive (scrollable wrapper)</div>
+                <div class="bo-tableWrap">
+                  <div class="bo-tableResponsive">
+                    <table class="bo-table" aria-label="Responsive table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Full Name</th>
+                          <th>Email Address</th>
+                          <th>Phone Number</th>
+                          <th>Street Address</th>
+                          <th>City</th>
+                          <th>Country</th>
+                          <th class="col-num">Postal Code</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>John Doe</td>
+                          <td>john.doe@example.com</td>
+                          <td>+1 234 567 8900</td>
+                          <td>123 Main Street</td>
+                          <td>New York</td>
+                          <td>USA</td>
+                          <td class="col-num">10001</td>
+                          <td class="col-actions">
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Edit">Edit</button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>Jane Smith</td>
+                          <td>jane.smith@example.com</td>
+                          <td>+1 234 567 8901</td>
+                          <td>456 Oak Avenue</td>
+                          <td>Los Angeles</td>
+                          <td>USA</td>
+                          <td class="col-num">90001</td>
+                          <td class="col-actions">
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Edit">Edit</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 9. Table with Checkboxes -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">9. Table with Checkboxes</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Table with checkboxes">
+                    <thead>
+                      <tr>
+                        <th class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select all rows" />
+                          </label>
+                        </th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th class="col-num">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" />
+                          </label>
+                        </td>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" checked />
+                          </label>
+                        </td>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" />
+                          </label>
+                        </td>
+                        <td>Bob Wilson</td>
+                        <td>bob@example.com</td>
+                        <td class="col-num">Inactive</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Bonus: Combined Features -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">Bonus: Table with Toolbar, Search, and Combined Features</div>
+                <div class="bo-tableWrap">
+                  <div class="bo-tableToolbar">
+                    <div class="bo-tableToolbarLeft">
+                      <div class="bo-tableSearch">
+                        <svg class="bo-tableSearchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="11" cy="11" r="8"/>
+                          <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input type="text" placeholder="Search users..." aria-label="Search users" />
+                      </div>
+                    </div>
+                    <div class="bo-tableToolbarRight">
+                      <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Filter">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                        </svg>
+                        Filter
+                      </button>
+                      <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Export">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export
+                      </button>
+                    </div>
+                  </div>
+                  <table class="bo-table bo-table--striped bo-table--hover" aria-label="Full featured table">
+                    <thead>
+                      <tr>
+                        <th class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select all" />
+                          </label>
+                        </th>
+                        <th class="bo-tableSort" aria-sort="ascending" role="columnheader" aria-label="Name, sorted ascending">
+                          Name
+                          <span class="bo-tableSortIcon" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 5v14M19 12l-7 7-7-7"/>
+                            </svg>
+                          </span>
+                        </th>
+                        <th>Email</th>
+                        <th class="col-md">Role</th>
+                        <th class="col-num">Status</th>
+                        <th class="col-actions">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" />
+                          </label>
+                        </td>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Administrator</td>
+                        <td class="col-num">Active</td>
+                        <td class="col-actions">
+                          <div class="bo-tableInlineActions">
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="View">View</button>
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Edit">Edit</button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" checked />
+                          </label>
+                        </td>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>Editor</td>
+                        <td class="col-num">Active</td>
+                        <td class="col-actions">
+                          <div class="bo-tableInlineActions">
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="View">View</button>
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Edit">Edit</button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" />
+                          </label>
+                        </td>
+                        <td>Bob Wilson</td>
+                        <td>bob@example.com</td>
+                        <td>Viewer</td>
+                        <td class="col-num">Inactive</td>
+                        <td class="col-actions">
+                          <div class="bo-tableInlineActions">
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="View">View</button>
+                            <button class="bo-btn bo-btn--ghost bo-btn--sm" aria-label="Edit">Edit</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="bo-tableFooter">
+                    <div class="bo-paginationInfo">
+                      <span>3 of 24 users selected</span>
+                    </div>
+                    <nav class="bo-pagination" role="navigation" aria-label="Table pagination">
+                      <button class="bo-pageNav" type="button" aria-label="Previous page" disabled>
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Page 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 3">3</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 4">4</button>
+                      <button class="bo-pageNav" type="button" aria-label="Next page">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ============================================
+                 LIGHT THEME
+                 ============================================ -->
+            <div class="bo-demo-light">
+              <div class="bo-demo-label" style="margin-bottom: 20px">Light Theme</div>
+
+              <!-- 1. Basic Data Table -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">1. Basic Data Table</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Basic data table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th class="col-num">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Administrator</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                      <tr>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>Editor</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                      <tr>
+                        <td>Bob Wilson</td>
+                        <td>bob@example.com</td>
+                        <td>Viewer</td>
+                        <td class="col-num">Inactive</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 2. Table with Sorting -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">2. Table with Sorting Indicators</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Sortable table">
+                    <thead>
+                      <tr>
+                        <th class="bo-tableSort" aria-sort="descending" role="columnheader" aria-label="Name, sorted descending">
+                          Name
+                          <span class="bo-tableSortIcon" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 5v14M19 12l-7 7-7-7"/>
+                            </svg>
+                          </span>
+                        </th>
+                        <th>Email</th>
+                        <th class="col-num">Date</th>
+                        <th class="col-num">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Sarah Connor</td>
+                        <td>sarah@example.com</td>
+                        <td class="col-num">2024-01-15</td>
+                        <td class="col-num">$1,250</td>
+                      </tr>
+                      <tr>
+                        <td>Michael Brown</td>
+                        <td>michael@example.com</td>
+                        <td class="col-num">2024-01-14</td>
+                        <td class="col-num">$890</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 3. Table with Checkboxes -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">3. Table with Checkboxes</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Table with checkboxes">
+                    <thead>
+                      <tr>
+                        <th class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select all rows" />
+                          </label>
+                        </th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th class="col-num">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" />
+                          </label>
+                        </td>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                      <tr>
+                        <td class="col-checkbox">
+                          <label class="bo-checkbox">
+                            <input type="checkbox" aria-label="Select row" checked />
+                          </label>
+                        </td>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td class="col-num">Active</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 4. Striped and Hover -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">4. Striped and Hoverable Rows</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table bo-table--striped bo-table--hover" aria-label="Striped and hoverable table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th class="col-num">Stock</th>
+                        <th class="col-num">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Laptop Pro</td>
+                        <td>Electronics</td>
+                        <td class="col-num">45</td>
+                        <td class="col-num">$1,299</td>
+                      </tr>
+                      <tr>
+                        <td>Wireless Mouse</td>
+                        <td>Accessories</td>
+                        <td class="col-num">128</td>
+                        <td class="col-num">$49</td>
+                      </tr>
+                      <tr>
+                        <td>USB-C Cable</td>
+                        <td>Accessories</td>
+                        <td class="col-num">256</td>
+                        <td class="col-num">$19</td>
+                      </tr>
+                      <tr>
+                        <td>Monitor 27"</td>
+                        <td>Electronics</td>
+                        <td class="col-num">32</td>
+                        <td class="col-num">$399</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 5. With Pagination -->
+              <div class="bo-demo-group">
+                <div class="bo-demo-label">5. Table with Pagination</div>
+                <div class="bo-tableWrap">
+                  <table class="bo-table" aria-label="Paginated table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th class="col-num">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Active</td>
+                        <td class="col-num">$1,250</td>
+                      </tr>
+                      <tr>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>Active</td>
+                        <td class="col-num">$890</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="bo-tableFooter">
+                    <div class="bo-tableFooterInfo">Showing 1-2 of 156 results</div>
+                    <nav class="bo-pagination" role="navigation" aria-label="Table pagination">
+                      <button class="bo-pageNav" type="button" aria-label="Previous page" disabled>
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+                      <button class="bo-pageBtn bo-pageBtn--active" type="button" aria-label="Page 1" aria-current="page">1</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 2">2</button>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 3">3</button>
+                      <span class="bo-pageEllipsis" aria-hidden="true">...</span>
+                      <button class="bo-pageBtn" type="button" aria-label="Page 16">16</button>
+                      <button class="bo-pageNav" type="button" aria-label="Next page">
+                        <svg class="bo-pageIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Demo interactivity for sorting
+      document.addEventListener('DOMContentLoaded', function() {
+        // Sort button click handlers
+        const sortHeaders = document.querySelectorAll('.bo-tableSort');
+        sortHeaders.forEach(function(header) {
+          header.addEventListener('click', function() {
+            const currentSort = this.getAttribute('aria-sort');
+            const table = this.closest('table');
+            const allHeaders = table.querySelectorAll('.bo-tableSort');
+
+            // Remove sort from all headers
+            allHeaders.forEach(function(h) {
+              h.setAttribute('aria-sort', 'none');
+            });
+
+            // Toggle sort direction
+            if (currentSort === 'ascending') {
+              this.setAttribute('aria-sort', 'descending');
+            } else {
+              this.setAttribute('aria-sort', 'ascending');
+            }
+          });
+        });
+
+        // Row selection handlers
+        const rowCheckboxes = document.querySelectorAll('.bo-table tbody tr td:first-child input[type="checkbox"]');
+        rowCheckboxes.forEach(function(checkbox) {
+          checkbox.addEventListener('change', function() {
+            const row = this.closest('tr');
+            if (this.checked) {
+              row.classList.add('bo-tableRow--selected');
+            } else {
+              row.classList.remove('bo-tableRow--selected');
+            }
+          });
+        });
+
+        // Select all checkbox handler
+        const selectAllCheckboxes = document.querySelectorAll('thead input[type="checkbox"]');
+        selectAllCheckboxes.forEach(function(checkbox) {
+          checkbox.addEventListener('change', function() {
+            const table = this.closest('table');
+            const rowCheckboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+            rowCheckboxes.forEach(function(rowCheckbox) {
+              rowCheckbox.checked = checkbox.checked;
+              const row = rowCheckbox.closest('tr');
+              if (checkbox.checked) {
+                row.classList.add('bo-tableRow--selected');
+              } else {
+                row.classList.remove('bo-tableRow--selected');
+              }
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

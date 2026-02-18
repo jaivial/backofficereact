@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Search</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Demo layout styles */
+      .bo-demo-section {
+        padding: 24px;
+        display: grid;
+        gap: 32px;
+      }
+
+      .bo-demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .bo-demo-col {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .bo-demo-label {
+        font-size: 11px;
+        color: var(--bo-faint);
+        margin-bottom: 4px;
+      }
+
+      .bo-demo-title {
+        font-size: 13px;
+        font-weight: 720;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+      }
+
+      .bo-theme-block {
+        border-radius: 14px;
+        padding: 20px;
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-theme-label {
+        font-size: 11px;
+        font-weight: 720;
+        color: var(--bo-muted);
+        margin-bottom: 16px;
+        display: block;
+      }
+
+      /* Search component specific styles */
+      .bo-searchWrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .bo-searchIcon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--bo-faint);
+        pointer-events: none;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .bo-searchWrap--icon .bo-input {
+        padding-left: 38px;
+      }
+
+      .bo-searchClear {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        color: var(--bo-faint);
+        cursor: pointer;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 160ms ease, color 160ms ease;
+      }
+
+      .bo-searchClear:hover {
+        background: var(--bo-border);
+        color: var(--bo-text);
+      }
+
+      .bo-searchDropdown {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+        border-radius: 12px;
+        box-shadow: var(--bo-shadow-soft);
+        z-index: 100;
+        overflow: hidden;
+        min-width: 200px;
+      }
+
+      .bo-searchDropdownItem {
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: background 160ms ease;
+        font-size: 14px;
+        color: var(--bo-text);
+      }
+
+      .bo-searchDropdownItem:hover,
+      .bo-searchDropdownItem.is-active {
+        background: rgba(185, 168, 255, 0.1);
+      }
+
+      .bo-searchDropdownItemIcon {
+        width: 16px;
+        height: 16px;
+        color: var(--bo-muted);
+        flex-shrink: 0;
+      }
+
+      .bo-searchHighlight {
+        background: rgba(185, 168, 255, 0.25);
+        color: var(--bo-accent);
+        padding: 0 2px;
+        border-radius: 2px;
+        font-weight: 600;
+      }
+
+      .bo-searchFilters {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .bo-searchFilterBtn {
+        padding: 6px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--bo-border);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--bo-muted);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 160ms ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .bo-searchFilterBtn:hover {
+        border-color: var(--bo-border-2);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .bo-searchFilterBtn.is-active {
+        border-color: var(--bo-accent);
+        background: rgba(185, 168, 255, 0.12);
+        color: var(--bo-accent);
+      }
+
+      .bo-searchLoading {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .bo-searchCompact {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .bo-searchCompact .bo-input {
+        width: 180px;
+      }
+
+      .bo-searchVoiceBtn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        color: var(--bo-faint);
+        cursor: pointer;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 160ms ease, color 160ms ease;
+      }
+
+      .bo-searchVoiceBtn:hover {
+        background: var(--bo-border);
+        color: var(--bo-accent);
+      }
+
+      .bo-searchVoiceBtn.is-recording {
+        color: #ef4444;
+        animation: bo-pulse-recording 1.5s ease-in-out infinite;
+      }
+
+      @keyframes bo-pulse-recording {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      .bo-searchEmpty {
+        padding: 20px;
+        text-align: center;
+        color: var(--bo-muted);
+        font-size: 13px;
+      }
+
+      .bo-searchResultMeta {
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--bo-faint);
+      }
+
+      /* Inline search in toolbar context */
+      .bo-toolbarSearch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .bo-toolbarSearch .bo-searchWrap {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dark Theme (Default) -->
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 900px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-demo-section">
+              <div class="bo-title" style="margin-bottom: 8px">Search Components</div>
+
+              <!-- 1. Basic Search Input with Icon -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">1. Basic Search Input with Icon</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Default</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Search with search icon</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search..."
+                          aria-label="Search"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Search with Clear Button -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">2. Search with Clear Button</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">With Value</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Clear button appears when input has value</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search..."
+                          value="Hotel reservations"
+                          aria-label="Search"
+                        />
+                        <button class="bo-searchClear" type="button" aria-label="Clear search">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Search with Suggestions Dropdown -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">3. Search with Suggestions Dropdown</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Dropdown Visible (aria-expanded="true")</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">With suggestions dropdown</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon" style="width: 280px">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search customers, reservations..."
+                          value="reservation"
+                          aria-label="Search"
+                          aria-expanded="true"
+                          aria-controls="search-suggestions"
+                          role="combobox"
+                        />
+                        <div
+                          id="search-suggestions"
+                          class="bo-searchDropdown"
+                          role="listbox"
+                          aria-label="Search suggestions"
+                        >
+                          <button class="bo-searchDropdownItem" type="button" role="option">
+                            <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                              </svg>
+                            </span>
+                            <span><span class="bo-searchHighlight">Reservation</span> #1234</span>
+                            <span class="bo-searchResultMeta">Today</span>
+                          </button>
+                          <button class="bo-searchDropdownItem" type="button" role="option">
+                            <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                              </svg>
+                            </span>
+                            <span><span class="bo-searchHighlight">Reservation</span> for Garcia</span>
+                            <span class="bo-searchResultMeta">Tomorrow</span>
+                          </button>
+                          <button class="bo-searchDropdownItem" type="button" role="option">
+                            <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9 22 9 12 15 12 15 22"/>
+                              </svg>
+                            </span>
+                            <span><span class="bo-searchHighlight">Reservation</span> Villa Carmen</span>
+                            <span class="bo-searchResultMeta">Pending</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">No Results</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Empty state</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon" style="width: 280px">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search..."
+                          value="xyz123"
+                          aria-label="Search"
+                          aria-expanded="true"
+                          aria-controls="search-no-results"
+                          role="combobox"
+                        />
+                        <div
+                          id="search-no-results"
+                          class="bo-searchDropdown"
+                          role="listbox"
+                        >
+                          <div class="bo-searchEmpty">
+                            No results found for "xyz123"
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Search with Filters -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">4. Search with Filters</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">With Active Filters</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Search with filter buttons</div>
+                      <div class="bo-searchFilters">
+                        <div class="bo-search bo-searchWrap bo-searchWrap--icon" style="flex: 1; min-width: 200px">
+                          <span class="bo-searchIcon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="11" cy="11" r="8"/>
+                              <path d="m21 21-4.3-4.3"/>
+                            </svg>
+                          </span>
+                          <input
+                            type="search"
+                            class="bo-input"
+                            placeholder="Search..."
+                            aria-label="Search with filters"
+                          />
+                        </div>
+                        <button class="bo-searchFilterBtn is-active" type="button">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                          </svg>
+                          All
+                        </button>
+                        <button class="bo-searchFilterBtn" type="button">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                          </svg>
+                          Pending
+                        </button>
+                        <button class="bo-searchFilterBtn" type="button">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                          </svg>
+                          Confirmed
+                        </button>
+                        <button class="bo-searchFilterBtn" type="button">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                          </svg>
+                          Cancelled
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Search Results Highlight -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">5. Search Results Highlight</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">With Text Highlight</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Results showing matched text</div>
+                      <div class="bo-searchDropdown" style="position: relative; display: block;">
+                        <button class="bo-searchDropdownItem" type="button" role="option">
+                          <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                          </span>
+                          <span><span class="bo-searchHighlight">Maria</span> Garcia</span>
+                          <span class="bo-searchResultMeta">Guest</span>
+                        </button>
+                        <button class="bo-searchDropdownItem" type="button" role="option">
+                          <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                          </span>
+                          <span><span class="bo-searchHighlight">Maria</span> Lopez</span>
+                          <span class="bo-searchResultMeta">Guest</span>
+                        </button>
+                        <button class="bo-searchDropdownItem" type="button" role="option">
+                          <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                          </span>
+                          <span>Carlos <span class="bo-searchHighlight">Maria</span>nez</span>
+                          <span class="bo-searchResultMeta">Staff</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6. Search Loading State -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">6. Search Loading State</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Loading</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Spinner shown while searching</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Searching..."
+                          value="Hotel"
+                          aria-label="Searching"
+                          aria-busy="true"
+                        />
+                        <div class="bo-searchLoading" role="status" aria-label="Searching">
+                          <div class="bo-spinner bo-spinner--sm bo-spinner--lila"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 7. Search Compact (Inline) -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">7. Search Compact (Inline)</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Inline Search</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Small inline search field</div>
+                      <div class="bo-searchCompact">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input bo-input--sm"
+                          placeholder="Quick search..."
+                          aria-label="Quick search"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 8. Search with Voice Icon -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">8. Search with Voice Icon</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Default</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">With voice input button</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search or speak..."
+                          aria-label="Search or use voice input"
+                        />
+                        <button class="bo-searchVoiceBtn" type="button" aria-label="Use voice search">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Recording</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Voice input active</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Listening..."
+                          aria-label="Listening for voice input"
+                          aria-live="polite"
+                        />
+                        <button class="bo-searchVoiceBtn is-recording" type="button" aria-label="Stop voice search">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Small Variant -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">Small Input Variant</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Small Search Input</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Using bo-input--sm class</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input bo-input--sm"
+                          placeholder="Small search..."
+                          aria-label="Small search"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light Theme Version -->
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 900px; height: auto" data-theme="light">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-demo-section">
+              <div class="bo-title" style="margin-bottom: 8px">Search Components - Light Theme</div>
+
+              <!-- 1. Basic Search Input with Icon -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">1. Basic Search Input with Icon</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Default</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Search with search icon</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search..."
+                          aria-label="Search"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Search with Clear Button -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">2. Search with Clear Button</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">With Value</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Clear button appears when input has value</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search..."
+                          value="Hotel reservations"
+                          aria-label="Search"
+                        />
+                        <button class="bo-searchClear" type="button" aria-label="Clear search">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Search with Suggestions Dropdown -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">3. Search with Suggestions Dropdown</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Dropdown Visible (aria-expanded="true")</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">With suggestions dropdown</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon" style="width: 280px">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search customers, reservations..."
+                          value="reservation"
+                          aria-label="Search"
+                          aria-expanded="true"
+                          aria-controls="search-suggestions-light"
+                          role="combobox"
+                        />
+                        <div
+                          id="search-suggestions-light"
+                          class="bo-searchDropdown"
+                          role="listbox"
+                          aria-label="Search suggestions"
+                        >
+                          <button class="bo-searchDropdownItem" type="button" role="option">
+                            <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                              </svg>
+                            </span>
+                            <span><span class="bo-searchHighlight">Reservation</span> #1234</span>
+                            <span class="bo-searchResultMeta">Today</span>
+                          </button>
+                          <button class="bo-searchDropdownItem" type="button" role="option">
+                            <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                              </svg>
+                            </span>
+                            <span><span class="bo-searchHighlight">Reservation</span> for Garcia</span>
+                            <span class="bo-searchResultMeta">Tomorrow</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Search with Filters -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">4. Search with Filters</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">With Active Filters</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Search with filter buttons</div>
+                      <div class="bo-searchFilters">
+                        <div class="bo-search bo-searchWrap bo-searchWrap--icon" style="flex: 1; min-width: 200px">
+                          <span class="bo-searchIcon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="11" cy="11" r="8"/>
+                              <path d="m21 21-4.3-4.3"/>
+                            </svg>
+                          </span>
+                          <input
+                            type="search"
+                            class="bo-input"
+                            placeholder="Search..."
+                            aria-label="Search with filters"
+                          />
+                        </div>
+                        <button class="bo-searchFilterBtn is-active" type="button">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                          </svg>
+                          All
+                        </button>
+                        <button class="bo-searchFilterBtn" type="button">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                          </svg>
+                          Pending
+                        </button>
+                        <button class="bo-searchFilterBtn" type="button">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                          </svg>
+                          Confirmed
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Search Results Highlight -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">5. Search Results Highlight</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">With Text Highlight</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Results showing matched text</div>
+                      <div class="bo-searchDropdown" style="position: relative; display: block;">
+                        <button class="bo-searchDropdownItem" type="button" role="option">
+                          <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                          </span>
+                          <span><span class="bo-searchHighlight">Maria</span> Garcia</span>
+                          <span class="bo-searchResultMeta">Guest</span>
+                        </button>
+                        <button class="bo-searchDropdownItem" type="button" role="option">
+                          <span class="bo-searchDropdownItemIcon" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                          </span>
+                          <span><span class="bo-searchHighlight">Maria</span> Lopez</span>
+                          <span class="bo-searchResultMeta">Guest</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6. Search Loading State -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">6. Search Loading State</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Loading</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Spinner shown while searching</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Searching..."
+                          value="Hotel"
+                          aria-label="Searching"
+                          aria-busy="true"
+                        />
+                        <div class="bo-searchLoading" role="status" aria-label="Searching">
+                          <div class="bo-spinner bo-spinner--sm bo-spinner--lila"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 7. Search Compact (Inline) -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">7. Search Compact (Inline)</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Inline Search</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Small inline search field</div>
+                      <div class="bo-searchCompact">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input bo-input--sm"
+                          placeholder="Quick search..."
+                          aria-label="Quick search"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 8. Search with Voice Icon -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">8. Search with Voice Icon</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Default</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">With voice input button</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Search or speak..."
+                          aria-label="Search or use voice input"
+                        />
+                        <button class="bo-searchVoiceBtn" type="button" aria-label="Use voice search">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Recording</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Voice input active</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input"
+                          placeholder="Listening..."
+                          aria-label="Listening for voice input"
+                          aria-live="polite"
+                        />
+                        <button class="bo-searchVoiceBtn is-recording" type="button" aria-label="Stop voice search">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Small Variant -->
+              <div class="bo-demo-col">
+                <div class="bo-demo-title">Small Input Variant</div>
+                <div class="bo-demo-row">
+                  <div class="bo-theme-block">
+                    <span class="bo-theme-label">Small Search Input</span>
+                    <div class="bo-demo-col">
+                      <div class="bo-demo-label">Using bo-input--sm class</div>
+                      <div class="bo-search bo-searchWrap bo-searchWrap--icon">
+                        <span class="bo-searchIcon" aria-hidden="true">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                          </svg>
+                        </span>
+                        <input
+                          type="search"
+                          class="bo-input bo-input--sm"
+                          placeholder="Small search..."
+                          aria-label="Small search"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

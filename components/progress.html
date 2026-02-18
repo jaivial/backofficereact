@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Progress Bars</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Progress Bar CSS Custom Properties */
+      :root {
+        /* Progress track background */
+        --bo-progress-bg: rgba(255, 255, 255, 0.08);
+        --bo-progress-track: var(--bo-surface-2);
+
+        /* Progress bar colors */
+        --bo-progress-lila: #b9a8ff;
+        --bo-progress-cyan: #93efe7;
+        --bo-progress-success: #28a745;
+        --bo-progress-warning: #ffc107;
+        --bo-progress-danger: #dc3545;
+
+        /* Progress bar shadows */
+        --bo-progress-shadow-lila: 0 0 12px rgba(185, 168, 255, 0.5);
+        --bo-progress-shadow-cyan: 0 0 12px rgba(147, 239, 231, 0.5);
+        --bo-progress-shadow-success: 0 0 12px rgba(40, 167, 69, 0.5);
+        --bo-progress-shadow-warning: 0 0 12px rgba(255, 193, 7, 0.5);
+        --bo-progress-shadow-danger: 0 0 12px rgba(220, 53, 69, 0.5);
+
+        /* Circular progress */
+        --bo-progress-circle-bg: rgba(255, 255, 255, 0.08);
+      }
+
+      :root[data-theme="light"] {
+        --bo-progress-bg: rgba(0, 0, 0, 0.06);
+        --bo-progress-track: var(--bo-surface-2);
+        --bo-progress-circle-bg: rgba(0, 0, 0, 0.05);
+
+        --bo-progress-shadow-lila: 0 0 8px rgba(185, 168, 255, 0.3);
+        --bo-progress-shadow-cyan: 0 0 8px rgba(147, 239, 231, 0.3);
+        --bo-progress-shadow-success: 0 0 8px rgba(40, 167, 69, 0.3);
+        --bo-progress-shadow-warning: 0 0 8px rgba(255, 193, 7, 0.3);
+        --bo-progress-shadow-danger: 0 0 8px rgba(220, 53, 69, 0.3);
+      }
+
+      /* Base Progress Bar */
+      .bo-progress {
+        position: relative;
+        width: 100%;
+        height: 10px;
+        background: var(--bo-progress-track);
+        border-radius: 100px;
+        overflow: hidden;
+      }
+
+      .bo-progress-bar {
+        height: 100%;
+        border-radius: 100px;
+        transition: width 0.4s ease-out;
+        background: var(--bo-progress-lila);
+        box-shadow: var(--bo-progress-shadow-lila);
+      }
+
+      /* Color Variants */
+      .bo-progress-bar--lila {
+        background: var(--bo-progress-lila);
+        box-shadow: var(--bo-progress-shadow-lila);
+      }
+
+      .bo-progress-bar--cyan {
+        background: var(--bo-progress-cyan);
+        box-shadow: var(--bo-progress-shadow-cyan);
+      }
+
+      .bo-progress-bar--success {
+        background: var(--bo-progress-success);
+        box-shadow: var(--bo-progress-shadow-success);
+      }
+
+      .bo-progress-bar--warning {
+        background: var(--bo-progress-warning);
+        box-shadow: var(--bo-progress-shadow-warning);
+      }
+
+      .bo-progress-bar--danger {
+        background: var(--bo-progress-danger);
+        box-shadow: var(--bo-progress-shadow-danger);
+      }
+
+      /* Height Variants */
+      .bo-progress--sm {
+        height: 6px;
+      }
+
+      .bo-progress--md {
+        height: 10px;
+      }
+
+      .bo-progress--lg {
+        height: 16px;
+      }
+
+      /* Striped Progress */
+      .bo-progress-bar--striped {
+        background-image: linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.15) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.15) 50%,
+          rgba(255, 255, 255, 0.15) 75%,
+          transparent 75%,
+          transparent
+        );
+        background-size: 1rem 1rem;
+      }
+
+      .bo-progress-bar--animated {
+        animation: bo-progress-stripes 1s linear infinite;
+      }
+
+      @keyframes bo-progress-stripes {
+        from {
+          background-position: 1rem 0;
+        }
+        to {
+          background-position: 0 0;
+        }
+      }
+
+      /* Progress with Percentage Label */
+      .bo-progressWrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .bo-progressLabel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        color: var(--bo-text);
+        font-weight: 500;
+      }
+
+      .bo-progressPercent {
+        font-variant-numeric: tabular-nums;
+        color: var(--bo-muted);
+        font-weight: 600;
+      }
+
+      /* Circular Progress / Donut */
+      .bo-progressCircle {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .bo-progressCircle svg {
+        transform: rotate(-90deg);
+      }
+
+      .bo-progressCircle-track {
+        fill: none;
+        stroke: var(--bo-progress-circle-bg);
+        stroke-linecap: round;
+      }
+
+      .bo-progressCircle-bar {
+        fill: none;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.4s ease-out;
+      }
+
+      .bo-progressCircle-bar--lila {
+        stroke: var(--bo-progress-lila);
+        filter: drop-shadow(var(--bo-progress-shadow-lila));
+      }
+
+      .bo-progressCircle-bar--cyan {
+        stroke: var(--bo-progress-cyan);
+        filter: drop-shadow(var(--bo-progress-shadow-cyan));
+      }
+
+      .bo-progressCircle-bar--success {
+        stroke: var(--bo-progress-success);
+        filter: drop-shadow(var(--bo-progress-shadow-success));
+      }
+
+      .bo-progressCircle-bar--warning {
+        stroke: var(--bo-progress-warning);
+        filter: drop-shadow(var(--bo-progress-shadow-warning));
+      }
+
+      .bo-progressCircle-bar--danger {
+        stroke: var(--bo-progress-danger);
+        filter: drop-shadow(var(--bo-progress-shadow-danger));
+      }
+
+      .bo-progressCircle-text {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .bo-progressCircle-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--bo-text);
+        line-height: 1;
+      }
+
+      .bo-progressCircle-label {
+        font-size: 11px;
+        color: var(--bo-muted);
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* Circular sizes */
+      .bo-progressCircle--sm .bo-progressCircle-value {
+        font-size: 14px;
+      }
+
+      .bo-progressCircle--sm .bo-progressCircle-label {
+        font-size: 9px;
+      }
+
+      .bo-progressCircle--md .bo-progressCircle-value {
+        font-size: 24px;
+      }
+
+      .bo-progressCircle--md .bo-progressCircle-label {
+        font-size: 11px;
+      }
+
+      .bo-progressCircle--lg .bo-progressCircle-value {
+        font-size: 36px;
+      }
+
+      .bo-progressCircle--lg .bo-progressCircle-label {
+        font-size: 13px;
+      }
+
+      /* Demo Layout */
+      .bo-demoSection {
+        margin-bottom: 32px;
+      }
+
+      .bo-demoTitle {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+      }
+
+      .bo-demoGrid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .bo-demoRow {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .bo-demoLabel {
+        min-width: 80px;
+        font-size: 13px;
+        color: var(--bo-muted);
+      }
+
+      .bo-progress--demo {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .bo-progressCircle--demo {
+        margin-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 980px; height: auto; min-height: 700px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div style="padding: 24px">
+
+              <!-- Theme Toggle -->
+              <div class="bo-toolbar">
+                <div class="bo-toolbarLeft">
+                  <button class="bo-btn" onclick="toggleTheme()">Toggle Theme</button>
+                </div>
+              </div>
+
+              <!-- Section: Linear Progress Bars -->
+              <section class="bo-demoSection" aria-label="Linear Progress Bars">
+                <h2 class="bo-demoTitle">Linear Progress Bars</h2>
+
+                <!-- Basic Linear Progress -->
+                <div class="bo-demoGrid">
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Default</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" aria-label="Progress 60%">
+                      <div class="bo-progress-bar" style="width: 60%"></div>
+                    </div>
+                  </div>
+
+                  <!-- Small -->
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Small</span>
+                    <div class="bo-progress bo-progress--sm bo-progress--demo" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" aria-label="Progress 45%">
+                      <div class="bo-progress-bar" style="width: 45%"></div>
+                    </div>
+                  </div>
+
+                  <!-- Large -->
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Large</span>
+                    <div class="bo-progress bo-progress--lg bo-progress--demo" role="progressbar" aria-valunow="75" aria-valuemin="0" aria-valuemax="100" aria-label="Progress 75%">
+                      <div class="bo-progress-bar" style="width: 75%"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Section: Progress Bars with Percentage -->
+              <section class="bo-demoSection" aria-label="Progress with Percentage">
+                <h2 class="bo-demoTitle">Progress with Percentage Label</h2>
+
+                <div class="bo-demoGrid">
+                  <div class="bo-progressWrap" style="max-width: 400px">
+                    <div class="bo-progressLabel">
+                      <span>Loading</span>
+                      <span class="bo-progressPercent">65%</span>
+                    </div>
+                    <div class="bo-progress bo-progress--md" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" aria-label="Progress 65%">
+                      <div class="bo-progress-bar" style="width: 65%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-progressWrap" style="max-width: 400px">
+                    <div class="bo-progressLabel">
+                      <span>Upload</span>
+                      <span class="bo-progressPercent">82%</span>
+                    </div>
+                    <div class="bo-progress bo-progress--lg" role="progressbar" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100" aria-label="Progress 82%">
+                      <div class="bo-progress-bar bo-progress-bar--success" style="width: 82%"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Section: Color Variants -->
+              <section class="bo-demoSection" aria-label="Color Variants">
+                <h2 class="bo-demoTitle">Color Variants</h2>
+
+                <div class="bo-demoGrid">
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Lila</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" aria-label="Lila progress 70%">
+                      <div class="bo-progress-bar bo-progress-bar--lila" style="width: 70%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Cyan</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100" aria-label="Cyan progress 55%">
+                      <div class="bo-progress-bar bo-progress-bar--cyan" style="width: 55%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Success</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100" aria-label="Success progress 90%">
+                      <div class="bo-progress-bar bo-progress-bar--success" style="width: 90%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Warning</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" aria-label="Warning progress 45%">
+                      <div class="bo-progress-bar bo-progress-bar--warning" style="width: 45%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Danger</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" aria-label="Danger progress 25%">
+                      <div class="bo-progress-bar bo-progress-bar--danger" style="width: 25%"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Section: Striped Animated -->
+              <section class="bo-demoSection" aria-label="Striped and Animated">
+                <h2 class="bo-demoTitle">Striped and Animated</h2>
+
+                <div class="bo-demoGrid">
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Striped</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" aria-label="Striped progress 60%">
+                      <div class="bo-progress-bar bo-progress-bar--striped" style="width: 60%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Animated</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="Animated progress 75%">
+                      <div class="bo-progress-bar bo-progress-bar--striped bo-progress-bar--animated" style="width: 75%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Animated Lila</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Animated lila progress 50%">
+                      <div class="bo-progress-bar bo-progress-bar--lila bo-progress-bar--striped bo-progress-bar--animated" style="width: 50%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bo-demoRow">
+                    <span class="bo-demoLabel">Animated Success</span>
+                    <div class="bo-progress bo-progress--demo" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" aria-label="Animated success progress 85%">
+                      <div class="bo-progress-bar bo-progress-bar--success bo-progress-bar--striped bo-progress-bar--animated" style="width: 85%"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Section: Circular Progress / Donut -->
+              <section class="bo-demoSection" aria-label="Circular Progress">
+                <h2 class="bo-demoTitle">Circular Progress / Donut</h2>
+
+                <div class="bo-demoRow">
+                  <!-- Small Circle -->
+                  <div class="bo-progressCircle bo-progressCircle--sm bo-progressCircle--demo" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="Circular progress 75%">
+                    <svg width="64" height="64">
+                      <circle class="bo-progressCircle-track" cx="32" cy="32" r="26" stroke-width="5"></circle>
+                      <circle class="bo-progressCircle-bar bo-progressCircle-bar--lila" cx="32" cy="32" r="26" stroke-width="5" stroke-dasharray="163.36" stroke-dashoffset="40.84"></circle>
+                    </svg>
+                    <div class="bo-progressCircle-text">
+                      <span class="bo-progressCircle-value">75%</span>
+                      <span class="bo-progressCircle-label">Complete</span>
+                    </div>
+                  </div>
+
+                  <!-- Medium Circle -->
+                  <div class="bo-progressCircle bo-progressCircle--md bo-progressCircle--demo" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" aria-label="Circular progress 60%">
+                    <svg width="100" height="100">
+                      <circle class="bo-progressCircle-track" cx="50" cy="50" r="40" stroke-width="8"></circle>
+                      <circle class="bo-progressCircle-bar bo-progressCircle-bar--cyan" cx="50" cy="50" r="40" stroke-width="8" stroke-dasharray="251.33" stroke-dashoffset="100.53"></circle>
+                    </svg>
+                    <div class="bo-progressCircle-text">
+                      <span class="bo-progressCircle-value">60%</span>
+                      <span class="bo-progressCircle-label">Done</span>
+                    </div>
+                  </div>
+
+                  <!-- Large Circle -->
+                  <div class="bo-progressCircle bo-progressCircle--lg bo-progressCircle--demo" role="progressbar" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100" aria-label="Circular progress 90%">
+                    <svg width="140" height="140">
+                      <circle class="bo-progressCircle-track" cx="70" cy="70" r="56" stroke-width="10"></circle>
+                      <circle class="bo-progressCircle-bar bo-progressCircle-bar--success" cx="70" cy="70" r="56" stroke-width="10" stroke-dasharray="351.86" stroke-dashoffset="35.19"></circle>
+                    </svg>
+                    <div class="bo-progressCircle-text">
+                      <span class="bo-progressCircle-value">90%</span>
+                      <span class="bo-progressCircle-label">Progress</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Color variants for circular -->
+                <div class="bo-demoRow" style="margin-top: 24px">
+                  <div class="bo-progressCircle bo-progressCircle--md bo-progressCircle--demo" role="progressbar" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100" aria-label="Warning circular progress 35%">
+                    <svg width="100" height="100">
+                      <circle class="bo-progressCircle-track" cx="50" cy="50" r="40" stroke-width="8"></circle>
+                      <circle class="bo-progressCircle-bar bo-progressCircle-bar--warning" cx="50" cy="50" r="40" stroke-width="8" stroke-dasharray="251.33" stroke-dashoffset="163.36"></circle>
+                    </svg>
+                    <div class="bo-progressCircle-text">
+                      <span class="bo-progressCircle-value">35%</span>
+                      <span class="bo-progressCircle-label">Warning</span>
+                    </div>
+                  </div>
+
+                  <div class="bo-progressCircle bo-progressCircle--md bo-progressCircle--demo" role="progressbar" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100" aria-label="Danger circular progress 15%">
+                    <svg width="100" height="100">
+                      <circle class="bo-progressCircle-track" cx="50" cy="50" r="40" stroke-width="8"></circle>
+                      <circle class="bo-progressCircle-bar bo-progressCircle-bar--danger" cx="50" cy="50" r="40" stroke-width="8" stroke-dasharray="251.33" stroke-dashoffset="213.63"></circle>
+                    </svg>
+                    <div class="bo-progressCircle-text">
+                      <span class="bo-progressCircle-value">15%</span>
+                      <span class="bo-progressCircle-label">Critical</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleTheme() {
+        const html = document.documentElement;
+        if (html.getAttribute('data-theme') === 'light') {
+          html.removeAttribute('data-theme');
+        } else {
+          html.setAttribute('data-theme', 'light');
+        }
+      }
+    </script>
+  </body>
+</html>

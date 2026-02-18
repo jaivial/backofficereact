@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Empty State</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Empty state base styles */
+      .bo-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 48px 24px;
+        gap: 16px;
+      }
+
+      /* Empty state with illustration */
+      .bo-empty--illustration {
+        padding: 56px 24px;
+      }
+
+      .bo-emptyIllustration {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(185, 168, 255, 0.12), rgba(147, 239, 231, 0.08));
+        border: 1px solid var(--bo-border);
+        display: grid;
+        place-items: center;
+        margin-bottom: 8px;
+      }
+
+      .bo-emptyIllustration svg {
+        width: 56px;
+        height: 56px;
+        color: var(--bo-accent);
+        opacity: 0.85;
+      }
+
+      /* Empty state with icon */
+      .bo-emptyIcon {
+        width: 72px;
+        height: 72px;
+        border-radius: var(--bo-radius-md);
+        background: rgba(185, 168, 255, 0.08);
+        border: 1px solid rgba(185, 168, 255, 0.15);
+        display: grid;
+        place-items: center;
+        margin-bottom: 4px;
+      }
+
+      .bo-emptyIcon svg {
+        width: 32px;
+        height: 32px;
+        color: var(--bo-accent);
+      }
+
+      /* Empty state content */
+      .bo-emptyTitle {
+        font-size: 16px;
+        font-weight: 720;
+        color: var(--bo-text);
+        letter-spacing: 0.1px;
+        margin: 0;
+      }
+
+      .bo-emptyDesc {
+        font-size: 13px;
+        color: var(--bo-muted);
+        line-height: 1.5;
+        max-width: 320px;
+        margin: 0;
+      }
+
+      .bo-emptyDesc--wide {
+        max-width: 420px;
+      }
+
+      /* Empty state actions */
+      .bo-emptyActions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      /* Compact variant for tables/cards */
+      .bo-empty--compact {
+        padding: 32px 16px;
+        gap: 12px;
+      }
+
+      .bo-empty--compact .bo-emptyIcon {
+        width: 52px;
+        height: 52px;
+      }
+
+      .bo-empty--compact .bo-emptyIcon svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .bo-empty--compact .bo-emptyTitle {
+        font-size: 14px;
+      }
+
+      .bo-empty--compact .bo-emptyDesc {
+        font-size: 12px;
+      }
+
+      /* Search specific */
+      .bo-emptySearch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 40px 20px;
+      }
+
+      .bo-emptySearchIcon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(185, 168, 255, 0.06);
+        border: 1px solid var(--bo-border);
+        display: grid;
+        place-items: center;
+        margin-bottom: 4px;
+      }
+
+      .bo-emptySearchIcon svg {
+        width: 28px;
+        height: 28px;
+        color: var(--bo-faint);
+      }
+
+      .bo-emptySearchTerm {
+        font-weight: 720;
+        color: var(--bo-text);
+      }
+
+      /* Table empty state */
+      .bo-emptyTable {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 48px 20px;
+        gap: 14px;
+      }
+
+      .bo-emptyTableIcon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(185, 168, 255, 0.1), rgba(147, 239, 231, 0.06));
+        border: 1px solid var(--bo-border);
+        display: grid;
+        place-items: center;
+      }
+
+      .bo-emptyTableIcon svg {
+        width: 24px;
+        height: 24px;
+        color: var(--bo-faint);
+      }
+
+      /* Inline variant for small spaces */
+      .bo-empty--inline {
+        flex-direction: row;
+        padding: 20px;
+        gap: 14px;
+        text-align: left;
+      }
+
+      .bo-empty--inline .bo-emptyIcon {
+        margin-bottom: 0;
+        flex-shrink: 0;
+      }
+
+      .bo-empty--inline .bo-emptyContent {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .bo-empty--inline .bo-emptyTitle {
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .bo-empty--inline .bo-emptyDesc {
+        font-size: 12px;
+        max-width: none;
+      }
+
+      /* Demo layout styles */
+      .bo-demo-section {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .bo-demo-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+      }
+
+      .bo-demo-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .bo-demo-dark,
+      .bo-demo-light {
+        padding: 20px;
+        border-radius: var(--bo-radius-md);
+      }
+
+      .bo-demo-dark {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-light {
+        background: var(--bo-surface-2);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .bo-demo-title {
+        font-size: 18px;
+        font-weight: 720;
+        color: var(--bo-text);
+      }
+
+      .bo-demo-label {
+        font-size: 11px;
+        font-weight: 780;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+      }
+
+      /* Focus styles */
+      .bo-emptyTitle:focus {
+        outline: 2px solid rgba(185, 168, 255, 0.5);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+
+      /* Animation for attention */
+      @keyframes bo-empty-pulse {
+        0%, 100% { opacity: 0.85; }
+        50% { opacity: 0.6; }
+      }
+
+      .bo-empty--attention .bo-emptyIcon svg,
+      .bo-empty--attention .bo-emptyIllustration svg {
+        animation: bo-empty-pulse 2.5s ease-in-out infinite;
+      }
+
+      /* Light theme adjustments */
+      :root[data-theme="light"] .bo-emptyIllustration {
+        background: linear-gradient(135deg, rgba(185, 168, 255, 0.2), rgba(147, 239, 231, 0.12));
+      }
+
+      :root[data-theme="light"] .bo-emptyIcon {
+        background: rgba(185, 168, 255, 0.15);
+        border-color: rgba(185, 168, 255, 0.25);
+      }
+
+      :root[data-theme="light"] .bo-emptyTableIcon {
+        background: linear-gradient(135deg, rgba(185, 168, 255, 0.18), rgba(147, 239, 231, 0.1));
+      }
+
+      :root[data-theme="light"] .bo-emptySearchIcon {
+        background: rgba(185, 168, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 100%; height: 100vh">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-demo-header">
+              <div class="bo-demo-title">Empty State Components</div>
+              <button class="bo-btn bo-btn--ghost" type="button" onclick="toggleTheme()">
+                Toggle Theme
+              </button>
+            </div>
+
+            <!-- Dark Theme Section -->
+            <div class="bo-demo-dark" data-theme="dark">
+              <div class="bo-demo-label">Dark Theme</div>
+              <div class="bo-demo-section">
+                <div class="bo-demo-row">
+                  <!-- 1. Empty state with illustration -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">With Illustration</div>
+                    <div
+                      class="bo-empty bo-empty--illustration"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyIllustration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 8v13H3V8" />
+                          <path d="M1 3h22v5H1z" />
+                          <path d="M10 12h4" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">No hay contenido disponible</h3>
+                      <p class="bo-emptyDesc">
+                        Prontotendrs acceso a nuevas funcionalidades. Mantente al tanto de las actualizaciones.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- 2. Empty state with icon -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">With Icon</div>
+                    <div
+                      class="bo-empty bo-empty--compact"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                          <path d="M13 2v7h7" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">Sin documentos</h3>
+                      <p class="bo-emptyDesc">
+                        No hay archivosSubidos an.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-demo-row">
+                  <!-- 3. Empty state with title and description -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">Title and Description</div>
+                    <div
+                      class="bo-empty"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <h3 class="bo-emptyTitle">No hay notificaciones</h3>
+                      <p class="bo-emptyDesc bo-emptyDesc--wide">
+                        Estars al tanto de todas las actualizaciones importantes cuando sucedan. No te pierdas nada.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- 4. Empty state with action button -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">With Action Button</div>
+                    <div
+                      class="bo-empty"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">Crea tu primer proyecto</h3>
+                      <p class="bo-emptyDesc">
+                        Comienza a organizar tu trabajo creando un nuevo proyecto.
+                      </p>
+                      <div class="bo-emptyActions">
+                        <button class="bo-btn bo-btn--primary" type="button">
+                          <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          Nuevo Proyecto
+                        </button>
+                        <button class="bo-btn bo-btn--ghost" type="button">
+                          Ms informacin
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-demo-row">
+                  <!-- 5. No results search state -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">No Results Search</div>
+                    <div
+                      class="bo-emptySearch"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptySearchIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="11" cy="11" r="8" />
+                          <path d="m21 21-4.35-4.35" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">No se encontraron resultados</h3>
+                      <p class="bo-emptyDesc">
+                        No hay coincidencias para <span class="bo-emptySearchTerm">"busqueda invlida"</span>. Intenta con otros trminos.
+                      </p>
+                      <div class="bo-emptyActions">
+                        <button class="bo-btn bo-btn--ghost bo-btn--sm" type="button">
+                          Limpiar bsqueda
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 6. No data table state -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">No Data Table</div>
+                    <div
+                      class="bo-emptyTable"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyTableIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 3h18v18H3zM3 9h18M9 21V9" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">Tabla sin datos</h3>
+                      <p class="bo-emptyDesc">
+                        No hay registros para mostrar en este momento.
+                      </p>
+                      <div class="bo-emptyActions">
+                        <button class="bo-btn bo-btn--primary bo-btn--sm" type="button">
+                          <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          Agregar registro
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Additional: Inline empty state -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Inline Variant (for cards/sidebars)</div>
+                  <div
+                    class="bo-empty bo-empty--inline"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div class="bo-emptyIcon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      </svg>
+                    </div>
+                    <div class="bo-emptyContent">
+                      <h3 class="bo-emptyTitle">No hay elementos</h3>
+                      <p class="bo-emptyDesc">Agrega tu primer elemento para comenzar.</p>
+                    </div>
+                    <button class="bo-btn bo-btn--primary bo-btn--sm" type="button">
+                      Aadir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Light Theme Section -->
+            <div class="bo-demo-light" data-theme="light">
+              <div class="bo-demo-label" style="margin-bottom: 16px;">Light Theme</div>
+              <div class="bo-demo-section">
+                <div class="bo-demo-row">
+                  <!-- 1. Empty state with illustration -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">With Illustration</div>
+                    <div
+                      class="bo-empty bo-empty--illustration"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyIllustration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 8v13H3V8" />
+                          <path d="M1 3h22v5H1z" />
+                          <path d="M10 12h4" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">No hay contenido disponible</h3>
+                      <p class="bo-emptyDesc">
+                        Pronto tendrs acceso a nuevas funcionalidades. Mantente al tanto de las actualizaciones.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- 2. Empty state with icon -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">With Icon</div>
+                    <div
+                      class="bo-empty bo-empty--compact"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                          <path d="M13 2v7h7" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">Sin documentos</h3>
+                      <p class="bo-emptyDesc">
+                        No hay archivosSubidos an.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-demo-row">
+                  <!-- 3. Empty state with title and description -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">Title and Description</div>
+                    <div
+                      class="bo-empty"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <h3 class="bo-emptyTitle">No hay notificaciones</h3>
+                      <p class="bo-emptyDesc bo-emptyDesc--wide">
+                        Estars al tanto de todas las actualizaciones importantes cuando sucedan. No te pierdas nada.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- 4. Empty state with action button -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">With Action Button</div>
+                    <div
+                      class="bo-empty"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">Crea tu primer proyecto</h3>
+                      <p class="bo-emptyDesc">
+                        Comienza a organizar tu trabajo creando un nuevo proyecto.
+                      </p>
+                      <div class="bo-emptyActions">
+                        <button class="bo-btn bo-btn--primary" type="button">
+                          <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          Nuevo Proyecto
+                        </button>
+                        <button class="bo-btn bo-btn--ghost" type="button">
+                          Ms informacin
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bo-demo-row">
+                  <!-- 5. No results search state -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">No Results Search</div>
+                    <div
+                      class="bo-emptySearch"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptySearchIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="11" cy="11" r="8" />
+                          <path d="m21 21-4.35-4.35" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">No se encontraron resultados</h3>
+                      <p class="bo-emptyDesc">
+                        No hay coincidencias para <span class="bo-emptySearchTerm">"busqueda invlida"</span>. Intenta con otros trminos.
+                      </p>
+                      <div class="bo-emptyActions">
+                        <button class="bo-btn bo-btn--ghost bo-btn--sm" type="button">
+                          Limpiar bsqueda
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 6. No data table state -->
+                  <div class="bo-demo-group">
+                    <div class="bo-demo-label">No Data Table</div>
+                    <div
+                      class="bo-emptyTable"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div class="bo-emptyTableIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 3h18v18H3zM3 9h18M9 21V9" />
+                        </svg>
+                      </div>
+                      <h3 class="bo-emptyTitle">Tabla sin datos</h3>
+                      <p class="bo-emptyDesc">
+                        No hay registros para mostrar en este momento.
+                      </p>
+                      <div class="bo-emptyActions">
+                        <button class="bo-btn bo-btn--primary bo-btn--sm" type="button">
+                          <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          Agregar registro
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Additional: Inline empty state -->
+                <div class="bo-demo-group">
+                  <div class="bo-demo-label">Inline Variant (for cards/sidebars)</div>
+                  <div
+                    class="bo-empty bo-empty--inline"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div class="bo-emptyIcon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      </svg>
+                    </div>
+                    <div class="bo-emptyContent">
+                      <h3 class="bo-emptyTitle">No hay elementos</h3>
+                      <p class="bo-emptyDesc">Agrega tu primer elemento para comenzar.</p>
+                    </div>
+                    <button class="bo-btn bo-btn--primary bo-btn--sm" type="button">
+                      Aadir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Theme toggle function
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', newTheme);
+
+        // Update all demo sections
+        document.querySelectorAll('.bo-demo-dark, .bo-demo-light').forEach(section => {
+          if (newTheme === 'light') {
+            section.classList.remove('bo-demo-dark');
+            section.classList.add('bo-demo-light');
+            section.setAttribute('data-theme', 'light');
+          } else {
+            section.classList.remove('bo-demo-light');
+            section.classList.add('bo-demo-dark');
+            section.setAttribute('data-theme', 'dark');
+          }
+        });
+      }
+
+      // Initialize theme from localStorage or system preference
+      (function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </body>
+</html>

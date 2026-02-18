@@ -252,6 +252,62 @@ async function start() {
     }
   });
 
+  // Proxy for public invoice lookup (no auth required)
+  // This proxies to the backend which validates the token
+  app.use("/api/public/invoices", async (req, res) => {
+    try {
+      const upstreamURL = new URL(req.originalUrl, backendOrigin);
+
+      const headers = new Headers();
+      for (const [k, v] of Object.entries(req.headers)) {
+        if (v === undefined) continue;
+        if (Array.isArray(v)) headers.set(k, v.join(","));
+        else headers.set(k, v);
+      }
+
+      headers.delete("host");
+      headers.set("accept-encoding", "identity");
+
+      const body = req.method === "GET" || req.method === "HEAD" ? undefined : await readRequestBody(req);
+      if (body !== undefined) headers.delete("content-length");
+
+      const init: RequestInit = {
+        method: req.method,
+        headers,
+        body: body as any,
+        redirect: "manual",
+      };
+
+      const upstream = await fetch(upstreamURL, init);
+      res.status(upstream.status);
+
+      upstream.headers.forEach((v, k) => {
+        const lk = k.toLowerCase();
+        if (lk === "set-cookie") return; // Don't forward cookies for public API
+        const skip = [
+          "connection",
+          "keep-alive",
+          "proxy-authenticate",
+          "proxy-authorization",
+          "te",
+          "trailer",
+          "transfer-encoding",
+          "upgrade",
+          "content-length",
+          "content-encoding",
+        ];
+        if (skip.includes(lk)) return;
+        res.setHeader(k, v);
+      });
+
+      const buf = Buffer.from(await upstream.arrayBuffer());
+      res.send(buf);
+    } catch (err) {
+      console.error("[backoffice] public invoice proxy error", err);
+      res.status(502).json({ success: false, message: "Upstream error" });
+    }
+  });
+
   // Proxy for local web preview iframe used by the menus wizard.
   // Keeping it same-origin avoids mixed-content issues when backoffice runs on HTTPS.
   app.use("/preview-web", async (req, res) => {
@@ -359,12 +415,38 @@ async function start() {
   // Use a regex route to catch-all GET requests for SSR.
   app.get(/.*/, async (req, res, next) => {
     try {
-      const isAppLike = req.path === "/" || req.path === "/login" || req.path === "/app" || req.path.startsWith("/app/");
+      // Public routes that don't require authentication
+      const isPublicRoute = req.path === "/" || req.path === "/login" || req.path === "/app" || req.path.startsWith("/app/") || req.path.startsWith("/factura/");
+      const isAppLike = isPublicRoute || req.path.startsWith("/factura/");
       if (!isAppLike && !wantsHTML(req)) return next();
 
       const cookies = parseCookies(typeof req.headers.cookie === "string" ? req.headers.cookie : undefined);
       const theme = cookies.bo_theme === "light" ? "light" : "dark";
       const session = await fetchSession(backendOrigin, typeof req.headers.cookie === "string" ? req.headers.cookie : undefined);
+
+      // Allow public access to invoice viewing route without session
+      if (req.path.startsWith("/factura/")) {
+        // Public route - render the page without requiring session
+        const pageContextInit: any = {
+          urlOriginal: req.originalUrl,
+          headersOriginal: req.headers,
+          bo: { theme, session: null } satisfies BOPageContext,
+          boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
+        };
+
+        const pageContext = await renderPage(pageContextInit);
+        const httpResponse = pageContext.httpResponse;
+        if (!httpResponse) return next();
+
+        const { body, statusCode, contentType, headers } = httpResponse;
+        res.status(statusCode);
+        res.type(contentType);
+        for (const [k, v] of Object.entries(headers ?? {})) {
+          res.setHeader(k, v as any);
+        }
+        res.send(body);
+        return;
+      }
 
       const isApp = req.path === "/app" || req.path.startsWith("/app/");
       if (isApp && !session) {

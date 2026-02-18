@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Dropdown Menus</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      .bo-demoSection {
+        padding: 24px;
+        display: grid;
+        gap: 32px;
+      }
+      .bo-demoTitle {
+        font-size: 13px;
+        font-weight: 720;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+      }
+      .bo-demoRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .bo-demoCol {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .bo-demoLabel {
+        font-size: 11px;
+        color: var(--bo-faint);
+        margin-bottom: 4px;
+      }
+      .bo-themeBlock {
+        border-radius: 14px;
+        padding: 20px;
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+      }
+      .bo-themeLabel {
+        font-size: 11px;
+        font-weight: 720;
+        color: var(--bo-muted);
+        margin-bottom: 16px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 900px; height: auto">
+        <div class="bo-app">
+          <!-- Dark Theme (Default) -->
+          <div class="bo-demoSection">
+            <div class="bo-title" style="margin-bottom: 8px">Dropdown Menus</div>
+
+            <!-- 1. Simple Dropdown Button -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">1. Simple Dropdown Button</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Default state</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Select option</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">With Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Menu visible (aria-expanded="true")</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Selected option</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">Option one</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Option two</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Option three</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Dropdown with Search/Filter -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">2. Dropdown with Search/Filter</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With search input</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Filter by status...</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With search and items</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Search or select...</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <div style="padding: 8px 10px; border-bottom: 1px solid var(--bo-border);">
+                        <input type="text" placeholder="Search..." style="width: 100%; background: transparent; border: none; color: var(--bo-text); font-size: 13px; outline: none;" />
+                      </div>
+                      <button class="bo-menuItem" type="button" role="menuitem">Active</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Pending</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Completed</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Cancelled</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Dropdown with Icons -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">3. Dropdown with Icons</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Menu with icons</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Actions</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With icons visible</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Actions</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </span>
+                        Edit
+                      </button>
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          </svg>
+                        </span>
+                        View
+                      </button>
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          </svg>
+                        </span>
+                        Duplicate
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Dropdown with Dividers -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">4. Dropdown with Dividers</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With dividers</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">More options</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With dividers visible</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">More options</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">Profile</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Settings</button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem" type="button" role="menuitem">Keyboard shortcuts</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Help center</button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem" type="button" role="menuitem">Sign out</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Dropdown with Danger Items -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">5. Dropdown with Danger Items</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With danger items</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Item options</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Danger items visible</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Item options</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">View details</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Edit item</button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          </svg>
+                        </span>
+                        Duplicate
+                      </button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem is-danger" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          </svg>
+                        </span>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Small Variant -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">Small Variant</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Small button (bo-selectBtn--sm)</div>
+                    <button class="bo-selectBtn bo-selectBtn--sm" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Small dropdown</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light Theme Version -->
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 900px; height: auto" data-theme="light">
+        <div class="bo-app">
+          <div class="bo-demoSection">
+            <div class="bo-title" style="margin-bottom: 8px">Dropdown Menus - Light Theme</div>
+
+            <!-- 1. Simple Dropdown Button -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">1. Simple Dropdown Button</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Default state</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Select option</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">With Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Menu visible (aria-expanded="true")</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Selected option</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">Option one</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Option two</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Option three</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Dropdown with Search/Filter -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">2. Dropdown with Search/Filter</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With search and items</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Search or select...</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <div style="padding: 8px 10px; border-bottom: 1px solid var(--bo-border);">
+                        <input type="text" placeholder="Search..." style="width: 100%; background: transparent; border: none; color: var(--bo-text); font-size: 13px; outline: none;" />
+                      </div>
+                      <button class="bo-menuItem" type="button" role="menuitem">Active</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Pending</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Completed</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Cancelled</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Dropdown with Icons -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">3. Dropdown with Icons</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With icons visible</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Actions</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </span>
+                        Edit
+                      </button>
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          </svg>
+                        </span>
+                        View
+                      </button>
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          </svg>
+                        </span>
+                        Duplicate
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Dropdown with Dividers -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">4. Dropdown with Dividers</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">With dividers visible</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">More options</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">Profile</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Settings</button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem" type="button" role="menuitem">Keyboard shortcuts</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Help center</button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem" type="button" role="menuitem">Sign out</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Dropdown with Danger Items -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">5. Dropdown with Danger Items</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Menu Open</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Danger items visible</div>
+                    <button class="bo-selectBtn" type="button" aria-haspopup="true" aria-expanded="true">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Item options</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-menu" role="menu" style="position: relative; margin-top: 4px;">
+                      <button class="bo-menuItem" type="button" role="menuitem">View details</button>
+                      <button class="bo-menuItem" type="button" role="menuitem">Edit item</button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          </svg>
+                        </span>
+                        Duplicate
+                      </button>
+                      <div style="height: 1px; background: var(--bo-border); margin: 6px 0;"></div>
+                      <button class="bo-menuItem is-danger" type="button" role="menuitem">
+                        <span class="bo-menuIcon" aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          </svg>
+                        </span>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Small Variant -->
+            <div class="bo-demoCol">
+              <div class="bo-demoTitle">Small Variant</div>
+              <div class="bo-demoRow">
+                <div class="bo-themeBlock">
+                  <span class="bo-themeLabel">Default</span>
+                  <div class="bo-demoCol">
+                    <div class="bo-demoLabel">Small button (bo-selectBtn--sm)</div>
+                    <button class="bo-selectBtn bo-selectBtn--sm" type="button" aria-haspopup="true" aria-expanded="false">
+                      <span class="bo-selectLabelWrap">
+                        <span class="bo-selectLabel">Small dropdown</span>
+                      </span>
+                      <span class="bo-selectChev" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

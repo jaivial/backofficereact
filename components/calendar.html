@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Calendar</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      .bo-demoSection {
+        padding: 20px;
+      }
+      .bo-demoTitle {
+        font-size: 13px;
+        font-weight: 760;
+        color: rgba(238, 240, 246, 0.42);
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .bo-demoGap {
+        margin-bottom: 32px;
+      }
+      .bo-demoGap:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Calendar container styles */
+      .bo-calendar {
+        border-radius: var(--bo-radius-md);
+        border: 1px solid var(--bo-border);
+        background: var(--bo-surface);
+        padding: 16px;
+        max-width: 340px;
+      }
+
+      /* Calendar header */
+      .bo-calHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .bo-calTitle {
+        font-size: 16px;
+        font-weight: 760;
+        color: var(--bo-text);
+      }
+
+      .bo-calNav {
+        display: flex;
+        gap: 4px;
+      }
+
+      .bo-calNavBtn {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        background: transparent;
+        border-radius: 6px;
+        color: var(--bo-muted);
+        cursor: pointer;
+        transition: background 160ms ease, color 160ms ease;
+      }
+
+      .bo-calNavBtn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--bo-text);
+      }
+
+      .bo-calNavBtn:focus-visible {
+        outline: 2px solid var(--bo-accent);
+        outline-offset: 2px;
+      }
+
+      .bo-calNavBtn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .bo-calNavBtn:disabled:hover {
+        background: transparent;
+        color: var(--bo-muted);
+      }
+
+      .bo-calNavBtn .bo-ico {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* Week view calendar */
+      .bo-calendar--week {
+        max-width: 100%;
+      }
+
+      .bo-calendar--week .bo-calGrid {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+      }
+
+      .bo-calendar--week .bo-calDay {
+        width: 100%;
+        height: 60px;
+        border-radius: 8px;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 6px;
+        gap: 2px;
+      }
+
+      .bo-calendar--week .bo-calDayHeader {
+        font-size: 10px;
+        font-weight: 760;
+        color: var(--bo-faint);
+        text-transform: uppercase;
+      }
+
+      /* Day view calendar */
+      .bo-calendar--day {
+        max-width: 340px;
+      }
+
+      .bo-dayView {
+        text-align: center;
+        padding: 20px 0;
+      }
+
+      .bo-dayView .bo-dayNumber {
+        font-size: 48px;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--bo-accent);
+      }
+
+      .bo-dayView .bo-dayName {
+        font-size: 14px;
+        color: var(--bo-muted);
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      /* Today indicator */
+      .bo-calDay.is-today {
+        outline: 2px solid rgba(147, 239, 231, 0.28);
+        outline-offset: 2px;
+      }
+
+      .bo-calDay.is-today.is-selected {
+        outline-color: rgba(147, 239, 231, 0.28);
+      }
+
+      /* Disabled dates */
+      .bo-calDay.is-disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+
+      .bo-calDay.is-disabled:hover {
+        background: transparent;
+      }
+
+      /* Range selection */
+      .bo-calDay.is-in-range {
+        background: rgba(185, 168, 255, 0.12);
+        border-radius: 0;
+      }
+
+      .bo-calDay.is-range-start {
+        background: rgba(185, 168, 255, 0.28);
+        border-radius: 999px 0 0 999px;
+      }
+
+      .bo-calDay.is-range-end {
+        background: rgba(185, 168, 255, 0.28);
+        border-radius: 0 999px 999px 0;
+      }
+
+      /* Events */
+      .bo-calEvent {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(185, 168, 255, 0.25);
+        color: var(--bo-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
+
+      .bo-calDay .bo-calEvent + .bo-calEvent {
+        margin-top: 2px;
+      }
+
+      /* Event colors */
+      .bo-calEvent--purple {
+        background: rgba(185, 168, 255, 0.25);
+        color: var(--bo-text);
+      }
+
+      .bo-calEvent--cyan {
+        background: rgba(147, 239, 231, 0.2);
+        color: var(--bo-text);
+      }
+
+      .bo-calEvent--green {
+        background: rgba(134, 238, 156, 0.2);
+        color: var(--bo-text);
+      }
+
+      .bo-calEvent--yellow {
+        background: rgba(255, 223, 132, 0.25);
+        color: var(--bo-text);
+      }
+
+      .bo-calEvent--red {
+        background: rgba(255, 137, 166, 0.2);
+        color: var(--bo-text);
+      }
+
+      /* Week view event styling */
+      .bo-calendar--week .bo-calDay {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 4px 6px;
+      }
+
+      .bo-calendar--week .bo-calEvent {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* View switcher tabs */
+      .bo-calViewTabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 16px;
+        padding: 4px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        width: fit-content;
+      }
+
+      .bo-calViewTab {
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 0;
+        background: transparent;
+        color: var(--bo-muted);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 160ms ease;
+      }
+
+      .bo-calViewTab:hover {
+        color: var(--bo-text);
+      }
+
+      .bo-calViewTab.is-active {
+        background: var(--bo-surface-2);
+        color: var(--bo-text);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .bo-calViewTab:focus-visible {
+        outline: 2px solid var(--bo-accent);
+        outline-offset: 2px;
+      }
+
+      /* Light theme adjustments */
+      :root[data-theme="light"] .bo-calDay:hover {
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      :root[data-theme="light"] .bo-calNavBtn:hover {
+        background: rgba(0, 0, 0, 0.04);
+        color: var(--bo-text);
+      }
+
+      :root[data-theme="light"] .bo-calDay.is-today {
+        outline-color: rgba(0, 0, 0, 0.15);
+      }
+
+      :root[data-theme="light"] .bo-calDay.is-selected {
+        background: rgba(185, 168, 255, 0.2);
+        border-color: rgba(185, 168, 255, 0.25);
+        box-shadow: 0 4px 12px rgba(185, 168, 255, 0.15);
+      }
+
+      :root[data-theme="light"] .bo-calDay.is-in-range {
+        background: rgba(185, 168, 255, 0.1);
+      }
+
+      :root[data-theme="light"] .bo-calViewTab.is-active {
+        background: var(--bo-surface-2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      :root[data-theme="light"] .bo-dayView .bo-dayNumber {
+        color: var(--bo-accent);
+      }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Calendar state
+        var currentDate = new Date(2026, 1, 17); // February 17, 2026
+        var selectedDate = new Date(2026, 1, 10);
+        var rangeStart = new Date(2026, 1, 5);
+        var rangeEnd = new Date(2026, 1, 15);
+
+        // Disabled dates (example: weekends)
+        var disabledDates = [
+          new Date(2026, 1, 7),
+          new Date(2026, 1, 8),
+          new Date(2026, 1, 14),
+          new Date(2026, 1, 15),
+          new Date(2026, 1, 21),
+          new Date(2026, 1, 22),
+          new Date(2026, 1, 28),
+          new Date(2026, 1, 29)
+        ];
+
+        // Sample events
+        var events = [
+          { date: new Date(2026, 1, 3), title: "Reunion", color: "purple" },
+          { date: new Date(2026, 1, 10), title: "Cita medica", color: "cyan" },
+          { date: new Date(2026, 1, 12), title: "Entrega proyecto", color: "green" },
+          { date: new Date(2026, 1, 15), title: "Revision", color: "yellow" },
+          { date: new Date(2026, 1, 18), title: "Cliente", color: "red" },
+          { date: new Date(2026, 1, 20), title: "Conferencia", color: "purple" },
+          { date: new Date(2026, 1, 24), title: "Sprint", color: "cyan" },
+          { date: new Date(2026, 1, 27), title: "Cierre", color: "green" }
+        ];
+
+        var monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        var dayNames = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+        var dayNamesShort = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+
+        // Helper functions
+        function isSameDay(d1, d2) {
+          return d1 && d2 && d1.getFullYear() === d2.getFullYear() &&
+                 d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+        }
+
+        function isToday(date) {
+          var today = new Date(2026, 1, 17); // Fixed for demo
+          return isSameDay(date, today);
+        }
+
+        function isDisabled(date) {
+          return disabledDates.some(function(d) { return isSameDay(d, date); });
+        }
+
+        function isInRange(date) {
+          if (!rangeStart || !rangeEnd) return false;
+          return date >= rangeStart && date <= rangeEnd;
+        }
+
+        function isRangeStart(date) {
+          return isSameDay(date, rangeStart);
+        }
+
+        function isRangeEnd(date) {
+          return isSameDay(date, rangeEnd);
+        }
+
+        function getEventsForDate(date) {
+          return events.filter(function(e) { return isSameDay(e.date, date); });
+        }
+
+        function getDaysInMonth(year, month) {
+          return new Date(year, month + 1, 0).getDate();
+        }
+
+        function getFirstDayOfMonth(year, month) {
+          return new Date(year, month, 1).getDay();
+        }
+
+        // Render month calendar
+        function renderMonthCalendar(containerId, year, month, showEvents) {
+          var container = document.getElementById(containerId);
+          var daysInMonth = getDaysInMonth(year, month);
+          var firstDay = getFirstDayOfMonth(year, month);
+
+          var html = '';
+          html += '<div class="bo-calHeader">';
+          html += '<button class="bo-calNavBtn" aria-label="Mes anterior" data-action="prev"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>';
+          html += '<span class="bo-calTitle">' + monthNames[month] + ' ' + year + '</span>';
+          html += '<button class="bo-calNavBtn" aria-label="Mes siguiente" data-action="next"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+          html += '</div>';
+
+          html += '<div class="bo-calDows" aria-hidden="true">';
+          for (var i = 0; i < 7; i++) {
+            html += '<div>' + dayNamesShort[i] + '</div>';
+          }
+          html += '</div>';
+
+          html += '<div class="bo-calGrid" role="grid" aria-label="Calendario">';
+
+          // Empty cells before first day
+          for (var i = 0; i < firstDay; i++) {
+            html += '<div class="bo-calDay bo-calDay--empty" role="gridcell"></div>';
+          }
+
+          // Days
+          for (var day = 1; day <= daysInMonth; day++) {
+            var date = new Date(year, month, day);
+            var isSelected = isSameDay(date, selectedDate);
+            var isTodayDate = isToday(date);
+            var disabled = isDisabled(date);
+            var inRange = isInRange(date);
+            var rangeStartDate = isRangeStart(date);
+            var rangeEndDate = isRangeEnd(date);
+
+            var classes = 'bo-calDay';
+            if (isSelected) classes += ' is-selected';
+            if (isTodayDate) classes += ' is-today';
+            if (disabled) classes += ' is-disabled';
+            if (inRange && !isSelected) classes += ' is-in-range';
+            if (rangeStartDate) classes += ' is-range-start';
+            if (rangeEndDate) classes += ' is-range-end';
+
+            var tabIndex = isSelected ? '0' : '-1';
+            var ariaLabel = dayNames[date.getDay()] + ' ' + day + ' de ' + monthNames[month];
+            if (isTodayDate) ariaLabel += ', hoy';
+            if (isSelected) ariaLabel += ', seleccionado';
+            if (disabled) ariaLabel += ', deshabilitado';
+
+            html += '<button class="' + classes + '" role="gridcell" tabindex="' + tabIndex + '" aria-label="' + ariaLabel + '"' + (disabled ? ' disabled' : '') + ' data-date="' + year + '-' + (month + 1) + '-' + day + '">';
+            html += day;
+
+            // Show events if enabled
+            if (showEvents) {
+              var dayEvents = getEventsForDate(date);
+              if (dayEvents.length > 0) {
+                html += '<div class="bo-calEvents" style="margin-top:2px">';
+                for (var e = 0; e < Math.min(dayEvents.length, 2); e++) {
+                  html += '<div class="bo-calEvent bo-calEvent--' + dayEvents[e].color + '">' + dayEvents[e].title + '</div>';
+                }
+                if (dayEvents.length > 2) {
+                  html += '<div class="bo-calEvent">+' + (dayEvents.length - 2) + '</div>';
+                }
+                html += '</div>';
+              }
+            }
+
+            html += '</button>';
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        }
+
+        // Render week calendar
+        function renderWeekCalendar(containerId, year, month, day) {
+          var container = document.getElementById(containerId);
+          var startOfWeek = new Date(year, month, day - ((dayNames[new Date(year, month, day).getDay()] + 6) % 7));
+
+          var html = '';
+          html += '<div class="bo-calHeader">';
+          html += '<button class="bo-calNavBtn" aria-label="Semana anterior" data-action="prev-week"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>';
+          var weekStart = new Date(startOfWeek);
+          var weekEnd = new Date(startOfWeek);
+          weekEnd.setDate(weekEnd.getDate() + 6);
+          html += '<span class="bo-calTitle">Semana del ' + weekStart.getDate() + ' ' + monthNames[weekStart.getMonth()] + ' - ' + weekEnd.getDate() + ' ' + monthNames[weekEnd.getMonth()] + '</span>';
+          html += '<button class="bo-calNavBtn" aria-label="Semana siguiente" data-action="next-week"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+          html += '</div>';
+
+          html += '<div class="bo-calGrid" role="grid" aria-label="Vista de semana">';
+
+          for (var i = 0; i < 7; i++) {
+            var date = new Date(startOfWeek);
+            date.setDate(date.getDate() + i);
+
+            var isSelected = isSameDay(date, selectedDate);
+            var isTodayDate = isToday(date);
+            var disabled = isDisabled(date);
+
+            var classes = 'bo-calDay';
+            if (isSelected) classes += ' is-selected';
+            if (isTodayDate) classes += ' is-today';
+            if (disabled) classes += ' is-disabled';
+
+            var tabIndex = isSelected ? '0' : '-1';
+            var ariaLabel = dayNames[date.getDay()] + ' ' + date.getDate() + ' de ' + monthNames[date.getMonth()];
+            if (isTodayDate) ariaLabel += ', hoy';
+            if (isSelected) ariaLabel += ', seleccionado';
+
+            html += '<button class="' + classes + '" role="gridcell" tabindex="' + tabIndex + '" aria-label="' + ariaLabel + '">';
+            html += '<span class="bo-calDayHeader">' + dayNamesShort[i] + '</span>';
+            html += '<span class="bo-calDayNumber">' + date.getDate() + '</span>';
+
+            // Show events
+            var dayEvents = getEventsForDate(date);
+            for (var e = 0; e < dayEvents.length; e++) {
+              html += '<div class="bo-calEvent bo-calEvent--' + dayEvents[e].color + '">' + dayEvents[e].title + '</div>';
+            }
+
+            html += '</button>';
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        }
+
+        // Render day view
+        function renderDayCalendar(containerId, year, month, day) {
+          var container = document.getElementById(containerId);
+          var date = new Date(year, month, day);
+
+          var html = '';
+          html += '<div class="bo-calHeader">';
+          html += '<button class="bo-calNavBtn" aria-label="Dia anterior" data-action="prev-day"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>';
+          html += '<span class="bo-calTitle">' + dayNames[date.getDay()] + ', ' + date.getDate() + ' de ' + monthNames[month] + '</span>';
+          html += '<button class="bo-calNavBtn" aria-label="Dia siguiente" data-action="next-day"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+          html += '</div>';
+
+          html += '<div class="bo-dayView" role="region" aria-label="Vista del dia">';
+          html += '<div class="bo-dayNumber">' + date.getDate() + '</div>';
+          html += '<div class="bo-dayName">' + dayNames[date.getDay()] + '</div>';
+          html += '</div>';
+
+          html += '<div class="bo-calGrid" style="margin-top: 20px;" role="list" aria-label="Eventos del dia">';
+
+          var dayEvents = getEventsForDate(date);
+          if (dayEvents.length === 0) {
+            html += '<p style="color: var(--bo-muted); text-align: center; grid-column: 1/-1; padding: 20px;">No hay eventos programados</p>';
+          } else {
+            for (var i = 0; i < dayEvents.length; i++) {
+              html += '<div class="bo-calEvent bo-calEvent--' + dayEvents[i].color + '" role="listitem" style="grid-column: 1/-1; margin-bottom: 8px;">' + dayEvents[i].title + '</div>';
+            }
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        }
+
+        // Initial render
+        renderMonthCalendar('cal-month', 2026, 1, false);
+        renderMonthCalendar('cal-month-events', 2026, 1, true);
+        renderWeekCalendar('cal-week', 2026, 1, 17);
+        renderDayCalendar('cal-day', 2026, 1, 17);
+
+        // Navigation handlers (demo only)
+        document.querySelectorAll('.bo-calendar').forEach(function(cal) {
+          cal.addEventListener('click', function(e) {
+            var navBtn = e.target.closest('.bo-calNavBtn');
+            if (navBtn && !navBtn.disabled) {
+              var action = navBtn.getAttribute('data-action');
+              console.log('Calendar navigation:', action);
+              // Demo only - would update calendar in real implementation
+            }
+          });
+
+          cal.addEventListener('keydown', function(e) {
+            if (e.target.classList.contains('bo-calDay')) {
+              var days = Array.from(cal.querySelectorAll('.bo-calDay:not(.is-disabled)'));
+              var currentIndex = days.indexOf(e.target);
+              var newIndex;
+
+              switch(e.key) {
+                case 'ArrowRight':
+                  e.preventDefault();
+                  newIndex = Math.min(currentIndex + 1, days.length - 1);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'ArrowLeft':
+                  e.preventDefault();
+                  newIndex = Math.max(currentIndex - 1, 0);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'ArrowDown':
+                  e.preventDefault();
+                  newIndex = Math.min(currentIndex + 7, days.length - 1);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'ArrowUp':
+                  e.preventDefault();
+                  newIndex = Math.max(currentIndex - 7, 0);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'Home':
+                  e.preventDefault();
+                  var firstDay = days.find(function(d) { return !d.classList.contains('bo-calDay--empty'); });
+                  if (firstDay) {
+                    firstDay.focus();
+                    firstDay.click();
+                  }
+                  break;
+                case 'End':
+                  e.preventDefault();
+                  var lastDay = days.filter(function(d) { return !d.classList.contains('bo-calDay--empty'); }).pop();
+                  if (lastDay) {
+                    lastDay.focus();
+                    lastDay.click();
+                  }
+                  break;
+              }
+            }
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 520px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <!-- Demo 1: Month View Calendar -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Month view calendar</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar" id="cal-month"></div>
+              </div>
+            </div>
+
+            <!-- Demo 2: Calendar with events -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Calendar with events</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar" id="cal-month-events"></div>
+              </div>
+            </div>
+
+            <!-- Demo 3: Week view calendar -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Week view calendar</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar bo-calendar--week" id="cal-week"></div>
+              </div>
+            </div>
+
+            <!-- Demo 4: Day view calendar -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Day view calendar</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar bo-calendar--day" id="cal-day"></div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light theme version -->
+    <div class="bo-stage" style="margin-top: 20px">
+      <div class="bo-window" style="width: 520px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <!-- Demo 1: Month View Calendar - Light -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Month view calendar</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar" id="cal-month-light"></div>
+              </div>
+            </div>
+
+            <!-- Demo 2: Calendar with events - Light -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Calendar with events</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar" id="cal-month-events-light"></div>
+              </div>
+            </div>
+
+            <!-- Demo 3: Week view calendar - Light -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Week view calendar</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar bo-calendar--week" id="cal-week-light"></div>
+              </div>
+            </div>
+
+            <!-- Demo 4: Day view calendar - Light -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Day view calendar</div>
+              <div class="bo-demoGap">
+                <div class="bo-calendar bo-calendar--day" id="cal-day-light"></div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Apply light theme to the second demo
+      document.querySelectorAll('body > .bo-stage')[1].setAttribute('data-theme', 'light');
+
+      // Re-run calendar rendering for light theme
+      document.addEventListener('DOMContentLoaded', function() {
+        // Calendar state for light theme
+        var currentDate = new Date(2026, 1, 17);
+        var selectedDate = new Date(2026, 1, 10);
+        var rangeStart = new Date(2026, 1, 5);
+        var rangeEnd = new Date(2026, 1, 15);
+
+        var disabledDates = [
+          new Date(2026, 1, 7), new Date(2026, 1, 8),
+          new Date(2026, 1, 14), new Date(2026, 1, 15),
+          new Date(2026, 1, 21), new Date(2026, 1, 22),
+          new Date(2026, 1, 28), new Date(2026, 1, 29)
+        ];
+
+        var events = [
+          { date: new Date(2026, 1, 3), title: "Reunion", color: "purple" },
+          { date: new Date(2026, 1, 10), title: "Cita medica", color: "cyan" },
+          { date: new Date(2026, 1, 12), title: "Entrega proyecto", color: "green" },
+          { date: new Date(2026, 1, 15), title: "Revision", color: "yellow" },
+          { date: new Date(2026, 1, 18), title: "Cliente", color: "red" },
+          { date: new Date(2026, 1, 20), title: "Conferencia", color: "purple" },
+          { date: new Date(2026, 1, 24), title: "Sprint", color: "cyan" },
+          { date: new Date(2026, 1, 27), title: "Cierre", color: "green" }
+        ];
+
+        var monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        var dayNames = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+        var dayNamesShort = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+
+        function isSameDay(d1, d2) {
+          return d1 && d2 && d1.getFullYear() === d2.getFullYear() &&
+                 d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+        }
+
+        function isToday(date) {
+          var today = new Date(2026, 1, 17);
+          return isSameDay(date, today);
+        }
+
+        function isDisabled(date) {
+          return disabledDates.some(function(d) { return isSameDay(d, date); });
+        }
+
+        function isInRange(date) {
+          if (!rangeStart || !rangeEnd) return false;
+          return date >= rangeStart && date <= rangeEnd;
+        }
+
+        function isRangeStart(date) {
+          return isSameDay(date, rangeStart);
+        }
+
+        function isRangeEnd(date) {
+          return isSameDay(date, rangeEnd);
+        }
+
+        function getEventsForDate(date) {
+          return events.filter(function(e) { return isSameDay(e.date, date); });
+        }
+
+        function getDaysInMonth(year, month) {
+          return new Date(year, month + 1, 0).getDate();
+        }
+
+        function getFirstDayOfMonth(year, month) {
+          return new Date(year, month, 1).getDay();
+        }
+
+        function renderMonthCalendarLight(containerId, year, month, showEvents) {
+          var container = document.getElementById(containerId);
+          var daysInMonth = getDaysInMonth(year, month);
+          var firstDay = getFirstDayOfMonth(year, month);
+
+          var html = '';
+          html += '<div class="bo-calHeader">';
+          html += '<button class="bo-calNavBtn" aria-label="Mes anterior" data-action="prev"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>';
+          html += '<span class="bo-calTitle">' + monthNames[month] + ' ' + year + '</span>';
+          html += '<button class="bo-calNavBtn" aria-label="Mes siguiente" data-action="next"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+          html += '</div>';
+
+          html += '<div class="bo-calDows" aria-hidden="true">';
+          for (var i = 0; i < 7; i++) {
+            html += '<div>' + dayNamesShort[i] + '</div>';
+          }
+          html += '</div>';
+
+          html += '<div class="bo-calGrid" role="grid" aria-label="Calendario">';
+
+          for (var i = 0; i < firstDay; i++) {
+            html += '<div class="bo-calDay bo-calDay--empty" role="gridcell"></div>';
+          }
+
+          for (var day = 1; day <= daysInMonth; day++) {
+            var date = new Date(year, month, day);
+            var isSelected = isSameDay(date, selectedDate);
+            var isTodayDate = isToday(date);
+            var disabled = isDisabled(date);
+            var inRange = isInRange(date);
+            var rangeStartDate = isRangeStart(date);
+            var rangeEndDate = isRangeEnd(date);
+
+            var classes = 'bo-calDay';
+            if (isSelected) classes += ' is-selected';
+            if (isTodayDate) classes += ' is-today';
+            if (disabled) classes += ' is-disabled';
+            if (inRange && !isSelected) classes += ' is-in-range';
+            if (rangeStartDate) classes += ' is-range-start';
+            if (rangeEndDate) classes += ' is-range-end';
+
+            var tabIndex = isSelected ? '0' : '-1';
+            var ariaLabel = dayNames[date.getDay()] + ' ' + day + ' de ' + monthNames[month];
+            if (isTodayDate) ariaLabel += ', hoy';
+            if (isSelected) ariaLabel += ', seleccionado';
+            if (disabled) ariaLabel += ', deshabilitado';
+
+            html += '<button class="' + classes + '" role="gridcell" tabindex="' + tabIndex + '" aria-label="' + ariaLabel + '"' + (disabled ? ' disabled' : '') + ' data-date="' + year + '-' + (month + 1) + '-' + day + '">';
+            html += day;
+
+            if (showEvents) {
+              var dayEvents = getEventsForDate(date);
+              if (dayEvents.length > 0) {
+                html += '<div class="bo-calEvents" style="margin-top:2px">';
+                for (var e = 0; e < Math.min(dayEvents.length, 2); e++) {
+                  html += '<div class="bo-calEvent bo-calEvent--' + dayEvents[e].color + '">' + dayEvents[e].title + '</div>';
+                }
+                if (dayEvents.length > 2) {
+                  html += '<div class="bo-calEvent">+' + (dayEvents.length - 2) + '</div>';
+                }
+                html += '</div>';
+              }
+            }
+
+            html += '</button>';
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        }
+
+        function renderWeekCalendarLight(containerId, year, month, day) {
+          var container = document.getElementById(containerId);
+          var startOfWeek = new Date(year, month, day - ((dayNames[new Date(year, month, day).getDay()] + 6) % 7));
+
+          var html = '';
+          html += '<div class="bo-calHeader">';
+          html += '<button class="bo-calNavBtn" aria-label="Semana anterior" data-action="prev-week"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>';
+          var weekStart = new Date(startOfWeek);
+          var weekEnd = new Date(startOfWeek);
+          weekEnd.setDate(weekEnd.getDate() + 6);
+          html += '<span class="bo-calTitle">Semana del ' + weekStart.getDate() + ' ' + monthNames[weekStart.getMonth()] + ' - ' + weekEnd.getDate() + ' ' + monthNames[weekEnd.getMonth()] + '</span>';
+          html += '<button class="bo-calNavBtn" aria-label="Semana siguiente" data-action="next-week"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+          html += '</div>';
+
+          html += '<div class="bo-calGrid" role="grid" aria-label="Vista de semana">';
+
+          for (var i = 0; i < 7; i++) {
+            var date = new Date(startOfWeek);
+            date.setDate(date.getDate() + i);
+
+            var isSelected = isSameDay(date, selectedDate);
+            var isTodayDate = isToday(date);
+            var disabled = isDisabled(date);
+
+            var classes = 'bo-calDay';
+            if (isSelected) classes += ' is-selected';
+            if (isTodayDate) classes += ' is-today';
+            if (disabled) classes += ' is-disabled';
+
+            var tabIndex = isSelected ? '0' : '-1';
+            var ariaLabel = dayNames[date.getDay()] + ' ' + date.getDate() + ' de ' + monthNames[date.getMonth()];
+            if (isTodayDate) ariaLabel += ', hoy';
+            if (isSelected) ariaLabel += ', seleccionado';
+
+            html += '<button class="' + classes + '" role="gridcell" tabindex="' + tabIndex + '" aria-label="' + ariaLabel + '">';
+            html += '<span class="bo-calDayHeader">' + dayNamesShort[i] + '</span>';
+            html += '<span class="bo-calDayNumber">' + date.getDate() + '</span>';
+
+            var dayEvents = getEventsForDate(date);
+            for (var e = 0; e < dayEvents.length; e++) {
+              html += '<div class="bo-calEvent bo-calEvent--' + dayEvents[e].color + '">' + dayEvents[e].title + '</div>';
+            }
+
+            html += '</button>';
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        }
+
+        function renderDayCalendarLight(containerId, year, month, day) {
+          var container = document.getElementById(containerId);
+          var date = new Date(year, month, day);
+
+          var html = '';
+          html += '<div class="bo-calHeader">';
+          html += '<button class="bo-calNavBtn" aria-label="Dia anterior" data-action="prev-day"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>';
+          html += '<span class="bo-calTitle">' + dayNames[date.getDay()] + ', ' + date.getDate() + ' de ' + monthNames[month] + '</span>';
+          html += '<button class="bo-calNavBtn" aria-label="Dia siguiente" data-action="next-day"><svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+          html += '</div>';
+
+          html += '<div class="bo-dayView" role="region" aria-label="Vista del dia">';
+          html += '<div class="bo-dayNumber">' + date.getDate() + '</div>';
+          html += '<div class="bo-dayName">' + dayNames[date.getDay()] + '</div>';
+          html += '</div>';
+
+          html += '<div class="bo-calGrid" style="margin-top: 20px;" role="list" aria-label="Eventos del dia">';
+
+          var dayEvents = getEventsForDate(date);
+          if (dayEvents.length === 0) {
+            html += '<p style="color: var(--bo-muted); text-align: center; grid-column: 1/-1; padding: 20px;">No hay eventos programados</p>';
+          } else {
+            for (var i = 0; i < dayEvents.length; i++) {
+              html += '<div class="bo-calEvent bo-calEvent--' + dayEvents[i].color + '" role="listitem" style="grid-column: 1/-1; margin-bottom: 8px;">' + dayEvents[i].title + '</div>';
+            }
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        }
+
+        renderMonthCalendarLight('cal-month-light', 2026, 1, false);
+        renderMonthCalendarLight('cal-month-events-light', 2026, 1, true);
+        renderWeekCalendarLight('cal-week-light', 2026, 1, 17);
+        renderDayCalendarLight('cal-day-light', 2026, 1, 17);
+
+        // Add keyboard navigation to light theme calendars
+        document.querySelectorAll('body > .bo-stage')[1].querySelectorAll('.bo-calendar').forEach(function(cal) {
+          cal.addEventListener('keydown', function(e) {
+            if (e.target.classList.contains('bo-calDay')) {
+              var days = Array.from(cal.querySelectorAll('.bo-calDay:not(.is-disabled)'));
+              var currentIndex = days.indexOf(e.target);
+              var newIndex;
+
+              switch(e.key) {
+                case 'ArrowRight':
+                  e.preventDefault();
+                  newIndex = Math.min(currentIndex + 1, days.length - 1);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'ArrowLeft':
+                  e.preventDefault();
+                  newIndex = Math.max(currentIndex - 1, 0);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'ArrowDown':
+                  e.preventDefault();
+                  newIndex = Math.min(currentIndex + 7, days.length - 1);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'ArrowUp':
+                  e.preventDefault();
+                  newIndex = Math.max(currentIndex - 7, 0);
+                  days[newIndex].focus();
+                  days[newIndex].click();
+                  break;
+                case 'Home':
+                  e.preventDefault();
+                  var firstDay = days.find(function(d) { return !d.classList.contains('bo-calDay--empty'); });
+                  if (firstDay) {
+                    firstDay.focus();
+                    firstDay.click();
+                  }
+                  break;
+                case 'End':
+                  e.preventDefault();
+                  var lastDay = days.filter(function(d) { return !d.classList.contains('bo-calDay--empty'); }).pop();
+                  if (lastDay) {
+                    lastDay.focus();
+                    lastDay.click();
+                  }
+                  break;
+              }
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

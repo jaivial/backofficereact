@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Form Checkboxes</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Checkbox and radio custom styles */
+      .bo-checkbox,
+      .bo-radio {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .bo-checkbox input[type="checkbox"],
+      .bo-radio input[type="radio"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 1px solid var(--bo-border-2);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.03);
+        cursor: pointer;
+        position: relative;
+        transition: all 160ms ease;
+        flex-shrink: 0;
+      }
+
+      .bo-radio input[type="radio"] {
+        border-radius: 50%;
+      }
+
+      .bo-checkbox input[type="checkbox"]:hover,
+      .bo-radio input[type="radio"]:hover {
+        border-color: rgba(185, 168, 255, 0.4);
+      }
+
+      .bo-checkbox input[type="checkbox"]:focus-visible,
+      .bo-radio input[type="radio"]:focus-visible {
+        outline: none;
+        border-color: rgba(185, 168, 255, 0.5);
+        box-shadow: 0 0 0 3px rgba(185, 168, 255, 0.15);
+      }
+
+      .bo-checkbox input[type="checkbox"]:checked,
+      .bo-radio input[type="radio"]:checked {
+        background: rgba(185, 168, 255, 0.22);
+        border-color: rgba(185, 168, 255, 0.5);
+      }
+
+      .bo-checkbox input[type="checkbox"]:checked::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border: solid rgba(255, 255, 255, 0.95);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .bo-radio input[type="radio"]:checked::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        width: 10px;
+        height: 10px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+      }
+
+      .bo-checkbox input[type="checkbox"]:disabled,
+      .bo-radio input[type="radio"]:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .bo-checkboxLabel,
+      .bo-radioLabel {
+        font-size: 14px;
+        color: var(--bo-text);
+        line-height: 1.4;
+      }
+
+      .bo-checkbox--sm input[type="checkbox"],
+      .bo-radio--sm input[type="radio"] {
+        width: 16px;
+        height: 16px;
+      }
+
+      .bo-checkbox--sm input[type="checkbox"]:checked::after {
+        left: 4px;
+        top: 1px;
+        width: 4px;
+        height: 8px;
+      }
+
+      .bo-checkbox--sm .bo-checkboxLabel,
+      .bo-radio--sm .bo-radioLabel {
+        font-size: 12px;
+      }
+
+      /* Checkbox group layout */
+      .bo-checkboxGroup {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .bo-checkboxRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      /* Error state */
+      .bo-checkbox.is-error input[type="checkbox"],
+      .bo-checkbox.is-error input[type="radio"],
+      .bo-radio.is-error input[type="checkbox"],
+      .bo-radio.is-error input[type="radio"] {
+        border-color: rgba(220, 53, 69, 0.6);
+      }
+
+      .bo-checkbox.is-error input[type="checkbox"]:checked,
+      .bo-radio.is-error input[type="radio"]:checked {
+        background: rgba(220, 53, 69, 0.2);
+        border-color: rgba(220, 53, 69, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 560px; height: 640px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-card" aria-label="Checkboxes and radio buttons showcase">
+              <div class="bo-cardHead">
+                <div class="bo-cardTitle">Form Checkboxes</div>
+                <div class="bo-cardDesc">Checkboxes and radio button selections</div>
+              </div>
+
+              <!-- Checkbox Section -->
+              <div class="bo-field">
+                <div class="bo-label">Notifications</div>
+                <div class="bo-checkboxGroup" role="group" aria-labelledby="checkbox-group-label">
+                  <label class="bo-checkbox" id="checkbox-group-label">
+                    <input
+                      type="checkbox"
+                      id="check-email"
+                      checked
+                      aria-describedby="check-email-desc"
+                    />
+                    <span class="bo-checkboxLabel">Email notifications</span>
+                  </label>
+                  <span class="bo-mutedText" id="check-email-desc">Receive updates via email</span>
+
+                  <label class="bo-checkbox">
+                    <input
+                      type="checkbox"
+                      id="check-sms"
+                    />
+                    <span class="bo-checkboxLabel">SMS notifications</span>
+                  </label>
+
+                  <label class="bo-checkbox">
+                    <input
+                      type="checkbox"
+                      id="check-marketing"
+                    />
+                    <span class="bo-checkboxLabel">Marketing communications</span>
+                  </label>
+
+                  <label class="bo-checkbox">
+                    <input
+                      type="checkbox"
+                      id="check-terms"
+                      required
+                      aria-required="true"
+                    />
+                    <span class="bo-checkboxLabel">I accept the terms and conditions</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Small Checkboxes -->
+              <div class="bo-field">
+                <div class="bo-label">Quick Select</div>
+                <div class="bo-checkboxRow">
+                  <label class="bo-checkbox bo-checkbox--sm">
+                    <input type="checkbox" id="check-opt1" checked />
+                    <span class="bo-checkboxLabel">Option 1</span>
+                  </label>
+                  <label class="bo-checkbox bo-checkbox--sm">
+                    <input type="checkbox" id="check-opt2" />
+                    <span class="bo-checkboxLabel">Option 2</span>
+                  </label>
+                  <label class="bo-checkbox bo-checkbox--sm">
+                    <input type="checkbox" id="check-opt3" />
+                    <span class="bo-checkboxLabel">Option 3</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Disabled Checkbox -->
+              <div class="bo-field">
+                <label class="bo-checkbox">
+                  <input
+                    type="checkbox"
+                    id="check-disabled"
+                    disabled
+                    checked
+                    aria-disabled="true"
+                  />
+                  <span class="bo-checkboxLabel">Disabled checkbox (checked)</span>
+                </label>
+              </div>
+
+              <!-- Radio Buttons Section -->
+              <div class="bo-field">
+                <div class="bo-label">Payment Method</div>
+                <div class="bo-checkboxGroup" role="radiogroup" aria-labelledby="radio-group-label">
+                  <label class="bo-radio" id="radio-group-label">
+                    <input
+                      type="radio"
+                      name="payment"
+                      id="radio-card"
+                      checked
+                    />
+                    <span class="bo-radioLabel">Credit / Debit Card</span>
+                  </label>
+
+                  <label class="bo-radio">
+                    <input
+                      type="radio"
+                      name="payment"
+                      id="radio-paypal"
+                    />
+                    <span class="bo-radioLabel">PayPal</span>
+                  </label>
+
+                  <label class="bo-radio">
+                    <input
+                      type="radio"
+                      name="payment"
+                      id="radio-bank"
+                    />
+                    <span class="bo-radioLabel">Bank Transfer</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Small Radio Buttons -->
+              <div class="bo-field">
+                <div class="bo-label">Priority</div>
+                <div class="bo-checkboxRow">
+                  <label class="bo-radio bo-radio--sm">
+                    <input type="radio" name="priority" id="radio-low" checked />
+                    <span class="bo-radioLabel">Low</span>
+                  </label>
+                  <label class="bo-radio bo-radio--sm">
+                    <input type="radio" name="priority" id="radio-med" />
+                    <span class="bo-radioLabel">Medium</span>
+                  </label>
+                  <label class="bo-radio bo-radio--sm">
+                    <input type="radio" name="priority" id="radio-high" />
+                    <span class="bo-radioLabel">High</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Disabled Radio -->
+              <div class="bo-field">
+                <label class="bo-radio">
+                  <input
+                    type="radio"
+                    name="radio-disabled"
+                    id="radio-disabled"
+                    disabled
+                    aria-disabled="true"
+                  />
+                  <span class="bo-radioLabel">Disabled radio option</span>
+                </label>
+              </div>
+
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

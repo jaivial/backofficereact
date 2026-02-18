@@ -6,7 +6,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import type { Member, RoleCatalogItem, RoleUserItem } from "../../../api/types";
 import { roleLabel } from "../../../lib/rbac";
 import { sessionAtom } from "../../../state/atoms";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/shadcn/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/shell/Avatar";
 import { RoleBadge } from "../../../ui/widgets/roles/RoleBadge";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";

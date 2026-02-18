@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Tabs</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      .bo-demoSection {
+        padding: 20px;
+      }
+      .bo-demoTitle {
+        font-size: 13px;
+        font-weight: 760;
+        color: rgba(238, 240, 246, 0.42);
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .bo-demoGap {
+        margin-bottom: 32px;
+      }
+      /* Tab panel styling */
+      .bo-tabPanel {
+        padding: 20px;
+        border-radius: 14px;
+        border: 1px solid var(--bo-border);
+        background: rgba(255, 255, 255, 0.02);
+        min-height: 120px;
+      }
+      .bo-tabPanel[hidden] {
+        display: none;
+      }
+      .bo-tabPanelTitle {
+        font-size: 16px;
+        font-weight: 720;
+        margin-bottom: 8px;
+      }
+      .bo-tabPanelText {
+        color: var(--bo-muted);
+        font-size: 14px;
+      }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching logic
+        document.querySelectorAll('.bo-tabs').forEach(function(tabsContainer) {
+          var tabs = tabsContainer.querySelectorAll('.bo-tab');
+          var tablist = tabsContainer.closest('[role="tablist"]');
+
+          tabs.forEach(function(tab) {
+            tab.addEventListener('click', function(e) {
+              e.preventDefault();
+              var targetId = tab.getAttribute('data-target');
+              if (!targetId) return;
+
+              // Update aria-selected
+              tabs.forEach(function(t) {
+                t.setAttribute('aria-selected', 'false');
+                t.classList.remove('is-active');
+              });
+              tab.setAttribute('aria-selected', 'true');
+              tab.classList.add('is-active');
+
+              // Show/hide panels
+              var panels = tabsContainer.querySelectorAll('[role="tabpanel"]');
+              panels.forEach(function(panel) {
+                if (panel.id === targetId) {
+                  panel.hidden = false;
+                } else {
+                  panel.hidden = true;
+                }
+              });
+            });
+          });
+
+          // Keyboard navigation
+          tablist.addEventListener('keydown', function(e) {
+            var focusedTab = document.activeElement;
+            if (!focusedTab.classList.contains('bo-tab')) return;
+
+            var tabs = Array.from(tablist.querySelectorAll('.bo-tab[role="tab"]'));
+            var index = tabs.indexOf(focusedTab);
+            var newIndex;
+
+            switch(e.key) {
+              case 'ArrowRight':
+                e.preventDefault();
+                newIndex = (index + 1) % tabs.length;
+                tabs[newIndex].focus();
+                tabs[newIndex].click();
+                break;
+              case 'ArrowLeft':
+                e.preventDefault();
+                newIndex = (index - 1 + tabs.length) % tabs.length;
+                tabs[newIndex].focus();
+                tabs[newIndex].click();
+                break;
+              case 'Home':
+                e.preventDefault();
+                tabs[0].focus();
+                tabs[0].click();
+                break;
+              case 'End':
+                e.preventDefault();
+                tabs[tabs.length - 1].focus();
+                tabs[tabs.length - 1].click();
+                break;
+            }
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 760px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <!-- Demo 1: Basic horizontal tabs with indicator -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Horizontal tabs with indicator</div>
+              <div class="bo-demoGap">
+                <div class="bo-tabs" role="tablist" aria-label="Basic tabs example">
+                  <button class="bo-tab is-active" role="tab" aria-selected="true" data-target="panel-basic-1" tabindex="0">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabLabel">Overview</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-basic-2" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabLabel">Details</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-basic-3" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabLabel">Settings</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-basic-1">
+                  <div class="bo-tabPanelTitle">Overview</div>
+                  <div class="bo-tabPanelText">This is the overview content panel. The active tab has a gradient indicator below it.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-basic-2" hidden>
+                  <div class="bo-tabPanelTitle">Details</div>
+                  <div class="bo-tabPanelText">This is the details content panel. Click on different tabs to switch between panels.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-basic-3" hidden>
+                  <div class="bo-tabPanelTitle">Settings</div>
+                  <div class="bo-tabPanelText">This is the settings content panel. Use arrow keys to navigate between tabs.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 2: Tabs with icons -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Tabs with icons</div>
+              <div class="bo-demoGap">
+                <div class="bo-tabs" role="tablist" aria-label="Tabs with icons example">
+                  <button class="bo-tab is-active" role="tab" aria-selected="true" data-target="panel-icon-1" tabindex="0">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                          <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Home</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-icon-2" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Team</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-icon-3" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                          <line x1="16" y1="2" x2="16" y2="6"/>
+                          <line x1="8" y1="2" x2="8" y2="6"/>
+                          <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Calendar</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-icon-4" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Settings</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-icon-1">
+                  <div class="bo-tabPanelTitle">Home</div>
+                  <div class="bo-tabPanelText">Welcome to the home tab with an icon. Icons help users quickly identify tab content.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-icon-2" hidden>
+                  <div class="bo-tabPanelTitle">Team</div>
+                  <div class="bo-tabPanelText">Manage your team members here. Use keyboard navigation to switch between tabs.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-icon-3" hidden>
+                  <div class="bo-tabPanelTitle">Calendar</div>
+                  <div class="bo-tabPanelText">View and manage your calendar events. Arrow keys move between tabs.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-icon-4" hidden>
+                  <div class="bo-tabPanelTitle">Settings</div>
+                  <div class="bo-tabPanelText">Configure your application settings. Home and End keys jump to first/last tabs.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 3: Tabs with badges/counts -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Tabs with badges/counts</div>
+              <div class="bo-demoGap">
+                <div class="bo-tabs" role="tablist" aria-label="Tabs with badges example">
+                  <button class="bo-tab is-active" role="tab" aria-selected="true" data-target="panel-badge-1" tabindex="0">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabLabel">Notifications</span>
+                      <span class="bo-badge bo-badge--ok">12</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-badge-2" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabLabel">Messages</span>
+                      <span class="bo-badge">5</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-badge-3" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabLabel">Alerts</span>
+                      <span class="bo-badge bo-badge--warn">3</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-badge-4" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabLabel">Archive</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-badge-1">
+                  <div class="bo-tabPanelTitle">Notifications</div>
+                  <div class="bo-tabPanelText">You have 12 new notifications. Badges display counts or status indicators.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-badge-2" hidden>
+                  <div class="bo-tabPanelTitle">Messages</div>
+                  <div class="bo-tabPanelText">You have 5 unread messages. The badge indicates the number of unread items.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-badge-3" hidden>
+                  <div class="bo-tabPanelTitle">Alerts</div>
+                  <div class="bo-tabPanelText">You have 3 alerts that need attention. Warning badges highlight important items.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-badge-4" hidden>
+                  <div class="bo-tabPanelTitle">Archive</div>
+                  <div class="bo-tabPanelText">Your archived items are stored here. No unread items in this section.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 4: Active/inactive states -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Active/inactive states</div>
+              <div class="bo-demoGap">
+                <div class="bo-tabs" role="tablist" aria-label="Tab states example">
+                  <button class="bo-tab is-active" role="tab" aria-selected="true" data-target="panel-state-1" tabindex="0">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Active</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-state-2" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Inactive</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-state-3" tabindex="-1" disabled>
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Disabled</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-state-1">
+                  <div class="bo-tabPanelTitle">Active Tab</div>
+                  <div class="bo-tabPanelText">This tab is currently active. It has the is-active class and aria-selected="true".</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-state-2" hidden>
+                  <div class="bo-tabPanelTitle">Inactive Tab</div>
+                  <div class="bo-tabPanelText">This tab is inactive. It does not have the is-active class and has aria-selected="false".</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-state-3" hidden>
+                  <div class="bo-tabPanelTitle">Disabled Tab</div>
+                  <div class="bo-tabPanelText">This tab is disabled and cannot be selected. Use the disabled attribute.</div>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light theme version -->
+    <div class="bo-stage" style="margin-top: 20px">
+      <div class="bo-window" style="width: 760px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Tabs with icons and badges</div>
+              <div class="bo-demoGap">
+                <div class="bo-tabs" role="tablist" aria-label="Light theme tabs example">
+                  <button class="bo-tab is-active" role="tab" aria-selected="true" data-target="panel-light-1" tabindex="0">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                          <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Dashboard</span>
+                      <span class="bo-badge bo-badge--ok">4</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-light-2" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Users</span>
+                      <span class="bo-badge">28</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-light-3" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="18" y1="20" x2="18" y2="10"/>
+                          <line x1="12" y1="20" x2="12" y2="4"/>
+                          <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Analytics</span>
+                    </span>
+                  </button>
+                  <button class="bo-tab" role="tab" aria-selected="false" data-target="panel-light-4" tabindex="-1">
+                    <span class="bo-tabInner">
+                      <span class="bo-tabIcon" aria-hidden="true">
+                        <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                      </span>
+                      <span class="bo-tabLabel">Config</span>
+                    </span>
+                  </button>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-light-1">
+                  <div class="bo-tabPanelTitle">Dashboard</div>
+                  <div class="bo-tabPanelText">Light theme tabs maintain proper contrast and visibility. The gradient indicator is clearly visible.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-light-2" hidden>
+                  <div class="bo-tabPanelTitle">Users</div>
+                  <div class="bo-tabPanelText">Manage your users here. Switch between tabs using the arrow keys or by clicking.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-light-3" hidden>
+                  <div class="bo-tabPanelTitle">Analytics</div>
+                  <div class="bo-tabPanelText">View your analytics data and reports. Tabs support keyboard navigation for accessibility.</div>
+                </div>
+                <div class="bo-tabPanel" role="tabpanel" id="panel-light-4" hidden>
+                  <div class="bo-tabPanelTitle">Configuration</div>
+                  <div class="bo-tabPanelText">Configure your application settings. All tabs follow the same pattern for consistency.</div>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Apply light theme to the second demo
+      document.querySelectorAll('body > .bo-stage')[1].setAttribute('data-theme', 'light');
+    </script>
+  </body>
+</html>

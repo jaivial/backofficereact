@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Tooltip</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* ============================================
+         TOOLTIP SYSTEM - CSS-only with data-tooltip
+         ============================================ */
+
+      /* Base tooltip container */
+      [data-tooltip] {
+        position: relative;
+        display: inline-flex;
+        cursor: pointer;
+      }
+
+      /* Base tooltip element */
+      [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        z-index: 9999;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.4;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+        border-radius: var(--bo-radius-sm);
+        box-shadow: var(--bo-shadow-soft);
+      }
+
+      /* Show tooltip on hover and focus */
+      [data-tooltip]:hover::after,
+      [data-tooltip]:focus::after {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* ============================================
+         TOOLTIP POSITIONS
+         ============================================ */
+
+      /* Top position (default) */
+      [data-tooltip*="top"]::after {
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        margin-bottom: 8px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="top"]::after,
+      [data-tooltip]:focus[data-tooltip*="top"]::after {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* Bottom position */
+      [data-tooltip*="bottom"]::after {
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(8px);
+        margin-top: 8px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="bottom"]::after,
+      [data-tooltip]:focus[data-tooltip*="bottom"]::after {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* Left position */
+      [data-tooltip*="left"]::after {
+        top: 50%;
+        right: 100%;
+        left: auto;
+        transform: translateY(-50%) translateX(-8px);
+        margin-right: 8px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="left"]::after,
+      [data-tooltip]:focus[data-tooltip*="left"]::after {
+        transform: translateY(-50%) translateX(0);
+      }
+
+      /* Right position */
+      [data-tooltip*="right"]::after {
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%) translateX(8px);
+        margin-left: 8px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="right"]::after,
+      [data-tooltip]:focus[data-tooltip*="right"]::after {
+        transform: translateY(-50%) translateX(0);
+      }
+
+      /* ============================================
+         DARK TOOLTIP (default)
+         ============================================ */
+
+      [data-tooltip]:not([data-tooltip-theme="light"])::after {
+        background: var(--bo-surface-2);
+        color: var(--bo-text);
+        border: 1px solid var(--bo-border);
+      }
+
+      /* ============================================
+         LIGHT TOOLTIP
+         ============================================ */
+
+      [data-tooltip-theme="light"]::after {
+        background: #ffffff;
+        color: rgba(20, 21, 26, 0.95);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.10);
+      }
+
+      /* ============================================
+         TOOLTIP ARROWS
+         ============================================ */
+
+      /* Base arrow styling */
+      [data-tooltip*="top"]:not([data-tooltip-no-arrow])::before,
+      [data-tooltip*="bottom"]:not([data-tooltip-no-arrow])::before,
+      [data-tooltip*="left"]:not([data-tooltip-no-arrow])::before,
+      [data-tooltip*="right"]:not([data-tooltip-no-arrow])::before {
+        content: "";
+        position: absolute;
+        z-index: 9999;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+      }
+
+      /* Top arrow */
+      [data-tooltip*="top"]:not([data-tooltip-no-arrow])::before {
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-bottom: 1px;
+        border-width: 0 6px 7px 6px;
+        border-color: transparent transparent var(--bo-border) transparent;
+      }
+
+      [data-tooltip*="top"]:not([data-tooltip-no-arrow])::after {
+        border-radius: 4px 4px 6px 6px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="top"]:not([data-tooltip-no-arrow])::before,
+      [data-tooltip]:focus[data-tooltip*="top"]:not([data-tooltip-no-arrow])::before {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Bottom arrow */
+      [data-tooltip*="bottom"]:not([data-tooltip-no-arrow])::before {
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 1px;
+        border-width: 7px 6px 0 6px;
+        border-color: var(--bo-border) transparent transparent transparent;
+      }
+
+      [data-tooltip*="bottom"]:not([data-tooltip-no-arrow])::after {
+        border-radius: 6px 6px 4px 4px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="bottom"]:not([data-tooltip-no-arrow])::before,
+      [data-tooltip]:focus[data-tooltip*="bottom"]:not([data-tooltip-no-arrow])::before {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Left arrow */
+      [data-tooltip*="left"]:not([data-tooltip-no-arrow])::before {
+        top: 50%;
+        right: 100%;
+        transform: translateY(-50%);
+        margin-right: 1px;
+        border-width: 6px 7px 6px 0;
+        border-color: transparent var(--bo-border) transparent transparent;
+      }
+
+      [data-tooltip*="left"]:not([data-tooltip-no-arrow])::after {
+        border-radius: 6px 4px 4px 6px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="left"]:not([data-tooltip-no-arrow])::before,
+      [data-tooltip]:focus[data-tooltip*="left"]:not([data-tooltip-no-arrow])::before {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Right arrow */
+      [data-tooltip*="right"]:not([data-tooltip-no-arrow])::before {
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        margin-left: 1px;
+        border-width: 6px 0 6px 7px;
+        border-color: transparent transparent transparent var(--bo-border);
+      }
+
+      [data-tooltip*="right"]:not([data-tooltip-no-arrow])::after {
+        border-radius: 4px 6px 6px 4px;
+      }
+
+      [data-tooltip]:hover[data-tooltip*="right"]:not([data-tooltip-no-arrow])::before,
+      [data-tooltip]:focus[data-tooltip*="right"]:not([data-tooltip-no-arrow])::before {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Light theme arrows */
+      [data-tooltip-theme="light"]:not([data-tooltip-no-arrow])::before {
+        border-color: transparent transparent rgba(0, 0, 0, 0.12) transparent !important;
+      }
+
+      [data-tooltip-theme="light"][data-tooltip*="bottom"]:not([data-tooltip-no-arrow])::before {
+        border-color: rgba(0, 0, 0, 0.12) transparent transparent transparent !important;
+      }
+
+      [data-tooltip-theme="light"][data-tooltip*="left"]:not([data-tooltip-no-arrow])::before {
+        border-color: transparent rgba(0, 0, 0, 0.12) transparent transparent !important;
+      }
+
+      [data-tooltip-theme="light"][data-tooltip*="right"]:not([data-tooltip-no-arrow])::before {
+        border-color: transparent transparent transparent rgba(0, 0, 0, 0.12) !important;
+      }
+
+      /* ============================================
+         TOOLTIP WITH ICON
+         ============================================ */
+
+      [data-tooltip*="icon"]::after {
+        content: "";
+        display: none;
+      }
+
+      [data-tooltip-icon]::after {
+        content: "";
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+      }
+
+      /* ============================================
+         TOOLTIP ON DISABLED BUTTON
+         ============================================ */
+
+      [data-tooltip].bo-btn:disabled {
+        cursor: not-allowed;
+      }
+
+      [data-tooltip].bo-btn:disabled::after {
+        /* Adjust position for disabled buttons */
+        white-space: normal;
+        min-width: 120px;
+        text-align: center;
+      }
+
+      /* For disabled buttons, use a wrapper approach */
+      .tooltip-disabled-wrapper {
+        position: relative;
+        display: inline-flex;
+      }
+
+      .tooltip-disabled-wrapper [data-tooltip]::after {
+        /* Keep tooltip visible on disabled elements */
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* ============================================
+         MULTI-LINE TOOLTIP
+         ============================================ */
+
+      [data-tooltip-multiline]::after {
+        white-space: normal;
+        min-width: 180px;
+        max-width: 250px;
+        text-align: left;
+      }
+
+      /* ============================================
+         DEMO PAGE STYLES
+         ============================================ */
+
+      .demo-section {
+        margin-bottom: 28px;
+      }
+
+      .demo-title {
+        font-size: 11px;
+        font-weight: 760;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bo-muted);
+        margin-bottom: 12px;
+      }
+
+      .demo-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .demo-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .demo-block {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+
+      .demo-blockTitle {
+        font-size: 14px;
+        font-weight: 760;
+        color: var(--bo-text);
+        margin-bottom: 16px;
+      }
+
+      .demo-divider {
+        height: 1px;
+        background: var(--bo-border);
+        margin: 20px 0;
+      }
+
+      /* Icon sizing within tooltips */
+      .tooltip-icon-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .tooltip-icon-container .bo-ico {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+
+      /* Spacer element for demo */
+      .tooltip-spacer {
+        display: inline-block;
+        width: 80px;
+      }
+
+      /* Ensure proper spacing for demo */
+      .demo-icon-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* Accessibility: focus visible */
+      [data-tooltip]:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--bo-bg), 0 0 0 5px var(--bo-accent);
+        border-radius: var(--bo-radius-sm);
+      }
+
+      :root:not([data-theme="light"]) [data-tooltip]:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+
+      :root[data-theme="light"] [data-tooltip]:focus-visible {
+        box-shadow: 0 0 0 3px var(--bo-shell), 0 0 0 5px var(--bo-accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 980px; height: auto; min-height: 690px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main" style="padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 22px; font-weight: 760; margin: 0 0 24px; color: var(--bo-text);">Tooltip Component</h1>
+
+            <!-- Basic Tooltip on Hover -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Basic Tooltip on Hover</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                CSS-only tooltip using data-tooltip attribute. Hover over the elements below.
+              </p>
+              <div class="demo-grid">
+                <button class="bo-btn bo-btn--primary" data-tooltip="This is a simple tooltip!" aria-describedby="tooltip-1">
+                  Hover me
+                </button>
+                <span data-tooltip="Tooltip on text element" aria-describedby="tooltip-2" style="color: var(--bo-accent); cursor: help;">
+                  Hover text
+                </span>
+                <div class="bo-ico" style="width: 24px; height: 24px; color: var(--bo-muted);"
+                     data-tooltip="Tooltip on icon" aria-describedby="tooltip-3" tabindex="0" role="img" aria-label="Info icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4M12 8h.01"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tooltip Positions -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Tooltip Positions (top, bottom, left, right)</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                Position the tooltip using keywords: top (default), bottom, left, right
+              </p>
+              <div class="demo-grid">
+                <!-- Top -->
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Tooltip on top" aria-describedby="tooltip-top">
+                  Top
+                </button>
+                <!-- Bottom -->
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Tooltip on bottom" data-tooltip-position="bottom" aria-describedby="tooltip-bottom">
+                  Bottom
+                </button>
+                <!-- Left -->
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Tooltip on left" data-tooltip-position="left" aria-describedby="tooltip-left">
+                  Left
+                </button>
+                <!-- Right -->
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Tooltip on right" data-tooltip-position="right" aria-describedby="tooltip-right">
+                  Right
+                </button>
+              </div>
+            </div>
+
+            <!-- Tooltip with Arrow -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Tooltip with Arrow</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                Arrows are shown by default. Use data-tooltip-no-arrow to hide them.
+              </p>
+              <div class="demo-grid">
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Arrow pointing down" data-tooltip-position="top" aria-describedby="tooltip-arrow1">
+                  Top Arrow
+                </button>
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Arrow pointing up" data-tooltip-position="bottom" aria-describedby="tooltip-arrow2">
+                  Bottom Arrow
+                </button>
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Arrow pointing right" data-tooltip-position="left" aria-describedby="tooltip-arrow3">
+                  Left Arrow
+                </button>
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Arrow pointing left" data-tooltip-position="right" aria-describedby="tooltip-arrow4">
+                  Right Arrow
+                </button>
+              </div>
+            </div>
+
+            <!-- Dark Tooltip (Default) -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Dark Tooltip (Default)</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                Dark tooltip is the default theme. Uses surface-2 background with border.
+              </p>
+              <div class="demo-grid">
+                <button class="bo-btn bo-btn--primary" data-tooltip="Dark themed tooltip" aria-describedby="tooltip-dark1">
+                  Dark Tooltip
+                </button>
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Dark tooltip on ghost" aria-describedby="tooltip-dark2">
+                  Ghost + Dark
+                </button>
+                <button class="bo-btn bo-btn--danger" data-tooltip="Dark tooltip on danger" aria-describedby="tooltip-dark3">
+                  Danger + Dark
+                </button>
+              </div>
+            </div>
+
+            <!-- Light Tooltip Variant -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Light Tooltip Variant</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                Use data-tooltip-theme="light" for light themed tooltips.
+              </p>
+              <div class="demo-grid">
+                <button class="bo-btn bo-btn--primary" data-tooltip="Light themed tooltip" data-tooltip-theme="light" aria-describedby="tooltip-light1">
+                  Light Tooltip
+                </button>
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Light tooltip on ghost" data-tooltip-theme="light" aria-describedby="tooltip-light2">
+                  Ghost + Light
+                </button>
+                <button class="bo-btn bo-btn--danger" data-tooltip="Light tooltip on danger" data-tooltip-theme="light" aria-describedby="tooltip-light3">
+                  Danger + Light
+                </button>
+              </div>
+            </div>
+
+            <!-- Tooltip with Icon -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Tooltip with Icon</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                Tooltips can contain icons. Add data-tooltip-icon attribute and include SVG inside.
+              </p>
+              <div class="demo-grid">
+                <span class="tooltip-icon-container" data-tooltip="Edit item" data-tooltip-position="top" aria-describedby="tooltip-icon1" tabindex="0" role="button" aria-label="Edit">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </span>
+                <span class="tooltip-icon-container" data-tooltip="Delete item" data-tooltip-position="top" aria-describedby="tooltip-icon2" tabindex="0" role="button" aria-label="Delete">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </span>
+                <span class="tooltip-icon-container" data-tooltip="View details" data-tooltip-position="top" aria-describedby="tooltip-icon3" tabindex="0" role="button" aria-label="View">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </span>
+                <span class="tooltip-icon-container" data-tooltip="Download file" data-tooltip-position="top" aria-describedby="tooltip-icon4" tabindex="0" role="button" aria-label="Download">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Tooltip on Disabled Button -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Tooltip on Disabled Button</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                Disabled buttons need a wrapper element to show tooltips. The wrapper maintains tooltip visibility.
+              </p>
+              <div class="demo-grid">
+                <div class="tooltip-disabled-wrapper">
+                  <button class="bo-btn bo-btn--primary" disabled data-tooltip="Action not available" data-tooltip-position="top" aria-describedby="tooltip-disabled1">
+                    Disabled Button
+                  </button>
+                </div>
+                <div class="tooltip-disabled-wrapper">
+                  <button class="bo-btn bo-btn--ghost" disabled data-tooltip="Please save first" data-tooltip-position="top" aria-describedby="tooltip-disabled2">
+                    Save to enable
+                  </button>
+                </div>
+                <div class="tooltip-disabled-wrapper">
+                  <button class="bo-btn bo-btn--danger" disabled data-tooltip="No permission" data-tooltip-position="top" aria-describedby="tooltip-disabled3">
+                    Delete (Restricted)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Light Theme Preview Section -->
+            <div class="demo-block" data-theme="light" style="background: var(--bo-surface-2); padding: 20px; border-radius: 14px;">
+              <div class="demo-blockTitle" style="margin-bottom: 12px;">Light Theme Preview</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">Tooltips maintain proper contrast in both light and dark themes.</p>
+
+              <!-- Dark tooltips in light context -->
+              <div class="demo-grid" style="margin-bottom: 20px;">
+                <button class="bo-btn bo-btn--primary" data-tooltip="Dark tooltip in light" aria-describedby="tooltip-light-preview1">
+                  Dark in Light
+                </button>
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Dark tooltip ghost" aria-describedby="tooltip-light-preview2">
+                  Ghost
+                </button>
+                <span data-tooltip="Text tooltip" aria-describedby="tooltip-light-preview3" style="color: var(--bo-accent); cursor: help;">
+                  Text link
+                </span>
+              </div>
+
+              <!-- Light tooltips in light context -->
+              <div class="demo-grid">
+                <button class="bo-btn bo-btn--primary" data-tooltip="Light tooltip in light" data-tooltip-theme="light" aria-describedby="tooltip-light-preview4">
+                  Light in Light
+                </button>
+                <button class="bo-btn bo-btn--ghost" data-tooltip="Light tooltip here" data-tooltip-theme="light" aria-describedby="tooltip-light-preview5">
+                  Light Ghost
+                </button>
+                <span data-tooltip="Light text tooltip" data-tooltip-theme="light" aria-describedby="tooltip-light-preview6" style="color: var(--bo-accent); cursor: help;">
+                  Light Text
+                </span>
+              </div>
+            </div>
+
+            <!-- Combined Examples -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Combined Examples</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">
+                Combining position, theme, and arrow options.
+              </p>
+
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <!-- Row 1 -->
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <button class="bo-btn bo-btn--sm bo-btn--primary" data-tooltip="Small primary + top + arrow" data-tooltip-position="top" aria-describedby="tooltip-comb1">
+                    Small Top
+                  </button>
+                  <button class="bo-btn bo-btn--sm bo-btn--ghost" data-tooltip="Small ghost + bottom" data-tooltip-position="bottom" aria-describedby="tooltip-comb2">
+                    Small Bottom
+                  </button>
+                </div>
+
+                <!-- Row 2 -->
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <button class="bo-btn bo-btn--sm bo-btn--primary" data-tooltip="Light theme + left" data-tooltip-position="left" data-tooltip-theme="light" aria-describedby="tooltip-comb3">
+                    Left Light
+                  </button>
+                  <button class="bo-btn bo-btn--sm bo-btn--ghost" data-tooltip="Light + right + arrow" data-tooltip-position="right" data-tooltip-theme="light" aria-describedby="tooltip-comb4">
+                    Right Light
+                  </button>
+                </div>
+
+                <!-- Row 3 -->
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <span data-tooltip="Icon + top + dark" data-tooltip-position="top" aria-describedby="tooltip-comb5" tabindex="0" role="button" aria-label="Settings">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; color: var(--bo-muted);">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                  </span>
+                  <span data-tooltip="Icon + bottom + light" data-tooltip-position="bottom" data-tooltip-theme="light" aria-describedby="tooltip-comb6" tabindex="0" role="button" aria-label="Help">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; color: var(--bo-muted);">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                  </span>
+                </div>
+
+                <!-- Row 4 -->
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <div class="tooltip-disabled-wrapper">
+                    <button class="bo-btn bo-btn--sm bo-btn--primary" disabled data-tooltip="Disabled + top" data-tooltip-position="top" aria-describedby="tooltip-comb7">
+                      Disabled
+                    </button>
+                  </div>
+                  <div class="tooltip-disabled-wrapper">
+                    <button class="bo-btn bo-btn--sm bo-btn--ghost" disabled data-tooltip="Disabled + light" data-tooltip-position="bottom" data-tooltip-theme="light" aria-describedby="tooltip-comb8">
+                      Disabled Light
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Usage Instructions -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Usage Instructions</div>
+              <div style="font-size: 12px; color: var(--bo-muted); line-height: 1.8;">
+                <p style="margin-top: 0;"><strong>Basic tooltip:</strong> Add <code>data-tooltip="Your message"</code> to any element.</p>
+                <p><strong>Position:</strong> Use keywords in the attribute: <code>data-tooltip="Message|top"</code> or <code>data-tooltip-position="bottom"</code>.</p>
+                <p><strong>Light theme:</strong> Add <code>data-tooltip-theme="light"</code>.</p>
+                <p><strong>No arrow:</strong> Add <code>data-tooltip-no-arrow</code> attribute.</p>
+                <p><strong>Accessibility:</strong> Always include <code>aria-describedby="unique-id"</code> (or let the tooltip text serve as description).</p>
+                <p><strong>Disabled buttons:</strong> Wrap in a container div for tooltip support.</p>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

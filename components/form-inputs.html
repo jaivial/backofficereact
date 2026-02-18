@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Form Inputs</title>
+    <link rel="stylesheet" href="./bo.css" />
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 560px; height: 680px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-card" aria-label="Form inputs showcase">
+              <div class="bo-cardHead">
+                <div class="bo-cardTitle">Form Inputs</div>
+                <div class="bo-cardDesc">Text, email, password, textarea and select dropdowns</div>
+              </div>
+
+              <!-- Text Input -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-text">Text Input</label>
+                <input
+                  type="text"
+                  id="input-text"
+                  class="bo-input"
+                  placeholder="Enter your name"
+                  aria-describedby="input-text-desc"
+                />
+                <span class="bo-mutedText" id="input-text-desc">Your full name as it appears on ID</span>
+              </div>
+
+              <!-- Email Input -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-email">Email Address</label>
+                <input
+                  type="email"
+                  id="input-email"
+                  class="bo-input"
+                  placeholder="email@example.com"
+                  autocomplete="email"
+                  aria-required="false"
+                />
+              </div>
+
+              <!-- Password Input -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-password">Password</label>
+                <input
+                  type="password"
+                  id="input-password"
+                  class="bo-input"
+                  placeholder="Enter secure password"
+                  autocomplete="new-password"
+                  aria-required="true"
+                />
+              </div>
+
+              <!-- Small Input -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-small">Small Input</label>
+                <input
+                  type="text"
+                  id="input-small"
+                  class="bo-input bo-input--sm"
+                  placeholder="Compact field"
+                />
+              </div>
+
+              <!-- Textarea -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-message">Message</label>
+                <textarea
+                  id="input-message"
+                  class="bo-input bo-textarea"
+                  placeholder="Write your message here..."
+                  aria-describedby="input-message-hint"
+                  rows="4"
+                ></textarea>
+                <span class="bo-mutedText" id="input-message-hint">Maximum 500 characters</span>
+              </div>
+
+              <!-- Select Dropdown (Native) -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-country">Select Country</label>
+                <select
+                  id="input-country"
+                  class="bo-input bo-selectNative"
+                  aria-required="false"
+                >
+                  <option value="" disabled selected>Choose a country</option>
+                  <option value="es">Espana</option>
+                  <option value="fr">Francia</option>
+                  <option value="de">Alemania</option>
+                  <option value="it">Italia</option>
+                  <option value="pt">Portugal</option>
+                </select>
+              </div>
+
+              <!-- Disabled Input -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-disabled">Disabled Input</label>
+                <input
+                  type="text"
+                  id="input-disabled"
+                  class="bo-input"
+                  placeholder="This field is disabled"
+                  disabled
+                  aria-disabled="true"
+                />
+              </div>
+
+              <!-- With Icon -->
+              <div class="bo-field">
+                <label class="bo-label" for="input-with-icon">Input with Icon</label>
+                <div class="bo-inputIconWrap">
+                  <svg class="bo-inputIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                  <input
+                    type="search"
+                    id="input-with-icon"
+                    class="bo-input"
+                    placeholder="Search..."
+                  />
+                </div>
+              </div>
+
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Accordion</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      .bo-demoSection {
+        padding: 20px;
+      }
+      .bo-demoTitle {
+        font-size: 13px;
+        font-weight: 760;
+        color: rgba(238, 240, 246, 0.42);
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .bo-demoGap {
+        margin-bottom: 32px;
+      }
+      /* Demo content styling */
+      .bo-accordionDemoContent {
+        padding: 8px 0;
+      }
+      .bo-accordionDemoContent p {
+        margin: 0 0 8px;
+      }
+      .bo-accordionDemoContent p:last-child {
+        margin-bottom: 0;
+      }
+      .bo-accordionDemoList {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--bo-muted);
+      }
+      .bo-accordionDemoList li {
+        margin-bottom: 4px;
+      }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Single open accordion (default behavior)
+        document.querySelectorAll('.bo-accordion:not(.bo-accordion--multiple)').forEach(function(accordion) {
+          var items = accordion.querySelectorAll('.bo-accordionItem');
+
+          items.forEach(function(item) {
+            var trigger = item.querySelector('.bo-accordionTrigger');
+
+            trigger.addEventListener('click', function(e) {
+              if (trigger.hasAttribute('disabled')) return;
+
+              var isActive = item.classList.contains('is-active');
+
+              // Close all items in the same accordion (single open mode)
+              items.forEach(function(i) {
+                i.classList.remove('is-active');
+                var t = i.querySelector('.bo-accordionTrigger');
+                t.setAttribute('aria-expanded', 'false');
+              });
+
+              // Open the clicked item if it wasn't active
+              if (!isActive) {
+                item.classList.add('is-active');
+                trigger.setAttribute('aria-expanded', 'true');
+              }
+            });
+          });
+        });
+
+        // Multiple open accordion
+        document.querySelectorAll('.bo-accordion--multiple').forEach(function(accordion) {
+          var items = accordion.querySelectorAll('.bo-accordionItem');
+
+          items.forEach(function(item) {
+            var trigger = item.querySelector('.bo-accordionTrigger');
+
+            trigger.addEventListener('click', function(e) {
+              if (trigger.hasAttribute('disabled')) return;
+
+              var isActive = item.classList.contains('is-active');
+
+              // Toggle the clicked item
+              if (isActive) {
+                item.classList.remove('is-active');
+                trigger.setAttribute('aria-expanded', 'false');
+              } else {
+                item.classList.add('is-active');
+                trigger.setAttribute('aria-expanded', 'true');
+              }
+            });
+          });
+        });
+
+        // Search filter functionality
+        document.querySelectorAll('.bo-accordionSearch').forEach(function(searchInput) {
+          var accordion = searchInput.closest('.bo-accordionWrapper');
+          var items = accordion.querySelectorAll('.bo-accordionItem');
+
+          searchInput.addEventListener('input', function(e) {
+            var query = e.target.value.toLowerCase().trim();
+            var hasResults = false;
+
+            items.forEach(function(item) {
+              var trigger = item.querySelector('.bo-accordionTrigger');
+              var text = trigger.textContent.toLowerCase();
+
+              if (query === '' || text.includes(query)) {
+                item.hidden = false;
+                hasResults = true;
+              } else {
+                item.hidden = true;
+              }
+            });
+
+            // Show/hide no results message
+            var noResults = accordion.querySelector('.bo-accordionSearch--noResults');
+            if (noResults) {
+              noResults.hidden = hasResults;
+            }
+          });
+        });
+
+        // Keyboard navigation
+        document.querySelectorAll('.bo-accordionTrigger').forEach(function(trigger) {
+          trigger.addEventListener('keydown', function(e) {
+            var accordion = trigger.closest('.bo-accordion');
+            var items = Array.from(accordion.querySelectorAll('.bo-accordionTrigger:not([disabled])'));
+            var index = items.indexOf(trigger);
+            var newIndex;
+
+            switch(e.key) {
+              case 'ArrowDown':
+                e.preventDefault();
+                newIndex = Math.min(index + 1, items.length - 1);
+                items[newIndex].focus();
+                break;
+              case 'ArrowUp':
+                e.preventDefault();
+                newIndex = Math.max(index - 1, 0);
+                items[newIndex].focus();
+                break;
+              case 'Home':
+                e.preventDefault();
+                items[0].focus();
+                break;
+              case 'End':
+                e.preventDefault();
+                items[items.length - 1].focus();
+                break;
+            }
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 760px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <!-- Demo 1: Accordion with single item open at a time -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Single item open at a time</div>
+              <div class="bo-demoGap">
+                <div class="bo-accordion" role="region" aria-label="Single open accordion">
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-single-1" id="trigger-single-1">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Getting Started</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-single-1" role="region" aria-labelledby="trigger-single-1">
+                      <div class="bo-accordionDemoContent">
+                        <p>Welcome to our platform! This section covers the basics of getting started.</p>
+                        <ul class="bo-accordionDemoList">
+                          <li>Create your account</li>
+                          <li>Set up your profile</li>
+                          <li>Explore the dashboard</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-single-2" id="trigger-single-2">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Account Settings</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-single-2" role="region" aria-labelledby="trigger-single-2">
+                      <div class="bo-accordionDemoContent">
+                        <p>Manage your account settings including password, email preferences, and security options.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-single-3" id="trigger-single-3">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Privacy & Security</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-single-3" role="region" aria-labelledby="trigger-single-3">
+                      <div class="bo-accordionDemoContent">
+                        <p>Your privacy is important to us. Learn about how we protect your data.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 2: Accordion allow multiple open -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Allow multiple open</div>
+              <div class="bo-demoGap">
+                <div class="bo-accordion bo-accordion--multiple" role="region" aria-label="Multiple open accordion">
+                  <div class="bo-accordionItem is-active">
+                    <button class="bo-accordionTrigger" aria-expanded="true" aria-controls="content-multi-1" id="trigger-multi-1">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Notifications</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" id="content-multi-1" role="region" aria-labelledby="trigger-multi-1">
+                      <div class="bo-accordionDemoContent">
+                        <p>Manage your notification preferences. You can choose which notifications you want to receive.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-multi-2" id="trigger-multi-2">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Email Preferences</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-multi-2" role="region" aria-labelledby="trigger-multi-2">
+                      <div class="bo-accordionDemoContent">
+                        <p>Configure your email delivery settings and frequency.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem is-active">
+                    <button class="bo-accordionTrigger" aria-expanded="true" aria-controls="content-multi-3" id="trigger-multi-3">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Push Notifications</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" id="content-multi-3" role="region" aria-labelledby="trigger-multi-3">
+                      <div class="bo-accordionDemoContent">
+                        <p>Enable or disable push notifications on your devices.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 3: Accordion with icons -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Accordion with icons</div>
+              <div class="bo-demoGap">
+                <div class="bo-accordion bo-accordion--with-icons" role="region" aria-label="Accordion with icons">
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-icon-1" id="trigger-icon-1">
+                      <span class="bo-accordionTriggerLeft">
+                        <svg class="bo-accordionTriggerIcon bo-accordionTriggerIcon--start" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                          <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        <span>Dashboard</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-icon-1" role="region" aria-labelledby="trigger-icon-1">
+                      <div class="bo-accordionDemoContent">
+                        <p>View your dashboard with key metrics and recent activity.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-icon-2" id="trigger-icon-2">
+                      <span class="bo-accordionTriggerLeft">
+                        <svg class="bo-accordionTriggerIcon bo-accordionTriggerIcon--start" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span>Team Members</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-icon-2" role="region" aria-labelledby="trigger-icon-2">
+                      <div class="bo-accordionDemoContent">
+                        <p>Manage your team members, roles, and permissions.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-icon-3" id="trigger-icon-3">
+                      <span class="bo-accordionTriggerLeft">
+                        <svg class="bo-accordionTriggerIcon bo-accordionTriggerIcon--start" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        <span>Settings</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-icon-3" role="region" aria-labelledby="trigger-icon-3">
+                      <div class="bo-accordionDemoContent">
+                        <p>Configure your application settings and preferences.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 4: Accordion with badge count -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Accordion with badge count</div>
+              <div class="bo-demoGap">
+                <div class="bo-accordion" role="region" aria-label="Accordion with badges">
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-badge-1" id="trigger-badge-1">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Unread Messages</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <span class="bo-accordionBadge">12</span>
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-badge-1" role="region" aria-labelledby="trigger-badge-1">
+                      <div class="bo-accordionDemoContent">
+                        <p>You have 12 unread messages from your contacts.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-badge-2" id="trigger-badge-2">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Pending Requests</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <span class="bo-accordionBadge bo-accordionBadge--yellow">5</span>
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-badge-2" role="region" aria-labelledby="trigger-badge-2">
+                      <div class="bo-accordionDemoContent">
+                        <p>You have 5 pending requests that need your approval.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-badge-3" id="trigger-badge-3">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>New Alerts</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <span class="bo-accordionBadge bo-accordionBadge--red">3</span>
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-badge-3" role="region" aria-labelledby="trigger-badge-3">
+                      <div class="bo-accordionDemoContent">
+                        <p>You have 3 new alerts that require your attention.</p>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-badge-4" id="trigger-badge-4">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Completed Tasks</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <span class="bo-accordionBadge bo-accordionBadge--green">28</span>
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-badge-4" role="region" aria-labelledby="trigger-badge-4">
+                      <div class="bo-accordionDemoContent">
+                        <p>You have completed 28 tasks this week. Great job!</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 5: Nested accordion -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Nested accordion</div>
+              <div class="bo-demoGap">
+                <div class="bo-accordion" role="region" aria-label="Nested accordion">
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-nested-1" id="trigger-nested-1">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Documentation</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-nested-1" role="region" aria-labelledby="trigger-nested-1">
+                      <div class="bo-accordionDemoContent">
+                        <div class="bo-accordion bo-accordion--nested" role="region" aria-label="Nested documentation sections">
+                          <div class="bo-accordionItem">
+                            <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-nested-1a" id="trigger-nested-1a">
+                              <span class="bo-accordionTriggerLeft">
+                                <span>Getting Started</span>
+                              </span>
+                              <span class="bo-accordionTriggerRight">
+                                <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                  <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                              </span>
+                            </button>
+                            <div class="bo-accordionContent" hidden id="content-nested-1a" role="region" aria-labelledby="trigger-nested-1a">
+                              <div class="bo-accordionDemoContent">
+                                <p>Learn the basics of our platform.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="bo-accordionItem">
+                            <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-nested-1b" id="trigger-nested-1b">
+                              <span class="bo-accordionTriggerLeft">
+                                <span>API Reference</span>
+                              </span>
+                              <span class="bo-accordionTriggerRight">
+                                <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                  <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                              </span>
+                            </button>
+                            <div class="bo-accordionContent" hidden id="content-nested-1b" role="region" aria-labelledby="trigger-nested-1b">
+                              <div class="bo-accordionDemoContent">
+                                <p>Complete API documentation and endpoints.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="bo-accordionItem">
+                            <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-nested-1c" id="trigger-nested-1c">
+                              <span class="bo-accordionTriggerLeft">
+                                <span>Examples</span>
+                              </span>
+                              <span class="bo-accordionTriggerRight">
+                                <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                  <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                              </span>
+                            </button>
+                            <div class="bo-accordionContent" hidden id="content-nested-1c" role="region" aria-labelledby="trigger-nested-1c">
+                              <div class="bo-accordionDemoContent">
+                                <p>Code examples and tutorials.</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-nested-2" id="trigger-nested-2">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Resources</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-nested-2" role="region" aria-labelledby="trigger-nested-2">
+                      <div class="bo-accordionDemoContent">
+                        <div class="bo-accordion bo-accordion--nested" role="region" aria-label="Nested resource sections">
+                          <div class="bo-accordionItem">
+                            <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-nested-2a" id="trigger-nested-2a">
+                              <span class="bo-accordionTriggerLeft">
+                                <span>Videos</span>
+                              </span>
+                              <span class="bo-accordionTriggerRight">
+                                <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                  <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                              </span>
+                            </button>
+                            <div class="bo-accordionContent" hidden id="content-nested-2a" role="region" aria-labelledby="trigger-nested-2a">
+                              <div class="bo-accordionDemoContent">
+                                <p>Watch video tutorials and guides.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="bo-accordionItem">
+                            <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-nested-2b" id="trigger-nested-2b">
+                              <span class="bo-accordionTriggerLeft">
+                                <span>Community</span>
+                              </span>
+                              <span class="bo-accordionTriggerRight">
+                                <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                  <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                              </span>
+                            </button>
+                            <div class="bo-accordionContent" hidden id="content-nested-2b" role="region" aria-labelledby="trigger-nested-2b">
+                              <div class="bo-accordionDemoContent">
+                                <p>Join our community forums.</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 6: Accordion bordered variant -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Accordion bordered variant</div>
+              <div class="bo-demoGap">
+                <div class="bo-accordion bo-accordion--bordered" role="region" aria-label="Bordered accordion">
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-border-1" id="trigger-border-1">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>General Information</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-border-1" role="region" aria-labelledby="trigger-border-1">
+                      <div class="bo-accordionDemoContent">
+                        <p>General settings and configuration options for your application.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-border-2" id="trigger-border-2">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Advanced Options</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-border-2" role="region" aria-labelledby="trigger-border-2">
+                      <div class="bo-accordionDemoContent">
+                        <p>Advanced configuration options for power users.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-border-3" id="trigger-border-3">
+                      <span class="bo-accordionTriggerLeft">
+                        <span>Integrations</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-border-3" role="region" aria-labelledby="trigger-border-3">
+                      <div class="bo-accordionDemoContent">
+                        <p>Connect with third-party services and APIs.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo 7: Accordion with search filter -->
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Accordion with search filter</div>
+              <div class="bo-demoGap">
+                <div class="bo-accordionWrapper">
+                  <div class="bo-accordionSearchWrap">
+                    <svg class="bo-accordionSearchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="11" cy="11" r="8"/>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" class="bo-accordionSearch" placeholder="Search items..." aria-label="Search accordion items">
+                  </div>
+                  <div class="bo-accordion bo-accordion--flat" role="region" aria-label="Searchable accordion">
+                    <div class="bo-accordionItem">
+                      <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-search-1" id="trigger-search-1">
+                        <span class="bo-accordionTriggerLeft">
+                          <span>Account Overview</span>
+                        </span>
+                        <span class="bo-accordionTriggerRight">
+                          <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"/>
+                          </svg>
+                        </span>
+                      </button>
+                      <div class="bo-accordionContent" hidden id="content-search-1" role="region" aria-labelledby="trigger-search-1">
+                        <div class="bo-accordionDemoContent">
+                          <p>View your account overview and summary.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bo-accordionItem">
+                      <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-search-2" id="trigger-search-2">
+                        <span class="bo-accordionTriggerLeft">
+                          <span>Billing History</span>
+                        </span>
+                        <span class="bo-accordionTriggerRight">
+                          <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"/>
+                          </svg>
+                        </span>
+                      </button>
+                      <div class="bo-accordionContent" hidden id="content-search-2" role="region" aria-labelledby="trigger-search-2">
+                        <div class="bo-accordionDemoContent">
+                          <p>Review your billing history and invoices.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bo-accordionItem">
+                      <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-search-3" id="trigger-search-3">
+                        <span class="bo-accordionTriggerLeft">
+                          <span>Subscription Plans</span>
+                        </span>
+                        <span class="bo-accordionTriggerRight">
+                          <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"/>
+                          </svg>
+                        </span>
+                      </button>
+                      <div class="bo-accordionContent" hidden id="content-search-3" role="region" aria-labelledby="trigger-search-3">
+                        <div class="bo-accordionDemoContent">
+                          <p>Manage your subscription and plan details.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bo-accordionItem">
+                      <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-search-4" id="trigger-search-4">
+                        <span class="bo-accordionTriggerLeft">
+                          <span>Payment Methods</span>
+                        </span>
+                        <span class="bo-accordionTriggerRight">
+                          <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"/>
+                          </svg>
+                        </span>
+                      </button>
+                      <div class="bo-accordionContent" hidden id="content-search-4" role="region" aria-labelledby="trigger-search-4">
+                        <div class="bo-accordionDemoContent">
+                          <p>Add and manage your payment methods.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bo-accordionItem">
+                      <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-search-5" id="trigger-search-5">
+                        <span class="bo-accordionTriggerLeft">
+                          <span>Tax Information</span>
+                        </span>
+                        <span class="bo-accordionTriggerRight">
+                          <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"/>
+                          </svg>
+                        </span>
+                      </button>
+                      <div class="bo-accordionContent" hidden id="content-search-5" role="region" aria-labelledby="trigger-search-5">
+                        <div class="bo-accordionDemoContent">
+                          <p>Configure your tax settings and information.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionSearch--noResults" hidden>
+                    No items found matching your search.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light theme version -->
+    <div class="bo-stage" style="margin-top: 20px">
+      <div class="bo-window" style="width: 760px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+
+            <div class="bo-demoSection">
+              <div class="bo-demoTitle">Light theme - Multiple variants</div>
+              <div class="bo-demoGap">
+                <!-- With icons and badges -->
+                <div class="bo-accordion bo-accordion--bordered bo-accordion--with-icons" role="region" aria-label="Light theme accordion">
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-light-1" id="trigger-light-1">
+                      <span class="bo-accordionTriggerLeft">
+                        <svg class="bo-accordionTriggerIcon bo-accordionTriggerIcon--start" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Active Subscriptions</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <span class="bo-accordionBadge bo-accordionBadge--lila">4</span>
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-light-1" role="region" aria-labelledby="trigger-light-1">
+                      <div class="bo-accordionDemoContent">
+                        <p>You have 4 active subscriptions.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-light-2" id="trigger-light-2">
+                      <span class="bo-accordionTriggerLeft">
+                        <svg class="bo-accordionTriggerIcon bo-accordionTriggerIcon--start" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>Pending Renewals</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <span class="bo-accordionBadge bo-accordionBadge--yellow">2</span>
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-light-2" role="region" aria-labelledby="trigger-light-2">
+                      <div class="bo-accordionDemoContent">
+                        <p>2 subscriptions are pending renewal.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bo-accordionItem">
+                    <button class="bo-accordionTrigger" aria-expanded="false" aria-controls="content-light-3" id="trigger-light-3">
+                      <span class="bo-accordionTriggerLeft">
+                        <svg class="bo-accordionTriggerIcon bo-accordionTriggerIcon--start" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                          <line x1="16" y1="2" x2="16" y2="6"/>
+                          <line x1="8" y1="2" x2="8" y2="6"/>
+                          <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <span>Scheduled Tasks</span>
+                      </span>
+                      <span class="bo-accordionTriggerRight">
+                        <span class="bo-accordionBadge bo-accordionBadge--cyan">8</span>
+                        <svg class="bo-accordionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </button>
+                    <div class="bo-accordionContent" hidden id="content-light-3" role="region" aria-labelledby="trigger-light-3">
+                      <div class="bo-accordionDemoContent">
+                        <p>You have 8 scheduled tasks.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Apply light theme to the second demo
+      document.querySelectorAll('body > .bo-stage')[1].setAttribute('data-theme', 'light');
+    </script>
+  </body>
+</html>

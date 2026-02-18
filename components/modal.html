@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Modal Dialog</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Modal size variations using CSS custom property */
+      .bo-modal--sm { --bo-modal-w: 360px; }
+      .bo-modal--md { --bo-modal-w: 520px; }
+      .bo-modal--lg { --bo-modal-w: 720px; }
+      .bo-modal--xl { --bo-modal-w: 960px; }
+
+      /* Focus visible polyfill styles */
+      .bo-modal:focus { outline: none; }
+      .bo-modalX:focus-visible,
+      .bo-btn:focus-visible {
+        outline: 2px solid rgba(185, 168, 255, 0.6);
+        outline-offset: 2px;
+      }
+
+      /* Backdrop click to close */
+      .bo-modalOverlay[data-close-on-backdrop="true"] {
+        cursor: pointer;
+      }
+      .bo-modalOverlay[data-close-on-backdrop="true"] .bo-modal {
+        cursor: default;
+      }
+
+      /* Scrollable modal body */
+      .bo-modalBody--scrollable {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+
+      /* Centered modal */
+      .bo-modal--centered {
+        text-align: center;
+      }
+      .bo-modal--centered .bo-modalHead {
+        justify-content: center;
+      }
+      .bo-modal--centered .bo-modalActions {
+        justify-content: center;
+      }
+
+      /* Hide modal when hidden attribute present */
+      .bo-modalOverlay[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Demo stage with both themes -->
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 100%; height: 100vh">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-card">
+              <div class="bo-cardHead">
+                <h2 class="bo-cardTitle">Modal Dialog Examples</h2>
+              </div>
+              <div class="bo-cardBody">
+                <p style="margin-bottom: 16px; color: var(--bo-muted);">
+                  Click any button to open the modal dialog. Use the Escape key or click outside to close.
+                </p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <button class="bo-btn bo-btn--primary" onclick="openModal('modal-sm')">
+                    Small Modal
+                  </button>
+                  <button class="bo-btn bo-btn--primary" onclick="openModal('modal-md')">
+                    Medium Modal
+                  </button>
+                  <button class="bo-btn bo-btn--primary" onclick="openModal('modal-lg')">
+                    Large Modal
+                  </button>
+                  <button class="bo-btn bo-btn--primary" onclick="openModal('modal-xl')">
+                    Extra Large Modal
+                  </button>
+                  <button class="bo-btn" onclick="toggleTheme()">
+                    Toggle Theme
+                  </button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Small Modal -->
+    <div
+      id="modal-sm"
+      class="bo-modalOverlay"
+      data-close-on-backdrop="true"
+      role="presentation"
+      hidden
+    >
+      <div
+        class="bo-modal bo-modal--sm"
+        role="dialog"
+        aria-labelledby="modal-sm-title"
+        aria-modal="true"
+        tabindex="-1"
+      >
+        <div class="bo-modalHead">
+          <h3 id="modal-sm-title" class="bo-modalTitle">Confirm Action</h3>
+          <button
+            class="bo-modalX"
+            type="button"
+            aria-label="Close dialog"
+            onclick="closeModal('modal-sm')"
+          >
+            <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="bo-modalBody">
+          <p>Are you sure you want to proceed with this action? This operation cannot be undone.</p>
+        </div>
+        <div class="bo-modalActions">
+          <button class="bo-btn bo-btn--sm" type="button" onclick="closeModal('modal-sm')">
+            Cancel
+          </button>
+          <button class="bo-btn bo-btn--primary bo-btn--sm" type="button" onclick="closeModal('modal-sm')">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medium Modal (Default) -->
+    <div
+      id="modal-md"
+      class="bo-modalOverlay"
+      data-close-on-backdrop="true"
+      role="presentation"
+      hidden
+    >
+      <div
+        class="bo-modal bo-modal--md"
+        role="dialog"
+        aria-labelledby="modal-md-title"
+        aria-modal="true"
+        tabindex="-1"
+      >
+        <div class="bo-modalHead">
+          <h3 id="modal-md-title" class="bo-modalTitle">Edit Profile</h3>
+          <button
+            class="bo-modalX"
+            type="button"
+            aria-label="Close dialog"
+            onclick="closeModal('modal-md')"
+          >
+            <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="bo-modalBody">
+          <p style="margin-bottom: 12px;">Update your profile information below:</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+              <span style="color: var(--bo-text); font-weight: 600;">Full Name</span>
+              <input type="text" class="bo-btn" style="width: 100%; text-align: left;" value="John Doe" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+              <span style="color: var(--bo-text); font-weight: 600;">Email Address</span>
+              <input type="email" class="bo-btn" style="width: 100%; text-align: left;" value="john@example.com" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+              <span style="color: var(--bo-text); font-weight: 600;">Phone Number</span>
+              <input type="tel" class="bo-btn" style="width: 100%; text-align: left;" value="+34 612 345 678" />
+            </label>
+          </div>
+        </div>
+        <div class="bo-modalActions">
+          <button class="bo-btn" type="button" onclick="closeModal('modal-md')">
+            Cancel
+          </button>
+          <button class="bo-btn bo-btn--primary" type="button" onclick="closeModal('modal-md')">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Large Modal -->
+    <div
+      id="modal-lg"
+      class="bo-modalOverlay"
+      data-close-on-backdrop="true"
+      role="presentation"
+      hidden
+    >
+      <div
+        class="bo-modal bo-modal--lg"
+        role="dialog"
+        aria-labelledby="modal-lg-title"
+        aria-modal="true"
+        tabindex="-1"
+      >
+        <div class="bo-modalHead">
+          <h3 id="modal-lg-title" class="bo-modalTitle">Advanced Settings</h3>
+          <button
+            class="bo-modalX"
+            type="button"
+            aria-label="Close dialog"
+            onclick="closeModal('modal-lg')"
+          >
+            <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="bo-modalBody bo-modalBody--scrollable">
+          <p style="margin-bottom: 16px;">Configure advanced options for your application:</p>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--bo-border); border-radius: 8px; cursor: pointer;">
+              <input type="checkbox" checked />
+              <span>Enable notifications</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--bo-border); border-radius: 8px; cursor: pointer;">
+              <input type="checkbox" checked />
+              <span>Auto-save drafts</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--bo-border); border-radius: 8px; cursor: pointer;">
+              <input type="checkbox" />
+              <span>Dark mode default</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--bo-border); border-radius: 8px; cursor: pointer;">
+              <input type="checkbox" />
+              <span>Analytics tracking</span>
+            </label>
+          </div>
+          <div style="margin-top: 16px;">
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+              <span style="color: var(--bo-text); font-weight: 600;">Session Timeout (minutes)</span>
+              <input type="number" class="bo-btn" style="width: 120px; text-align: left;" value="30" min="5" max="120" />
+            </label>
+          </div>
+        </div>
+        <div class="bo-modalActions">
+          <button class="bo-btn bo-btn--danger" type="button" onclick="closeModal('modal-lg')">
+            Reset to Default
+          </button>
+          <button class="bo-btn" type="button" onclick="closeModal('modal-lg')">
+            Cancel
+          </button>
+          <button class="bo-btn bo-btn--primary" type="button" onclick="closeModal('modal-lg')">
+            Apply Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Extra Large Modal -->
+    <div
+      id="modal-xl"
+      class="bo-modalOverlay"
+      data-close-on-backdrop="true"
+      role="presentation"
+      hidden
+    >
+      <div
+        class="bo-modal bo-modal--xl"
+        role="dialog"
+        aria-labelledby="modal-xl-title"
+        aria-modal="true"
+        tabindex="-1"
+      >
+        <div class="bo-modalHead">
+          <h3 id="modal-xl-title" class="bo-modalTitle">Content Management</h3>
+          <button
+            class="bo-modalX"
+            type="button"
+            aria-label="Close dialog"
+            onclick="closeModal('modal-xl')"
+          >
+            <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="bo-modalBody bo-modalBody--scrollable">
+          <div style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; min-height: 300px;">
+            <nav style="border-right: 1px solid var(--bo-border); padding-right: 16px;">
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                <li><a href="#" style="display: block; padding: 8px 12px; border-radius: 8px; color: var(--bo-text); text-decoration: none; background: rgba(185, 168, 255, 0.1);">General</a></li>
+                <li><a href="#" style="display: block; padding: 8px 12px; border-radius: 8px; color: var(--bo-muted); text-decoration: none;">Appearance</a></li>
+                <li><a href="#" style="display: block; padding: 8px 12px; border-radius: 8px; color: var(--bo-muted); text-decoration: none;">Security</a></li>
+                <li><a href="#" style="display: block; padding: 8px 12px; border-radius: 8px; color: var(--bo-muted); text-decoration: none;">Integrations</a></li>
+                <li><a href="#" style="display: block; padding: 8px 12px; border-radius: 8px; color: var(--bo-muted); text-decoration: none;">Billing</a></li>
+              </ul>
+            </nav>
+            <div>
+              <h4 style="margin: 0 0 12px; font-size: 14px; color: var(--bo-text);">General Settings</h4>
+              <p style="color: var(--bo-muted); font-size: 12px; margin-bottom: 16px;">
+                Configure the basic settings for your application. These options affect the overall behavior and appearance of your platform.
+              </p>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 12px;">
+                <span style="color: var(--bo-text); font-weight: 600;">Application Name</span>
+                <input type="text" class="bo-btn" style="width: 100%; text-align: left;" value="My Application" />
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 12px;">
+                <span style="color: var(--bo-text); font-weight: 600;">Support Email</span>
+                <input type="email" class="bo-btn" style="width: 100%; text-align: left;" value="support@example.com" />
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+                <span style="color: var(--bo-text); font-weight: 600;">Timezone</span>
+                <select class="bo-btn" style="width: 100%; text-align: left;">
+                  <option>Europe/Madrid (UTC+1)</option>
+                  <option>Europe/London (UTC+0)</option>
+                  <option>America/New_York (UTC-5)</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="bo-modalActions">
+          <button class="bo-btn" type="button" onclick="closeModal('modal-xl')">
+            Cancel
+          </button>
+          <button class="bo-btn bo-btn--primary" type="button" onclick="closeModal('modal-xl')">
+            Save Configuration
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Store previously focused element for focus restoration
+      let previouslyFocused = null;
+
+      // Modal open/close functions with focus trap
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        // Store currently focused element
+        previouslyFocused = document.activeElement;
+
+        // Show modal
+        modal.hidden = false;
+
+        // Focus the modal dialog itself
+        const dialog = modal.querySelector('[role="dialog"]');
+        if (dialog) {
+          dialog.focus();
+        }
+
+        // Add keydown listener for Escape
+        document.addEventListener('keydown', handleModalKeydown);
+
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        // Hide modal
+        modal.hidden = true;
+
+        // Remove keydown listener
+        document.removeEventListener('keydown', handleModalKeydown);
+
+        // Restore body scroll
+        document.body.style.overflow = '';
+
+        // Restore focus to previously focused element
+        if (previouslyFocused) {
+          previouslyFocused.focus();
+          previouslyFocused = null;
+        }
+      }
+
+      // Handle keyboard events including focus trap
+      function handleModalKeydown(event) {
+        const activeModal = document.querySelector('.bo-modalOverlay:not([hidden])');
+        if (!activeModal) return;
+
+        const dialog = activeModal.querySelector('[role="dialog"]');
+        if (!dialog) return;
+
+        if (event.key === 'Escape') {
+          // Close modal on Escape
+          closeModal(activeModal.id);
+          event.preventDefault();
+          return;
+        }
+
+        // Focus trap
+        if (event.key === 'Tab') {
+          const focusableElements = dialog.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (event.shiftKey) {
+            // Shift + Tab - backwards
+            if (document.activeElement === firstElement || document.activeElement === dialog) {
+              lastElement.focus();
+              event.preventDefault();
+            }
+          } else {
+            // Tab - forwards
+            if (document.activeElement === lastElement) {
+              firstElement.focus();
+              event.preventDefault();
+            }
+          }
+        }
+      }
+
+      // Handle backdrop click to close
+      document.addEventListener('click', function(event) {
+        const overlays = document.querySelectorAll('.bo-modalOverlay:not([hidden])');
+        overlays.forEach(overlay => {
+          if (overlay.dataset.closeOnBackdrop === 'true' && event.target === overlay) {
+            closeModal(overlay.id);
+          }
+        });
+      });
+
+      // Theme toggle function
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', newTheme);
+      }
+
+      // Initialize theme from localStorage or system preference
+      (function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </body>
+</html>

@@ -37,7 +37,15 @@ import type {
   RoleUserItem,
   RestaurantBranding,
   RestaurantIntegrations,
+  RestaurantInvoiceSettings,
   Vino,
+  InvoiceTemplate,
+  InvoiceTemplateInput,
+  ReminderTemplate,
+  ReminderTemplateInput,
+  ReminderSettings,
+  InvoiceReminder,
+  SendReminderInput,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 
@@ -207,6 +215,16 @@ export function createClient(opts: ClientOpts) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(branding),
+        });
+      },
+      async getInvoiceSettings(): Promise<APISuccess<{ settings: RestaurantInvoiceSettings }> | APIError> {
+        return json("/api/admin/invoices/settings", { method: "GET" });
+      },
+      async setInvoiceSettings(settings: RestaurantInvoiceSettings): Promise<APISuccess<{ settings: RestaurantInvoiceSettings }> | APIError> {
+        return json("/api/admin/invoices/settings", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(settings),
         });
       },
     },
@@ -534,6 +552,165 @@ export function createClient(opts: ClientOpts) {
           return json(`/api/admin/vinos/${id}`, { method: "DELETE" });
         },
       },
+      cafes: {
+        async list(params?: { tipo?: string; active?: number; search?: string }): Promise<APISuccess<{ items: FoodItem[] }> | APIError> {
+          const q = new URLSearchParams();
+          if (params?.tipo) q.set("tipo", params.tipo);
+          if (params?.active !== undefined) q.set("active", String(params.active));
+          if (params?.search) q.set("search", params.search);
+          const qs = q.toString();
+          return json(`/api/admin/cafes${qs ? `?${qs}` : ""}`, { method: "GET" });
+        },
+        async create(input: {
+          tipo?: string;
+          nombre: string;
+          precio: number;
+          descripcion?: string;
+          titulo?: string;
+          suplemento?: number;
+          alergenos?: string[];
+          active?: boolean;
+          imageBase64?: string;
+        }): Promise<APISuccess<{ num: number }> | APIError> {
+          return json("/api/admin/cafes", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async patch(
+          id: number,
+          patch: Partial<{
+            tipo: string;
+            nombre: string;
+            precio: number;
+            descripcion: string;
+            titulo: string;
+            suplemento: number;
+            alergenos: string[];
+            active: boolean;
+            imageBase64: string;
+          }>,
+        ): Promise<APISuccess | APIError> {
+          return json(`/api/admin/cafes/${id}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(patch),
+          });
+        },
+        async delete(id: number): Promise<APISuccess | APIError> {
+          return json(`/api/admin/cafes/${id}`, { method: "DELETE" });
+        },
+        async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
+          return json(`/api/admin/cafes/${id}/toggle`, { method: "POST" });
+        },
+      },
+      bebidas: {
+        async list(params?: { tipo?: string; active?: number; search?: string }): Promise<APISuccess<{ items: FoodItem[] }> | APIError> {
+          const q = new URLSearchParams();
+          if (params?.tipo) q.set("tipo", params.tipo);
+          if (params?.active !== undefined) q.set("active", String(params.active));
+          if (params?.search) q.set("search", params.search);
+          const qs = q.toString();
+          return json(`/api/admin/bebidas${qs ? `?${qs}` : ""}`, { method: "GET" });
+        },
+        async create(input: {
+          tipo?: string;
+          nombre: string;
+          precio: number;
+          descripcion?: string;
+          titulo?: string;
+          suplemento?: number;
+          alergenos?: string[];
+          active?: boolean;
+          imageBase64?: string;
+        }): Promise<APISuccess<{ num: number }> | APIError> {
+          return json("/api/admin/bebidas", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async patch(
+          id: number,
+          patch: Partial<{
+            tipo: string;
+            nombre: string;
+            precio: number;
+            descripcion: string;
+            titulo: string;
+            suplemento: number;
+            alergenos: string[];
+            active: boolean;
+            imageBase64: string;
+          }>,
+        ): Promise<APISuccess | APIError> {
+          return json(`/api/admin/bebidas/${id}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(patch),
+          });
+        },
+        async delete(id: number): Promise<APISuccess | APIError> {
+          return json(`/api/admin/bebidas/${id}`, { method: "DELETE" });
+        },
+        async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
+          return json(`/api/admin/bebidas/${id}/toggle`, { method: "POST" });
+        },
+      },
+      platos: {
+        async list(params?: { tipo?: string; active?: number; search?: string }): Promise<APISuccess<{ items: FoodItem[] }> | APIError> {
+          const q = new URLSearchParams();
+          if (params?.tipo) q.set("tipo", params.tipo);
+          if (params?.active !== undefined) q.set("active", String(params.active));
+          if (params?.search) q.set("search", params.search);
+          const qs = q.toString();
+          return json(`/api/admin/platos${qs ? `?${qs}` : ""}`, { method: "GET" });
+        },
+        async create(input: {
+          tipo?: string;
+          nombre: string;
+          precio: number;
+          descripcion?: string;
+          titulo?: string;
+          suplemento?: number;
+          alergenos?: string[];
+          active?: boolean;
+          imageBase64?: string;
+        }): Promise<APISuccess<{ num: number }> | APIError> {
+          return json("/api/admin/platos", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async patch(
+          id: number,
+          patch: Partial<{
+            tipo: string;
+            nombre: string;
+            precio: number;
+            descripcion: string;
+            titulo: string;
+            suplemento: number;
+            alergenos: string[];
+            active: boolean;
+            imageBase64: string;
+          }>,
+        ): Promise<APISuccess | APIError> {
+          return json(`/api/admin/platos/${id}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(patch),
+          });
+        },
+        async delete(id: number): Promise<APISuccess | APIError> {
+          return json(`/api/admin/platos/${id}`, { method: "DELETE" });
+        },
+        async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
+          return json(`/api/admin/platos/${id}/toggle`, { method: "POST" });
+        },
+      },
       grupos: {
         async list(status?: string): Promise<APISuccess<{ menus: GroupMenuSummary[]; count: number }> | APIError> {
           const q = status ? `?status=${encodeURIComponent(status)}` : "";
@@ -803,6 +980,7 @@ export function createClient(opts: ClientOpts) {
     invoices: {
       async list(params?: {
         search?: string;
+        search_by?: "name" | "email" | "invoice_number";
         status?: string;
         date_type?: string;
         date_from?: string;
@@ -814,6 +992,7 @@ export function createClient(opts: ClientOpts) {
       }): Promise<APISuccess<{ invoices: import("./types").Invoice[]; total: number; page: number; limit: number }> | APIError> {
         const q = new URLSearchParams();
         if (params?.search) q.set("search", params.search);
+        if (params?.search_by) q.set("search_by", params.search_by);
         if (params?.status) q.set("status", params.status);
         if (params?.date_type) q.set("date_type", params.date_type);
         if (params?.date_from) q.set("date_from", params.date_from);
@@ -857,6 +1036,14 @@ export function createClient(opts: ClientOpts) {
         });
       },
 
+      async sendWithCustomization(id: number, params: { subject?: string; message?: string }): Promise<APISuccess<{ pdf_url: string; sent_at: string }> | APIError> {
+        return json(`/api/admin/invoices/${id}/send`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(params),
+        });
+      },
+
       async searchReservations(params: {
         date_from?: string;
         date_to?: string;
@@ -875,6 +1062,13 @@ export function createClient(opts: ClientOpts) {
         return json(`/api/admin/invoices/search-reservation?${q.toString()}`, { method: "GET" });
       },
 
+      async getByCustomerEmail(email: string): Promise<APISuccess<{ invoices: import("./types").Invoice[]; total: number }> | APIError> {
+        const q = new URLSearchParams();
+        q.set("search", email);
+        q.set("search_by", "email");
+        return json(`/api/admin/invoices?${q.toString()}`, { method: "GET" });
+      },
+
       async uploadImage(id: number, file: File): Promise<{ success: boolean; url?: string } | import("./types").APIError> {
         const formData = new FormData();
         formData.append("image", file);
@@ -883,6 +1077,560 @@ export function createClient(opts: ClientOpts) {
           body: formData,
         });
         return readJSON(res);
+      },
+
+      async getHistory(id: number): Promise<import("./types").InvoiceHistoryListResponse | import("./types").APIError> {
+        return json(`/api/admin/invoices/${id}/history`, { method: "GET" });
+      },
+
+      async addPayment(id: number, input: import("./types").InvoicePaymentInput): Promise<APISuccess<{ payment: import("./types").InvoicePayment }> | APIError> {
+        return json(`/api/admin/invoices/${id}/payments`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async deletePayment(paymentId: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/invoices/payments/${paymentId}`, {
+          method: "DELETE",
+        });
+      },
+
+      async getPayments(id: number): Promise<APISuccess<{ payments: import("./types").InvoicePayment[] }> | APIError> {
+        return json(`/api/admin/invoices/${id}/payments`, { method: "GET" });
+      },
+
+      async getAnalytics(params?: {
+        date_from?: string;
+        date_to?: string;
+        months?: number;
+      }): Promise<APISuccess<{ analytics: import("./types").InvoiceAnalytics }> | APIError> {
+        const q = new URLSearchParams();
+        if (params?.date_from) q.set("date_from", params.date_from);
+        if (params?.date_to) q.set("date_to", params.date_to);
+        if (params?.months) q.set("months", String(params.months));
+        return json(`/api/admin/invoices/analytics?${q.toString()}`, { method: "GET" });
+      },
+
+      async merge(input: import("./types").InvoiceMergeInput): Promise<import("./types").InvoiceMergeResponse | import("./types").APIError> {
+        return json("/api/admin/invoices/merge", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async split(input: import("./types").InvoiceSplitInput): Promise<import("./types").InvoiceSplitResponse | import("./types").APIError> {
+        return json("/api/admin/invoices/split", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async getSplitInfo(id: number): Promise<import("./types").InvoiceSplitInfoResponse | import("./types").APIError> {
+        return json(`/api/admin/invoices/${id}/split-info`, { method: "GET" });
+      },
+
+      async getChildInvoices(parentId: number): Promise<APISuccess<{ invoices: import("./types").Invoice[] }> | APIError> {
+        return json(`/api/admin/invoices/${parentId}/child-invoices`, { method: "GET" });
+      },
+
+      async getParentInvoice(childId: number): Promise<APISuccess<{ invoice: import("./types").Invoice }> | APIError> {
+        return json(`/api/admin/invoices/${childId}/parent-invoice`, { method: "GET" });
+      },
+
+      // Invoice Comments
+      async getComments(invoiceId: number): Promise<APISuccess<{ comments: import("./types").InvoiceComment[] }> | APIError> {
+        return json(`/api/admin/invoices/${invoiceId}/comments`, { method: "GET" });
+      },
+
+      async addComment(invoiceId: number, input: { content: string }): Promise<APISuccess<{ comment: import("./types").InvoiceComment }> | APIError> {
+        return json(`/api/admin/invoices/${invoiceId}/comments`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async updateComment(invoiceId: number, commentId: number, input: { content: string }): Promise<APISuccess<{ comment: import("./types").InvoiceComment }> | APIError> {
+        return json(`/api/admin/invoices/${invoiceId}/comments/${commentId}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async deleteComment(invoiceId: number, commentId: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/invoices/${invoiceId}/comments/${commentId}`, {
+          method: "DELETE",
+        });
+      },
+
+      // Invoice Renumbering
+      async previewRenumber(input: import("./types").InvoiceRenumberInput): Promise<APISuccess<{ preview: import("./types").InvoiceRenumberPreview[] }> | APIError> {
+        return json("/api/admin/invoices/renumber/preview", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async applyRenumber(input: import("./types").InvoiceRenumberInput): Promise<import("./types").InvoiceRenumberResult | import("./types").APIError> {
+        return json("/api/admin/invoices/renumber/apply", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async getRenumberHistory(): Promise<import("./types").InvoiceRenumberAuditListResponse | import("./types").APIError> {
+        return json("/api/admin/invoices/renumber/history", { method: "GET" });
+      },
+    },
+
+    invoiceTemplates: {
+      async list(): Promise<APISuccess<{ templates: InvoiceTemplate[]; total: number }> | APIError> {
+        return json(`/api/admin/invoice-templates`, { method: "GET" });
+      },
+
+      async get(id: number): Promise<APISuccess<{ template: InvoiceTemplate }> | APIError> {
+        return json(`/api/admin/invoice-templates/${id}`, { method: "GET" });
+      },
+
+      async create(input: InvoiceTemplateInput): Promise<APISuccess<{ id: number }> | APIError> {
+        return json("/api/admin/invoice-templates", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async update(id: number, input: InvoiceTemplateInput): Promise<APISuccess | APIError> {
+        return json(`/api/admin/invoice-templates/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/invoice-templates/${id}`, {
+          method: "DELETE",
+        });
+      },
+
+      async toggleActive(id: number): Promise<APISuccess<{ is_active: boolean }> | APIError> {
+        return json(`/api/admin/invoice-templates/${id}/toggle-active`, {
+          method: "POST",
+        });
+      },
+    },
+
+    // Tax Reports API (IVA Summary)
+    taxReports: {
+      async getIVAReport(params: {
+        date_from: string;
+        date_to: string;
+        include_credit_notes?: boolean;
+        quarter?: string;
+      }): Promise<APISuccess<{ report: import("./types").TaxReport }> | APIError> {
+        const q = new URLSearchParams();
+        q.set("date_from", params.date_from);
+        q.set("date_to", params.date_to);
+        if (params.include_credit_notes !== undefined) q.set("include_credit_notes", String(params.include_credit_notes));
+        if (params.quarter) q.set("quarter", params.quarter);
+        return json(`/api/admin/tax-reports/iva?${q.toString()}`, { method: "GET" });
+      },
+
+      async getQuarterlyBreakdown(year: number): Promise<APISuccess<{ quarters: import("./types").TaxReportQuarterlyBreakdown[] }> | APIError> {
+        const q = new URLSearchParams();
+        q.set("year", String(year));
+        return json(`/api/admin/tax-reports/quarterly?${q.toString()}`, { method: "GET" });
+      },
+
+      async exportReport(params: {
+        date_from: string;
+        date_to: string;
+        include_credit_notes?: boolean;
+        format: "pdf" | "excel" | "csv";
+        report_type?: "iva" | "irpf" | "summary";
+        quarter?: string;
+      }): Promise<APISuccess<{ download_url: string; filename: string }> | APIError> {
+        const q = new URLSearchParams();
+        q.set("date_from", params.date_from);
+        q.set("date_to", params.date_to);
+        q.set("format", params.format);
+        if (params.include_credit_notes !== undefined) q.set("include_credit_notes", String(params.include_credit_notes));
+        if (params.report_type) q.set("report_type", params.report_type);
+        if (params.quarter) q.set("quarter", params.quarter);
+        return json(`/api/admin/tax-reports/export?${q.toString()}`, { method: "GET" });
+      },
+
+      // Customer Statement API
+      async getCustomerStatement(params: {
+        customer_name: string;
+        date_from: string;
+        date_to: string;
+      }): Promise<APISuccess<{ statement: import("./types").CustomerStatement }> | APIError> {
+        const q = new URLSearchParams();
+        q.set("customer_name", params.customer_name);
+        q.set("date_from", params.date_from);
+        q.set("date_to", params.date_to);
+        return json(`/api/admin/customer-statement?${q.toString()}`, { method: "GET" });
+      },
+
+      async exportCustomerStatement(params: {
+        customer_name: string;
+        date_from: string;
+        date_to: string;
+        format: "pdf" | "csv";
+      }): Promise<APISuccess<{ download_url: string; filename: string }> | APIError> {
+        const q = new URLSearchParams();
+        q.set("customer_name", params.customer_name);
+        q.set("date_from", params.date_from);
+        q.set("date_to", params.date_to);
+        q.set("format", params.format);
+        return json(`/api/admin/customer-statement/export?${q.toString()}`, { method: "GET" });
+      },
+
+      async listCustomersWithInvoices(): Promise<APISuccess<{ customers: { name: string; email?: string; dni_cif?: string }[] }> | APIError> {
+        return json("/api/admin/customers-with-invoices", { method: "GET" });
+      },
+    },
+
+    // Credit Notes API
+    creditNotes: {
+      async list(params?: {
+        search?: string;
+        date_from?: string;
+        date_to?: string;
+        status?: string;
+        invoice_id?: number;
+        page?: number;
+        limit?: number;
+      }): Promise<APISuccess<{ credit_notes: import("./types").CreditNote[]; total: number; page: number; limit: number }> | APIError> {
+        const q = new URLSearchParams();
+        if (params?.search) q.set("search", params.search);
+        if (params?.date_from) q.set("date_from", params.date_from);
+        if (params?.date_to) q.set("date_to", params.date_to);
+        if (params?.status) q.set("status", params.status);
+        if (params?.invoice_id) q.set("invoice_id", String(params.invoice_id));
+        if (params?.page) q.set("page", String(params.page));
+        if (params?.limit) q.set("limit", String(params.limit));
+        return json(`/api/admin/credit-notes?${q.toString()}`, { method: "GET" });
+      },
+
+      async get(id: number): Promise<APISuccess<{ credit_note: import("./types").CreditNote }> | APIError> {
+        return json(`/api/admin/credit-notes/${id}`, { method: "GET" });
+      },
+
+      async create(input: import("./types").CreditNoteInput): Promise<APISuccess<{ id: number }> | APIError> {
+        return json("/api/admin/credit-notes", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async update(id: number, input: Partial<import("./types").CreditNoteInput>): Promise<APISuccess | APIError> {
+        return json(`/api/admin/credit-notes/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/credit-notes/${id}`, {
+          method: "DELETE",
+        });
+      },
+
+      async validate(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/credit-notes/${id}/validate`, {
+          method: "POST",
+        });
+      },
+
+      async apply(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/credit-notes/${id}/apply`, {
+          method: "POST",
+        });
+      },
+
+      async getPDF(id: number): Promise<APISuccess<{ pdf_url: string }> | APIError> {
+        return json(`/api/admin/credit-notes/${id}/pdf`, { method: "GET" });
+      },
+    },
+
+    // Reminder Templates API
+    reminderTemplates: {
+      async list(): Promise<APISuccess<{ templates: ReminderTemplate[]; total: number }> | APIError> {
+        return json(`/api/admin/reminder-templates`, { method: "GET" });
+      },
+
+      async get(id: number): Promise<APISuccess<{ template: ReminderTemplate }> | APIError> {
+        return json(`/api/admin/reminder-templates/${id}`, { method: "GET" });
+      },
+
+      async create(input: ReminderTemplateInput): Promise<APISuccess<{ id: number }> | APIError> {
+        return json("/api/admin/reminder-templates", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async update(id: number, input: ReminderTemplateInput): Promise<APISuccess | APIError> {
+        return json(`/api/admin/reminder-templates/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/reminder-templates/${id}`, {
+          method: "DELETE",
+        });
+      },
+
+      async setDefault(id: number): Promise<APISuccess<{ is_default: boolean }> | APIError> {
+        return json(`/api/admin/reminder-templates/${id}/set-default`, {
+          method: "POST",
+        });
+      },
+    },
+
+    // Invoice Reminders API
+    reminders: {
+      async send(invoiceId: number, input: SendReminderInput): Promise<APISuccess<{ reminder: InvoiceReminder }> | APIError> {
+        return json(`/api/admin/invoices/${invoiceId}/reminders/send`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async listByInvoice(invoiceId: number): Promise<APISuccess<{ reminders: InvoiceReminder[]; total: number }> | APIError> {
+        return json(`/api/admin/invoices/${invoiceId}/reminders`, { method: "GET" });
+      },
+
+      async getHistory(invoiceId: number): Promise<APISuccess<{ reminders: InvoiceReminder[]; total: number }> | APIError> {
+        return json(`/api/admin/invoices/${invoiceId}/reminders/history`, { method: "GET" });
+      },
+    },
+
+    // Reminder Settings API
+    reminderSettings: {
+      async get(): Promise<APISuccess<{ settings: ReminderSettings }> | APIError> {
+        return json(`/api/admin/reminder-settings`, { method: "GET" });
+      },
+
+      async update(settings: ReminderSettings): Promise<APISuccess<{ settings: ReminderSettings }> | APIError> {
+        return json(`/api/admin/reminder-settings`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(settings),
+        });
+      },
+    },
+
+    // Scheduled Reminders API
+    scheduledReminders: {
+      async list(params?: {
+        status?: string;
+        frequency?: string;
+        date_from?: string;
+        date_to?: string;
+        invoice_id?: number;
+        page?: number;
+        limit?: number;
+      }): Promise<APISuccess<{ reminders: any[]; total: number; page: number; limit: number }> | APIError> {
+        const q = new URLSearchParams();
+        if (params?.status) q.set("status", params.status);
+        if (params?.frequency) q.set("frequency", params.frequency);
+        if (params?.date_from) q.set("date_from", params.date_from);
+        if (params?.date_to) q.set("date_to", params.date_to);
+        if (params?.invoice_id) q.set("invoice_id", String(params.invoice_id));
+        if (params?.page) q.set("page", String(params.page));
+        if (params?.limit) q.set("limit", String(params.limit));
+        return json(`/api/admin/scheduled-reminders?${q.toString()}`, { method: "GET" });
+      },
+
+      async get(id: number): Promise<APISuccess<{ reminder: any }> | APIError> {
+        return json(`/api/admin/scheduled-reminders/${id}`, { method: "GET" });
+      },
+
+      async create(input: any): Promise<APISuccess<{ id: number }> | APIError> {
+        return json("/api/admin/scheduled-reminders", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async update(id: number, input: any): Promise<APISuccess | APIError> {
+        return json(`/api/admin/scheduled-reminders/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async cancel(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/scheduled-reminders/${id}/cancel`, {
+          method: "POST",
+        });
+      },
+
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/scheduled-reminders/${id}`, {
+          method: "DELETE",
+        });
+      },
+
+      async sendNow(id: number): Promise<APISuccess<{ reminder: any }> | APIError> {
+        return json(`/api/admin/scheduled-reminders/${id}/send-now`, {
+          method: "POST",
+        });
+      },
+    },
+
+    // Auto-Reminder Rules API
+    autoReminderRules: {
+      async list(): Promise<APISuccess<{ rules: any[]; total: number }> | APIError> {
+        return json(`/api/admin/auto-reminder-rules`, { method: "GET" });
+      },
+
+      async get(id: number): Promise<APISuccess<{ rule: any }> | APIError> {
+        return json(`/api/admin/auto-reminder-rules/${id}`, { method: "GET" });
+      },
+
+      async create(input: any): Promise<APISuccess<{ id: number }> | APIError> {
+        return json("/api/admin/auto-reminder-rules", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async update(id: number, input: any): Promise<APISuccess | APIError> {
+        return json(`/api/admin/auto-reminder-rules/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/auto-reminder-rules/${id}`, {
+          method: "DELETE",
+        });
+      },
+
+      async toggle(id: number, is_active: boolean): Promise<APISuccess | APIError> {
+        return json(`/api/admin/auto-reminder-rules/${id}/toggle`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ is_active }),
+        });
+      },
+    },
+
+    // Recurring Invoices API
+    recurringInvoices: {
+      async list(params?: {
+        is_active?: boolean;
+        search?: string;
+        page?: number;
+        limit?: number;
+      }): Promise<APISuccess<{ recurringInvoices: any[]; total: number; page: number; limit: number }> | APIError> {
+        const q = new URLSearchParams();
+        if (params?.is_active !== undefined) q.set("is_active", String(params.is_active));
+        if (params?.search) q.set("search", params.search);
+        if (params?.page) q.set("page", String(params.page));
+        if (params?.limit) q.set("limit", String(params.limit));
+        return json(`/api/admin/recurring-invoices?${q.toString()}`, { method: "GET" });
+      },
+
+      async get(id: number): Promise<APISuccess<{ recurringInvoice: any }> | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}`, { method: "GET" });
+      },
+
+      async create(input: any): Promise<APISuccess<{ id: number }> | APIError> {
+        return json("/api/admin/recurring-invoices", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async update(id: number, input: any): Promise<APISuccess | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}`, {
+          method: "DELETE",
+        });
+      },
+
+      async toggleActive(id: number): Promise<APISuccess<{ is_active: boolean }> | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}/toggle-active`, {
+          method: "POST",
+        });
+      },
+
+      async generateInvoice(id: number): Promise<APISuccess<{ invoice_id: number }> | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}/generate`, {
+          method: "POST",
+        });
+      },
+
+      async getLogs(id: number): Promise<APISuccess<{ logs: any[]; total: number }> | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}/logs`, { method: "GET" });
+      },
+
+      async pause(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}/pause`, {
+          method: "POST",
+        });
+      },
+
+      async resume(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/recurring-invoices/${id}/resume`, {
+          method: "POST",
+        });
+      },
+    },
+
+    // Background Job API (for managing scheduled jobs)
+    backgroundJobs: {
+      async processRecurringInvoices(): Promise<APISuccess<{ processed: number; generated: number; errors: number }> | APIError> {
+        return json("/api/admin/jobs/process-recurring-invoices", {
+          method: "POST",
+        });
+      },
+
+      async getJobStatus(jobType: string): Promise<APISuccess<{ last_run: string; next_run: string; status: string; last_result?: any }> | APIError> {
+        const q = new URLSearchParams({ job_type: jobType });
+        return json(`/api/admin/jobs/status?${q.toString()}`, { method: "GET" });
+      },
+    },
+
+    // Public Invoice API (for customer-facing invoice lookup)
+    publicInvoices: {
+      async get(id: number, token: string): Promise<import("./types").PublicInvoiceResponse | import("./types").APIError> {
+        const q = new URLSearchParams();
+        q.set("token", token);
+        return json(`/api/public/invoices/${id}?${q.toString()}`, { method: "GET" });
       },
     },
   };

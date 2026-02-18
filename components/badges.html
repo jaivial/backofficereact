@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Badges</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Additional badge styles for this component demo */
+      .demo-section {
+        margin-bottom: 28px;
+      }
+
+      .demo-title {
+        font-size: 11px;
+        font-weight: 760;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bo-muted);
+        margin-bottom: 12px;
+      }
+
+      .demo-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .demo-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .demo-label {
+        font-size: 12px;
+        color: var(--bo-muted);
+        min-width: 80px;
+      }
+
+      .demo-block {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+
+      .demo-blockTitle {
+        font-size: 14px;
+        font-weight: 760;
+        color: var(--bo-text);
+        margin-bottom: 16px;
+      }
+
+      /* Icon sizing for badges */
+      .bo-badge .bo-ico,
+      .bo-chip .bo-ico {
+        width: 14px;
+        height: 14px;
+      }
+
+      .bo-badge--sm .bo-ico,
+      .bo-chip--sm .bo-ico {
+        width: 12px;
+        height: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 980px; height: auto; min-height: 690px">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main" style="padding: 24px; overflow-y: auto;">
+            <h1 style="font-size: 22px; font-weight: 760; margin: 0 0 24px; color: var(--bo-text);">Badges & Chips</h1>
+
+            <!-- Status Badges -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Status Badges</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--active" role="status" aria-label="Active status">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Active
+                </span>
+                <span class="bo-badge bo-badge--inactive" role="status" aria-label="Inactive status">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M4.93 4.93l14.14 14.14"/>
+                  </svg>
+                  Inactive
+                </span>
+                <span class="bo-badge bo-badge--pending" role="status" aria-label="Pending status">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                  </svg>
+                  Pending
+                </span>
+              </div>
+            </div>
+
+            <!-- Color Variants - Lila -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Color Variants - Lila</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--lila">
+                  Lila Badge
+                </span>
+                <span class="bo-badge bo-badge--lila bo-badge--outlined">
+                  Lila Outlined
+                </span>
+                <span class="bo-badge bo-badge--lila" role="img" aria-label="With icon">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                  </svg>
+                  With Icon
+                </span>
+              </div>
+            </div>
+
+            <!-- Color Variants - Cyan -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Color Variants - Cyan</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--cyan">
+                  Cyan Badge
+                </span>
+                <span class="bo-badge bo-badge--cyan bo-badge--outlined">
+                  Cyan Outlined
+                </span>
+                <span class="bo-badge bo-badge--cyan" role="img" aria-label="With icon">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <path d="M22 4L12 14.01l-3-3"/>
+                  </svg>
+                  With Icon
+                </span>
+              </div>
+            </div>
+
+            <!-- Color Variants - Green -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Color Variants - Green</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--green">
+                  Green Badge
+                </span>
+                <span class="bo-badge bo-badge--green bo-badge--outlined">
+                  Green Outlined
+                </span>
+                <span class="bo-badge bo-badge--green" role="img" aria-label="With check icon">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Verified
+                </span>
+              </div>
+            </div>
+
+            <!-- Color Variants - Red -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Color Variants - Red</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--red">
+                  Red Badge
+                </span>
+                <span class="bo-badge bo-badge--red bo-badge--outlined">
+                  Red Outlined
+                </span>
+                <span class="bo-badge bo-badge--red" role="img" aria-label="With alert icon">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  Alert
+                </span>
+              </div>
+            </div>
+
+            <!-- Color Variants - Yellow -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Color Variants - Yellow</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--yellow">
+                  Yellow Badge
+                </span>
+                <span class="bo-badge bo-badge--yellow bo-badge--outlined">
+                  Yellow Outlined
+                </span>
+                <span class="bo-badge bo-badge--yellow" role="img" aria-label="With warning icon">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Warning
+                </span>
+              </div>
+            </div>
+
+            <!-- Small Size Badges -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Small Size Badges (--sm)</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--sm bo-badge--lila">Small Lila</span>
+                <span class="bo-badge bo-badge--sm bo-badge--cyan">Small Cyan</span>
+                <span class="bo-badge bo-badge--sm bo-badge--green">Small Green</span>
+                <span class="bo-badge bo-badge--sm bo-badge--red">Small Red</span>
+                <span class="bo-badge bo-badge--sm bo-badge--yellow">Small Yellow</span>
+              </div>
+            </div>
+
+            <!-- Small Size Badges with Icons -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Small Size Badges with Icons</div>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--sm bo-badge--lila">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Done
+                </span>
+                <span class="bo-badge bo-badge--sm bo-badge--green">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  OK
+                </span>
+                <span class="bo-badge bo-badge--sm bo-badge--red">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  Error
+                </span>
+                <span class="bo-badge bo-badge--sm bo-badge--yellow">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  Wait
+                </span>
+              </div>
+            </div>
+
+            <!-- Chip Variants -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Chip Variants (bo-chip)</div>
+              <div class="demo-grid">
+                <span class="bo-chip bo-chip--lila">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Chip Lila
+                </span>
+                <span class="bo-chip bo-chip--cyan">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                    <line x1="9" y1="9" x2="9.01" y2="9"/>
+                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                  </svg>
+                  Chip Cyan
+                </span>
+                <span class="bo-chip bo-chip--green">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <path d="M22 4L12 14.01l-3-3"/>
+                  </svg>
+                  Chip Green
+                </span>
+                <span class="bo-chip bo-chip--red">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  Chip Red
+                </span>
+                <span class="bo-chip bo-chip--yellow">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Chip Yellow
+                </span>
+              </div>
+            </div>
+
+            <!-- Small Chip Variants -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Small Chip Variants (--sm)</div>
+              <div class="demo-grid">
+                <span class="bo-chip bo-chip--sm bo-chip--lila">Small Chip</span>
+                <span class="bo-chip bo-chip--sm bo-chip--cyan">Small Chip</span>
+                <span class="bo-chip bo-chip--sm bo-chip--green">Small Chip</span>
+                <span class="bo-chip bo-chip--sm bo-chip--red">Small Chip</span>
+                <span class="bo-chip bo-chip--sm bo-chip--yellow">Small Chip</span>
+              </div>
+            </div>
+
+            <!-- Chips as Tags (bo-chip--tag) -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Chips as Tags</div>
+              <div class="demo-grid">
+                <span class="bo-chip bo-chip--tag bo-chip--lila">Tag: Feature</span>
+                <span class="bo-chip bo-chip--tag bo-chip--cyan">Tag: Design</span>
+                <span class="bo-chip bo-chip--tag bo-chip--green">Tag: Complete</span>
+                <span class="bo-chip bo-chip--tag bo-chip--red">Tag: Bug</span>
+                <span class="bo-chip bo-chip--tag bo-chip--yellow">Tag: Review</span>
+              </div>
+            </div>
+
+            <!-- Default bo-chip with bo-chip--on state -->
+            <div class="demo-block">
+              <div class="demo-blockTitle">Default bo-chip with --is-on state</div>
+              <div class="demo-grid">
+                <span class="bo-chip bo-chip--static">Default Chip</span>
+                <span class="bo-chip bo-chip--is-on bo-chip--static">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Selected
+                </span>
+                <span class="bo-chip bo-chip--static bo-chip--lila">Lila Chip</span>
+                <span class="bo-chip bo-chip--is-on bo-chip--static bo-chip--lila">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Lila Selected
+                </span>
+              </div>
+            </div>
+
+            <!-- Contrast Examples: Light Theme -->
+            <div class="demo-block" data-theme="light" style="background: var(--bo-surface-2); padding: 20px; border-radius: 14px;">
+              <div class="demo-blockTitle" style="margin-bottom: 12px;">Light Theme Preview</div>
+              <p style="font-size: 12px; color: var(--bo-muted); margin-bottom: 16px;">These badges are designed to maintain proper contrast ratios in both light and dark themes.</p>
+              <div class="demo-grid">
+                <span class="bo-badge bo-badge--lila">Lila</span>
+                <span class="bo-badge bo-badge--cyan">Cyan</span>
+                <span class="bo-badge bo-badge--green">Green</span>
+                <span class="bo-badge bo-badge--red">Red</span>
+                <span class="bo-badge bo-badge--yellow">Yellow</span>
+                <span class="bo-badge bo-badge--active">
+                  <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Active
+                </span>
+                <span class="bo-badge bo-badge--inactive">Inactive</span>
+                <span class="bo-badge bo-badge--pending">Pending</span>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

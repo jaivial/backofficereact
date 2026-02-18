@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Alert</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Alert layout styles */
+      .alerts-grid {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .alert-section {
+        margin-bottom: 32px;
+      }
+
+      .alert-section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--bo-muted);
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--bo-border);
+      }
+
+      /* Alert with icon layout */
+      .bo-alert--with-icon {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .bo-alert--with-icon .bo-alertIcon {
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* Alert with action layout */
+      .bo-alert--with-action {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .bo-alert--with-action .bo-alertContent {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .bo-alert--with-action .bo-alertActions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      /* Dismissible alert with icon */
+      .bo-alert--dismissible {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .bo-alert--dismissible .bo-alertDismissible {
+        flex-shrink: 0;
+      }
+
+      /* Hide dismissed alerts */
+      .bo-alert[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Demo stage with both themes -->
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 100%; min-height: 100vh">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-card">
+              <div class="bo-cardHead">
+                <h2 class="bo-cardTitle">Alert Components</h2>
+              </div>
+              <div class="bo-cardBody">
+                <p style="margin-bottom: 20px; color: var(--bo-muted);">
+                  Accessible alert components with role="alert" and aria-live support.
+                  Toggle theme to see both light and dark variants.
+                </p>
+                <button class="bo-btn" onclick="toggleTheme()">
+                  Toggle Theme
+                </button>
+              </div>
+            </div>
+
+            <!-- Basic Alerts with Icons -->
+            <div class="bo-card" style="margin-top: 24px;">
+              <div class="bo-cardHead">
+                <h3 class="bo-cardTitle">Alerts with Icons</h3>
+              </div>
+              <div class="bo-cardBody">
+                <div class="alerts-grid">
+                  <!-- Success Alert -->
+                  <div class="bo-alert bo-alert--success bo-alert--with-icon" role="alert" aria-live="polite">
+                    <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #28a745;">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                      <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    <div>
+                      <div class="bo-alertTitle" style="color: #28a745;">Operation Successful</div>
+                      <div class="bo-alertMsg">Your changes have been saved successfully.</div>
+                    </div>
+                  </div>
+
+                  <!-- Error Alert -->
+                  <div class="bo-alert bo-alert--error bo-alert--with-icon" role="alert" aria-live="polite">
+                    <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #dc3545;">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                    <div>
+                      <div class="bo-alertTitle" style="color: #dc3545;">Error Occurred</div>
+                      <div class="bo-alertMsg">Unable to process your request. Please try again.</div>
+                    </div>
+                  </div>
+
+                  <!-- Warning Alert -->
+                  <div class="bo-alert bo-alert--warning bo-alert--with-icon" role="alert" aria-live="polite">
+                    <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #ffc107;">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    <div>
+                      <div class="bo-alertTitle" style="color: #ffc107;">Warning</div>
+                      <div class="bo-alertMsg">Your session will expire in 5 minutes.</div>
+                    </div>
+                  </div>
+
+                  <!-- Info Alert -->
+                  <div class="bo-alert bo-alert--info bo-alert--with-icon" role="alert" aria-live="polite">
+                    <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #0dcaf0;">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="16" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                    <div>
+                      <div class="bo-alertTitle" style="color: #0dcaf0;">Information</div>
+                      <div class="bo-alertMsg">New features are available. Check the changelog for details.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alert with Description -->
+            <div class="bo-card" style="margin-top: 24px;">
+              <div class="bo-cardHead">
+                <h3 class="bo-cardTitle">Alert with Description</h3>
+              </div>
+              <div class="bo-cardBody">
+                <div class="bo-alert bo-alert--success" role="alert" aria-live="polite">
+                  <div class="bo-alertTitle">Backup Completed</div>
+                  <div class="bo-alertMsg">
+                    Your daily backup was completed successfully at 2:30 AM.
+                    Total size: 4.2 GB. Files backed up: 12,847.
+                    The backup is stored securely in the designated location.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alert with Action Button -->
+            <div class="bo-card" style="margin-top: 24px;">
+              <div class="bo-cardHead">
+                <h3 class="bo-cardTitle">Alert with Action Button</h3>
+              </div>
+              <div class="bo-cardBody">
+                <div class="bo-alert bo-alert--warning bo-alert--with-action" role="alert" aria-live="polite">
+                  <div class="bo-alertContent">
+                    <div class="bo-alertTitle">Storage Space Low</div>
+                    <div class="bo-alertMsg">You have used 85% of your storage quota. Consider upgrading your plan.</div>
+                  </div>
+                  <div class="bo-alertActions">
+                    <button class="bo-btn bo-btn--sm">Upgrade Now</button>
+                  </div>
+                </div>
+
+                <div class="bo-alert bo-alert--error bo-alert--with-action" style="margin-top: 12px;" role="alert" aria-live="polite">
+                  <div class="bo-alertContent">
+                    <div class="bo-alertTitle">Payment Failed</div>
+                    <div class="bo-alertMsg">Your payment could not be processed. Please update your payment method.</div>
+                  </div>
+                  <div class="bo-alertActions">
+                    <button class="bo-btn bo-btn--sm bo-btn--danger">Update Payment</button>
+                    <button class="bo-btn bo-btn--sm">Retry</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dismissible Alert -->
+            <div class="bo-card" style="margin-top: 24px;">
+              <div class="bo-cardHead">
+                <h3 class="bo-cardTitle">Dismissible Alerts</h3>
+              </div>
+              <div class="bo-cardBody">
+                <div class="bo-alert bo-alert--info bo-alert--dismissible" role="alert" aria-live="polite" id="dismissible-alert-1">
+                  <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #0dcaf0;">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                  <div>
+                    <div class="bo-alertTitle" style="color: #0dcaf0;">Dismissible Info Alert</div>
+                    <div class="bo-alertMsg">Click the X button to dismiss this alert.</div>
+                  </div>
+                  <button class="bo-alertDismissible" type="button" aria-label="Dismiss alert" onclick="dismissAlert('dismissible-alert-1')">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="bo-alert bo-alert--success bo-alert--dismissible" style="margin-top: 12px;" role="alert" aria-live="polite" id="dismissible-alert-2">
+                  <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #28a745;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  <div>
+                    <div class="bo-alertTitle" style="color: #28a745;">Changes Saved</div>
+                    <div class="bo-alertMsg">Your preferences have been updated successfully.</div>
+                  </div>
+                  <button class="bo-alertDismissible" type="button" aria-label="Dismiss alert" onclick="dismissAlert('dismissible-alert-2')">
+                    <svg class="bo-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Borderless Alerts -->
+            <div class="bo-card" style="margin-top: 24px;">
+              <div class="bo-cardHead">
+                <h3 class="bo-cardTitle">Borderless Alerts</h3>
+              </div>
+              <div class="bo-cardBody">
+                <div class="bo-alert bo-alert--success bo-alert--borderless" role="alert" aria-live="polite">
+                  <div class="bo-alertTitle">Minimal Success</div>
+                  <div class="bo-alertMsg">A subtle, borderless success message.</div>
+                </div>
+
+                <div class="bo-alert bo-alert--error bo-alert--borderless" style="margin-top: 12px;" role="alert" aria-live="polite">
+                  <div class="bo-alertTitle">Minimal Error</div>
+                  <div class="bo-alertMsg">A subtle, borderless error message.</div>
+                </div>
+
+                <div class="bo-alert bo-alert--warning bo-alert--borderless" style="margin-top: 12px;" role="alert" aria-live="polite">
+                  <div class="bo-alertTitle">Minimal Warning</div>
+                  <div class="bo-alertMsg">A subtle, borderless warning message.</div>
+                </div>
+
+                <div class="bo-alert bo-alert--info bo-alert--borderless" style="margin-top: 12px;" role="alert" aria-live="polite">
+                  <div class="bo-alertTitle">Minimal Info</div>
+                  <div class="bo-alertMsg">A subtle, borderless info message.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Solid Background Alerts (Alternative Style) -->
+            <div class="bo-card" style="margin-top: 24px;">
+              <div class="bo-cardHead">
+                <h3 class="bo-cardTitle">Solid Background Alerts</h3>
+              </div>
+              <div class="bo-cardBody">
+                <div class="bo-alert bo-alert--success bo-alert--borderless bo-alert--with-icon" role="alert" aria-live="polite" style="background: rgba(40, 167, 69, 0.18);">
+                  <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  <div>
+                    <div class="bo-alertTitle" style="color: #28a745;">Solid Success</div>
+                    <div class="bo-alertMsg">Alert with stronger background color.</div>
+                  </div>
+                </div>
+
+                <div class="bo-alert bo-alert--error bo-alert--borderless bo-alert--with-icon" style="margin-top: 12px; background: rgba(220, 53, 69, 0.18);" role="alert" aria-live="polite">
+                  <svg class="bo-alertIcon" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                  <div>
+                    <div class="bo-alertTitle" style="color: #dc3545;">Solid Error</div>
+                    <div class="bo-alertMsg">Alert with stronger background color.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Dismiss alert function
+      function dismissAlert(alertId) {
+        const alert = document.getElementById(alertId);
+        if (alert) {
+          alert.hidden = true;
+        }
+      }
+
+      // Theme toggle function
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', newTheme);
+      }
+
+      // Initialize theme from localStorage or system preference
+      (function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </body>
+</html>

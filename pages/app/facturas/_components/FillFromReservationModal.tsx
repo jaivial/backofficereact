@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Search, X, Calendar, Users, Clock } from "lucide-react";
+import { Modal } from "../../../../ui/overlays/Modal";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { Select } from "../../../../ui/inputs/Select";
 import type { ReservationSearchResult } from "../../../../api/types";
@@ -104,17 +105,9 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
   };
 
   return (
-    <div className="bo-modalOverlay" onClick={onClose}>
-      <div className="bo-modal bo-reservationModal" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modalHeader">
-          <h2 className="bo-modalTitle">Buscar reserva</h2>
-          <button type="button" className="bo-modalClose" onClick={onClose} aria-label="Cerrar">
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="bo-modalBody">
-          <div className="bo-reservationFilters">
+    <Modal open={true} title="Buscar reserva" onClose={onClose} widthPx={640}>
+      <div className="bo-reservationModalContent">
+        <div className="bo-reservationFilters">
             <div className="bo-reservationFiltersRow">
               <label className="bo-field">
                 <span className="bo-label">
@@ -239,7 +232,6 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component: Spinners & Loading</title>
+    <link rel="stylesheet" href="./bo.css" />
+    <style>
+      /* Demo layout styles */
+      .bo-demo-section {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      .bo-demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .bo-demo-row--column {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .bo-demo-label {
+        font-size: 11px;
+        font-weight: 780;
+        color: var(--bo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+      }
+
+      .bo-demo-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .bo-demo-dark,
+      .bo-demo-light {
+        padding: 20px;
+        border-radius: var(--bo-radius-md);
+      }
+
+      .bo-demo-dark {
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-light {
+        background: var(--bo-surface-2);
+        border: 1px solid var(--bo-border);
+      }
+
+      .bo-demo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .bo-demo-title {
+        font-size: 18px;
+        font-weight: 720;
+        color: var(--bo-text);
+      }
+
+      /* Theme toggle button */
+      .bo-themeToggle {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 100;
+      }
+
+      /* Section divider */
+      .bo-demo-divider {
+        height: 1px;
+        background: var(--bo-border);
+        margin: 8px 0;
+        width: 100%;
+      }
+
+      /* Overlay demo container */
+      .bo-overlayDemo {
+        position: relative;
+        height: 140px;
+        border-radius: var(--bo-radius-md);
+        background: var(--bo-surface);
+        border: 1px solid var(--bo-border);
+        overflow: hidden;
+      }
+
+      /* Card skeleton demo */
+      .bo-skeletonDemo {
+        display: grid;
+        gap: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bo-stage">
+      <div class="bo-window" style="width: 780px; height: auto">
+        <div class="bo-app" style="grid-template-columns: 78px 1fr">
+          <aside class="bo-sidebar" aria-hidden="true"></aside>
+          <main class="bo-main">
+            <div class="bo-demo-header">
+              <div class="bo-demo-title">Spinners & Loading States</div>
+            </div>
+
+            <!-- Basic Spinner -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Basic Spinner (CSS-only)</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-spinner" role="status" aria-label="Cargando"></div>
+                <span class="bo-srOnly">Cargando contenido</span>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Spinner Sizes -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Spinner Sizes</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-demo-row">
+                  <div class="bo-spinner bo-spinner--sm" role="status" aria-label="Extra pequeno"></div>
+                  <span class="bo-spinnerLabel">Small (sm)</span>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <div class="bo-spinner bo-spinner--md" role="status" aria-label="Pequeno"></div>
+                  <span class="bo-spinnerLabel">Medium (md) - Default</span>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <div class="bo-spinner bo-spinner--lg" role="status" aria-label="Grande"></div>
+                  <span class="bo-spinnerLabel">Large (lg)</span>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <div class="bo-spinner bo-spinner--xl" role="status" aria-label="Extra grande"></div>
+                  <span class="bo-spinnerLabel">Extra Large (xl)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Spinner Colors -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Spinner Colors</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-demo-row">
+                  <div class="bo-spinner bo-spinner--lila" role="status" aria-label="Lila"></div>
+                  <div class="bo-spinner bo-spinner--cyan" role="status" aria-label="Cyan"></div>
+                  <div class="bo-spinner bo-spinner--white" role="status" aria-label="Blanco"></div>
+                </div>
+              </div>
+              <div class="bo-demo-light" data-theme="light" style="margin-top: 12px">
+                <div class="bo-demo-row">
+                  <div class="bo-spinner bo-spinner--lila" role="status" aria-label="Lila"></div>
+                  <div class="bo-spinner bo-spinner--cyan" role="status" aria-label="Cyan"></div>
+                  <div class="bo-spinner bo-spinner--dark" role="status" aria-label="Oscuro"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Spinner with Text -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Spinner with Text / Loading Label</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-spinnerWithText">
+                  <div class="bo-spinner bo-spinner--lila" role="status" aria-label="Cargando"></div>
+                  <span class="bo-spinnerLabel">Cargando datos...</span>
+                </div>
+                <div class="bo-spinnerWithText" style="margin-top: 14px">
+                  <div class="bo-spinner bo-spinner--cyan" role="status" aria-label="Procesando"></div>
+                  <span class="bo-spinnerLabel">Procesando solicitud</span>
+                </div>
+              </div>
+              <div class="bo-demo-light" data-theme="light" style="margin-top: 12px">
+                <div class="bo-spinnerWithText">
+                  <div class="bo-spinner bo-spinner--lila" role="status" aria-label="Cargando"></div>
+                  <span class="bo-spinnerLabel">Cargando datos...</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Centered Spinner -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Centered Spinner</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-spinnerCentered" role="status" aria-live="polite">
+                  <div class="bo-spinner bo-spinner--lg bo-spinner--lila"></div>
+                  <span class="bo-spinnerLabel">Cargando contenido...</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Loading Overlay -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Loading Overlay</div>
+              <div class="bo-overlayDemo">
+                <div style="padding: 16px">
+                  <p style="color: var(--bo-muted); margin: 0 0 12px">Contenido existente en la tarjeta...</p>
+                  <p style="color: var(--bo-faint); margin: 0; font-size: 13px">Mas contenido que seria visible bajo la superposicion de carga.</p>
+                </div>
+                <div class="bo-loadingOverlay" aria-busy="true" role="status" aria-label="Cargando">
+                  <div class="bo-loadingOverlayContent">
+                    <div class="bo-spinner bo-spinner--lg bo-spinner--white"></div>
+                    <span class="bo-loadingOverlayText">Cargando...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="bo-overlayDemo" style="margin-top: 12px">
+                <div style="padding: 16px">
+                  <p style="color: var(--bo-muted); margin: 0 0 12px">Light overlay variant</p>
+                  <p style="color: var(--bo-faint); margin: 0; font-size: 13px">Para fondos claros.</p>
+                </div>
+                <div class="bo-loadingOverlay bo-loadingOverlay--light" aria-busy="true" role="status" aria-label="Cargando">
+                  <div class="bo-loadingOverlayContent">
+                    <div class="bo-spinner bo-spinner--lg bo-spinner--lila"></div>
+                    <span class="bo-loadingOverlayText" style="color: var(--bo-text)">Procesando</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Loading Skeleton -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Loading Skeleton (Shimmer Effect)</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-demo-row">
+                  <div class="bo-skeleton bo-skeleton--sm"></div>
+                  <div class="bo-skeleton bo-skeleton--md"></div>
+                  <div class="bo-skeleton bo-skeleton--lg"></div>
+                  <div class="bo-skeleton bo-skeleton--xl"></div>
+                </div>
+              </div>
+              <div class="bo-demo-light" data-theme="light" style="margin-top: 12px">
+                <div class="bo-demo-row">
+                  <div class="bo-skeleton bo-skeleton--sm"></div>
+                  <div class="bo-skeleton bo-skeleton--md"></div>
+                  <div class="bo-skeleton bo-skeleton--lg"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Skeleton Lines -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Skeleton Text Lines</div>
+              <div class="bo-demo-dark" data-theme="dark" style="max-width: 320px">
+                <div class="bo-skeletonLine bo-skeletonLine--lg"></div>
+                <div class="bo-skeletonLine bo-skeletonLine--md"></div>
+                <div class="bo-skeletonLine bo-skeletonLine--sm"></div>
+              </div>
+              <div class="bo-demo-light" data-theme="light" style="margin-top: 12px; max-width: 320px">
+                <div class="bo-skeletonLine bo-skeletonLine--lg"></div>
+                <div class="bo-skeletonLine bo-skeletonLine--md"></div>
+                <div class="bo-skeletonLine bo-skeletonLine--sm"></div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Skeleton Card -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Skeleton Card</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-skeletonCard" style="max-width: 320px">
+                  <div class="bo-skeletonCardHeader">
+                    <div class="bo-skeletonAvatar"></div>
+                    <div style="flex: 1">
+                      <div class="bo-skeleton bo-skeleton--md" style="margin-bottom: 8px"></div>
+                      <div class="bo-skeleton bo-skeleton--sm"></div>
+                    </div>
+                  </div>
+                  <div class="bo-skeletonCardBody">
+                    <div class="bo-skeletonLine bo-skeletonLine--lg"></div>
+                    <div class="bo-skeletonLine bo-skeletonLine--md"></div>
+                    <div class="bo-skeletonLine bo-skeletonLine--sm"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Loading Button -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Loading Button (with Spinner Inside)</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-demo-row">
+                  <button class="bo-btn bo-btn--primary" type="button">
+                    <span class="bo-spinner bo-spinner--sm"></span>
+                    <span class="bo-btnText">Guardar</span>
+                  </button>
+                  <button class="bo-btn bo-btn--primary bo-btn--loading" type="button" aria-busy="true">
+                    <span class="bo-spinner bo-spinner--sm"></span>
+                    <span class="bo-btnText">Guardando...</span>
+                  </button>
+                  <button class="bo-btn bo-btn--primary" type="button" disabled>
+                    <span class="bo-spinner bo-spinner--sm"></span>
+                    <span class="bo-btnText">Cargando</span>
+                  </button>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <button class="bo-btn" type="button">
+                    <span class="bo-spinner bo-spinner--md"></span>
+                    <span class="bo-btnText">Procesar</span>
+                  </button>
+                  <button class="bo-btn bo-btn--loading" type="button" aria-busy="true">
+                    <span class="bo-spinner bo-spinner--md"></span>
+                    <span class="bo-btnText">Procesando...</span>
+                  </button>
+                </div>
+              </div>
+              <div class="bo-demo-light" data-theme="light" style="margin-top: 12px">
+                <div class="bo-demo-row">
+                  <button class="bo-btn bo-btn--primary" type="button">
+                    <span class="bo-spinner bo-spinner--sm"></span>
+                    <span class="bo-btnText">Guardar</span>
+                  </button>
+                  <button class="bo-btn bo-btn--primary bo-btn--loading" type="button" aria-busy="true">
+                    <span class="bo-spinner bo-spinner--sm"></span>
+                    <span class="bo-btnText">Guardando...</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Pulsing Dot -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Pulsing Dot</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-demo-row">
+                  <div class="bo-pulse bo-pulse--lila" role="status" aria-label="Activo"></div>
+                  <span class="bo-spinnerLabel">Lila</span>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <div class="bo-pulse bo-pulse--cyan" role="status" aria-label="En linea"></div>
+                  <span class="bo-spinnerLabel">Cyan</span>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <div class="bo-pulse bo-pulse--white" role="status" aria-label="Esperando"></div>
+                  <span class="bo-spinnerLabel">White</span>
+                </div>
+              </div>
+              <div class="bo-demo-light" data-theme="light" style="margin-top: 12px">
+                <div class="bo-demo-row">
+                  <div class="bo-pulse bo-pulse--lila" role="status" aria-label="Activo"></div>
+                  <div class="bo-pulse bo-pulse--cyan" role="status" aria-label="En linea"></div>
+                  <div class="bo-pulse" role="status" aria-label="Default"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Pulsing Dots Group -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Pulsing Dots Group</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-pulseGroup" role="status" aria-label="Cargando">
+                  <div class="bo-pulse"></div>
+                  <div class="bo-pulse"></div>
+                  <div class="bo-pulse"></div>
+                </div>
+                <div class="bo-pulseGroup" style="margin-top: 12px" role="status" aria-label="Cargando">
+                  <div class="bo-pulse bo-pulse--lila"></div>
+                  <div class="bo-pulse bo-pulse--lila"></div>
+                  <div class="bo-pulse bo-pulse--lila"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Status Indicator -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Status Indicator with Pulse</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <div class="bo-demo-row">
+                  <div class="bo-statusPulse bo-statusPulse--online">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bo-surface-2); display: flex; align-items: center; justify-content: center;">
+                      <span style="font-size: 18px">&#128100;</span>
+                    </div>
+                  </div>
+                  <span class="bo-spinnerLabel">Online</span>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <div class="bo-statusPulse bo-statusPulse--away">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bo-surface-2); display: flex; align-items: center; justify-content: center;">
+                      <span style="font-size: 18px">&#128100;</span>
+                    </div>
+                  </div>
+                  <span class="bo-spinnerLabel">Away</span>
+                </div>
+                <div class="bo-demo-row" style="margin-top: 12px">
+                  <div class="bo-statusPulse bo-statusPulse--offline">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bo-surface-2); display: flex; align-items: center; justify-content: center;">
+                      <span style="font-size: 18px">&#128100;</span>
+                    </div>
+                  </div>
+                  <span class="bo-spinnerLabel">Offline</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-demo-divider"></div>
+
+            <!-- Accessibility Demo -->
+            <div class="bo-demo-group">
+              <div class="bo-demo-label">Accessibility (Screen Reader Support)</div>
+              <div class="bo-demo-dark" data-theme="dark">
+                <p style="color: var(--bo-muted); font-size: 13px; margin: 0 0 12px">
+                  Todos los spinners incluyen <code>role="status"</code> y <code>aria-label</code> para compatibilidad con lectores de pantalla.
+                </p>
+                <div class="bo-spinner" role="status" aria-label="Cargando datos del usuario"></div>
+                <div class="bo-spinnerWithText" style="margin-top: 12px" role="status" aria-label="Cargando contenido">
+                  <div class="bo-spinner bo-spinner--lila"></div>
+                  <span class="bo-spinnerLabel">Cargando contenido</span>
+                </div>
+                <p style="color: var(--bo-faint); font-size: 12px; margin: 12px 0 0">
+                  Usa <code>aria-busy="true"</code> en elementos para indicar que estan cargando.
+                </p>
+              </div>
+            </div>
+
+            <div style="height: 24px"></div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

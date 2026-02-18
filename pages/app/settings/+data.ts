@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../api/client";
-import type { RestaurantBranding, RestaurantIntegrations } from "../../../api/types";
+import type { RestaurantBranding, RestaurantIntegrations, RestaurantInvoiceSettings } from "../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -17,18 +17,22 @@ export async function data(pageContext: PageContextServer) {
   let error: string | null = null;
   let integrations: RestaurantIntegrations | null = null;
   let branding: RestaurantBranding | null = null;
+  let invoiceSettings: RestaurantInvoiceSettings | null = null;
 
   try {
-    const [a, b] = await Promise.all([api.settings.getIntegrations(), api.settings.getBranding()]);
+    const [a, b, c] = await Promise.all([api.settings.getIntegrations(), api.settings.getBranding(), api.settings.getInvoiceSettings()]);
     if (a.success) integrations = a.integrations;
     else error = a.message || "Error cargando integraciones";
 
     if (b.success) branding = b.branding;
     else if (!error) error = b.message || "Error cargando branding";
+
+    if (c.success) invoiceSettings = c.settings;
+    else if (!error) error = c.message || "Error cargando configuracion de facturas";
   } catch (e) {
     error = e instanceof Error ? e.message : "Error cargando ajustes";
   }
 
-  return { integrations, branding, error };
+  return { integrations, branding, invoiceSettings, error };
 }
 
