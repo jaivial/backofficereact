@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   Check,
   ChevronDown,
@@ -8,9 +9,9 @@ import {
   GripVertical,
   PencilLine,
   Plus,
+  Repeat2,
   Search,
   Settings2,
-  Sparkles,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -24,6 +25,8 @@ import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { Switch } from "../../../../ui/shadcn/Switch";
+import { MenuTypeChangeModal } from "../../../../ui/widgets/menus/MenuTypeChangeModal";
+import { MENU_TYPE_PANELS } from "../../../../ui/widgets/menus/menuPresentation";
 
 type PageData = {
   menu: GroupMenuV2 | null;
@@ -36,6 +39,7 @@ type EditorDish = {
   catalog_dish_id?: number | null;
   title: string;
   description: string;
+  description_enabled: boolean;
   allergens: string[];
   supplement_enabled: boolean;
   supplement_price: number | null;
@@ -101,13 +105,19 @@ type BasicsPayload = {
   main_dishes_limit_number: number;
 };
 
-const MENU_TYPES = [
-  { value: "closed_conventional", label: "Menu cerrado convencional", enabled: true },
-  { value: "closed_group", label: "Menu cerrado de grupo", enabled: true },
-  { value: "a_la_carte", label: "A la carta convencional", enabled: true },
-  { value: "a_la_carte_group", label: "A la carta grupo", enabled: true },
-  { value: "special", label: "Menu especial", enabled: true },
-] as const;
+const MENU_TYPE_HINTS: Record<string, string> = {
+  closed_conventional: "Estructura fija y rapida para menus clasicos",
+  closed_group: "Pensado para grupos con timing de servicio",
+  a_la_carte: "Carta abierta con mas libertad de eleccion",
+  a_la_carte_group: "Version de carta para reservas de grupo",
+  special: "Menu de temporada o evento con presentacion especial",
+};
+
+const MENU_TYPES = MENU_TYPE_PANELS.map((panel) => ({
+  ...panel,
+  enabled: true,
+  hint: MENU_TYPE_HINTS[panel.value] ?? "Plantilla lista para editar",
+}));
 
 const DEFAULT_BEVERAGE = {
   type: "no_incluida",
@@ -132,13 +142,6 @@ const ALLERGENS = [
   { key: "Altramuces", icon: "AL" },
   { key: "Moluscos", icon: "MO" },
 ] as const;
-
-const sectionKindOptions: { value: string; label: string }[] = [
-  { value: "entrantes", label: "Entrantes" },
-  { value: "principales", label: "Principales" },
-  { value: "postres", label: "Postres" },
-  { value: "custom", label: "Custom" },
-];
 
 const beverageTypeOptions: { value: string; label: string }[] = [
   { value: "no_incluida", label: "No incluida" },
@@ -253,12 +256,15 @@ function getSectionsFingerprint(sections: EditorSection[]): string {
 }
 
 function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
+  const description = d.description || "";
+  const hasDescription = description.trim().length > 0;
   return {
     clientId: prev?.clientId || uid("dish"),
     id: d.id,
     catalog_dish_id: d.catalog_dish_id ?? null,
     title: d.title,
-    description: d.description,
+    description,
+    description_enabled: (prev?.description_enabled ?? false) || hasDescription,
     allergens: d.allergens || [],
     supplement_enabled: !!d.supplement_enabled,
     supplement_price: d.supplement_price ?? null,
@@ -368,6 +374,9 @@ export default function Page() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [menuTypeModalOpen, setMenuTypeModalOpen] = useState(false);
+  const [menuTypePendingValue, setMenuTypePendingValue] = useState<string>(data.menu?.menu_type || "closed_conventional");
+  const [menuTypeChanging, setMenuTypeChanging] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
   const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(true);
   const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
@@ -390,6 +399,7 @@ export default function Page() {
 
   const isALaCarte = menuType === "a_la_carte" || menuType === "a_la_carte_group";
   const isSpecial = menuType === "special";
+  const hasSecondaryBasicsField = (!isALaCarte && !isSpecial) || isSpecial;
 
   const basicsDraft = useMemo<BasicsDraft>(
     () => ({
@@ -517,6 +527,11 @@ export default function Page() {
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (menuTypeModalOpen) return;
+    setMenuTypePendingValue(menuType || "closed_conventional");
+  }, [menuType, menuTypeModalOpen]);
 
   useEffect(() => {
     if (previewDockTimerRef.current) {
@@ -783,6 +798,58 @@ export default function Page() {
     }
   }, [api, menuType]);
 
+  const openMenuTypeModal = useCallback(() => {
+    setMenuTypePendingValue(menuType || "closed_conventional");
+    setMenuTypeModalOpen(true);
+  }, [menuType]);
+
+  const closeMenuTypeModal = useCallback(() => {
+    if (menuTypeChanging) return;
+    setMenuTypeModalOpen(false);
+    setMenuTypePendingValue(menuType || "closed_conventional");
+  }, [menuType, menuTypeChanging]);
+
+  const confirmMenuTypeChange = useCallback(async () => {
+    if (!menuId) return;
+
+    const previousType = menuType || "closed_conventional";
+    const requestedType = menuTypePendingValue || previousType;
+    if (requestedType === previousType) {
+      closeMenuTypeModal();
+      return;
+    }
+
+    setMenuTypeChanging(true);
+    setMenuType(requestedType);
+
+    try {
+      const res = await api.menus.gruposV2.patchMenuType(menuId, requestedType);
+      if (!res.success) {
+        throw new Error(res.message || "No se pudo cambiar el tipo de menu");
+      }
+
+      const savedType = res.menu_type || requestedType;
+      setMenuType(savedType);
+      setMenuTypePendingValue(savedType);
+      setMenuTypeModalOpen(false);
+      pushToast({ kind: "success", title: "Tipo actualizado" });
+    } catch (error) {
+      setMenuType(previousType);
+      setMenuTypePendingValue(previousType);
+      pushToast({
+        kind: "error",
+        title: "Error",
+        message: error instanceof Error ? error.message : "No se pudo cambiar el tipo de menu",
+      });
+    } finally {
+      setMenuTypeChanging(false);
+    }
+  }, [api, closeMenuTypeModal, menuId, menuType, menuTypePendingValue, pushToast]);
+
+  const handleMenuTypePendingChange = useCallback((value: string) => {
+    setMenuTypePendingValue(value);
+  }, []);
+
   const addSection = useCallback(() => {
     setSections((prev) => [
       ...prev,
@@ -833,6 +900,7 @@ export default function Page() {
           catalog_dish_id: fromCatalog?.id,
           title: fromCatalog?.title || "Nuevo plato",
           description: fromCatalog?.description || "",
+          description_enabled: (fromCatalog?.description || "").trim().length > 0,
           allergens: fromCatalog?.allergens || [],
           supplement_enabled: fromCatalog?.default_supplement_enabled || false,
           supplement_price: fromCatalog?.default_supplement_price ?? null,
@@ -941,21 +1009,39 @@ export default function Page() {
       {step === 0 ? (
         <div className="bo-menuWizardPanel">
           <h2 className="bo-sectionTitle">Tipo de menu</h2>
+          <p className="bo-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
           <div className="bo-typeGrid">
-            {MENU_TYPES.map((opt) => (
-              <button
-                key={opt.value}
-                className={`bo-typeCard ${menuType === opt.value ? "is-selected" : ""}`}
-                type="button"
-                disabled={!opt.enabled || busy}
-                onClick={() => setMenuType(opt.value)}
-              >
-                <div className="bo-typeTitle">{opt.label}</div>
-                {!opt.enabled ? <div className="bo-typeSoon">Proximamente</div> : null}
-              </button>
-            ))}
+            {MENU_TYPES.map((opt) => {
+              const Icon = opt.icon;
+              const isSelected = menuType === opt.value;
+
+              return (
+                <button
+                  key={opt.value}
+                  className={`bo-typeCard bo-menuGlassPanel ${isSelected ? "is-selected" : ""}`}
+                  type="button"
+                  disabled={!opt.enabled || busy}
+                  onClick={() => setMenuType(opt.value)}
+                  aria-pressed={isSelected}
+                >
+                  <div className="bo-typeCardTop">
+                    <div className="bo-typeIconWrap" aria-hidden="true">
+                      <Icon size={18} />
+                    </div>
+                    <div className={`bo-typeState ${isSelected ? "is-selected" : ""}`}>
+                      {isSelected ? <Check size={13} /> : null}
+                      {isSelected ? "Seleccionado" : "Plantilla"}
+                    </div>
+                  </div>
+                  <div className="bo-typeTitle">{opt.label}</div>
+                  <div className="bo-typeDesc">{opt.description}</div>
+                  <div className="bo-typeHint">{opt.hint}</div>
+                  {!opt.enabled ? <div className="bo-typeSoon">Proximamente</div> : null}
+                </button>
+              );
+            })}
           </div>
-          <div className="bo-menuWizardActions">
+          <div className="bo-menuWizardActions bo-menuWizardActions--right">
             <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void createDraftAndContinue()}>
               Continuar
             </button>
@@ -966,39 +1052,35 @@ export default function Page() {
       {step === 1 ? (
         <div className="bo-menuWizardPanel">
           <h2 className="bo-sectionTitle">Datos basicos</h2>
-          <div className="bo-form bo-form--menuWizard">
-            <div className="bo-field">
-              <div className="bo-label">Titulo</div>
-              <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
-            </div>
-
-            {!isALaCarte && !isSpecial ? (
-              <div className="bo-field">
-                <div className="bo-label">Precio</div>
-                <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+          <div className="bo-form bo-form--menuWizard bo-form--menuWizardBasics">
+            <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
+              <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
+                <div className="bo-label">Titulo</div>
+                <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
               </div>
-            ) : null}
 
-            {isSpecial ? (
-              <div className="bo-field">
-                <div className="bo-label">¿Tiene precio fijo?</div>
-                <Switch checked={!!Number(price)} onCheckedChange={(checked) => setPrice(checked ? "0" : "")} />
-                {Number(price) > 0 && (
-                  <input
-                    className="bo-input"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    inputMode="decimal"
-                    placeholder="Precio"
-                    style={{ marginTop: 8 }}
-                  />
-                )}
-              </div>
-            ) : null}
+              {!isALaCarte && !isSpecial ? (
+                <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
+                  <div className="bo-label">Precio</div>
+                  <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+                </div>
+              ) : null}
 
-            <div className="bo-field">
-              <div className="bo-label">Activo</div>
-              <Switch checked={active} onCheckedChange={setActive} />
+              {isSpecial ? (
+                <div className="bo-field bo-menuBasicsField bo-menuBasicsPriceToggle">
+                  <div className="bo-label">¿Tiene precio fijo?</div>
+                  <Switch checked={!!Number(price)} onCheckedChange={(checked) => setPrice(checked ? "0" : "")} />
+                  {Number(price) > 0 ? (
+                    <input
+                      className="bo-input bo-menuBasicsPriceInput"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      inputMode="decimal"
+                      placeholder="Precio"
+                    />
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             {!isSpecial ? (
@@ -1017,7 +1099,7 @@ export default function Page() {
                         }}
                       />
                       <button
-                        className="bo-btn bo-btn--ghost"
+                        className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn"
                         type="button"
                         aria-label={`Eliminar subtitulo ${idx + 1}`}
                         disabled={subtitles.length <= 1}
@@ -1027,12 +1109,33 @@ export default function Page() {
                       </button>
                     </div>
                   ))}
-                  <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
                     <Plus size={14} /> Añadir subtitulo
                   </button>
                 </div>
               </div>
             ) : null}
+
+            <div className="bo-menuBasicsSwitchRow">
+              <button
+                className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
+                type="button"
+                disabled={!menuId || busy || menuTypeChanging}
+                onClick={openMenuTypeModal}
+                aria-label="Cambiar tipo de menu"
+                title="Cambiar tipo"
+              >
+                <Repeat2 size={14} aria-hidden="true" focusable={false} />
+              </button>
+            </div>
+
+            <div className="bo-menuBasicsSwitchRow">
+              <label className="bo-menuBasicsActiveToggle">
+                <span className="bo-label">Activo</span>
+                <Switch checked={active} onCheckedChange={setActive} />
+                <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
+              </label>
+            </div>
           </div>
 
           <div className="bo-menuWizardActions">
@@ -1116,16 +1219,6 @@ export default function Page() {
                       </button>
                     </div>
                     <input className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} />
-                    {!isALaCarte ? (
-                      <Select
-                        className="bo-sectionKindSelect"
-                        value={sec.kind}
-                        onChange={(value) => updateSection(sec.clientId, { kind: value })}
-                        options={sectionKindOptions}
-                        size="sm"
-                        ariaLabel={`Tipo de seccion ${sec.title || idx + 1}`}
-                      />
-                    ) : null}
                     <button
                       className="bo-btn bo-btn--ghost"
                       type="button"
@@ -1195,47 +1288,87 @@ export default function Page() {
               <div className="bo-panelHead">
                 <div>
                   <div className="bo-panelTitle">Editor de menu</div>
-                  <div className="bo-panelMeta">Titulo, subtitulos y precio siguen editables</div>
+                  <div className="bo-panelMeta">Titulo, subtitulos, precio y estado siguen editables</div>
                 </div>
               </div>
-              <div className="bo-panelBody bo-form bo-form--menuWizard">
-                <div className="bo-field">
-                  <div className="bo-label">Titulo</div>
-                  <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
-                </div>
-                <div className="bo-field">
-                  <div className="bo-label">Precio</div>
-                  <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
-                </div>
-                <div className="bo-field bo-field--full">
-                  <div className="bo-label">Subtitulos</div>
-                  <div className="bo-stackFields">
-                    {subtitles.map((line, idx) => (
-                      <div key={`subtitle-final-${idx}`} className="bo-inlineField">
-                        <input
-                          className="bo-input"
-                          value={line}
-                          onChange={(e) => {
-                            const next = [...subtitles];
-                            next[idx] = e.target.value;
-                            setSubtitles(next);
-                          }}
-                        />
-                        <button
-                          className="bo-btn bo-btn--ghost"
-                          type="button"
-                          aria-label={`Eliminar subtitulo ${idx + 1}`}
-                          disabled={subtitles.length <= 1}
-                          onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    ))}
-                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
-                      <Plus size={14} /> Añadir subtitulo
-                    </button>
+              <div className="bo-panelBody bo-form bo-form--menuWizard bo-form--menuWizardBasics">
+                <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
+                  <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
+                    <div className="bo-label">Titulo</div>
+                    <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
                   </div>
+                  {!isALaCarte && !isSpecial ? (
+                    <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
+                      <div className="bo-label">Precio</div>
+                      <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+                    </div>
+                  ) : null}
+                  {isSpecial ? (
+                    <div className="bo-field bo-menuBasicsField bo-menuBasicsPriceToggle">
+                      <div className="bo-label">¿Tiene precio fijo?</div>
+                      <Switch checked={!!Number(price)} onCheckedChange={(checked) => setPrice(checked ? "0" : "")} />
+                      {Number(price) > 0 ? (
+                        <input
+                          className="bo-input bo-menuBasicsPriceInput"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          inputMode="decimal"
+                          placeholder="Precio"
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+                {!isSpecial ? (
+                  <div className="bo-field bo-field--full">
+                    <div className="bo-label">Subtitulos</div>
+                    <div className="bo-stackFields">
+                      {subtitles.map((line, idx) => (
+                        <div key={`subtitle-final-${idx}`} className="bo-inlineField">
+                          <input
+                            className="bo-input"
+                            value={line}
+                            onChange={(e) => {
+                              const next = [...subtitles];
+                              next[idx] = e.target.value;
+                              setSubtitles(next);
+                            }}
+                          />
+                          <button
+                            className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn"
+                            type="button"
+                            aria-label={`Eliminar subtitulo ${idx + 1}`}
+                            disabled={subtitles.length <= 1}
+                            onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                      <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
+                        <Plus size={14} /> Añadir subtitulo
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                <div className="bo-menuBasicsSwitchRow">
+                  <button
+                    className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
+                    type="button"
+                    disabled={!menuId || busy || menuTypeChanging}
+                    onClick={openMenuTypeModal}
+                    aria-label="Cambiar tipo de menu"
+                    title="Cambiar tipo"
+                  >
+                    <Repeat2 size={14} aria-hidden="true" focusable={false} />
+                  </button>
+                </div>
+                <div className="bo-menuBasicsSwitchRow">
+                  <label className="bo-menuBasicsActiveToggle">
+                    <span className="bo-label">Activo</span>
+                    <Switch checked={active} onCheckedChange={setActive} />
+                    <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
+                  </label>
                 </div>
               </div>
             </motion.div>
@@ -1346,12 +1479,26 @@ export default function Page() {
                                         onChange={(e) => updateDish(sec.clientId, dish.clientId, { title: e.target.value })}
                                         placeholder="Titulo plato"
                                       />
-                                      <textarea
-                                        className="bo-input bo-textarea"
-                                        value={dish.description}
-                                        onChange={(e) => updateDish(sec.clientId, dish.clientId, { description: e.target.value })}
-                                        placeholder="Descripcion"
-                                      />
+                                      <label className="bo-checkRow">
+                                        <Switch
+                                          checked={dish.description_enabled}
+                                          onCheckedChange={(checked) =>
+                                            updateDish(sec.clientId, dish.clientId, {
+                                              description_enabled: checked,
+                                              description: checked ? dish.description : "",
+                                            })
+                                          }
+                                        />
+                                        <span>Descripcion</span>
+                                      </label>
+                                      {dish.description_enabled ? (
+                                        <textarea
+                                          className="bo-input bo-textarea"
+                                          value={dish.description}
+                                          onChange={(e) => updateDish(sec.clientId, dish.clientId, { description: e.target.value })}
+                                          placeholder="Descripcion"
+                                        />
+                                      ) : null}
 
                                       {isALaCarte ? (
                                         <div className="bo-dishPriceRow">
@@ -1371,47 +1518,52 @@ export default function Page() {
                                       ) : null}
 
                                       <div className="bo-dishRow">
-                                        <label className="bo-checkRow">
-                                          <Switch
-                                            checked={dish.supplement_enabled}
-                                            onCheckedChange={(checked) =>
-                                              updateDish(sec.clientId, dish.clientId, {
-                                                supplement_enabled: checked,
-                                                supplement_price: checked ? dish.supplement_price : null,
-                                              })
-                                            }
-                                          />
-                                          <span>Suplemento</span>
-                                        </label>
-                                        {dish.supplement_enabled ? (
-                                          <input
-                                            className="bo-input bo-suppInput"
-                                            inputMode="decimal"
-                                            value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
-                                            onChange={(e) =>
-                                              updateDish(sec.clientId, dish.clientId, {
-                                                supplement_price: toNumOrNull(e.target.value),
-                                              })
-                                            }
-                                            placeholder="0.00"
-                                          />
-                                        ) : null}
+                                        <div className="bo-dishRowInlineControls">
+                                          <label className="bo-checkRow">
+                                            <Switch
+                                              checked={dish.supplement_enabled}
+                                              onCheckedChange={(checked) =>
+                                                updateDish(sec.clientId, dish.clientId, {
+                                                  supplement_enabled: checked,
+                                                  supplement_price: checked ? dish.supplement_price : null,
+                                                })
+                                              }
+                                            />
+                                            <span>Suplemento</span>
+                                          </label>
+                                          {dish.supplement_enabled ? (
+                                            <input
+                                              className="bo-input bo-suppInput"
+                                              inputMode="decimal"
+                                              value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
+                                              onChange={(e) =>
+                                                updateDish(sec.clientId, dish.clientId, {
+                                                  supplement_price: toNumOrNull(e.target.value),
+                                                })
+                                              }
+                                              placeholder="0.00"
+                                            />
+                                          ) : null}
+                                        </div>
 
-                                        <button
-                                          className="bo-btn bo-btn--ghost"
-                                          type="button"
-                                          onClick={() => setAllergenModal({ open: true, sectionClientId: sec.clientId, dishClientId: dish.clientId })}
-                                        >
-                                          <Sparkles size={14} /> Alergenos
-                                        </button>
-                                        <button
-                                          className="bo-btn bo-btn--ghost"
-                                          type="button"
-                                          aria-label={`Eliminar plato ${dish.title || dishIdx + 1}`}
-                                          onClick={() => removeDish(sec.clientId, dish.clientId)}
-                                        >
-                                          <Trash2 size={14} />
-                                        </button>
+                                        <div className="bo-dishRowActionsInline">
+                                          <button
+                                            className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishAllergenIconBtn"
+                                            type="button"
+                                            aria-label={`Editar alergenos de ${dish.title || dishIdx + 1}`}
+                                            onClick={() => setAllergenModal({ open: true, sectionClientId: sec.clientId, dishClientId: dish.clientId })}
+                                          >
+                                            <AlertTriangle size={14} />
+                                          </button>
+                                          <button
+                                            className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
+                                            type="button"
+                                            aria-label={`Eliminar plato ${dish.title || dishIdx + 1}`}
+                                            onClick={() => removeDish(sec.clientId, dish.clientId)}
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        </div>
                                       </div>
 
                                       {dish.allergens.length > 0 ? (
@@ -1571,12 +1723,28 @@ export default function Page() {
               </div>
             </motion.div>
 
-            <motion.div layout transition={paneLayoutTransition} className="bo-menuWizardActions bo-menuWizardActions--final">
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(2)} disabled={busy}>
-                Volver
+            <motion.div
+              layout
+              transition={paneLayoutTransition}
+              className="bo-menuWizardActions bo-menuWizardActions--final bo-menuWizardActions--iconOnlyInline"
+            >
+              <button
+                className="bo-btn bo-btn--ghost bo-btn--sm bo-menuFinalIconBtn"
+                type="button"
+                aria-label="Volver al paso de secciones"
+                onClick={() => setStep(2)}
+                disabled={busy}
+              >
+                <ArrowLeft size={16} />
               </button>
-              <button className="bo-btn bo-btn--primary" type="button" onClick={() => void onPublish()} disabled={busy}>
-                <Check size={16} /> Añadir
+              <button
+                className="bo-btn bo-btn--primary bo-btn--sm bo-menuFinalIconBtn"
+                type="button"
+                aria-label="Añadir menu"
+                onClick={() => void onPublish()}
+                disabled={busy}
+              >
+                <Check size={16} />
               </button>
             </motion.div>
           </motion.div>
@@ -1645,6 +1813,17 @@ export default function Page() {
           </div>
         </div>
       </Modal>
+
+      <MenuTypeChangeModal
+        open={menuTypeModalOpen}
+        title="Cambiar tipo de menu"
+        currentType={menuType || "closed_conventional"}
+        nextType={menuTypePendingValue}
+        saving={menuTypeChanging}
+        onClose={closeMenuTypeModal}
+        onNextTypeChange={handleMenuTypePendingChange}
+        onConfirm={() => void confirmMenuTypeChange()}
+      />
 
       {step === 4 && isSpecial ? (
         <div className="bo-menuWizardPanel">

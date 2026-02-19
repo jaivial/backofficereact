@@ -10,8 +10,13 @@ function uid(): string {
 export function useToasts() {
   const [toasts, setToasts] = useAtom(toastsAtom);
 
+  type ToastInput = { kind: ToastKind; title: string; message?: string; timeoutMs?: number };
+
   const pushToast = useCallback(
-    (t: { kind: ToastKind; title: string; message?: string; timeoutMs?: number }) => {
+    (input: ToastInput | string, legacyKind: ToastKind = "info") => {
+      const t: ToastInput = typeof input === "string"
+        ? { kind: legacyKind, title: input }
+        : input;
       const toast: Toast = {
         id: uid(),
         kind: t.kind,
@@ -35,4 +40,3 @@ export function useToasts() {
 
   return { toasts, pushToast, dismissToast };
 }
-

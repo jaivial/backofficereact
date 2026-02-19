@@ -87,11 +87,11 @@ export default function Page() {
 
       let res: FoodListResult;
       if (activeTab === "cafes") {
-        res = await api.cafes.list(params) as FoodListResult;
+        res = await api.menus.cafes.list(params) as FoodListResult;
       } else if (activeTab === "bebidas") {
-        res = await api.bebidas.list(params) as FoodListResult;
+        res = await api.menus.bebidas.list(params) as FoodListResult;
       } else {
-        res = await api.platos.list(params) as FoodListResult;
+        res = await api.menus.platos.list(params) as FoodListResult;
       }
 
       if (res.success && res.items) {
@@ -115,7 +115,7 @@ export default function Page() {
       if (tipoFilter) params.tipo = tipoFilter;
       if (activeFilter !== "all") params.active = activeFilter === "active" ? 1 : 0;
 
-      const res = await api.vinos.list(params) as VinosResult;
+      const res = await api.menus.vinos.list(params) as VinosResult;
       if (res.success && res.vinos) {
         setVinos(res.vinos);
       } else {
@@ -160,13 +160,13 @@ export default function Page() {
     try {
       let res;
       if (activeTab === "vinos") {
-        res = await api.vinos.delete(item.num);
+        res = await api.menus.vinos.delete(item.num);
       } else if (activeTab === "cafes") {
-        res = await api.cafes.delete(item.num);
+        res = await api.menus.cafes.delete(item.num);
       } else if (activeTab === "bebidas") {
-        res = await api.bebidas.delete(item.num);
+        res = await api.menus.bebidas.delete(item.num);
       } else {
-        res = await api.platos.delete(item.num);
+        res = await api.menus.platos.delete(item.num);
       }
 
       if (res.success) {
@@ -191,13 +191,13 @@ export default function Page() {
       let res;
       if (activeTab === "vinos") {
         // Vinos doesn't have toggle, use patch
-        res = await api.vinos.patch(item.num, { active: !item.active });
+        res = await api.menus.vinos.patch(item.num, { active: !item.active });
       } else if (activeTab === "cafes") {
-        res = await api.cafes.toggle(item.num);
+        res = await api.menus.cafes.toggle(item.num);
       } else if (activeTab === "bebidas") {
-        res = await api.bebidas.toggle(item.num);
+        res = await api.menus.bebidas.toggle(item.num);
       } else {
-        res = await api.platos.toggle(item.num);
+        res = await api.menus.platos.toggle(item.num);
       }
 
       if (res.success) {

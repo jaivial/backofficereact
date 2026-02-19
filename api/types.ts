@@ -3,10 +3,12 @@ import type { BORole, BOSection } from "../lib/rbac";
 export type BOUser = {
   id: number;
   email: string;
+  username?: string | null;
   name: string;
   role: BORole;
   roleImportance: number;
   sectionAccess: BOSection[];
+  mustChangePassword?: boolean;
 };
 
 export type BORestaurant = {
@@ -117,6 +119,7 @@ export type Vino = {
   anyo: string;
   active: boolean;
   has_foto: boolean;
+  foto_url?: string;
 };
 
 export type FoodItem = {
@@ -239,6 +242,16 @@ export type ConfigDayStatus = {
 
 export type OpeningMode = "morning" | "night" | "both";
 
+export type WeekdayOpen = {
+  monday: boolean;
+  tuesday: boolean;
+  wednesday: boolean;
+  thursday: boolean;
+  friday: boolean;
+  saturday: boolean;
+  sunday: boolean;
+};
+
 export type ConfigOpeningHours = {
   date: string;
   openingMode: OpeningMode;
@@ -278,6 +291,7 @@ export type ConfigDefaults = {
   morningHours: string[];
   nightHours: string[];
   hours: string[];
+  weekdayOpen: WeekdayOpen;
   dailyLimit: number;
   mesasDeDosLimit: string;
   mesasDeTresLimit: string;
@@ -322,6 +336,49 @@ export type Member = {
   isCurrentUser?: boolean;
 };
 
+export type DeliveryAttempt = {
+  channel: "email" | "whatsapp";
+  target: string;
+  sent: boolean;
+  error?: string;
+};
+
+export type MemberInvitationPreview = {
+  memberId: number;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  dni: string | null;
+  phone: string | null;
+  photoUrl: string | null;
+  roleSlug: string;
+  roleLabel: string;
+  expiresAt: string;
+  hasOnboardingGuid?: boolean;
+};
+
+export type InvitationOnboardingMember = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  dni: string | null;
+  phone: string | null;
+  photoUrl: string | null;
+  username?: string | null;
+  roleSlug: string;
+  roleLabel: string;
+};
+
+export type PasswordResetPreview = {
+  memberId: number;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  username?: string | null;
+  expiresAt: string;
+};
+
 export type MemberStatsPoint = {
   date: string;
   label: string;
@@ -338,7 +395,7 @@ export type MemberStatsSummary = {
 };
 
 export type MemberStats = {
-  view: "weekly" | "monthly" | "quarterly";
+  view: "weekly" | "monthly" | "quarterly" | "yearly";
   date: string;
   startDate: string;
   endDate: string;
@@ -576,7 +633,7 @@ export type Invoice = {
   account_image_url?: string;
   attachments?: InvoiceAttachment[];
   invoice_date: string;
-  due_date?: string;
+  due_date?: string | null;
   payment_date?: string;
   status: InvoiceStatus;
   is_reservation?: boolean;
@@ -614,7 +671,6 @@ export type Invoice = {
   original_invoice_number?: string | null;
   // Recurring billing fields
   recurring_invoice_id?: number | null;
-  due_date?: string | null;
   // Deposit tracking fields
   deposit_type?: InvoiceDepositType | null;
   deposit_amount?: number | null;
@@ -692,7 +748,6 @@ export type InvoiceInput = {
   original_invoice_id?: number;
   // Recurring billing fields
   recurring_invoice_id?: number;
-  due_date?: string;
   // Deposit tracking fields
   deposit_type?: InvoiceDepositType | null;
   deposit_amount?: number | null;

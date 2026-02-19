@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { X, Send, Mail, MessageSquare, Clock, AlertCircle } from "lucide-react";
-import type { Invoice, ReminderTemplate, SendReminderInput } from "../../../api/types";
-import { Select } from "../../../ui/inputs/Select";
-import { Textarea } from "../../../ui/inputs/Textarea";
-import { useToasts } from "../../../ui/feedback/useToasts";
-import { createClient } from "../../../api/client";
+import type { Invoice, ReminderTemplate, SendReminderInput } from "../../../../api/types";
+import { Select } from "../../../../ui/inputs/Select";
+import { useToasts } from "../../../../ui/feedback/useToasts";
+import { createClient } from "../../../../api/client";
 
 interface ReminderModalProps {
   invoice: Invoice;
@@ -190,11 +189,11 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
               Plantilla
             </label>
             <Select
-              id="template-select"
               value={String(selectedTemplateId)}
               onChange={(v) => setSelectedTemplateId(v ? Number(v) : "")}
-              options={templateOptions as any}
+              options={templateOptions}
               disabled={loadingTemplates}
+              ariaLabel="Seleccionar plantilla"
             />
           </div>
 
@@ -232,8 +231,9 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
             <label className="bo-label" htmlFor="custom-message">
               Mensaje personalizado (opcional)
             </label>
-            <Textarea
+            <textarea
               id="custom-message"
+              className="bo-textarea"
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
               placeholder="Deja en blanco para usar la plantilla"

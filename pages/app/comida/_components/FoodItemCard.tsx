@@ -45,8 +45,8 @@ export const FoodItemCard = React.memo(function FoodItemCard({
 
   const fotoUrl = useMemo(() => {
     if (isWine) {
-      // For wines, check has_foto - we need the full URL from API
-      return (item as Vino).has_foto ? (item as Vino).has_foto : null;
+      const wine = item as Vino;
+      return wine.foto_url || null;
     }
     return (item as FoodItem).foto_url || null;
   }, [item, isWine]);

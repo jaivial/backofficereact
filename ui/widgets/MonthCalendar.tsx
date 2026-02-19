@@ -69,17 +69,17 @@ export function MonthCalendar({
   const transition = reduceMotion ? { duration: 0 } : { duration: 1, ease: "easeInOut" as const };
 
   return (
-    <section className="bo-mcal" aria-label="Calendario mensual">
+    <section className="bo-mcal bo-mcal--glass" aria-label="Calendario mensual">
       <header className="bo-mcalHead">
         <div className="bo-mcalTitle">
           {monthNameES(month)} {year}
           <span className="bo-mcalMeta">{loading ? "Cargando..." : ""}</span>
         </div>
         <div className="bo-mcalNav">
-          <button className="bo-actionBtn" type="button" onClick={onPrevMonth} aria-label="Mes anterior" disabled={loading}>
+          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onPrevMonth} aria-label="Mes anterior" disabled={loading}>
             <ChevronLeft className="bo-ico" />
           </button>
-          <button className="bo-actionBtn" type="button" onClick={onNextMonth} aria-label="Mes siguiente" disabled={loading}>
+          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onNextMonth} aria-label="Mes siguiente" disabled={loading}>
             <ChevronRight className="bo-ico" />
           </button>
         </div>

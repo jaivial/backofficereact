@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { usePageContext } from "vike-react/usePagecontext";
+import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../api/client";
 import type { RestaurantBranding, RestaurantIntegrations, RestaurantInvoiceSettings, InvoiceNumberFormat, PdfTemplateType, InvoiceRenumberPreview, InvoiceRenumberAudit } from "../../../api/types";

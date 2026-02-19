@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { X, Mail, MessageSquare, Clock, AlertCircle, CheckCircle, XCircle } from "lucide-react";
-import type { InvoiceReminder } from "../../../api/types";
-import { createClient } from "../../../api/client";
+import type { InvoiceReminder } from "../../../../api/types";
+import { createClient } from "../../../../api/client";
 
 interface ReminderHistoryModalProps {
   invoiceId: number;

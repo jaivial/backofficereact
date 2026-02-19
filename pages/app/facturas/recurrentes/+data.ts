@@ -1,7 +1,7 @@
 import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
-import { createClient } from "../../../api/client";
-import type { RecurringInvoice } from "../../../api/recurring-types";
+import { createClient } from "../../../../api/client";
+import type { RecurringInvoice } from "../../../../api/recurring-types";
 
 type PageData = {
   recurringInvoices: RecurringInvoice[];

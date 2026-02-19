@@ -86,7 +86,8 @@ export default function Page() {
         setCustomerStatement(res.statement);
         pushToast("Estado de cuenta generado correctamente", "success");
       } else {
-        errorToast.show(res.message || "Error al generar el estado de cuenta");
+        const msg = "message" in res ? res.message : undefined;
+        errorToast.show(msg || "Error al generar el estado de cuenta");
       }
     } catch (e) {
       errorToast.show("Error al conectar con el servidor");

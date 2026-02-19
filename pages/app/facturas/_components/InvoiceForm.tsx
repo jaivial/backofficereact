@@ -37,6 +37,11 @@ type InvoiceFormProps = {
 
 type AutoSaveStatus = "idle" | "saving" | "saved" | "error";
 
+function formatPrice(amount: number, currency: CurrencyCode = "EUR"): string {
+  const symbol = CURRENCY_SYMBOLS[currency] || "€";
+  return `${symbol}${amount.toFixed(2)}`;
+}
+
 // Validation functions for Spanish formats
 
 // Validate email format
@@ -302,7 +307,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   // Deposit tracking state
   const [depositType, setDepositType] = useState<InvoiceDepositType | "">(invoice?.deposit_type || "");
   const [depositAmount, setDepositAmount] = useState(invoice?.deposit_amount?.toString() || "");
-  const [finalInvoiceId, setFinalInvoiceId] = useState<number | undefined>(invoice?.final_invoice_id);
+  const [finalInvoiceId, setFinalInvoiceId] = useState<number | undefined>(invoice?.final_invoice_id ?? undefined);
 
   // Line items state
   const [useLineItems, setUseLineItems] = useState(!!invoice?.line_items?.length || false);

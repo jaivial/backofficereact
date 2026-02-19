@@ -10,7 +10,7 @@ export default function Page() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const setSession = useSetAtom(sessionAtom);
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,12 +22,16 @@ export default function Page() {
       setError(null);
       setBusy(true);
       try {
-        const res = await api.auth.login(email, password);
+        const res = await api.auth.login(identifier, password);
         if (!res.success) {
           setError(res.message || "Login failed");
           return;
         }
         setSession(res.session);
+        if (res.session.user.mustChangePassword) {
+          window.location.href = "/change-password";
+          return;
+        }
         window.location.href = firstAllowedPath(res.session.user.role, res.session.user.sectionAccess, res.session.user.roleImportance);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Login failed");
@@ -35,7 +39,7 @@ export default function Page() {
         setBusy(false);
       }
     },
-    [api, email, password, setSession],
+    [api, identifier, password, setSession],
   );
 
   return (
@@ -47,13 +51,13 @@ export default function Page() {
 
           <form onSubmit={onSubmit} className="bo-form">
             <label className="bo-field">
-              <div className="bo-label">Email</div>
+              <div className="bo-label">Email o usuario</div>
               <input
                 className="bo-input"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                autoComplete="username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 required
               />
             </label>

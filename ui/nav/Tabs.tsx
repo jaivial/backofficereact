@@ -162,12 +162,14 @@ export function Tabs({
   }, [activeId, mounted, reduceMotion, tabs]);
 
   return (
-    <nav ref={navRef} className={["bo-tabs", className].filter(Boolean).join(" ")} aria-label={ariaLabel}>
+    <nav ref={navRef} className={["bo-tabs", "bo-tabs--glass", className].filter(Boolean).join(" ")} aria-label={ariaLabel}>
       {tabs.map((t) => {
         const active = t.id === activeId;
         const href = (() => {
           if (t.href.includes("?")) return t.href;
           if (typeof window === "undefined") return t.href;
+          const isMenusTab = t.id === "menus" || t.href.startsWith("/app/menus");
+          if (isMenusTab) return t.href;
           const sp = new URLSearchParams(window.location.search || "");
           const date = sp.get("date");
           return date ? `${t.href}?date=${encodeURIComponent(date)}` : t.href;

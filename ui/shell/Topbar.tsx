@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { LogOut } from "lucide-react";
+import { LogOut, Store } from "lucide-react";
 
 import { createClient } from "../../api/client";
 import type { BOSection } from "../../lib/rbac";
+import { hasSectionAccess } from "../../lib/rbac";
 import { fichajeRealtimeAtom, sessionAtom } from "../../state/atoms";
 import { DropdownMenu } from "../inputs/DropdownMenu";
 import { Select } from "../inputs/Select";
@@ -66,6 +67,20 @@ export function Topbar({ title }: { title: string }) {
     }
   }, [api, setSession]);
 
+  const goRestaurantConfig = useCallback(() => {
+    window.location.href = "/app/config";
+  }, []);
+
+  const canOpenRestaurantConfig = useMemo(() => {
+    if (!session) return false;
+    return hasSectionAccess(
+      session.user.role,
+      "reservas",
+      session.user.sectionAccess,
+      session.user.roleImportance,
+    );
+  }, [session]);
+
   const initials = useMemo(() => {
     const n = session?.user?.name || session?.user?.email || "";
     const parts = n.trim().split(/\s+/).filter(Boolean);
@@ -87,6 +102,28 @@ export function Topbar({ title }: { title: string }) {
     return formatElapsed((tick - startMs) / 1000);
   }, [fichaje.activeEntry?.startAtIso, tick]);
 
+  const userMenuItems = useMemo(
+    () => [
+      ...(canOpenRestaurantConfig
+        ? [
+            {
+              id: "restaurant-config",
+              label: "Configuracion restaurante",
+              icon: <Store size={18} strokeWidth={1.8} />,
+              onSelect: goRestaurantConfig,
+            },
+          ]
+        : []),
+      {
+        id: "logout",
+        label: "Salir",
+        icon: <LogOut size={18} strokeWidth={1.8} />,
+        onSelect: doLogout,
+      },
+    ],
+    [canOpenRestaurantConfig, doLogout, goRestaurantConfig],
+  );
+
   return (
     <header className="bo-topbar" aria-label="Topbar">
       <div className="bo-title">{title}</div>
@@ -107,14 +144,7 @@ export function Topbar({ title }: { title: string }) {
           label="User menu"
           triggerClassName="bo-avatarBtn"
           triggerContent={<div className="bo-avatar" aria-label="Profile">{initials}</div>}
-          items={[
-            {
-              id: "logout",
-              label: "Salir",
-              icon: <LogOut size={18} strokeWidth={1.8} />,
-              onSelect: doLogout,
-            },
-          ]}
+          items={userMenuItems}
         />
 
         {fichaje.activeEntry ? (

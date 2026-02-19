@@ -9,7 +9,7 @@ import {
   FileText,
   Clock,
 } from "lucide-react";
-import type { ImportResult, ImportHistoryEntry } from "../../../api/import-types";
+import type { ImportResult, ImportHistoryEntry } from "../../../../api/import-types";
 
 type ImportHistoryModalProps = {
   open: boolean;

@@ -41,7 +41,7 @@ export function TimeEntriesEditor({
       {entries.map((entry) => {
         const busy = busyEntryId === entry.id;
         return (
-          <section key={entry.id} className="bo-timeEntryCard" aria-label={`Registro ${entry.id}`}>
+          <section key={entry.id} className="bo-timeEntryCard bo-timeEntryCard--glass" aria-label={`Registro ${entry.id}`}>
             <div className="bo-timeEntryHead">
               <div className="bo-timeEntryHeadLeft">
                 <Clock3 size={14} strokeWidth={1.8} />
@@ -73,7 +73,7 @@ export function TimeEntriesEditor({
               ) : (
                 <div className="bo-timeEntryLiveActions">
                   <div className="bo-timeAdjustLabel">Fin</div>
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => onCloseLive(entry.id)} disabled={busy}>
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass" type="button" onClick={() => onCloseLive(entry.id)} disabled={busy}>
                     Cerrar ahora
                   </button>
                 </div>

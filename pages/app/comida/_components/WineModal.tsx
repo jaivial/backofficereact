@@ -143,9 +143,9 @@ export const WineModal = React.memo(function WineModal({
 
       let res;
       if (wine) {
-        res = await api.vinos.patch(wine.num, payload);
+        res = await api.menus.vinos.patch(wine.num, payload);
       } else {
-        res = await api.vinos.create(payload);
+        res = await api.menus.vinos.create(payload);
       }
 
       if (res.success) {

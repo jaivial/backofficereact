@@ -100,6 +100,7 @@ export default function Page() {
   const realtime = useAtomValue(fichajeRealtimeAtom);
   const setRealtime = useSetAtom(fichajeRealtimeAtom);
   const reduceMotion = useReducedMotion();
+  const [busy, setBusy] = useState(false);
 
   // Dismiss pending updates when user loads schedule data
   useEffect(() => {
@@ -118,7 +119,6 @@ export default function Page() {
   const [bookingMonthDays, setBookingMonthDays] = useState<CalendarDay[]>(data.bookingMonthDays);
   const [calendarTab, setCalendarTab] = useState<HorariosCalendarTab>("miembros");
   const [memberSearch, setMemberSearch] = useState("");
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);
   const [tick, setTick] = useState(() => Date.now());

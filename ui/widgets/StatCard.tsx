@@ -15,19 +15,22 @@ function Icon({ k }: { k: IconKey }) {
 
 export const StatCard = memo(function StatCard({
   label,
+  title,
   value,
   icon,
   onClick,
 }: {
-  label: string;
+  label?: string;
+  title?: string;
   value: string;
   icon: IconKey;
   onClick?: () => void;
 }) {
+  const displayLabel = label ?? title ?? "";
   return (
     <div
-      className={`bo-card ${onClick ? "bo-card--clickable" : ""}`}
-      aria-label={label}
+      className={`bo-card bo-card--glass ${onClick ? "bo-card--clickable" : ""}`}
+      aria-label={displayLabel}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
@@ -42,10 +45,9 @@ export const StatCard = memo(function StatCard({
         <div className="bo-statIcon" aria-hidden="true">
           <Icon k={icon} />
         </div>
-        <div className="bo-statLabel">{label}</div>
+        <div className="bo-statLabel">{displayLabel}</div>
       </div>
       <div className="bo-statValue">{value}</div>
     </div>
   );
 });
-

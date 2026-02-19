@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { X, File, Image, FileText, Download, Trash2, Zip, Loader2, Eye } from "lucide-react";
+import { X, File, Image, FileText, Download, Trash2, Archive, Loader2, Eye } from "lucide-react";
 import type { InvoiceAttachment } from "../../../../api/types";
 
 type AttachmentsModalProps = {
@@ -163,7 +163,7 @@ export function AttachmentsModal({
                   </>
                 ) : (
                   <>
-                    <Zip size={16} />
+                    <Archive size={16} />
                     Descargar todo (ZIP)
                   </>
                 )}

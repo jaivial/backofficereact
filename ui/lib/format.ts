@@ -1,6 +1,14 @@
 export function formatHHMM(t: string | null | undefined): string {
   if (!t) return "";
   const s = String(t).trim();
+  const m = s.match(/(\d{1,2}):(\d{1,2})/);
+  if (m) {
+    const hh = Number(m[1]);
+    const mm = Number(m[2]);
+    if (Number.isFinite(hh) && Number.isFinite(mm) && hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59) {
+      return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+    }
+  }
   if (s.length >= 5) return s.slice(0, 5);
   return s;
 }

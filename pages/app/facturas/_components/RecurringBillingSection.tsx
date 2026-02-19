@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { Select } from "../../../../ui/inputs/Select";
-import { AlertCircle, RefreshCw, Calendar, Clock, Play, Pause } from "lucide-react";
+import { AlertCircle, RefreshCw, Calendar, Clock, Play, Pause, Send } from "lucide-react";
 import type { RecurringFrequency, RecurringInvoiceStatus } from "../../../../api/recurring-types";
 import { RECURRING_FREQUENCY_OPTIONS } from "../../../../api/recurring-types";
 

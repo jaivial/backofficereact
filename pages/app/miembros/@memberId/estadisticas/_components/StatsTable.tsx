@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "../../../../../api/client";
-import type { MemberStatsTableRow } from "../../../../../api/types";
+import { createClient } from "../../../../../../api/client";
+import type { MemberStatsTableRow } from "../../../../../../api/types";
+import { Select } from "../../../../../../ui/inputs/Select";
+import { DateRangePicker } from "../../../../../../ui/inputs/DateRangePicker";
 
 type TableView = "weekly" | "monthly" | "quarterly" | "yearly";
 
@@ -16,6 +18,13 @@ const viewOptions: { value: TableView; label: string }[] = [
   { value: "yearly", label: "Anual" },
 ];
 
+function parseTableView(value: string): TableView {
+  if (value === "weekly") return "weekly";
+  if (value === "quarterly") return "quarterly";
+  if (value === "yearly") return "yearly";
+  return "monthly";
+}
+
 export function StatsTable({ memberId, initialYear }: StatsTableProps) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const currentYear = initialYear ?? new Date().getFullYear();
@@ -26,12 +35,11 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
   const [rows, setRows] = useState<MemberStatsTableRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Custom range state
-  const [showCustomRange, setShowCustomRange] = useState(false);
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [customLoading, setCustomLoading] = useState(false);
   const [customRows, setCustomRows] = useState<MemberStatsTableRow[]>([]);
+  const showCustomRange = Boolean(customFrom && customTo);
 
   const loadTableData = useCallback(async () => {
     if (memberId <= 0) return;
@@ -42,7 +50,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
       if (res.success) {
         setRows(res.rows);
       } else {
-        setError(res.message || "Error cargando datos");
+        setError("message" in res ? res.message : "Error cargando datos");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -60,7 +68,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
       if (res.success) {
         setCustomRows(res.rows);
       } else {
-        setError(res.message || "Error cargando datos");
+        setError("message" in res ? res.message : "Error cargando datos");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -70,13 +78,39 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
   }, [api.members, memberId, customFrom, customTo]);
 
   useEffect(() => {
-    if (showCustomRange) return;
+    if (showCustomRange) {
+      void loadCustomRange();
+      return;
+    }
     void loadTableData();
-  }, [loadTableData, showCustomRange]);
+  }, [loadCustomRange, loadTableData, showCustomRange]);
 
   const formatHours = (hours: number) => hours.toFixed(2);
 
   const displayRows = showCustomRange ? customRows : rows;
+  const totalWorked = useMemo(() => displayRows.reduce((sum, row) => sum + row.workedHours, 0), [displayRows]);
+  const totalExpected = useMemo(() => displayRows.reduce((sum, row) => sum + row.expectedHours, 0), [displayRows]);
+  const totalDifference = useMemo(() => displayRows.reduce((sum, row) => sum + row.difference, 0), [displayRows]);
+  const yearOptions = useMemo(
+    () =>
+      [currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((itemYear) => ({
+        value: String(itemYear),
+        label: String(itemYear),
+      })),
+    [currentYear],
+  );
+  const isBusy = loading || customLoading;
+
+  function renderColGroup() {
+    return (
+      <colgroup>
+        <col className="bo-statsTableCol bo-statsTableCol--period" />
+        <col className="bo-statsTableCol bo-statsTableCol--worked" />
+        <col className="bo-statsTableCol bo-statsTableCol--expected" />
+        <col className="bo-statsTableCol bo-statsTableCol--difference" />
+      </colgroup>
+    );
+  }
 
   return (
     <div className="bo-statsTable">
@@ -84,144 +118,133 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
         <div className="bo-statsTableFilters">
           <div className="bo-field">
             <label className="bo-label">Vista</label>
-            <select
-              className="bo-select"
+            <Select
+              className="bo-statsTableSelect"
               value={view}
-              onChange={(e) => setView(e.target.value as TableView)}
-              disabled={loading}
-            >
-              {viewOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              onChange={(nextView) => setView(parseTableView(nextView))}
+              options={viewOptions}
+              size="sm"
+              ariaLabel="Vista de estadisticas"
+              disabled={isBusy || showCustomRange}
+            />
           </div>
 
           <div className="bo-field">
             <label className="bo-label">Año</label>
-            <select
-              className="bo-select"
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              disabled={loading}
-            >
-              {[currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+            <Select
+              className="bo-statsTableSelect"
+              value={String(year)}
+              onChange={(nextYear) => setYear(Number(nextYear))}
+              options={yearOptions}
+              size="sm"
+              ariaLabel="Año de estadisticas"
+              disabled={isBusy || showCustomRange}
+            />
           </div>
 
-          <button
-            type="button"
-            className={`bo-btn bo-btn--sm ${showCustomRange ? "bo-btn--primary" : "bo-btn--ghost"}`}
-            onClick={() => setShowCustomRange(!showCustomRange)}
-          >
-            Rango personalizado
-          </button>
-        </div>
+          <div className="bo-field bo-statsTableRangeField">
+            <label className="bo-label">Rango personalizado</label>
+            <DateRangePicker
+              from={customFrom}
+              to={customTo}
+              onChange={({ from, to }) => {
+                setCustomFrom(from);
+                setCustomTo(to);
+                if (!from || !to) setCustomRows([]);
+              }}
+              className="bo-statsRangePicker"
+              buttonLabel="Rango personalizado"
+              ariaLabel="Seleccionar rango personalizado"
+            />
+          </div>
 
-        {showCustomRange && (
-          <div className="bo-statsTableCustomRange">
-            <div className="bo-field">
-              <label className="bo-label">Desde</label>
-              <input
-                type="date"
-                className="bo-input"
-                value={customFrom}
-                onChange={(e) => setCustomFrom(e.target.value)}
-              />
-            </div>
-            <div className="bo-field">
-              <label className="bo-label">Hasta</label>
-              <input
-                type="date"
-                className="bo-input"
-                value={customTo}
-                onChange={(e) => setCustomTo(e.target.value)}
-              />
-            </div>
+          {showCustomRange ? (
             <button
               type="button"
-              className="bo-btn bo-btn--primary bo-btn--sm"
-              onClick={() => void loadCustomRange()}
-              disabled={customLoading || !customFrom || !customTo}
+              className="bo-btn bo-btn--sm bo-btn--ghost"
+              onClick={() => {
+                setCustomFrom("");
+                setCustomTo("");
+                setCustomRows([]);
+              }}
             >
-              {customLoading ? "Cargando..." : "Cargar"}
+              Quitar rango
             </button>
-          </div>
-        )}
+          ) : null}
+        </div>
+        {showCustomRange ? <div className="bo-statsTableModeTag">Mostrando rango personalizado.</div> : null}
       </div>
 
       {error && <div className="bo-alert bo-alert--error">{error}</div>}
 
-      <div className="bo-tableWrap">
-        <table className="bo-table bo-table--stats" aria-label="Tabla de estadísticas">
-          <thead>
-            <tr>
-              <th>Período</th>
-              <th>Horas trabajadas</th>
-              <th>Horas esperadas</th>
-              <th>Diferencia</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading || customLoading ? (
+      <div className="bo-statsTableSurface">
+        <div className="bo-tableWrap bo-statsTableWrap">
+          <table className="bo-table bo-table--stats" aria-label="Tabla de estadisticas">
+            {renderColGroup()}
+            <thead>
               <tr>
-                <td colSpan={4} className="bo-loading">
-                  Cargando...
-                </td>
+                <th>Periodo</th>
+                <th>Horas trabajadas</th>
+                <th>Horas esperadas</th>
+                <th>Diferencia</th>
               </tr>
-            ) : displayRows.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="bo-mutedText" style={{ textAlign: "center" }}>
-                  No hay datos para el período seleccionado.
-                </td>
-              </tr>
-            ) : (
-              displayRows.map((row, idx) => (
-                <tr key={row.date + idx}>
-                  <td>{row.label}</td>
-                  <td>{formatHours(row.workedHours)} h</td>
-                  <td>{formatHours(row.expectedHours)} h</td>
-                  <td className={row.difference >= 0 ? "bo-positive" : "bo-negative"}>
-                    {row.difference >= 0 ? "+" : ""}
-                    {formatHours(row.difference)} h
+            </thead>
+            <tbody>
+              {isBusy ? (
+                <tr>
+                  <td colSpan={4} className="bo-loading">
+                    Cargando...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-          {!loading && !customLoading && displayRows.length > 0 && (
-            <tfoot>
-              <tr>
-                <td><strong>Total</strong></td>
-                <td>
-                  <strong>
-                    {formatHours(displayRows.reduce((sum, r) => sum + r.workedHours, 0))} h
-                  </strong>
-                </td>
-                <td>
-                  <strong>
-                    {formatHours(displayRows.reduce((sum, r) => sum + r.expectedHours, 0))} h
-                  </strong>
-                </td>
-                <td className={
-                  displayRows.reduce((sum, r) => sum + r.difference, 0) >= 0
-                    ? "bo-positive"
-                    : "bo-negative"
-                }>
-                  <strong>
-                    {displayRows.reduce((sum, r) => sum + r.difference, 0) >= 0 ? "+" : ""}
-                    {formatHours(displayRows.reduce((sum, r) => sum + r.difference, 0))} h
-                  </strong>
-                </td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
+              ) : displayRows.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="bo-mutedText bo-statsTableEmpty">
+                    No hay datos para el período seleccionado.
+                  </td>
+                </tr>
+              ) : (
+                displayRows.map((row, idx) => (
+                  <tr key={row.date + idx}>
+                    <td>{row.label}</td>
+                    <td>{formatHours(row.workedHours)} h</td>
+                    <td>{formatHours(row.expectedHours)} h</td>
+                    <td className={row.difference >= 0 ? "bo-positive" : "bo-negative"}>
+                      {row.difference >= 0 ? "+" : ""}
+                      {formatHours(row.difference)} h
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {!isBusy && displayRows.length > 0 ? (
+          <div className="bo-statsTableFooter">
+            <table className="bo-table bo-table--stats bo-table--statsFooter" aria-hidden="true">
+              {renderColGroup()}
+              <tfoot>
+                <tr>
+                  <td>
+                    <strong>Total</strong>
+                  </td>
+                  <td>
+                    <strong>{formatHours(totalWorked)} h</strong>
+                  </td>
+                  <td>
+                    <strong>{formatHours(totalExpected)} h</strong>
+                  </td>
+                  <td className={totalDifference >= 0 ? "bo-positive" : "bo-negative"}>
+                    <strong>
+                      {totalDifference >= 0 ? "+" : ""}
+                      {formatHours(totalDifference)} h
+                    </strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        ) : null}
       </div>
     </div>
   );

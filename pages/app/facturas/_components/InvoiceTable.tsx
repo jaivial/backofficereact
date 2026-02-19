@@ -158,6 +158,7 @@ const CATEGORY_CONFIG: Record<InvoiceCategory, { label: string; className: strin
   productos: { label: "Productos", className: "bo-badge--success" },
   servicios: { label: "Servicios", className: "bo-badge--warning" },
   otros: { label: "Otros", className: "bo-badge--muted" },
+  nota_credito: { label: "Nota de credito", className: "bo-badge--warning" },
 };
 
 function CategoryBadge({ category }: { category?: InvoiceCategory }) {
@@ -324,7 +325,7 @@ function TableSkeletonRow() {
 
 function TableSkeleton() {
   return (
-    <div className="bo-tableWrap" style={{ marginTop: 14 }}>
+    <div className="bo-tableWrap">
       <div className="bo-tableScroll">
         <table className="bo-table bo-table--facturas" aria-label="Cargando facturas...">
           <thead>
@@ -360,7 +361,7 @@ function TableSkeleton() {
   );
 }
 
-export function InvoiceTable({ invoices, loading, page, totalPages, total, sortField, sortDirection, onSort, hasFilters, onCreateNew, onEdit, onDuplicate, onSplit, onDelete, onDownloadPdf, onSendEmail, onSendWhatsApp, onPageChange, onStatusChange, onBulkStatusChange, onBulkDelete, onBulkPrint, onBulkMerge, onBulkSendEmail, onPrintAllVisible, onPreview, onViewCustomerHistory, onShowHistory, onViewNotes, onRegisterPayment, onSendReminder, onShowReminderHistory, onManageTemplates, onRemoveAttachment, onDownloadAllAttachments }: InvoiceTableProps) {
+export function InvoiceTable({ invoices, loading, page, totalPages, total, sortField, sortDirection, onSort, hasFilters, onCreateNew, onEdit, onDuplicate, onSplit, onDelete, onDownloadPdf, onSendEmail, onSendWhatsApp, onPageChange, onStatusChange, onBulkStatusChange, onBulkDelete, onBulkPrint, onBulkMerge, onBulkSendEmail, onPrintAllVisible, onPreview, onViewCustomerHistory, onShowHistory, onViewNotes, onRegisterPayment, onSendReminder, onShowReminderHistory, onManageTemplates, onCreateCreditNote, onRemoveAttachment, onDownloadAllAttachments, onMergeInvoices }: InvoiceTableProps) {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkStatusConfirmOpen, setBulkStatusConfirmOpen] = useState(false);
@@ -623,7 +624,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
   }
 
   return (
-    <div className="bo-tableWrap" style={{ marginTop: 14 }}>
+    <div className="bo-tableWrap">
       {/* Bulk Actions Bar */}
       {someSelected && (
         <div className="bo-bulkBar" role="region" aria-live="polite">
@@ -733,7 +734,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     </label>
                   ) : "sortField" in col && col.sortable ? (
                     <SortableHeader
-                      field={col.sortField}
+                      field={col.sortField as SortField}
                       label={col.label}
                       currentField={sortField}
                       sortDirection={sortDirection}
@@ -838,7 +839,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                   />
                 </td>
                 <td className={`col-is_reservation`} data-label="Tipo">
-                  <ReservationBadge isReservation={invoice.is_reservation} />
+                  <ReservationBadge isReservation={Boolean(invoice.is_reservation)} />
                   <SplitBadge isSplitChild={invoice.is_split_child} isSplitParent={invoice.is_split_parent} percentage={invoice.split_percentage} />
                 </td>
                 <td className={`col-deposit`} data-label="Deposito">
@@ -943,7 +944,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       </>
                     )}
                     {/* Marcar como pagada quick action - only show for non-paid invoices */}
-                    {(invoice.status === "pendiente" || invoice.status === "enviada") && invoice.status !== "pagada" && (
+                    {(invoice.status === "pendiente" || invoice.status === "enviada") && (
                       <button
                         className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--success"
                         type="button"

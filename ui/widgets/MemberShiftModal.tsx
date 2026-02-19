@@ -283,7 +283,7 @@ export function MemberShiftModal({
   const isActive = !!activeEntry;
 
   return (
-    <Modal open={open} onClose={onClose} title={fullName} widthPx={760}>
+    <Modal open={open} onClose={onClose} title={fullName} widthPx={760} className="bo-modal--memberShift">
       <div className="bo-shiftModal">
         <div className="bo-shiftModalDate">
           <Clock size={14} strokeWidth={1.8} />
@@ -299,7 +299,7 @@ export function MemberShiftModal({
         {!loading && (
           <>
             {hasSchedule && !isActive && (
-              <div className="bo-shiftModalSection">
+              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
                 <div className="bo-shiftModalLabel">Turno actual</div>
                 <div className="bo-shiftModalTimes">
                   <TimeAdjustCounter
@@ -318,11 +318,11 @@ export function MemberShiftModal({
                   />
                 </div>
                 <div className="bo-shiftModalActions">
-                  <button className="bo-btn bo-btn--primary" type="button" onClick={startFichaje} disabled={loading}>
+                  <button className="bo-btn bo-btn--primary bo-btn--glass" type="button" onClick={startFichaje} disabled={loading}>
                     <Play size={14} strokeWidth={1.8} />
                     Iniciar fichaje
                   </button>
-                  <button className="bo-btn bo-btn--ghost bo-btn--danger" type="button" onClick={removeShift} disabled={loading}>
+                  <button className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--glass" type="button" onClick={removeShift} disabled={loading}>
                     <Trash2 size={14} strokeWidth={1.8} />
                     Quitar turno
                   </button>
@@ -331,16 +331,16 @@ export function MemberShiftModal({
             )}
 
             {hasSchedule && isActive && (
-              <div className="bo-shiftModalSection">
+              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
                 <div className="bo-shiftModalLabel">Trabajando</div>
-                <div className="bo-shiftModalActive">
+                <div className="bo-shiftModalActive bo-shiftModalActive--glass">
                   <div className="bo-shiftModalActiveInfo">
                     <span className="bo-shiftModalActiveTime">Entrada: {activeEntry.startTime}</span>
                     <span className="bo-badge bo-badge--success">En curso</span>
                   </div>
                 </div>
                 <div className="bo-shiftModalActions">
-                  <button className="bo-btn bo-btn--danger" type="button" onClick={stopFichaje} disabled={loading}>
+                  <button className="bo-btn bo-btn--danger bo-btn--glass" type="button" onClick={stopFichaje} disabled={loading}>
                     <Square size={14} strokeWidth={1.8} />
                     Fichar salida
                   </button>
@@ -349,10 +349,10 @@ export function MemberShiftModal({
             )}
 
             {!hasSchedule && (
-              <div className="bo-shiftModalSection">
+              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
                 <div className="bo-shiftModalLabel">Sin turno asignado</div>
                 <button
-                  className="bo-btn bo-btn--primary bo-btn--full"
+                  className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
                   type="button"
                   onClick={() => setShowAssignForm(true)}
                   disabled={loading}
@@ -366,7 +366,7 @@ export function MemberShiftModal({
             <AnimatePresence>
               {((!hasSchedule && showAssignForm) || (hasSchedule && !isActive)) && (
                 <motion.div
-                  className="bo-shiftModalAssign"
+                  className="bo-shiftModalAssign bo-shiftModalAssign--glass"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
@@ -414,7 +414,7 @@ export function MemberShiftModal({
                     </div>
                   </div>
                   <button
-                    className="bo-btn bo-btn--primary bo-btn--full"
+                    className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
                     type="button"
                     onClick={assignShift}
                     disabled={loading}
@@ -433,7 +433,7 @@ export function MemberShiftModal({
                 transition={{ duration: 0.2, ease: "easeInOut" }}
               >
                 <button
-                  className="bo-btn bo-btn--ghost bo-btn--full bo-shiftModalAddBtn"
+                  className="bo-btn bo-btn--ghost bo-btn--full bo-shiftModalAddBtn bo-btn--glass"
                   type="button"
                   onClick={() => setShowAssignForm(!showAssignForm)}
                   disabled={loading}
@@ -451,7 +451,7 @@ export function MemberShiftModal({
                 transition={{ duration: 0.2, ease: "easeInOut" }}
               >
                 <button
-                  className="bo-btn bo-btn--ghost bo-btn--full"
+                  className="bo-btn bo-btn--ghost bo-btn--full bo-btn--glass"
                   type="button"
                   onClick={() => setShowAssignForm(!showAssignForm)}
                   disabled={loading}
@@ -462,7 +462,7 @@ export function MemberShiftModal({
 
                 {showAssignForm && (
                   <motion.div
-                    className="bo-shiftModalAssign"
+                    className="bo-shiftModalAssign bo-shiftModalAssign--glass"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
@@ -509,7 +509,7 @@ export function MemberShiftModal({
                       </div>
                     </div>
                     <button
-                      className="bo-btn bo-btn--primary bo-btn--full"
+                      className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
                       type="button"
                       onClick={assignShift}
                       disabled={loading}

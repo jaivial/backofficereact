@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Filter, FilterX, PencilLine, Plus, Trash2, BookOpen, Lock, Users, UtensilsCrossed, UsersRound, Star } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, Filter, FilterX, Plus } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 
@@ -9,7 +9,11 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { Select } from "../../../ui/inputs/Select";
 import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
-import { Switch } from "../../../ui/shadcn/Switch";
+import { cn } from "../../../ui/shadcn/utils";
+import { MenuSummaryCard } from "../../../ui/widgets/menus/MenuSummaryCard";
+import { MenuTypeChangeModal } from "../../../ui/widgets/menus/MenuTypeChangeModal";
+import { MenuTypePanelGrid } from "../../../ui/widgets/menus/MenuTypePanelGrid";
+import { MENU_TYPE_ORDER, menuTypeLabel } from "../../../ui/widgets/menus/menuPresentation";
 
 type PageData = {
   menus: GroupMenuV2Summary[];
@@ -19,15 +23,6 @@ type PageData = {
 type MenuStatusFilter = "all" | "active" | "inactive";
 type MenuSortOption = "created_desc" | "created_asc" | "price_asc" | "price_desc";
 
-const ORDERED_MENU_TYPES: string[] = ["closed_conventional", "closed_group", "a_la_carte", "a_la_carte_group", "special"];
-
-const MENU_TYPE_PANELS = [
-  { value: "closed_conventional", label: "Menu cerrado convencional", icon: Lock, description: "Menu fijo con precio cerrado" },
-  { value: "closed_group", label: "Menu cerrado grupo", icon: Users, description: "Menu fijo para grupos" },
-  { value: "a_la_carte", label: "A la carta convencional", icon: UtensilsCrossed, description: "Carta con platos a elegir" },
-  { value: "a_la_carte_group", label: "A la carta grupo", icon: UsersRound, description: "Carta para grupos" },
-  { value: "special", label: "Menu especial", icon: Star, description: "Menu especial con imagen" },
-] as const;
 const MENU_STATUS_FILTER_OPTIONS: { value: MenuStatusFilter; label: string }[] = [
   { value: "all", label: "Todos" },
   { value: "active", label: "Activos" },
@@ -39,12 +34,6 @@ const MENU_SORT_OPTIONS: { value: MenuSortOption; label: string }[] = [
   { value: "price_asc", label: "Precio ascendente" },
   { value: "price_desc", label: "Precio descendente" },
 ];
-
-function formatPrice(price: string): string {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return price;
-  return `${n.toFixed(2)} €`;
-}
 
 function normalizedSearchValue(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -62,102 +51,6 @@ function menuPriceNumber(menu: Pick<GroupMenuV2Summary, "price">): number {
   const n = Number(menu.price);
   return Number.isFinite(n) ? n : 0;
 }
-
-function menuTypeLabel(kind: string): string {
-  if (kind === "closed_group") return "Cerrado grupo";
-  if (kind === "a_la_carte") return "A la carta";
-  if (kind === "a_la_carte_group") return "A la carta grupo";
-  if (kind === "special") return "Especial";
-  return "Cerrado convencional";
-}
-
-type MenuCardProps = {
-  menu: GroupMenuV2Summary;
-  switchDisabled: boolean;
-  actionsDisabled: boolean;
-  onToggleActive: (menuId: number) => Promise<void>;
-  onOpenEditor: (menuId: number) => void;
-  onRequestDelete: (menu: GroupMenuV2Summary) => void;
-};
-
-const MenuCard = React.memo(function MenuCard({
-  menu,
-  switchDisabled,
-  actionsDisabled,
-  onToggleActive,
-  onOpenEditor,
-  onRequestDelete,
-}: MenuCardProps) {
-  const title = menu.menu_title || "Sin titulo";
-  const typeLabel = useMemo(() => menuTypeLabel(menu.menu_type || "closed_conventional"), [menu.menu_type]);
-  const priceLabel = useMemo(() => formatPrice(menu.price), [menu.price]);
-  const statusLabel = menu.active ? "Activo" : "Inactivo";
-
-  const handleToggle = useCallback(() => {
-    void onToggleActive(menu.id);
-  }, [menu.id, onToggleActive]);
-
-  const handleEdit = useCallback(() => {
-    onOpenEditor(menu.id);
-  }, [menu.id, onOpenEditor]);
-
-  const handleDelete = useCallback(() => {
-    onRequestDelete(menu);
-  }, [menu, onRequestDelete]);
-
-  return (
-    <article className="bo-menuV2Card" role="listitem">
-      <div className="bo-menuV2Main">
-        <div className="bo-menuV2TitleRow">
-          <h3 className="bo-menuV2Title">{title}</h3>
-        </div>
-
-        <div className="bo-menuV2Row bo-menuV2Row--meta">
-          <div className="bo-menuV2Meta">
-            <span className="bo-menuTag">{typeLabel}</span>
-            {menu.is_draft ? <span className="bo-menuTag bo-menuTag--warn">Borrador</span> : null}
-          </div>
-          <div className="bo-menuV2Price">{priceLabel}</div>
-        </div>
-      </div>
-
-      <div className="bo-menuV2Aside">
-        <div className="bo-menuV2StatusCtrl">
-          <span className={`bo-menuTag bo-menuTag--state ${menu.active ? "is-on" : ""}`}>{statusLabel}</span>
-          <Switch
-            checked={!!menu.active}
-            disabled={switchDisabled}
-            onCheckedChange={handleToggle}
-            aria-label={`Estado menu ${title}`}
-          />
-        </div>
-
-        <div className="bo-menuV2Actions">
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--sm bo-menuV2IconBtn"
-            type="button"
-            disabled={actionsDisabled}
-            onClick={handleEdit}
-            aria-label={`Editar menu ${title}`}
-            title="Editar"
-          >
-            <PencilLine size={14} />
-          </button>
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm bo-menuV2IconBtn"
-            type="button"
-            disabled={actionsDisabled}
-            onClick={handleDelete}
-            aria-label={`Eliminar menu ${title}`}
-            title="Eliminar"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-});
 
 type MenuFiltersProps = {
   searchText: string;
@@ -235,7 +128,13 @@ const MenuFilters = React.memo(function MenuFilters({
             <div className="bo-menuV2FiltersGrid">
               <label className="bo-field bo-menuV2Filter bo-menuV2Filter--search">
                 <span className="bo-label">Buscar por titulo</span>
-                <input className="bo-input" type="search" value={searchText} placeholder="Ejemplo: San Valentin" onChange={(e) => onSearchChange(e.target.value)} />
+                <input
+                  className="bo-input"
+                  type="search"
+                  value={searchText}
+                  placeholder="Ejemplo: San Valentin"
+                  onChange={(e) => onSearchChange(e.target.value)}
+                />
               </label>
 
               <label className="bo-field bo-menuV2Filter bo-menuV2Filter--status">
@@ -263,7 +162,7 @@ const MenuFilters = React.memo(function MenuFilters({
               <div className="bo-mutedText bo-menuV2FiltersCount">{summaryText}</div>
               <div className="bo-menuV2FiltersActions">
                 <button
-                  className={`bo-btn bo-btn--ghost bo-btn--sm bo-menuV2ClearBtn ${hasFilters ? "" : "is-hidden"}`.trim()}
+                  className={cn("bo-btn bo-btn--ghost bo-btn--sm bo-menuV2ClearBtn", !hasFilters && "is-hidden")}
                   type="button"
                   disabled={disableActions || !hasFilters}
                   onClick={onResetFilters}
@@ -290,10 +189,16 @@ export default function Page() {
 
   const [togglingMenuId, setTogglingMenuId] = useState<number | null>(null);
   const [deletingMenuId, setDeletingMenuId] = useState<number | null>(null);
+  const [changingMenuTypeId, setChangingMenuTypeId] = useState<number | null>(null);
 
   const error = data.error;
   const [menus, setMenus] = useState<GroupMenuV2Summary[]>(data.menus || []);
   const [confirmDel, setConfirmDel] = useState<{ open: boolean; menu: GroupMenuV2Summary | null }>({ open: false, menu: null });
+  const [changeTypeDialog, setChangeTypeDialog] = useState<{ open: boolean; menu: GroupMenuV2Summary | null; nextType: string }>({
+    open: false,
+    menu: null,
+    nextType: "closed_conventional",
+  });
   const [searchText, setSearchText] = useState("");
   const [showTypeSelector, setShowTypeSelector] = useState(true);
   const [statusFilter, setStatusFilter] = useState<MenuStatusFilter>("all");
@@ -301,7 +206,7 @@ export default function Page() {
   const [sortBy, setSortBy] = useState<MenuSortOption>("created_desc");
   useErrorToast(error);
 
-  const disableGlobalActions = deletingMenuId !== null;
+  const disableGlobalActions = deletingMenuId !== null || changingMenuTypeId !== null;
 
   const openEditor = useCallback((id?: number) => {
     const url = id ? `/app/menus/crear?menuId=${encodeURIComponent(String(id))}` : "/app/menus/crear";
@@ -351,6 +256,59 @@ export default function Page() {
     setConfirmDel({ open: false, menu: null });
   }, []);
 
+  const requestChangeType = useCallback((menu: GroupMenuV2Summary) => {
+    setChangeTypeDialog({
+      open: true,
+      menu,
+      nextType: menu.menu_type || "closed_conventional",
+    });
+  }, []);
+
+  const closeChangeTypeDialog = useCallback(() => {
+    if (changingMenuTypeId !== null) return;
+    setChangeTypeDialog({ open: false, menu: null, nextType: "closed_conventional" });
+  }, [changingMenuTypeId]);
+
+  const onChangeTypeConfirm = useCallback(async () => {
+    const menu = changeTypeDialog.menu;
+    if (!menu) return;
+
+    const previousType = menu.menu_type || "closed_conventional";
+    const requestedType = changeTypeDialog.nextType || previousType;
+    if (requestedType === previousType) {
+      closeChangeTypeDialog();
+      return;
+    }
+
+    setChangingMenuTypeId(menu.id);
+    setMenus((prev) => prev.map((item) => (item.id === menu.id ? { ...item, menu_type: requestedType } : item)));
+
+    try {
+      const res = await api.menus.gruposV2.patchMenuType(menu.id, requestedType);
+      if (!res.success) {
+        throw new Error(res.message || "No se pudo cambiar el tipo de menu");
+      }
+
+      const savedType = res.menu_type || requestedType;
+      setMenus((prev) => prev.map((item) => (item.id === menu.id ? { ...item, menu_type: savedType } : item)));
+      pushToast({ kind: "success", title: "Tipo actualizado" });
+      setChangeTypeDialog({ open: false, menu: null, nextType: "closed_conventional" });
+    } catch (error) {
+      setMenus((prev) => prev.map((item) => (item.id === menu.id ? { ...item, menu_type: previousType } : item)));
+      pushToast({
+        kind: "error",
+        title: "Error",
+        message: error instanceof Error ? error.message : "No se pudo cambiar el tipo de menu",
+      });
+    } finally {
+      setChangingMenuTypeId((current) => (current === menu.id ? null : current));
+    }
+  }, [api, changeTypeDialog.menu, changeTypeDialog.nextType, closeChangeTypeDialog, pushToast]);
+
+  const onChangeTypeSelection = useCallback((value: string) => {
+    setChangeTypeDialog((prev) => (prev.open ? { ...prev, nextType: value } : prev));
+  }, []);
+
   const resetFilters = useCallback(() => {
     setSearchText("");
     setStatusFilter("all");
@@ -374,10 +332,19 @@ export default function Page() {
     setSortBy(value);
   }, []);
 
+  const menuTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const menu of menus) {
+      const menuType = menu.menu_type || "closed_conventional";
+      counts[menuType] = (counts[menuType] || 0) + 1;
+    }
+    return counts;
+  }, [menus]);
+
   const menuTypeOptions = useMemo(() => {
     const out: string[] = [];
     const seen = new Set<string>();
-    for (const type of ORDERED_MENU_TYPES.concat(menus.map((m) => m.menu_type || "closed_conventional"))) {
+    for (const type of MENU_TYPE_ORDER.concat(menus.map((m) => m.menu_type || "closed_conventional"))) {
       if (!type || seen.has(type)) continue;
       seen.add(type);
       out.push(type);
@@ -429,72 +396,51 @@ export default function Page() {
   }, [resetFilters]);
 
   return (
-    <section aria-label="Menus" className="bo-menuV2Page">
-      {showTypeSelector && menus.length > 0 ? (
-        <div className="bo-menuTypePanels">
-          <div className="bo-menuTypePanelsGrid">
-            {MENU_TYPE_PANELS.map((panel) => {
-              const Icon = panel.icon;
-              const count = menus.filter((m) => (m.menu_type || "closed_conventional") === panel.value).length;
-              return (
-                <button
-                  key={panel.value}
-                  className="bo-menuTypePanel"
-                  type="button"
-                  onClick={() => handleTypePanelClick(panel.value)}
-                >
-                  <div className="bo-menuTypePanelIcon">
-                    <Icon size={28} />
-                  </div>
-                  <div className="bo-menuTypePanelLabel">{panel.label}</div>
-                  <div className="bo-menuTypePanelDesc">{panel.description}</div>
-                  {count > 0 && <div className="bo-menuTypePanelCount">{count} menu{count !== 1 ? "s" : ""}</div>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+    <section aria-label="Menus" className={cn("bo-menuV2Page", showTypeSelector && "is-selector")}>
+      {showTypeSelector ? (
+        <MenuTypePanelGrid countsByType={menuTypeCounts} onSelect={handleTypePanelClick} />
       ) : (
-        <MenuFilters
-          searchText={searchText}
-          statusFilter={statusFilter}
-          menuTypeFilter={menuTypeFilter}
-          sortBy={sortBy}
-          menuTypeOptions={menuTypeOptions}
-          hasFilters={hasFilters}
-          summaryText={summaryText}
-          disableActions={disableGlobalActions}
-          onSearchChange={handleSearchChange}
-          onStatusFilterChange={handleStatusFilterChange}
-          onMenuTypeFilterChange={handleMenuTypeFilterChange}
-          onSortByChange={handleSortByChange}
-          onResetFilters={resetFilters}
-        />
-      )}
+        <>
+          <button className="bo-menuBackBtn" type="button" onClick={handleBackToPanels}>
+            <ChevronLeft size={16} /> Volver a tipos de menu
+          </button>
 
-      {!showTypeSelector && (
-        <button className="bo-btn bo-btn--ghost bo-menuBackBtn" type="button" onClick={handleBackToPanels}>
-          <ChevronUp size={16} /> Volver a tipos de menu
-        </button>
-      )}
-
-      <div className="bo-menuV2Grid" role="list" aria-label="Lista de menus">
-        {filteredMenus.map((menu) => (
-          <MenuCard
-            key={menu.id}
-            menu={menu}
-            switchDisabled={disableGlobalActions || togglingMenuId === menu.id}
-            actionsDisabled={disableGlobalActions}
-            onToggleActive={onToggleActive}
-            onOpenEditor={openEditor}
-            onRequestDelete={requestDelete}
+          <MenuFilters
+            searchText={searchText}
+            statusFilter={statusFilter}
+            menuTypeFilter={menuTypeFilter}
+            sortBy={sortBy}
+            menuTypeOptions={menuTypeOptions}
+            hasFilters={hasFilters}
+            summaryText={summaryText}
+            disableActions={disableGlobalActions}
+            onSearchChange={handleSearchChange}
+            onStatusFilterChange={handleStatusFilterChange}
+            onMenuTypeFilterChange={handleMenuTypeFilterChange}
+            onSortByChange={handleSortByChange}
+            onResetFilters={resetFilters}
           />
-        ))}
 
-        {!filteredMenus.length ? (
-          <div className="bo-menuV2Empty">{menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}</div>
-        ) : null}
-      </div>
+          <div className="bo-menuV2Grid" role="list" aria-label="Lista de menus">
+            {filteredMenus.map((menu) => (
+              <MenuSummaryCard
+                key={menu.id}
+                menu={menu}
+                switchDisabled={disableGlobalActions || togglingMenuId === menu.id}
+                actionsDisabled={disableGlobalActions || changingMenuTypeId === menu.id}
+                onToggleActive={onToggleActive}
+                onOpenEditor={openEditor}
+                onRequestChangeType={requestChangeType}
+                onRequestDelete={requestDelete}
+              />
+            ))}
+
+            {!filteredMenus.length ? (
+              <div className="bo-menuV2Empty">{menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}</div>
+            ) : null}
+          </div>
+        </>
+      )}
 
       <button className="bo-menuFab" type="button" aria-label="Crear menu" onClick={() => openEditor()}>
         <Plus size={26} />
@@ -508,6 +454,16 @@ export default function Page() {
         danger
         onClose={closeDeleteConfirm}
         onConfirm={onDelete}
+      />
+      <MenuTypeChangeModal
+        open={changeTypeDialog.open}
+        title="Cambiar tipo de menu"
+        currentType={changeTypeDialog.menu?.menu_type || "closed_conventional"}
+        nextType={changeTypeDialog.nextType}
+        saving={changingMenuTypeId !== null}
+        onClose={closeChangeTypeDialog}
+        onNextTypeChange={onChangeTypeSelection}
+        onConfirm={() => void onChangeTypeConfirm()}
       />
     </section>
   );

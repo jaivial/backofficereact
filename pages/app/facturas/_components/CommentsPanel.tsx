@@ -72,10 +72,11 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
           message: "El comentario se ha añadido correctamente",
         });
       } else {
+        const msg = "message" in res ? res.message : undefined;
         pushToast({
           kind: "error",
           title: "Error",
-          message: res.message || "No se pudo añadir el comentario",
+          message: msg || "No se pudo añadir el comentario",
         });
       }
     } catch (err) {
@@ -122,10 +123,11 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
           message: "El comentario se ha actualizado correctamente",
         });
       } else {
+        const msg = "message" in res ? res.message : undefined;
         pushToast({
           kind: "error",
           title: "Error",
-          message: res.message || "No se pudo actualizar el comentario",
+          message: msg || "No se pudo actualizar el comentario",
         });
       }
     } catch (err) {
@@ -157,10 +159,11 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
           message: "El comentario se ha eliminado correctamente",
         });
       } else {
+        const msg = "message" in res ? res.message : undefined;
         pushToast({
           kind: "error",
           title: "Error",
-          message: res.message || "No se pudo eliminar el comentario",
+          message: msg || "No se pudo eliminar el comentario",
         });
       }
     } catch (err) {

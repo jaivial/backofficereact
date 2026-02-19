@@ -243,6 +243,14 @@ button {
   margin-top: 6px;
 }
 
+.bo-navDesktop {
+  display: flex;
+}
+
+.bo-navMobile {
+  display: none;
+}
+
 .bo-navBtn {
   width: 44px;
   height: 44px;
@@ -266,6 +274,17 @@ button {
   background: rgba(185, 168, 255, 0.12);
   border-color: rgba(185, 168, 255, 0.26);
   color: var(--bo-text);
+}
+
+.bo-navBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  .bo-navBtn--restaurantConfig {
+    display: none;
+  }
 }
 
 .bo-sidebarSpacer {
@@ -360,6 +379,11 @@ button {
   font-size: inherit;
   font-weight: inherit;
   color: inherit;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
 }
 
 /* Avatar sizes */
@@ -779,6 +803,13 @@ button {
   box-shadow: var(--bo-shadow-soft);
 }
 
+:root[data-theme="light"] .bo-panel {
+  border-radius: var(--bo-radius-lg);
+  background: linear-gradient(180deg, rgb(121 115 115 / 27%), rgb(57 41 80 / 29%)), #fffffff7;
+  border: 1px solid rgb(0 0 0 / 21%);
+  box-shadow: var(--bo-shadow-soft);
+}
+
 .bo-panelHead {
   display: flex;
   align-items: flex-end;
@@ -1037,6 +1068,23 @@ button {
 
 .bo-bulkAction {
   display: inline-flex;
+}
+
+@media (max-width: 720px) {
+  .bo-bulkBarContent {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-bulkBarActions {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .bo-bulkBarActions .bo-btn {
+    flex: 1 1 160px;
+    justify-content: center;
+  }
 }
 
 /* Checkbox styles */
@@ -1492,6 +1540,28 @@ button {
   border: 1px solid rgba(185, 168, 255, 0.32);
   box-shadow: 0 10px 24px rgba(185, 168, 255, 0.18);
   color: var(--bo-text);
+}
+
+.bo-calDay.is-inRange {
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 26%, transparent);
+  box-shadow: none;
+}
+
+.bo-calDay.is-rangeStart,
+.bo-calDay.is-rangeEnd {
+  background: color-mix(in srgb, var(--bo-accent) 36%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 48%, var(--bo-border));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--bo-accent) 22%, transparent);
+  color: var(--bo-text);
+}
+
+.bo-dateRangeActions {
+  margin-top: var(--bo-space-3);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--bo-space-2);
 }
 
 .bo-calDay--empty {
@@ -1955,6 +2025,11 @@ tr.is-inactive {
   gap: 10px;
 }
 
+.bo-dateRangeBtn {
+  min-width: 188px;
+  justify-content: flex-start;
+}
+
 .bo-dateBtnLabel {
   font-size: 12px;
   font-weight: 720;
@@ -1971,6 +2046,10 @@ tr.is-inactive {
     var(--bo-surface);
   box-shadow: var(--bo-shadow-soft);
   padding: 12px;
+}
+
+.bo-dateRangePop {
+  width: 312px;
 }
 
 .bo-dateHead {
@@ -2011,7 +2090,7 @@ tr.is-inactive {
 .bo-modal,
 .bo-modal-content {
   width: min(var(--bo-modal-w, 520px), calc(100vw - 36px));
-  max-height: calc(100vh - 36px);
+  max-height: 80vh;
   overflow: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -2045,7 +2124,8 @@ tr.is-inactive {
 }
 
 .bo-modalHead,
-.bo-modal-header {
+.bo-modal-header,
+.bo-modalHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2085,13 +2165,19 @@ tr.is-inactive {
 }
 
 .bo-modalActions,
-.bo-modal-footer {
+.bo-modal-footer,
+.bo-modalFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 14px;
   padding: 16px;
   border-top: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
 }
 
 /* ShiftModal */
@@ -2501,13 +2587,13 @@ tr.is-inactive {
 }
 
 .bo-donutWrap .bo-donutLabel {
-  font-size: 11px;
+  font-size: var(--bo-text-xs);
   color: rgba(238, 240, 246, 0.46);
   margin-bottom: 4px;
 }
 
 .bo-donutWrap .bo-donutValue {
-  font-size: 20px;
+  font-size: var(--bo-text-lg);
   font-weight: 780;
   letter-spacing: 0.3px;
 }
@@ -2622,7 +2708,8 @@ tr.is-inactive {
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
     border-right: 0;
     border-top: 1px solid var(--bo-border);
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
   }
 
   .bo-app--page .bo-brand,
@@ -2631,12 +2718,63 @@ tr.is-inactive {
     display: none;
   }
 
-  .bo-app--page .bo-nav {
-    flex-direction: row;
+  .bo-app--page .bo-navDesktop {
+    display: none;
+  }
+
+  .bo-app--page .bo-navMobile {
+    display: flex;
     width: 100%;
-    justify-content: space-between;
-    gap: 10px;
     margin-top: 0;
+    position: relative;
+  }
+
+  .bo-app--page .bo-navMobileMain {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: center;
+    justify-items: center;
+    padding-inline: calc(var(--bo-space-4) + var(--bo-space-1));
+  }
+
+  .bo-app--page .bo-navMobileMoreWrap {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  .bo-app--page .bo-navMobileOverflow {
+    position: absolute;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: calc(100% + var(--bo-space-2));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--bo-space-2);
+    z-index: 30;
+  }
+
+  .bo-app--page .bo-navMobileOverflowList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--bo-space-2);
+    padding: var(--bo-space-2);
+    border-radius: var(--bo-radius-lg);
+    border: 1px solid var(--bo-border-2);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.16)),
+      var(--bo-surface-2);
+    box-shadow: var(--bo-shadow-soft);
+  }
+
+  .bo-app--page .bo-navBtn--mobileMore.is-active {
+    background: rgba(185, 168, 255, 0.12);
+    border-color: rgba(185, 168, 255, 0.26);
+    color: var(--bo-text);
   }
 
   .bo-app--page .bo-navBtn.is-active {
@@ -3299,13 +3437,13 @@ tr.is-inactive {
 }
 
 .bo-donutPct {
-  font-size: 22px;
+  font-size: var(--bo-text-xl);
   font-weight: 820;
   letter-spacing: 0.01em;
 }
 
 .bo-donutMeta {
-  font-size: 13px;
+  font-size: var(--bo-text-sm);
   color: var(--bo-muted);
   font-weight: 700;
 }
@@ -3610,6 +3748,12 @@ tr.is-inactive {
 
 .bo-filtersToggle {
   gap: 8px;
+  font-size: var(--bo-text-sm);
+}
+
+.bo-filtersToggle .bo-ico {
+  width: var(--bo-text-base);
+  height: var(--bo-text-base);
 }
 
 .bo-filtersBody {
@@ -3666,8 +3810,16 @@ tr.is-inactive {
   min-width: 220px;
 }
 
-.bo-filterRow .bo-btn.bo-btn--download {
+.bo-filterRow .bo-btn.bo-btn--download,
+.bo-btn--downloadTop {
   margin-left: auto;
+  font-size: var(--bo-text-sm);
+}
+
+.bo-filterRow .bo-btn.bo-btn--download .bo-ico,
+.bo-btn--downloadTop .bo-ico {
+  width: var(--bo-text-base);
+  height: var(--bo-text-base);
 }
 
 @media (max-width: 760px) {
@@ -4323,6 +4475,47 @@ tr.is-inactive {
   min-width: 132px;
 }
 
+.bo-hourCardsContainer {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-configWeekdayGrid {
+  display: grid;
+  gap: var(--bo-space-2);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.bo-configDayCard {
+  width: 100%;
+  min-height: calc(var(--bo-space-4) * 4);
+  border-radius: var(--bo-radius-md);
+  padding-inline: var(--bo-space-2);
+  text-align: center;
+}
+
+.bo-configDayCardLabel {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-configLimitGrid {
+  display: grid;
+  gap: var(--bo-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.bo-configLimitCounterCard {
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 80%, var(--bo-accent));
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 56%),
+    color-mix(in srgb, var(--bo-surface-2) 82%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 .bo-hourCard--slot {
   width: 100%;
   min-height: 34px;
@@ -4331,9 +4524,114 @@ tr.is-inactive {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.bo-configFloorsPanel {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-configFloorTabs {
+  width: fit-content;
+}
+
+.bo-configFloorsPanelContent {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-configFloorCounter {
+  margin-inline: auto;
+  width: min(300px, 100%);
+}
+
+.bo-floorCards {
+  display: grid;
+  gap: var(--bo-space-2);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.bo-floorCard {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--bo-space-1);
+  justify-content: center;
+  border-radius: var(--bo-radius-lg);
+  padding: var(--bo-space-3);
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--bo-border) 86%, var(--bo-accent));
+  background: linear-gradient(155deg, color-mix(in srgb, var(--bo-surface-2) 78%, transparent), color-mix(in srgb, var(--bo-surface-3) 74%, transparent));
+  transition:
+    transform var(--bo-transition-base) var(--bo-ease),
+    border-color var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-floorCard:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
+  box-shadow: 0 12px 32px rgba(185, 168, 255, 0.13);
+}
+
+.bo-floorCard.is-on {
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--bo-accent) 14%, transparent), color-mix(in srgb, var(--bo-surface-3) 86%, transparent));
+}
+
 .bo-floorCard.is-ground {
   border-style: solid;
-  opacity: 1;
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--bo-accent-3) 22%, transparent), color-mix(in srgb, var(--bo-surface-2) 88%, transparent));
+}
+
+.bo-floorCardName {
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-tight);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-floorCardHint {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-floorSalonCard {
+  border: 1px solid color-mix(in srgb, var(--bo-border) 84%, var(--bo-accent));
+  border-radius: var(--bo-radius-md);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--bo-surface-2) 82%, transparent), color-mix(in srgb, var(--bo-surface-3) 86%, transparent));
+  padding: var(--bo-space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-3);
+  transition:
+    transform var(--bo-transition-base) var(--bo-ease),
+    border-color var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-floorSalonCard:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
+  box-shadow: 0 12px 28px rgba(185, 168, 255, 0.12);
+}
+
+.bo-floorSalonCardState {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
+.bo-floorSalonCardStatus {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-configSalonCards {
+  display: grid;
+  gap: var(--bo-space-2);
 }
 
 .bo-configDayLimitRow {
@@ -4427,6 +4725,9 @@ tr.is-inactive {
 
 @media (prefers-reduced-motion: reduce) {
   .bo-tab,
+  .bo-floorCard,
+  .bo-floorSalonCard,
+  .bo-configLimitCounterCard,
   .bo-mcalCell {
     transition: none;
   }
@@ -4596,6 +4897,7 @@ tr.is-inactive {
 }
 
 .bo-menuV2FiltersFoot {
+  margin-top: var(--bo-space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4856,9 +5158,29 @@ tr.is-inactive {
 }
 
 .bo-menuBackBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  line-height: var(--bo-leading-tight);
+  cursor: pointer;
+  transition: color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-menuBackBtn:hover {
+  color: var(--bo-text);
+}
+
+.bo-menuBackBtn:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+  border-radius: var(--bo-radius-sm);
 }
 
 .bo-menuFab {
@@ -4977,30 +5299,87 @@ tr.is-inactive {
   gap: 16px;
 }
 
+.bo-typeIntro {
+  margin: 0;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-normal);
+}
+
 .bo-typeGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(208px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bo-space-3);
+}
+
+@media (max-width: 980px) {
+  .bo-typeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .bo-typeCard {
-  border-radius: var(--bo-radius-md);
-  border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--bo-radius-lg);
   color: var(--bo-text);
   text-align: left;
-  padding: 12px;
-  min-height: 88px;
+  padding: var(--bo-space-4);
+  min-height: 176px;
   display: grid;
-  gap: 6px;
+  gap: var(--bo-space-2);
   align-content: start;
   cursor: pointer;
-  transition: border-color 160ms ease, background 160ms ease, transform 120ms ease;
+  transition:
+    border-color var(--bo-transition-base) var(--bo-ease),
+    background var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease),
+    transform var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-typeCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-typeIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--bo-radius-md);
+  display: inline-grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--bo-accent) 84%, var(--bo-text));
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+}
+
+.bo-typeState {
+  min-height: 24px;
+  padding-inline: var(--bo-space-2);
+  border-radius: var(--bo-radius-full);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 72%, var(--bo-accent));
+  background: color-mix(in srgb, var(--bo-surface) 74%, var(--bo-surface-2));
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-1);
+}
+
+.bo-typeState.is-selected {
+  border-color: color-mix(in srgb, var(--bo-accent) 56%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 16%, transparent);
+  color: color-mix(in srgb, var(--bo-accent) 82%, var(--bo-text));
 }
 
 .bo-typeCard:hover:not(:disabled) {
-  border-color: var(--bo-border-2);
+  border-color: color-mix(in srgb, var(--bo-accent) 36%, var(--bo-border));
   transform: translateY(-1px);
+}
+
+.bo-typeCard:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
 }
 
 .bo-typeCard:disabled {
@@ -5009,24 +5388,95 @@ tr.is-inactive {
 }
 
 .bo-typeCard.is-selected {
-  border-color: rgba(185, 168, 255, 0.45);
-  background: rgba(185, 168, 255, 0.14);
+  border-color: color-mix(in srgb, var(--bo-accent) 54%, var(--bo-border));
+  box-shadow: 0 14px 26px color-mix(in srgb, var(--bo-accent) 16%, var(--bo-surface-3));
 }
 
 .bo-typeTitle {
-  font-size: 13px;
-  font-weight: 780;
-  line-height: 1.3;
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-bold);
+  line-height: var(--bo-leading-tight);
+}
+
+.bo-typeDesc {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  line-height: var(--bo-leading-normal);
+}
+
+.bo-typeHint {
+  margin-top: auto;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-faint);
+  line-height: var(--bo-leading-normal);
 }
 
 .bo-typeSoon {
-  font-size: 12px;
+  font-size: var(--bo-text-xs);
   color: var(--bo-faint);
 }
 
 .bo-form--menuWizard {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.bo-form--menuWizardBasics {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.bo-menuBasicsMainRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(190px, 0.8fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.bo-menuBasicsMainRow.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bo-menuBasicsField {
+  min-width: 0;
+}
+
+.bo-menuBasicsField--price,
+.bo-menuBasicsPriceToggle {
+  width: 100%;
+  max-width: 260px;
+  justify-self: end;
+}
+
+.bo-menuBasicsPriceToggle {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.bo-menuBasicsSwitchRow {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-menuBasicsActiveToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-menuBasicsActiveToggle .bo-label {
+  margin: 0;
+}
+
+.bo-menuBasicsActiveToggle .bo-mutedText {
+  white-space: nowrap;
 }
 
 .bo-field--full {
@@ -5057,6 +5507,10 @@ tr.is-inactive {
   flex-wrap: wrap;
 }
 
+.bo-menuWizardActions--right {
+  justify-content: flex-end;
+}
+
 .bo-menuWizardActionsRight {
   display: flex;
   align-items: center;
@@ -5082,22 +5536,20 @@ tr.is-inactive {
 .bo-sectionCard {
   border-radius: var(--bo-radius-md);
   border: 1px solid var(--bo-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
-    rgba(255, 255, 255, 0.01);
+  background: color-mix(in srgb, var(--bo-surface-2) 88%, rgba(136, 142, 156, 0.22));
   padding: 10px;
+}
+
+:root[data-theme="light"] .bo-sectionCard {
+  border-color: color-mix(in srgb, var(--bo-border-2) 80%, rgba(20, 21, 26, 0.2));
+  background: color-mix(in srgb, var(--bo-surface-3) 86%, rgba(207, 214, 226, 0.72));
 }
 
 .bo-sectionCardHead {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(140px, auto) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-}
-
-.bo-sectionCardHead .bo-sectionKindSelect {
-  min-width: 132px;
-  justify-content: space-between;
 }
 
 .bo-sectionReorder {
@@ -5633,13 +6085,18 @@ tr.is-inactive {
     grid-template-columns: 1fr;
   }
 
-  .bo-sectionCardHead {
-    grid-template-columns: auto 1fr;
+  .bo-menuBasicsMainRow {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .bo-sectionCardHead .bo-sectionKindSelect,
-  .bo-sectionCardHead .bo-btn {
-    grid-column: 2 / -1;
+  .bo-menuBasicsField--price,
+  .bo-menuBasicsPriceToggle {
+    max-width: 100%;
+    justify-self: stretch;
+  }
+
+  .bo-sectionCardHead {
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
   .bo-menuFab {
@@ -5656,6 +6113,10 @@ tr.is-inactive {
 }
 
 @media (max-width: 620px) {
+  .bo-typeGrid {
+    grid-template-columns: 1fr;
+  }
+
   .bo-menuV2Card {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -6404,12 +6865,12 @@ tr.is-inactive {
 }
 
 .bo-memberDetailPage {
-  gap: 14px;
+  gap: var(--bo-space-4);
 }
 
 .bo-memberDetailRoute {
   display: grid;
-  gap: 14px;
+  gap: var(--bo-space-4);
 }
 
 .bo-tabs--memberDetail {
@@ -6435,6 +6896,8 @@ tr.is-inactive {
   height: 64px;
   border-radius: 18px;
   border: 1px solid var(--bo-border-2);
+  background: linear-gradient(135deg, rgba(185, 168, 255, 0.42), rgba(147, 239, 231, 0.24));
+  overflow: hidden;
 }
 
 .bo-imageDropInput {
@@ -6456,6 +6919,14 @@ tr.is-inactive {
 
 .bo-memberHeroAvatarDropzone {
   border-radius: 20px;
+}
+
+.bo-memberHeroAvatar .bo-memberAvatarFallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
 }
 
 .bo-memberAvatarUploadOverlay {
@@ -6576,7 +7047,8 @@ tr.is-inactive {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 10px;
+  column-gap: var(--bo-space-3);
+  row-gap: var(--bo-space-2);
 }
 
 .bo-memberControl {
@@ -6768,6 +7240,112 @@ tr.is-inactive {
 .bo-memberQuarterNote {
   font-size: 12px;
   color: var(--bo-faint);
+}
+
+.bo-statsTable {
+  margin-top: var(--bo-space-2);
+  display: grid;
+  gap: var(--bo-space-4);
+}
+
+.bo-statsTableControls {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-statsTableFilters {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--bo-space-3);
+}
+
+.bo-statsTableSelect,
+.bo-statsRangePicker {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-statsTableRangeField {
+  min-width: 204px;
+}
+
+.bo-statsTableModeTag {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-statsTableSurface {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.12));
+}
+
+.bo-statsTableWrap {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.bo-statsTableWrap .bo-table {
+  table-layout: fixed;
+}
+
+.bo-statsTableWrap .bo-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--bo-surface-2) 86%, transparent);
+}
+
+.bo-statsTableCol--period {
+  width: 36%;
+}
+
+.bo-statsTableCol--worked {
+  width: 22%;
+}
+
+.bo-statsTableCol--expected {
+  width: 22%;
+}
+
+.bo-statsTableCol--difference {
+  width: 20%;
+}
+
+.bo-table--stats .bo-positive {
+  color: var(--bo-color-success);
+}
+
+.bo-table--stats .bo-negative {
+  color: var(--bo-color-danger);
+}
+
+.bo-statsTableEmpty {
+  text-align: center;
+}
+
+.bo-statsTableFooter {
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-table--statsFooter {
+  table-layout: fixed;
+  background: color-mix(in srgb, var(--bo-surface-2) 84%, transparent);
+}
+
+.bo-table--statsFooter tfoot td {
+  padding: var(--bo-space-3) var(--bo-space-4);
+  color: var(--bo-text);
+}
+
+.bo-table--statsFooter tfoot tr {
+  border-top: 1px solid var(--bo-border);
 }
 
 .bo-fichajeTitle {
@@ -7926,6 +8504,15 @@ tr.is-inactive {
     flex: 1 1 180px;
   }
 
+  .bo-statsTableFilters .bo-field {
+    min-width: 0;
+    flex: 1 1 180px;
+  }
+
+  .bo-statsTableRangeField {
+    flex: 1 1 100%;
+  }
+
   .bo-memberSummaryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -7976,6 +8563,19 @@ tr.is-inactive {
 }
 
 @media (max-width: 620px) {
+  .bo-dateRangeBtn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bo-dateRangePop {
+    width: min(312px, calc(100vw - 16px));
+  }
+
+  .bo-statsTableWrap {
+    max-height: min(56vh, 360px);
+  }
+
   .bo-membersIntroHead {
     flex-direction: column;
     align-items: flex-start;
@@ -8841,6 +9441,10 @@ tr.is-inactive {
   padding-top: 8px;
 }
 
+.bo-invoiceFiltersGrid > * {
+  min-width: 0;
+}
+
 .bo-invoiceFilter--search {
   grid-column: span 2;
 }
@@ -8889,7 +9493,10 @@ tr.is-inactive {
   background: var(--bo-surface);
   color: var(--bo-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    border-color var(--bo-transition-base) var(--bo-ease),
+    background-color var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
 }
 
 .bo-datePresetBtn:hover {
@@ -8907,6 +9514,8 @@ tr.is-inactive {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   padding-top: 8px;
   border-top: 1px solid var(--bo-border);
 }
@@ -8919,6 +9528,14 @@ tr.is-inactive {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.bo-invoiceFiltersActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .bo-invoiceFiltersDateRange {
@@ -8983,24 +9600,41 @@ tr.is-inactive {
   gap: 8px;
 }
 
-.bo-savedFilterBtn {
+.bo-savedFilterPill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
   background: var(--bo-bg-subtle);
   border: 1px solid var(--bo-border);
   border-radius: var(--bo-radius);
   font-size: 13px;
   color: var(--bo-text);
-  cursor: pointer;
-  transition: all var(--bo-transition);
+  overflow: hidden;
 }
 
-.bo-savedFilterBtn:hover {
+.bo-savedFilterApply {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  min-width: 0;
+  transition:
+    background-color var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-savedFilterApply:hover {
   background: var(--bo-bg-hover);
-  border-color: var(--bo-primary);
   color: var(--bo-primary);
+}
+
+.bo-savedFilterApply:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
 }
 
 .bo-savedFilterName {
@@ -9014,18 +9648,25 @@ tr.is-inactive {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px;
+  padding: 6px;
   background: transparent;
   border: none;
   color: var(--bo-muted);
   cursor: pointer;
-  border-radius: var(--bo-radius-sm);
-  transition: all var(--bo-transition);
+  border-left: 1px solid var(--bo-border);
+  transition:
+    background-color var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
 }
 
 .bo-savedFilterDelete:hover {
   background: var(--bo-danger);
   color: white;
+}
+
+.bo-savedFilterDelete:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
 }
 
 .bo-invoiceClearBtn {
@@ -9066,6 +9707,22 @@ tr.is-inactive {
 .bo-table--facturas td.col-payment_method {
   width: 100px;
 }
+.bo-table--facturas th.col-currency,
+.bo-table--facturas td.col-currency {
+  width: 80px;
+}
+.bo-table--facturas th.col-payment_progress,
+.bo-table--facturas td.col-payment_progress {
+  width: 150px;
+}
+.bo-table--facturas th.col-due_date,
+.bo-table--facturas td.col-due_date {
+  width: 110px;
+}
+.bo-table--facturas th.col-deposit,
+.bo-table--facturas td.col-deposit {
+  width: 140px;
+}
 .bo-table--facturas th.col-status,
 .bo-table--facturas td.col-status {
   width: 100px;
@@ -9085,8 +9742,28 @@ tr.is-inactive {
 }
 .bo-table--facturas th.col-actions,
 .bo-table--facturas td.col-actions {
-  width: 120px;
+  width: 190px;
   text-align: right;
+}
+
+.bo-table--facturas td.col-actions .bo-tableActions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .bo-invoiceFiltersFoot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-invoiceFiltersSummary {
+    justify-content: space-between;
+  }
+
+  .bo-invoiceFiltersActions {
+    justify-content: space-between;
+  }
 }
 
 /* Responsive table for facturas */
@@ -12785,7 +13462,7 @@ tr.is-inactive {
 /* Preview Modal */
 .bo-previewModal {
   max-width: 90vw;
-  max-height: 90vh;
+  max-height: 80vh;
   width: auto;
   height: auto;
 }
@@ -13049,7 +13726,7 @@ tr.is-inactive {
 /* Import Wizard */
 .bo-importWizard {
   width: min(800px, calc(100vw - 36px));
-  max-height: calc(100vh - 80px);
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
 }
@@ -14554,7 +15231,7 @@ tr.is-inactive {
 .bo-pdf-preview-modal .bo-modal {
   max-width: 900px;
   width: 90vw;
-  max-height: 90vh;
+  max-height: 80vh;
 }
 
 .bo-pdf-preview {
@@ -14681,4 +15358,448 @@ tr.is-inactive {
 .bo-pdf-preview-footer-actions {
   display: flex;
   gap: 12px;
+}
+
+/* ============================================
+   Glassmorphism Minimal (Menus + Reusables)
+   ============================================ */
+:root {
+  --bo-glass-blur: 14px;
+  --bo-glass-border-strong: color-mix(in srgb, var(--bo-accent) 24%, var(--bo-border));
+  --bo-glass-shadow: 0 16px 30px rgba(8, 10, 22, 0.34);
+}
+
+:root[data-theme="light"] {
+  --bo-glass-border-strong: color-mix(in srgb, var(--bo-accent) 28%, rgba(20, 21, 26, 0.18));
+  --bo-glass-shadow: 0 12px 28px rgba(30, 38, 64, 0.14);
+}
+
+.bo-menuV2Page.is-selector {
+  min-height: clamp(470px, 72vh, 860px);
+  align-content: center;
+}
+
+.bo-menuTypePanels {
+  min-height: clamp(420px, 64vh, 780px);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.bo-menuTypePanelsGrid {
+  width: min(1120px, 100%);
+  gap: 14px;
+}
+
+.bo-menuGlassPanel,
+.bo-card--glass,
+.bo-modal--glass,
+.bo-toast--glass,
+.bo-alert--glass,
+.bo-memberPicker--glass,
+.bo-timeEntryCard--glass,
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass,
+.bo-shiftModalActive--glass,
+.bo-datePop--glass,
+.bo-mcal--glass,
+.bo-timeAdjust--glass,
+.bo-timeAdjustCounter--glass {
+  border: 1px solid var(--bo-glass-border-strong);
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.18)),
+    color-mix(in srgb, var(--bo-surface-2) 78%, transparent);
+  box-shadow: var(--bo-glass-shadow);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+}
+
+:root[data-theme="light"] .bo-menuGlassPanel,
+:root[data-theme="light"] .bo-card--glass,
+:root[data-theme="light"] .bo-modal--glass,
+:root[data-theme="light"] .bo-toast--glass,
+:root[data-theme="light"] .bo-alert--glass,
+:root[data-theme="light"] .bo-memberPicker--glass,
+:root[data-theme="light"] .bo-timeEntryCard--glass,
+:root[data-theme="light"] .bo-shiftModalSection--glass,
+:root[data-theme="light"] .bo-shiftModalAssign--glass,
+:root[data-theme="light"] .bo-shiftModalActive--glass,
+:root[data-theme="light"] .bo-datePop--glass,
+:root[data-theme="light"] .bo-mcal--glass,
+:root[data-theme="light"] .bo-timeAdjust--glass,
+:root[data-theme="light"] .bo-timeAdjustCounter--glass {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 9%, white), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 248, 255, 0.84)),
+    color-mix(in srgb, var(--bo-surface) 92%, rgba(255, 255, 255, 0.96));
+}
+
+:root[data-theme="light"] .bo-menuGlassPanel,
+:root[data-theme="light"] .bo-menuV2Card.bo-menuGlassPanel,
+:root[data-theme="light"] .bo-menuTypePanel.bo-menuGlassPanel {
+  border-radius: var(--bo-radius-lg);
+  background: linear-gradient(180deg, rgb(121 115 115 / 27%), rgb(57 41 80 / 29%)), #fffffff7;
+  border: 1px solid rgb(0 0 0 / 21%);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-menuV2Card.bo-menuGlassPanel,
+.bo-menuTypePanel.bo-menuGlassPanel {
+  transition: border-color var(--bo-transition-base) var(--bo-ease), transform var(--bo-transition-fast) var(--bo-ease), box-shadow var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-menuV2Filters,
+.bo-menuV2Card.bo-menuGlassPanel {
+  border-color: var(--bo-border);
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 10%, transparent), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.2)),
+    color-mix(in srgb, var(--bo-surface-2) 80%, transparent);
+}
+
+:root[data-theme="light"] .bo-menuV2Filters,
+:root[data-theme="light"] .bo-menuV2Card.bo-menuGlassPanel {
+  border-color: color-mix(in srgb, var(--bo-border-2) 82%, rgba(20, 21, 26, 0.24));
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, white), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(231, 237, 249, 0.82)),
+    color-mix(in srgb, var(--bo-surface) 90%, rgba(230, 236, 246, 0.94));
+}
+
+.bo-menuV2Card.bo-menuGlassPanel:hover {
+  border-color: var(--bo-border-2);
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--bo-border-2) 46%, rgba(8, 10, 22, 0.5));
+}
+
+.bo-menuTypePanel.bo-menuGlassPanel:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 42%, var(--bo-border));
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--bo-accent) 14%, rgba(8, 10, 22, 0.5));
+}
+
+.bo-menuV2Card.bo-menuGlassPanel.is-active {
+  border-color: var(--bo-border-2);
+}
+
+.bo-menuV2Card.bo-menuGlassPanel.is-draft {
+  border-style: dashed;
+}
+
+.bo-menuTypePanel.bo-menuGlassPanel {
+  min-height: 186px;
+  justify-content: flex-start;
+  padding-top: 20px;
+}
+
+.bo-menuTypePanel:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-menuTypePanelIcon {
+  background: color-mix(in srgb, var(--bo-accent) 16%, transparent);
+  color: color-mix(in srgb, var(--bo-accent) 82%, var(--bo-text));
+}
+
+.bo-menuTypePanelLabel {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bo-menuTypePanelDesc {
+  font-size: 12px;
+}
+
+.bo-menuTypePanelCount {
+  margin-top: auto;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 34%, transparent);
+  font-weight: 650;
+  color: color-mix(in srgb, var(--bo-accent) 84%, var(--bo-text));
+  background: color-mix(in srgb, var(--bo-accent) 11%, transparent);
+}
+
+.bo-menuV2Filters {
+  backdrop-filter: blur(11px) saturate(112%);
+  -webkit-backdrop-filter: blur(11px) saturate(112%);
+}
+
+.bo-menuTag {
+  border-color: color-mix(in srgb, var(--bo-border) 74%, var(--bo-accent));
+  background: color-mix(in srgb, var(--bo-surface) 62%, rgba(255, 255, 255, 0.14));
+  color: color-mix(in srgb, var(--bo-text) 70%, var(--bo-muted));
+}
+
+.bo-menuTag--state.is-on {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 42%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent-2) 14%, transparent);
+  color: color-mix(in srgb, var(--bo-accent-2) 78%, var(--bo-text));
+}
+
+:root[data-theme="light"] .bo-menuTag {
+  border-color: rgba(20, 21, 26, 0.14);
+  background: rgba(255, 255, 255, 0.82);
+  color: rgba(20, 21, 26, 0.82);
+}
+
+:root[data-theme="light"] .bo-menuTag--warn {
+  border-color: rgba(146, 87, 0, 0.36);
+  background: rgba(251, 191, 36, 0.24);
+  color: rgba(106, 57, 0, 0.98);
+}
+
+:root[data-theme="light"] .bo-menuTag--state.is-on {
+  border-color: rgba(10, 125, 117, 0.34);
+  background: rgba(45, 212, 191, 0.22);
+  color: rgba(6, 92, 84, 0.98);
+}
+
+.bo-tabs--glass {
+  border-color: color-mix(in srgb, var(--bo-accent) 20%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(0, 0, 0, 0.18)),
+    color-mix(in srgb, var(--bo-surface-2) 68%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.bo-navBtn--glass,
+.bo-actionBtn--glass,
+.bo-dateBtn--glass,
+.bo-btn--glass,
+.bo-counterBtn--glass {
+  border-color: color-mix(in srgb, var(--bo-accent) 24%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 74%, rgba(255, 255, 255, 0.11));
+}
+
+.bo-timeAdjustValue--glass,
+.bo-timeAdjustCounterValue--glass {
+  border-color: color-mix(in srgb, var(--bo-accent) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 78%, rgba(255, 255, 255, 0.11));
+}
+
+.bo-modal--confirm {
+  max-width: min(520px, calc(100vw - 36px));
+}
+
+:root[data-theme="light"] .bo-alert--glass .bo-alertMsg,
+:root[data-theme="light"] .bo-toast--glass .bo-toastMsg,
+:root[data-theme="light"] .bo-memberPickerMeta,
+:root[data-theme="light"] .bo-menuTypePanelDesc,
+:root[data-theme="light"] .bo-timeEntryFoot {
+  color: rgba(20, 21, 26, 0.72);
+}
+
+.bo-alert--glass.bo-alert--error {
+  border-color: color-mix(in srgb, var(--bo-color-danger) 42%, var(--bo-border));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(220, 38, 38, 0.14));
+}
+
+.bo-alert--glass.bo-alert--success {
+  border-color: color-mix(in srgb, var(--bo-color-success) 40%, var(--bo-border));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(22, 163, 74, 0.12));
+}
+
+.bo-toast--glass.bo-toast--error {
+  border-color: color-mix(in srgb, var(--bo-color-danger) 44%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(220, 38, 38, 0.16)),
+    color-mix(in srgb, var(--bo-surface-2) 82%, transparent);
+}
+
+.bo-toast--glass.bo-toast--success {
+  border-color: color-mix(in srgb, var(--bo-color-success) 40%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(22, 163, 74, 0.14)),
+    color-mix(in srgb, var(--bo-surface-2) 82%, transparent);
+}
+
+:root[data-theme="light"] .bo-alert--glass.bo-alert--error .bo-alertTitle,
+:root[data-theme="light"] .bo-toast--glass.bo-toast--error .bo-toastTitle {
+  color: rgba(127, 29, 29, 0.96);
+}
+
+:root[data-theme="light"] .bo-alert--glass.bo-alert--success .bo-alertTitle,
+:root[data-theme="light"] .bo-toast--glass.bo-toast--success .bo-toastTitle {
+  color: rgba(20, 83, 45, 0.96);
+}
+
+@media (max-width: 620px) {
+  .bo-menuV2Page.is-selector {
+    min-height: 0;
+  }
+
+  .bo-menuTypePanels {
+    min-height: 0;
+    place-items: stretch;
+  }
+
+  .bo-menuTypePanel.bo-menuGlassPanel {
+    min-height: 164px;
+  }
+}
+
+/* ============================================
+   Shift Modal Clean Refresh
+   ============================================ */
+.bo-modal--memberShift {
+  width: min(760px, calc(100vw - 28px));
+  padding: clamp(12px, 1.9vw, 20px);
+}
+
+.bo-shiftModal {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.bo-shiftModalDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-muted);
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 72%, rgba(255, 255, 255, 0.1));
+}
+
+.bo-shiftModalLoading {
+  min-height: 188px;
+  border-radius: var(--bo-radius-md);
+  border: 1px dashed var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-2) 80%, transparent);
+}
+
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass,
+.bo-shiftModalActive--glass {
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass {
+  padding: 14px;
+  gap: 12px;
+}
+
+.bo-shiftModalLabel {
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-faint);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bo-shiftModalTimes {
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-shiftModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-shiftModalActions .bo-btn,
+.bo-shiftModal .bo-btn--full {
+  min-height: 40px;
+  border-radius: 12px;
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-shiftModalActive--glass {
+  padding: 12px;
+  border-color: color-mix(in srgb, var(--bo-accent-2) 38%, var(--bo-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-accent-2) 11%, transparent), transparent 78%),
+    color-mix(in srgb, var(--bo-surface) 80%, transparent);
+}
+
+.bo-shiftModalActiveInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-shiftModalActiveTime {
+  font-size: 13px;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-shiftModalWheels {
+  gap: 12px;
+}
+
+.bo-shiftModalWheelGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-shiftModalWheelLabel {
+  font-size: 11px;
+  color: var(--bo-muted);
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-shiftModalWheelRow {
+  gap: 8px;
+}
+
+.bo-shiftModalWheelSpin {
+  width: 100%;
+}
+
+.bo-shiftModalAssign--glass {
+  border-top: 1px solid color-mix(in srgb, var(--bo-accent) 18%, var(--bo-border));
+}
+
+.bo-shiftModalAddBtn {
+  margin-top: 0;
+}
+
+:root[data-theme="light"] .bo-modal--memberShift {
+  box-shadow: 0 14px 32px rgba(17, 24, 39, 0.14);
+}
+
+:root[data-theme="light"] .bo-shiftModalDate {
+  color: rgba(20, 21, 26, 0.74);
+  border-color: rgba(124, 92, 231, 0.24);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+:root[data-theme="light"] .bo-shiftModalLabel {
+  color: rgba(20, 21, 26, 0.58);
+}
+
+:root[data-theme="light"] .bo-shiftModalActive--glass {
+  border-color: rgba(13, 148, 136, 0.32);
+  background:
+    linear-gradient(180deg, rgba(45, 212, 191, 0.16), rgba(255, 255, 255, 0.86));
+}
+
+@media (max-width: 760px) {
+  .bo-modal--memberShift {
+    width: calc(100vw - 20px);
+    padding: 12px;
+  }
+
+  .bo-shiftModalTimes,
+  .bo-shiftModalWheels,
+  .bo-shiftModalWheelRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-shiftModalActions .bo-btn,
+  .bo-shiftModal .bo-btn--full {
+    width: 100%;
+    flex: 1 1 100%;
+  }
 }

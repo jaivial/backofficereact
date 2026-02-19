@@ -18,6 +18,7 @@ const ACTION_CONFIG: Record<InvoiceHistoryAction, { label: string; icon: React.R
   deleted: { label: "Eliminada", icon: <Trash2 size={14} />, className: "bo-historyAction--deleted" },
   sent: { label: "Enviada", icon: <Send size={14} />, className: "bo-historyAction--sent" },
   duplicated: { label: "Duplicada", icon: <Copy size={14} />, className: "bo-historyAction--duplicated" },
+  renumbered: { label: "Renumerada", icon: <History size={14} />, className: "bo-historyAction--updated" },
 };
 
 function formatDateTime(dateStr: string): string {
@@ -81,7 +82,8 @@ export function InvoiceHistoryModal({
       if (res.success) {
         setHistory(res.history);
       } else {
-        setError(res.message || "Error al cargar el historial");
+        const msg = "message" in res ? res.message : undefined;
+        setError(msg || "Error al cargar el historial");
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error desconocido");

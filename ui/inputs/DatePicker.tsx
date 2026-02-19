@@ -10,6 +10,10 @@ type DatePickerProps = {
   value: string;
   onChange: (iso: string) => void;
   popoverOffsetX?: number;
+  disabled?: boolean;
+  minDate?: string;
+  maxDate?: string;
+  id?: string;
 };
 
 function portalEl(): HTMLElement | null {
@@ -39,7 +43,7 @@ function buildMonthGrid(year: number, month0: number) {
   return cells;
 }
 
-export function DatePicker({ value, onChange, popoverOffsetX = 0 }: DatePickerProps) {
+export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = false, minDate, maxDate, id }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -69,7 +73,10 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0 }: DatePickerPr
   }, [open, popoverOffsetX]);
 
   const close = useCallback(() => setOpen(false), []);
-  const toggle = useCallback(() => setOpen((v) => !v), []);
+  const toggle = useCallback(() => {
+    if (disabled) return;
+    setOpen((v) => !v);
+  }, [disabled]);
 
   useEffect(() => {
     if (!open) return;
@@ -118,7 +125,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0 }: DatePickerPr
       <AnimatePresence>
         <motion.div
           ref={popRef}
-          className="bo-datePop"
+          className="bo-datePop bo-datePop--glass"
           initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
@@ -128,11 +135,21 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0 }: DatePickerPr
           aria-label="Calendar"
         >
           <div className="bo-dateHead">
-            <button type="button" className="bo-actionBtn" onClick={prevMonth} aria-label="Prev month">
+            <button
+              type="button"
+              className="bo-actionBtn bo-actionBtn--glass"
+              onClick={prevMonth}
+              aria-label="Prev month"
+            >
               <ChevronLeft size={18} strokeWidth={1.8} />
             </button>
             <div className="bo-dateTitle">{monthLabel(viewYear, viewMonth0)}</div>
-            <button type="button" className="bo-actionBtn" onClick={nextMonth} aria-label="Next month">
+            <button
+              type="button"
+              className="bo-actionBtn bo-actionBtn--glass"
+              onClick={nextMonth}
+              aria-label="Next month"
+            >
               <ChevronRight size={18} strokeWidth={1.8} />
             </button>
           </div>
@@ -151,12 +168,17 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0 }: DatePickerPr
               const iso = c.iso;
               const isSelected = iso === selectedISO;
               const cls = isSelected ? "bo-calDay is-selected" : "bo-calDay";
+              const isBeforeMin = Boolean(minDate && iso < minDate);
+              const isAfterMax = Boolean(maxDate && iso > maxDate);
+              const isDisabled = isBeforeMin || isAfterMax;
               return (
                 <button
                   key={iso}
                   type="button"
-                  className={cls}
+                  className={`${cls}${isDisabled ? " is-disabled" : ""}`}
+                  disabled={isDisabled}
                   onClick={() => {
+                    if (isDisabled) return;
                     onChange(iso);
                     close();
                   }}
@@ -174,7 +196,16 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0 }: DatePickerPr
 
   return (
     <>
-      <button ref={btnRef} className="bo-dateBtn" type="button" onClick={toggle} aria-label="Select date">
+      <button
+        id={id}
+        ref={btnRef}
+        className="bo-dateBtn bo-dateBtn--glass"
+        type="button"
+        onClick={toggle}
+        aria-label="Select date"
+        aria-disabled={disabled}
+        disabled={disabled}
+      >
         <CalendarDays size={18} strokeWidth={1.8} />
         <span className="bo-dateBtnLabel">{value}</span>
       </button>

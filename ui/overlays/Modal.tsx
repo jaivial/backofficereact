@@ -24,6 +24,7 @@ export function Modal({
   onClose,
   children,
   widthPx,
+  size,
   className,
 }: {
   open: boolean;
@@ -31,10 +32,17 @@ export function Modal({
   onClose: () => void;
   children: React.ReactNode;
   widthPx?: number;
+  size?: "sm" | "md" | "lg";
   className?: string;
 }) {
   useFocusRestore(open);
   const reduceMotion = useReducedMotion();
+  const sizeWidth =
+    size === "sm" ? 460 :
+    size === "md" ? 640 :
+    size === "lg" ? 840 :
+    undefined;
+  const resolvedWidth = widthPx ?? sizeWidth;
 
   useEffect(() => {
     if (!open) return;
@@ -64,12 +72,12 @@ export function Modal({
           }}
         >
           <motion.div
-            className={["bo-modal", className].filter(Boolean).join(" ")}
+            className={["bo-modal", "bo-modal--glass", className].filter(Boolean).join(" ")}
             role="dialog"
             aria-label={title}
             style={
-              widthPx
-                ? ({ ["--bo-modal-w" as any]: `${widthPx}px` } as React.CSSProperties)
+              resolvedWidth
+                ? ({ ["--bo-modal-w" as any]: `${resolvedWidth}px` } as React.CSSProperties)
                 : undefined
             }
             initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}

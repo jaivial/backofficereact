@@ -16,6 +16,7 @@ const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; className: s
   solicitada: { label: "Solicitada", className: "bo-badge--warning" },
   pendiente: { label: "Pendiente", className: "bo-badge--info" },
   enviada: { label: "Enviada", className: "bo-badge--success" },
+  pagada: { label: "Pagada", className: "bo-badge--success" },
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -35,7 +36,7 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf }: InvoicePreviewModalProps) {
+export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, onSendEmail }: InvoicePreviewModalProps) {
   const handleEdit = () => {
     onEdit(invoice);
     onClose();

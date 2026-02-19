@@ -178,21 +178,21 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       let res;
       if (foodType === "cafes") {
         if (item) {
-          res = await api.cafes.patch(item.num, payload);
+          res = await api.menus.cafes.patch(item.num, payload);
         } else {
-          res = await api.cafes.create(payload);
+          res = await api.menus.cafes.create(payload);
         }
       } else if (foodType === "bebidas") {
         if (item) {
-          res = await api.bebidas.patch(item.num, payload);
+          res = await api.menus.bebidas.patch(item.num, payload);
         } else {
-          res = await api.bebidas.create(payload);
+          res = await api.menus.bebidas.create(payload);
         }
       } else {
         if (item) {
-          res = await api.platos.patch(item.num, payload);
+          res = await api.menus.platos.patch(item.num, payload);
         } else {
-          res = await api.platos.create(payload);
+          res = await api.menus.platos.create(payload);
         }
       }
 

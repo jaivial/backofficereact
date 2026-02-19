@@ -112,93 +112,93 @@ type SearchByOption = "name" | "email" | "invoice_number";
 
 type InvoiceFiltersProps = {
   searchText: string;
-  searchBy: SearchByOption;
+  searchBy?: SearchByOption;
   statusFilter: InvoiceStatus | "";
-  categoryFilter: InvoiceCategory | "";
-  tagFilter: string;
+  categoryFilter?: InvoiceCategory | "";
+  tagFilter?: string;
   dateType: "invoice_date" | "reservation_date";
   dateFrom: string;
   dateTo: string;
-  dueDateFrom: string;
-  dueDateTo: string;
-  isOverdue: boolean | null;
+  dueDateFrom?: string;
+  dueDateTo?: string;
+  isOverdue?: boolean | null;
   isReservation: boolean | null;
-  isCreditNote: boolean | null;
+  isCreditNote?: boolean | null;
   sortBy: string;
   hasFilters: boolean;
   summaryText: string;
   statusOptions: { value: InvoiceStatus | ""; label: string }[];
-  categoryOptions: { value: InvoiceCategory | ""; label: string }[];
+  categoryOptions?: { value: InvoiceCategory | ""; label: string }[];
   sortOptions: { value: string; label: string }[];
-  savedFilters: InvoiceFilterPreset[];
+  savedFilters?: InvoiceFilterPreset[];
   onSearchChange: (value: string) => void;
-  onSearchByChange: (value: SearchByOption) => void;
+  onSearchByChange?: (value: SearchByOption) => void;
   onStatusFilterChange: (value: InvoiceStatus | "") => void;
-  onCategoryFilterChange: (value: InvoiceCategory | "") => void;
-  onTagFilterChange: (value: string) => void;
+  onCategoryFilterChange?: (value: InvoiceCategory | "") => void;
+  onTagFilterChange?: (value: string) => void;
   onDateTypeChange: (value: "invoice_date" | "reservation_date") => void;
   onDateFromChange: (value: string) => void;
   onDateToChange: (value: string) => void;
-  onDueDateFromChange: (value: string) => void;
-  onDueDateToChange: (value: string) => void;
-  onIsOverdueChange: (value: boolean | null) => void;
+  onDueDateFromChange?: (value: string) => void;
+  onDueDateToChange?: (value: string) => void;
+  onIsOverdueChange?: (value: boolean | null) => void;
   onIsReservationChange: (value: boolean | null) => void;
-  onIsCreditNoteChange: (value: boolean | null) => void;
+  onIsCreditNoteChange?: (value: boolean | null) => void;
   onSortByChange: (value: string) => void;
   onResetFilters: () => void;
   onApplyFilters: () => void;
   onExportCSV?: () => void;
   onImport?: () => void;
   onImportHistory?: () => void;
-  onSaveFilter: (name: string) => void;
-  onLoadFilter: (preset: InvoiceFilterPreset) => void;
-  onDeleteFilter: (id: string) => void;
+  onSaveFilter?: (name: string) => void;
+  onLoadFilter?: (preset: InvoiceFilterPreset) => void;
+  onDeleteFilter?: (id: string) => void;
   onDatePresetChange?: (preset: DatePreset) => void;
 };
 
 export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>(function InvoiceFilters({
   searchText,
-  searchBy,
+  searchBy = "name",
   statusFilter,
-  categoryFilter,
-  tagFilter,
+  categoryFilter = "",
+  tagFilter = "",
   dateType,
   dateFrom,
   dateTo,
-  dueDateFrom,
-  dueDateTo,
-  isOverdue,
+  dueDateFrom = "",
+  dueDateTo = "",
+  isOverdue = null,
   isReservation,
-  isCreditNote,
+  isCreditNote = null,
   sortBy,
   hasFilters,
   summaryText,
   statusOptions,
-  categoryOptions,
+  categoryOptions = INVOICE_CATEGORY_OPTIONS,
   sortOptions,
-  savedFilters,
+  savedFilters = [],
   onSearchChange,
-  onSearchByChange,
+  onSearchByChange = () => {},
   onStatusFilterChange,
-  onCategoryFilterChange,
-  onTagFilterChange,
+  onCategoryFilterChange = () => {},
+  onTagFilterChange = () => {},
   onDateTypeChange,
   onDateFromChange,
   onDateToChange,
-  onDueDateFromChange,
-  onDueDateToChange,
-  onIsOverdueChange,
+  onDueDateFromChange = () => {},
+  onDueDateToChange = () => {},
+  onIsOverdueChange = () => {},
   onIsReservationChange,
-  onIsCreditNoteChange,
+  onIsCreditNoteChange = () => {},
   onSortByChange,
   onResetFilters,
   onApplyFilters,
   onExportCSV,
   onImport,
   onImportHistory,
-  onSaveFilter,
-  onLoadFilter,
-  onDeleteFilter,
+  onSaveFilter = () => {},
+  onLoadFilter = () => {},
+  onDeleteFilter = () => {},
   onDatePresetChange,
 }: InvoiceFiltersProps, ref) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -720,14 +720,20 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 </div>
                 <div className="bo-savedFiltersList">
                   {savedFilters.map((preset) => (
-                    <button
+                    <div
                       key={preset.id}
-                      className="bo-savedFilterBtn"
-                      type="button"
-                      onClick={() => handleLoadFilter(preset)}
-                      title={`Aplicar: ${preset.name}`}
+                      className="bo-savedFilterPill"
+                      role="group"
+                      aria-label={`Filtro guardado: ${preset.name}`}
                     >
-                      <span className="bo-savedFilterName">{preset.name}</span>
+                      <button
+                        className="bo-savedFilterApply"
+                        type="button"
+                        onClick={() => handleLoadFilter(preset)}
+                        title={`Aplicar: ${preset.name}`}
+                      >
+                        <span className="bo-savedFilterName">{preset.name}</span>
+                      </button>
                       <button
                         className="bo-savedFilterDelete"
                         type="button"
@@ -737,7 +743,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                       >
                         <Trash2 size={12} />
                       </button>
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>

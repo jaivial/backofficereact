@@ -26,13 +26,13 @@ export function MemberPicker({
   emptyLabel: string;
 }) {
   return (
-    <aside className="bo-memberPicker" aria-label={title}>
+    <aside className="bo-memberPicker bo-memberPicker--glass" aria-label={title}>
       <div className="bo-memberPickerHead">
         <div className="bo-panelTitle">{title}</div>
         <div className="bo-memberPickerCount">{items.length}</div>
       </div>
 
-      <label className="bo-memberPickerSearch" aria-label="Buscar miembro">
+      <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro">
         <Search size={14} strokeWidth={1.8} />
         <input
           type="text"
@@ -48,7 +48,7 @@ export function MemberPicker({
           <button
             key={item.id}
             type="button"
-            className={`bo-memberPickerBtn${selectedId === item.id ? " is-active" : ""}`}
+            className={`bo-memberPickerBtn bo-memberPickerBtn--glass${selectedId === item.id ? " is-active" : ""}`}
             onClick={() => onSelect(item.id)}
           >
             <span className="bo-memberPickerName">

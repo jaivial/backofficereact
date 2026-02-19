@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { Check, Loader2, Pencil, Upload } from "lucide-react";
+import { Check, Loader2, Mail, Pencil, RefreshCcw, Upload } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
@@ -11,6 +11,7 @@ import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { ImageDropInput } from "../../../../ui/inputs/ImageDropInput";
 import { PhoneInput } from "../../../../ui/inputs/PhoneInput";
+import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { imageToWebpMax200KB } from "../../../../ui/lib/imageFile";
 import { composePhoneE164, splitStoredPhone } from "../../../../ui/lib/phone";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
@@ -50,6 +51,10 @@ export default function Page() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
+  const [resendBusy, setResendBusy] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
+  const [confirmResendOpen, setConfirmResendOpen] = useState(false);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   useErrorToast(error);
 
   const [firstName, setFirstName] = useState(data.member?.firstName ?? "");
@@ -128,6 +133,54 @@ export default function Page() {
     [api.members, member, pushToast],
   );
 
+  const onResendInvitation = useCallback(async () => {
+    if (!member) return;
+    setResendBusy(true);
+    setError(null);
+    try {
+      const res = await api.members.resendInvitation(member.id);
+      if (!res.success) {
+        setError(res.message || "No se pudo reenviar la invitación");
+        return;
+      }
+      const sentChannels = (res.invitation?.delivery || []).filter((item) => item.sent).map((item) => item.channel);
+      pushToast({
+        kind: "success",
+        title: "Invitación reenviada",
+        message: sentChannels.length ? `Enviada por ${sentChannels.join(" y ")}.` : undefined,
+      });
+      setConfirmResendOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo reenviar la invitación");
+    } finally {
+      setResendBusy(false);
+    }
+  }, [api.members, member, pushToast]);
+
+  const onSendPasswordReset = useCallback(async () => {
+    if (!member) return;
+    setResetBusy(true);
+    setError(null);
+    try {
+      const res = await api.members.sendPasswordReset(member.id);
+      if (!res.success) {
+        setError(res.message || "No se pudo enviar el reset");
+        return;
+      }
+      const sentChannels = (res.reset?.delivery || []).filter((item) => item.sent).map((item) => item.channel);
+      pushToast({
+        kind: "success",
+        title: "Enlace de reset enviado",
+        message: sentChannels.length ? `Enviado por ${sentChannels.join(" y ")}.` : undefined,
+      });
+      setConfirmResetOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo enviar el reset");
+    } finally {
+      setResetBusy(false);
+    }
+  }, [api.members, member, pushToast]);
+
   const memberName = member ? `${member.firstName} ${member.lastName}`.trim() : "";
   const currentEmail = normalizeEmail(session?.user?.email);
   const isSelfMember = !!member && (member.isCurrentUser || (currentEmail !== "" && normalizeEmail(member.email) === currentEmail));
@@ -169,6 +222,24 @@ export default function Page() {
                 </div>
               </div>
               <div className="bo-memberHeroActions">
+                <button
+                  className="bo-btn bo-btn--ghost"
+                  type="button"
+                  onClick={() => setConfirmResendOpen(true)}
+                  disabled={saving || avatarBusy || resendBusy || resetBusy}
+                >
+                  <RefreshCcw size={14} strokeWidth={1.8} />
+                  Reenviar invitación
+                </button>
+                <button
+                  className="bo-btn bo-btn--ghost"
+                  type="button"
+                  onClick={() => setConfirmResetOpen(true)}
+                  disabled={saving || avatarBusy || resendBusy || resetBusy}
+                >
+                  <Mail size={14} strokeWidth={1.8} />
+                  Recuperar contraseña
+                </button>
                 <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
                   <Pencil size={14} strokeWidth={1.8} />
                   {editing ? "Cancelar" : "Editar"}
@@ -246,6 +317,26 @@ export default function Page() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmResendOpen}
+        title="Reenviar invitación"
+        message="Se generará un nuevo enlace de invitación y se invalidarán los enlaces anteriores activos."
+        confirmText="Reenviar"
+        onClose={() => setConfirmResendOpen(false)}
+        onConfirm={onResendInvitation}
+        busy={resendBusy}
+      />
+
+      <ConfirmDialog
+        open={confirmResetOpen}
+        title="Enviar recuperación de contraseña"
+        message="Se enviará un enlace para restablecer contraseña al email y/o teléfono del miembro."
+        confirmText="Enviar enlace"
+        onClose={() => setConfirmResetOpen(false)}
+        onConfirm={onSendPasswordReset}
+        busy={resetBusy}
+      />
     </section>
   );
 }

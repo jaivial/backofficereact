@@ -1,12 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { X, Plus, Pencil, Trash2, Star, StarOff, Mail, MessageSquare, AlertCircle } from "lucide-react";
-import type { ReminderTemplate, ReminderTemplateInput } from "../../../api/types";
-import { Select } from "../../../ui/inputs/Select";
-import { TextInput } from "../../../ui/inputs/TextInput";
-import { Textarea } from "../../../ui/inputs/Textarea";
-import { useToasts } from "../../../ui/feedback/useToasts";
-import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
-import { createClient } from "../../../api/client";
+import type { ReminderTemplate, ReminderTemplateInput } from "../../../../api/types";
+import { useToasts } from "../../../../ui/feedback/useToasts";
+import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
+import { createClient } from "../../../../api/client";
 
 interface ReminderTemplatesModalProps {
   open: boolean;
@@ -255,8 +252,9 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                 <label className="bo-label" htmlFor="template-name">
                   Nombre de la plantilla
                 </label>
-                <TextInput
+                <input
                   id="template-name"
+                  className="bo-input"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="ej: Recordatorio primera semana"
@@ -296,8 +294,9 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                   <label className="bo-label" htmlFor="template-subject">
                     Asunto
                   </label>
-                  <TextInput
+                  <input
                     id="template-subject"
+                    className="bo-input"
                     value={formData.subject || ""}
                     onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
                     placeholder="Recordatorio de pago - Factura {invoice_number}"
@@ -312,8 +311,9 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                 <label className="bo-label" htmlFor="template-body">
                   Cuerpo del mensaje
                 </label>
-                <Textarea
+                <textarea
                   id="template-body"
+                  className="bo-textarea"
                   value={formData.body}
                   onChange={(e) => setFormData((prev) => ({ ...prev, body: e.target.value }))}
                   rows={8}

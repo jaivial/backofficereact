@@ -1,9 +1,9 @@
-import { createClient } from "../../../api/client";
-import { canViewOwnSchedule } from "../../../lib/rbac";
-import type { BOSession } from "../../../api/types";
+import { createClient } from "../../../../api/client";
+import { canViewOwnSchedule } from "../../../../lib/rbac";
+import type { BOSession } from "../../../../api/types";
 
 export type Data = {
-  schedules: import("../../../api/types").FichajeSchedule[];
+  schedules: import("../../../../api/types").FichajeSchedule[];
   error: string | null;
 };
 
@@ -18,7 +18,7 @@ export async function data(pageContext: { session: BOSession | null }): Promise<
   }
 
   // Check if user can view their own schedule
-  if (!canViewOwnSchedule(session.role)) {
+  if (!canViewOwnSchedule(session.user.role)) {
     return {
       schedules: [],
       error: "No tienes permiso para ver horarios",

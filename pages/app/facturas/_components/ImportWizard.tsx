@@ -19,8 +19,8 @@ import {
   FileText,
   Settings,
 } from "lucide-react";
-import { useToasts } from "../../../ui/feedback/useToasts";
-import { Select } from "../../../ui/inputs/Select";
+import { useToasts } from "../../../../ui/feedback/useToasts";
+import { Select } from "../../../../ui/inputs/Select";
 import {
   type ImportColumnMapping,
   type ImportFieldType,
@@ -35,9 +35,9 @@ import {
   PAYMENT_METHOD_MAPPING,
   CATEGORY_MAPPING,
   CURRENCY_MAPPING,
-} from "../../../api/import-types";
-import type { InvoiceInput, InvoiceStatus, PaymentMethod, InvoiceCategory, CurrencyCode } from "../../../api/types";
-import type { createClient } from "../../../api/client";
+} from "../../../../api/import-types";
+import type { InvoiceInput, InvoiceStatus, PaymentMethod, InvoiceCategory, CurrencyCode } from "../../../../api/types";
+import type { createClient } from "../../../../api/client";
 
 type ImportWizardProps = {
   open: boolean;
@@ -176,19 +176,20 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
     const mappedData: Partial<InvoiceInput> = {};
 
     // Get required fields
-    const requiredFields = IMPORT_FIELD_OPTIONS.filter((f) => f.required).map((f) => f.value);
+    const requiredFields = IMPORT_FIELD_OPTIONS.filter((f) => f.required).map((f) => f.value as ImportFieldType);
 
     // Process each mapped column
     Object.entries(mapping).forEach(([header, fieldType]) => {
       if (fieldType === "ignore") return;
+      const mappedField = fieldType as ImportFieldType;
 
       const rawValue = rowData[header]?.trim() || "";
 
       // Check required fields
-      if (requiredFields.includes(fieldType) && !rawValue) {
+      if (requiredFields.includes(mappedField) && !rawValue) {
         errors.push({
           row: rowNumber,
-          field: fieldType,
+          field: mappedField,
           message: `El campo es obligatorio`,
           value: rawValue,
         });
@@ -633,10 +634,11 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                 importedIds.push(res.id);
                 successCount++;
               } else {
+                const msg = "message" in res ? res.message : undefined;
                 errors.push({
                   row: row.rowNumber,
                   field: "general",
-                  message: res.message || "Error al crear la factura",
+                  message: msg || "Error al crear la factura",
                   value: "",
                 });
               }

@@ -27,8 +27,8 @@ export type JobInfo = {
 };
 
 // Calculate next run time based on interval
-export function calculateNextRun(intervalMs: number): Date {
-  return new Date(Date.now() + intervalMs);
+export function calculateNextRun(intervalMs: number): string {
+  return new Date(Date.now() + intervalMs).toISOString();
 }
 
 // Format interval for display

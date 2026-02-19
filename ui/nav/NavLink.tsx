@@ -5,16 +5,19 @@ export const NavLink = memo(function NavLink({
   active,
   label,
   children,
+  className,
 }: {
   href: string;
   active: boolean;
   label: string;
   children: React.ReactNode;
+  className?: string;
 }) {
+  const classes = ["bo-navBtn", "bo-navBtn--glass", active ? "is-active" : "", className ?? ""].filter(Boolean).join(" ");
+
   return (
-    <a className={`bo-navBtn${active ? " is-active" : ""}`} href={href} aria-label={label}>
+    <a className={classes} href={href} aria-label={label}>
       {children}
     </a>
   );
 });
-

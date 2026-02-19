@@ -11,6 +11,7 @@ import type {
   ConfigFloor,
   ConfigOpeningHours,
   ConfigSalonCondesa,
+  WeekdayOpen,
   DashboardMetrics,
   CalendarDay,
   DishCatalogItem,
@@ -26,6 +27,10 @@ import type {
   FichajeState,
   TimeEntry,
   Member,
+  DeliveryAttempt,
+  MemberInvitationPreview,
+  InvitationOnboardingMember,
+  PasswordResetPreview,
   MemberStats,
   MemberStatsTableRow,
   MemberTimeBalance,
@@ -33,6 +38,7 @@ import type {
   MenuDish,
   MenuTable,
   MenuVisibilityItem,
+  FoodItem,
   Postre,
   RoleCatalogItem,
   RoleCurrentUser,
@@ -103,11 +109,11 @@ export function createClient(opts: ClientOpts) {
 
   return {
     auth: {
-      async login(email: string, password: string): Promise<APISuccess<{ session: BOSession }> | APIError> {
+      async login(identifier: string, password: string): Promise<APISuccess<{ session: BOSession }> | APIError> {
         return json("/api/admin/login", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ identifier, email: identifier, password }),
         });
       },
       async logout(): Promise<APISuccess | APIError> {
@@ -119,6 +125,13 @@ export function createClient(opts: ClientOpts) {
       },
       async me(): Promise<APISuccess<{ session: BOSession }> | APIError> {
         return json("/api/admin/me", { method: "GET" });
+      },
+      async setPassword(password: string, confirmPassword: string): Promise<APISuccess | APIError> {
+        return json("/api/admin/me/password", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ password, confirmPassword }),
+        });
       },
       async setActiveRestaurant(
         restaurantId: number,
@@ -152,7 +165,7 @@ export function createClient(opts: ClientOpts) {
         sort?: "reservation_time" | "added_date";
         dir?: "asc" | "desc";
       }): Promise<
-        APISuccess<{ bookings: Booking[]; total_count: number; total: number; page: number; count: number }> | APIError
+        APISuccess<{ bookings: Booking[]; floors?: ConfigFloor[]; total_count: number; total: number; page: number; count: number }> | APIError
       > {
         const q = new URLSearchParams();
         q.set("date", params.date);
@@ -237,13 +250,24 @@ export function createClient(opts: ClientOpts) {
       async create(input: {
         firstName: string;
         lastName: string;
+        roleSlug: string;
         email?: string | null;
         dni?: string | null;
         bankAccount?: string | null;
         phone?: string | null;
         photoUrl?: string | null;
+        username?: string | null;
+        temporaryPassword?: string | null;
         weeklyContractHours?: number;
-      }): Promise<APISuccess<{ member: Member }> | APIError> {
+      }): Promise<
+        APISuccess<{
+          member: Member;
+          user?: { id: number; email: string; username?: string | null; created: boolean; mustChangePassword?: boolean };
+          role?: string;
+          invitation?: { created: boolean; expiresAt?: string; delivery?: DeliveryAttempt[] };
+          provisioning?: { manualCredentials: boolean; hasContact: boolean; mustChangePassword?: boolean };
+        }> | APIError
+      > {
         return json("/api/admin/members", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -283,7 +307,7 @@ export function createClient(opts: ClientOpts) {
       },
       async getStats(
         id: number,
-        params: { view: "weekly" | "monthly" | "quarterly"; date: string },
+        params: { view: "weekly" | "monthly" | "quarterly" | "yearly"; date: string },
       ): Promise<APISuccess<MemberStats> | APIError> {
         const q = new URLSearchParams({ view: params.view, date: params.date });
         return json(`/api/admin/members/${id}/stats?${q.toString()}`, { method: "GET" });
@@ -312,6 +336,100 @@ export function createClient(opts: ClientOpts) {
       ): Promise<APISuccess<{ rows: MemberStatsTableRow[] }> | APIError> {
         const q = new URLSearchParams({ view: params.view, year: String(params.year) });
         return json(`/api/admin/members/${id}/table-data?${q.toString()}`, { method: "GET" });
+      },
+      async resendInvitation(
+        id: number,
+      ): Promise<
+        APISuccess<{
+          member: { id: number; boUserId: number; username?: string | null };
+          invitation: { expiresAt: string; delivery: DeliveryAttempt[] };
+        }> | APIError
+      > {
+        return json(`/api/admin/members/${id}/invitation/resend`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
+      async sendPasswordReset(
+        id: number,
+      ): Promise<
+        APISuccess<{
+          reset: { expiresAt: string; delivery: DeliveryAttempt[] };
+        }> | APIError
+      > {
+        return json(`/api/admin/members/${id}/password-reset/send`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
+    },
+    invitations: {
+      async validate(token: string): Promise<APISuccess<{ invitation: MemberInvitationPreview }> | APIError> {
+        return json("/api/admin/invitations/validate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      },
+      onboarding: {
+        async start(
+          token: string,
+        ): Promise<APISuccess<{ onboardingGuid: string; member: InvitationOnboardingMember }> | APIError> {
+          return json("/api/admin/invitations/onboarding/start", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ token }),
+          });
+        },
+        async get(
+          guid: string,
+        ): Promise<APISuccess<{ member: InvitationOnboardingMember; expiresAt: string }> | APIError> {
+          return json(`/api/admin/invitations/onboarding/${encodeURIComponent(guid)}`, { method: "GET" });
+        },
+        async saveProfile(
+          guid: string,
+          input: { firstName: string; lastName: string; photoUrl?: string | null },
+        ): Promise<APISuccess<{ member: Member }> | APIError> {
+          return json(`/api/admin/invitations/onboarding/${encodeURIComponent(guid)}/profile`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async uploadAvatar(guid: string, file: File | Blob): Promise<APISuccess<{ member: Member; avatarUrl: string }> | APIError> {
+          const form = new FormData();
+          const filename = file instanceof File && file.name ? file.name : "avatar.webp";
+          form.append("avatar", file, filename);
+          return json(`/api/admin/invitations/onboarding/${encodeURIComponent(guid)}/avatar`, {
+            method: "POST",
+            body: form,
+          });
+        },
+        async setPassword(guid: string, password: string, confirmPassword: string): Promise<APISuccess<{ next: string }> | APIError> {
+          return json(`/api/admin/invitations/onboarding/${encodeURIComponent(guid)}/password`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ password, confirmPassword }),
+          });
+        },
+      },
+    },
+    passwordResets: {
+      async validate(token: string): Promise<APISuccess<{ reset: PasswordResetPreview }> | APIError> {
+        return json("/api/admin/password-resets/validate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      },
+      async confirm(token: string, password: string, confirmPassword: string): Promise<APISuccess<{ next: string }> | APIError> {
+        return json("/api/admin/password-resets/confirm", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ token, password, confirmPassword }),
+        });
       },
     },
     roles: {
@@ -817,6 +935,13 @@ export function createClient(opts: ClientOpts) {
             body: JSON.stringify(input),
           });
         },
+        async patchMenuType(id: number, menuType: string): Promise<APISuccess<{ menu_id: number; menu_type: string }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/menu-type`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ menu_type: menuType }),
+          });
+        },
         async putSections(
           id: number,
           sections: Array<{ id?: number; title: string; kind: string; position?: number }>,
@@ -907,6 +1032,7 @@ export function createClient(opts: ClientOpts) {
         openingMode: "morning" | "night" | "both";
         morningHours: string[];
         nightHours: string[];
+        weekdayOpen: WeekdayOpen;
         dailyLimit: number;
         mesasDeDosLimit: string;
         mesasDeTresLimit: string;

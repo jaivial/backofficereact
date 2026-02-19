@@ -13,10 +13,12 @@ import { firstAllowedPath, isPathAllowed } from "../lib/rbac";
 type BOUser = {
   id: number;
   email: string;
+  username?: string | null;
   name: string;
   role: string;
   roleImportance: number;
   sectionAccess: string[];
+  mustChangePassword?: boolean;
 };
 
 type BORestaurant = {
@@ -72,15 +74,20 @@ async function readRequestBody(req: express.Request): Promise<Buffer> {
 
 async function fetchSession(backendOrigin: string, cookieHeader: string | undefined): Promise<BOSession | null> {
   if (!cookieHeader) return null;
-  const url = new URL("/api/admin/me", backendOrigin);
-  const res = await fetch(url, {
-    method: "GET",
-    headers: { cookie: cookieHeader },
-  });
-  if (!res.ok) return null;
-  const json = (await res.json()) as any;
-  if (!json || json.success !== true || !json.session) return null;
-  return json.session as BOSession;
+  try {
+    const url = new URL("/api/admin/me", backendOrigin);
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { cookie: cookieHeader },
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as any;
+    if (!json || json.success !== true || !json.session) return null;
+    return json.session as BOSession;
+  } catch (err) {
+    console.error("[backoffice] fetchSession error", err);
+    return null;
+  }
 }
 
 function todayISO(): string {
@@ -93,7 +100,109 @@ function todayISO(): string {
 
 function wantsHTML(req: express.Request): boolean {
   const accept = req.headers["accept"] ?? "";
-  return typeof accept === "string" ? accept.includes("text/html") : true;
+  if (typeof accept !== "string") return true;
+  if (accept.trim() === "") return true;
+  return accept.includes("text/html") || accept.includes("*/*");
+}
+
+function escapeHTML(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function defaultErrorMessage(statusCode: number): string {
+  if (statusCode === 404) return "Pagina no encontrada";
+  if (statusCode === 401) return "Sesion no autorizada";
+  if (statusCode === 403) return "Acceso denegado";
+  return "Error interno";
+}
+
+function renderFallbackErrorPage(statusCode: number, message?: string): string {
+  const safeCode = Number.isFinite(statusCode) ? Math.trunc(statusCode) : 500;
+  const safeMessage = escapeHTML((message ?? defaultErrorMessage(safeCode)).trim() || defaultErrorMessage(safeCode));
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${safeCode} · ${safeMessage}</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(185, 168, 255, 0.16), transparent 60%),
+        radial-gradient(1000px 500px at 100% 100%, rgba(147, 239, 231, 0.14), transparent 60%),
+        #111218;
+      color: #eef0f6;
+    }
+    .bo-fallback {
+      width: min(520px, 100%);
+      background: rgba(34, 35, 43, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 20px;
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.34);
+    }
+    .bo-fallback-code { font-size: clamp(48px, 14vw, 84px); line-height: 1; color: #b9a8ff; font-weight: 760; }
+    .bo-fallback-title { margin: 12px 0 6px; font-size: 22px; font-weight: 680; }
+    .bo-fallback-copy { margin: 0 0 20px; color: rgba(238, 240, 246, 0.72); }
+    .bo-fallback-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .bo-fallback-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #eef0f6;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .bo-fallback-btn--primary {
+      border-color: rgba(185, 168, 255, 0.45);
+      background: rgba(185, 168, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <main class="bo-fallback" role="main" aria-live="polite">
+    <div class="bo-fallback-code">${safeCode}</div>
+    <h1 class="bo-fallback-title">${safeMessage}</h1>
+    <p class="bo-fallback-copy">No pudimos renderizar esta pantalla. Puedes volver al panel o recargar.</p>
+    <div class="bo-fallback-actions">
+      <a class="bo-fallback-btn bo-fallback-btn--primary" href="/app">Volver al panel</a>
+      <a class="bo-fallback-btn" href="">Reintentar</a>
+    </div>
+  </main>
+</body>
+</html>`;
+}
+
+function sendFallbackErrorPage(res: express.Response, statusCode: number, message?: string): void {
+  if (res.headersSent) return;
+  res.status(statusCode);
+  res.type("text/html");
+  res.send(renderFallbackErrorPage(statusCode, message));
+}
+
+function isUnrenderableVikeError(statusCode: number, body: unknown): boolean {
+  if (statusCode < 500) return false;
+  if (typeof body !== "string") return false;
+  return body.includes("<p>An error occurred.</p>") && body.includes("error page");
 }
 
 function isValidISODate(v: string | null | undefined): boolean {
@@ -179,6 +288,12 @@ async function start() {
     .filter(Boolean);
 
   const app = express();
+
+  // Browser fallback: avoid 404s when clients request "/favicon.ico".
+  // We keep a single icon source and redirect to the SVG shipped in /public.
+  app.get("/favicon.ico", (_req, res) => {
+    res.redirect(302, "/favicon.svg");
+  });
 
   // Proxy only the admin API to the Go backend.
   // Important: Vite serves modules under "/<path-from-root>", and we have "backoffice/api/*".
@@ -416,7 +531,16 @@ async function start() {
   app.get(/.*/, async (req, res, next) => {
     try {
       // Public routes that don't require authentication
-      const isPublicRoute = req.path === "/" || req.path === "/login" || req.path === "/app" || req.path.startsWith("/app/") || req.path.startsWith("/factura/");
+      const isPublicRoute =
+        req.path === "/" ||
+        req.path === "/login" ||
+        req.path === "/change-password" ||
+        req.path === "/app" ||
+        req.path.startsWith("/app/") ||
+        req.path.startsWith("/factura/") ||
+        req.path.startsWith("/invitacion/") ||
+        req.path.startsWith("/onboarding/") ||
+        req.path.startsWith("/reset-password/");
       const isAppLike = isPublicRoute || req.path.startsWith("/factura/");
       if (!isAppLike && !wantsHTML(req)) return next();
 
@@ -439,6 +563,10 @@ async function start() {
         if (!httpResponse) return next();
 
         const { body, statusCode, contentType, headers } = httpResponse;
+        if (isUnrenderableVikeError(statusCode, body)) {
+          sendFallbackErrorPage(res, 500);
+          return;
+        }
         res.status(statusCode);
         res.type(contentType);
         for (const [k, v] of Object.entries(headers ?? {})) {
@@ -453,12 +581,38 @@ async function start() {
         res.redirect(302, "/login");
         return;
       }
+      if (req.path === "/change-password" && !session) {
+        res.redirect(302, "/login");
+        return;
+      }
+      if (session?.user?.mustChangePassword) {
+        if (req.path !== "/change-password") {
+          res.redirect(302, "/change-password");
+          return;
+        }
+      }
       if (req.path === "/login" && session) {
+        if (session.user.mustChangePassword) {
+          res.redirect(302, "/change-password");
+          return;
+        }
         res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
         return;
       }
       if (req.path === "/") {
-        res.redirect(302, session ? firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance) : "/login");
+        if (!session) {
+          res.redirect(302, "/login");
+          return;
+        }
+        if (session.user.mustChangePassword) {
+          res.redirect(302, "/change-password");
+          return;
+        }
+        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
+        return;
+      }
+      if (req.path === "/change-password" && session && !session.user.mustChangePassword) {
+        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
         return;
       }
 
@@ -496,6 +650,10 @@ async function start() {
       if (!httpResponse) return next();
 
       const { body, statusCode, contentType, headers } = httpResponse;
+      if (isUnrenderableVikeError(statusCode, body)) {
+        sendFallbackErrorPage(res, 500);
+        return;
+      }
       res.status(statusCode);
       res.type(contentType);
       for (const [k, v] of Object.entries(headers ?? {})) {
@@ -509,12 +667,25 @@ async function start() {
     }
   });
 
+  app.use((req, res, next) => {
+    if (res.headersSent) {
+      next();
+      return;
+    }
+    if (!wantsHTML(req)) {
+      next();
+      return;
+    }
+    sendFallbackErrorPage(res, 404);
+  });
+
   // Error handler middleware - render error page instead of default Express error
   app.use(async (err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error("[backoffice] error handler:", err);
 
-    const statusCode = (err as any)?.statusCode ?? (err as any)?.status ?? 500;
-    const isHttpError = typeof statusCode === "number" && statusCode >= 400 && statusCode < 600;
+    const rawStatusCode = Number((err as any)?.statusCode ?? (err as any)?.status);
+    const isHttpError = Number.isFinite(rawStatusCode) && rawStatusCode >= 400 && rawStatusCode < 600;
+    const statusCode = isHttpError ? Math.trunc(rawStatusCode) : 500;
 
     if (!isHttpError) {
       // For non-HTTP errors (like SSR exceptions), render the error page via vike
@@ -532,7 +703,11 @@ async function start() {
         const pageContext = await renderPage(pageContextInit);
         const httpResponse = pageContext.httpResponse;
         if (httpResponse) {
-          const { body, contentType, headers } = httpResponse;
+          const { body, statusCode: httpStatusCode, contentType, headers } = httpResponse;
+          if (isUnrenderableVikeError(httpStatusCode, body)) {
+            sendFallbackErrorPage(res, 500);
+            return;
+          }
           res.status(500);
           res.type(contentType);
           for (const [k, v] of Object.entries(headers ?? {})) {
@@ -546,23 +721,8 @@ async function start() {
       }
     }
 
-    // Default: simple error response
-    const message = isHttpError ? (err as any)?.message ?? "Error" : "Internal Server Error";
-    res.status(isHttpError ? statusCode : 500);
-    res.type("text/html");
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head><title>${statusCode} - Error</title></head>
-      <body style="font-family: system-ui; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #111218; color: #eef0f6;">
-        <div style="text-align: center;">
-          <div style="font-size: 72px; opacity: 0.15;">${statusCode}</div>
-          <h1 style="font-size: 20px;">${message || "Error"}</h1>
-          <a href="/app" style="color: #b9a8ff;">Volver al inicio</a>
-        </div>
-      </body>
-      </html>
-    `);
+    const message = isHttpError ? String((err as any)?.message ?? "").trim() : undefined;
+    sendFallbackErrorPage(res, statusCode, message);
   });
 
   if (isProd) {

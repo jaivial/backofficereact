@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { createClient } from "../../../../../api/client";
 import type { MemberStats, MemberTimeBalance } from "../../../../../api/types";
@@ -32,6 +31,11 @@ function parseStatsView(v: string): StatsView {
   if (v === "quarterly") return "quarterly";
   if (v === "yearly") return "yearly";
   return "weekly";
+}
+
+function toFiniteNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 export default function Page() {
@@ -82,9 +86,9 @@ export default function Page() {
   const balanceLive = useMemo(() => applyLiveToBalance(balance, liveEntry, liveHours), [balance, liveEntry, liveHours]);
 
   const chartMax = maxHours(statsLive);
-  const weeklyPercent = statsLive?.summary.weeklyProgressPercent ?? 0;
+  const weeklyPercent = toFiniteNumber(statsLive?.summary.weeklyProgressPercent);
   const weeklyProgress = Math.max(0, Math.min(100, weeklyPercent));
-  const balanceHours = balanceLive?.balanceHours ?? 0;
+  const balanceHours = toFiniteNumber(balanceLive?.balanceHours);
   const points = statsLive?.points ?? [];
 
   return (
@@ -163,10 +167,11 @@ export default function Page() {
                   }}
                 >
                   {points.map((point) => {
-                    const h = (point.hours / chartMax) * 100;
+                    const pointHours = toFiniteNumber(point.hours);
+                    const h = (pointHours / chartMax) * 100;
                     return (
                       <div key={point.date} className="bo-memberBarCol">
-                        <div className="bo-memberBarValue">{point.hours.toFixed(1)}</div>
+                        <div className="bo-memberBarValue">{pointHours.toFixed(1)}</div>
                         <div className="bo-memberBarTrack">
                           <div className="bo-memberBarFill" style={{ height: `${Math.max(h, 3)}%` }} />
                         </div>
@@ -177,57 +182,7 @@ export default function Page() {
                 </div>
               </div>
             ) : (
-              <div className="bo-memberLinearChart">
-                <div className="bo-memberLinearScroll" style={{ minWidth: `${Math.max(points.length, 1) * 60}px` }}>
-                  <ResponsiveContainer width={Math.max(points.length, 1) * 60} height={220}>
-                    <AreaChart data={points} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="rgba(185, 168, 255, 0.5)" stopOpacity={0.5} />
-                        <stop offset="95%" stopColor="rgba(185, 168, 255, 0.1)" stopOpacity={0.1} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey="label"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "rgba(238, 240, 246, 0.42)", fontSize: 11 }}
-                      tickMargin={8}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "rgba(238, 240, 246, 0.42)", fontSize: 11 }}
-                      tickFormatter={(v) => v.toFixed(1)}
-                      domain={[0, chartMax]}
-                      width={40}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "rgba(34, 35, 43, 0.95)",
-                        border: "1px solid rgba(255, 255, 255, 0.06)",
-                        borderRadius: "12px",
-                        padding: "8px 12px",
-                        fontSize: "12px",
-                      }}
-                      labelStyle={{ color: "rgba(238, 240, 246, 0.86)", fontWeight: 720 }}
-                      itemStyle={{ color: "rgba(185, 168, 255, 0.96)" }}
-                      formatter={(value) => [`${Number(value).toFixed(2)} h`, "Horas"]}
-                      cursor={{ stroke: "rgba(185, 168, 255, 0.3)", strokeWidth: 1 }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="hours"
-                      stroke="rgba(185, 168, 255, 0.96)"
-                      strokeWidth={2.5}
-                      fill="url(#colorHours)"
-                      dot={{ fill: "rgba(185, 168, 255, 0.96)", strokeWidth: 0, r: 4 }}
-                      activeDot={{ r: 6, fill: "rgba(185, 168, 255, 1)" }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-                </div>
-              </div>
+              <MemberLinearChart points={points} chartMax={chartMax} />
             )}
             {points.length ? null : <div className="bo-mutedText">Sin datos de horas para el periodo seleccionado.</div>}
           </div>
@@ -235,15 +190,15 @@ export default function Page() {
           <div className="bo-memberSummaryGrid">
             <div className="bo-kv">
               <div className="bo-kvLabel">Horas trabajadas</div>
-              <div className="bo-kvValue">{(statsLive?.summary.workedHours ?? 0).toFixed(2)} h</div>
+              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
             </div>
             <div className="bo-kv">
               <div className="bo-kvLabel">Horas esperadas</div>
-              <div className="bo-kvValue">{(statsLive?.summary.expectedHours ?? 0).toFixed(2)} h</div>
+              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
             </div>
             <div className="bo-kv">
               <div className="bo-kvLabel">Progreso periodo</div>
-              <div className="bo-kvValue">{(statsLive?.summary.progressPercent ?? 0).toFixed(2)}%</div>
+              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
             </div>
             <div className="bo-kv">
               <div className="bo-kvLabel">Bolsa trimestral</div>
@@ -276,5 +231,130 @@ export default function Page() {
         </div>
       </div>
     </section>
+  );
+}
+
+type RechartsComponents = {
+  Area: React.ComponentType<any>;
+  AreaChart: React.ComponentType<any>;
+  ResponsiveContainer: React.ComponentType<any>;
+  Tooltip: React.ComponentType<any>;
+  XAxis: React.ComponentType<any>;
+  YAxis: React.ComponentType<any>;
+};
+
+function useRechartsComponents() {
+  const [components, setComponents] = useState<RechartsComponents | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+    let active = true;
+
+    const load = async () => {
+      try {
+        const mod = await import("recharts");
+        if (!active) return;
+        setComponents({
+          Area: mod.Area,
+          AreaChart: mod.AreaChart,
+          ResponsiveContainer: mod.ResponsiveContainer,
+          Tooltip: mod.Tooltip,
+          XAxis: mod.XAxis,
+          YAxis: mod.YAxis,
+        });
+      } catch {
+        if (!active) return;
+        setLoadError(true);
+      }
+    };
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, [isClient]);
+
+  return { components, isClient, loadError };
+}
+
+function MemberLinearChart({
+  points,
+  chartMax,
+}: {
+  points: MemberStats["points"];
+  chartMax: number;
+}) {
+  const { components, isClient, loadError } = useRechartsComponents();
+
+  if (!isClient || !components) {
+    return (
+      <div className="bo-memberLinearChart">
+        <div className="bo-memberLinearLoading">{loadError ? "No se pudo cargar el grafico." : "Cargando grafico…"}</div>
+      </div>
+    );
+  }
+
+  const { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } = components;
+  const chartWidth = Math.max(points.length, 1) * 60;
+
+  return (
+    <div className="bo-memberLinearChart">
+      <div className="bo-memberLinearScroll" style={{ minWidth: `${chartWidth}px` }}>
+        <ResponsiveContainer width={chartWidth} height={220}>
+          <AreaChart data={points} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="rgba(185, 168, 255, 0.5)" stopOpacity={0.5} />
+                <stop offset="95%" stopColor="rgba(185, 168, 255, 0.1)" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+            <XAxis
+              dataKey="label"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "rgba(238, 240, 246, 0.42)", fontSize: 11 }}
+              tickMargin={8}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "rgba(238, 240, 246, 0.42)", fontSize: 11 }}
+              tickFormatter={(v: unknown) => toFiniteNumber(v).toFixed(1)}
+              domain={[0, chartMax]}
+              width={40}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "rgba(34, 35, 43, 0.95)",
+                border: "1px solid rgba(255, 255, 255, 0.06)",
+                borderRadius: "12px",
+                padding: "8px 12px",
+                fontSize: "12px",
+              }}
+              labelStyle={{ color: "rgba(238, 240, 246, 0.86)", fontWeight: 720 }}
+              itemStyle={{ color: "rgba(185, 168, 255, 0.96)" }}
+              formatter={(value: unknown) => [`${Number(value).toFixed(2)} h`, "Horas"]}
+              cursor={{ stroke: "rgba(185, 168, 255, 0.3)", strokeWidth: 1 }}
+            />
+            <Area
+              type="monotone"
+              dataKey="hours"
+              stroke="rgba(185, 168, 255, 0.96)"
+              strokeWidth={2.5}
+              fill="url(#colorHours)"
+              dot={{ fill: "rgba(185, 168, 255, 0.96)", strokeWidth: 0, r: 4 }}
+              activeDot={{ r: 6, fill: "rgba(185, 168, 255, 1)" }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

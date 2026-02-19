@@ -190,6 +190,14 @@ button {
   margin-top: 6px;
 }
 
+.bo-navDesktop {
+  display: flex;
+}
+
+.bo-navMobile {
+  display: none;
+}
+
 .bo-navBtn {
   width: 44px;
   height: 44px;
@@ -213,6 +221,12 @@ button {
   background: rgba(185, 168, 255, 0.12);
   border-color: rgba(185, 168, 255, 0.26);
   color: var(--bo-text);
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  .bo-navBtn--restaurantConfig {
+    display: none;
+  }
 }
 
 .bo-sidebarSpacer {
@@ -723,6 +737,13 @@ button {
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.13)),
     var(--bo-surface);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+:root[data-theme="light"] .bo-panel {
+  border-radius: var(--bo-radius-lg);
+  background: linear-gradient(180deg, rgb(121 115 115 / 27%), rgb(57 41 80 / 29%)), #fffffff7;
+  border: 1px solid rgb(0 0 0 / 21%);
   box-shadow: var(--bo-shadow-soft);
 }
 
@@ -1928,7 +1949,8 @@ tr.is-inactive {
 }
 
 .bo-modalHead,
-.bo-modal-header {
+.bo-modal-header,
+.bo-modalHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1968,13 +1990,19 @@ tr.is-inactive {
 }
 
 .bo-modalActions,
-.bo-modal-footer {
+.bo-modal-footer,
+.bo-modalFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 14px;
   padding: 16px;
   border-top: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
 }
 
 /* ShiftModal */
@@ -2384,13 +2412,13 @@ tr.is-inactive {
 }
 
 .bo-donutWrap .bo-donutLabel {
-  font-size: 11px;
+  font-size: var(--bo-text-xs);
   color: rgba(238, 240, 246, 0.46);
   margin-bottom: 4px;
 }
 
 .bo-donutWrap .bo-donutValue {
-  font-size: 20px;
+  font-size: var(--bo-text-lg);
   font-weight: 780;
   letter-spacing: 0.3px;
 }
@@ -2505,7 +2533,8 @@ tr.is-inactive {
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
     border-right: 0;
     border-top: 1px solid var(--bo-border);
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
   }
 
   .bo-app--page .bo-brand,
@@ -2514,12 +2543,55 @@ tr.is-inactive {
     display: none;
   }
 
-  .bo-app--page .bo-nav {
-    flex-direction: row;
+  .bo-app--page .bo-navDesktop {
+    display: none;
+  }
+
+  .bo-app--page .bo-navMobile {
+    display: flex;
     width: 100%;
+    margin-top: 0;
+    position: relative;
+  }
+
+  .bo-app--page .bo-navMobileMain {
+    width: 100%;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 0;
+  }
+
+  .bo-app--page .bo-navMobileOverflow {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 30;
+  }
+
+  .bo-app--page .bo-navMobileOverflowList {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 18px;
+    border: 1px solid var(--bo-border-2);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.16)),
+      var(--bo-surface-2);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+  }
+
+  .bo-app--page .bo-navBtn--mobileMore.is-active,
+  .bo-app--page .bo-navBtn--mobileClose {
+    background: rgba(185, 168, 255, 0.12);
+    border-color: rgba(185, 168, 255, 0.26);
+    color: var(--bo-text);
   }
 
   .bo-app--page .bo-navBtn.is-active {
@@ -3184,13 +3256,13 @@ tr.is-inactive {
 }
 
 .bo-donutPct {
-  font-size: 22px;
+  font-size: var(--bo-text-xl);
   font-weight: 820;
   letter-spacing: 0.01em;
 }
 
 .bo-donutMeta {
-  font-size: 13px;
+  font-size: var(--bo-text-sm);
   color: var(--bo-muted);
   font-weight: 700;
 }
@@ -3495,6 +3567,12 @@ tr.is-inactive {
 
 .bo-filtersToggle {
   gap: 8px;
+  font-size: var(--bo-text-sm);
+}
+
+.bo-filtersToggle .bo-ico {
+  width: var(--bo-text-base);
+  height: var(--bo-text-base);
 }
 
 .bo-filtersBody {
@@ -3551,8 +3629,16 @@ tr.is-inactive {
   min-width: 220px;
 }
 
-.bo-filterRow .bo-btn.bo-btn--download {
+.bo-filterRow .bo-btn.bo-btn--download,
+.bo-btn--downloadTop {
   margin-left: auto;
+  font-size: var(--bo-text-sm);
+}
+
+.bo-filterRow .bo-btn.bo-btn--download .bo-ico,
+.bo-btn--downloadTop .bo-ico {
+  width: var(--bo-text-base);
+  height: var(--bo-text-base);
 }
 
 @media (max-width: 760px) {
@@ -4481,6 +4567,7 @@ tr.is-inactive {
 }
 
 .bo-menuV2FiltersFoot {
+  margin-top: var(--bo-space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4825,6 +4912,64 @@ tr.is-inactive {
   gap: 12px;
 }
 
+.bo-form--menuWizardBasics {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.bo-menuBasicsMainRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(190px, 0.8fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.bo-menuBasicsMainRow.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bo-menuBasicsField {
+  min-width: 0;
+}
+
+.bo-menuBasicsField--price,
+.bo-menuBasicsPriceToggle {
+  width: 100%;
+  max-width: 260px;
+  justify-self: end;
+}
+
+.bo-menuBasicsPriceToggle {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.bo-menuBasicsSwitchRow {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-menuBasicsActiveToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-menuBasicsActiveToggle .bo-label {
+  margin: 0;
+}
+
+.bo-menuBasicsActiveToggle .bo-mutedText {
+  white-space: nowrap;
+}
+
 .bo-field--full {
   grid-column: 1 / -1;
 }
@@ -4845,12 +4990,29 @@ tr.is-inactive {
   min-width: 40px;
 }
 
+.bo-inlineFieldIconBtn {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.bo-inlineFieldIconBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
 .bo-menuWizardActions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.bo-menuWizardActions--right {
+  justify-content: flex-end;
 }
 
 .bo-menuWizardActionsRight {
@@ -4886,14 +5048,9 @@ tr.is-inactive {
 
 .bo-sectionCardHead {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(140px, auto) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-}
-
-.bo-sectionCardHead .bo-sectionKindSelect {
-  min-width: 132px;
-  justify-content: space-between;
 }
 
 .bo-sectionReorder {
@@ -4967,8 +5124,8 @@ tr.is-inactive {
 
 .bo-menuWizardFinal {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.28fr) minmax(280px, 0.72fr);
+  gap: 12px;
   align-items: start;
 }
 
@@ -5163,6 +5320,24 @@ tr.is-inactive {
   flex-wrap: wrap;
 }
 
+.bo-dishRow > .bo-checkRow,
+.bo-dishRow > .bo-suppInput,
+.bo-dishRow > .bo-btn,
+.bo-dishRow > .bo-dishRowInlineControls,
+.bo-dishRow > .bo-dishRowActionsInline {
+  flex: 0 0 auto;
+  width: fit-content;
+}
+
+.bo-dishRowInlineControls,
+.bo-dishRowActionsInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  width: fit-content;
+}
+
 .bo-checkRow {
   display: inline-flex;
   align-items: center;
@@ -5173,6 +5348,23 @@ tr.is-inactive {
 
 .bo-suppInput {
   width: 108px;
+}
+
+.bo-dishIconOnlyBtn,
+.bo-dishAllergenIconBtn,
+.bo-dishDeleteIconBtn {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.bo-dishIconOnlyBtn svg,
+.bo-dishAllergenIconBtn svg,
+.bo-dishDeleteIconBtn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .bo-allergenRow {
@@ -5231,6 +5423,16 @@ tr.is-inactive {
   align-self: flex-start;
 }
 
+.bo-subtitleAddBtn {
+  width: fit-content;
+  min-height: 32px;
+  align-self: flex-start;
+  padding-inline: 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  gap: 6px;
+}
+
 .bo-searchResults {
   margin-top: 6px;
   display: grid;
@@ -5265,6 +5467,32 @@ tr.is-inactive {
 
 .bo-menuWizardActions--final {
   margin-top: 2px;
+}
+
+.bo-menuFinalIconActions,
+.bo-menuWizardActions--iconOnlyInline,
+.bo-menuWizardActionsRight--iconOnlyInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: fit-content;
+}
+
+.bo-menuFinalIconBtn,
+.bo-menuWizardFinalIconBtn {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--bo-radius-sm);
+  flex: 0 0 auto;
+}
+
+.bo-menuFinalIconBtn svg,
+.bo-menuWizardFinalIconBtn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .bo-previewHead {
@@ -5354,7 +5582,7 @@ tr.is-inactive {
 
 @media (max-width: 1280px) {
   .bo-menuWizardFinal {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+    grid-template-columns: minmax(0, 1.16fr) minmax(280px, 0.84fr);
   }
 
   .bo-previewFrame {
@@ -5412,13 +5640,18 @@ tr.is-inactive {
     grid-template-columns: 1fr;
   }
 
-  .bo-sectionCardHead {
-    grid-template-columns: auto 1fr;
+  .bo-menuBasicsMainRow {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .bo-sectionCardHead .bo-sectionKindSelect,
-  .bo-sectionCardHead .bo-btn {
-    grid-column: 2 / -1;
+  .bo-menuBasicsField--price,
+  .bo-menuBasicsPriceToggle {
+    max-width: 100%;
+    justify-self: stretch;
+  }
+
+  .bo-sectionCardHead {
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
   .bo-menuFab {
@@ -5483,12 +5716,26 @@ tr.is-inactive {
     width: 100%;
   }
 
+  .bo-inlineField .bo-btn.bo-inlineFieldIconBtn,
+  .bo-inlineField .bo-btn.bo-subtitleAddBtn {
+    width: fit-content;
+  }
+
   .bo-dishRow {
     row-gap: 10px;
   }
 
   .bo-dishRow .bo-btn {
-    flex: 1 1 100%;
+    flex: 0 0 auto;
+    width: fit-content;
+  }
+
+  .bo-dishRow .bo-dishRowInlineControls,
+  .bo-dishRow .bo-dishRowActionsInline,
+  .bo-dishRow .bo-checkRow,
+  .bo-dishRow .bo-suppInput {
+    flex: 0 0 auto;
+    width: fit-content;
   }
 
   .bo-menuWizardActions {
@@ -5499,12 +5746,38 @@ tr.is-inactive {
     flex: 1 1 100%;
   }
 
+  .bo-menuWizardActions.bo-menuWizardActions--iconOnlyInline {
+    width: fit-content;
+    margin-left: auto;
+    flex-wrap: nowrap;
+  }
+
+  .bo-menuWizardActions.bo-menuWizardActions--iconOnlyInline > .bo-btn {
+    flex: 0 0 auto;
+    width: fit-content;
+  }
+
   .bo-menuWizardActionsRight {
     width: 100%;
   }
 
   .bo-menuWizardActionsRight .bo-btn {
     flex: 1 1 0;
+  }
+
+  .bo-menuWizardActionsRight.bo-menuWizardActionsRight--iconOnlyInline,
+  .bo-menuFinalIconActions {
+    width: fit-content;
+    margin-left: auto;
+    flex-wrap: nowrap;
+  }
+
+  .bo-menuWizardActionsRight.bo-menuWizardActionsRight--iconOnlyInline .bo-btn,
+  .bo-menuFinalIconActions .bo-btn,
+  .bo-menuWizardActions > .bo-btn.bo-menuFinalIconBtn,
+  .bo-menuWizardActions > .bo-btn.bo-menuWizardFinalIconBtn {
+    flex: 0 0 auto;
+    width: fit-content;
   }
 
   .bo-previewFrame {
@@ -13749,4 +14022,609 @@ tr.is-inactive {
 
 .bo-statsTablePanel .bo-panelBody {
   padding: 16px;
+}
+
+/* ============================================
+   Glassmorphism Minimal (Menus + Reusables)
+   ============================================ */
+:root {
+  --bo-glass-blur: 14px;
+  --bo-glass-border-strong: color-mix(in srgb, var(--bo-accent) 24%, var(--bo-border));
+  --bo-glass-shadow: 0 16px 30px rgba(8, 10, 22, 0.34);
+}
+
+:root[data-theme="light"] {
+  --bo-glass-border-strong: color-mix(in srgb, var(--bo-accent) 28%, rgba(20, 21, 26, 0.18));
+  --bo-glass-shadow: 0 12px 28px rgba(30, 38, 64, 0.14);
+}
+
+.bo-menuV2Page.is-selector {
+  min-height: clamp(470px, 72vh, 860px);
+  align-content: center;
+}
+
+.bo-menuTypePanels {
+  min-height: clamp(420px, 64vh, 780px);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.bo-menuTypePanelsGrid {
+  width: min(1120px, 100%);
+  gap: 14px;
+}
+
+.bo-menuGlassPanel,
+.bo-card--glass,
+.bo-modal--glass,
+.bo-toast--glass,
+.bo-alert--glass,
+.bo-memberPicker--glass,
+.bo-timeEntryCard--glass,
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass,
+.bo-shiftModalActive--glass,
+.bo-datePop--glass,
+.bo-mcal--glass,
+.bo-timeAdjust--glass,
+.bo-timeAdjustCounter--glass {
+  border: 1px solid var(--bo-glass-border-strong);
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.18)),
+    color-mix(in srgb, var(--bo-surface-2) 78%, transparent);
+  box-shadow: var(--bo-glass-shadow);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+}
+
+:root[data-theme="light"] .bo-menuGlassPanel,
+:root[data-theme="light"] .bo-card--glass,
+:root[data-theme="light"] .bo-modal--glass,
+:root[data-theme="light"] .bo-toast--glass,
+:root[data-theme="light"] .bo-alert--glass,
+:root[data-theme="light"] .bo-memberPicker--glass,
+:root[data-theme="light"] .bo-timeEntryCard--glass,
+:root[data-theme="light"] .bo-shiftModalSection--glass,
+:root[data-theme="light"] .bo-shiftModalAssign--glass,
+:root[data-theme="light"] .bo-shiftModalActive--glass,
+:root[data-theme="light"] .bo-datePop--glass,
+:root[data-theme="light"] .bo-mcal--glass,
+:root[data-theme="light"] .bo-timeAdjust--glass,
+:root[data-theme="light"] .bo-timeAdjustCounter--glass {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 9%, white), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 248, 255, 0.84)),
+    color-mix(in srgb, var(--bo-surface) 92%, rgba(255, 255, 255, 0.96));
+}
+
+:root[data-theme="light"] .bo-menuGlassPanel {
+  border-radius: var(--bo-radius-lg);
+  background: linear-gradient(180deg, rgb(121 115 115 / 27%), rgb(57 41 80 / 29%)), #fffffff7;
+  border: 1px solid rgb(0 0 0 / 21%);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-menuV2Card.bo-menuGlassPanel,
+.bo-menuTypePanel.bo-menuGlassPanel {
+  transition: border-color var(--bo-transition-base) var(--bo-ease), transform var(--bo-transition-fast) var(--bo-ease), box-shadow var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-menuV2Card.bo-menuGlassPanel:hover,
+.bo-menuTypePanel.bo-menuGlassPanel:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 42%, var(--bo-border));
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--bo-accent) 14%, rgba(8, 10, 22, 0.5));
+}
+
+.bo-menuV2Card.bo-menuGlassPanel.is-active {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 34%, var(--bo-border));
+}
+
+.bo-menuV2Card.bo-menuGlassPanel.is-draft {
+  border-style: dashed;
+}
+
+.bo-menuTypePanel.bo-menuGlassPanel {
+  min-height: 186px;
+  justify-content: flex-start;
+  padding-top: 20px;
+}
+
+.bo-menuTypePanel:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-menuTypePanelIcon {
+  background: color-mix(in srgb, var(--bo-accent) 16%, transparent);
+  color: color-mix(in srgb, var(--bo-accent) 82%, var(--bo-text));
+}
+
+.bo-menuTypePanelLabel {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bo-menuTypePanelDesc {
+  font-size: 12px;
+}
+
+.bo-menuTypePanelCount {
+  margin-top: auto;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 34%, transparent);
+  font-weight: 650;
+  color: color-mix(in srgb, var(--bo-accent) 84%, var(--bo-text));
+  background: color-mix(in srgb, var(--bo-accent) 11%, transparent);
+}
+
+.bo-menuV2Filters {
+  backdrop-filter: blur(11px) saturate(112%);
+  -webkit-backdrop-filter: blur(11px) saturate(112%);
+}
+
+.bo-menuTag {
+  border-color: color-mix(in srgb, var(--bo-border) 74%, var(--bo-accent));
+  background: color-mix(in srgb, var(--bo-surface) 62%, rgba(255, 255, 255, 0.14));
+  color: color-mix(in srgb, var(--bo-text) 70%, var(--bo-muted));
+}
+
+.bo-menuTag--state.is-on {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 42%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent-2) 14%, transparent);
+  color: color-mix(in srgb, var(--bo-accent-2) 78%, var(--bo-text));
+}
+
+:root[data-theme="light"] .bo-menuTag {
+  border-color: rgba(20, 21, 26, 0.14);
+  background: rgba(255, 255, 255, 0.82);
+  color: rgba(20, 21, 26, 0.82);
+}
+
+:root[data-theme="light"] .bo-menuTag--warn {
+  border-color: rgba(146, 87, 0, 0.36);
+  background: rgba(251, 191, 36, 0.24);
+  color: rgba(106, 57, 0, 0.98);
+}
+
+:root[data-theme="light"] .bo-menuTag--state.is-on {
+  border-color: rgba(10, 125, 117, 0.34);
+  background: rgba(45, 212, 191, 0.22);
+  color: rgba(6, 92, 84, 0.98);
+}
+
+.bo-tabs--glass {
+  border-color: color-mix(in srgb, var(--bo-accent) 20%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(0, 0, 0, 0.18)),
+    color-mix(in srgb, var(--bo-surface-2) 68%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.bo-navBtn--glass,
+.bo-actionBtn--glass,
+.bo-dateBtn--glass,
+.bo-btn--glass,
+.bo-counterBtn--glass {
+  border-color: color-mix(in srgb, var(--bo-accent) 24%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 74%, rgba(255, 255, 255, 0.11));
+}
+
+.bo-timeAdjustValue--glass,
+.bo-timeAdjustCounterValue--glass {
+  border-color: color-mix(in srgb, var(--bo-accent) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 78%, rgba(255, 255, 255, 0.11));
+}
+
+.bo-modal--confirm {
+  max-width: min(520px, calc(100vw - 36px));
+}
+
+:root[data-theme="light"] .bo-alert--glass .bo-alertMsg,
+:root[data-theme="light"] .bo-toast--glass .bo-toastMsg,
+:root[data-theme="light"] .bo-memberPickerMeta,
+:root[data-theme="light"] .bo-menuTypePanelDesc,
+:root[data-theme="light"] .bo-timeEntryFoot {
+  color: rgba(20, 21, 26, 0.72);
+}
+
+.bo-alert--glass.bo-alert--error {
+  border-color: color-mix(in srgb, var(--bo-color-danger) 42%, var(--bo-border));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(220, 38, 38, 0.14));
+}
+
+.bo-alert--glass.bo-alert--success {
+  border-color: color-mix(in srgb, var(--bo-color-success) 40%, var(--bo-border));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(22, 163, 74, 0.12));
+}
+
+.bo-toast--glass.bo-toast--error {
+  border-color: color-mix(in srgb, var(--bo-color-danger) 44%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(220, 38, 38, 0.16)),
+    color-mix(in srgb, var(--bo-surface-2) 82%, transparent);
+}
+
+.bo-toast--glass.bo-toast--success {
+  border-color: color-mix(in srgb, var(--bo-color-success) 40%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(22, 163, 74, 0.14)),
+    color-mix(in srgb, var(--bo-surface-2) 82%, transparent);
+}
+
+:root[data-theme="light"] .bo-alert--glass.bo-alert--error .bo-alertTitle,
+:root[data-theme="light"] .bo-toast--glass.bo-toast--error .bo-toastTitle {
+  color: rgba(127, 29, 29, 0.96);
+}
+
+:root[data-theme="light"] .bo-alert--glass.bo-alert--success .bo-alertTitle,
+:root[data-theme="light"] .bo-toast--glass.bo-toast--success .bo-toastTitle {
+  color: rgba(20, 83, 45, 0.96);
+}
+
+@media (max-width: 620px) {
+  .bo-menuV2Page.is-selector {
+    min-height: 0;
+  }
+
+  .bo-menuTypePanels {
+    min-height: 0;
+    place-items: stretch;
+  }
+
+  .bo-menuTypePanel.bo-menuGlassPanel {
+    min-height: 164px;
+  }
+}
+
+/* ============================================
+   Shift Modal Clean Refresh
+   ============================================ */
+.bo-modal--memberShift {
+  width: min(760px, calc(100vw - 28px));
+  padding: clamp(12px, 1.9vw, 20px);
+}
+
+.bo-shiftModal {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.bo-shiftModalDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-muted);
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 72%, rgba(255, 255, 255, 0.1));
+}
+
+.bo-shiftModalLoading {
+  min-height: 188px;
+  border-radius: var(--bo-radius-md);
+  border: 1px dashed var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-2) 80%, transparent);
+}
+
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass,
+.bo-shiftModalActive--glass {
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass {
+  padding: 14px;
+  gap: 12px;
+}
+
+.bo-shiftModalLabel {
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-faint);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bo-shiftModalTimes {
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-shiftModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-shiftModalActions .bo-btn,
+.bo-shiftModal .bo-btn--full {
+  min-height: 40px;
+  border-radius: 12px;
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-shiftModalActive--glass {
+  padding: 12px;
+  border-color: color-mix(in srgb, var(--bo-accent-2) 38%, var(--bo-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-accent-2) 11%, transparent), transparent 78%),
+    color-mix(in srgb, var(--bo-surface) 80%, transparent);
+}
+
+.bo-shiftModalActiveInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-shiftModalActiveTime {
+  font-size: 13px;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-shiftModalWheels {
+  gap: 12px;
+}
+
+.bo-shiftModalWheelGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-shiftModalWheelLabel {
+  font-size: 11px;
+  color: var(--bo-muted);
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-shiftModalWheelRow {
+  gap: 8px;
+}
+
+.bo-shiftModalWheelSpin {
+  width: 100%;
+}
+
+.bo-shiftModalAssign--glass {
+  border-top: 1px solid color-mix(in srgb, var(--bo-accent) 18%, var(--bo-border));
+}
+
+.bo-shiftModalAddBtn {
+  margin-top: 0;
+}
+
+:root[data-theme="light"] .bo-modal--memberShift {
+  box-shadow: 0 14px 32px rgba(17, 24, 39, 0.14);
+}
+
+:root[data-theme="light"] .bo-shiftModalDate {
+  color: rgba(20, 21, 26, 0.74);
+  border-color: rgba(124, 92, 231, 0.24);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+:root[data-theme="light"] .bo-shiftModalLabel {
+  color: rgba(20, 21, 26, 0.58);
+}
+
+:root[data-theme="light"] .bo-shiftModalActive--glass {
+  border-color: rgba(13, 148, 136, 0.32);
+  background:
+    linear-gradient(180deg, rgba(45, 212, 191, 0.16), rgba(255, 255, 255, 0.86));
+}
+
+@media (max-width: 760px) {
+  .bo-modal--memberShift {
+    width: calc(100vw - 20px);
+    padding: 12px;
+  }
+
+  .bo-shiftModalTimes,
+  .bo-shiftModalWheels,
+  .bo-shiftModalWheelRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-shiftModalActions .bo-btn,
+  .bo-shiftModal .bo-btn--full {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+.bo-modal--memberCreate {
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-modal--memberCreate .bo-modalOutline {
+  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.bo-memberCreateBody {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-memberCreateAvatarBlock {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.bo-memberCreateAvatarDrop {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  border: 1px dashed var(--bo-border-2);
+  position: relative;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bo-memberCreateAvatar {
+  width: 88px;
+  height: 88px;
+}
+
+.bo-memberCreateAvatarHint {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-memberCreateAvatarText {
+  text-align: center;
+}
+
+.bo-memberCreateGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-inlineError {
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: rgba(248, 113, 113, 0.95);
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.bo-onboardingWindow {
+  min-height: min(640px, calc(100vh - 48px));
+  height: auto;
+}
+
+.bo-onboardingWindow--lg {
+  width: min(820px, calc(100vw - 36px));
+}
+
+.bo-stage--onboarding {
+  align-items: stretch;
+}
+
+.bo-onboardingCard {
+  min-height: 100%;
+  display: grid;
+  gap: 14px;
+  align-content: center;
+}
+
+.bo-onboardingLoading {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  color: var(--bo-muted);
+}
+
+.bo-onboardingIcon {
+  width: 62px;
+  height: 62px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.bo-onboardingIcon--ok {
+  border: 1px solid rgba(34, 197, 94, 0.36);
+  background: rgba(34, 197, 94, 0.14);
+  color: rgba(134, 239, 172, 0.95);
+}
+
+.bo-onboardingIcon--error {
+  border: 1px solid rgba(239, 68, 68, 0.38);
+  background: rgba(239, 68, 68, 0.14);
+  color: rgba(252, 165, 165, 0.95);
+}
+
+.bo-onboardingStep {
+  display: grid;
+  gap: 12px;
+}
+
+.bo-onboardingAvatarRow {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-onboardingActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.bo-onboardingDone {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.bo-onboardingDoneIcon {
+  width: 76px;
+  height: 76px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent-2) 40%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.14)),
+    color-mix(in srgb, var(--bo-accent-2) 24%, var(--bo-surface-2));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-onboardingStartBtn {
+  min-width: 180px;
+  justify-content: center;
+  margin-inline: auto;
+  gap: 8px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 34%, var(--bo-border));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.16)),
+    color-mix(in srgb, var(--bo-surface) 75%, rgba(255, 255, 255, 0.18));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@media (max-width: 760px) {
+  .bo-memberCreateGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-onboardingActions {
+    flex-direction: column;
+  }
 }

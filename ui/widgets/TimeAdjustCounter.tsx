@@ -15,11 +15,11 @@ export function TimeAdjustCounter({
   disabled?: boolean;
 }) {
   return (
-    <div className="bo-timeAdjustCounter" aria-label={label}>
+    <div className="bo-timeAdjustCounter bo-timeAdjustCounter--glass" aria-label={label}>
       <div className="bo-timeAdjustCounterLabel">{label}</div>
       <div className="bo-timeAdjustCounterCtrls">
         <button
-          className="bo-counterBtn"
+          className="bo-counterBtn bo-counterBtn--glass"
           type="button"
           onClick={onMinus}
           disabled={disabled}
@@ -27,9 +27,9 @@ export function TimeAdjustCounter({
         >
           <Minus size={14} strokeWidth={2.2} />
         </button>
-        <div className="bo-timeAdjustCounterValue">{value}</div>
+        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass">{value}</div>
         <button
-          className="bo-counterBtn"
+          className="bo-counterBtn bo-counterBtn--glass"
           type="button"
           onClick={onPlus}
           disabled={disabled}

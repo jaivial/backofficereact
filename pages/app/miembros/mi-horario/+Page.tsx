@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { CalendarDays, Clock3, User } from "lucide-react";
 
-import { createClient } from "../../../api/client";
-import type { FichajeSchedule } from "../../../api/types";
+import { createClient } from "../../../../api/client";
+import type { FichajeSchedule } from "../../../../api/types";
 import type { Data } from "./+data";
-import { useErrorToast } from "../../../ui/feedback/useErrorToast";
+import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 
 function pad2(n: number): string {
   return String(n).padStart(2, "0");

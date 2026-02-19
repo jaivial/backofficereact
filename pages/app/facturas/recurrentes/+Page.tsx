@@ -1,8 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { RefreshCw, Plus, Play, Pause, Eye, Edit, Trash2, Clock, Calendar, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
-import { useConfig } from "vike-react/useConfig";
-import { useNavigate } from "@nanorouter/react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { createClient } from "../../../../api/client";
 import type { Data } from "./+data";
@@ -13,20 +11,12 @@ export default function RecurringInvoicesPage() {
   const pageContext = usePageContext();
   const data = pageContext.data as Data;
   const { pushToast } = useToasts();
-  const navigate = useNavigate();
+  const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Helper to get API client with proper auth
-  const getApi = useCallback(() => {
-    const backendOrigin = pageContext.boRequest?.backendOrigin ?? "http://127.0.0.1:8080";
-    const cookieHeader = pageContext.boRequest?.cookieHeader ?? "";
-    return createClient({ baseUrl: backendOrigin, cookieHeader });
-  }, [pageContext.boRequest]);
 
   const handleToggleActive = useCallback(async (id: number, currentStatus: boolean) => {
     setIsLoading(true);
     try {
-      const api = getApi();
       const res = await api.recurringInvoices.toggleActive(id);
       if (res.success) {
         pushToast({
@@ -54,12 +44,11 @@ export default function RecurringInvoicesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [getApi, pushToast]);
+  }, [api, pushToast]);
 
   const handleGenerateNow = useCallback(async (id: number) => {
     setIsLoading(true);
     try {
-      const api = getApi();
       const res = await api.recurringInvoices.generateInvoice(id);
       if (res.success) {
         pushToast({
@@ -85,7 +74,7 @@ export default function RecurringInvoicesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [getApi, pushToast]);
+  }, [api, pushToast]);
 
   const handleDelete = useCallback(async (id: number) => {
     if (!confirm("¿Estás seguro de que quieres eliminar esta facturación recurrente?")) {
@@ -94,7 +83,6 @@ export default function RecurringInvoicesPage() {
 
     setIsLoading(true);
     try {
-      const api = getApi();
       const res = await api.recurringInvoices.delete(id);
       if (res.success) {
         pushToast({
@@ -120,7 +108,11 @@ export default function RecurringInvoicesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [getApi, pushToast]);
+  }, [api, pushToast]);
+
+  const navigate = useCallback((href: string) => {
+    window.location.href = href;
+  }, []);
 
   const getFrequencyLabel = (frequency: string) => {
     return RECURRING_FREQUENCY_OPTIONS.find(f => f.value === frequency)?.label || frequency;

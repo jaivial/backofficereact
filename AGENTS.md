@@ -7,6 +7,14 @@ Scope: todo lo que cuelga de `backoffice/`.
 - Mantener el CSS ligero: sin frameworks, sin dependencias, sin JS para layout.
 - Soporte completo para temas claro y oscuro con cumplimiento WCAG.
 
+## Skills a usar en este scope
+- `villacarmen-backoffice-ssr`:
+  usar por defecto para cualquier `read/edit/update` en `backoffice/` (SSR vike, cliente API admin, UI compartida).
+- `villacarmen-contract-sync`:
+  usar además cuando el cambio dependa de nuevos contratos backend o modifique consumo de `/api/admin/*`.
+- `villacarmen-smoke-check`:
+  usar al cerrar tareas para validacion rapida de typecheck/build e integracion.
+
 ## Estructura
 - Componentes y preview viven en `backoffice/components/`.
 - CSS base/tokens: `backoffice/components/bo.css` (no duplicar tokens en otros CSS).
@@ -96,6 +104,7 @@ Scope: todo lo que cuelga de `backoffice/`.
 - **Botones**: altura 40px, `border-radius: var(--bo-radius-sm)`, padding horizontal 14px.
 - **Inputs**: altura 40px, `border-radius: var(--bo-radius-sm)`.
 - **Action buttons**: 36x36px, `border-radius: var(--bo-radius-md)`.
+- Regla de oro rendimiento React: cualquier lista/mapa/bloque derivado (arrays, objetos con `label/estado`, contadores o filtros) que dependa de `state/props` y se pase al árbol visual debe memoizarse con `useMemo`; los callbacks de UI que suben al árbol deben ser `useCallback` para estabilizar renders.
 
 ## Tipografía y espaciado
 - Fuente: stack del sistema (`--bo-font`).

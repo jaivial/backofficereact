@@ -1,26 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Minus, Plus, Bell, BellOff, Mail, MessageSquare, Clock, Calendar, RefreshCw, Trash2, Play, Pause, X, List, PlusCircle } from "lucide-react";
+import { Building2, LayoutGrid } from "lucide-react";
 
 import { createClient } from "../../../api/client";
-import type {
-  ConfigDefaults,
-  ConfigFloor,
-  OpeningMode,
-  ReminderSettings,
-  ReminderTemplate,
-  ScheduledReminder,
-  ScheduledReminderInput,
-  ScheduledReminderFrequency,
-  ScheduledReminderStatus,
-  AutoReminderRule,
-  AutoReminderRuleInput,
-} from "../../../api/types";
-import { Select } from "../../../ui/inputs/Select";
-import { TextInput } from "../../../ui/inputs/TextInput";
+import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../../../api/types";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
-import { useToasts } from "../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
+import { useToasts } from "../../../ui/feedback/useToasts";
+import { Select } from "../../../ui/inputs/Select";
+import { Switch } from "../../../ui/shadcn/Switch";
+import { PlusMinusCounter } from "../../../ui/widgets/PlusMinusCounter";
+import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -28,26 +18,18 @@ type PageData = {
   error: string | null;
 };
 
-type HourBlock = {
+type HourSlot = {
   id: string;
+  value: string;
   label: string;
-  hours: string[];
 };
 
-const morningBlocks: HourBlock[] = [
-  { id: "m-08", label: "08:00 - 10:00", hours: ["08:00", "08:30", "09:00", "09:30"] },
-  { id: "m-10", label: "10:00 - 12:00", hours: ["10:00", "10:30", "11:00", "11:30"] },
-  { id: "m-12", label: "12:00 - 14:00", hours: ["12:00", "12:30", "13:00", "13:30"] },
-  { id: "m-14", label: "14:00 - 16:00", hours: ["14:00", "14:30", "15:00", "15:30"] },
-  { id: "m-16", label: "16:00 - 17:00", hours: ["16:00", "16:30"] },
-];
+type FloorTab = "plantas" | "salones";
 
-const nightBlocks: HourBlock[] = [
-  { id: "n-1730", label: "17:30 - 19:30", hours: ["17:30", "18:00", "18:30", "19:00"] },
-  { id: "n-1930", label: "19:30 - 21:30", hours: ["19:30", "20:00", "20:30", "21:00"] },
-  { id: "n-2130", label: "21:30 - 23:30", hours: ["21:30", "22:00", "22:30", "23:00"] },
-  { id: "n-2330", label: "23:30 - 01:00", hours: ["23:30", "00:00", "00:30"] },
-];
+type WeekdayCard = {
+  key: keyof WeekdayOpen;
+  label: string;
+};
 
 const openingModeOptions = [
   { value: "both", label: "Mañana + Noche" },
@@ -55,19 +37,161 @@ const openingModeOptions = [
   { value: "night", label: "Solo noche" },
 ] as const;
 
-function toggleBlock(current: string[], block: HourBlock): string[] {
-  const set = new Set(current);
-  const isOn = block.hours.every((h) => set.has(h));
-  for (const h of block.hours) {
-    if (isOn) set.delete(h);
-    else set.add(h);
-  }
-  return [...set];
+const weekdayCards: WeekdayCard[] = [
+  { key: "monday", label: "Lunes" },
+  { key: "tuesday", label: "Martes" },
+  { key: "wednesday", label: "Miércoles" },
+  { key: "thursday", label: "Jueves" },
+  { key: "friday", label: "Viernes" },
+  { key: "saturday", label: "Sábado" },
+  { key: "sunday", label: "Domingo" },
+];
+
+const tableLimitValues = [...Array.from({ length: 41 }, (_, i) => String(i)), "999"];
+
+function normalizeToHHMM(totalMinutes: number): string {
+  const day = 24 * 60;
+  const normalized = ((totalMinutes % day) + day) % day;
+  const hours = Math.floor(normalized / 60);
+  const minutes = normalized % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
-function blockIsOn(current: string[], block: HourBlock): boolean {
+function formatHourLabel(hhmm: string): string {
+  return hhmm;
+}
+
+function buildHalfHourSlots(startMinutes: number, endMinutes: number, prefix: string): HourSlot[] {
+  const out: HourSlot[] = [];
+  const target = endMinutes < startMinutes ? endMinutes + 24 * 60 : endMinutes;
+  for (let cursor = startMinutes; cursor <= target; cursor += 30) {
+    const value = normalizeToHHMM(cursor);
+    out.push({
+      id: `${prefix}-${value.replace(":", "")}`,
+      value,
+      label: formatHourLabel(value),
+    });
+  }
+  return out;
+}
+
+function serviceSortKey(hhmm: string): number {
+  const [hRaw, mRaw] = hhmm.split(":");
+  const h = Number(hRaw);
+  const m = Number(mRaw);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return 0;
+  const minutes = h * 60 + m;
+  return minutes < 8 * 60 ? minutes + 24 * 60 : minutes;
+}
+
+function sortServiceHours(hours: string[]): string[] {
+  return [...hours].sort((a, b) => {
+    const ka = serviceSortKey(a);
+    const kb = serviceSortKey(b);
+    if (ka === kb) return a.localeCompare(b);
+    return ka - kb;
+  });
+}
+
+function toggleHour(current: string[], hour: string): string[] {
   const set = new Set(current);
-  return block.hours.every((h) => set.has(h));
+  if (set.has(hour)) set.delete(hour);
+  else set.add(hour);
+  return sortServiceHours([...set]);
+}
+
+function clampDailyLimit(v: number): number {
+  if (!Number.isFinite(v)) return 0;
+  return Math.max(0, Math.min(500, Math.trunc(v)));
+}
+
+function defaultWeekdayOpen(): WeekdayOpen {
+  return {
+    monday: false,
+    tuesday: false,
+    wednesday: false,
+    thursday: true,
+    friday: true,
+    saturday: true,
+    sunday: true,
+  };
+}
+
+function parseWeekdayFlag(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1" || normalized === "open" || normalized === "abierto") return true;
+    if (normalized === "false" || normalized === "0" || normalized === "closed" || normalized === "cerrado") return false;
+  }
+  return null;
+}
+
+function normalizeWeekdayOpenMap(input: unknown): WeekdayOpen {
+  const fallback = defaultWeekdayOpen();
+  if (!input || typeof input !== "object") return fallback;
+
+  const sourceRaw = input as Record<string, unknown>;
+  const source: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(sourceRaw)) {
+    source[key.toLowerCase()] = value;
+  }
+
+  const aliases: Record<keyof WeekdayOpen, string[]> = {
+    monday: ["monday", "lunes", "1"],
+    tuesday: ["tuesday", "martes", "2"],
+    wednesday: ["wednesday", "miércoles", "miercoles", "3"],
+    thursday: ["thursday", "jueves", "4"],
+    friday: ["friday", "viernes", "5"],
+    saturday: ["saturday", "sábado", "sabado", "6"],
+    sunday: ["sunday", "domingo", "0", "7"],
+  };
+
+  const out = { ...fallback };
+
+  (Object.keys(aliases) as (keyof WeekdayOpen)[]).forEach((weekday) => {
+    for (const alias of aliases[weekday]) {
+      if (!(alias in source)) continue;
+      const parsed = parseWeekdayFlag(source[alias]);
+      if (parsed !== null) {
+        out[weekday] = parsed;
+        break;
+      }
+    }
+  });
+
+  return out;
+}
+
+function normalizeTableLimit(value: string | null | undefined): string {
+  if (value === "999") return "999";
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return "999";
+  const clamped = Math.max(0, Math.min(40, Math.trunc(parsed)));
+  return String(clamped);
+}
+
+function stepTableLimit(current: string, direction: -1 | 1): string {
+  const currentValue = normalizeTableLimit(current);
+  const currentIndex = tableLimitValues.indexOf(currentValue);
+  const safeIndex = currentIndex === -1 ? tableLimitValues.indexOf("999") : currentIndex;
+  const nextIndex = Math.max(0, Math.min(tableLimitValues.length - 1, safeIndex + direction));
+  return tableLimitValues[nextIndex] || currentValue;
+}
+
+function formatTableLimit(value: string): string {
+  const normalized = normalizeTableLimit(value);
+  return normalized === "999" ? "Sin límite" : normalized;
+}
+
+function readAPIMessage(result: unknown, fallback: string): string {
+  if (!result || typeof result !== "object") return fallback;
+  if (!("message" in result)) return fallback;
+  const message = (result as { message?: unknown }).message;
+  if (typeof message !== "string") return fallback;
+  const trimmed = message.trim();
+  return trimmed || fallback;
 }
 
 export default function Page() {
@@ -75,73 +199,25 @@ export default function Page() {
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
+  const floorTabFromQuery = pageContext.urlParsed?.search?.tab === "salones" ? "salones" : "plantas";
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
   const [defaults, setDefaults] = useState<ConfigDefaults | null>(data.defaults);
   const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
-  const [dailyLimitDraft, setDailyLimitDraft] = useState(String(data.defaults?.dailyLimit ?? 45));
+  const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery);
+  const floorTabs = useMemo<TabItem[]>(
+    () => [
+      { id: "plantas", label: "Plantas", href: "/app/config?tab=plantas", icon: <Building2 className="bo-ico" /> },
+      { id: "salones", label: "Salones", href: "/app/config?tab=salones", icon: <LayoutGrid className="bo-ico" /> },
+    ],
+    [],
+  );
 
-  // Reminder settings state
-  const [reminderSettings, setReminderSettings] = useState<ReminderSettings | null>(null);
-  const [reminderTemplates, setReminderTemplates] = useState<ReminderTemplate[]>([]);
-  const [loadingReminderSettings, setLoadingReminderSettings] = useState(true);
-
-  // Scheduled reminders state
-  const [scheduledReminders, setScheduledReminders] = useState<ScheduledReminder[]>([]);
-  const [loadingScheduledReminders, setLoadingScheduledReminders] = useState(false);
-  const [showScheduledReminderForm, setShowScheduledReminderForm] = useState(false);
-  const [editingScheduledReminder, setEditingScheduledReminder] = useState<ScheduledReminder | null>(null);
-  const [scheduledReminderFilter, setScheduledReminderFilter] = useState<string>("pending");
-
-  // Auto-reminder rules state
-  const [autoReminderRules, setAutoReminderRules] = useState<AutoReminderRule[]>([]);
-  const [loadingAutoReminderRules, setLoadingAutoReminderRules] = useState(false);
-  const [showAutoRuleForm, setShowAutoRuleForm] = useState(false);
-  const [editingAutoRule, setEditingAutoRule] = useState<AutoReminderRule | null>(null);
-
-  // Form state for new scheduled reminder
-  const [newScheduledReminder, setNewScheduledReminder] = useState<ScheduledReminderInput>({
-    invoice_id: 0,
-    template_id: null,
-    scheduled_date: "",
-    scheduled_time: "09:00",
-    frequency: "once",
-    send_via: "email",
-    custom_message: "",
-    max_recurrences: null,
-  });
-
-  // Form state for new auto-reminder rule
-  const [newAutoRule, setNewAutoRule] = useState<AutoReminderRuleInput>({
-    name: "",
-    description: "",
-    is_active: true,
-    trigger_type: "overdue",
-    trigger_days: 7,
-    trigger_date: null,
-    template_id: null,
-    send_via: "email",
-    send_time: "09:00",
-    frequency: "once",
-    max_recurrences: null,
-    invoice_status_filter: null,
-    invoice_category_filter: null,
-    exclude_invoice_ids: null,
-  });
+  const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
+  const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
 
   useErrorToast(error);
-
-  useEffect(() => {
-    if (!defaults) return;
-    setDailyLimitDraft(String(defaults.dailyLimit));
-  }, [defaults?.dailyLimit]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const mesasOptions = useMemo(() => {
-    const out = [{ value: "999", label: "Sin límite" }];
-    for (let i = 0; i <= 40; i++) out.push({ value: String(i), label: String(i) });
-    return out;
-  }, []);
 
   const saveDefaults = useCallback(
     async (
@@ -152,6 +228,7 @@ export default function Page() {
         dailyLimit: number;
         mesasDeDosLimit: string;
         mesasDeTresLimit: string;
+        weekdayOpen: WeekdayOpen;
       }>,
       successMessage?: string,
     ) => {
@@ -160,14 +237,15 @@ export default function Page() {
       try {
         const res = await api.config.setDefaults(patch);
         if (!res.success) {
-          setError(res.message || "No se pudo guardar");
+          setError(readAPIMessage(res, "No se pudo guardar"));
           return;
         }
         setDefaults(res);
-        if (successMessage) pushToast({ kind: "success", title: "Actualizado", message: successMessage });
+        if (successMessage) {
+          pushToast({ kind: "success", title: "Actualizado", message: successMessage });
+        }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "No se pudo guardar";
-        setError(msg);
+        setError(e instanceof Error ? e.message : "No se pudo guardar");
       } finally {
         setBusy(false);
       }
@@ -178,77 +256,26 @@ export default function Page() {
   const reload = useCallback(async () => {
     setBusy(true);
     setError(null);
-    setLoadingReminderSettings(true);
-    setLoadingScheduledReminders(true);
-    setLoadingAutoReminderRules(true);
     try {
-      const [d0, d1, rSettings, rTemplates, sReminders, aRules] = await Promise.all([
-        api.config.getDefaults(),
-        api.config.getDefaultFloors(),
-        api.reminderSettings.get(),
-        api.reminderTemplates.list(),
-        api.scheduledReminders.list({ status: "pending" }),
-        api.autoReminderRules.list(),
-      ]);
-      if (!d0.success) throw new Error(d0.message || "Error cargando defaults");
-      if (!d1.success) throw new Error(d1.message || "Error cargando plantas");
-      setDefaults(d0);
-      setFloors(d1.floors || []);
-      if (rSettings.success) {
-        setReminderSettings(rSettings.settings || null);
+      const [defaultsRes, floorsRes] = await Promise.all([api.config.getDefaults(), api.config.getDefaultFloors()]);
+
+      if (!defaultsRes.success) {
+        setError(readAPIMessage(defaultsRes, "Error cargando configuración por defecto"));
+        return;
       }
-      if (rTemplates.success) {
-        setReminderTemplates(rTemplates.templates || []);
+      if (!floorsRes.success) {
+        setError(readAPIMessage(floorsRes, "Error cargando plantas"));
+        return;
       }
-      if (sReminders.success) {
-        setScheduledReminders(sReminders.reminders || []);
-      }
-      if (aRules.success) {
-        setAutoReminderRules(aRules.rules || []);
-      }
+
+      setDefaults(defaultsRes);
+      setFloors(floorsRes.floors || []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error cargando configuración");
     } finally {
       setBusy(false);
-      setLoadingReminderSettings(false);
-      setLoadingScheduledReminders(false);
-      setLoadingAutoReminderRules(false);
     }
-  }, [api.config, api.reminderSettings, api.reminderTemplates, api.scheduledReminders, api.autoReminderRules]);
-
-  const updateOpeningMode = useCallback(
-    (mode: string) => {
-      void saveDefaults({ openingMode: (mode as OpeningMode) || "both" });
-    },
-    [saveDefaults],
-  );
-
-  const toggleMorningBlock = useCallback(
-    (block: HourBlock) => {
-      if (!defaults) return;
-      const next = toggleBlock(defaults.morningHours || [], block);
-      void saveDefaults({ morningHours: next });
-    },
-    [defaults, saveDefaults],
-  );
-
-  const toggleNightBlock = useCallback(
-    (block: HourBlock) => {
-      if (!defaults) return;
-      const next = toggleBlock(defaults.nightHours || [], block);
-      void saveDefaults({ nightHours: next });
-    },
-    [defaults, saveDefaults],
-  );
-
-  const saveDailyLimit = useCallback(() => {
-    const n = Number(dailyLimitDraft);
-    if (!Number.isFinite(n) || n < 0 || n > 500) {
-      pushToast({ kind: "error", title: "Error", message: "Límite diario inválido" });
-      return;
-    }
-    void saveDefaults({ dailyLimit: Math.trunc(n) }, "Límite diario actualizado");
-  }, [dailyLimitDraft, pushToast, saveDefaults]);
+  }, [api.config]);
 
   const saveFloorsCount = useCallback(
     async (count: number) => {
@@ -257,252 +284,193 @@ export default function Page() {
       try {
         const res = await api.config.setDefaultFloors({ count });
         if (!res.success) {
-          setError(res.message || "No se pudo actualizar plantas");
+          setError(readAPIMessage(res, "No se pudo actualizar plantas"));
           return;
         }
         setFloors(res.floors || []);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "No se pudo actualizar plantas";
-        setError(msg);
+        setError(e instanceof Error ? e.message : "No se pudo actualizar plantas");
       } finally {
         setBusy(false);
       }
     },
-    [api.config, pushToast],
+    [api.config],
+  );
+
+  const onNavigateFloorTab = useCallback(
+    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
+      void _href;
+      event.preventDefault();
+      setFloorTab(id === "salones" ? "salones" : "plantas");
+    },
+    [setFloorTab],
   );
 
   const toggleFloorDefault = useCallback(
-    async (floor: ConfigFloor) => {
+    async (floor: ConfigFloor, explicitValue?: boolean) => {
       if (floor.isGround) return;
+
+      const nextActive = typeof explicitValue === "boolean" ? explicitValue : !floor.active;
+
       setBusy(true);
       setError(null);
       try {
-        const res = await api.config.setDefaultFloors({ floorNumber: floor.floorNumber, active: !floor.active });
+        const res = await api.config.setDefaultFloors({ floorNumber: floor.floorNumber, active: nextActive });
         if (!res.success) {
-          setError(res.message || "No se pudo actualizar la planta");
+          setError(readAPIMessage(res, "No se pudo actualizar la planta"));
           return;
         }
         setFloors(res.floors || []);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "No se pudo actualizar la planta";
-        setError(msg);
+        setError(e instanceof Error ? e.message : "No se pudo actualizar la planta");
       } finally {
         setBusy(false);
       }
     },
-    [api.config, pushToast],
+    [api.config],
   );
 
-  // Save reminder settings
-  const saveReminderSettings = useCallback(
-    async (settings: ReminderSettings) => {
-      setBusy(true);
-      setError(null);
-      try {
-        const res = await api.reminderSettings.update(settings);
-        if (!res.success) {
-          setError(res.message || "No se pudieron guardar los ajustes de recordatorios");
-          return;
-        }
-        setReminderSettings(res.settings || null);
-        pushToast({ kind: "success", title: "Actualizado", message: "Ajustes de recordatorios guardados" });
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "No se pudieron guardar los ajustes";
-        setError(msg);
-      } finally {
-        setBusy(false);
-      }
+  const weekdayOpen = useMemo(() => normalizeWeekdayOpenMap(defaults?.weekdayOpen), [defaults?.weekdayOpen]);
+  const floorCount = useMemo(() => floors.length || 1, [floors.length]);
+  const canGrow = useMemo(() => floorCount < 8, [floorCount]);
+  const canShrink = useMemo(() => floorCount > 1, [floorCount]);
+  const mesasDeDosValue = useMemo(() => normalizeTableLimit(defaults?.mesasDeDosLimit), [defaults?.mesasDeDosLimit]);
+  const mesasDeTresValue = useMemo(() => normalizeTableLimit(defaults?.mesasDeTresLimit), [defaults?.mesasDeTresLimit]);
+
+  const morningHourCards = useMemo(() => {
+    const active = new Set(defaults?.morningHours || []);
+    return morningSlots.map((slot) => ({
+      ...slot,
+      active: active.has(slot.value),
+    }));
+  }, [defaults?.morningHours, morningSlots]);
+
+  const nightHourCards = useMemo(() => {
+    const active = new Set(defaults?.nightHours || []);
+    return nightSlots.map((slot) => ({
+      ...slot,
+      active: active.has(slot.value),
+    }));
+  }, [defaults?.nightHours, nightSlots]);
+
+  const weekdayCardsWithState = useMemo(
+    () =>
+      weekdayCards.map((weekday) => ({
+        ...weekday,
+        isOpen: Boolean(weekdayOpen[weekday.key]),
+      })),
+    [weekdayOpen],
+  );
+
+  const floorCards = useMemo(
+    () =>
+      floors.map((floor) => ({
+        floor,
+        plantaLabel: floor.name,
+        salonLabel: floor.isGround ? "Salón principal" : `Salón ${floor.floorNumber}`,
+        statusLabel: floor.active ? "Abierto" : "Cerrado",
+        defaultLabel: `${floor.active ? "Abierto por defecto" : "Cerrado por defecto"}${floor.isGround ? " (siempre abierto)" : ""}`,
+        keyPrefix: `${floor.id}`,
+      })),
+    [floors],
+  );
+
+  const handleMorningHour = useCallback(
+    (hour: string) => {
+      void saveDefaults({
+        morningHours: toggleHour(defaults?.morningHours || [], hour),
+      });
     },
-    [api.reminderSettings, pushToast],
+    [defaults?.morningHours, saveDefaults],
   );
 
-  // Scheduled Reminder functions
-  const loadScheduledReminders = useCallback(
-    async (filter?: string) => {
-      setLoadingScheduledReminders(true);
-      try {
-        const res = await api.scheduledReminders.list({ status: filter || undefined });
-        if (res.success) {
-          setScheduledReminders(res.reminders || []);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error cargando recordatorios programados");
-      } finally {
-        setLoadingScheduledReminders(false);
-      }
+  const handleNightHour = useCallback(
+    (hour: string) => {
+      void saveDefaults({
+        nightHours: toggleHour(defaults?.nightHours || [], hour),
+      });
     },
-    [api.scheduledReminders],
+    [defaults?.nightHours, saveDefaults],
   );
 
-  const createScheduledReminder = useCallback(
-    async (input: ScheduledReminderInput) => {
-      setBusy(true);
-      setError(null);
-      try {
-        const res = await api.scheduledReminders.create(input);
-        if (!res.success) {
-          setError(res.message || "No se pudo crear el recordatorio programado");
-          return;
-        }
-        pushToast({ kind: "success", title: "Creado", message: "Recordatorio programado creado" });
-        setShowScheduledReminderForm(false);
-        setNewScheduledReminder({
-          invoice_id: 0,
-          template_id: null,
-          scheduled_date: "",
-          scheduled_time: "09:00",
-          frequency: "once",
-          send_via: "email",
-          custom_message: "",
-          max_recurrences: null,
-        });
-        void loadScheduledReminders(scheduledReminderFilter);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error creando recordatorio");
-      } finally {
-        setBusy(false);
-      }
+  const toggleWeekdayOpen = useCallback(
+    (weekdayKey: keyof WeekdayOpen) => {
+      void saveDefaults({
+        weekdayOpen: {
+          ...weekdayOpen,
+          [weekdayKey]: !weekdayOpen[weekdayKey],
+        },
+      });
     },
-    [api.scheduledReminders, pushToast, loadScheduledReminders, scheduledReminderFilter],
+    [saveDefaults, weekdayOpen],
   );
 
-  const cancelScheduledReminder = useCallback(
-    async (id: number) => {
-      setBusy(true);
-      setError(null);
-      try {
-        const res = await api.scheduledReminders.cancel(id);
-        if (!res.success) {
-          setError(res.message || "No se pudo cancelar el recordatorio");
-          return;
-        }
-        pushToast({ kind: "success", title: "Cancelado", message: "Recordatorio cancelado" });
-        void loadScheduledReminders(scheduledReminderFilter);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error cancelando recordatorio");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [api.scheduledReminders, pushToast, loadScheduledReminders, scheduledReminderFilter],
+  const handleFloorsDecrease = useCallback(() => {
+    if (!canShrink) return;
+    void saveFloorsCount(floorCount - 1);
+  }, [canShrink, floorCount, saveFloorsCount]);
+
+  const handleFloorsIncrease = useCallback(() => {
+    if (!canGrow) return;
+    void saveFloorsCount(floorCount + 1);
+  }, [canGrow, floorCount, saveFloorsCount]);
+
+  const dailyLimit = useMemo(() => defaults?.dailyLimit ?? 0, [defaults?.dailyLimit]);
+  const openingModeLabel = useMemo(
+    () => (defaults?.openingMode === "both" ? "Mañana + noche" : defaults?.openingMode === "morning" ? "Mañana" : "Noche"),
+    [defaults?.openingMode],
   );
 
-  const deleteScheduledReminder = useCallback(
-    async (id: number) => {
-      setBusy(true);
-      setError(null);
-      try {
-        const res = await api.scheduledReminders.delete(id);
-        if (!res.success) {
-          setError(res.message || "No se pudo eliminar el recordatorio");
-          return;
-        }
-        pushToast({ kind: "success", title: "Eliminado", message: "Recordatorio eliminado" });
-        void loadScheduledReminders(scheduledReminderFilter);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error eliminando recordatorio");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [api.scheduledReminders, pushToast, loadScheduledReminders, scheduledReminderFilter],
-  );
+  const canDailyDecrease = useMemo(() => dailyLimit > 0, [dailyLimit]);
+  const canDailyIncrease = useMemo(() => dailyLimit < 500, [dailyLimit]);
+  const dailyLimitLabel = useMemo(() => String(dailyLimit), [dailyLimit]);
 
-  // Auto-reminder Rules functions
-  const createAutoRule = useCallback(
-    async (input: AutoReminderRuleInput) => {
-      setBusy(true);
-      setError(null);
-      try {
-        const res = await api.autoReminderRules.create(input);
-        if (!res.success) {
-          setError(res.message || "No se pudo crear la regla de recordatorio automatico");
-          return;
-        }
-        pushToast({ kind: "success", title: "Creada", message: "Regla de recordatorio automatico creada" });
-        setShowAutoRuleForm(false);
-        setNewAutoRule({
-          name: "",
-          description: "",
-          is_active: true,
-          trigger_type: "overdue",
-          trigger_days: 7,
-          trigger_date: null,
-          template_id: null,
-          send_via: "email",
-          send_time: "09:00",
-          frequency: "once",
-          max_recurrences: null,
-          invoice_status_filter: null,
-          invoice_category_filter: null,
-          exclude_invoice_ids: null,
-        });
-        const rulesRes = await api.autoReminderRules.list();
-        if (rulesRes.success) {
-          setAutoReminderRules(rulesRes.rules || []);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error creando regla");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [api.autoReminderRules, pushToast],
-  );
+  const handleDailyDecrease = useCallback(() => {
+    const next = clampDailyLimit(dailyLimit - 1);
+    if (next === dailyLimit) return;
+    void saveDefaults({ dailyLimit: next });
+  }, [dailyLimit, saveDefaults]);
 
-  const toggleAutoRule = useCallback(
-    async (id: number, isActive: boolean) => {
-      setBusy(true);
-      setError(null);
-      try {
-        const res = await api.autoReminderRules.toggle(id, isActive);
-        if (!res.success) {
-          setError(res.message || "No se pudo cambiar el estado de la regla");
-          return;
-        }
-        pushToast({ kind: "success", title: "Actualizado", message: isActive ? "Regla activada" : "Regla desactivada" });
-        const rulesRes = await api.autoReminderRules.list();
-        if (rulesRes.success) {
-          setAutoReminderRules(rulesRes.rules || []);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error cambiando estado");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [api.autoReminderRules, pushToast],
-  );
+  const handleDailyIncrease = useCallback(() => {
+    const next = clampDailyLimit(dailyLimit + 1);
+    if (next === dailyLimit) return;
+    void saveDefaults({ dailyLimit: next });
+  }, [dailyLimit, saveDefaults]);
 
-  const deleteAutoRule = useCallback(
-    async (id: number) => {
-      setBusy(true);
-      setError(null);
-      try {
-        const res = await api.autoReminderRules.delete(id);
-        if (!res.success) {
-          setError(res.message || "No se pudo eliminar la regla");
-          return;
-        }
-        pushToast({ kind: "success", title: "Eliminada", message: "Regla eliminada" });
-        const rulesRes = await api.autoReminderRules.list();
-        if (rulesRes.success) {
-          setAutoReminderRules(rulesRes.rules || []);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error eliminando regla");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [api.autoReminderRules, pushToast],
-  );
+  const mesasDeDosLabel = useMemo(() => formatTableLimit(mesasDeDosValue), [mesasDeDosValue]);
+  const mesasDeTresLabel = useMemo(() => formatTableLimit(mesasDeTresValue), [mesasDeTresValue]);
+  const canMesasDeDosDecrease = useMemo(() => mesasDeDosValue !== "0", [mesasDeDosValue]);
+  const canMesasDeDosIncrease = useMemo(() => mesasDeDosValue !== "999", [mesasDeDosValue]);
+  const canMesasDeTresDecrease = useMemo(() => mesasDeTresValue !== "0", [mesasDeTresValue]);
+  const canMesasDeTresIncrease = useMemo(() => mesasDeTresValue !== "999", [mesasDeTresValue]);
 
-  if (!defaults) return <InlineAlert kind="info" title="Cargando" message="Preparando configuración..." />;
+  const handleMesasDeDosDecrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeDosValue, -1);
+    if (next === mesasDeDosValue) return;
+    void saveDefaults({ mesasDeDosLimit: next });
+  }, [mesasDeDosValue, saveDefaults]);
 
-  const floorCount = floors.length || 1;
-  const canGrow = floorCount < 8;
-  const canShrink = floorCount > 1;
+  const handleMesasDeDosIncrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeDosValue, 1);
+    if (next === mesasDeDosValue) return;
+    void saveDefaults({ mesasDeDosLimit: next });
+  }, [mesasDeDosValue, saveDefaults]);
+
+  const handleMesasDeTresDecrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeTresValue, -1);
+    if (next === mesasDeTresValue) return;
+    void saveDefaults({ mesasDeTresLimit: next });
+  }, [mesasDeTresValue, saveDefaults]);
+
+  const handleMesasDeTresIncrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeTresValue, 1);
+    if (next === mesasDeTresValue) return;
+    void saveDefaults({ mesasDeTresLimit: next });
+  }, [mesasDeTresValue, saveDefaults]);
+
+  if (!defaults) {
+    return <InlineAlert kind="info" title="Cargando" message="Preparando configuración..." />;
+  }
 
   return (
     <section aria-label="Configuración por defecto">
@@ -521,12 +489,12 @@ export default function Page() {
         <div className="bo-panel">
           <div className="bo-panelHead">
             <div className="bo-panelTitle">Modo de apertura</div>
-            <div className="bo-panelMeta">{defaults.openingMode === "both" ? "Mañana + noche" : defaults.openingMode === "morning" ? "Mañana" : "Noche"}</div>
+            <div className="bo-panelMeta">{openingModeLabel}</div>
           </div>
           <div className="bo-panelBody bo-row">
             <Select
               value={defaults.openingMode}
-              onChange={updateOpeningMode}
+              onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
               options={openingModeOptions as any}
               size="sm"
               ariaLabel="Modo de apertura por defecto"
@@ -537,23 +505,23 @@ export default function Page() {
         <div className="bo-panel">
           <div className="bo-panelHead">
             <div className="bo-panelTitle">Horarios por defecto</div>
-            <div className="bo-panelMeta">Selección inmediata</div>
+            <div className="bo-panelMeta">Slots de media hora con guardado inmediato</div>
           </div>
-          <div className="bo-panelBody" style={{ display: "grid", gap: 14 }}>
+          <div className="bo-panelBody bo-hourCardsContainer">
             <div className="bo-field">
               <div className="bo-label">Mañana (08:00 - 17:00)</div>
-              <div className="bo-hourCards">
-                {morningBlocks.map((block) => {
-                  const on = blockIsOn(defaults.morningHours || [], block);
+              <div className="bo-hourCards bo-hourCards--slots">
+                {morningHourCards.map((slot) => {
+                  const on = slot.active;
                   return (
                     <button
-                      key={block.id}
+                      key={slot.id}
                       type="button"
-                      className={`bo-hourCard${on ? " is-on" : ""}`}
-                      onClick={() => toggleMorningBlock(block)}
+                      className={`bo-hourCard bo-hourCard--slot${on ? " is-on" : ""}`}
+                      onClick={() => void handleMorningHour(slot.value)}
                       disabled={busy}
                     >
-                      {block.label}
+                      {slot.label}
                     </button>
                   );
                 })}
@@ -562,18 +530,18 @@ export default function Page() {
 
             <div className="bo-field">
               <div className="bo-label">Noche (17:30 - 01:00)</div>
-              <div className="bo-hourCards">
-                {nightBlocks.map((block) => {
-                  const on = blockIsOn(defaults.nightHours || [], block);
+              <div className="bo-hourCards bo-hourCards--slots">
+                {nightHourCards.map((slot) => {
+                  const on = slot.active;
                   return (
                     <button
-                      key={block.id}
+                      key={slot.id}
                       type="button"
-                      className={`bo-hourCard${on ? " is-on" : ""}`}
-                      onClick={() => toggleNightBlock(block)}
+                      className={`bo-hourCard bo-hourCard--slot${on ? " is-on" : ""}`}
+                      onClick={() => void handleNightHour(slot.value)}
                       disabled={busy}
                     >
-                      {block.label}
+                      {slot.label}
                     </button>
                   );
                 })}
@@ -584,43 +552,76 @@ export default function Page() {
 
         <div className="bo-panel">
           <div className="bo-panelHead">
-            <div className="bo-panelTitle">Límites por defecto</div>
-            <div className="bo-panelMeta">Aplican si no hay override diario</div>
+            <div className="bo-panelTitle">Calendario semanal</div>
+            <div className="bo-panelMeta">Semana genérica (lunes a domingo)</div>
           </div>
-          <div className="bo-panelBody bo-row">
-            <div className="bo-field bo-field--inline">
-              <div className="bo-label">Límite diario</div>
-              <input
-                className="bo-input bo-input--sm"
-                style={{ width: 100 }}
-                value={dailyLimitDraft}
-                inputMode="numeric"
-                onChange={(e) => setDailyLimitDraft(e.target.value)}
-                onBlur={saveDailyLimit}
-              />
+          <div className="bo-panelBody bo-configWeekdayGrid">
+            {weekdayCardsWithState.map((weekday) => {
+              const isOpen = weekday.isOpen;
+              return (
+                <button
+                  key={weekday.key}
+                  type="button"
+                  className={`bo-hourCard bo-configDayCard${isOpen ? " is-on" : ""}`}
+                  disabled={busy}
+                  aria-pressed={isOpen}
+                  aria-label={`${weekday.label} (${isOpen ? "abierto" : "cerrado"})`}
+                  onClick={() => void toggleWeekdayOpen(weekday.key)}
+                >
+                    <div className="bo-configDayCardLabel">{weekday.label}</div>
+                  </button>
+                );
+              })}
             </div>
+        </div>
 
-            <div className="bo-field bo-field--inline">
-              <div className="bo-label">Mesas de 2</div>
-              <Select
-                value={defaults.mesasDeDosLimit || "999"}
-                onChange={(v) => void saveDefaults({ mesasDeDosLimit: v })}
-                options={mesasOptions}
-                size="sm"
-                ariaLabel="Mesas de 2 por defecto"
-              />
-            </div>
+        <div className="bo-panel">
+          <div className="bo-panelHead">
+            <div className="bo-panelTitle">Límites por defecto</div>
+            <div className="bo-panelMeta">Autosave inmediato</div>
+          </div>
+          <div className="bo-panelBody bo-configLimitGrid">
+            <PlusMinusCounter
+              label="Límite diario"
+              value={dailyLimitLabel}
+              className="bo-configLimitCounterCard"
+              onDecrease={handleDailyDecrease}
+              onIncrease={handleDailyIncrease}
+              canDecrease={canDailyDecrease}
+              canIncrease={canDailyIncrease}
+              disabled={busy}
+              helperText="Rango permitido: 0-500"
+              decrementAriaLabel="Reducir límite diario"
+              incrementAriaLabel="Aumentar límite diario"
+            />
 
-            <div className="bo-field bo-field--inline">
-              <div className="bo-label">Mesas de 3</div>
-              <Select
-                value={defaults.mesasDeTresLimit || "999"}
-                onChange={(v) => void saveDefaults({ mesasDeTresLimit: v })}
-                options={mesasOptions}
-                size="sm"
-                ariaLabel="Mesas de 3 por defecto"
-              />
-            </div>
+            <PlusMinusCounter
+              label="Mesas de 2"
+              value={mesasDeDosLabel}
+              className="bo-configLimitCounterCard"
+              onDecrease={handleMesasDeDosDecrease}
+              onIncrease={handleMesasDeDosIncrease}
+              canDecrease={canMesasDeDosDecrease}
+              canIncrease={canMesasDeDosIncrease}
+              disabled={busy}
+              helperText="0-40 o Sin límite"
+              decrementAriaLabel="Reducir mesas de 2"
+              incrementAriaLabel="Aumentar mesas de 2"
+            />
+
+            <PlusMinusCounter
+              label="Mesas de 3"
+              value={mesasDeTresLabel}
+              className="bo-configLimitCounterCard"
+              onDecrease={handleMesasDeTresDecrease}
+              onIncrease={handleMesasDeTresIncrease}
+              canDecrease={canMesasDeTresDecrease}
+              canIncrease={canMesasDeTresIncrease}
+              disabled={busy}
+              helperText="0-40 o Sin límite"
+              decrementAriaLabel="Reducir mesas de 3"
+              incrementAriaLabel="Aumentar mesas de 3"
+            />
           </div>
         </div>
 
@@ -629,650 +630,88 @@ export default function Page() {
             <div className="bo-panelTitle">Plantas del restaurante</div>
             <div className="bo-panelMeta">{floorCount} plantas</div>
           </div>
-          <div className="bo-panelBody" style={{ display: "grid", gap: 12 }}>
-            <div className="bo-row">
-              <button
-                className="bo-actionBtn"
-                type="button"
-                onClick={() => {
-                  if (!canShrink) return;
-                  void saveFloorsCount(floorCount - 1);
-                }}
-                disabled={busy || !canShrink}
-                aria-label="Quitar planta"
-              >
-                <Minus size={18} strokeWidth={1.8} />
-              </button>
-              <div className="bo-mutedText">Total plantas: {floorCount}</div>
-              <button
-                className="bo-actionBtn"
-                type="button"
-                onClick={() => {
-                  if (!canGrow) return;
-                  void saveFloorsCount(floorCount + 1);
-                }}
-                disabled={busy || !canGrow}
-                aria-label="Añadir planta"
-              >
-                <Plus size={18} strokeWidth={1.8} />
-              </button>
-            </div>
+          <div className="bo-panelBody bo-configFloorsPanel">
+            <Tabs tabs={floorTabs} activeId={floorTab} ariaLabel="Secciones de plantas" className="bo-tabs--reservas bo-configFloorTabs" onNavigate={onNavigateFloorTab} />
 
-            <div className="bo-hourCards bo-hourCards--floors">
-              {floors.map((floor) => (
-                <button
-                  key={floor.id}
-                  type="button"
-                  className={`bo-hourCard bo-floorCard${floor.active ? " is-on" : ""}${floor.isGround ? " is-ground" : ""}`}
-                  disabled={busy || floor.isGround}
-                  onClick={() => void toggleFloorDefault(floor)}
-                >
-                  {floor.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Reminder Settings Section */}
-      <div className="bo-stack">
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">
-              <Bell size={18} style={{ marginRight: 8, verticalAlign: "middle" }} />
-              Recordatorios de pago
-            </div>
-            <div className="bo-panelMeta">Configura el envio automatico de recordatorios</div>
-          </div>
-          <div className="bo-panelBody">
-            {loadingReminderSettings ? (
-              <InlineAlert kind="info" title="Cargando" message="Cargando ajustes de recordatorios..." />
-            ) : (
-              <>
-                {/* Enable Auto Reminder */}
-                <div className="bo-field">
-                  <label className="bo-toggle">
-                    <input
-                      type="checkbox"
-                      checked={reminderSettings?.auto_reminder_enabled || false}
-                      onChange={(e) => {
-                        if (reminderSettings) {
-                          saveReminderSettings({
-                            ...reminderSettings,
-                            auto_reminder_enabled: e.target.checked,
-                          });
-                        }
-                      }}
-                      disabled={busy}
-                    />
-                    <span className="bo-toggle-slider"></span>
-                    <span className="bo-toggle-label">
-                      <BellOff size={14} style={{ marginRight: 4 }} />
-                      Enviar recordatorios automaticos
-                    </span>
-                  </label>
-                  <div className="bo-fieldHelp">
-                    Enviar automaticamente un recordatorio a los clientes cuando una factura este pendiente de pago
-                  </div>
-                </div>
-
-                {/* Days After Due */}
-                {reminderSettings?.auto_reminder_enabled && (
-                  <>
-                    <div className="bo-field bo-field--inline">
-                      <div className="bo-label">Enviar recordatorio</div>
-                      <div className="bo-row" style={{ alignItems: "center", gap: 8 }}>
-                        <span>despues de</span>
-                        <Select
-                          value={String(reminderSettings?.auto_reminder_days_after_due || 7)}
-                          onChange={(v) => {
-                            if (reminderSettings) {
-                              saveReminderSettings({
-                                ...reminderSettings,
-                                auto_reminder_days_after_due: Number(v),
-                              });
-                            }
-                          }}
-                          options={[
-                            { value: "1", label: "1 dia" },
-                            { value: "3", label: "3 dias" },
-                            { value: "7", label: "7 dias" },
-                            { value: "14", label: "14 dias" },
-                            { value: "30", label: "30 dias" },
-                          ]}
-                          size="sm"
-                          disabled={busy}
-                        />
-                        <span>de vencimiento</span>
-                      </div>
-                    </div>
-
-                    {/* Send Via */}
-                    <div className="bo-field">
-                      <div className="bo-label">Metodo de envio</div>
-                      <div className="bo-radioGroup">
-                        <label className="bo-radio">
-                          <input
-                            type="radio"
-                            name="auto_reminder_send_via"
-                            value="email"
-                            checked={reminderSettings?.auto_reminder_send_via === "email"}
-                            onChange={() => {
-                              if (reminderSettings) {
-                                saveReminderSettings({
-                                  ...reminderSettings,
-                                  auto_reminder_send_via: "email",
-                                });
-                              }
-                            }}
-                            disabled={busy}
-                          />
-                          <Mail size={14} />
-                          <span>Email</span>
-                        </label>
-                        <label className="bo-radio">
-                          <input
-                            type="radio"
-                            name="auto_reminder_send_via"
-                            value="whatsapp"
-                            checked={reminderSettings?.auto_reminder_send_via === "whatsapp"}
-                            onChange={() => {
-                              if (reminderSettings) {
-                                saveReminderSettings({
-                                  ...reminderSettings,
-                                  auto_reminder_send_via: "whatsapp",
-                                });
-                              }
-                            }}
-                            disabled={busy}
-                          />
-                          <MessageSquare size={14} />
-                          <span>WhatsApp</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Template Selection */}
-                    <div className="bo-field">
-                      <div className="bo-label">Plantilla a usar</div>
-                      <Select
-                        value={String(reminderSettings?.auto_reminder_template_id || "")}
-                        onChange={(v) => {
-                          if (reminderSettings) {
-                            saveReminderSettings({
-                              ...reminderSettings,
-                              auto_reminder_template_id: v ? Number(v) : null,
-                            });
-                          }
-                        }}
-                        options={[
-                          { value: "", label: "-- Seleccionar plantilla --" },
-                          ...reminderTemplates.map((t) => ({
-                            value: String(t.id),
-                            label: `${t.name} (${t.send_via === "email" ? "Email" : "WhatsApp"})`,
-                          })),
-                        ]}
-                        size="sm"
-                        disabled={busy}
-                      />
-                      <div className="bo-fieldHelp">
-                        Selecciona la plantilla que se usara para los recordatorios automaticos
-                      </div>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Scheduled Reminders Section */}
-      <div className="bo-stack">
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">
-              <Calendar size={18} style={{ marginRight: 8, verticalAlign: "middle" }} />
-              Recordatorios programados
-            </div>
-            <div className="bo-panelMeta">Programa recordatorios para fechas especificas</div>
-          </div>
-          <div className="bo-panelBody">
-            {/* Filter and Actions */}
-            <div className="bo-row" style={{ marginBottom: 16, justifyContent: "space-between" }}>
-              <div className="bo-field bo-field--inline">
-                <Select
-                  value={scheduledReminderFilter}
-                  onChange={(v) => {
-                    setScheduledReminderFilter(v);
-                    void loadScheduledReminders(v);
-                  }}
-                  options={[
-                    { value: "", label: "Todos" },
-                    { value: "pending", label: "Pendientes" },
-                    { value: "sent", label: "Enviados" },
-                    { value: "cancelled", label: "Cancelados" },
-                    { value: "failed", label: "Fallidos" },
-                  ]}
-                  size="sm"
+            {floorTab === "plantas" ? (
+              <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent">
+                <PlusMinusCounter
+                  label="Total de plantas"
+                  value={String(floorCount)}
+                  className="bo-configLimitCounterCard bo-configFloorCounter"
+                  onDecrease={handleFloorsDecrease}
+                  onIncrease={handleFloorsIncrease}
+                  canDecrease={canShrink}
+                  canIncrease={canGrow}
+                  disabled={busy}
+                  helperText="Planta baja incluida"
+                  decrementAriaLabel="Quitar planta"
+                  incrementAriaLabel="Añadir planta"
                 />
-              </div>
-              <button
-                className="bo-btn bo-btn--primary"
-                type="button"
-                onClick={() => setShowScheduledReminderForm(true)}
-              >
-                <PlusCircle size={16} style={{ marginRight: 4 }} />
-                Nuevo recordatorio
-              </button>
-            </div>
 
-            {/* New Scheduled Reminder Form */}
-            {showScheduledReminderForm && (
-              <div className="bo-form" style={{ marginBottom: 16, padding: 16, backgroundColor: "var(--bo-bg-secondary)", borderRadius: 8 }}>
-                <div className="bo-field">
-                  <div className="bo-label">ID de factura</div>
-                  <input
-                    type="number"
-                    className="bo-input bo-input--sm"
-                    value={newScheduledReminder.invoice_id || ""}
-                    onChange={(e) => setNewScheduledReminder({ ...newScheduledReminder, invoice_id: Number(e.target.value) })}
-                    placeholder="ID de la factura"
-                  />
-                </div>
-                <div className="bo-row" style={{ gap: 12 }}>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Fecha</div>
-                    <input
-                      type="date"
-                      className="bo-input bo-input--sm"
-                      value={newScheduledReminder.scheduled_date}
-                      onChange={(e) => setNewScheduledReminder({ ...newScheduledReminder, scheduled_date: e.target.value })}
-                    />
-                  </div>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Hora</div>
-                    <input
-                      type="time"
-                      className="bo-input bo-input--sm"
-                      value={newScheduledReminder.scheduled_time}
-                      onChange={(e) => setNewScheduledReminder({ ...newScheduledReminder, scheduled_time: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="bo-row" style={{ gap: 12 }}>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Frecuencia</div>
-                    <Select
-                      value={newScheduledReminder.frequency}
-                      onChange={(v) => setNewScheduledReminder({ ...newScheduledReminder, frequency: v as ScheduledReminderFrequency })}
-                      options={[
-                        { value: "once", label: "Una vez" },
-                        { value: "daily", label: "Diario" },
-                        { value: "weekly", label: "Semanal" },
-                        { value: "monthly", label: "Mensual" },
-                      ]}
-                      size="sm"
-                    />
-                  </div>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Via</div>
-                    <Select
-                      value={newScheduledReminder.send_via}
-                      onChange={(v) => setNewScheduledReminder({ ...newScheduledReminder, send_via: v as "email" | "whatsapp" })}
-                      options={[
-                        { value: "email", label: "Email" },
-                        { value: "whatsapp", label: "WhatsApp" },
-                      ]}
-                      size="sm"
-                    />
-                  </div>
-                </div>
-                <div className="bo-field">
-                  <div className="bo-label">Plantilla</div>
-                  <Select
-                    value={String(newScheduledReminder.template_id || "")}
-                    onChange={(v) => setNewScheduledReminder({ ...newScheduledReminder, template_id: v ? Number(v) : null })}
-                    options={[
-                      { value: "", label: "-- Seleccionar plantilla --" },
-                      ...reminderTemplates.map((t) => ({
-                        value: String(t.id),
-                        label: `${t.name} (${t.send_via === "email" ? "Email" : "WhatsApp"})`,
-                      })),
-                    ]}
-                    size="sm"
-                  />
-                </div>
-                <div className="bo-field">
-                  <div className="bo-label">Mensaje personalizado (opcional)</div>
-                  <textarea
-                    className="bo-input"
-                    rows={2}
-                    value={newScheduledReminder.custom_message || ""}
-                    onChange={(e) => setNewScheduledReminder({ ...newScheduledReminder, custom_message: e.target.value })}
-                    placeholder="Mensaje adicional..."
-                  />
-                </div>
-                <div className="bo-row" style={{ gap: 8, marginTop: 8 }}>
-                  <button
-                    className="bo-btn bo-btn--primary"
-                    type="button"
-                    onClick={() => void createScheduledReminder(newScheduledReminder)}
-                    disabled={busy || !newScheduledReminder.invoice_id || !newScheduledReminder.scheduled_date}
-                  >
-                    Crear
-                  </button>
-                  <button
-                    className="bo-btn bo-btn--ghost"
-                    type="button"
-                    onClick={() => {
-                      setShowScheduledReminderForm(false);
-                      setNewScheduledReminder({
-                        invoice_id: 0,
-                        template_id: null,
-                        scheduled_date: "",
-                        scheduled_time: "09:00",
-                        frequency: "once",
-                        send_via: "email",
-                        custom_message: "",
-                        max_recurrences: null,
-                      });
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Scheduled Reminders List */}
-            {loadingScheduledReminders ? (
-              <InlineAlert kind="info" title="Cargando" message="Cargando recordatorios..." />
-            ) : scheduledReminders.length === 0 ? (
-              <InlineAlert kind="info" title="Sin recordatorios" message="No hay recordatorios programados" />
-            ) : (
-              <div style={{ display: "grid", gap: 8 }}>
-                {scheduledReminders.map((reminder) => (
-                  <div
-                    key={reminder.id}
-                    className="bo-card"
-                    style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12 }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 600 }}>
-                        Factura #{reminder.invoice_id}
-                        {reminder.invoice_number && ` (${reminder.invoice_number})`}
-                      </div>
-                      <div className="bo-mutedText" style={{ fontSize: 13 }}>
-                        {reminder.customer_name} | {reminder.scheduled_date} {reminder.scheduled_time}
-                      </div>
-                      <div className="bo-mutedText" style={{ fontSize: 12 }}>
-                        {reminder.frequency === "once" ? "Una vez" : reminder.frequency === "daily" ? "Diario" : reminder.frequency === "weekly" ? "Semanal" : "Mensual"} | {reminder.send_via === "email" ? "Email" : "WhatsApp"}
-                        {reminder.template_name && ` | ${reminder.template_name}`}
-                      </div>
-                    </div>
-                    <div className="bo-row" style={{ gap: 4 }}>
-                      {reminder.status === "pending" && (
-                        <>
-                          <button
-                            className="bo-actionBtn"
-                            type="button"
-                            title="Cancelar"
-                            onClick={() => void cancelScheduledReminder(reminder.id)}
-                            disabled={busy}
-                          >
-                            <X size={16} />
-                          </button>
-                          <button
-                            className="bo-actionBtn"
-                            type="button"
-                            title="Eliminar"
-                            onClick={() => void deleteScheduledReminder(reminder.id)}
-                            disabled={busy}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </>
-                      )}
-                      <span
-                        className={`bo-badge bo-badge--${reminder.status === "pending" ? "warning" : reminder.status === "sent" ? "success" : reminder.status === "cancelled" ? "muted" : "danger"}`}
+                <div className="bo-configSalonCards" aria-label="Plantas del restaurante">
+                  {floorCards.map((floor) => {
+                    const salonLabel = floor.plantaLabel;
+                    return (
+                      <div
+                        key={`planta-${floor.keyPrefix}`}
+                        className="bo-floorSalonCard"
                       >
-                        {reminder.status === "pending" ? "Pendiente" : reminder.status === "sent" ? "Enviado" : reminder.status === "cancelled" ? "Cancelado" : "Fallido"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Auto-Reminder Rules Section */}
-      <div className="bo-stack">
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">
-              <Clock size={18} style={{ marginRight: 8, verticalAlign: "middle" }} />
-              Reglas de recordatorios automaticos
-            </div>
-            <div className="bo-panelMeta">Configura reglas para enviar recordatorios automaticamente</div>
-          </div>
-          <div className="bo-panelBody">
-            {/* Actions */}
-            <div className="bo-row" style={{ marginBottom: 16, justifyContent: "flex-end" }}>
-              <button
-                className="bo-btn bo-btn--primary"
-                type="button"
-                onClick={() => setShowAutoRuleForm(true)}
-              >
-                <PlusCircle size={16} style={{ marginRight: 4 }} />
-                Nueva regla
-              </button>
-            </div>
-
-            {/* New Auto Rule Form */}
-            {showAutoRuleForm && (
-              <div className="bo-form" style={{ marginBottom: 16, padding: 16, backgroundColor: "var(--bo-bg-secondary)", borderRadius: 8 }}>
-                <div className="bo-field">
-                  <div className="bo-label">Nombre de la regla</div>
-                  <input
-                    type="text"
-                    className="bo-input bo-input--sm"
-                    value={newAutoRule.name}
-                    onChange={(e) => setNewAutoRule({ ...newAutoRule, name: e.target.value })}
-                    placeholder="Ej: Recordatorio semanal de facturas pendientes"
-                  />
-                </div>
-                <div className="bo-field">
-                  <div className="bo-label">Descripcion</div>
-                  <input
-                    type="text"
-                    className="bo-input bo-input--sm"
-                    value={newAutoRule.description || ""}
-                    onChange={(e) => setNewAutoRule({ ...newAutoRule, description: e.target.value })}
-                    placeholder="Descripcion opcional..."
-                  />
-                </div>
-                <div className="bo-row" style={{ gap: 12 }}>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Tipo de activador</div>
-                    <Select
-                      value={newAutoRule.trigger_type}
-                      onChange={(v) => setNewAutoRule({ ...newAutoRule, trigger_type: v as "due_date" | "overdue" | "days_after_invoice" | "custom_date" })}
-                      options={[
-                        { value: "overdue", label: "Facturas vencidas" },
-                        { value: "due_date", label: "Fecha de vencimiento" },
-                        { value: "days_after_invoice", label: "Dias despues de factura" },
-                        { value: "custom_date", label: "Fecha personalizada" },
-                      ]}
-                      size="sm"
-                    />
-                  </div>
-                  {newAutoRule.trigger_type === "days_after_invoice" && (
-                    <div className="bo-field bo-field--inline">
-                      <div className="bo-label">Dias despues</div>
-                      <input
-                        type="number"
-                        className="bo-input bo-input--sm"
-                        style={{ width: 80 }}
-                        value={newAutoRule.trigger_days || ""}
-                        onChange={(e) => setNewAutoRule({ ...newAutoRule, trigger_days: Number(e.target.value) })}
-                      />
-                    </div>
-                  )}
-                  {newAutoRule.trigger_type === "custom_date" && (
-                    <div className="bo-field bo-field--inline">
-                      <div className="bo-label">Fecha</div>
-                      <input
-                        type="date"
-                        className="bo-input bo-input--sm"
-                        value={newAutoRule.trigger_date || ""}
-                        onChange={(e) => setNewAutoRule({ ...newAutoRule, trigger_date: e.target.value })}
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className="bo-row" style={{ gap: 12 }}>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Hora de envio</div>
-                    <input
-                      type="time"
-                      className="bo-input bo-input--sm"
-                      value={newAutoRule.send_time}
-                      onChange={(e) => setNewAutoRule({ ...newAutoRule, send_time: e.target.value })}
-                    />
-                  </div>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Frecuencia</div>
-                    <Select
-                      value={newAutoRule.frequency}
-                      onChange={(v) => setNewAutoRule({ ...newAutoRule, frequency: v as ScheduledReminderFrequency })}
-                      options={[
-                        { value: "once", label: "Una vez" },
-                        { value: "daily", label: "Diario" },
-                        { value: "weekly", label: "Semanal" },
-                        { value: "monthly", label: "Mensual" },
-                      ]}
-                      size="sm"
-                    />
-                  </div>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label">Via</div>
-                    <Select
-                      value={newAutoRule.send_via}
-                      onChange={(v) => setNewAutoRule({ ...newAutoRule, send_via: v as "email" | "whatsapp" })}
-                      options={[
-                        { value: "email", label: "Email" },
-                        { value: "whatsapp", label: "WhatsApp" },
-                      ]}
-                      size="sm"
-                    />
-                  </div>
-                </div>
-                <div className="bo-field">
-                  <div className="bo-label">Plantilla</div>
-                  <Select
-                    value={String(newAutoRule.template_id || "")}
-                    onChange={(v) => setNewAutoRule({ ...newAutoRule, template_id: v ? Number(v) : null })}
-                    options={[
-                      { value: "", label: "-- Seleccionar plantilla --" },
-                      ...reminderTemplates.map((t) => ({
-                        value: String(t.id),
-                        label: `${t.name} (${t.send_via === "email" ? "Email" : "WhatsApp"})`,
-                      })),
-                    ]}
-                    size="sm"
-                  />
-                </div>
-                <div className="bo-row" style={{ gap: 8, marginTop: 8 }}>
-                  <button
-                    className="bo-btn bo-btn--primary"
-                    type="button"
-                    onClick={() => void createAutoRule(newAutoRule)}
-                    disabled={busy || !newAutoRule.name}
-                  >
-                    Crear regla
-                  </button>
-                  <button
-                    className="bo-btn bo-btn--ghost"
-                    type="button"
-                    onClick={() => {
-                      setShowAutoRuleForm(false);
-                      setNewAutoRule({
-                        name: "",
-                        description: "",
-                        is_active: true,
-                        trigger_type: "overdue",
-                        trigger_days: 7,
-                        trigger_date: null,
-                        template_id: null,
-                        send_via: "email",
-                        send_time: "09:00",
-                        frequency: "once",
-                        max_recurrences: null,
-                        invoice_status_filter: null,
-                        invoice_category_filter: null,
-                        exclude_invoice_ids: null,
-                      });
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Auto Rules List */}
-            {loadingAutoReminderRules ? (
-              <InlineAlert kind="info" title="Cargando" message="Cargando reglas..." />
-            ) : autoReminderRules.length === 0 ? (
-              <InlineAlert kind="info" title="Sin reglas" message="No hay reglas de recordatorios automaticos configuradas" />
-            ) : (
-              <div style={{ display: "grid", gap: 8 }}>
-                {autoReminderRules.map((rule) => (
-                  <div
-                    key={rule.id}
-                    className="bo-card"
-                    style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12 }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 600 }}>{rule.name}</div>
-                      {rule.description && (
-                        <div className="bo-mutedText" style={{ fontSize: 13 }}>
-                          {rule.description}
+                        <div>
+                          <div className="bo-floorCardName">{salonLabel}</div>
+                          <div className="bo-floorCardHint">
+                            {floor.defaultLabel}
+                          </div>
                         </div>
-                      )}
-                      <div className="bo-mutedText" style={{ fontSize: 12 }}>
-                        {rule.trigger_type === "overdue" ? "Facturas vencidas" : rule.trigger_type === "due_date" ? "Fecha de vencimiento" : rule.trigger_type === "days_after_invoice" ? `${rule.trigger_days} dias despues de factura` : "Fecha personalizada"} | {rule.send_time} | {rule.frequency === "once" ? "Una vez" : rule.frequency === "daily" ? "Diario" : rule.frequency === "weekly" ? "Semanal" : "Mensual"} | {rule.send_via === "email" ? "Email" : "WhatsApp"}
+
+                        <div className="bo-floorSalonCardState">
+                          <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                          <Switch
+                            checked={floor.floor.active}
+                            disabled={busy || floor.floor.isGround}
+                            onCheckedChange={(checked) => {
+                              if (floor.floor.isGround) return;
+                              void toggleFloorDefault(floor.floor, checked);
+                            }}
+                            aria-label={`Estado por defecto de ${salonLabel}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalonCards">
+                {floorCards.map((floor) => {
+                  const salonLabel = floor.salonLabel;
+                  return (
+                    <div
+                      key={`salon-${floor.keyPrefix}`}
+                      className="bo-floorSalonCard"
+                    >
+                      <div>
+                        <div className="bo-floorCardName">{salonLabel}</div>
+                        <div className="bo-floorCardHint">
+                          {floor.defaultLabel}
+                        </div>
+                      </div>
+
+                      <div className="bo-floorSalonCardState">
+                        <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                        <Switch
+                          checked={floor.floor.active}
+                          disabled={busy || floor.floor.isGround}
+                          onCheckedChange={(checked) => {
+                            if (floor.floor.isGround) return;
+                            void toggleFloorDefault(floor.floor, checked);
+                          }}
+                          aria-label={`Estado por defecto de ${salonLabel}`}
+                        />
                       </div>
                     </div>
-                    <div className="bo-row" style={{ gap: 4 }}>
-                      <button
-                        className="bo-actionBtn"
-                        type="button"
-                        title={rule.is_active ? "Desactivar" : "Activar"}
-                        onClick={() => void toggleAutoRule(rule.id, !rule.is_active)}
-                        disabled={busy}
-                      >
-                        {rule.is_active ? <Pause size={16} /> : <Play size={16} />}
-                      </button>
-                      <button
-                        className="bo-actionBtn"
-                        type="button"
-                        title="Eliminar"
-                        onClick={() => void deleteAutoRule(rule.id)}
-                        disabled={busy}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                      <span className={`bo-badge bo-badge--${rule.is_active ? "success" : "muted"}`}>
-                        {rule.is_active ? "Activa" : "Inactiva"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
