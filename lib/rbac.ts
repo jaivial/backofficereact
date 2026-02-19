@@ -150,6 +150,8 @@ export function isPathAllowed(
   sectionAccessRaw?: string[] | null,
   roleImportanceRaw?: number | null,
 ): boolean {
+  if (pathname === "/app" || pathname === "/app/") return true;
+  if (pathname === "/app/backoffice" || pathname.startsWith("/app/backoffice/")) return true;
   const section = sectionForPath(pathname);
   if (!section) return false;
   return hasSectionAccess(roleRaw, section, sectionAccessRaw, roleImportanceRaw);

@@ -12,9 +12,10 @@ export type AppNavigationMeta = {
   breadcrumbs: BreadcrumbItem[];
 };
 
-const ROOT_BREADCRUMB: BreadcrumbItem = { label: "Backoffice", href: "/app/dashboard" };
+const ROOT_BREADCRUMB: BreadcrumbItem = { label: "Backoffice", href: "/app" };
 
 const SEGMENT_LABELS: Record<string, string> = {
+  backoffice: "Inicio",
   dashboard: "Dashboard",
   reservas: "Reservas",
   config: "Configuracion",
@@ -40,6 +41,8 @@ const SEGMENT_LABELS: Record<string, string> = {
 };
 
 const TITLE_BY_PATH: Record<string, string> = {
+  "/app": "Inicio",
+  "/app/backoffice": "Inicio",
   "/app/dashboard": "Dashboard",
   "/app/reservas": "Reservas",
   "/app/reservas/anadir": "Anadir reserva",
