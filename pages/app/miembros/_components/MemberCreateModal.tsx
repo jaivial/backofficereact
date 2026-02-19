@@ -7,6 +7,7 @@ import { PhoneInput } from "../../../../ui/inputs/PhoneInput";
 import { Select } from "../../../../ui/inputs/Select";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
+import { RoleIcon } from "../../../../ui/widgets/roles/RoleIcon";
 
 export type CreateMemberInput = {
   firstName: string;
@@ -85,7 +86,12 @@ export function MemberCreateModal({
   }, [avatarFile]);
 
   const roleOptions = useMemo(
-    () => roles.map((role) => ({ value: role.slug, label: role.label })),
+    () =>
+      roles.map((role) => ({
+        value: role.slug,
+        label: role.label,
+        icon: <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={15} strokeWidth={1.8} />,
+      })),
     [roles],
   );
 
@@ -111,7 +117,6 @@ export function MemberCreateModal({
           <div className="bo-panelHead">
             <div>
               <div className="bo-panelTitle">Datos de acceso y perfil</div>
-              <div className="bo-panelMeta">Si no añades email ni teléfono, debes definir username y password temporal.</div>
             </div>
           </div>
           <div className="bo-panelBody bo-memberCreateBody">
@@ -128,11 +133,10 @@ export function MemberCreateModal({
                   {avatarPreview ? <AvatarImage src={avatarPreview} alt="Preview" /> : null}
                   <AvatarFallback className="bo-memberAvatarFallback">{initials(firstName, lastName)}</AvatarFallback>
                 </Avatar>
-                <span className="bo-memberCreateAvatarHint" aria-hidden="true">
-                  <Upload size={16} />
+                <span className="bo-memberCreateAvatarOverlay" aria-hidden="true">
+                  <Upload size={18} strokeWidth={1.8} />
                 </span>
               </ImageDropInput>
-              <div className="bo-mutedText bo-memberCreateAvatarText">Avatar opcional (WEBP recomendado).</div>
             </div>
 
             <div className="bo-memberCreateGrid">
@@ -169,7 +173,14 @@ export function MemberCreateModal({
 
               <label className="bo-field bo-field--wide">
                 <span className="bo-label">Rol</span>
-                <Select value={roleSlug} onChange={setRoleSlug} options={roleOptions} ariaLabel="Seleccionar rol" disabled={busy} />
+                <Select
+                  value={roleSlug}
+                  onChange={setRoleSlug}
+                  options={roleOptions}
+                  ariaLabel="Seleccionar rol"
+                  disabled={busy}
+                  listMaxHeightPx={200}
+                />
               </label>
 
               {!hasContact ? (

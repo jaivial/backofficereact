@@ -10,6 +10,7 @@ import { DropdownMenu } from "../inputs/DropdownMenu";
 import { Select } from "../inputs/Select";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { useToasts } from "../feedback/useToasts";
+import { Breadcrumbs, type BreadcrumbItem } from "../nav/Breadcrumbs";
 
 function isBOSection(value: string): value is BOSection {
   return value === "reservas" || value === "menus" || value === "ajustes" || value === "miembros" || value === "fichaje" || value === "horarios";
@@ -23,7 +24,13 @@ function formatElapsed(totalSeconds: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export function Topbar({ title }: { title: string }) {
+export function Topbar({
+  title,
+  breadcrumbs,
+}: {
+  title: string;
+  breadcrumbs?: BreadcrumbItem[];
+}) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const [session, setSession] = useAtom(sessionAtom);
@@ -126,7 +133,10 @@ export function Topbar({ title }: { title: string }) {
 
   return (
     <header className="bo-topbar" aria-label="Topbar">
-      <div className="bo-title">{title}</div>
+      <div className="bo-topbarHeading">
+        <div className="bo-title">{title}</div>
+        {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}
+      </div>
       <div className="bo-actions">
         {session?.restaurants?.length ? (
           <Select

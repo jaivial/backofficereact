@@ -4,29 +4,16 @@ import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { sessionAtom } from "../../state/atoms";
+import { buildAppNavigationMeta } from "../../ui/nav/Breadcrumbs";
 import { Sidebar } from "../../ui/shell/Sidebar";
 import { Topbar } from "../../ui/shell/Topbar";
-
-function titleForPath(pathname: string): string {
-  if (pathname.startsWith("/app/reservas")) return "Reservas";
-  if (pathname.startsWith("/app/menus")) return "Menus";
-  if (pathname.startsWith("/app/config")) return "Configuracion";
-  if (pathname.startsWith("/app/comsit")) return "Configuracion";
-  if (pathname.startsWith("/app/settings")) return "Ajustes";
-  if (pathname.startsWith("/app/miembros")) return "Miembros";
-  if (pathname.startsWith("/app/horarios")) return "Horarios";
-  if (pathname.startsWith("/app/fichaje")) return "Fichaje";
-  if (pathname.startsWith("/app/reportes")) return "Reportes";
-  if (pathname.startsWith("/app/estado-cuenta")) return "Estado de Cuenta";
-  return "Backoffice";
-}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pageContext = usePageContext();
   const session = useAtomValue(sessionAtom);
   const reduceMotion = useReducedMotion();
   const pathname = pageContext.urlPathname ?? "/";
-  const title = useMemo(() => titleForPath(pathname), [pathname]);
+  const navigationMeta = useMemo(() => buildAppNavigationMeta(pathname), [pathname]);
   const prevRestaurant = useRef<number | null>(null);
 
   // `session` is guaranteed by server middleware, but keep render stable.
@@ -54,7 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         roleImportance={session.user.roleImportance}
       />
       <main className="bo-main">
-        <Topbar title={title} />
+        <Topbar title={navigationMeta.title} breadcrumbs={navigationMeta.breadcrumbs} />
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

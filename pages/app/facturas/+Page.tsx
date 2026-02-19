@@ -178,12 +178,14 @@ export default function Page() {
   const handleCreateNew = useCallback(() => {
     setEditingInvoice(null);
     setIsCreatingNew(true);
+    setActiveTab("añadir");
   }, []);
 
   // Handle edit existing invoice
   const handleEditInvoice = useCallback((invoice: Invoice) => {
     setEditingInvoice(invoice);
     setIsCreatingNew(true);
+    setActiveTab("añadir");
   }, []);
 
   // Handle cancel edit
@@ -322,6 +324,7 @@ export default function Page() {
   const handleTabChange = useCallback((id: string) => {
     if (id === "añadir") {
       handleCreateNew();
+      return;
     }
     setActiveTab(id);
   }, [handleCreateNew]);
@@ -333,77 +336,86 @@ export default function Page() {
         activeId={activeTab}
         onChange={handleTabChange}
         aria-label="Facturas"
+        className="bo-tabs--reservas bo-tabs--facturas"
       />
 
       <SimpleTabsContent id="resumen" activeId={activeTab}>
-        <InvoiceFilters
-          searchText={searchText}
-          statusFilter={statusFilter}
-          dateType={dateType}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          isReservation={isReservation}
-          sortBy={sortBy}
-          hasFilters={hasFilters}
-          summaryText={summaryText}
-          statusOptions={INVOICE_STATUS_OPTIONS}
-          sortOptions={INVOICE_SORT_OPTIONS}
-          onSearchChange={handleSearchChange}
-          onStatusFilterChange={handleStatusFilterChange}
-          onDateTypeChange={handleDateTypeChange}
-          onDateFromChange={handleDateFromChange}
-          onDateToChange={handleDateToChange}
-          onIsReservationChange={handleIsReservationChange}
-          onSortByChange={handleSortByChange}
-          onResetFilters={resetFilters}
-          onApplyFilters={fetchInvoices}
-        />
+        <div className="bo-facturasSummary">
+          <InvoiceFilters
+            searchText={searchText}
+            statusFilter={statusFilter}
+            dateType={dateType}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            isReservation={isReservation}
+            sortBy={sortBy}
+            hasFilters={hasFilters}
+            summaryText={summaryText}
+            statusOptions={INVOICE_STATUS_OPTIONS}
+            sortOptions={INVOICE_SORT_OPTIONS}
+            onSearchChange={handleSearchChange}
+            onStatusFilterChange={handleStatusFilterChange}
+            onDateTypeChange={handleDateTypeChange}
+            onDateFromChange={handleDateFromChange}
+            onDateToChange={handleDateToChange}
+            onIsReservationChange={handleIsReservationChange}
+            onSortByChange={handleSortByChange}
+            onResetFilters={resetFilters}
+            onApplyFilters={fetchInvoices}
+          />
 
-        <InvoiceTable
-          invoices={filteredInvoices}
-          loading={loading}
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          sortField={null}
-          sortDirection="desc"
-          onSort={() => {}}
-          hasFilters={hasFilters}
-          onCreateNew={handleCreateNew}
-          onEdit={handleEditInvoice}
-          onDuplicate={() => {}}
-          onSplit={() => {}}
-          onDelete={() => {}}
-          onDownloadPdf={() => {}}
-          onSendEmail={handleSendEmail}
-          onSendWhatsApp={handleSendWhatsApp}
-          onPageChange={handlePageChange}
-          onStatusChange={() => {}}
-          onBulkStatusChange={() => {}}
-          onBulkDelete={() => {}}
-          onBulkPrint={() => {}}
-          onBulkMerge={() => {}}
-          onBulkSendEmail={handleBulkSendEmail}
-          onPrintAllVisible={() => {}}
-          onPreview={() => {}}
-          onViewCustomerHistory={() => {}}
-          onShowHistory={() => {}}
-          onViewNotes={() => {}}
-          onRegisterPayment={() => {}}
-          onSendReminder={() => {}}
-          onShowReminderHistory={() => {}}
-          onManageTemplates={() => {}}
-        />
+          <InvoiceTable
+            invoices={filteredInvoices}
+            loading={loading}
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            sortField={null}
+            sortDirection="desc"
+            onSort={() => {}}
+            hasFilters={hasFilters}
+            onCreateNew={handleCreateNew}
+            onEdit={handleEditInvoice}
+            onDuplicate={() => {}}
+            onSplit={() => {}}
+            onDelete={() => {}}
+            onDownloadPdf={() => {}}
+            onSendEmail={handleSendEmail}
+            onSendWhatsApp={handleSendWhatsApp}
+            onPageChange={handlePageChange}
+            onStatusChange={() => {}}
+            onBulkStatusChange={() => {}}
+            onBulkDelete={() => {}}
+            onBulkPrint={() => {}}
+            onBulkMerge={() => {}}
+            onBulkSendEmail={handleBulkSendEmail}
+            onPrintAllVisible={() => {}}
+            onPreview={() => {}}
+            onViewCustomerHistory={() => {}}
+            onShowHistory={() => {}}
+            onViewNotes={() => {}}
+            onRegisterPayment={() => {}}
+            onSendReminder={() => {}}
+            onShowReminderHistory={() => {}}
+            onManageTemplates={() => {}}
+          />
+        </div>
       </SimpleTabsContent>
 
       <SimpleTabsContent id="añadir" activeId={activeTab}>
-        <InvoiceForm
-          invoice={editingInvoice}
-          onSave={handleSaveInvoice}
-          onCancel={handleCancelEdit}
-          searchReservations={searchReservations}
-          currentUserId={currentUserId}
-        />
+        <div className="bo-container bo-facturasFormContainer">
+          <div className="bo-panel bo-facturasFormPanel">
+            <div className="bo-panelBody bo-facturasFormPanelBody">
+              <InvoiceForm
+                invoice={editingInvoice}
+                onSave={handleSaveInvoice}
+                onCancel={handleCancelEdit}
+                searchReservations={searchReservations}
+                currentUserId={currentUserId}
+              />
+            </div>
+          </div>
+        </div>
       </SimpleTabsContent>
 
       {/* Send Email Modal */}

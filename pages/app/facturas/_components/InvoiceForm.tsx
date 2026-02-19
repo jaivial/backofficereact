@@ -854,53 +854,57 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         </div>
       )}
       <div className="bo-invoiceFormHeader">
-        <h2 className="bo-invoiceFormTitle">{invoice ? "Editar Factura" : "Nueva Factura"}</h2>
+        <div className="bo-invoiceFormHeaderMain">
+          <h2 className="bo-invoiceFormTitle">{invoice ? "Editar Factura" : "Nueva Factura"}</h2>
 
-        {/* Auto-save status indicator - only show for existing invoices */}
-        {invoice && invoice.id && (
-          <div className="bo-invoiceFormAutoSave">
-            {autoSaveStatus === "saving" && (
-              <span className="bo-invoiceFormAutoSave--saving">
-                <Loader2 size={14} className="bo-invoiceFormAutoSaveIcon bo-invoiceFormAutoSaveIcon--spinning" />
-                Guardando...
-              </span>
-            )}
-            {autoSaveStatus === "saved" && (
-              <span className="bo-invoiceFormAutoSave--saved">
-                <Check size={14} className="bo-invoiceFormAutoSaveIcon" />
-                Guardado
-              </span>
-            )}
-            {autoSaveStatus === "error" && (
-              <span className="bo-invoiceFormAutoSave--error">
-                <AlertCircle size={14} className="bo-invoiceFormAutoSaveIcon" />
-                Error al guardar
-              </span>
-            )}
-            {autoSaveStatus === "idle" && isDirty && (
-              <span className="bo-invoiceFormAutoSave--pending">
-                Pendiente de guardar
-              </span>
-            )}
-          </div>
-        )}
+          {/* Auto-save status indicator - only show for existing invoices */}
+          {invoice && invoice.id && (
+            <div className="bo-invoiceFormAutoSave">
+              {autoSaveStatus === "saving" && (
+                <span className="bo-invoiceFormAutoSave--saving">
+                  <Loader2 size={14} className="bo-invoiceFormAutoSaveIcon bo-invoiceFormAutoSaveIcon--spinning" />
+                  Guardando...
+                </span>
+              )}
+              {autoSaveStatus === "saved" && (
+                <span className="bo-invoiceFormAutoSave--saved">
+                  <Check size={14} className="bo-invoiceFormAutoSaveIcon" />
+                  Guardado
+                </span>
+              )}
+              {autoSaveStatus === "error" && (
+                <span className="bo-invoiceFormAutoSave--error">
+                  <AlertCircle size={14} className="bo-invoiceFormAutoSaveIcon" />
+                  Error al guardar
+                </span>
+              )}
+              {autoSaveStatus === "idle" && isDirty && (
+                <span className="bo-invoiceFormAutoSave--pending">
+                  Pendiente de guardar
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
-        <button
-          type="button"
-          className="bo-btn bo-btn--ghost bo-btn--sm"
-          onClick={() => setShowReservationModal(true)}
-        >
-          <Search size={16} />
-          Rellenar desde reserva
-        </button>
-        <button
-          type="button"
-          className="bo-btn bo-btn--ghost bo-btn--sm"
-          onClick={() => setShowTemplateModal(true)}
-        >
-          <FileText size={16} />
-          Crear desde plantilla
-        </button>
+        <div className="bo-invoiceFormHeaderActions">
+          <button
+            type="button"
+            className="bo-btn bo-btn--ghost bo-btn--sm"
+            onClick={() => setShowReservationModal(true)}
+          >
+            <Search size={16} />
+            Rellenar desde reserva
+          </button>
+          <button
+            type="button"
+            className="bo-btn bo-btn--ghost bo-btn--sm"
+            onClick={() => setShowTemplateModal(true)}
+          >
+            <FileText size={16} />
+            Crear desde plantilla
+          </button>
+        </div>
       </div>
 
       <div className="bo-invoiceFormGrid">
