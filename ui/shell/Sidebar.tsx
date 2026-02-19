@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Clock3, Store } from "lucide-react";
+import { Ellipsis, Settings, Clock3, Store } from "lucide-react";
 
-import type { SidebarItemKey } from "../../lib/rbac";
 import { sidebarItemsForRole, canManageHorarios } from "../../lib/rbac";
 import { NavLink } from "../nav/NavLink";
+import { iconForSidebarItemKey } from "../nav/sectionIcons";
 
 type SidebarNavEntry = {
   id: string;
@@ -14,31 +14,6 @@ type SidebarNavEntry = {
   active: boolean;
   className?: string;
 };
-
-function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
-  switch (key) {
-    case "reservas":
-      return <CalendarDays size={size} strokeWidth={strokeWidth} />;
-    case "menus":
-      return <UtensilsCrossed size={size} strokeWidth={strokeWidth} />;
-    case "miembros":
-      return <ShieldUser size={size} strokeWidth={strokeWidth} />;
-    case "ajustes":
-      return <Link size={size} strokeWidth={strokeWidth} />;
-    case "fichaje":
-      return <ClipboardCheck size={size} strokeWidth={strokeWidth} />;
-    case "horarios":
-      return <CalendarClock size={size} strokeWidth={strokeWidth} />;
-    case "facturas":
-      return <FileText size={size} strokeWidth={strokeWidth} />;
-    case "reportes":
-      return <BarChart3 size={size} strokeWidth={strokeWidth} />;
-    case "estado_cuenta":
-      return <Receipt size={size} strokeWidth={strokeWidth} />;
-    default:
-      return <Settings size={size} strokeWidth={strokeWidth} />;
-  }
-}
 
 export function Sidebar({
   pathname,
@@ -70,7 +45,7 @@ export function Sidebar({
         id: item.key,
         href: item.href,
         label: item.label,
-        icon: iconForItem(item.key, iconProps.size, iconProps.strokeWidth),
+        icon: iconForSidebarItemKey(item.key, iconProps),
         active,
       };
     });

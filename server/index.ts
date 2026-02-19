@@ -596,7 +596,7 @@ async function start() {
           res.redirect(302, "/change-password");
           return;
         }
-        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
+        res.redirect(302, "/app");
         return;
       }
       if (req.path === "/") {
@@ -608,16 +608,11 @@ async function start() {
           res.redirect(302, "/change-password");
           return;
         }
-        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
+        res.redirect(302, "/app");
         return;
       }
       if (req.path === "/change-password" && session && !session.user.mustChangePassword) {
-        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
-        return;
-      }
-
-      if (session && req.path === "/app") {
-        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
+        res.redirect(302, "/app");
         return;
       }
 

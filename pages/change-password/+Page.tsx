@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { createClient } from "../../api/client";
-import { firstAllowedPath } from "../../lib/rbac";
 import { sessionAtom } from "../../state/atoms";
 import { useErrorToast } from "../../ui/feedback/useErrorToast";
 
@@ -49,7 +48,7 @@ export default function Page() {
               }
             : session,
         );
-        window.location.href = firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance);
+        window.location.href = "/app";
       } catch (err) {
         setError(err instanceof Error ? err.message : "No se pudo actualizar");
       } finally {

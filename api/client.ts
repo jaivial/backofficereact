@@ -38,6 +38,7 @@ import type {
   MenuDish,
   MenuTable,
   MenuVisibilityItem,
+  FoodCategory,
   FoodItem,
   Postre,
   RoleCatalogItem,
@@ -106,6 +107,305 @@ export function createClient(opts: ClientOpts) {
     }
     return data as T;
   }
+
+  async function jsonWithFallback<T>(paths: string[], init: RequestInit): Promise<T> {
+    let lastError: Error | null = null;
+    for (const path of paths) {
+      try {
+        return await json<T>(path, init);
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error("Unknown error");
+      }
+    }
+    throw (lastError ?? new Error("No endpoint available"));
+  }
+
+  function withQuery(path: string, params?: Record<string, string | number | boolean | null | undefined>): string {
+    if (!params) return path;
+    const q = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value === null || value === undefined || value === "") continue;
+      q.set(key, String(value));
+    }
+    const qs = q.toString();
+    return qs ? `${path}?${qs}` : path;
+  }
+
+  type ComidaListParams = {
+    tipo?: string;
+    active?: number;
+    search?: string;
+    page?: number;
+    limit?: number;
+    categoria?: string;
+    category?: string;
+  };
+
+  const comidaApi = {
+    postres: {
+      async list(params?: { active?: number; search?: string; page?: number; limit?: number }): Promise<APISuccess<{ postres: Postre[] }> | APIError> {
+        return json(withQuery("/api/admin/postres", params), { method: "GET" });
+      },
+      async create(input: { descripcion: string; alergenos: string[]; active?: boolean; precio?: number }): Promise<APISuccess<{ postre: Postre }> | APIError> {
+        return json("/api/admin/postres", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async patch(id: number, patch: Partial<Pick<Postre, "descripcion" | "active" | "precio">> & { alergenos?: string[] }): Promise<APISuccess | APIError> {
+        return json(`/api/admin/postres/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+      },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/postres/${id}`, { method: "DELETE" });
+      },
+      async toggle(id: number, active: boolean): Promise<APISuccess | APIError> {
+        return json(`/api/admin/postres/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ active }),
+        });
+      },
+    },
+    vinos: {
+      async list(params?: ComidaListParams): Promise<APISuccess<{ vinos: Vino[]; total?: number; page?: number; limit?: number }> | APIError> {
+        return json(withQuery("/api/admin/vinos", params), { method: "GET" });
+      },
+      async create(input: {
+        tipo: string;
+        nombre: string;
+        precio: number;
+        descripcion?: string;
+        bodega: string;
+        denominacion_origen?: string;
+        graduacion?: number;
+        anyo?: string;
+        active?: boolean;
+        imageBase64?: string;
+      }): Promise<APISuccess<{ num: number }> | APIError> {
+        return json("/api/admin/vinos", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async patch(
+        id: number,
+        patch: Partial<{
+          tipo: string;
+          nombre: string;
+          precio: number;
+          descripcion: string;
+          bodega: string;
+          denominacion_origen: string;
+          graduacion: number;
+          anyo: string;
+          active: boolean;
+          imageBase64: string;
+        }>,
+      ): Promise<APISuccess | APIError> {
+        return json(`/api/admin/vinos/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+      },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/vinos/${id}`, { method: "DELETE" });
+      },
+      async toggle(id: number, active: boolean): Promise<APISuccess | APIError> {
+        return json(`/api/admin/vinos/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ active }),
+        });
+      },
+    },
+    cafes: {
+      async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
+        return json(withQuery("/api/admin/cafes", params), { method: "GET" });
+      },
+      async create(input: {
+        tipo?: string;
+        nombre: string;
+        precio: number;
+        descripcion?: string;
+        titulo?: string;
+        suplemento?: number;
+        alergenos?: string[];
+        active?: boolean;
+        imageBase64?: string;
+        categoria?: string;
+        category?: string;
+      }): Promise<APISuccess<{ num: number }> | APIError> {
+        return json("/api/admin/cafes", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async patch(
+        id: number,
+        patch: Partial<{
+          tipo: string;
+          nombre: string;
+          precio: number;
+          descripcion: string;
+          titulo: string;
+          suplemento: number;
+          alergenos: string[];
+          active: boolean;
+          imageBase64: string;
+          categoria: string;
+          category: string;
+        }>,
+      ): Promise<APISuccess | APIError> {
+        return json(`/api/admin/cafes/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+      },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/cafes/${id}`, { method: "DELETE" });
+      },
+      async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
+        return json(`/api/admin/cafes/${id}/toggle`, { method: "POST" });
+      },
+    },
+    bebidas: {
+      async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
+        return json(withQuery("/api/admin/bebidas", params), { method: "GET" });
+      },
+      async create(input: {
+        tipo?: string;
+        nombre: string;
+        precio: number;
+        descripcion?: string;
+        titulo?: string;
+        suplemento?: number;
+        alergenos?: string[];
+        active?: boolean;
+        imageBase64?: string;
+        categoria?: string;
+        category?: string;
+      }): Promise<APISuccess<{ num: number }> | APIError> {
+        return json("/api/admin/bebidas", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async patch(
+        id: number,
+        patch: Partial<{
+          tipo: string;
+          nombre: string;
+          precio: number;
+          descripcion: string;
+          titulo: string;
+          suplemento: number;
+          alergenos: string[];
+          active: boolean;
+          imageBase64: string;
+          categoria: string;
+          category: string;
+        }>,
+      ): Promise<APISuccess | APIError> {
+        return json(`/api/admin/bebidas/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+      },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/bebidas/${id}`, { method: "DELETE" });
+      },
+      async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
+        return json(`/api/admin/bebidas/${id}/toggle`, { method: "POST" });
+      },
+    },
+    platos: {
+      async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
+        return json(withQuery("/api/admin/platos", params), { method: "GET" });
+      },
+      async create(input: {
+        tipo?: string;
+        nombre: string;
+        precio: number;
+        descripcion?: string;
+        titulo?: string;
+        suplemento?: number;
+        alergenos?: string[];
+        active?: boolean;
+        imageBase64?: string;
+        categoria?: string;
+        category?: string;
+        category_id?: number | null;
+      }): Promise<APISuccess<{ num: number }> | APIError> {
+        return json("/api/admin/platos", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async patch(
+        id: number,
+        patch: Partial<{
+          tipo: string;
+          nombre: string;
+          precio: number;
+          descripcion: string;
+          titulo: string;
+          suplemento: number;
+          alergenos: string[];
+          active: boolean;
+          imageBase64: string;
+          categoria: string;
+          category: string;
+          category_id: number | null;
+        }>,
+      ): Promise<APISuccess | APIError> {
+        return json(`/api/admin/platos/${id}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+      },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/platos/${id}`, { method: "DELETE" });
+      },
+      async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
+        return json(`/api/admin/platos/${id}/toggle`, { method: "POST" });
+      },
+      categories: {
+        async list(): Promise<APISuccess<{ categories: FoodCategory[] }> | APIError> {
+          return jsonWithFallback(
+            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            { method: "GET" },
+          );
+        },
+        async create(input: { name: string; slug?: string }): Promise<APISuccess<{ category: FoodCategory }> | APIError> {
+          return jsonWithFallback(
+            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                name: input.name,
+                label: input.name,
+                slug: input.slug,
+              }),
+            },
+          );
+        },
+      },
+    },
+  };
 
   return {
     auth: {
@@ -545,6 +845,7 @@ export function createClient(opts: ClientOpts) {
         return json(`/api/admin/horarios/my-schedule?${q.toString()}`, { method: "GET" });
       },
     },
+    comida: comidaApi,
     menus: {
       visibility: {
         async list(): Promise<APISuccess<{ menus: MenuVisibilityItem[] }> | APIError> {
@@ -626,238 +927,11 @@ export function createClient(opts: ClientOpts) {
           return json(`/api/admin/menus/finde/dishes/${id}`, { method: "DELETE" });
         },
       },
-      postres: {
-        async list(): Promise<APISuccess<{ postres: Postre[] }> | APIError> {
-          return json("/api/admin/postres", { method: "GET" });
-        },
-        async create(input: { descripcion: string; alergenos: string[]; active?: boolean }): Promise<APISuccess<{ postre: Postre }> | APIError> {
-          return json("/api/admin/postres", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(input),
-          });
-        },
-        async patch(id: number, patch: Partial<Pick<Postre, "descripcion" | "active">> & { alergenos?: string[] }): Promise<APISuccess | APIError> {
-          return json(`/api/admin/postres/${id}`, {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(patch),
-          });
-        },
-        async delete(id: number): Promise<APISuccess | APIError> {
-          return json(`/api/admin/postres/${id}`, { method: "DELETE" });
-        },
-      },
-      vinos: {
-        async list(params?: { tipo?: string; active?: number }): Promise<APISuccess<{ vinos: Vino[] }> | APIError> {
-          const q = new URLSearchParams();
-          if (params?.tipo) q.set("tipo", params.tipo);
-          if (params?.active !== undefined) q.set("active", String(params.active));
-          const qs = q.toString();
-          return json(`/api/admin/vinos${qs ? `?${qs}` : ""}`, { method: "GET" });
-        },
-        async create(input: {
-          tipo: string;
-          nombre: string;
-          precio: number;
-          descripcion?: string;
-          bodega: string;
-          denominacion_origen?: string;
-          graduacion?: number;
-          anyo?: string;
-          active?: boolean;
-          imageBase64?: string;
-        }): Promise<APISuccess<{ num: number }> | APIError> {
-          return json("/api/admin/vinos", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(input),
-          });
-        },
-        async patch(
-          id: number,
-          patch: Partial<{
-            tipo: string;
-            nombre: string;
-            precio: number;
-            descripcion: string;
-            bodega: string;
-            denominacion_origen: string;
-            graduacion: number;
-            anyo: string;
-            active: boolean;
-            imageBase64: string;
-          }>,
-        ): Promise<APISuccess | APIError> {
-          return json(`/api/admin/vinos/${id}`, {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(patch),
-          });
-        },
-        async delete(id: number): Promise<APISuccess | APIError> {
-          return json(`/api/admin/vinos/${id}`, { method: "DELETE" });
-        },
-      },
-      cafes: {
-        async list(params?: { tipo?: string; active?: number; search?: string }): Promise<APISuccess<{ items: FoodItem[] }> | APIError> {
-          const q = new URLSearchParams();
-          if (params?.tipo) q.set("tipo", params.tipo);
-          if (params?.active !== undefined) q.set("active", String(params.active));
-          if (params?.search) q.set("search", params.search);
-          const qs = q.toString();
-          return json(`/api/admin/cafes${qs ? `?${qs}` : ""}`, { method: "GET" });
-        },
-        async create(input: {
-          tipo?: string;
-          nombre: string;
-          precio: number;
-          descripcion?: string;
-          titulo?: string;
-          suplemento?: number;
-          alergenos?: string[];
-          active?: boolean;
-          imageBase64?: string;
-        }): Promise<APISuccess<{ num: number }> | APIError> {
-          return json("/api/admin/cafes", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(input),
-          });
-        },
-        async patch(
-          id: number,
-          patch: Partial<{
-            tipo: string;
-            nombre: string;
-            precio: number;
-            descripcion: string;
-            titulo: string;
-            suplemento: number;
-            alergenos: string[];
-            active: boolean;
-            imageBase64: string;
-          }>,
-        ): Promise<APISuccess | APIError> {
-          return json(`/api/admin/cafes/${id}`, {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(patch),
-          });
-        },
-        async delete(id: number): Promise<APISuccess | APIError> {
-          return json(`/api/admin/cafes/${id}`, { method: "DELETE" });
-        },
-        async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
-          return json(`/api/admin/cafes/${id}/toggle`, { method: "POST" });
-        },
-      },
-      bebidas: {
-        async list(params?: { tipo?: string; active?: number; search?: string }): Promise<APISuccess<{ items: FoodItem[] }> | APIError> {
-          const q = new URLSearchParams();
-          if (params?.tipo) q.set("tipo", params.tipo);
-          if (params?.active !== undefined) q.set("active", String(params.active));
-          if (params?.search) q.set("search", params.search);
-          const qs = q.toString();
-          return json(`/api/admin/bebidas${qs ? `?${qs}` : ""}`, { method: "GET" });
-        },
-        async create(input: {
-          tipo?: string;
-          nombre: string;
-          precio: number;
-          descripcion?: string;
-          titulo?: string;
-          suplemento?: number;
-          alergenos?: string[];
-          active?: boolean;
-          imageBase64?: string;
-        }): Promise<APISuccess<{ num: number }> | APIError> {
-          return json("/api/admin/bebidas", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(input),
-          });
-        },
-        async patch(
-          id: number,
-          patch: Partial<{
-            tipo: string;
-            nombre: string;
-            precio: number;
-            descripcion: string;
-            titulo: string;
-            suplemento: number;
-            alergenos: string[];
-            active: boolean;
-            imageBase64: string;
-          }>,
-        ): Promise<APISuccess | APIError> {
-          return json(`/api/admin/bebidas/${id}`, {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(patch),
-          });
-        },
-        async delete(id: number): Promise<APISuccess | APIError> {
-          return json(`/api/admin/bebidas/${id}`, { method: "DELETE" });
-        },
-        async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
-          return json(`/api/admin/bebidas/${id}/toggle`, { method: "POST" });
-        },
-      },
-      platos: {
-        async list(params?: { tipo?: string; active?: number; search?: string }): Promise<APISuccess<{ items: FoodItem[] }> | APIError> {
-          const q = new URLSearchParams();
-          if (params?.tipo) q.set("tipo", params.tipo);
-          if (params?.active !== undefined) q.set("active", String(params.active));
-          if (params?.search) q.set("search", params.search);
-          const qs = q.toString();
-          return json(`/api/admin/platos${qs ? `?${qs}` : ""}`, { method: "GET" });
-        },
-        async create(input: {
-          tipo?: string;
-          nombre: string;
-          precio: number;
-          descripcion?: string;
-          titulo?: string;
-          suplemento?: number;
-          alergenos?: string[];
-          active?: boolean;
-          imageBase64?: string;
-        }): Promise<APISuccess<{ num: number }> | APIError> {
-          return json("/api/admin/platos", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(input),
-          });
-        },
-        async patch(
-          id: number,
-          patch: Partial<{
-            tipo: string;
-            nombre: string;
-            precio: number;
-            descripcion: string;
-            titulo: string;
-            suplemento: number;
-            alergenos: string[];
-            active: boolean;
-            imageBase64: string;
-          }>,
-        ): Promise<APISuccess | APIError> {
-          return json(`/api/admin/platos/${id}`, {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(patch),
-          });
-        },
-        async delete(id: number): Promise<APISuccess | APIError> {
-          return json(`/api/admin/platos/${id}`, { method: "DELETE" });
-        },
-        async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
-          return json(`/api/admin/platos/${id}/toggle`, { method: "POST" });
-        },
-      },
+      postres: comidaApi.postres,
+      vinos: comidaApi.vinos,
+      cafes: comidaApi.cafes,
+      bebidas: comidaApi.bebidas,
+      platos: comidaApi.platos,
       grupos: {
         async list(status?: string): Promise<APISuccess<{ menus: GroupMenuSummary[]; count: number }> | APIError> {
           const q = status ? `?status=${encodeURIComponent(status)}` : "";

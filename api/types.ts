@@ -105,6 +105,7 @@ export type Postre = {
   descripcion: string;
   alergenos: string[];
   active: boolean;
+  precio?: number;
 };
 
 export type Vino = {
@@ -134,6 +135,41 @@ export type FoodItem = {
   active: boolean;
   has_foto: boolean;
   foto_url?: string;
+  categoria?: string;
+  category_id?: number | null;
+  category_slug?: string;
+};
+
+export type ComidaTipo = "vinos" | "cafes" | "postres" | "platos" | "bebidas";
+
+export type FoodCategory = {
+  id: number;
+  name: string;
+  slug: string;
+  source: "base" | "custom";
+  active: boolean;
+};
+
+export type ComidaItem = {
+  num: number;
+  tipo: string;
+  nombre: string;
+  precio: number;
+  descripcion: string;
+  active: boolean;
+  has_foto: boolean;
+  foto_url?: string;
+  titulo?: string;
+  suplemento?: number;
+  alergenos?: string[];
+  bodega?: string;
+  denominacion_origen?: string;
+  graduacion?: number;
+  anyo?: string;
+  categoria?: string;
+  category_id?: number | null;
+  category_slug?: string;
+  source_type: ComidaTipo;
 };
 
 export type GroupMenuSummary = {
