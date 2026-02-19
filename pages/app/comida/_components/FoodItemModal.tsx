@@ -1,23 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, Upload, X } from "lucide-react";
+import { ImagePlus, Plus, Upload, X } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
 import type { FoodItem } from "../../../../api/types";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { compressImageToWebP, formatFileSize, isValidImageFile } from "../../../../lib/imageCompressor";
-
-type FoodType = "platos" | "bebidas" | "cafes";
+import { FOOD_TYPE_TIPO_OPTIONS, type FoodType } from "./foodTypes";
 
 interface FoodItemModalProps {
   open: boolean;
   item: FoodItem | null;
-  foodType: FoodType;
+  foodType: Exclude<FoodType, "vinos">;
+  categoryOptions?: Array<{ value: string; label: string }>;
+  onRequestCreateCategory?: () => void;
   onClose: () => void;
   onSave: (item: FoodItem) => void;
 }
 
-// Common allergen options
 const ALERGEN_OPTIONS = [
   { value: "gluten", label: "Gluten" },
   { value: "crustaceos", label: "Crustaceos" },
@@ -35,36 +35,14 @@ const ALERGEN_OPTIONS = [
   { value: "moluscos", label: "Moluscos" },
 ];
 
-// Type options based on food type
-const TIPO_OPTIONS: Record<FoodType, { value: string; label: string }[]> = {
-  platos: [
-    { value: "ENTRANTE", label: "Entrante" },
-    { value: "PRINCIPAL", label: "Principal" },
-    { value: "ARROZ", label: "Arroz" },
-    { value: "POSTRES", label: "Postres" },
-  ],
-  bebidas: [
-    { value: "REFRESCO", label: "Refresco" },
-    { value: "AGUA", label: "Agua" },
-    { value: "ZUMO", label: "Zumo" },
-    { value: "CERVEZA", label: "Cerveza" },
-    { value: "COPA", label: "Copa" },
-  ],
-  cafes: [
-    { value: "CAFE", label: "Cafe" },
-    { value: "INFUSION", label: "Infusion" },
-    { value: "CHOCOLATE", label: "Chocolate" },
-  ],
-};
-
-function formatEuro(price: number): string {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(price);
-}
+const TIPO_OPTIONS = FOOD_TYPE_TIPO_OPTIONS;
 
 export const FoodItemModal = React.memo(function FoodItemModal({
   open,
   item,
   foodType,
+  categoryOptions = [],
+  onRequestCreateCategory,
   onClose,
   onSave,
 }: FoodItemModalProps) {
@@ -74,44 +52,49 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-
-  // Form state
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState("");
   const [precio, setPrecio] = useState("");
   const [suplemento, setSuplemento] = useState("");
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [categoria, setCategoria] = useState("");
   const [alergenos, setAlergenos] = useState<string[]>([]);
   const [active, setActive] = useState(true);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Initialize form when item changes
+  const isPostre = foodType === "postres";
+  const supportsAlergenos = foodType === "platos" || foodType === "postres";
+  const supportsCategoria = foodType === "platos";
+  const supportsSuplemento = foodType === "platos";
+
   useEffect(() => {
     if (item) {
       setNombre(item.nombre || "");
       setTipo(item.tipo || TIPO_OPTIONS[foodType][0]?.value || "");
       setPrecio(item.precio?.toString() || "");
-      setSuplemento((item as FoodItem).suplemento?.toString() || "");
-      setTitulo((item as FoodItem).titulo || "");
-      setDescripcion(item.descripcion || "");
-      setAlergenos((item as FoodItem).alergenos || []);
+      setSuplemento(item.suplemento?.toString() || "");
+      setTitulo(item.titulo || "");
+      setDescripcion(item.descripcion || item.nombre || "");
+      setCategoria(item.category_id ? String(item.category_id) : (item.categoria || ""));
+      setAlergenos(item.alergenos || []);
       setActive(item.active ?? true);
       setImageBase64(null);
-      setImagePreview((item as FoodItem).foto_url || null);
-    } else {
-      setNombre("");
-      setTipo(TIPO_OPTIONS[foodType][0]?.value || "");
-      setPrecio("");
-      setSuplemento("");
-      setTitulo("");
-      setDescripcion("");
-      setAlergenos([]);
-      setActive(true);
-      setImageBase64(null);
-      setImagePreview(null);
+      setImagePreview(item.foto_url || null);
+      return;
     }
+    setNombre("");
+    setTipo(TIPO_OPTIONS[foodType][0]?.value || "");
+    setPrecio("");
+    setSuplemento("");
+    setTitulo("");
+    setDescripcion("");
+    setCategoria("");
+    setAlergenos([]);
+    setActive(true);
+    setImageBase64(null);
+    setImagePreview(null);
   }, [item, foodType, open]);
 
   const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,8 +111,9 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       const compressed = await compressImageToWebP(file, 100);
       setImageBase64(compressed);
       setImagePreview(compressed);
-      pushToast({ kind: "success", title: "Imagen comprimida", message: `Tamano: ${formatFileSize(Math.ceil((compressed.split(",")[1].length * 3) / 4))}` });
-    } catch (err) {
+      const bytes = Math.ceil((compressed.split(",")[1]?.length || 0) * 0.75);
+      pushToast({ kind: "success", title: "Imagen comprimida", message: `Tamano: ${formatFileSize(bytes)}` });
+    } catch {
       pushToast({ kind: "error", title: "Error", message: "No se pudo procesar la imagen" });
     } finally {
       setUploading(false);
@@ -142,92 +126,151 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   }, []);
 
   const handleAlergenoToggle = useCallback((value: string) => {
-    setAlergenos((prev) => (prev.includes(value) ? prev.filter((a) => a !== value) : []));
+    setAlergenos((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+  const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!nombre.trim()) {
-      pushToast({ kind: "error", title: "Error", message: "El nombre es requerido" });
+    const nombreOrDesc = isPostre ? (descripcion.trim() || nombre.trim()) : nombre.trim();
+    if (!nombreOrDesc) {
+      pushToast({ kind: "error", title: "Error", message: isPostre ? "La descripcion es requerida" : "El nombre es requerido" });
       return;
     }
 
-    const precioNum = parseFloat(precio);
-    if (isNaN(precioNum) || precioNum < 0) {
+    const precioNum = isPostre ? 0 : Number(precio);
+    if (!isPostre && (!Number.isFinite(precioNum) || precioNum < 0)) {
       pushToast({ kind: "error", title: "Error", message: "Precio invalido" });
       return;
     }
-
-    const suplementoNum = parseFloat(suplemento) || 0;
+    const suplementoNum = supportsSuplemento ? Number(suplemento || 0) : 0;
 
     setSaving(true);
     try {
-      const payload = {
-        nombre: nombre.trim(),
+      if (isPostre) {
+        const payload = {
+          descripcion: nombreOrDesc,
+          alergenos: alergenos,
+          active,
+          precio: Number.isFinite(Number(precio)) ? Number(precio) : undefined,
+        };
+        const res = item
+          ? await api.comida.postres.patch(item.num, payload)
+          : await api.comida.postres.create(payload);
+
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
+          return;
+        }
+
+        const saved = ((res as any).item as FoodItem | undefined) ?? {
+          num: item?.num || Number((res as any).num || 0),
+          tipo: "POSTRE",
+          nombre: nombreOrDesc,
+          precio: 0,
+          descripcion: nombreOrDesc,
+          titulo: "",
+          suplemento: 0,
+          alergenos: alergenos,
+          active,
+          has_foto: false,
+        };
+        pushToast({ kind: "success", title: item ? "Actualizado" : "Creado" });
+        onSave(saved);
+        return;
+      }
+
+      const payload: Record<string, any> = {
+        nombre: nombreOrDesc,
         tipo: tipo || undefined,
         precio: precioNum,
-        suplemento: suplementoNum,
-        titulo: titulo.trim() || undefined,
         descripcion: descripcion.trim() || undefined,
+        titulo: titulo.trim() || undefined,
+        suplemento: supportsSuplemento ? suplementoNum : undefined,
         alergenos: alergenos.length > 0 ? alergenos : undefined,
         active,
         imageBase64: imageBase64 || undefined,
       };
 
-      let res;
-      if (foodType === "cafes") {
-        if (item) {
-          res = await api.menus.cafes.patch(item.num, payload);
-        } else {
-          res = await api.menus.cafes.create(payload);
-        }
-      } else if (foodType === "bebidas") {
-        if (item) {
-          res = await api.menus.bebidas.patch(item.num, payload);
-        } else {
-          res = await api.menus.bebidas.create(payload);
-        }
-      } else {
-        if (item) {
-          res = await api.menus.platos.patch(item.num, payload);
-        } else {
-          res = await api.menus.platos.create(payload);
+      if (supportsCategoria) {
+        const catValue = categoria.trim();
+        if (catValue !== "") {
+          const maybeId = Number(catValue);
+          if (Number.isFinite(maybeId) && maybeId > 0) payload.category_id = maybeId;
+          else payload.categoria = catValue;
         }
       }
 
-      if (res.success) {
-        pushToast({ kind: "success", title: item ? "Actualizado" : "Creado" });
-        onSave({
-          num: item?.num || (res as { num: number }).num,
-          nombre: nombre.trim(),
-          tipo: tipo,
-          precio: precioNum,
-          descripcion: descripcion.trim(),
-          titulo: titulo.trim(),
-          suplemento: suplementoNum,
-          alergenos,
-          active,
-          has_foto: !!imageBase64 || !!imagePreview,
-          foto_url: imagePreview || undefined,
-        });
-      } else {
+      const targetApi = foodType === "platos"
+        ? api.comida.platos
+        : foodType === "bebidas"
+          ? api.comida.bebidas
+          : api.comida.cafes;
+
+      const res = item
+        ? await targetApi.patch(item.num, payload as any)
+        : await targetApi.create(payload as any);
+
+      if (!res.success) {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
+        return;
       }
+
+      const categoriaLabel = supportsCategoria
+        ? (categoryOptions.find((option) => option.value === categoria)?.label || categoria || undefined)
+        : undefined;
+      const saved = ((res as any).item as FoodItem | undefined) ?? {
+        num: item?.num || Number((res as any).num || 0),
+        nombre: nombreOrDesc,
+        tipo: tipo || "",
+        precio: precioNum,
+        descripcion: descripcion.trim(),
+        titulo: titulo.trim(),
+        suplemento: suplementoNum,
+        alergenos,
+        active,
+        has_foto: !!imageBase64 || !!imagePreview,
+        foto_url: imagePreview || undefined,
+        categoria: categoriaLabel,
+      };
+      pushToast({ kind: "success", title: item ? "Actualizado" : "Creado" });
+      onSave(saved);
     } catch {
       pushToast({ kind: "error", title: "Error", message: "Error de conexion" });
     } finally {
       setSaving(false);
     }
-  }, [nombre, tipo, precio, suplemento, titulo, descripcion, alergenos, active, imageBase64, imagePreview, item, foodType, api, onSave, pushToast]);
+  }, [
+    active,
+    alergenos,
+    api.comida.bebidas,
+    api.comida.cafes,
+    api.comida.platos,
+    api.comida.postres,
+    categoria,
+    categoryOptions,
+    descripcion,
+    foodType,
+    imageBase64,
+    imagePreview,
+    isPostre,
+    item,
+    nombre,
+    onSave,
+    precio,
+    pushToast,
+    suplemento,
+    supportsCategoria,
+    supportsSuplemento,
+    tipo,
+    titulo,
+  ]);
 
-  const title = item ? `Editar ${foodType.slice(0, -1)}` : `Nuevo ${foodType.slice(0, -1)}`;
+  const title = item ? "Editar elemento" : "Nuevo elemento";
 
   return (
     <Modal open={open} onClose={onClose} title={title} size="lg">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <div className="bo-foodModal-grid">
-          {/* Image upload */}
           <div className="bo-foodModal-imageSection">
             <div className="bo-foodModal-imagePreview">
               {imagePreview ? (
@@ -249,6 +292,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                 </div>
               )}
             </div>
+
             <input
               ref={fileInputRef}
               type="file"
@@ -277,48 +321,47 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             <p className="bo-foodModal-imageHint">Se comprimira a WebP (max 100KB)</p>
           </div>
 
-          {/* Form fields */}
           <div className="bo-foodModal-fields">
             <div className="bo-field">
               <label className="bo-label" htmlFor="nombre">
-                Nombre *
+                {isPostre ? "Descripcion *" : "Nombre *"}
               </label>
               <input
                 id="nombre"
                 type="text"
                 className="bo-input"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Nombre del elemento"
+                value={isPostre ? descripcion : nombre}
+                onChange={(e) => {
+                  if (isPostre) setDescripcion(e.target.value);
+                  else setNombre(e.target.value);
+                }}
+                placeholder={isPostre ? "Descripcion del postre" : "Nombre del elemento"}
                 required
               />
             </div>
 
-            <div className="bo-field">
-              <label className="bo-label" htmlFor="titulo">
-                Titulo (opcional)
-              </label>
-              <input
-                id="titulo"
-                type="text"
-                className="bo-input"
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                placeholder="Titulo alternativo para mostrar"
-              />
-            </div>
+            {!isPostre ? (
+              <div className="bo-field">
+                <label className="bo-label" htmlFor="titulo">
+                  Titulo (opcional)
+                </label>
+                <input
+                  id="titulo"
+                  type="text"
+                  className="bo-input"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  placeholder="Texto secundario para card"
+                />
+              </div>
+            ) : null}
 
             <div className="bo-fieldRow">
               <div className="bo-field">
                 <label className="bo-label" htmlFor="tipo">
                   Tipo
                 </label>
-                <select
-                  id="tipo"
-                  className="bo-select"
-                  value={tipo}
-                  onChange={(e) => setTipo(e.target.value)}
-                >
+                <select id="tipo" className="bo-select" value={tipo} onChange={(e) => setTipo(e.target.value)}>
                   {TIPO_OPTIONS[foodType].map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -327,56 +370,83 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                 </select>
               </div>
 
-              <div className="bo-field">
-                <label className="bo-label" htmlFor="precio">
-                  Precio *
-                </label>
-                <input
-                  id="precio"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="bo-input"
-                  value={precio}
-                  onChange={(e) => setPrecio(e.target.value)}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
+              {!isPostre ? (
+                <div className="bo-field">
+                  <label className="bo-label" htmlFor="precio">
+                    Precio *
+                  </label>
+                  <input
+                    id="precio"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="bo-input"
+                    value={precio}
+                    onChange={(e) => setPrecio(e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+              ) : null}
 
-              <div className="bo-field">
-                <label className="bo-label" htmlFor="suplemento">
-                  Suplemento
-                </label>
-                <input
-                  id="suplemento"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="bo-input"
-                  value={suplemento}
-                  onChange={(e) => setSuplemento(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
+              {supportsSuplemento ? (
+                <div className="bo-field">
+                  <label className="bo-label" htmlFor="suplemento">
+                    Suplemento
+                  </label>
+                  <input
+                    id="suplemento"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="bo-input"
+                    value={suplemento}
+                    onChange={(e) => setSuplemento(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+              ) : null}
             </div>
 
-            <div className="bo-field">
-              <label className="bo-label" htmlFor="descripcion">
-                Descripcion
-              </label>
-              <textarea
-                id="descripcion"
-                className="bo-textarea"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Descripcion del elemento..."
-                rows={3}
-              />
-            </div>
+            {supportsCategoria ? (
+              <div className="bo-field">
+                <div className="bo-foodModalCategoryHead">
+                  <label className="bo-label" htmlFor="categoria">
+                    Categoria
+                  </label>
+                  <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onRequestCreateCategory}>
+                    <Plus size={14} />
+                    Anadir categoria
+                  </button>
+                </div>
+                <select id="categoria" className="bo-select" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                  <option value="">Sin categoria</option>
+                  {categoryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
 
-            {/* Alergenos - only for dishes */}
-            {foodType === "platos" && (
+            {!isPostre ? (
+              <div className="bo-field">
+                <label className="bo-label" htmlFor="descripcion">
+                  Detalle
+                </label>
+                <textarea
+                  id="descripcion"
+                  className="bo-textarea"
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  placeholder="Descripcion del elemento..."
+                  rows={3}
+                />
+              </div>
+            ) : null}
+
+            {supportsAlergenos ? (
               <div className="bo-field">
                 <label className="bo-label">Alergenos</label>
                 <div className="bo-foodModal-alergenos">
@@ -392,22 +462,17 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             <div className="bo-field">
               <label className="bo-checkboxLabel">
-                <input
-                  type="checkbox"
-                  checked={active}
-                  onChange={(e) => setActive(e.target.checked)}
-                />
+                <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
                 <span>Activo</span>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
         <div className="bo-foodModal-actions">
           <button type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={saving}>
             Cancelar

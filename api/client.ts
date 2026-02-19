@@ -134,46 +134,70 @@ export function createClient(opts: ClientOpts) {
   type ComidaListParams = {
     tipo?: string;
     active?: number;
+    q?: string;
     search?: string;
     page?: number;
     limit?: number;
+    pageSize?: number;
     categoria?: string;
     category?: string;
+    alergeno?: string;
+    suplemento?: number;
   };
 
   const comidaApi = {
     postres: {
       async list(params?: { active?: number; search?: string; page?: number; limit?: number }): Promise<APISuccess<{ postres: Postre[] }> | APIError> {
-        return json(withQuery("/api/admin/postres", params), { method: "GET" });
+        return json(
+          withQuery("/api/admin/comida/postres", {
+            active: params?.active,
+            q: params?.search,
+            page: params?.page,
+            pageSize: params?.limit,
+          }),
+          { method: "GET" },
+        );
       },
       async create(input: { descripcion: string; alergenos: string[]; active?: boolean; precio?: number }): Promise<APISuccess<{ postre: Postre }> | APIError> {
-        return json("/api/admin/postres", {
+        return json("/api/admin/comida/postres", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
         });
       },
       async patch(id: number, patch: Partial<Pick<Postre, "descripcion" | "active" | "precio">> & { alergenos?: string[] }): Promise<APISuccess | APIError> {
-        return json(`/api/admin/postres/${id}`, {
+        return json(`/api/admin/comida/postres/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
         });
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/postres/${id}`, { method: "DELETE" });
+        return json(`/api/admin/comida/postres/${id}`, { method: "DELETE" });
       },
       async toggle(id: number, active: boolean): Promise<APISuccess | APIError> {
-        return json(`/api/admin/postres/${id}`, {
+        return json(`/api/admin/comida/postres/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ active }),
         });
       },
+      async get(id: number): Promise<APISuccess<{ item: FoodItem; postre: Postre }> | APIError> {
+        return json(`/api/admin/comida/postres/${id}`, { method: "GET" });
+      },
     },
     vinos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ vinos: Vino[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(withQuery("/api/admin/vinos", params), { method: "GET" });
+        return json(
+          withQuery("/api/admin/comida/vinos", {
+            tipo: params?.tipo,
+            active: params?.active,
+            q: params?.q ?? params?.search,
+            page: params?.page,
+            pageSize: params?.pageSize ?? params?.limit,
+          }),
+          { method: "GET" },
+        );
       },
       async create(input: {
         tipo: string;
@@ -187,7 +211,7 @@ export function createClient(opts: ClientOpts) {
         active?: boolean;
         imageBase64?: string;
       }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/vinos", {
+        return json("/api/admin/comida/vinos", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
@@ -208,26 +232,42 @@ export function createClient(opts: ClientOpts) {
           imageBase64: string;
         }>,
       ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/vinos/${id}`, {
+        return json(`/api/admin/comida/vinos/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
         });
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/vinos/${id}`, { method: "DELETE" });
+        return json(`/api/admin/comida/vinos/${id}`, { method: "DELETE" });
       },
       async toggle(id: number, active: boolean): Promise<APISuccess | APIError> {
-        return json(`/api/admin/vinos/${id}`, {
+        return json(`/api/admin/comida/vinos/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ active }),
         });
       },
+      async get(id: number): Promise<APISuccess<{ item: Vino; vino: Vino }> | APIError> {
+        return json(`/api/admin/comida/vinos/${id}`, { method: "GET" });
+      },
     },
     cafes: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(withQuery("/api/admin/cafes", params), { method: "GET" });
+        return json(
+          withQuery("/api/admin/comida/cafes", {
+            tipo: params?.tipo,
+            active: params?.active,
+            q: params?.q ?? params?.search,
+            page: params?.page,
+            pageSize: params?.pageSize ?? params?.limit,
+            categoria: params?.categoria,
+            category: params?.category,
+            alergeno: params?.alergeno,
+            suplemento: params?.suplemento,
+          }),
+          { method: "GET" },
+        );
       },
       async create(input: {
         tipo?: string;
@@ -242,7 +282,7 @@ export function createClient(opts: ClientOpts) {
         categoria?: string;
         category?: string;
       }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/cafes", {
+        return json("/api/admin/comida/cafes", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
@@ -264,22 +304,38 @@ export function createClient(opts: ClientOpts) {
           category: string;
         }>,
       ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/cafes/${id}`, {
+        return json(`/api/admin/comida/cafes/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
         });
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/cafes/${id}`, { method: "DELETE" });
+        return json(`/api/admin/comida/cafes/${id}`, { method: "DELETE" });
       },
       async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
         return json(`/api/admin/cafes/${id}/toggle`, { method: "POST" });
       },
+      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
+        return json(`/api/admin/comida/cafes/${id}`, { method: "GET" });
+      },
     },
     bebidas: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(withQuery("/api/admin/bebidas", params), { method: "GET" });
+        return json(
+          withQuery("/api/admin/comida/bebidas", {
+            tipo: params?.tipo,
+            active: params?.active,
+            q: params?.q ?? params?.search,
+            page: params?.page,
+            pageSize: params?.pageSize ?? params?.limit,
+            categoria: params?.categoria,
+            category: params?.category,
+            alergeno: params?.alergeno,
+            suplemento: params?.suplemento,
+          }),
+          { method: "GET" },
+        );
       },
       async create(input: {
         tipo?: string;
@@ -294,7 +350,7 @@ export function createClient(opts: ClientOpts) {
         categoria?: string;
         category?: string;
       }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/bebidas", {
+        return json("/api/admin/comida/bebidas", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
@@ -316,22 +372,38 @@ export function createClient(opts: ClientOpts) {
           category: string;
         }>,
       ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/bebidas/${id}`, {
+        return json(`/api/admin/comida/bebidas/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
         });
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/bebidas/${id}`, { method: "DELETE" });
+        return json(`/api/admin/comida/bebidas/${id}`, { method: "DELETE" });
       },
       async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
         return json(`/api/admin/bebidas/${id}/toggle`, { method: "POST" });
       },
+      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
+        return json(`/api/admin/comida/bebidas/${id}`, { method: "GET" });
+      },
     },
     platos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(withQuery("/api/admin/platos", params), { method: "GET" });
+        return json(
+          withQuery("/api/admin/comida/platos", {
+            tipo: params?.tipo,
+            active: params?.active,
+            q: params?.q ?? params?.search,
+            page: params?.page,
+            pageSize: params?.pageSize ?? params?.limit,
+            categoria: params?.categoria,
+            category: params?.category,
+            alergeno: params?.alergeno,
+            suplemento: params?.suplemento,
+          }),
+          { method: "GET" },
+        );
       },
       async create(input: {
         tipo?: string;
@@ -347,7 +419,7 @@ export function createClient(opts: ClientOpts) {
         category?: string;
         category_id?: number | null;
       }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/platos", {
+        return json("/api/admin/comida/platos", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
@@ -370,28 +442,31 @@ export function createClient(opts: ClientOpts) {
           category_id: number | null;
         }>,
       ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/platos/${id}`, {
+        return json(`/api/admin/comida/platos/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
         });
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/platos/${id}`, { method: "DELETE" });
+        return json(`/api/admin/comida/platos/${id}`, { method: "DELETE" });
       },
       async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
         return json(`/api/admin/platos/${id}/toggle`, { method: "POST" });
       },
+      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
+        return json(`/api/admin/comida/platos/${id}`, { method: "GET" });
+      },
       categories: {
         async list(): Promise<APISuccess<{ categories: FoodCategory[] }> | APIError> {
           return jsonWithFallback(
-            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            ["/api/admin/comida/platos/categorias", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
             { method: "GET" },
           );
         },
         async create(input: { name: string; slug?: string }): Promise<APISuccess<{ category: FoodCategory }> | APIError> {
           return jsonWithFallback(
-            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            ["/api/admin/comida/platos/categorias", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
             {
               method: "POST",
               headers: { "content-type": "application/json" },

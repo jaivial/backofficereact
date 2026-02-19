@@ -3,8 +3,10 @@ import { ChevronDown, ChevronUp, Filter, FilterX, Search } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Select } from "../../../../ui/inputs/Select";
+import type { FoodType } from "./foodTypes";
 
 type ActiveFilter = "all" | "active" | "inactive";
+type SuplementoFilter = "all" | "yes" | "no";
 
 interface FilterOption {
   value: string;
@@ -12,6 +14,7 @@ interface FilterOption {
 }
 
 interface FoodFiltersProps {
+  foodType: FoodType;
   search: string;
   onSearchChange: (value: string) => void;
   tipoFilter: string;
@@ -19,6 +22,14 @@ interface FoodFiltersProps {
   tipoOptions: FilterOption[];
   activeFilter: ActiveFilter;
   onActiveChange: (value: ActiveFilter) => void;
+  categoryFilter: string;
+  onCategoryChange: (value: string) => void;
+  categoryOptions: FilterOption[];
+  alergenoFilter: string;
+  onAlergenoChange: (value: string) => void;
+  alergenoOptions: FilterOption[];
+  suplementoFilter: SuplementoFilter;
+  onSuplementoChange: (value: SuplementoFilter) => void;
   onReset: () => void;
   count: number;
 }
@@ -29,7 +40,14 @@ const ACTIVE_OPTIONS: { value: ActiveFilter; label: string }[] = [
   { value: "inactive", label: "Inactivos" },
 ];
 
+const SUPLEMENTO_OPTIONS: { value: SuplementoFilter; label: string }[] = [
+  { value: "all", label: "Con y sin suplemento" },
+  { value: "yes", label: "Con suplemento" },
+  { value: "no", label: "Sin suplemento" },
+];
+
 export const FoodFilters = React.memo(function FoodFilters({
+  foodType,
   search,
   onSearchChange,
   tipoFilter,
@@ -37,15 +55,33 @@ export const FoodFilters = React.memo(function FoodFilters({
   tipoOptions,
   activeFilter,
   onActiveChange,
+  categoryFilter,
+  onCategoryChange,
+  categoryOptions,
+  alergenoFilter,
+  onAlergenoChange,
+  alergenoOptions,
+  suplementoFilter,
+  onSuplementoChange,
   onReset,
   count,
 }: FoodFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const reduceMotion = useReducedMotion();
 
+  const supportsCategories = foodType === "platos";
+  const supportsAlergenos = foodType === "platos" || foodType === "postres";
+  const supportsSuplemento = foodType === "platos";
+
   const hasFilters = useMemo(
-    () => search.trim().length > 0 || tipoFilter !== "" || activeFilter !== "all",
-    [search, tipoFilter, activeFilter],
+    () =>
+      search.trim().length > 0
+      || tipoFilter !== ""
+      || activeFilter !== "all"
+      || categoryFilter !== ""
+      || alergenoFilter !== ""
+      || suplementoFilter !== "all",
+    [search, tipoFilter, activeFilter, categoryFilter, alergenoFilter, suplementoFilter],
   );
 
   const toggleExpanded = useCallback(() => {
@@ -81,8 +117,7 @@ export const FoodFilters = React.memo(function FoodFilters({
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="bo-foodFiltersGrid">
-              {/* Search */}
+            <div className="bo-foodFiltersGrid bo-foodFiltersGrid--extended">
               <div className="bo-field bo-foodFilter bo-foodFilter--search">
                 <span className="bo-label">
                   <Search size={14} />
@@ -99,18 +134,11 @@ export const FoodFilters = React.memo(function FoodFilters({
                 </div>
               </div>
 
-              {/* Tipo filter */}
               <div className="bo-field bo-foodFilter bo-foodFilter--tipo">
                 <span className="bo-label">Tipo</span>
-                <Select
-                  value={tipoFilter}
-                  onChange={onTipoChange}
-                  options={tipoOptions}
-                  ariaLabel="Tipo"
-                />
+                <Select value={tipoFilter} onChange={onTipoChange} options={tipoOptions} ariaLabel="Tipo" />
               </div>
 
-              {/* Active filter */}
               <div className="bo-field bo-foodFilter bo-foodFilter--active">
                 <span className="bo-label">Estado</span>
                 <Select
@@ -121,7 +149,42 @@ export const FoodFilters = React.memo(function FoodFilters({
                 />
               </div>
 
-              {/* Clear filters */}
+              {supportsCategories ? (
+                <div className="bo-field bo-foodFilter">
+                  <span className="bo-label">Categoria</span>
+                  <Select
+                    value={categoryFilter}
+                    onChange={onCategoryChange}
+                    options={categoryOptions}
+                    ariaLabel="Categoria"
+                  />
+                </div>
+              ) : null}
+
+              {supportsAlergenos ? (
+                <div className="bo-field bo-foodFilter">
+                  <span className="bo-label">Alergeno</span>
+                  <Select
+                    value={alergenoFilter}
+                    onChange={onAlergenoChange}
+                    options={alergenoOptions}
+                    ariaLabel="Alergeno"
+                  />
+                </div>
+              ) : null}
+
+              {supportsSuplemento ? (
+                <div className="bo-field bo-foodFilter">
+                  <span className="bo-label">Suplemento</span>
+                  <Select
+                    value={suplementoFilter}
+                    onChange={(v) => onSuplementoChange(v as SuplementoFilter)}
+                    options={SUPLEMENTO_OPTIONS}
+                    ariaLabel="Suplemento"
+                  />
+                </div>
+              ) : null}
+
               <div className="bo-foodFilterActions">
                 <button
                   className={`bo-btn bo-btn--ghost bo-btn--sm bo-foodClearBtn ${hasFilters ? "" : "is-hidden"}`}

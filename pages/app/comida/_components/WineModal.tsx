@@ -63,8 +63,7 @@ export const WineModal = React.memo(function WineModal({
       setDescripcion(wine.descripcion || "");
       setActive(wine.active ?? true);
       setImageBase64(null);
-      // We'll need to fetch the image URL - for now just set to null
-      setImagePreview(null);
+      setImagePreview(wine.foto_url || null);
     } else {
       setNombre("");
       setTipo("TINTO");
@@ -143,14 +142,14 @@ export const WineModal = React.memo(function WineModal({
 
       let res;
       if (wine) {
-        res = await api.menus.vinos.patch(wine.num, payload);
+        res = await api.comida.vinos.patch(wine.num, payload);
       } else {
-        res = await api.menus.vinos.create(payload);
+        res = await api.comida.vinos.create(payload);
       }
 
       if (res.success) {
         pushToast({ kind: "success", title: wine ? "Actualizado" : "Creado" });
-        onSave({
+        const saved = ((res as any).item as Vino | undefined) ?? {
           num: wine?.num || (res as { num: number }).num,
           nombre: nombre.trim(),
           tipo,
@@ -162,7 +161,8 @@ export const WineModal = React.memo(function WineModal({
           descripcion: descripcion.trim(),
           active,
           has_foto: !!imageBase64 || !!wine?.has_foto,
-        });
+        };
+        onSave(saved);
       } else {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
       }

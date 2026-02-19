@@ -3,147 +3,130 @@ import { PencilLine, Trash2 } from "lucide-react";
 
 import type { FoodItem, Vino } from "../../../../api/types";
 import { Switch } from "../../../../ui/shadcn/Switch";
-
-type FoodType = "platos" | "bebidas" | "cafes" | "vinos";
+import type { FoodType } from "./foodTypes";
 
 interface FoodItemCardProps {
   item: FoodItem | Vino;
   foodType: FoodType;
+  busy?: boolean;
+  onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
 }
 
 function formatEuro(price: number): string {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(price);
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(Number(price || 0));
 }
 
 export const FoodItemCard = React.memo(function FoodItemCard({
   item,
   foodType,
+  busy,
+  onOpen,
   onEdit,
   onDelete,
   onToggle,
 }: FoodItemCardProps) {
   const isWine = foodType === "vinos";
 
-  const formatAlergenos = useCallback((alergenos?: string[]) => {
-    if (!alergenos || alergenos.length === 0) return null;
-    return alergenos.join(", ");
-  }, []);
-
-  const alergenosText = useMemo(() => {
-    if (isWine) return null;
-    return formatAlergenos((item as FoodItem).alergenos);
-  }, [item, isWine, formatAlergenos]);
-
-  const suplemento = useMemo(() => {
-    if (isWine) return null;
-    const sup = (item as FoodItem).suplemento;
-    return sup && sup > 0 ? formatEuro(sup) : null;
-  }, [item, isWine]);
-
-  const fotoUrl = useMemo(() => {
+  const secondaryMeta = useMemo(() => {
     if (isWine) {
       const wine = item as Vino;
-      return wine.foto_url || null;
+      const parts = [wine.tipo, wine.denominacion_origen].filter(Boolean);
+      return parts.join(" · ");
     }
-    return (item as FoodItem).foto_url || null;
-  }, [item, isWine]);
 
-  const wineSpecific = useMemo(() => {
-    if (!isWine) return null;
-    const w = item as Vino;
-    return {
-      bodega: w.bodega,
-      denominacion: w.denominacion_origen,
-      graduacion: w.graduacion,
-      anyo: w.anyo,
-    };
-  }, [item, isWine]);
+    const food = item as FoodItem;
+    if (foodType === "platos") {
+      const badgeParts = [food.categoria || food.tipo, food.suplemento && food.suplemento > 0 ? `+${formatEuro(food.suplemento)}` : ""].filter(Boolean);
+      return badgeParts.join(" · ");
+    }
+    return [food.tipo, food.categoria].filter(Boolean).join(" · ");
+  }, [foodType, isWine, item]);
 
-  const tipoLabel = useMemo(() => {
-    return item.tipo || foodType;
-  }, [item.tipo, foodType]);
+  const extraMeta = useMemo(() => {
+    if (isWine) {
+      const wine = item as Vino;
+      return [wine.bodega, wine.anyo].filter(Boolean).join(" · ");
+    }
+    const food = item as FoodItem;
+    if (food.alergenos?.length) {
+      return `${food.alergenos.length} alergenos`;
+    }
+    return "";
+  }, [isWine, item]);
+
+  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onOpen();
+    }
+  }, [onOpen]);
+
+  const stopPropagation = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+  }, []);
 
   return (
-    <article className="bo-foodCard" role="listitem">
-      {/* Image */}
-      <div className="bo-foodCard-image">
-        {fotoUrl ? (
-          <img src={fotoUrl} alt="" loading="lazy" decoding="async" />
-        ) : (
-          <div className="bo-foodCard-placeholder" />
-        )}
+    <article
+      className="bo-memberCard bo-foodMemberCard"
+      role="button"
+      tabIndex={0}
+      aria-label={`Abrir detalle de ${item.nombre}`}
+      onClick={onOpen}
+      onKeyDown={onKeyDown}
+    >
+      <div className="bo-foodMemberMedia" aria-hidden="true">
+        {item.foto_url ? <img src={item.foto_url} alt="" loading="lazy" decoding="async" /> : <div className="bo-foodMemberMediaPlaceholder" />}
       </div>
 
-      {/* Content */}
-      <div className="bo-foodCard-content">
-        <div className="bo-foodCard-meta">
-          <span className="bo-foodCard-tipo">{tipoLabel}</span>
-          {!item.active && <span className="bo-foodCard-inactive">Inactivo</span>}
+      <div className="bo-foodMemberBody">
+        <div className="bo-foodMemberTitleRow">
+          <h3 className="bo-foodMemberTitle">{item.nombre}</h3>
+          {!item.active ? <span className="bo-badge bo-badge--danger">Inactivo</span> : null}
         </div>
 
-        <h3 className="bo-foodCard-title">{item.nombre}</h3>
+        {secondaryMeta ? <div className="bo-foodMemberMeta">{secondaryMeta}</div> : null}
+        {extraMeta ? <div className="bo-foodMemberSubMeta">{extraMeta}</div> : null}
 
-        {item.descripcion && (
-          <p className="bo-foodCard-desc">{item.descripcion}</p>
-        )}
-
-        {/* Wine specific */}
-        {isWine && wineSpecific && (
-          <div className="bo-foodCard-wineMeta">
-            {wineSpecific.bodega && <span className="bo-foodCard-wineBodega">{wineSpecific.bodega}</span>}
-            {wineSpecific.denominacion && (
-              <span className="bo-foodCard-wineDO">D.O. {wineSpecific.denominacion}</span>
-            )}
-            <div className="bo-foodCard-wineFacts">
-              {wineSpecific.anyo && <span>{wineSpecific.anyo}</span>}
-              {wineSpecific.graduacion && <span>{wineSpecific.graduacion}%</span>}
-            </div>
+        <div className="bo-foodMemberFooter">
+          <span className="bo-foodMemberPrice">{formatEuro(item.precio)}</span>
+          <div className="bo-foodMemberActions">
+            <Switch
+              checked={!!item.active}
+              onCheckedChange={onToggle}
+              disabled={busy}
+              aria-label={`Activar ${item.nombre}`}
+              onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
+            />
+            <button
+              className="bo-btn bo-btn--ghost bo-btn--sm bo-foodCardIconBtn"
+              type="button"
+              onClick={(e) => {
+                stopPropagation(e);
+                onEdit();
+              }}
+              aria-label={`Editar ${item.nombre}`}
+              title="Editar"
+              disabled={busy}
+            >
+              <PencilLine size={14} />
+            </button>
+            <button
+              className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm bo-foodCardIconBtn"
+              type="button"
+              onClick={(e) => {
+                stopPropagation(e);
+                onDelete();
+              }}
+              aria-label={`Eliminar ${item.nombre}`}
+              title="Eliminar"
+              disabled={busy}
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
-        )}
-
-        {/* Alergenos */}
-        {alergenosText && (
-          <div className="bo-foodCard-alergenos">
-            <span className="bo-foodCard-alergenosLabel">Alergenos:</span>
-            {alergenosText}
-          </div>
-        )}
-      </div>
-
-      {/* Price and actions */}
-      <div className="bo-foodCard-footer">
-        <div className="bo-foodCard-price">
-          {formatEuro(item.precio)}
-          {suplemento && <span className="bo-foodCard-suplemento">+{suplemento}</span>}
-        </div>
-
-        <div className="bo-foodCard-actions">
-          <Switch
-            checked={!!item.active}
-            onCheckedChange={onToggle}
-            aria-label={`Activar ${item.nombre}`}
-          />
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--sm bo-foodCardIconBtn"
-            type="button"
-            onClick={onEdit}
-            aria-label={`Editar ${item.nombre}`}
-            title="Editar"
-          >
-            <PencilLine size={14} />
-          </button>
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm bo-foodCardIconBtn"
-            type="button"
-            onClick={onDelete}
-            aria-label={`Eliminar ${item.nombre}`}
-            title="Eliminar"
-          >
-            <Trash2 size={14} />
-          </button>
         </div>
       </div>
     </article>
