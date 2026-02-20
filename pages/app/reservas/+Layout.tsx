@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { CalendarDays, PlusCircle, SlidersHorizontal, Map } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 

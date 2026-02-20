@@ -1,13 +1,13 @@
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
-import type { TaxReport, TaxReportIVABreakdown, TaxReportQuarterlyBreakdown, TaxReportInvoiceItem, CustomerStatement, InvoicePayment } from "../../../api/types";
-import { formatCurrency, CURRENCY_SYMBOLS, type CurrencyCode } from "../../../api/types";
+import type { TaxReport, TaxReportQuarterlyBreakdown, CustomerStatement } from "../../../api/types";
+import { formatCurrency, CURRENCY_SYMBOLS } from "../../../api/types";
 import { SimpleTabs, SimpleTabsContent, SimpleTabsList } from "../../../ui/nav/SimpleTabs";
 import { StatCard } from "../../../ui/widgets/StatCard";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
-import { Download, FileText, Calendar, Filter, Printer, FileSpreadsheet, RefreshCw, ChevronDown, ChevronUp, User, DollarSign, Receipt, CreditCard } from "lucide-react";
+import { FileText, Filter, FileSpreadsheet, RefreshCw, ChevronDown, ChevronUp, User, Receipt } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -156,7 +156,8 @@ export default function Page() {
         setCustomerStatement(res.statement);
         pushToast("Estado de cuenta generado correctamente", "success");
       } else {
-        errorToast.show(res.message || "Error al generar el estado de cuenta");
+        const message = !res.success ? res.message : undefined;
+        errorToast.show(message || "Error al generar el estado de cuenta");
       }
     } catch (e) {
       errorToast.show("Error al conectar con el servidor");
@@ -374,7 +375,8 @@ export default function Page() {
         setReport(res.report);
         pushToast("Reporte generado correctamente", "success");
       } else {
-        errorToast.show(res.message || "Error al generar el reporte");
+        const message = !res.success ? res.message : undefined;
+        errorToast.show(message || "Error al generar el reporte");
       }
     } catch (e) {
       errorToast.show("Error al conectar con el servidor");
@@ -700,27 +702,27 @@ export default function Page() {
                     <StatCard
                       title="Saldo Inicial"
                       value={formatCurrency(customerStatement.opening_balance, "EUR")}
-                      icon={<DollarSign className="w-5 h-5 text-gray-600" />}
+                      icon="clock"
                     />
                     <StatCard
                       title="Total Facturado"
                       value={formatCurrency(customerStatement.summary.total_invoiced, "EUR")}
-                      icon={<Receipt className="w-5 h-5 text-blue-600" />}
+                      icon="file-text"
                     />
                     <StatCard
                       title="Total Pagado"
                       value={formatCurrency(customerStatement.summary.total_paid, "EUR")}
-                      icon={<CreditCard className="w-5 h-5 text-green-600" />}
+                      icon="check"
                     />
                     <StatCard
                       title="Pendiente"
                       value={formatCurrency(customerStatement.summary.total_pending, "EUR")}
-                      icon={<Calendar className="w-5 h-5 text-yellow-600" />}
+                      icon="calendar"
                     />
                     <StatCard
                       title="Saldo Final"
                       value={formatCurrency(customerStatement.closing_balance, "EUR")}
-                      icon={<DollarSign className="w-5 h-5 text-red-600" />}
+                      icon="trending-up"
                     />
                   </div>
 
@@ -911,33 +913,34 @@ export default function Page() {
               </button>
             </>
           )}
-        </div>
-      </div>
+	        </div>
+	      </div>
+	      </div>
 
-      {/* Report Content */}
-      {report ? (
+	      {/* Report Content */}
+	      {report ? (
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <StatCard
               title="Base Imponible"
               value={formatCurrency(report.summary.total_base, "EUR")}
-              icon={<FileText className="w-5 h-5 text-blue-600" />}
+              icon="file-text"
             />
             <StatCard
               title="IVA Acumulado"
               value={formatCurrency(report.summary.total_iva, "EUR")}
-              icon={<Calendar className="w-5 h-5 text-purple-600" />}
+              icon="calendar"
             />
             <StatCard
               title="Total"
               value={formatCurrency(report.summary.total, "EUR")}
-              icon={<Calendar className="w-5 h-5 text-green-600" />}
+              icon="trending-up"
             />
             <StatCard
               title="Facturas"
               value={String(report.summary.invoice_count)}
-              icon={<FileText className="w-5 h-5 text-orange-600" />}
+              icon="users"
             />
           </div>
 
@@ -1140,25 +1143,27 @@ export default function Page() {
                   </table>
                 )}
               </div>
-            </SimpleTabsContent>
-          </SimpleTabs>
-          </SimpleTabsContent>
-        </SimpleTabs>
-      ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay reporte generado</h3>
-          <p className="text-gray-500 mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
-          <button
-            onClick={handleGenerateReport}
-            disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
-            Generar Reporte
-          </button>
-        </div>
-      )}
-    </div>
+	            </SimpleTabsContent>
+	          </SimpleTabs>
+	        </>
+	        ) : (
+	          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay reporte generado</h3>
+            <p className="text-gray-500 mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
+            <button
+              onClick={handleGenerateReport}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
+              Generar Reporte
+            </button>
+          </div>
+        )}
+      </SimpleTabsContent>
+    </SimpleTabs>
+  </div>
+</div>
   );
 }
