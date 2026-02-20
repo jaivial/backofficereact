@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { CalendarDays, PlusCircle, SlidersHorizontal } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { CalendarDays, PlusCircle, SlidersHorizontal, Map } from "lucide-react";
 
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 
@@ -20,6 +19,7 @@ function todayISO(): string {
 function activeTabId(pathname: string): string {
   if (pathname.startsWith("/app/reservas/config")) return "config";
   if (pathname.startsWith("/app/reservas/anadir")) return "anadir";
+  if (pathname.startsWith("/app/reservas/tables")) return "tables";
   return "reservas";
 }
 
@@ -47,6 +47,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const tabs = useMemo<TabItem[]>(
     () => [
       { id: "reservas", label: "Reservas", href: `/app/reservas${qs}`, icon: <CalendarDays className="bo-ico" /> },
+      { id: "tables", label: "Mapas", href: `/app/reservas/tables${qs}`, icon: <Map className="bo-ico" /> },
       { id: "config", label: "Configuración", href: `/app/reservas/config${qs}`, icon: <SlidersHorizontal className="bo-ico" /> },
       { id: "anadir", label: "Añadir", href: `/app/reservas/anadir${qs}`, icon: <PlusCircle className="bo-ico" /> },
     ],
