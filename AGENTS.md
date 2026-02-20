@@ -1,6 +1,6 @@
 # Backoffice UI (vanilla) reglas de estilo
 
-Scope: todo lo que cuelga de `backoffice/`.
+Scope: todo lo que cuelga de `backofficereact/`.
 
 ## Objetivo
 - Replicar el estilo del dashboard (tema oscuro, cards suaves, acentos lila/cian) usando solo HTML + CSS vanilla.
@@ -16,9 +16,10 @@ Scope: todo lo que cuelga de `backoffice/`.
   usar al cerrar tareas para validacion rapida de typecheck/build e integracion.
 
 ## Estructura
-- Componentes y preview viven en `backoffice/components/`.
-- CSS base/tokens: `backoffice/components/bo.css` (no duplicar tokens en otros CSS).
-- Vista previa de todos los componentes: `backoffice/components/index.html`.
+- Componentes y preview viven en `backofficereact/components/`.
+- CSS base/tokens (FUENTE UNICA DE VERDAD): `backofficereact/components/bo.css` (no duplicar tokens en otros CSS).
+- `backofficereact/public/bo.css` no define la guia visual: no usarlo como referencia de estilos y no editarlo manualmente para cambios de diseño.
+- Vista previa de todos los componentes: `backofficereact/components/index.html`.
 
 ## Convenciones
 - Prefijo de clases: `bo-` (evita colisiones).
@@ -26,9 +27,10 @@ Scope: todo lo que cuelga de `backoffice/`.
 - Iconos: siempre inline SVG (stroke `currentColor`, `stroke-width: 1.8`, caps/joins redondeados).
 - **NUNCA hardcodear colores, spacing, border-radius o transiciones** - usar siempre tokens CSS.
 - **NUNCA usar `transition: all`** - especificar propiedades.
+- **SIEMPRE tomar tokens y estilos base desde `backofficereact/components/bo.css`**.
 
 ## Tokens (no hardcodear)
-- Colores, radios y sombras se consumen desde `:root` en `backoffice/components/bo.css`.
+- Colores, radios y sombras se consumen desde `:root` en `backofficereact/components/bo.css`.
 - Superficies: usar `--bo-surface*` con overlays `linear-gradient(...)` para profundidad.
 - Acentos: `--bo-accent` (lila), `--bo-accent-2` (cian), `--bo-accent-3` (card clara).
 
@@ -289,6 +291,8 @@ select:focus-visible,
 - `card-monthly-billing.html` - Facturación mensual
 
 ## Componentes reutilizables (React)
+- Regla estricta: antes de crear UI nueva, revisar `backofficereact/ui/` y reutilizar componentes existentes.
+- Si existe componente equivalente en `ui/`, es obligatorio usarlo o extenderlo con props/variantes; no duplicar markup/estilos.
 - Navegación:
   - `ui/nav/Tabs.tsx` (tabs de ruta)
   - `ui/nav/NavLink.tsx` (items sidebar)
@@ -312,6 +316,7 @@ select:focus-visible,
 
 ## Regla de extracción
 - Si un patrón visual/funcional aparece en 2 o más páginas, extraerlo a `ui/widgets/`.
+- Si el patrón ya existe en `ui/`, reutilizarlo primero; extraer solo cuando no exista una opción reusable.
 - No duplicar tokens visuales fuera de `components/bo.css`.
 
 ## Colores de estado (para badges, alerts, etc.)
@@ -347,11 +352,13 @@ Los colores de estado deben mantener contraste WCAG AA en ambos temas:
 3. Agregar link en `index.html`
 
 ### Agregar nuevo componente React
-1. Crear en `ui/widgets/` o `ui/inputs/` según tipo
-2. Usar mismas clases CSS (`bo-` prefix)
-3. Soportar prop `theme?: 'light' | 'dark' | 'system'`
-4. Testear en ambos temas
-5. **Usar `cn()` utility** para combinar clases (no string concatenation):
+1. Revisar `backofficereact/ui/` para confirmar si ya existe un componente reusable equivalente.
+2. Si existe, reutilizarlo/extenderlo (no crear duplicado).
+3. Si no existe, crear en `ui/widgets/` o `ui/inputs/` según tipo.
+4. Usar mismas clases CSS (`bo-` prefix).
+5. Soportar prop `theme?: 'light' | 'dark' | 'system'`.
+6. Testear en ambos temas.
+7. **Usar `cn()` utility** para combinar clases (no string concatenation):
    ```tsx
    import { cn } from "../shadcn/utils";
 

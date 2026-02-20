@@ -149,19 +149,24 @@ export async function data(pageContext: PageContextServer) {
   let error: string | null = null;
 
   try {
-    const [listPayload, categoriesRes] = await Promise.all([
-      fetchList(api, foodType, {
-        page: Number.isFinite(page) && page > 0 ? page : 1,
-        pageSize: Number.isFinite(pageSize) && pageSize > 0 ? Math.min(pageSize, 100) : 24,
-        search: initialFilters.search,
-        tipo: initialFilters.tipo,
-        active: initialFilters.active,
-        category: initialFilters.category,
-        alergeno: initialFilters.alergeno,
-        suplemento: initialFilters.suplemento,
-      }),
-      foodType === "platos" ? api.comida.platos.categories.list() : Promise.resolve(null),
-    ]);
+    const listPromise = fetchList(api, foodType, {
+      page: Number.isFinite(page) && page > 0 ? page : 1,
+      pageSize: Number.isFinite(pageSize) && pageSize > 0 ? Math.min(pageSize, 100) : 24,
+      search: initialFilters.search,
+      tipo: initialFilters.tipo,
+      active: initialFilters.active,
+      category: initialFilters.category,
+      alergeno: initialFilters.alergeno,
+      suplemento: initialFilters.suplemento,
+    });
+
+    // Categories are optional for rendering the list. If this endpoint is not enabled
+    // (e.g. 405 from legacy backend), avoid failing the whole page SSR payload.
+    const categoriesPromise = foodType === "platos"
+      ? api.comida.platos.categories.list().catch(() => null)
+      : Promise.resolve(null);
+
+    const [listPayload, categoriesRes] = await Promise.all([listPromise, categoriesPromise]);
 
     items = listPayload.items;
     total = listPayload.total;
