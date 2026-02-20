@@ -51,9 +51,7 @@ function normalizeToHHMM(totalMinutes: number): string {
 }
 
 function formatHourLabel(hhmm: string): string {
-  const [h, m] = hhmm.split(":");
-  const hNoZero = String(Number(h));
-  return m === "00" ? hNoZero : `${hNoZero}:${m}`;
+  return hhmm;
 }
 
 function buildHalfHourSlots(startMinutes: number, endMinutes: number, prefix: string): HourSlot[] {

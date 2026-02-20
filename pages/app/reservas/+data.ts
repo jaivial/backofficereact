@@ -24,28 +24,48 @@ export async function data(pageContext: PageContextServer) {
 
   const api = createClient({ baseUrl: backendOrigin, cookieHeader });
 
+  const safeCall = async <T>(promise: Promise<T>, fallback: T): Promise<T> => {
+    try {
+      return await promise;
+    } catch {
+      return fallback;
+    }
+  };
+
   const [bookingsRes, calRes, limitRes, metricsRes] = await Promise.all([
-    api.reservas.list({ date, page: 1, count: 15, sort: "reservation_time", dir: "asc" }),
-    (() => {
-      const [y, m] = date.split("-").map((x) => Number(x));
-      const year = Number.isFinite(y) ? y : new Date().getFullYear();
-      const month = Number.isFinite(m) ? m : new Date().getMonth() + 1;
-      return api.calendar.getMonth({ year, month });
-    })(),
-    api.config.getDailyLimit(date),
-    api.dashboard.getMetrics(date),
+    safeCall(
+      api.reservas.list({ date, page: 1, count: 15, sort: "reservation_time", dir: "asc" }),
+      { success: false, message: "Error consultando reservas" },
+    ),
+    safeCall(
+      (() => {
+        const [y, m] = date.split("-").map((x) => Number(x));
+        const year = Number.isFinite(y) ? y : new Date().getFullYear();
+        const month = Number.isFinite(m) ? m : new Date().getMonth() + 1;
+        return api.calendar.getMonth({ year, month });
+      })(),
+      { success: false, message: "Error consultando calendario", data: [] },
+    ),
+    safeCall(api.config.getDailyLimit(date), { success: false, message: "Error consultando límite diario" }),
+    safeCall(api.dashboard.getMetrics(date), { success: false, message: "Error consultando métricas" }),
   ]);
 
   let error: string | null = null;
-  const bookings = bookingsRes.success ? bookingsRes.bookings : [];
+  const bookings = bookingsRes.success ? (bookingsRes as any).bookings : [];
   const total_count = bookingsRes.success ? bookingsRes.total_count : 0;
   const page = bookingsRes.success ? bookingsRes.page : 1;
   const count = bookingsRes.success ? bookingsRes.count : 15;
-  if (!bookingsRes.success) error = bookingsRes.message || "Error cargando reservas";
+  if (!bookingsRes.success) error = bookingsRes.message || "Error consultando reservas";
 
   const calendarDays: CalendarDay[] = calRes.success ? (calRes as any).data : [];
   const dailyLimit: ConfigDailyLimit | null = limitRes.success ? (limitRes as any) : null;
   const metrics: DashboardMetrics | null = metricsRes.success ? (metricsRes as any).metrics : null;
+
+  if (!error) {
+    if (!calRes.success) error = calRes.message || "Error consultando calendario";
+    if (!limitRes.success) error = error || limitRes.message || "Error consultando límite diario";
+    if (!metricsRes.success) error = error || metricsRes.message || "Error consultando métricas";
+  }
 
   return {
     date,

@@ -27,7 +27,7 @@ const ERROR_CONTENT: Record<ErrorStatus, ErrorContent> = {
     title: "Acceso denegado",
     message: "Tu usuario no tiene permisos para ver esta seccion.",
     primaryLabel: "Volver al panel",
-    primaryHref: "/app",
+    primaryHref: "/app/backoffice",
     secondaryLabel: "Cambiar sesion",
     secondaryHref: "/login",
   },
@@ -35,7 +35,7 @@ const ERROR_CONTENT: Record<ErrorStatus, ErrorContent> = {
     title: "Pagina no encontrada",
     message: "La ruta solicitada no existe o ha cambiado.",
     primaryLabel: "Volver al panel",
-    primaryHref: "/app",
+    primaryHref: "/app/backoffice",
     secondaryLabel: "Ir al inicio",
     secondaryHref: "/",
   },
@@ -45,7 +45,7 @@ const ERROR_CONTENT: Record<ErrorStatus, ErrorContent> = {
     primaryLabel: "Reintentar",
     primaryAction: "reload",
     secondaryLabel: "Volver al panel",
-    secondaryHref: "/app",
+    secondaryHref: "/app/backoffice",
   },
 };
 
@@ -90,7 +90,7 @@ export default function ErrorPage() {
               {content.primaryLabel}
             </button>
           ) : (
-            <a href={content.primaryHref ?? "/app"} className="bo-btn bo-btn--primary">
+            <a href={content.primaryHref ?? "/app/backoffice"} className="bo-btn bo-btn--primary">
               <LogIn size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </a>

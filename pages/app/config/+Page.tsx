@@ -29,6 +29,7 @@ type FloorTab = "plantas" | "salones";
 type WeekdayCard = {
   key: keyof WeekdayOpen;
   label: string;
+  shortLabel: string;
 };
 
 const openingModeOptions = [
@@ -38,13 +39,13 @@ const openingModeOptions = [
 ] as const;
 
 const weekdayCards: WeekdayCard[] = [
-  { key: "monday", label: "Lunes" },
-  { key: "tuesday", label: "Martes" },
-  { key: "wednesday", label: "Miércoles" },
-  { key: "thursday", label: "Jueves" },
-  { key: "friday", label: "Viernes" },
-  { key: "saturday", label: "Sábado" },
-  { key: "sunday", label: "Domingo" },
+  { key: "monday", label: "Lunes", shortLabel: "L" },
+  { key: "tuesday", label: "Martes", shortLabel: "M" },
+  { key: "wednesday", label: "Miércoles", shortLabel: "X" },
+  { key: "thursday", label: "Jueves", shortLabel: "J" },
+  { key: "friday", label: "Viernes", shortLabel: "V" },
+  { key: "saturday", label: "Sábado", shortLabel: "S" },
+  { key: "sunday", label: "Domingo", shortLabel: "D" },
 ];
 
 const tableLimitValues = [...Array.from({ length: 41 }, (_, i) => String(i)), "999"];
@@ -568,7 +569,12 @@ export default function Page() {
                   aria-label={`${weekday.label} (${isOpen ? "abierto" : "cerrado"})`}
                   onClick={() => void toggleWeekdayOpen(weekday.key)}
                 >
-                    <div className="bo-configDayCardLabel">{weekday.label}</div>
+                  <div className="bo-configDayCardLabel">
+                    <span className="bo-configDayCardLabelFull">{weekday.label}</span>
+                    <span className="bo-configDayCardLabelShort" aria-hidden="true">
+                      {weekday.shortLabel}
+                    </span>
+                  </div>
                   </button>
                 );
               })}

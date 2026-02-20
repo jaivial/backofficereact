@@ -102,6 +102,14 @@ function sectionAllowedByImportance(section: BOSection, roleImportanceRaw?: numb
   return roleImportanceRaw >= 90;
 }
 
+function canAccessComida(
+  roleRaw: string | null | undefined,
+  sectionAccessRaw?: string[] | null,
+  roleImportanceRaw?: number | null,
+): boolean {
+  return hasSectionAccess(roleRaw, "menus", sectionAccessRaw, roleImportanceRaw) || hasSectionAccess(roleRaw, "comida", sectionAccessRaw, roleImportanceRaw);
+}
+
 export function hasSectionAccess(
   roleRaw: string | null | undefined,
   section: BOSection,
@@ -157,6 +165,9 @@ export function isPathAllowed(
   if (pathname === "/app/backoffice" || pathname.startsWith("/app/backoffice/")) return true;
   const section = sectionForPath(pathname);
   if (!section) return false;
+  if (section === "comida") {
+    return canAccessComida(roleRaw, sectionAccessRaw, roleImportanceRaw);
+  }
   return hasSectionAccess(roleRaw, section, sectionAccessRaw, roleImportanceRaw);
 }
 
@@ -165,7 +176,12 @@ export function sidebarItemsForRole(
   sectionAccessRaw?: string[] | null,
   roleImportanceRaw?: number | null,
 ): SidebarItem[] {
-  return SIDEBAR_ITEMS.filter((item) => hasSectionAccess(roleRaw, item.key, sectionAccessRaw, roleImportanceRaw));
+  return SIDEBAR_ITEMS.filter((item) => {
+    if (item.key === "comida") {
+      return canAccessComida(roleRaw, sectionAccessRaw, roleImportanceRaw);
+    }
+    return hasSectionAccess(roleRaw, item.key, sectionAccessRaw, roleImportanceRaw);
+  });
 }
 
 export function roleLabel(roleRaw: string | null | undefined): string {

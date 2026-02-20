@@ -48,7 +48,7 @@ export default function Page() {
               }
             : session,
         );
-        window.location.href = "/app";
+        window.location.href = "/app/backoffice";
       } catch (err) {
         setError(err instanceof Error ? err.message : "No se pudo actualizar");
       } finally {

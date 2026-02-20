@@ -31,7 +31,7 @@ export default function Page() {
           window.location.href = "/change-password";
           return;
         }
-        window.location.href = "/app";
+        window.location.href = "/app/backoffice";
       } catch (e) {
         setError(e instanceof Error ? e.message : "Login failed");
       } finally {

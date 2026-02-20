@@ -1,7 +1,8 @@
-import React, { useCallback, useMemo } from "react";
-import { Plus, X, Trash2 } from "lucide-react";
+import React, { useCallback, useMemo, useState } from "react";
+import { CircleDollarSign, Hash, List, Percent, Receipt, Eye, Plus, X, Trash2, Calculator } from "lucide-react";
 import type { InvoiceLineItem, InvoiceLineItemInput } from "../../../../api/types";
 import { CURRENCY_SYMBOLS, type CurrencyCode } from "../../../../api/types";
+import { Modal } from "../../../../ui/overlays/Modal";
 
 export interface LineItemsRef {
   getLineItems: () => InvoiceLineItemInput[];
@@ -21,6 +22,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
   ref
 ) {
   const currencySymbol = CURRENCY_SYMBOLS[currency] || "€";
+  const [lineItemDetailsIndex, setLineItemDetailsIndex] = useState<number | null>(null);
 
   // Calculate item totals
   const calculateItemTotal = useCallback((quantity: number, unitPrice: number, ivaRate: number) => {
@@ -97,6 +99,19 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
     return { subtotal, totalIva, total };
   }, [items]);
 
+  const openLineItemDetails = useCallback((index: number) => {
+    setLineItemDetailsIndex(index);
+  }, []);
+
+  const closeLineItemDetails = useCallback(() => {
+    setLineItemDetailsIndex(null);
+  }, []);
+
+  const selectedLineItem = useMemo(
+    () => (lineItemDetailsIndex !== null ? items[lineItemDetailsIndex] : null),
+    [items, lineItemDetailsIndex]
+  );
+
   // Expose methods via ref
   React.useImperativeHandle(ref, () => ({
     getLineItems: () => {
@@ -144,12 +159,30 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
         <>
           <div className="bo-lineItemsTable">
             <div className="bo-lineItemsTableHeader">
-              <div className="bo-lineItemCell bo-lineItemCell--description">Descripcion</div>
-              <div className="bo-lineItemCell bo-lineItemCell--quantity">Cantidad</div>
-              <div className="bo-lineItemCell bo-lineItemCell--price">Precio unit.</div>
-              <div className="bo-lineItemCell bo-lineItemCell--iva">IVA (%)</div>
-              <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">Importe IVA</div>
-              <div className="bo-lineItemCell bo-lineItemCell--total">Total</div>
+              <div className="bo-lineItemCell bo-lineItemCell--description">
+                <List size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                <span className="bo-srOnly">Descripcion</span>
+              </div>
+              <div className="bo-lineItemCell bo-lineItemCell--quantity">
+                <Hash size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                <span className="bo-srOnly">Cantidad</span>
+              </div>
+              <div className="bo-lineItemCell bo-lineItemCell--price">
+                <CircleDollarSign size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                <span className="bo-srOnly">Precio unit.</span>
+              </div>
+              <div className="bo-lineItemCell bo-lineItemCell--iva">
+                <Percent size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                <span className="bo-srOnly">IVA</span>
+              </div>
+              <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
+                <Receipt size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                <span className="bo-srOnly">Importe IVA</span>
+              </div>
+              <div className="bo-lineItemCell bo-lineItemCell--total">
+                <Calculator size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                <span className="bo-srOnly">Total</span>
+              </div>
               <div className="bo-lineItemCell bo-lineItemCell--actions"></div>
             </div>
 
@@ -168,35 +201,41 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                 <div className="bo-lineItemCell bo-lineItemCell--quantity">
                   <input
                     type="number"
-                    className="bo-input"
+                    className="bo-input bo-lineItemInputNumber"
+                    inputMode="decimal"
                     value={item.quantity}
                     onChange={(e) => handleUpdateItem(index, "quantity", e.target.value)}
                     min="0"
                     step="1"
                     disabled={disabled}
+                    aria-label="Cantidad"
                   />
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--price">
                   <input
                     type="number"
-                    className="bo-input"
+                    className="bo-input bo-lineItemInputNumber"
+                    inputMode="decimal"
                     value={item.unit_price}
                     onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
                     min="0"
                     step="0.01"
                     disabled={disabled}
+                    aria-label="Precio unitario"
                   />
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--iva">
                   <input
                     type="number"
-                    className="bo-input"
+                    className="bo-input bo-lineItemInputNumber"
+                    inputMode="decimal"
                     value={item.iva_rate}
                     onChange={(e) => handleUpdateItem(index, "iva_rate", e.target.value)}
                     min="0"
                     max="100"
                     step="0.1"
                     disabled={disabled}
+                    aria-label="IVA"
                   />
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
@@ -210,6 +249,16 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                   </span>
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--actions">
+                  <button
+                    type="button"
+                    className="bo-btn bo-btn--ghost bo-btn--sm bo-lineItemActionBtn"
+                    onClick={() => openLineItemDetails(index)}
+                    disabled={disabled}
+                    title="Ver detalle"
+                    aria-label={`Ver detalle de linea ${index + 1}`}
+                  >
+                    <Eye size={14} />
+                  </button>
                   <button
                     type="button"
                     className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
@@ -226,7 +275,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           </div>
 
           {/* Summary */}
-          <div className="bo-lineItemsSummary">
+        <div className="bo-lineItemsSummary">
             <div className="bo-lineItemsSummaryRow">
               <span className="bo-lineItemsSummaryLabel">Subtotal:</span>
               <span className="bo-lineItemsSummaryValue">{summary.subtotal.toFixed(2)} {currencySymbol}</span>
@@ -241,6 +290,63 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
             </div>
           </div>
         </>
+      )}
+
+      {selectedLineItem && (
+        <Modal
+          open={lineItemDetailsIndex !== null}
+          title={`Detalle de línea ${lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}`}
+          onClose={closeLineItemDetails}
+          size="sm"
+        >
+          <div className="bo-modalHead">
+            <h3 className="bo-modalTitle">Detalle de línea {lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}</h3>
+            <button
+              type="button"
+              className="bo-btn bo-btn--ghost bo-btn--sm"
+              onClick={closeLineItemDetails}
+              aria-label="Cerrar detalle de línea"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="bo-lineItemsDetail">
+            <div className="bo-lineItemsDetailField">
+              <span className="bo-label">Descripción</span>
+              <div className="bo-lineItemsDetailValue">{selectedLineItem.description || "—"}</div>
+            </div>
+
+            <div className="bo-lineItemsDetailGrid">
+              <div className="bo-lineItemsDetailField">
+                <span className="bo-label">Cantidad</span>
+                <div className="bo-lineItemsDetailValue">{selectedLineItem.quantity}</div>
+              </div>
+              <div className="bo-lineItemsDetailField">
+                <span className="bo-label">Precio unitario</span>
+                <div className="bo-lineItemsDetailValue">
+                  {selectedLineItem.unit_price.toFixed(2)} {currencySymbol}
+                </div>
+              </div>
+              <div className="bo-lineItemsDetailField">
+                <span className="bo-label">IVA</span>
+                <div className="bo-lineItemsDetailValue">{selectedLineItem.iva_rate}%</div>
+              </div>
+              <div className="bo-lineItemsDetailField">
+                <span className="bo-label">Importe IVA</span>
+                <div className="bo-lineItemsDetailValue">
+                  {selectedLineItem.iva_amount.toFixed(2)} {currencySymbol}
+                </div>
+              </div>
+              <div className="bo-lineItemsDetailField">
+                <span className="bo-label">Total</span>
+                <div className="bo-lineItemsDetailValue bo-lineItemsDetailValue--strong">
+                  {selectedLineItem.total.toFixed(2)} {currencySymbol}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

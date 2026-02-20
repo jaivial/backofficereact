@@ -24,6 +24,7 @@ export function Select({
   style,
   disabled,
   listMaxHeightPx,
+  menuMinWidthPx,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -34,6 +35,7 @@ export function Select({
   style?: React.CSSProperties;
   disabled?: boolean;
   listMaxHeightPx?: number;
+  menuMinWidthPx?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -63,13 +65,14 @@ export function Select({
     if (!el) return;
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
-    const width = Math.max(180, r.width);
+    const minWidth = typeof menuMinWidthPx === "number" ? menuMinWidthPx : 180;
+    const width = Math.max(minWidth, r.width);
     const top = r.bottom + 8;
     const left = clamp(r.left, 8, vw - width - 8);
     setPos({ top, left, width });
     const idx = Math.max(0, options.findIndex((o) => o.value === value));
     setActiveIdx(idx);
-  }, [open, options, value]);
+  }, [menuMinWidthPx, open, options, value]);
 
   useEffect(() => {
     if (!open) return;

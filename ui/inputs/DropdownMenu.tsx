@@ -26,11 +26,13 @@ export function DropdownMenu({
   items,
   triggerContent,
   triggerClassName,
+  menuMinWidthPx,
 }: {
   label: string;
   items: MenuItem[];
   triggerContent?: React.ReactNode;
   triggerClassName?: string;
+  menuMinWidthPx?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -51,10 +53,10 @@ export function DropdownMenu({
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
     const top = r.bottom + 8;
-    const minWidth = Math.max(160, r.width);
+    const minWidth = Math.max(typeof menuMinWidthPx === "number" ? menuMinWidthPx : 160, r.width);
     const left = clamp(r.left, 8, vw - minWidth - 8);
     setPos({ top, left, minWidth });
-  }, [open]);
+  }, [menuMinWidthPx, open]);
 
   useEffect(() => {
     if (!open) return;

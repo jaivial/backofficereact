@@ -82,7 +82,8 @@ export function createClient(opts: ClientOpts) {
   const baseUrl = opts.baseUrl.replace(/\/+$/, "");
 
   async function apiFetch(path: string, init: RequestInit): Promise<Response> {
-    const url = baseUrl + path;
+    const normalizedPath = !isBrowser() && path.startsWith("/api/admin/") ? path.replace(/^\/api\/admin/, "/admin") : path;
+    const url = baseUrl + normalizedPath;
     const headers = new Headers(init.headers ?? {});
 
     if (!isBrowser()) {
@@ -134,70 +135,315 @@ export function createClient(opts: ClientOpts) {
   type ComidaListParams = {
     tipo?: string;
     active?: number;
-    q?: string;
     search?: string;
     page?: number;
     limit?: number;
-    pageSize?: number;
     categoria?: string;
     category?: string;
-    alergeno?: string;
-    suplemento?: number;
   };
+
+  type ComidaWriteInput = {
+    tipo?: string;
+    nombre: string;
+    precio: number;
+    descripcion?: string;
+    titulo?: string;
+    suplemento?: number;
+    alergenos?: string[];
+    active?: boolean;
+    imageBase64?: string;
+    categoria?: string;
+    category?: string;
+    category_id?: number | null;
+  };
+
+  type ComidaPatchInput = Partial<{
+    tipo: string;
+    nombre: string;
+    precio: number;
+    descripcion: string;
+    titulo: string;
+    suplemento: number;
+    alergenos: string[];
+    active: boolean;
+    imageBase64: string;
+    categoria: string;
+    category: string;
+    category_id: number | null;
+  }>;
+
+  type FallbackComidaCategory = "platos" | "bebidas" | "cafes";
+
+  function parseEmbeddedPrice(v: string): number {
+    const m = v.match(/(\d+(?:[.,]\d{1,2})?)\s*€/);
+    if (!m || !m[1]) return 0;
+    const n = Number(m[1].replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function normalizeMenuTipo(v: string | undefined, fallback: "ENTRANTE" | "PRINCIPAL" | "ARROZ" = "PRINCIPAL"): string {
+    const raw = String(v ?? "").trim().toUpperCase();
+    if (raw === "ENTRANTE" || raw === "PRINCIPAL" || raw === "ARROZ") return raw;
+    if (raw.includes("ENTRANTE")) return "ENTRANTE";
+    if (raw.includes("ARROZ")) return "ARROZ";
+    return fallback;
+  }
+
+  function normalizedComidaText(v: string): string {
+    return v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
+  const CAFE_TYPE_HINTS = new Set(["CAFE", "CAFEES", "CAFES", "INFUSION", "INFUSIONES", "CHOCOLATE", "TE"]);
+  const BEBIDA_TYPE_HINTS = new Set([
+    "BEBIDA",
+    "BEBIDAS",
+    "REFRESCO",
+    "REFRESCOS",
+    "AGUA",
+    "ZUMO",
+    "ZUMOS",
+    "CERVEZA",
+    "CERVEZAS",
+    "COPA",
+    "COPAS",
+  ]);
+  const CAFE_TEXT_HINTS = ["cafe", "cafes", "espresso", "capuccino", "cappuccino", "infusion", "te", "chocolate caliente"];
+  const BEBIDA_TEXT_HINTS = [
+    "bebida",
+    "refresco",
+    "agua",
+    "zumo",
+    "cerveza",
+    "copa",
+    "coctel",
+    "cocktail",
+    "tinto de verano",
+    "sangria",
+    "vermut",
+  ];
+
+  function includesAnyHint(haystack: string, hints: string[]): boolean {
+    return hints.some((hint) => haystack.includes(hint));
+  }
+
+  function classifyFallbackFoodItem(item: FoodItem): FallbackComidaCategory {
+    const tipoUpper = String(item.tipo ?? "").trim().toUpperCase();
+    if (CAFE_TYPE_HINTS.has(tipoUpper)) return "cafes";
+    if (BEBIDA_TYPE_HINTS.has(tipoUpper)) return "bebidas";
+
+    const text = normalizedComidaText(`${item.tipo ?? ""} ${item.nombre ?? ""} ${item.descripcion ?? ""}`);
+    if (includesAnyHint(text, CAFE_TEXT_HINTS)) return "cafes";
+    if (includesAnyHint(text, BEBIDA_TEXT_HINTS)) return "bebidas";
+    return "platos";
+  }
+
+  function mapMenuDishToFoodItem(dish: MenuDish): FoodItem {
+    const descripcion = String(dish.descripcion ?? "").trim();
+    const price = parseEmbeddedPrice(descripcion);
+    return {
+      num: dish.num,
+      tipo: String(dish.tipo ?? "").trim() || "PRINCIPAL",
+      nombre: descripcion,
+      precio: price,
+      descripcion,
+      titulo: "",
+      suplemento: 0,
+      alergenos: Array.isArray(dish.alergenos) ? dish.alergenos : [],
+      active: !!dish.active,
+      has_foto: false,
+    };
+  }
+
+  function applyComidaFilters(items: FoodItem[], params?: ComidaListParams): FoodItem[] {
+    if (!params) return items;
+    const searchQ = String(params.search ?? "").trim().toLowerCase();
+    const tipoQ = String(params.tipo ?? "").trim().toLowerCase();
+    const activeQ = params.active;
+
+    return items.filter((item) => {
+      if (tipoQ && String(item.tipo ?? "").toLowerCase() !== tipoQ) return false;
+      if (activeQ === 0 && item.active) return false;
+      if (activeQ === 1 && !item.active) return false;
+      if (searchQ) {
+        const haystack = `${item.nombre} ${item.descripcion}`.toLowerCase();
+        if (!haystack.includes(searchQ)) return false;
+      }
+      return true;
+    });
+  }
+
+  async function listComidaWithFallback(
+    primaryPath: string,
+    fallbackMenuPath: "/api/admin/menus/dia" | "/api/admin/menus/finde",
+    params?: ComidaListParams,
+    skipPrimary = false,
+    fallbackCategory?: FallbackComidaCategory,
+  ): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
+    const fromFallback = async (): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> => {
+      const fallbackRes = await json<APISuccess<{ menu: MenuTable }> | APIError>(fallbackMenuPath, { method: "GET" });
+      if (!fallbackRes.success) return fallbackRes;
+
+      const dishes = Array.isArray(fallbackRes.menu?.dishes)
+        ? fallbackRes.menu.dishes.filter((dish) => String(dish.tipo ?? "").toUpperCase() !== "PRECIO")
+        : [];
+      let mappedItems = dishes.map(mapMenuDishToFoodItem);
+      if (fallbackCategory) {
+        mappedItems = mappedItems.filter((item) => classifyFallbackFoodItem(item) === fallbackCategory);
+      }
+      const items = applyComidaFilters(mappedItems, params);
+      return {
+        success: true,
+        items,
+        total: items.length,
+        page: 1,
+        limit: items.length,
+      };
+    };
+
+    if (skipPrimary) return fromFallback();
+    try {
+      return await json(withQuery(primaryPath, params), { method: "GET" });
+    } catch {
+      return fromFallback();
+    }
+  }
+
+  async function createComidaWithFallback(
+    primaryPath: string,
+    fallbackCreatePath: "/api/admin/menus/dia/dishes" | "/api/admin/menus/finde/dishes",
+    input: ComidaWriteInput,
+    fallbackTipo: "ENTRANTE" | "PRINCIPAL" | "ARROZ" = "PRINCIPAL",
+    skipPrimary = false,
+  ): Promise<APISuccess<{ num: number }> | APIError> {
+    const fromFallback = async (): Promise<APISuccess<{ num: number }> | APIError> => {
+      const descripcion = String(input.descripcion ?? input.nombre ?? "").trim();
+      const fallbackRes = await json<APISuccess<{ dish: MenuDish }> | APIError>(fallbackCreatePath, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          tipo: normalizeMenuTipo(input.tipo, fallbackTipo),
+          descripcion,
+          alergenos: input.alergenos ?? [],
+          active: input.active ?? true,
+        }),
+      });
+      if (!fallbackRes.success) return fallbackRes;
+      return { success: true, num: fallbackRes.dish.num };
+    };
+
+    if (skipPrimary) return fromFallback();
+    try {
+      return await json(primaryPath, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+    } catch {
+      return fromFallback();
+    }
+  }
+
+  async function patchComidaWithFallback(
+    primaryPath: string,
+    fallbackPatchPath: string,
+    patch: ComidaPatchInput,
+    fallbackTipo: "ENTRANTE" | "PRINCIPAL" | "ARROZ" = "PRINCIPAL",
+    skipPrimary = false,
+  ): Promise<APISuccess | APIError> {
+    const fromFallback = async (): Promise<APISuccess | APIError> => {
+      const fallbackPatch: Partial<Pick<MenuDish, "tipo" | "descripcion" | "active">> & { alergenos?: string[] } = {};
+      if (patch.tipo !== undefined) fallbackPatch.tipo = normalizeMenuTipo(patch.tipo, fallbackTipo);
+      const fallbackDesc = String(patch.descripcion ?? patch.nombre ?? "").trim();
+      if (fallbackDesc) fallbackPatch.descripcion = fallbackDesc;
+      if (patch.alergenos !== undefined) fallbackPatch.alergenos = patch.alergenos;
+      if (patch.active !== undefined) fallbackPatch.active = patch.active;
+
+      if (Object.keys(fallbackPatch).length === 0) return { success: true } as APISuccess;
+      return json(fallbackPatchPath, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(fallbackPatch),
+      });
+    };
+
+    if (skipPrimary) return fromFallback();
+    try {
+      return await json(primaryPath, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+    } catch {
+      return fromFallback();
+    }
+  }
+
+  async function deleteComidaWithFallback(primaryPath: string, fallbackDeletePath: string, skipPrimary = false): Promise<APISuccess | APIError> {
+    if (skipPrimary) return json(fallbackDeletePath, { method: "DELETE" });
+    try {
+      return await json(primaryPath, { method: "DELETE" });
+    } catch {
+      return json(fallbackDeletePath, { method: "DELETE" });
+    }
+  }
+
+  async function toggleComidaWithFallback(
+    primaryPath: string,
+    fallbackPatchPath: string,
+    active: boolean,
+    skipPrimary = false,
+  ): Promise<APISuccess<{ active: boolean }> | APIError> {
+    const fromFallback = async (): Promise<APISuccess<{ active: boolean }> | APIError> => {
+      const fallbackRes = await json<APISuccess | APIError>(fallbackPatchPath, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ active }),
+      });
+      if (!fallbackRes.success) return fallbackRes;
+      return { success: true, active };
+    };
+
+    if (skipPrimary) return fromFallback();
+    try {
+      return await json(primaryPath, { method: "POST" });
+    } catch {
+      return fromFallback();
+    }
+  }
 
   const comidaApi = {
     postres: {
       async list(params?: { active?: number; search?: string; page?: number; limit?: number }): Promise<APISuccess<{ postres: Postre[] }> | APIError> {
-        return json(
-          withQuery("/api/admin/comida/postres", {
-            active: params?.active,
-            q: params?.search,
-            page: params?.page,
-            pageSize: params?.limit,
-          }),
-          { method: "GET" },
-        );
+        return json(withQuery("/api/admin/postres", params), { method: "GET" });
       },
       async create(input: { descripcion: string; alergenos: string[]; active?: boolean; precio?: number }): Promise<APISuccess<{ postre: Postre }> | APIError> {
-        return json("/api/admin/comida/postres", {
+        return json("/api/admin/postres", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
         });
       },
       async patch(id: number, patch: Partial<Pick<Postre, "descripcion" | "active" | "precio">> & { alergenos?: string[] }): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/postres/${id}`, {
+        return json(`/api/admin/postres/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
         });
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/postres/${id}`, { method: "DELETE" });
+        return json(`/api/admin/postres/${id}`, { method: "DELETE" });
       },
       async toggle(id: number, active: boolean): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/postres/${id}`, {
+        return json(`/api/admin/postres/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ active }),
         });
       },
-      async get(id: number): Promise<APISuccess<{ item: FoodItem; postre: Postre }> | APIError> {
-        return json(`/api/admin/comida/postres/${id}`, { method: "GET" });
-      },
     },
     vinos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ vinos: Vino[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(
-          withQuery("/api/admin/comida/vinos", {
-            tipo: params?.tipo,
-            active: params?.active,
-            q: params?.q ?? params?.search,
-            page: params?.page,
-            pageSize: params?.pageSize ?? params?.limit,
-          }),
-          { method: "GET" },
-        );
+        return json(withQuery("/api/admin/vinos", params), { method: "GET" });
       },
       async create(input: {
         tipo: string;
@@ -211,7 +457,7 @@ export function createClient(opts: ClientOpts) {
         active?: boolean;
         imageBase64?: string;
       }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/comida/vinos", {
+        return json("/api/admin/vinos", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
@@ -232,241 +478,105 @@ export function createClient(opts: ClientOpts) {
           imageBase64: string;
         }>,
       ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/vinos/${id}`, {
+        return json(`/api/admin/vinos/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
         });
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/vinos/${id}`, { method: "DELETE" });
+        return json(`/api/admin/vinos/${id}`, { method: "DELETE" });
       },
       async toggle(id: number, active: boolean): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/vinos/${id}`, {
+        return json(`/api/admin/vinos/${id}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ active }),
         });
       },
-      async get(id: number): Promise<APISuccess<{ item: Vino; vino: Vino }> | APIError> {
-        return json(`/api/admin/comida/vinos/${id}`, { method: "GET" });
-      },
     },
     cafes: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(
-          withQuery("/api/admin/comida/cafes", {
-            tipo: params?.tipo,
-            active: params?.active,
-            q: params?.q ?? params?.search,
-            page: params?.page,
-            pageSize: params?.pageSize ?? params?.limit,
-            categoria: params?.categoria,
-            category: params?.category,
-            alergeno: params?.alergeno,
-            suplemento: params?.suplemento,
-          }),
-          { method: "GET" },
+        return listComidaWithFallback("/api/admin/cafes", "/api/admin/menus/finde", params, true, "cafes");
+      },
+      async create(input: ComidaWriteInput): Promise<APISuccess<{ num: number }> | APIError> {
+        return createComidaWithFallback("/api/admin/cafes", "/api/admin/menus/finde/dishes", input, "ENTRANTE", true);
+      },
+      async patch(id: number, patch: ComidaPatchInput): Promise<APISuccess | APIError> {
+        return patchComidaWithFallback(
+          `/api/admin/cafes/${id}`,
+          `/api/admin/menus/finde/dishes/${id}`,
+          patch,
+          "ENTRANTE",
+          true,
         );
       },
-      async create(input: {
-        tipo?: string;
-        nombre: string;
-        precio: number;
-        descripcion?: string;
-        titulo?: string;
-        suplemento?: number;
-        alergenos?: string[];
-        active?: boolean;
-        imageBase64?: string;
-        categoria?: string;
-        category?: string;
-      }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/comida/cafes", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(input),
-        });
-      },
-      async patch(
-        id: number,
-        patch: Partial<{
-          tipo: string;
-          nombre: string;
-          precio: number;
-          descripcion: string;
-          titulo: string;
-          suplemento: number;
-          alergenos: string[];
-          active: boolean;
-          imageBase64: string;
-          categoria: string;
-          category: string;
-        }>,
-      ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/cafes/${id}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(patch),
-        });
-      },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/cafes/${id}`, { method: "DELETE" });
+        return deleteComidaWithFallback(`/api/admin/cafes/${id}`, `/api/admin/menus/finde/dishes/${id}`, true);
       },
-      async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
-        return json(`/api/admin/cafes/${id}/toggle`, { method: "POST" });
-      },
-      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        return json(`/api/admin/comida/cafes/${id}`, { method: "GET" });
+      async toggle(id: number, active = true): Promise<APISuccess<{ active: boolean }> | APIError> {
+        return toggleComidaWithFallback(
+          `/api/admin/cafes/${id}/toggle`,
+          `/api/admin/menus/finde/dishes/${id}`,
+          active,
+          true,
+        );
       },
     },
     bebidas: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(
-          withQuery("/api/admin/comida/bebidas", {
-            tipo: params?.tipo,
-            active: params?.active,
-            q: params?.q ?? params?.search,
-            page: params?.page,
-            pageSize: params?.pageSize ?? params?.limit,
-            categoria: params?.categoria,
-            category: params?.category,
-            alergeno: params?.alergeno,
-            suplemento: params?.suplemento,
-          }),
-          { method: "GET" },
+        return listComidaWithFallback("/api/admin/bebidas", "/api/admin/menus/finde", params, true, "bebidas");
+      },
+      async create(input: ComidaWriteInput): Promise<APISuccess<{ num: number }> | APIError> {
+        return createComidaWithFallback("/api/admin/bebidas", "/api/admin/menus/finde/dishes", input, "ENTRANTE", true);
+      },
+      async patch(id: number, patch: ComidaPatchInput): Promise<APISuccess | APIError> {
+        return patchComidaWithFallback(
+          `/api/admin/bebidas/${id}`,
+          `/api/admin/menus/finde/dishes/${id}`,
+          patch,
+          "ENTRANTE",
+          true,
         );
       },
-      async create(input: {
-        tipo?: string;
-        nombre: string;
-        precio: number;
-        descripcion?: string;
-        titulo?: string;
-        suplemento?: number;
-        alergenos?: string[];
-        active?: boolean;
-        imageBase64?: string;
-        categoria?: string;
-        category?: string;
-      }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/comida/bebidas", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(input),
-        });
-      },
-      async patch(
-        id: number,
-        patch: Partial<{
-          tipo: string;
-          nombre: string;
-          precio: number;
-          descripcion: string;
-          titulo: string;
-          suplemento: number;
-          alergenos: string[];
-          active: boolean;
-          imageBase64: string;
-          categoria: string;
-          category: string;
-        }>,
-      ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/bebidas/${id}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(patch),
-        });
-      },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/bebidas/${id}`, { method: "DELETE" });
+        return deleteComidaWithFallback(`/api/admin/bebidas/${id}`, `/api/admin/menus/finde/dishes/${id}`, true);
       },
-      async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
-        return json(`/api/admin/bebidas/${id}/toggle`, { method: "POST" });
-      },
-      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        return json(`/api/admin/comida/bebidas/${id}`, { method: "GET" });
+      async toggle(id: number, active = true): Promise<APISuccess<{ active: boolean }> | APIError> {
+        return toggleComidaWithFallback(
+          `/api/admin/bebidas/${id}/toggle`,
+          `/api/admin/menus/finde/dishes/${id}`,
+          active,
+          true,
+        );
       },
     },
     platos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(
-          withQuery("/api/admin/comida/platos", {
-            tipo: params?.tipo,
-            active: params?.active,
-            q: params?.q ?? params?.search,
-            page: params?.page,
-            pageSize: params?.pageSize ?? params?.limit,
-            categoria: params?.categoria,
-            category: params?.category,
-            alergeno: params?.alergeno,
-            suplemento: params?.suplemento,
-          }),
-          { method: "GET" },
-        );
+        return listComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia", params, true, "platos");
       },
-      async create(input: {
-        tipo?: string;
-        nombre: string;
-        precio: number;
-        descripcion?: string;
-        titulo?: string;
-        suplemento?: number;
-        alergenos?: string[];
-        active?: boolean;
-        imageBase64?: string;
-        categoria?: string;
-        category?: string;
-        category_id?: number | null;
-      }): Promise<APISuccess<{ num: number }> | APIError> {
-        return json("/api/admin/comida/platos", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(input),
-        });
+      async create(input: ComidaWriteInput): Promise<APISuccess<{ num: number }> | APIError> {
+        return createComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia/dishes", input, "PRINCIPAL", true);
       },
-      async patch(
-        id: number,
-        patch: Partial<{
-          tipo: string;
-          nombre: string;
-          precio: number;
-          descripcion: string;
-          titulo: string;
-          suplemento: number;
-          alergenos: string[];
-          active: boolean;
-          imageBase64: string;
-          categoria: string;
-          category: string;
-          category_id: number | null;
-        }>,
-      ): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/platos/${id}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(patch),
-        });
+      async patch(id: number, patch: ComidaPatchInput): Promise<APISuccess | APIError> {
+        return patchComidaWithFallback(`/api/admin/platos/${id}`, `/api/admin/menus/dia/dishes/${id}`, patch, "PRINCIPAL", true);
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return json(`/api/admin/comida/platos/${id}`, { method: "DELETE" });
+        return deleteComidaWithFallback(`/api/admin/platos/${id}`, `/api/admin/menus/dia/dishes/${id}`, true);
       },
-      async toggle(id: number): Promise<APISuccess<{ active: boolean }> | APIError> {
-        return json(`/api/admin/platos/${id}/toggle`, { method: "POST" });
-      },
-      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        return json(`/api/admin/comida/platos/${id}`, { method: "GET" });
+      async toggle(id: number, active = true): Promise<APISuccess<{ active: boolean }> | APIError> {
+        return toggleComidaWithFallback(`/api/admin/platos/${id}/toggle`, `/api/admin/menus/dia/dishes/${id}`, active, true);
       },
       categories: {
         async list(): Promise<APISuccess<{ categories: FoodCategory[] }> | APIError> {
           return jsonWithFallback(
-            ["/api/admin/comida/platos/categorias", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
             { method: "GET" },
           );
         },
         async create(input: { name: string; slug?: string }): Promise<APISuccess<{ category: FoodCategory }> | APIError> {
           return jsonWithFallback(
-            ["/api/admin/comida/platos/categorias", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
             {
               method: "POST",
               headers: { "content-type": "application/json" },

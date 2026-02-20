@@ -12,7 +12,7 @@ export type AppNavigationMeta = {
   breadcrumbs: BreadcrumbItem[];
 };
 
-const ROOT_BREADCRUMB: BreadcrumbItem = { label: "Backoffice", href: "/app" };
+const ROOT_BREADCRUMB: BreadcrumbItem = { label: "Backoffice", href: "/app/backoffice" };
 
 const SEGMENT_LABELS: Record<string, string> = {
   backoffice: "Inicio",

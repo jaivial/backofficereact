@@ -20,10 +20,11 @@ export default function Page() {
   const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance), [role, roleImportance, sectionAccess]);
 
   const orbitItems = useMemo<OrbitItem[]>(() => {
-    if (items.length <= 1) return items.map((item) => ({ ...item, angleDeg: -90 }));
     return items.map((item, index) => {
-      const angleDeg = (index / items.length) * 360 - 90;
-      return { ...item, angleDeg };
+      return {
+        ...item,
+        angleDeg: items.length <= 1 ? -90 : (index / items.length) * 360 - 90,
+      };
     });
   }, [items]);
 
@@ -53,12 +54,15 @@ export default function Page() {
             <ChefHat className="bo-homeCenterIcon" />
           </div>
 
-          {orbitItems.map((item) => (
+          {orbitItems.map((item, index) => (
             <a
               key={item.key}
               className="bo-homeNode"
               href={item.href}
-              style={{ ["--bo-home-angle" as any]: `${item.angleDeg}deg` }}
+              style={{
+                ["--bo-home-angle" as any]: `${item.angleDeg}deg`,
+                ["--bo-home-node-delay" as any]: `${index * 42}ms`,
+              }}
             >
               <span className="bo-homeNodeIcon" aria-hidden="true">
                 {iconForSidebarItemKey(item.key, { size: 18, strokeWidth: 1.8 })}
@@ -82,4 +86,3 @@ export default function Page() {
     </div>
   );
 }
-

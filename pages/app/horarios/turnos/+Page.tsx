@@ -1,16 +1,18 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { CalendarClock, Play, Square } from "lucide-react";
+import { CalendarClock, Play, Search, Square } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
-import type { FichajeSchedule, Member, TimeEntry } from "../../../../api/types";
+import type { FichajeActiveEntry, FichajeSchedule, Member, TimeEntry } from "../../../../api/types";
 import { fichajeRealtimeAtom } from "../../../../state/atoms";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { MemberPicker, type MemberPickerItem } from "../../../../ui/widgets/MemberPicker";
+import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { TimeEntriesEditor, type EditableTimeEntry } from "../../../../ui/widgets/TimeEntriesEditor";
 import { useToasts } from "../../../../ui/feedback/useToasts";
+import { HorariosRosterTable, type HorariosRosterRow, type HorariosRosterTableView } from "../../../../ui/widgets/HorariosRosterTable";
 
 type PageData = {
   date: string;
@@ -18,6 +20,8 @@ type PageData = {
   schedules: FichajeSchedule[];
   error: string | null;
 };
+
+const VIEW_STORAGE_KEY = "bo_horarios_turnos_view";
 
 function fullName(member: Member): string {
   const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
@@ -71,6 +75,17 @@ export default function Page() {
   const [busyFichaje, setBusyFichaje] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);
+  const [view, setView] = useState<HorariosRosterTableView>(() => {
+    try {
+      const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
+      if (stored === "table" || stored === "grid") return stored;
+    } catch {
+      // ignore
+    }
+    return "grid";
+  });
+  const [shiftModalMember, setShiftModalMember] = useState<Member | null>(null);
+  const [shiftModalOpen, setShiftModalOpen] = useState(false);
 
   const membersSorted = useMemo(
     () => [...(data.members || [])].sort((a, b) => fullName(a).localeCompare(fullName(b), "es", { sensitivity: "base" })),
@@ -84,10 +99,10 @@ export default function Page() {
   }, [schedules]);
 
   const activeEntriesForDate = useMemo(() => {
-    const out = new Set<number>();
+    const out = new Map<number, FichajeActiveEntry>();
     for (const entry of Object.values(realtime.activeEntriesByMember)) {
       if (!entry || entry.workDate !== date) continue;
-      out.add(entry.memberId);
+      out.set(entry.memberId, entry);
     }
     return out;
   }, [date, realtime.activeEntriesByMember]);
@@ -301,11 +316,52 @@ export default function Page() {
     [selectedMemberId, activeEntriesForDate],
   );
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, view);
+    } catch {
+      // ignore
+    }
+  }, [view]);
+
   React.useEffect(() => {
     void loadEntries(date, selectedMemberId).catch((err) => {
       setError(err instanceof Error ? err.message : "No se pudieron cargar registros");
     });
   }, [date, loadEntries, selectedMemberId]);
+
+  const tableMembers = useMemo(() => {
+    const query = memberSearch.trim().toLowerCase();
+    if (!query) return membersSorted;
+    return membersSorted.filter((member) => fullName(member).toLowerCase().includes(query));
+  }, [memberSearch, membersSorted]);
+
+  const rosterRows = useMemo<HorariosRosterRow[]>(
+    () =>
+      tableMembers.map((member) => ({
+        member,
+        schedule: scheduleByMember.get(member.id),
+        activeEntry: activeEntriesForDate.get(member.id),
+      })),
+    [activeEntriesForDate, scheduleByMember, tableMembers],
+  );
+
+  const onRosterSelect = useCallback(
+    (member: Member) => {
+      void selectMember(member.id);
+    },
+    [selectMember],
+  );
+
+  const onOpenShiftModal = useCallback((member: Member) => {
+    setShiftModalMember(member);
+    setShiftModalOpen(true);
+  }, []);
+
+  const onCloseShiftModal = useCallback(() => {
+    setShiftModalOpen(false);
+    setShiftModalMember(null);
+  }, []);
 
   return (
     <section aria-label="Edicion de turnos" className="bo-turnosPage">
@@ -321,19 +377,71 @@ export default function Page() {
           <div className="bo-horariosPreviewActions">
             <DatePicker value={date} onChange={(nextDate) => void selectDate(nextDate)} />
             <div className="bo-horariosDateBadge">{loading ? "Cargando..." : date}</div>
+            <div className="bo-tabs bo-tabs--glass bo-viewTabs" role="tablist" aria-label="Cambiar vista">
+              <button
+                type="button"
+                className={`bo-tab${view === "grid" ? " is-active" : ""}`}
+                role="tab"
+                aria-selected={view === "grid"}
+                onClick={() => setView("grid")}
+              >
+                {view === "grid" ? <span className="bo-tabIndicator" /> : null}
+                <span className="bo-tabInner">
+                  <span className="bo-tabLabel">Grid</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`bo-tab${view === "table" ? " is-active" : ""}`}
+                role="tab"
+                aria-selected={view === "table"}
+                onClick={() => setView("table")}
+              >
+                {view === "table" ? <span className="bo-tabIndicator" /> : null}
+                <span className="bo-tabInner">
+                  <span className="bo-tabLabel">Tabla</span>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="bo-panelBody bo-turnosBody">
-          <MemberPicker
-            title="Miembros"
-            searchValue={memberSearch}
-            onSearchChange={setMemberSearch}
-            items={pickerItems}
-            selectedId={selectedMemberId}
-            onSelect={(memberId) => void selectMember(memberId)}
-            emptyLabel="Sin miembros para mostrar."
-          />
+        <div className={`bo-panelBody bo-turnosBody${view === "table" ? " bo-turnosBody--table" : ""}`}>
+          {view === "grid" ? (
+            <MemberPicker
+              title="Miembros"
+              searchValue={memberSearch}
+              onSearchChange={setMemberSearch}
+              items={pickerItems}
+              selectedId={selectedMemberId}
+              onSelect={(memberId) => void selectMember(memberId)}
+              emptyLabel="Sin miembros para mostrar."
+            />
+          ) : (
+            <section className="bo-turnosRoster" aria-label="Tabla de miembros">
+              <div className="bo-turnosRosterHead">
+                <div className="bo-panelTitle">Miembros</div>
+                <div className="bo-memberPickerCount">{tableMembers.length}</div>
+              </div>
+              <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro">
+                <Search size={14} strokeWidth={1.8} />
+                <input
+                  type="text"
+                  className="bo-memberPickerSearchInput"
+                  value={memberSearch}
+                  onChange={(ev) => setMemberSearch(ev.target.value)}
+                  placeholder="Buscar..."
+                />
+              </label>
+              <HorariosRosterTable
+                rows={rosterRows}
+                selectedMemberId={selectedMemberId}
+                onRowClick={onRosterSelect}
+                onEditMember={onOpenShiftModal}
+                ariaLabel="Tabla de horarios (turnos)"
+              />
+            </section>
+          )}
 
           <section className="bo-turnosEditor" aria-label="Editor de turnos">
             <div className="bo-turnosEditorHead">
@@ -385,6 +493,10 @@ export default function Page() {
           </section>
         </div>
       </div>
+
+      {shiftModalMember ? (
+        <MemberShiftModal member={shiftModalMember} selectedDate={date} open={shiftModalOpen} onClose={onCloseShiftModal} />
+      ) : null}
     </section>
   );
 }
