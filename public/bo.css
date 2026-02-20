@@ -2562,27 +2562,48 @@ tr.is-inactive {
 
   .bo-app--page .bo-navMobileMain {
     width: 100%;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    justify-items: center;
+    padding-inline: 8px;
+  }
+
+  .bo-app--page .bo-navMobileMoreWrap {
+    position: relative;
+    display: grid;
+    place-items: center;
   }
 
   .bo-app--page .bo-navMobileOverflow {
     position: absolute;
-    right: 0;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) translateY(8px) scale(0.96);
+    transform-origin: bottom center;
     bottom: calc(100% + 10px);
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     gap: 8px;
     z-index: 30;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 150ms ease-out, opacity 150ms ease-out, visibility 150ms ease-out;
+  }
+
+  .bo-app--page .bo-navMobileOverflow.is-open {
+    transform: translateX(-50%) translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .bo-app--page .bo-navMobileOverflowList {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     gap: 8px;
     padding: 10px;
     border-radius: 18px;
@@ -2614,7 +2635,8 @@ tr.is-inactive {
 @media (prefers-reduced-motion: reduce) {
   .bo-actionBtn,
   .bo-navBtn,
-  .bo-calDay {
+  .bo-calDay,
+  .bo-navMobileOverflow {
     transition: none;
   }
 
