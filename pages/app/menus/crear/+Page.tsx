@@ -1,19 +1,30 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle,
   ArrowLeft,
+  Bean,
   Check,
   ChevronDown,
   ChevronUp,
+  CircleDot,
+  Egg,
   Eye,
+  Fish,
+  FlaskConical,
   GripVertical,
+  LeafyGreen,
+  Milk,
+  Nut,
   PencilLine,
   Plus,
   Repeat2,
   Search,
   Settings2,
+  Shell,
+  Shrimp,
+  Sprout,
   Trash2,
   Upload,
+  Wheat,
 } from "lucide-react";
 import { motion, Reorder, useDragControls, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
@@ -21,10 +32,12 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../../api/client";
 import type { DishCatalogItem, GroupMenuV2, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../api/types";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
+import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { Switch } from "../../../../ui/shadcn/Switch";
+import { FoodDishCard } from "../../../../ui/widgets/food/FoodDishCard";
 import { MenuTypeChangeModal } from "../../../../ui/widgets/menus/MenuTypeChangeModal";
 import { MENU_TYPE_PANELS } from "../../../../ui/widgets/menus/menuPresentation";
 
@@ -46,6 +59,7 @@ type EditorDish = {
   price: number | null;
   active: boolean;
   position: number;
+  foto_url?: string;
 };
 
 type EditorSection = {
@@ -127,20 +141,20 @@ const DEFAULT_BEVERAGE = {
 };
 
 const ALLERGENS = [
-  { key: "Gluten", icon: "G" },
-  { key: "Crustaceos", icon: "C" },
-  { key: "Huevos", icon: "H" },
-  { key: "Pescado", icon: "P" },
-  { key: "Cacahuetes", icon: "CA" },
-  { key: "Soja", icon: "S" },
-  { key: "Leche", icon: "L" },
-  { key: "Frutos de cascara", icon: "FC" },
-  { key: "Apio", icon: "A" },
-  { key: "Mostaza", icon: "M" },
-  { key: "Sesamo", icon: "SE" },
-  { key: "Sulfitos", icon: "SU" },
-  { key: "Altramuces", icon: "AL" },
-  { key: "Moluscos", icon: "MO" },
+  { key: "Gluten", icon: Wheat },
+  { key: "Crustaceos", icon: Shrimp },
+  { key: "Huevos", icon: Egg },
+  { key: "Pescado", icon: Fish },
+  { key: "Cacahuetes", icon: Nut },
+  { key: "Soja", icon: Bean },
+  { key: "Leche", icon: Milk },
+  { key: "Frutos de cascara", icon: Nut },
+  { key: "Apio", icon: LeafyGreen },
+  { key: "Mostaza", icon: Sprout },
+  { key: "Sesamo", icon: CircleDot },
+  { key: "Sulfitos", icon: FlaskConical },
+  { key: "Altramuces", icon: Bean },
+  { key: "Moluscos", icon: Shell },
 ] as const;
 
 const beverageTypeOptions: { value: string; label: string }[] = [
@@ -196,8 +210,11 @@ function ReorderItemContainer({ as = "div", value, className, transition, whileD
       as={as}
       value={value}
       className={className}
+      layout="position"
       dragListener={false}
       dragControls={dragControls}
+      dragMomentum={false}
+      dragElastic={0.04}
       transition={transition}
       whileDrag={whileDrag}
     >
@@ -213,6 +230,449 @@ function toNumOrNull(raw: string): number | null {
   if (!Number.isFinite(n)) return null;
   return n;
 }
+
+function formatEuro(value: number): string {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(Number(value || 0));
+}
+
+function WheatOffIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m2 22 10-10" />
+      <path d="m16 8-1.17 1.17" />
+      <path d="M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" />
+      <path d="m8 8-.53.53a3.5 3.5 0 0 0 0 4.94L9 15l1.53-1.53c.55-.55.88-1.25.98-1.97" />
+      <path d="M10.91 5.26c.15-.26.34-.51.56-.73L13 3l1.53 1.53a3.5 3.5 0 0 1 .28 4.62" />
+      <path d="M20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4Z" />
+      <path d="M11.47 17.47 13 19l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L5 19l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" />
+      <path d="m16 16-.53.53a3.5 3.5 0 0 1-4.94 0L9 15l1.53-1.53a3.49 3.49 0 0 1 1.97-.98" />
+      <path d="M18.74 13.09c.26-.15.51-.34.73-.56L21 11l-1.53-1.53a3.5 3.5 0 0 0-4.62-.28" />
+      <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>
+  );
+}
+
+function debugMenuPerf(event: string, payload?: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
+  const globalDebug = (window as any).__MENU_PERF_DEBUG === true;
+  let storageDebug = false;
+  try {
+    storageDebug = window.localStorage.getItem("menuPerfDebug") === "1";
+  } catch {
+    storageDebug = false;
+  }
+  if (!globalDebug && !storageDebug) return;
+  console.log("[menus/crear perf]", event, payload ?? {});
+}
+
+type MenuDishEditorCardProps = {
+  sectionClientId: string;
+  dish: EditorDish;
+  dishIdx: number;
+  isALaCarte: boolean;
+  startDishDrag: (event: React.PointerEvent<Element>) => void;
+  setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
+  removeDish: (sectionClientId: string, dishClientId: string) => void;
+  updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => void;
+};
+
+const MenuDishEditorCard = React.memo(
+  function MenuDishEditorCard({
+    sectionClientId,
+    dish,
+    dishIdx,
+    isALaCarte,
+    startDishDrag,
+    setAllergenModal,
+    removeDish,
+    updateDish,
+  }: MenuDishEditorCardProps) {
+    const dishLabel = dish.title || `Plato ${dishIdx + 1}`;
+
+    return (
+      <FoodDishCard
+        className="bo-dishCard bo-dishCard--horizontal"
+        bodyClassName="bo-dishCardBody"
+        debugId={`section:${sectionClientId}:dish:${dish.clientId}`}
+        title={dishLabel}
+        imageUrl={dish.foto_url}
+        inactive={!dish.active}
+        priceLabel={isALaCarte ? formatEuro(dish.price ?? 0) : undefined}
+        footerActions={(
+          <div className="bo-dishRowActionsInline bo-dishRowActionsInline--split">
+            <button
+              className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishAllergenIconBtn"
+              type="button"
+              aria-label={`Editar alergenos de ${dishLabel}`}
+              onClick={() => setAllergenModal({ open: true, sectionClientId, dishClientId: dish.clientId })}
+            >
+              <WheatOffIcon size={14} />
+            </button>
+            <button
+              className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
+              type="button"
+              aria-label={`Eliminar plato ${dishLabel}`}
+              onClick={() => removeDish(sectionClientId, dish.clientId)}
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        )}
+      >
+        <div className="bo-dishEditorContent">
+          <div className="bo-dishCardHead">
+            <button
+              className="bo-dishDrag"
+              type="button"
+              aria-label={`Arrastrar plato ${dishLabel}`}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                startDishDrag(event);
+              }}
+            >
+              <GripVertical size={14} />
+            </button>
+            <label className="bo-checkRow">
+              <Switch
+                checked={dish.active}
+                onCheckedChange={(checked) => {
+                  debugMenuPerf("ui-toggle-active", {
+                    sectionClientId,
+                    dishClientId: dish.clientId,
+                    checked,
+                  });
+                  updateDish(sectionClientId, dish.clientId, { active: checked });
+                }}
+              />
+              <span>Activo</span>
+            </label>
+          </div>
+          <div className="bo-dishFields">
+            <textarea
+              className="bo-input bo-textarea bo-dishTitleTextarea"
+              rows={1}
+              value={dish.title}
+              ref={(node) => {
+                if (!node) return;
+                node.style.height = "auto";
+                node.style.height = `${Math.max(node.scrollHeight, 40)}px`;
+              }}
+              onInput={(e) => {
+                const node = e.currentTarget;
+                node.style.height = "auto";
+                node.style.height = `${Math.max(node.scrollHeight, 40)}px`;
+              }}
+              onChange={(e) => updateDish(sectionClientId, dish.clientId, { title: e.target.value })}
+              placeholder="Titulo plato"
+            />
+            <label className="bo-checkRow">
+              <Switch
+                checked={dish.description_enabled}
+                onCheckedChange={(checked) => {
+                  debugMenuPerf("ui-toggle-description", {
+                    sectionClientId,
+                    dishClientId: dish.clientId,
+                    checked,
+                  });
+                  updateDish(sectionClientId, dish.clientId, {
+                    description_enabled: checked,
+                    description: checked ? dish.description : "",
+                  });
+                }}
+              />
+              <span>Descripcion</span>
+            </label>
+            {dish.description_enabled ? (
+              <textarea
+                className="bo-input bo-textarea"
+                value={dish.description}
+                onChange={(e) => updateDish(sectionClientId, dish.clientId, { description: e.target.value })}
+                placeholder="Descripcion"
+              />
+            ) : null}
+
+            {isALaCarte ? (
+              <div className="bo-dishPriceRow">
+                <label className="bo-label">Precio</label>
+                <input
+                  className="bo-input bo-priceInput"
+                  inputMode="decimal"
+                  value={dish.price == null ? "" : String(dish.price)}
+                  onChange={(e) =>
+                    updateDish(sectionClientId, dish.clientId, {
+                      price: toNumOrNull(e.target.value),
+                    })
+                  }
+                  placeholder="0.00"
+                />
+              </div>
+            ) : null}
+
+            <div className="bo-dishRow">
+              <div className="bo-dishRowInlineControls">
+                <label className="bo-checkRow">
+                  <Switch
+                    checked={dish.supplement_enabled}
+                    onCheckedChange={(checked) => {
+                      debugMenuPerf("ui-toggle-supplement", {
+                        sectionClientId,
+                        dishClientId: dish.clientId,
+                        checked,
+                      });
+                      updateDish(sectionClientId, dish.clientId, {
+                        supplement_enabled: checked,
+                        supplement_price: checked ? dish.supplement_price : null,
+                      });
+                    }}
+                  />
+                  <span>Suplemento</span>
+                </label>
+                {dish.supplement_enabled ? (
+                  <input
+                    className="bo-input bo-suppInput"
+                    inputMode="decimal"
+                    value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
+                    onChange={(e) =>
+                      updateDish(sectionClientId, dish.clientId, {
+                        supplement_price: toNumOrNull(e.target.value),
+                      })
+                    }
+                    placeholder="0.00"
+                  />
+                ) : null}
+              </div>
+            </div>
+
+            {dish.allergens.length > 0 ? (
+              <div className="bo-allergenRow">
+                {dish.allergens.map((name) => (
+                  <span key={`${dish.clientId}-${name}`} className="bo-allergenPill">
+                    {name}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </FoodDishCard>
+    );
+  },
+  (prev, next) => (
+    prev.sectionClientId === next.sectionClientId
+    && areEditorDishesEqual(prev.dish, next.dish)
+    && prev.dishIdx === next.dishIdx
+    && prev.isALaCarte === next.isALaCarte
+  ),
+);
+
+const EMPTY_SEARCH_RESULTS: DishCatalogItem[] = [];
+
+type MenuSectionEditorPanelProps = {
+  sec: EditorSection;
+  secIdx: number;
+  sectionsCount: number;
+  isALaCarte: boolean;
+  reorderTransition: any;
+  reorderWhileDrag: any;
+  chevronHover: any;
+  chevronTapUp: any;
+  chevronTapDown: any;
+  moveSection: (from: number, to: number) => void;
+  updateSection: (clientId: string, patch: Partial<EditorSection>) => void;
+  reorderDishes: (sectionClientId: string, orderedClientIds: string[]) => void;
+  setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
+  removeDish: (sectionClientId: string, dishClientId: string) => void;
+  updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => void;
+  addDish: (sectionClientId: string, fromCatalog?: DishCatalogItem) => void;
+  handleSearch: (sectionClientId: string, term: string) => void;
+  searchTerm: string;
+  searchItems: DishCatalogItem[];
+};
+
+const MenuSectionEditorPanel = React.memo(
+  function MenuSectionEditorPanel({
+    sec,
+    secIdx,
+    sectionsCount,
+    isALaCarte,
+    reorderTransition,
+    reorderWhileDrag,
+    chevronHover,
+    chevronTapUp,
+    chevronTapDown,
+    moveSection,
+    updateSection,
+    reorderDishes,
+    setAllergenModal,
+    removeDish,
+    updateDish,
+    addDish,
+    handleSearch,
+    searchTerm,
+    searchItems,
+  }: MenuSectionEditorPanelProps) {
+    return (
+      <ReorderItemContainer
+        value={sec.clientId}
+        className="bo-panel bo-accordionSection bo-reorderItem"
+        transition={reorderTransition}
+        whileDrag={reorderWhileDrag}
+      >
+        {(startSectionDrag) => (
+          <>
+            <div className="bo-accordionHeadRow">
+              <div className="bo-sectionReorder bo-sectionReorder--accordion">
+                <div className="bo-sectionMoveControls">
+                  <motion.button
+                    className="bo-sectionMoveBtn"
+                    type="button"
+                    aria-label={`Subir seccion ${sec.title || secIdx + 1}`}
+                    disabled={secIdx === 0}
+                    whileHover={chevronHover}
+                    whileTap={chevronTapUp}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={() => moveSection(secIdx, secIdx - 1)}
+                  >
+                    <ChevronUp size={14} />
+                  </motion.button>
+                  <motion.button
+                    className="bo-sectionMoveBtn"
+                    type="button"
+                    aria-label={`Bajar seccion ${sec.title || secIdx + 1}`}
+                    disabled={secIdx === sectionsCount - 1}
+                    whileHover={chevronHover}
+                    whileTap={chevronTapDown}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={() => moveSection(secIdx, secIdx + 1)}
+                  >
+                    <ChevronDown size={14} />
+                  </motion.button>
+                </div>
+                <button
+                  className="bo-sectionDrag"
+                  type="button"
+                  aria-label={`Arrastrar seccion ${sec.title || secIdx + 1}`}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    startSectionDrag(event);
+                  }}
+                >
+                  <GripVertical size={18} />
+                </button>
+              </div>
+              <button
+                className="bo-accordionHead"
+                type="button"
+                onClick={() => updateSection(sec.clientId, { expanded: !sec.expanded })}
+              >
+                <span className="bo-accordionHeadLeft">
+                  <input
+                    className="bo-input"
+                    value={sec.title}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => updateSection(sec.clientId, { title: e.target.value })}
+                  />
+                </span>
+                {sec.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+            </div>
+
+            {sec.expanded !== false ? (
+              <div className="bo-panelBody">
+                <Reorder.Group
+                  axis="y"
+                  values={sec.dishes.map((dish) => dish.clientId)}
+                  onReorder={(orderedDishClientIds) => reorderDishes(sec.clientId, orderedDishClientIds)}
+                  className="bo-dishesStack bo-reorderGroup"
+                >
+                  {sec.dishes.map((dish, dishIdx) => (
+                    <ReorderItemContainer
+                      key={dish.clientId}
+                      value={dish.clientId}
+                      className="bo-dishReorderItem bo-reorderItem"
+                      transition={reorderTransition}
+                      whileDrag={reorderWhileDrag}
+                    >
+                      {(startDishDrag) => (
+                        <MenuDishEditorCard
+                          sectionClientId={sec.clientId}
+                          dish={dish}
+                          dishIdx={dishIdx}
+                          isALaCarte={isALaCarte}
+                          startDishDrag={startDishDrag}
+                          setAllergenModal={setAllergenModal}
+                          removeDish={removeDish}
+                          updateDish={updateDish}
+                        />
+                      )}
+                    </ReorderItemContainer>
+                  ))}
+                </Reorder.Group>
+
+                <div className="bo-dishAddRow">
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-dishAddBtn" type="button" onClick={() => addDish(sec.clientId)}>
+                    <Plus size={12} /> Añadir plato
+                  </button>
+                </div>
+
+                <div className="bo-searchCatalogRow">
+                  <div className="bo-searchCatalogInputWrap">
+                    <Search size={14} className="bo-searchCatalogIcon" aria-hidden="true" />
+                    <input
+                      className="bo-input bo-searchCatalogInput"
+                      placeholder="Buscar plato en base de datos"
+                      value={searchTerm}
+                      onChange={(e) => handleSearch(sec.clientId, e.target.value)}
+                    />
+                  </div>
+                  {searchItems.length > 0 ? (
+                    <div className="bo-searchResults">
+                      {searchItems.map((item) => (
+                        <button
+                          key={`${sec.clientId}-${item.id}`}
+                          type="button"
+                          className="bo-searchResultBtn"
+                          onClick={() => addDish(sec.clientId, item)}
+                        >
+                          <span>{item.title}</span>
+                          <span className="bo-mutedText">Añadir</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
+      </ReorderItemContainer>
+    );
+  },
+  (prev, next) => (
+    prev.sec === next.sec
+    && prev.secIdx === next.secIdx
+    && prev.sectionsCount === next.sectionsCount
+    && prev.isALaCarte === next.isALaCarte
+    && prev.reorderTransition === next.reorderTransition
+    && prev.reorderWhileDrag === next.reorderWhileDrag
+    && prev.chevronHover === next.chevronHover
+    && prev.chevronTapUp === next.chevronTapUp
+    && prev.chevronTapDown === next.chevronTapDown
+    && prev.searchTerm === next.searchTerm
+    && prev.searchItems === next.searchItems
+  ),
+);
 
 function buildBasicsPayload(draft: BasicsDraft): BasicsPayload {
   return {
@@ -255,6 +715,131 @@ function getSectionsFingerprint(sections: EditorSection[]): string {
   );
 }
 
+function getSectionsStructureFingerprint(sections: EditorSection[]): string {
+  return JSON.stringify(
+    sections.map((sec, idx) => ({
+      id: sec.id || null,
+      clientId: sec.clientId,
+      title: sec.title.trim(),
+      kind: sec.kind,
+      position: idx,
+    })),
+  );
+}
+
+function getSectionDishesFingerprint(section: EditorSection): string {
+  return JSON.stringify(
+    section.dishes.map((dish, idx) => ({
+      id: dish.id || null,
+      catalog: dish.catalog_dish_id || null,
+      title: dish.title,
+      description: dish.description,
+      allergens: dish.allergens,
+      supplement_enabled: dish.supplement_enabled,
+      supplement_price: dish.supplement_price,
+      price: dish.price,
+      active: dish.active,
+      position: idx,
+    })),
+  );
+}
+
+function getSectionsDishFingerprintMap(sections: EditorSection[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const section of sections) {
+    map[section.clientId] = getSectionDishesFingerprint(section);
+  }
+  return map;
+}
+
+type SectionDishSyncState = {
+  order: string;
+  byId: Record<string, string>;
+};
+
+function getDishPatchFingerprint(dish: EditorDish, isALaCarte: boolean): string {
+  return JSON.stringify({
+    id: dish.id || null,
+    catalog: dish.catalog_dish_id || null,
+    title: dish.title.trim(),
+    description: dish.description,
+    allergens: dish.allergens,
+    supplement_enabled: dish.supplement_enabled,
+    supplement_price: dish.supplement_price,
+    price: isALaCarte ? dish.price : null,
+    active: dish.active,
+  });
+}
+
+function getSectionDishSyncState(section: EditorSection, isALaCarte: boolean): SectionDishSyncState {
+  const ids = section.dishes.map((dish) => dish.id || 0);
+  const byId: Record<string, string> = {};
+  section.dishes.forEach((dish) => {
+    if (!dish.id) return;
+    byId[String(dish.id)] = getDishPatchFingerprint(dish, isALaCarte);
+  });
+  return {
+    order: JSON.stringify(ids),
+    byId,
+  };
+}
+
+function getSectionsDishSyncStateMap(sections: EditorSection[], isALaCarte: boolean): Record<string, SectionDishSyncState> {
+  const map: Record<string, SectionDishSyncState> = {};
+  sections.forEach((section) => {
+    map[section.clientId] = getSectionDishSyncState(section, isALaCarte);
+  });
+  return map;
+}
+
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+function areEditorDishesEqual(prev: EditorDish, next: EditorDish): boolean {
+  return (
+    prev.clientId === next.clientId
+    && prev.id === next.id
+    && prev.catalog_dish_id === next.catalog_dish_id
+    && prev.title === next.title
+    && prev.description === next.description
+    && prev.description_enabled === next.description_enabled
+    && arraysEqual(prev.allergens, next.allergens)
+    && prev.supplement_enabled === next.supplement_enabled
+    && prev.supplement_price === next.supplement_price
+    && prev.price === next.price
+    && prev.active === next.active
+    && prev.position === next.position
+    && prev.foto_url === next.foto_url
+  );
+}
+
+function mergeDishFromServer(prev: EditorDish | undefined, server: GroupMenuV2Dish): EditorDish {
+  const next = mapApiDish(server, prev);
+  if (!prev) return next;
+  if (
+    prev.id === next.id
+    && prev.catalog_dish_id === next.catalog_dish_id
+    && prev.title === next.title
+    && prev.description === next.description
+    && prev.description_enabled === next.description_enabled
+    && arraysEqual(prev.allergens, next.allergens)
+    && prev.supplement_enabled === next.supplement_enabled
+    && prev.supplement_price === next.supplement_price
+    && prev.price === next.price
+    && prev.active === next.active
+    && prev.position === next.position
+    && prev.foto_url === next.foto_url
+  ) {
+    return prev;
+  }
+  return next;
+}
+
 function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
   const description = d.description || "";
   const hasDescription = description.trim().length > 0;
@@ -271,6 +856,7 @@ function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
     price: d.price ?? null,
     active: d.active !== false,
     position: d.position || 0,
+    foto_url: d.foto_url || d.image_url || prev?.foto_url,
   };
 }
 
@@ -390,10 +976,15 @@ export default function Page() {
   const previewDockTimerRef = useRef<number | null>(null);
   const syncTimerRef = useRef<number | null>(null);
   const basicsTimerRef = useRef<number | null>(null);
+  const renderCountRef = useRef(0);
   const lastSavedBasicsRef = useRef<string>("");
   const inFlightBasicsRef = useRef<string | null>(null);
   const lastSavedSectionsRef = useRef<string>("");
+  const lastSavedSectionsStructureRef = useRef<string>("");
+  const lastSavedSectionDishesRef = useRef<Record<string, string>>({});
+  const lastSavedSectionDishSyncRef = useRef<Record<string, SectionDishSyncState>>({});
   const inFlightSectionsRef = useRef<string | null>(null);
+  const syncRequestSeqRef = useRef(0);
 
   const steps = [0, 1, 2, 3];
 
@@ -440,6 +1031,33 @@ export default function Page() {
   const sectionsFingerprint = useMemo(() => getSectionsFingerprint(sections), [sections]);
   const shouldReduceMotion = useReducedMotion();
   const sectionOrder = useMemo(() => sections.map((sec) => sec.clientId), [sections]);
+  const loadingSectionTitles = useMemo(() => {
+    const fromMenu = Array.isArray(data.menu?.sections) ? data.menu.sections : [];
+    if (fromMenu.length > 0) {
+      return fromMenu.map((section, idx) => section.title?.trim() || `Seccion ${idx + 1}`);
+    }
+    return ["Entrantes", "Principales", "Postres"];
+  }, [data.menu]);
+
+  useEffect(() => {
+    renderCountRef.current += 1;
+    debugMenuPerf("page-commit", {
+      render: renderCountRef.current,
+      menuId,
+      step,
+      hydrated,
+      saveState,
+      sections: sections.length,
+      sectionIds: sections.map((section) => section.clientId),
+    });
+  });
+
+  useEffect(() => {
+    debugMenuPerf("sections-fingerprint-change", {
+      fingerprint: sectionsFingerprint.slice(0, 18),
+      sections: sections.length,
+    });
+  }, [sectionsFingerprint, sections.length]);
   const paneLayoutTransition = useMemo(
     () =>
       shouldReduceMotion
@@ -455,10 +1073,8 @@ export default function Page() {
       shouldReduceMotion
         ? { duration: 0 }
         : {
-            type: "spring",
-            stiffness: 420,
-            damping: 32,
-            mass: 0.38,
+            duration: 0.18,
+            ease: [0.2, 0, 0, 1] as const,
           },
     [shouldReduceMotion],
   );
@@ -467,7 +1083,6 @@ export default function Page() {
       shouldReduceMotion
         ? undefined
         : {
-            scale: 1.012,
             borderColor: "rgba(185, 168, 255, 0.56)",
             boxShadow: "0 16px 34px rgba(8, 10, 20, 0.5)",
           },
@@ -482,12 +1097,17 @@ export default function Page() {
       lastSavedBasicsRef.current = "";
       inFlightBasicsRef.current = null;
       lastSavedSectionsRef.current = "";
+      lastSavedSectionsStructureRef.current = "";
+      lastSavedSectionDishesRef.current = {};
+      lastSavedSectionDishSyncRef.current = {};
       inFlightSectionsRef.current = null;
+      syncRequestSeqRef.current = 0;
       setHydrated(true);
       return;
     }
 
     const mapped = mapApiMenu(data.menu, sections);
+    const mappedIsALaCarte = mapped.menuType === "a_la_carte" || mapped.menuType === "a_la_carte_group";
     setTitle(mapped.title);
     setPrice(mapped.price);
     setActive(mapped.active);
@@ -522,8 +1142,12 @@ export default function Page() {
     });
     lastSavedBasicsRef.current = JSON.stringify(mappedBasicsPayload);
     lastSavedSectionsRef.current = getSectionsFingerprint(mapped.sections);
+    lastSavedSectionsStructureRef.current = getSectionsStructureFingerprint(mapped.sections);
+    lastSavedSectionDishesRef.current = getSectionsDishFingerprintMap(mapped.sections);
+    lastSavedSectionDishSyncRef.current = getSectionsDishSyncStateMap(mapped.sections, mappedIsALaCarte);
     inFlightBasicsRef.current = null;
     inFlightSectionsRef.current = null;
+    syncRequestSeqRef.current = 0;
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -611,31 +1235,156 @@ export default function Page() {
         return;
       }
 
+      const requestSeq = syncRequestSeqRef.current + 1;
+      syncRequestSeqRef.current = requestSeq;
       inFlightSectionsRef.current = fingerprint;
       setSaveState("saving");
+      debugMenuPerf("sync-sections:start", {
+        requestSeq,
+        force,
+        sections: sectionsSnapshot.length,
+        fingerprint: fingerprint.slice(0, 18),
+      });
 
       try {
-        const structure = sectionsSnapshot.map((sec, idx) => ({
-          id: sec.id,
-          title: sec.title.trim() || "Seccion",
-          kind: sec.kind,
+        const structureFingerprint = getSectionsStructureFingerprint(sectionsSnapshot);
+        let rebuilt = sectionsSnapshot.map((section, idx) => ({
+          ...section,
           position: idx,
+          dishes: section.dishes,
         }));
+        let needsStateReconcile = false;
 
-        const resSections = await api.menus.gruposV2.putSections(menuId, structure);
-        if (!resSections.success) {
-          throw new Error(resSections.message || "No se pudieron guardar las secciones");
+        const shouldSyncStructure = force
+          || structureFingerprint !== lastSavedSectionsStructureRef.current
+          || rebuilt.some((section) => !section.id);
+        debugMenuPerf("sync-sections:structure-check", {
+          requestSeq,
+          shouldSyncStructure,
+          fingerprint: structureFingerprint.slice(0, 18),
+        });
+
+        if (shouldSyncStructure) {
+          const structure = rebuilt.map((sec, idx) => ({
+            id: sec.id,
+            title: sec.title.trim() || "Seccion",
+            kind: sec.kind,
+            position: idx,
+          }));
+
+          debugMenuPerf("api-call", {
+            requestSeq,
+            endpoint: "PUT /group-menus-v2/:id/sections",
+            sections: structure.length,
+          });
+          const resSections = await api.menus.gruposV2.putSections(menuId, structure);
+          if (!resSections.success) {
+            throw new Error(resSections.message || "No se pudieron guardar las secciones");
+          }
+
+          needsStateReconcile = true;
+          rebuilt = (resSections.sections || []).map((sec, idx) => {
+            const local = rebuilt[idx];
+            const mapped = mapApiSection(sec, local);
+            mapped.dishes = withDishPositions(local?.dishes || []);
+            return mapped;
+          });
         }
 
-        const rebuilt = (resSections.sections || []).map((sec, idx) => {
-          const local = sectionsSnapshot[idx];
-          const mapped = mapApiSection(sec, local);
-          mapped.dishes = (local?.dishes || []).map((d, dIdx) => ({ ...d, position: dIdx }));
-          return mapped;
+        const changedSectionClientIds = force
+          ? new Set(rebuilt.map((section) => section.clientId))
+          : new Set(
+            rebuilt
+              .filter((section) => getSectionDishesFingerprint(section) !== lastSavedSectionDishesRef.current[section.clientId])
+              .map((section) => section.clientId),
+          );
+        debugMenuPerf("sync-sections:dish-diff", {
+          requestSeq,
+          changedSections: Array.from(changedSectionClientIds),
+          changedCount: changedSectionClientIds.size,
         });
 
         for (const section of rebuilt) {
-          if (!section.id) continue;
+          if (!section.id || !changedSectionClientIds.has(section.clientId)) continue;
+
+          const previousSectionSyncState = lastSavedSectionDishSyncRef.current[section.clientId];
+          const nextSectionSyncState = getSectionDishSyncState(section, isALaCarte);
+          const allSectionDishesPersisted = section.dishes.every((dish) => !!dish.id);
+          const canSyncBySingleDishPatch = !force
+            && !shouldSyncStructure
+            && !!previousSectionSyncState
+            && allSectionDishesPersisted
+            && previousSectionSyncState.order === nextSectionSyncState.order;
+
+          if (canSyncBySingleDishPatch && previousSectionSyncState) {
+            const changedDishes = section.dishes.filter((dish) => {
+              if (!dish.id) return false;
+              const dishId = String(dish.id);
+              return previousSectionSyncState.byId[dishId] !== nextSectionSyncState.byId[dishId];
+            });
+
+            const hasUnsupportedPatch = changedDishes.some((dish) => dish.title.trim().length === 0);
+
+            if (!hasUnsupportedPatch && changedDishes.length > 0) {
+              debugMenuPerf("sync-sections:dish-patch-diff", {
+                requestSeq,
+                sectionId: section.id,
+                clientId: section.clientId,
+                changedDishes: changedDishes.map((dish) => dish.id),
+              });
+
+              const prevByID = new Map<number, EditorDish>();
+              section.dishes.forEach((dish) => {
+                if (dish.id) prevByID.set(dish.id, dish);
+              });
+
+              const patchedByID = new Map<number, EditorDish>();
+              for (const dish of changedDishes) {
+                if (!dish.id) continue;
+                const trimmedTitle = dish.title.trim();
+                if (!trimmedTitle) continue;
+
+                debugMenuPerf("api-call", {
+                  requestSeq,
+                  endpoint: "PATCH /group-menus-v2/:id/sections/:sectionId/dishes/:dishId",
+                  sectionId: section.id,
+                  clientId: section.clientId,
+                  dishId: dish.id,
+                });
+                const patched = await api.menus.gruposV2.patchSectionDish(menuId, section.id, dish.id, {
+                  catalog_dish_id: dish.catalog_dish_id ?? null,
+                  title: trimmedTitle,
+                  description: dish.description,
+                  allergens: dish.allergens,
+                  supplement_enabled: dish.supplement_enabled,
+                  supplement_price: dish.supplement_price,
+                  price: isALaCarte ? dish.price : null,
+                  active: dish.active,
+                });
+                if (!patched.success) {
+                  throw new Error(patched.message || "No se pudo guardar el plato");
+                }
+                patchedByID.set(dish.id, mergeDishFromServer(prevByID.get(dish.id), patched.dish));
+              }
+
+              if (patchedByID.size > 0) {
+                const merged = section.dishes.map((dish) => {
+                  if (!dish.id) return dish;
+                  return patchedByID.get(dish.id) || dish;
+                });
+                const sameDishRefs = merged.length === section.dishes.length && merged.every((dish, idx) => dish === section.dishes[idx]);
+                if (!sameDishRefs) {
+                  needsStateReconcile = true;
+                  section.dishes = merged;
+                }
+              }
+            }
+
+            if (!hasUnsupportedPatch) {
+              lastSavedSectionDishSyncRef.current[section.clientId] = getSectionDishSyncState(section, isALaCarte);
+              continue;
+            }
+          }
 
           const payloadDishes: Array<{
             id?: number;
@@ -649,12 +1398,15 @@ export default function Page() {
             active: boolean;
           }> = [];
 
+          const localDishes: EditorDish[] = [];
+          let localDishMutated = false;
+
           for (const dish of section.dishes) {
             const trimmedTitle = dish.title.trim();
             if (!trimmedTitle) continue;
 
             let catalogId = dish.catalog_dish_id ?? null;
-            if (!catalogId) {
+            if (!catalogId && !dish.id) {
               const upsert = await api.menus.dishesCatalog.upsert({
                 id: undefined,
                 title: trimmedTitle,
@@ -668,6 +1420,12 @@ export default function Page() {
               }
             }
 
+            if (catalogId && !dish.catalog_dish_id) {
+              localDishMutated = true;
+              localDishes.push({ ...dish, catalog_dish_id: catalogId });
+            } else {
+              localDishes.push(dish);
+            }
             payloadDishes.push({
               id: dish.id,
               catalog_dish_id: catalogId,
@@ -681,27 +1439,64 @@ export default function Page() {
             });
           }
 
+          if (localDishMutated) {
+            needsStateReconcile = true;
+          }
+          section.dishes = withDishPositions(localDishes);
+
+          debugMenuPerf("api-call", {
+            requestSeq,
+            endpoint: "PUT /group-menus-v2/:id/sections/:sectionId/dishes",
+            sectionId: section.id,
+            clientId: section.clientId,
+            dishes: payloadDishes.length,
+          });
           const saved = await api.menus.gruposV2.putSectionDishes(menuId, section.id, payloadDishes);
           if (!saved.success) {
             throw new Error(saved.message || "No se pudieron guardar los platos");
           }
 
-          section.dishes = (saved.dishes || []).map((dish) => {
-            const prev = section.dishes.find((x) => x.id === dish.id);
-            return mapApiDish(dish, prev);
+          const prevByID = new Map<number, EditorDish>();
+          section.dishes.forEach((dish) => {
+            if (dish.id) prevByID.set(dish.id, dish);
           });
+
+          const merged = (saved.dishes || []).map((dish, dishIdx) => {
+            const prev = (dish.id ? prevByID.get(dish.id) : undefined) || section.dishes[dishIdx];
+            return mergeDishFromServer(prev, dish);
+          });
+          const sameDishRefs = merged.length === section.dishes.length && merged.every((dish, idx) => dish === section.dishes[idx]);
+          if (!sameDishRefs) {
+            needsStateReconcile = true;
+            section.dishes = merged;
+          }
+          lastSavedSectionDishSyncRef.current[section.clientId] = getSectionDishSyncState(section, isALaCarte);
         }
 
-        setSections(rebuilt);
-        lastSavedSectionsRef.current = getSectionsFingerprint(rebuilt);
+        if (syncRequestSeqRef.current !== requestSeq) return;
+
+        if (needsStateReconcile) {
+          setSections(rebuilt);
+        }
+        const savedSource = needsStateReconcile ? rebuilt : sectionsSnapshot;
+        lastSavedSectionsRef.current = needsStateReconcile ? getSectionsFingerprint(savedSource) : fingerprint;
+        lastSavedSectionsStructureRef.current = getSectionsStructureFingerprint(savedSource);
+        lastSavedSectionDishesRef.current = getSectionsDishFingerprintMap(savedSource);
+        lastSavedSectionDishSyncRef.current = getSectionsDishSyncStateMap(savedSource, isALaCarte);
         setSaveState("saved");
+        debugMenuPerf("sync-sections:done", {
+          requestSeq,
+          sections: rebuilt.length,
+          needsStateReconcile,
+        });
       } finally {
         if (inFlightSectionsRef.current === fingerprint) {
           inFlightSectionsRef.current = null;
         }
+        debugMenuPerf("sync-sections:finally", { requestSeq });
       }
     },
-    [api, menuId],
+    [api, isALaCarte, menuId],
   );
 
   useEffect(() => {
@@ -723,6 +1518,12 @@ export default function Page() {
     if (lastSavedSectionsRef.current === sectionsFingerprint || inFlightSectionsRef.current === sectionsFingerprint) return;
 
     const snapshot = sections;
+    debugMenuPerf("sync-sections:schedule", {
+      menuId,
+      step,
+      sections: snapshot.length,
+      fingerprint: sectionsFingerprint.slice(0, 18),
+    });
 
     if (syncTimerRef.current) window.clearTimeout(syncTimerRef.current);
     syncTimerRef.current = window.setTimeout(() => {
@@ -751,6 +1552,7 @@ export default function Page() {
       if (!loaded.success) throw new Error(loaded.message || "No se pudo cargar borrador");
 
       const mapped = mapApiMenu(loaded.menu);
+      const mappedIsALaCarte = mapped.menuType === "a_la_carte" || mapped.menuType === "a_la_carte_group";
       setMenuId(created.menu_id);
       setTitle(mapped.title);
       setPrice(mapped.price || "0");
@@ -786,7 +1588,11 @@ export default function Page() {
       lastSavedBasicsRef.current = JSON.stringify(mappedBasicsPayload);
       inFlightBasicsRef.current = null;
       lastSavedSectionsRef.current = getSectionsFingerprint(mapped.sections);
+      lastSavedSectionsStructureRef.current = getSectionsStructureFingerprint(mapped.sections);
+      lastSavedSectionDishesRef.current = getSectionsDishFingerprintMap(mapped.sections);
+      lastSavedSectionDishSyncRef.current = getSectionsDishSyncStateMap(mapped.sections, mappedIsALaCarte);
       inFlightSectionsRef.current = null;
+      syncRequestSeqRef.current = 0;
       setSaveState("idle");
 
       window.history.replaceState({}, "", `/app/menus/crear?menuId=${created.menu_id}`);
@@ -872,7 +1678,20 @@ export default function Page() {
   }, []);
 
   const updateSection = useCallback((clientId: string, patch: Partial<EditorSection>) => {
-    setSections((prev) => prev.map((sec) => (sec.clientId === clientId ? { ...sec, ...patch } : sec)));
+    setSections((prev) => {
+      let changed = false;
+      const next = prev.map((sec) => {
+        if (sec.clientId !== clientId) return sec;
+        for (const [k, v] of Object.entries(patch) as Array<[keyof EditorSection, EditorSection[keyof EditorSection]]>) {
+          if (!Object.is(sec[k], v)) {
+            changed = true;
+            return { ...sec, ...patch };
+          }
+        }
+        return sec;
+      });
+      return changed ? next : prev;
+    });
   }, []);
 
   const moveSection = useCallback((from: number, to: number) => {
@@ -887,7 +1706,12 @@ export default function Page() {
   }, []);
 
   const reorderSections = useCallback((orderedClientIds: string[]) => {
-    setSections((prev) => withSectionPositions(orderByClientId(prev, orderedClientIds)));
+    setSections((prev) => {
+      if (orderedClientIds.length === prev.length && prev.every((section, idx) => section.clientId === orderedClientIds[idx])) {
+        return prev;
+      }
+      return withSectionPositions(orderByClientId(prev, orderedClientIds));
+    });
   }, []);
 
   const addDish = useCallback((sectionClientId: string, fromCatalog?: DishCatalogItem) => {
@@ -907,6 +1731,7 @@ export default function Page() {
           price: isALaCarte ? 0 : null,
           active: true,
           position: sec.dishes.length,
+          foto_url: fromCatalog?.foto_url || fromCatalog?.image_url,
         };
         return { ...sec, dishes: [...sec.dishes, dish] };
       }),
@@ -914,15 +1739,29 @@ export default function Page() {
   }, [isALaCarte]);
 
   const updateDish = useCallback((sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => {
-    setSections((prev) =>
-      prev.map((sec) => {
+    setSections((prev) => {
+      let changed = false;
+      const next = prev.map((sec) => {
         if (sec.clientId !== sectionClientId) return sec;
-        return {
-          ...sec,
-          dishes: sec.dishes.map((dish) => (dish.clientId === dishClientId ? { ...dish, ...patch } : dish)),
-        };
-      }),
-    );
+
+        let dishChanged = false;
+        const dishes = sec.dishes.map((dish) => {
+          if (dish.clientId !== dishClientId) return dish;
+          for (const [k, v] of Object.entries(patch) as Array<[keyof EditorDish, EditorDish[keyof EditorDish]]>) {
+            if (!Object.is(dish[k], v)) {
+              dishChanged = true;
+              return { ...dish, ...patch };
+            }
+          }
+          return dish;
+        });
+
+        if (!dishChanged) return sec;
+        changed = true;
+        return { ...sec, dishes };
+      });
+      return changed ? next : prev;
+    });
   }, []);
 
   const removeDish = useCallback((sectionClientId: string, dishClientId: string) => {
@@ -943,6 +1782,9 @@ export default function Page() {
     setSections((prev) =>
       prev.map((sec) => {
         if (sec.clientId !== sectionClientId) return sec;
+        if (orderedClientIds.length === sec.dishes.length && sec.dishes.every((dish, idx) => dish.clientId === orderedClientIds[idx])) {
+          return sec;
+        }
         return {
           ...sec,
           dishes: withDishPositions(orderByClientId(sec.dishes, orderedClientIds)),
@@ -1373,254 +2215,47 @@ export default function Page() {
               </div>
             </motion.div>
 
-            <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsEditor bo-reorderGroup">
+            {!hydrated ? (
+              <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true">
+                {loadingSectionTitles.map((sectionTitle, idx) => (
+                  <div key={`section-loading-${idx}`} className="bo-panel bo-accordionSection">
+                    <div className="bo-panelHead">
+                      <div className="bo-panelTitle">{sectionTitle}</div>
+                    </div>
+                    <div className="bo-panelBody">
+                      <LoadingSpinner centered size="sm" label="Cargando platos..." />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsEditor bo-reorderGroup">
               {sections.map((sec, secIdx) => (
-                <ReorderItemContainer
+                <MenuSectionEditorPanel
                   key={sec.clientId}
-                  as="div"
-                  value={sec.clientId}
-                  className="bo-panel bo-accordionSection bo-reorderItem"
-                  transition={reorderTransition}
-                  whileDrag={reorderWhileDrag}
-                >
-                  {(startSectionDrag) => (
-                    <>
-                      <div className="bo-accordionHeadRow">
-                        <div className="bo-sectionReorder bo-sectionReorder--accordion">
-                          <div className="bo-sectionMoveControls">
-                            <motion.button
-                              className="bo-sectionMoveBtn"
-                              type="button"
-                              aria-label={`Subir seccion ${sec.title || secIdx + 1}`}
-                              disabled={secIdx === 0}
-                              whileHover={chevronHover}
-                              whileTap={chevronTapUp}
-                              onPointerDown={(event) => event.stopPropagation()}
-                              onClick={() => moveSection(secIdx, secIdx - 1)}
-                            >
-                              <ChevronUp size={14} />
-                            </motion.button>
-                            <motion.button
-                              className="bo-sectionMoveBtn"
-                              type="button"
-                              aria-label={`Bajar seccion ${sec.title || secIdx + 1}`}
-                              disabled={secIdx === sections.length - 1}
-                              whileHover={chevronHover}
-                              whileTap={chevronTapDown}
-                              onPointerDown={(event) => event.stopPropagation()}
-                              onClick={() => moveSection(secIdx, secIdx + 1)}
-                            >
-                              <ChevronDown size={14} />
-                            </motion.button>
-                          </div>
-                          <button
-                            className="bo-sectionDrag"
-                            type="button"
-                            aria-label={`Arrastrar seccion ${sec.title || secIdx + 1}`}
-                            onPointerDown={(event) => {
-                              event.preventDefault();
-                              startSectionDrag(event);
-                            }}
-                          >
-                            <GripVertical size={18} />
-                          </button>
-                        </div>
-                        <button
-                          className="bo-accordionHead"
-                          type="button"
-                          onClick={() => updateSection(sec.clientId, { expanded: !sec.expanded })}
-                        >
-                          <span className="bo-accordionHeadLeft">
-                            <input
-                              className="bo-input"
-                              value={sec.title}
-                              onClick={(e) => e.stopPropagation()}
-                              onChange={(e) => updateSection(sec.clientId, { title: e.target.value })}
-                            />
-                          </span>
-                          {sec.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-                      </div>
-
-                      {sec.expanded !== false ? (
-                        <div className="bo-panelBody">
-                          <Reorder.Group
-                            axis="y"
-                            values={sec.dishes.map((dish) => dish.clientId)}
-                            onReorder={(orderedDishClientIds) => reorderDishes(sec.clientId, orderedDishClientIds)}
-                            className="bo-dishesStack bo-reorderGroup"
-                          >
-                            {sec.dishes.map((dish, dishIdx) => (
-                              <ReorderItemContainer
-                                key={dish.clientId}
-                                as="article"
-                                value={dish.clientId}
-                                className="bo-dishCard bo-reorderItem"
-                                transition={reorderTransition}
-                                whileDrag={reorderWhileDrag}
-                              >
-                                {(startDishDrag) => (
-                                  <>
-                                    <button
-                                      className="bo-dishDrag"
-                                      type="button"
-                                      aria-label={`Arrastrar plato ${dish.title || dishIdx + 1}`}
-                                      onPointerDown={(event) => {
-                                        event.preventDefault();
-                                        startDishDrag(event);
-                                      }}
-                                    >
-                                      <GripVertical size={14} />
-                                    </button>
-                                    <div className="bo-dishFields">
-                                      <input
-                                        className="bo-input"
-                                        value={dish.title}
-                                        onChange={(e) => updateDish(sec.clientId, dish.clientId, { title: e.target.value })}
-                                        placeholder="Titulo plato"
-                                      />
-                                      <label className="bo-checkRow">
-                                        <Switch
-                                          checked={dish.description_enabled}
-                                          onCheckedChange={(checked) =>
-                                            updateDish(sec.clientId, dish.clientId, {
-                                              description_enabled: checked,
-                                              description: checked ? dish.description : "",
-                                            })
-                                          }
-                                        />
-                                        <span>Descripcion</span>
-                                      </label>
-                                      {dish.description_enabled ? (
-                                        <textarea
-                                          className="bo-input bo-textarea"
-                                          value={dish.description}
-                                          onChange={(e) => updateDish(sec.clientId, dish.clientId, { description: e.target.value })}
-                                          placeholder="Descripcion"
-                                        />
-                                      ) : null}
-
-                                      {isALaCarte ? (
-                                        <div className="bo-dishPriceRow">
-                                          <label className="bo-label">Precio</label>
-                                          <input
-                                            className="bo-input bo-priceInput"
-                                            inputMode="decimal"
-                                            value={dish.price == null ? "" : String(dish.price)}
-                                            onChange={(e) =>
-                                              updateDish(sec.clientId, dish.clientId, {
-                                                price: toNumOrNull(e.target.value),
-                                              })
-                                            }
-                                            placeholder="0.00"
-                                          />
-                                        </div>
-                                      ) : null}
-
-                                      <div className="bo-dishRow">
-                                        <div className="bo-dishRowInlineControls">
-                                          <label className="bo-checkRow">
-                                            <Switch
-                                              checked={dish.supplement_enabled}
-                                              onCheckedChange={(checked) =>
-                                                updateDish(sec.clientId, dish.clientId, {
-                                                  supplement_enabled: checked,
-                                                  supplement_price: checked ? dish.supplement_price : null,
-                                                })
-                                              }
-                                            />
-                                            <span>Suplemento</span>
-                                          </label>
-                                          {dish.supplement_enabled ? (
-                                            <input
-                                              className="bo-input bo-suppInput"
-                                              inputMode="decimal"
-                                              value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
-                                              onChange={(e) =>
-                                                updateDish(sec.clientId, dish.clientId, {
-                                                  supplement_price: toNumOrNull(e.target.value),
-                                                })
-                                              }
-                                              placeholder="0.00"
-                                            />
-                                          ) : null}
-                                        </div>
-
-                                        <div className="bo-dishRowActionsInline">
-                                          <button
-                                            className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishAllergenIconBtn"
-                                            type="button"
-                                            aria-label={`Editar alergenos de ${dish.title || dishIdx + 1}`}
-                                            onClick={() => setAllergenModal({ open: true, sectionClientId: sec.clientId, dishClientId: dish.clientId })}
-                                          >
-                                            <AlertTriangle size={14} />
-                                          </button>
-                                          <button
-                                            className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
-                                            type="button"
-                                            aria-label={`Eliminar plato ${dish.title || dishIdx + 1}`}
-                                            onClick={() => removeDish(sec.clientId, dish.clientId)}
-                                          >
-                                            <Trash2 size={14} />
-                                          </button>
-                                        </div>
-                                      </div>
-
-                                      {dish.allergens.length > 0 ? (
-                                        <div className="bo-allergenRow">
-                                          {dish.allergens.map((name) => (
-                                            <span key={`${dish.clientId}-${name}`} className="bo-allergenPill">
-                                              {name}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      ) : null}
-                                    </div>
-                                  </>
-                                )}
-                              </ReorderItemContainer>
-                            ))}
-                          </Reorder.Group>
-
-                          <div className="bo-dishAddRow">
-                            <button className="bo-btn bo-btn--ghost bo-btn--sm bo-dishAddBtn" type="button" onClick={() => addDish(sec.clientId)}>
-                              <Plus size={12} /> Añadir plato
-                            </button>
-                          </div>
-
-                          <div className="bo-searchCatalogRow">
-                            <div className="bo-searchCatalogInputWrap">
-                              <Search size={14} className="bo-searchCatalogIcon" aria-hidden="true" />
-                              <input
-                                className="bo-input bo-searchCatalogInput"
-                                placeholder="Buscar plato en base de datos"
-                                value={searchTerms[sec.clientId] || ""}
-                                onChange={(e) => handleSearch(sec.clientId, e.target.value)}
-                              />
-                            </div>
-                            {(searchResults[sec.clientId] || []).length > 0 ? (
-                              <div className="bo-searchResults">
-                                {(searchResults[sec.clientId] || []).map((item) => (
-                                  <button
-                                    key={`${sec.clientId}-${item.id}`}
-                                    type="button"
-                                    className="bo-searchResultBtn"
-                                    onClick={() => addDish(sec.clientId, item)}
-                                  >
-                                    <span>{item.title}</span>
-                                    <span className="bo-mutedText">Añadir</span>
-                                  </button>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  )}
-                </ReorderItemContainer>
+                  sec={sec}
+                  secIdx={secIdx}
+                  sectionsCount={sections.length}
+                  isALaCarte={isALaCarte}
+                  reorderTransition={reorderTransition}
+                  reorderWhileDrag={reorderWhileDrag}
+                  chevronHover={chevronHover}
+                  chevronTapUp={chevronTapUp}
+                  chevronTapDown={chevronTapDown}
+                  moveSection={moveSection}
+                  updateSection={updateSection}
+                  reorderDishes={reorderDishes}
+                  setAllergenModal={setAllergenModal}
+                  removeDish={removeDish}
+                  updateDish={updateDish}
+                  addDish={addDish}
+                  handleSearch={handleSearch}
+                  searchTerm={searchTerms[sec.clientId] || ""}
+                  searchItems={searchResults[sec.clientId] ?? EMPTY_SEARCH_RESULTS}
+                />
               ))}
-            </Reorder.Group>
+              </Reorder.Group>
+            )}
 
             <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
               <div className="bo-panelHead">
@@ -1792,6 +2427,7 @@ export default function Page() {
               const sec = sections.find((s) => s.clientId === open.sectionClientId);
               const dish = sec?.dishes.find((d) => d.clientId === open.dishClientId);
               const selected = !!dish?.allergens.includes(item.key);
+              const Icon = item.icon;
               return (
                 <button
                   key={item.key}
@@ -1805,7 +2441,7 @@ export default function Page() {
                     updateDish(open.sectionClientId, open.dishClientId, { allergens: Array.from(set) });
                   }}
                 >
-                  <span className="bo-allergenCircleIcon">{item.icon}</span>
+                  <span className="bo-allergenCircleIcon"><Icon size={16} /></span>
                   <span className="bo-allergenCircleLabel">{item.key}</span>
                 </button>
               );
