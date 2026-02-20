@@ -367,6 +367,7 @@ export type Member = {
   dni: string | null;
   bankAccount: string | null;
   phone: string | null;
+  whatsappNumber: string | null;
   photoUrl: string | null;
   weeklyContractHours: number;
   isCurrentUser?: boolean;

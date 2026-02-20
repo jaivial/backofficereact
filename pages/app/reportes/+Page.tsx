@@ -7,7 +7,7 @@ import { SimpleTabs, SimpleTabsContent, SimpleTabsList } from "../../../ui/nav/S
 import { StatCard } from "../../../ui/widgets/StatCard";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
-import { FileText, Filter, FileSpreadsheet, RefreshCw, ChevronDown, ChevronUp, User, Receipt } from "lucide-react";
+import { Download, FileText, Calendar, Filter, Printer, FileSpreadsheet, RefreshCw, ChevronDown, ChevronUp, User, DollarSign, Receipt, CreditCard } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -154,10 +154,9 @@ export default function Page() {
       });
       if (res.success && res.statement) {
         setCustomerStatement(res.statement);
-        pushToast({ kind: "success", title: "Estado de cuenta generado correctamente" });
+        pushToast("Estado de cuenta generado correctamente", "success");
       } else {
-        const msg = "message" in res ? res.message : undefined;
-        errorToast.show(msg || "Error al generar el estado de cuenta");
+        errorToast.show(res.message || "Error al generar el estado de cuenta");
       }
     } catch (e) {
       errorToast.show("Error al conectar con el servidor");
@@ -275,7 +274,7 @@ export default function Page() {
 
       const safeName = customerStatement.customer_name.replace(/[^a-zA-Z0-9]/g, "_");
       doc.save(`estado_cuenta_${safeName}_${statementDateFrom}_${statementDateTo}.pdf`);
-      pushToast({ kind: "success", title: "PDF exportado correctamente" });
+      pushToast("PDF exportado correctamente", "success");
     } catch (e) {
       errorToast.show("Error al exportar PDF");
     } finally {
@@ -339,7 +338,7 @@ export default function Page() {
       link.click();
       URL.revokeObjectURL(url);
 
-      pushToast({ kind: "success", title: "CSV exportado correctamente" });
+      pushToast("CSV exportado correctamente", "success");
     } catch (e) {
       errorToast.show("Error al exportar CSV");
     } finally {
@@ -373,10 +372,9 @@ export default function Page() {
       });
       if (res.success && res.report) {
         setReport(res.report);
-        pushToast({ kind: "success", title: "Reporte generado correctamente" });
+        pushToast("Reporte generado correctamente", "success");
       } else {
-        const msg = "message" in res ? res.message : undefined;
-        errorToast.show(msg || "Error al generar el reporte");
+        errorToast.show(res.message || "Error al generar el reporte");
       }
     } catch (e) {
       errorToast.show("Error al conectar con el servidor");
@@ -469,7 +467,7 @@ export default function Page() {
       doc.text("Generado por Villa Carmen Backoffice", 14, 285);
 
       doc.save(`iva-report-${report.date_from}-${report.date_to}.pdf`);
-      pushToast({ kind: "success", title: "PDF exportado correctamente" });
+      pushToast("PDF exportado correctamente", "success");
     } catch (e) {
       errorToast.show("Error al exportar PDF");
     } finally {
@@ -540,7 +538,7 @@ export default function Page() {
       link.click();
       URL.revokeObjectURL(url);
 
-      pushToast({ kind: "success", title: "Excel (CSV) exportado correctamente" });
+      pushToast("Excel (CSV) exportado correctamente", "success");
     } catch (e) {
       errorToast.show("Error al exportar Excel");
     } finally {
@@ -702,27 +700,27 @@ export default function Page() {
                     <StatCard
                       title="Saldo Inicial"
                       value={formatCurrency(customerStatement.opening_balance, "EUR")}
-                      icon="file-text"
+                      icon={<DollarSign className="w-5 h-5 text-gray-600" />}
                     />
                     <StatCard
                       title="Total Facturado"
                       value={formatCurrency(customerStatement.summary.total_invoiced, "EUR")}
-                      icon="file-text"
+                      icon={<Receipt className="w-5 h-5 text-blue-600" />}
                     />
                     <StatCard
                       title="Total Pagado"
                       value={formatCurrency(customerStatement.summary.total_paid, "EUR")}
-                      icon="check"
+                      icon={<CreditCard className="w-5 h-5 text-green-600" />}
                     />
                     <StatCard
                       title="Pendiente"
                       value={formatCurrency(customerStatement.summary.total_pending, "EUR")}
-                      icon="clock"
+                      icon={<Calendar className="w-5 h-5 text-yellow-600" />}
                     />
                     <StatCard
                       title="Saldo Final"
                       value={formatCurrency(customerStatement.closing_balance, "EUR")}
-                      icon="trending-up"
+                      icon={<DollarSign className="w-5 h-5 text-red-600" />}
                     />
                   </div>
 
@@ -924,22 +922,22 @@ export default function Page() {
             <StatCard
               title="Base Imponible"
               value={formatCurrency(report.summary.total_base, "EUR")}
-              icon="file-text"
+              icon={<FileText className="w-5 h-5 text-blue-600" />}
             />
             <StatCard
               title="IVA Acumulado"
               value={formatCurrency(report.summary.total_iva, "EUR")}
-              icon="file-text"
+              icon={<Calendar className="w-5 h-5 text-purple-600" />}
             />
             <StatCard
               title="Total"
               value={formatCurrency(report.summary.total, "EUR")}
-              icon="trending-up"
+              icon={<Calendar className="w-5 h-5 text-green-600" />}
             />
             <StatCard
               title="Facturas"
               value={String(report.summary.invoice_count)}
-              icon="users"
+              icon={<FileText className="w-5 h-5 text-orange-600" />}
             />
           </div>
 
@@ -1144,7 +1142,8 @@ export default function Page() {
               </div>
             </SimpleTabsContent>
           </SimpleTabs>
-        </>
+          </SimpleTabsContent>
+        </SimpleTabs>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -1160,10 +1159,6 @@ export default function Page() {
           </button>
         </div>
       )}
-            </div>
-          </SimpleTabsContent>
-        </SimpleTabs>
-      </div>
     </div>
   );
 }
