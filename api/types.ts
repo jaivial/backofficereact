@@ -349,6 +349,31 @@ export type RestaurantIntegrations = {
   restaurantWhatsappNumbers: string[];
 };
 
+export type UazapiServer = {
+  id: number;
+  name: string;
+  baseUrl: string;
+  adminTokenMasked?: string | null;
+  capacity: number;
+  priority: number;
+  isActive: boolean;
+  metadata?: Record<string, unknown> | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type UazapiServerCreateInput = {
+  name: string;
+  baseUrl: string;
+  adminToken: string;
+  capacity: number;
+  priority: number;
+  isActive: boolean;
+  metadata?: Record<string, unknown> | null;
+};
+
+export type UazapiServerPatchInput = Partial<UazapiServerCreateInput>;
+
 export type RestaurantBranding = {
   brandName: string;
   logoUrl: string;
@@ -1615,3 +1640,175 @@ export const INVOICE_DEPOSIT_TYPE_OPTIONS: { value: InvoiceDepositType; label: s
   { value: "advance", label: "Anticipo" },
   { value: "deposit", label: "Seña" },
 ];
+
+// Premium website contracts
+export type WebsiteTemplate = {
+  id: string;
+  name: string;
+  description?: string | null;
+  thumbnail_url?: string | null;
+  preview_url?: string | null;
+  tags: string[];
+  active: boolean;
+};
+
+export type WebsiteConfig = {
+  id: number;
+  restaurant_id: number;
+  template_id: string | null;
+  custom_html: string | null;
+  domain: string | null;
+  is_published: boolean;
+  published_at?: string | null;
+  updated_at?: string;
+};
+
+export type WebsiteDraftRequest = {
+  prompt: string;
+  language?: string;
+  tone?: string;
+};
+
+export type WebsiteDraftResponse = {
+  html_content: string;
+  render_css?: string | null;
+  meta: {
+    title: string;
+    lang: string;
+    theme?: string | null;
+  };
+};
+
+// Premium domain contracts
+export type DomainSearchQuery = {
+  query: string;
+  tld?: string;
+  currency?: string;
+};
+
+export type DomainSearchResult = {
+  domain: string;
+  available: boolean;
+  provider_price: number;
+  marked_price: number;
+  currency: string;
+  reason?: string | null;
+};
+
+export type DomainQuote = {
+  domain: string;
+  provider_price: number;
+  marked_price: number;
+  currency: string;
+  available?: boolean;
+};
+
+export type DomainVerificationStatus = "checking" | "pending" | "active" | "failed";
+
+export type DomainRegisterRequest = {
+  domain: string;
+  idempotency_key?: string;
+  years?: number;
+  auto_renew?: boolean;
+};
+
+export type DomainRegisterResponse = {
+  domain: string;
+  status: DomainVerificationStatus;
+  message?: string;
+  recurring_invoice_id?: number | null;
+  cf_domain_id?: string | null;
+  cf_zone_id?: string | null;
+};
+
+// Premium table contracts
+export type PremiumTableStatus = "available" | "occupied" | "reserved";
+
+export type PremiumTable = {
+  id: number;
+  restaurant_id: number;
+  area_id: number;
+  name: string;
+  capacity: number;
+  status: PremiumTableStatus;
+  x_pos: number;
+  y_pos: number;
+  rotation_deg?: number;
+  shape?: "circle" | "square" | "rectangle";
+  width?: number | null;
+  height?: number | null;
+  version?: number;
+  updated_at?: string;
+};
+
+export type PremiumTableArea = {
+  id: number;
+  restaurant_id: number;
+  name: string;
+  bg_color: string;
+  tables: PremiumTable[];
+};
+
+export type PremiumTableLayoutResponse = {
+  areas: PremiumTableArea[];
+  sequence?: number;
+  generated_at?: string;
+};
+
+export type PremiumTablePatchInput = Partial<{
+  area_id: number;
+  name: string;
+  capacity: number;
+  status: PremiumTableStatus;
+  x_pos: number;
+  y_pos: number;
+  rotation_deg: number;
+  shape: "circle" | "square" | "rectangle";
+  width: number | null;
+  height: number | null;
+  version: number;
+}>;
+
+export type PremiumTableBulkPatchInput = {
+  updates: Array<{
+    id: number;
+    patch: PremiumTablePatchInput;
+  }>;
+};
+
+export type TableStatusUpdateEvent = {
+  type: "table_status_changed" | "table_position_rebased" | "table_created" | "table_deleted";
+  sequence: number;
+  timestamp: string;
+  table_id: number;
+  status?: PremiumTableStatus;
+  x_pos?: number;
+  y_pos?: number;
+  table?: PremiumTable;
+};
+
+// Premium WhatsApp contracts
+export type WhatsAppMessageTemplate = {
+  id: string;
+  name: string;
+  language: string;
+  category?: string | null;
+  body: string;
+  variables: string[];
+  active: boolean;
+};
+
+export type WhatsAppSendRequest = {
+  member_id?: number;
+  to?: string;
+  template_id?: string;
+  message?: string;
+  variables?: Record<string, string | number | boolean>;
+};
+
+export type WhatsAppSendResponse = {
+  message_id: string;
+  status: "queued" | "sent" | "delivered" | "read" | "failed";
+  to: string;
+  error?: string | null;
+};
