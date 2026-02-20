@@ -183,7 +183,8 @@ const MenuFilters = React.memo(function MenuFilters({
 
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as PageData;
+  // Guard against missing or malformed data
+  const data = (pageContext.data as PageData) || { menus: [], error: null };
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
 
@@ -192,7 +193,9 @@ export default function Page() {
   const [changingMenuTypeId, setChangingMenuTypeId] = useState<number | null>(null);
 
   const error = data.error;
-  const [menus, setMenus] = useState<GroupMenuV2Summary[]>(data.menus || []);
+  // Ensure menus is always an array to prevent iteration errors
+  const menusData = Array.isArray(data.menus) ? data.menus : [];
+  const [menus, setMenus] = useState<GroupMenuV2Summary[]>(menusData);
   const [confirmDel, setConfirmDel] = useState<{ open: boolean; menu: GroupMenuV2Summary | null }>({ open: false, menu: null });
   const [changeTypeDialog, setChangeTypeDialog] = useState<{ open: boolean; menu: GroupMenuV2Summary | null; nextType: string }>({
     open: false,

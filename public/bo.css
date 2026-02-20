@@ -253,6 +253,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
 }
 
 .bo-title {
@@ -265,6 +266,11 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: absolute;
+  top: max(0px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 160;
+  max-width: calc(100vw - 24px);
 }
 
 .bo-actionBtn {
@@ -1706,7 +1712,7 @@ tr.is-inactive {
 /* Dropdown / Select / Date */
 .bo-menu {
   position: fixed;
-  z-index: 90;
+  z-index: 320;
   border-radius: 14px;
   border: 1px solid var(--bo-border);
   background:
@@ -1795,7 +1801,7 @@ tr.is-inactive {
 
 .bo-selectList {
   position: fixed;
-  z-index: 90;
+  z-index: 320;
   border-radius: 14px;
   border: 1px solid var(--bo-border);
   background:
@@ -11372,6 +11378,65 @@ tr.is-inactive {
   padding-bottom: 98px;
 }
 
+.bo-foodHome {
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 94px;
+}
+
+.bo-foodHub {
+  width: min(940px, 100%);
+}
+
+.bo-foodHubGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-foodHubCard {
+  min-height: 132px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bo-surface) 94%, transparent), color-mix(in srgb, var(--bo-shell) 88%, transparent));
+  color: var(--bo-text);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 16px 15px;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.bo-foodHubCard:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 42%, var(--bo-border));
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(12, 14, 26, 0.24);
+}
+
+.bo-foodHubIcon {
+  width: 20px;
+  height: 20px;
+  color: color-mix(in srgb, var(--bo-accent-2) 76%, var(--bo-text));
+  flex-shrink: 0;
+}
+
+.bo-foodHubLabel {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.bo-foodHubHint {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--bo-muted);
+}
+
 .bo-foodPage-hero {
   padding: 24px 0 20px;
   border-bottom: 1px solid var(--bo-border);
@@ -11395,6 +11460,14 @@ tr.is-inactive {
   padding-bottom: 60px;
 }
 
+.bo-foodCategoryTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
 .bo-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -11403,69 +11476,96 @@ tr.is-inactive {
 
 /* Food Tabs */
 .bo-foodTabsSticky {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--bo-shell);
-  padding: 12px 0;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--bo-border);
+  position: static;
+  margin-bottom: 18px;
 }
 
 .bo-foodTabs {
-  display: flex;
-  gap: 4px;
-  background: var(--bo-surface);
-  padding: 4px;
-  border-radius: var(--bo-radius-md);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 2px 0;
   position: relative;
 }
 
 .bo-foodTab {
   position: relative;
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  background: transparent;
+  min-height: 88px;
+  padding: 12px 14px;
+  border: 1px solid var(--bo-border);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bo-surface) 94%, transparent), color-mix(in srgb, var(--bo-shell) 88%, transparent));
   color: var(--bo-muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: var(--bo-radius-sm);
-  transition: color 0.2s ease;
+  border-radius: var(--bo-radius-md);
+  transition: color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .bo-foodTab:hover {
   color: var(--bo-text);
+  border-color: color-mix(in srgb, var(--bo-accent) 40%, var(--bo-border));
+  box-shadow: 0 10px 24px rgba(12, 14, 26, 0.2);
+  transform: translateY(-1px);
 }
 
 .bo-foodTab.is-active {
-  color: var(--bo-bg);
+  color: var(--bo-text);
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--bo-accent) 22%, transparent);
 }
 
 .bo-foodTabBubble {
   position: absolute;
-  inset: 0;
-  background: var(--bo-accent);
-  border-radius: var(--bo-radius-sm);
+  inset: 1px;
+  background:
+    radial-gradient(120% 200% at -10% -20%, color-mix(in srgb, var(--bo-accent) 28%, transparent), transparent 55%),
+    linear-gradient(150deg, color-mix(in srgb, var(--bo-accent) 16%, var(--bo-surface)), color-mix(in srgb, var(--bo-accent-2) 10%, var(--bo-shell)));
+  border-radius: calc(var(--bo-radius-md) - 1px);
   z-index: -1;
+}
+
+.bo-foodTabIcon {
+  width: 18px;
+  height: 18px;
+  color: color-mix(in srgb, var(--bo-accent-2) 66%, var(--bo-muted));
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.bo-foodTab.is-active .bo-foodTabIcon {
+  color: color-mix(in srgb, var(--bo-accent-2) 80%, var(--bo-text));
 }
 
 .bo-foodTabLabel {
   position: relative;
   z-index: 1;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--bo-text);
+}
+
+.bo-foodTabHint {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--bo-muted);
 }
 
 /* Food Filters */
 .bo-foodFilters {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding: 12px;
   border-radius: var(--bo-radius-md);
   border: 1px solid var(--bo-border);
-  background: var(--bo-surface);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--bo-surface) 94%, transparent), color-mix(in srgb, var(--bo-shell) 90%, transparent));
 }
 
 .bo-foodFiltersHead {
@@ -11928,6 +12028,10 @@ tr.is-inactive {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .bo-foodHubGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .bo-foodFiltersGrid {
     grid-template-columns: 1fr;
   }
@@ -11945,11 +12049,7 @@ tr.is-inactive {
   }
 
   .bo-foodTabs {
-    flex-wrap: wrap;
-  }
-
-  .bo-foodTab {
-    min-width: calc(50% - 2px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

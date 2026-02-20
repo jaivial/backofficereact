@@ -6,7 +6,8 @@ import { createClient } from "../../../api/client";
 import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput } from "../../../api/types";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
-import { SimpleTabs, SimpleTabsContent } from "../../../ui/nav/SimpleTabs";
+import { FileText, PlusCircle } from "lucide-react";
+import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 import { InvoiceFilters } from "./_components/InvoiceFilters";
 import { InvoiceTable } from "./_components/InvoiceTable";
 import { InvoiceForm } from "./_components/InvoiceForm";
@@ -316,12 +317,15 @@ export default function Page() {
     return invoices;
   }, [invoices]);
 
-  const TABS = [
-    { id: "resumen", label: "Resumen" },
-    { id: "añadir", label: "Añadir" },
-  ];
+  const TABS = useMemo<TabItem[]>(
+    () => [
+      { id: "resumen", label: "Resumen", href: "/app/facturas?tab=resumen", icon: <FileText className="bo-ico" /> },
+      { id: "añadir", label: "Añadir", href: "/app/facturas?tab=añadir", icon: <PlusCircle className="bo-ico" /> },
+    ],
+    [],
+  );
 
-  const handleTabChange = useCallback((id: string) => {
+  const onNavigateTab = useCallback((_href: string, id: string) => {
     if (id === "añadir") {
       handleCreateNew();
       return;
@@ -329,17 +333,13 @@ export default function Page() {
     setActiveTab(id);
   }, [handleCreateNew]);
 
+  
+
   return (
     <div className="bo-facturasPage">
-      <SimpleTabs
-        items={TABS}
-        activeId={activeTab}
-        onChange={handleTabChange}
-        aria-label="Facturas"
-        className="bo-tabs--reservas bo-tabs--facturas"
-      />
-
-      <SimpleTabsContent id="resumen" activeId={activeTab}>
+      <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab} />
+      {activeTab === "resumen" ? (
+        <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen">
         <div className="bo-facturasSummary">
           <InvoiceFilters
             searchText={searchText}
@@ -400,23 +400,28 @@ export default function Page() {
             onManageTemplates={() => {}}
           />
         </div>
-      </SimpleTabsContent>
+      </div>
+      ) : null}
 
-      <SimpleTabsContent id="añadir" activeId={activeTab}>
-        <div className="bo-container bo-facturasFormContainer">
-          <div className="bo-panel bo-facturasFormPanel">
-            <div className="bo-panelBody bo-facturasFormPanelBody">
-              <InvoiceForm
-                invoice={editingInvoice}
-                onSave={handleSaveInvoice}
-                onCancel={handleCancelEdit}
-                searchReservations={searchReservations}
-                currentUserId={currentUserId}
-              />
+      {activeTab === "añadir" ? (
+        <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir">
+        <div className="bo-formContainer">
+          <div className="bo-container bo-facturasFormContainer">
+            <div className="bo-panel bo-facturasFormPanel">
+              <div className="bo-panelBody bo-facturasFormPanelBody">
+                <InvoiceForm
+                  invoice={editingInvoice}
+                  onSave={handleSaveInvoice}
+                  onCancel={handleCancelEdit}
+                  searchReservations={searchReservations}
+                  currentUserId={currentUserId}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </SimpleTabsContent>
+      </div>
+      ) : null}
 
       {/* Send Email Modal */}
       <SendEmailModal

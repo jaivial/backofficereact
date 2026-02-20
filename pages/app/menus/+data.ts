@@ -19,7 +19,7 @@ export async function data(pageContext: PageContextServer) {
 
   try {
     const res = await api.menus.gruposV2.list(true);
-    if (res.success) menus = res.menus;
+    if (res.success) menus = Array.isArray(res.menus) ? res.menus : [];
     else error = res.message || "Error cargando menus";
   } catch (e) {
     error = e instanceof Error ? e.message : "Error cargando menus";

@@ -75,7 +75,8 @@ async function readRequestBody(req: express.Request): Promise<Buffer> {
 async function fetchSession(backendOrigin: string, cookieHeader: string | undefined): Promise<BOSession | null> {
   if (!cookieHeader) return null;
   try {
-    const url = new URL("/api/admin/me", backendOrigin);
+    // NOTE: backendOrigin already includes /api prefix, so use /admin/me.
+    const url = new URL("/admin/me", backendOrigin);
     const res = await fetch(url, {
       method: "GET",
       headers: { cookie: cookieHeader },
@@ -103,6 +104,49 @@ function wantsHTML(req: express.Request): boolean {
   if (typeof accept !== "string") return true;
   if (accept.trim() === "") return true;
   return accept.includes("text/html") || accept.includes("*/*");
+}
+
+function isPageContextRequest(pathname: string, originalUrl?: string): boolean {
+  if (/\.pageContext\.json\/?$/.test(pathname)) return true;
+  if (typeof originalUrl === "string") {
+    const pathOnly = originalUrl.split("?")[0] ?? "";
+    if (/\.pageContext\.json\/?$/.test(pathOnly)) return true;
+  }
+  return false;
+}
+
+function sendHttpResponse(res: express.Response, httpResponse: { statusCode: number; headers?: Record<string, unknown>; body: unknown; contentType?: string | null }): void {
+  const { body, statusCode, headers = {}, contentType } = httpResponse;
+  let hasContentTypeHeader = false;
+  res.status(statusCode);
+
+  if (typeof (headers as any)?.forEach === "function") {
+    (headers as any).forEach((value: unknown, name: string) => {
+      if (typeof name === "string" && name.toLowerCase() === "content-type") {
+        hasContentTypeHeader = true;
+      }
+      if (typeof name === "string") {
+        res.setHeader(name, value as any);
+      }
+    });
+  } else {
+    for (const [name, value] of Object.entries(headers)) {
+      if (name.toLowerCase() === "content-type") {
+        hasContentTypeHeader = true;
+      }
+      res.setHeader(name, value as any);
+    }
+  }
+
+  if (!hasContentTypeHeader) {
+    if (typeof contentType === "string") {
+      res.type(contentType);
+    } else {
+      res.type("text/html");
+    }
+  }
+
+  res.send(body as any);
 }
 
 function escapeHTML(value: string): string {
@@ -184,7 +228,7 @@ function renderFallbackErrorPage(statusCode: number, message?: string): string {
     <h1 class="bo-fallback-title">${safeMessage}</h1>
     <p class="bo-fallback-copy">No pudimos renderizar esta pantalla. Puedes volver al panel o recargar.</p>
     <div class="bo-fallback-actions">
-      <a class="bo-fallback-btn bo-fallback-btn--primary" href="/app">Volver al panel</a>
+      <a class="bo-fallback-btn bo-fallback-btn--primary" href="/app/backoffice">Volver al panel</a>
       <a class="bo-fallback-btn" href="">Reintentar</a>
     </div>
   </main>
@@ -212,7 +256,9 @@ function isValidISODate(v: string | null | undefined): boolean {
 function wsOriginFromBackend(backendOrigin: string): string {
   const u = new URL(backendOrigin);
   u.protocol = u.protocol === "https:" ? "wss:" : "ws:";
-  return u.toString();
+  // Remove trailing slash to avoid double slashes when concatenating paths
+  const origin = u.toString();
+  return origin.endsWith("/") ? origin.slice(0, -1) : origin;
 }
 
 function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin: string) {
@@ -231,13 +277,18 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
     if (!pathname.startsWith("/api/admin/fichaje/ws")) return;
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
-      let upstreamURL = "";
+      let upstreamPath = "";
       try {
-        upstreamURL = new URL(reqURL, wsBase).toString();
+        const reqURLParsed = new URL(reqURL, "http://local");
+        // Strip /api prefix: /api/admin/... -> /admin/...
+        upstreamPath = reqURLParsed.pathname.replace(/^\/api/, "");
+        upstreamPath += reqURLParsed.search;
       } catch {
         clientWS.close();
         return;
       }
+
+      const upstreamURL = wsBase + upstreamPath;
 
       const headers: Record<string, string> = {};
       for (const [k, v] of Object.entries(req.headers)) {
@@ -300,7 +351,9 @@ async function start() {
   // If we proxied "/api/*" we'd shadow Vite modules like "/api/client.ts".
   app.use("/api/admin", async (req, res) => {
     try {
-      const upstreamURL = new URL(req.originalUrl, backendOrigin);
+      // Strip /api prefix when forwarding to backend (backend uses /admin/* routes)
+      const upstreamPath = req.originalUrl.replace(/^\/api(\/admin)/, "$1");
+      const upstreamURL = new URL(upstreamPath, backendOrigin);
 
       const headers = new Headers();
       for (const [k, v] of Object.entries(req.headers)) {
@@ -546,7 +599,12 @@ async function start() {
 
       const cookies = parseCookies(typeof req.headers.cookie === "string" ? req.headers.cookie : undefined);
       const theme = cookies.bo_theme === "light" ? "light" : "dark";
-      const session = await fetchSession(backendOrigin, typeof req.headers.cookie === "string" ? req.headers.cookie : undefined);
+      const cookieHeader = typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
+      console.log(`[SSR] ${req.path} cookieHeader=${cookieHeader ? "present" : "null"}`);
+      const session = await fetchSession(backendOrigin, cookieHeader);
+      console.log(`[SSR] ${req.path} session=${session ? "valid" : "null"}`);
+
+      const pageContextRequest = isPageContextRequest(req.path, req.originalUrl);
 
       // Allow public access to invoice viewing route without session
       if (req.path.startsWith("/factura/")) {
@@ -562,30 +620,25 @@ async function start() {
         const httpResponse = pageContext.httpResponse;
         if (!httpResponse) return next();
 
-        const { body, statusCode, contentType, headers } = httpResponse;
-        if (isUnrenderableVikeError(statusCode, body)) {
+        if (isUnrenderableVikeError(httpResponse.statusCode, httpResponse.body) && !pageContextRequest) {
           sendFallbackErrorPage(res, 500);
           return;
         }
-        res.status(statusCode);
-        res.type(contentType);
-        for (const [k, v] of Object.entries(headers ?? {})) {
-          res.setHeader(k, v as any);
-        }
-        res.send(body);
+        sendHttpResponse(res, httpResponse);
         return;
       }
 
-      const isApp = req.path === "/app" || req.path.startsWith("/app/");
-      if (isApp && !session) {
+      const isAppRoot = req.path === "/app" || req.path === "/app/";
+      const isApp = isAppRoot || req.path.startsWith("/app/");
+      if (isApp && !session && !pageContextRequest) {
         res.redirect(302, "/login");
         return;
       }
-      if (req.path === "/change-password" && !session) {
+      if (req.path === "/change-password" && !session && !pageContextRequest) {
         res.redirect(302, "/login");
         return;
       }
-      if (session?.user?.mustChangePassword) {
+      if (session?.user?.mustChangePassword && !pageContextRequest) {
         if (req.path !== "/change-password") {
           res.redirect(302, "/change-password");
           return;
@@ -596,7 +649,7 @@ async function start() {
           res.redirect(302, "/change-password");
           return;
         }
-        res.redirect(302, "/app");
+        res.redirect(302, "/app/backoffice");
         return;
       }
       if (req.path === "/") {
@@ -608,15 +661,20 @@ async function start() {
           res.redirect(302, "/change-password");
           return;
         }
-        res.redirect(302, "/app");
+        res.redirect(302, "/app/backoffice");
         return;
       }
       if (req.path === "/change-password" && session && !session.user.mustChangePassword) {
-        res.redirect(302, "/app");
+        res.redirect(302, "/app/backoffice");
         return;
       }
 
-      if (session && req.path.startsWith("/app/") && !isPathAllowed(req.path, session.user.role, session.user.sectionAccess, session.user.roleImportance)) {
+      if (session && isAppRoot) {
+        res.redirect(302, "/app/backoffice");
+        return;
+      }
+
+      if (session && req.path.startsWith("/app/") && !pageContextRequest && !isPathAllowed(req.path, session.user.role, session.user.sectionAccess, session.user.roleImportance)) {
         res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
         return;
       }
@@ -644,17 +702,11 @@ async function start() {
       const httpResponse = pageContext.httpResponse;
       if (!httpResponse) return next();
 
-      const { body, statusCode, contentType, headers } = httpResponse;
-      if (isUnrenderableVikeError(statusCode, body)) {
+      if (isUnrenderableVikeError(httpResponse.statusCode, httpResponse.body) && !pageContextRequest) {
         sendFallbackErrorPage(res, 500);
         return;
       }
-      res.status(statusCode);
-      res.type(contentType);
-      for (const [k, v] of Object.entries(headers ?? {})) {
-        res.setHeader(k, v as any);
-      }
-      res.send(body);
+      sendHttpResponse(res, httpResponse);
     } catch (err) {
       console.error("[backoffice] SSR error", err);
       next(err);
@@ -681,6 +733,7 @@ async function start() {
     const rawStatusCode = Number((err as any)?.statusCode ?? (err as any)?.status);
     const isHttpError = Number.isFinite(rawStatusCode) && rawStatusCode >= 400 && rawStatusCode < 600;
     const statusCode = isHttpError ? Math.trunc(rawStatusCode) : 500;
+    const pageContextRequest = isPageContextRequest(req.path, req.originalUrl);
 
     if (!isHttpError) {
       // For non-HTTP errors (like SSR exceptions), render the error page via vike
@@ -698,17 +751,11 @@ async function start() {
         const pageContext = await renderPage(pageContextInit);
         const httpResponse = pageContext.httpResponse;
         if (httpResponse) {
-          const { body, statusCode: httpStatusCode, contentType, headers } = httpResponse;
-          if (isUnrenderableVikeError(httpStatusCode, body)) {
+          if (isUnrenderableVikeError(httpResponse.statusCode, httpResponse.body) && !pageContextRequest) {
             sendFallbackErrorPage(res, 500);
             return;
           }
-          res.status(500);
-          res.type(contentType);
-          for (const [k, v] of Object.entries(headers ?? {})) {
-            res.setHeader(k, v as any);
-          }
-          res.send(body);
+          sendHttpResponse(res, { ...httpResponse, statusCode: 500 });
           return;
         }
       } catch {
@@ -717,6 +764,12 @@ async function start() {
     }
 
     const message = isHttpError ? String((err as any)?.message ?? "").trim() : undefined;
+    if (pageContextRequest) {
+      res.status(statusCode);
+      res.type("application/json");
+      res.send(JSON.stringify({ statusCode, message: message || defaultErrorMessage(statusCode) }));
+      return;
+    }
     sendFallbackErrorPage(res, statusCode, message);
   });
 

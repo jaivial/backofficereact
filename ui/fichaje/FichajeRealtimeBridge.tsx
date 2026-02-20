@@ -8,9 +8,14 @@ import { fichajeRealtimeAtom, sessionAtom } from "../../state/atoms";
 const BASE_RETRY_MS = 800;
 const MAX_RETRY_MS = 8000;
 
+function normalizedHost(): string {
+  if (window.location.hostname !== "0.0.0.0") return window.location.host;
+  return window.location.port ? `localhost:${window.location.port}` : "localhost";
+}
+
 function wsURL(): string {
   const proto = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${proto}://${window.location.host}/api/admin/fichaje/ws`;
+  return `${proto}://${normalizedHost()}/api/admin/fichaje/ws`;
 }
 
 function todayISO(): string {

@@ -9,6 +9,7 @@ import { fichajeRealtimeAtom } from "../../../../state/atoms";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
+import { HorariosRosterTable, type HorariosRosterRow, type HorariosRosterTableView } from "../../../../ui/widgets/HorariosRosterTable";
 
 type PageData = {
   date: string;
@@ -16,6 +17,8 @@ type PageData = {
   schedules: FichajeSchedule[];
   error: string | null;
 };
+
+const VIEW_STORAGE_KEY = "bo_horarios_preview_view";
 
 function fullName(member: Member): string {
   const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
@@ -54,6 +57,15 @@ export default function Page() {
   const [tick, setTick] = useState(() => Date.now());
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [view, setView] = useState<HorariosRosterTableView>(() => {
+    try {
+      const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
+      if (stored === "table" || stored === "grid") return stored;
+    } catch {
+      // ignore
+    }
+    return "grid";
+  });
 
   const membersSorted = useMemo(
     () => [...(data.members || [])].sort((a, b) => fullName(a).localeCompare(fullName(b), "es", { sensitivity: "base" })),
@@ -89,6 +101,14 @@ export default function Page() {
     const timer = window.setInterval(() => setTick(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [liveMembers.length]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, view);
+    } catch {
+      // ignore
+    }
+  }, [view]);
 
   const syncURL = useCallback((nextDate: string) => {
     const url = new URL(window.location.href);
@@ -128,6 +148,17 @@ export default function Page() {
     setSelectedMember(null);
   }, []);
 
+  const tableMembers = useMemo(() => [...liveMembers, ...idleMembers], [idleMembers, liveMembers]);
+  const rosterRows = useMemo<HorariosRosterRow[]>(
+    () =>
+      tableMembers.map((member) => ({
+        member,
+        schedule: schedulesByMember.get(member.id),
+        activeEntry: activeEntriesForDate.get(member.id),
+      })),
+    [activeEntriesForDate, schedulesByMember, tableMembers],
+  );
+
   return (
     <section aria-label="Preview de horarios" className="bo-horariosPreviewPage">
       <div className="bo-panel">
@@ -142,6 +173,32 @@ export default function Page() {
           <div className="bo-horariosPreviewActions">
             <DatePicker value={date} onChange={(nextDate) => void onDateChange(nextDate)} />
             <div className="bo-horariosDateBadge">{busy ? "Cargando..." : date}</div>
+            <div className="bo-tabs bo-tabs--glass bo-viewTabs" role="tablist" aria-label="Cambiar vista">
+              <button
+                type="button"
+                className={`bo-tab${view === "grid" ? " is-active" : ""}`}
+                role="tab"
+                aria-selected={view === "grid"}
+                onClick={() => setView("grid")}
+              >
+                {view === "grid" ? <span className="bo-tabIndicator" /> : null}
+                <span className="bo-tabInner">
+                  <span className="bo-tabLabel">Grid</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`bo-tab${view === "table" ? " is-active" : ""}`}
+                role="tab"
+                aria-selected={view === "table"}
+                onClick={() => setView("table")}
+              >
+                {view === "table" ? <span className="bo-tabIndicator" /> : null}
+                <span className="bo-tabInner">
+                  <span className="bo-tabLabel">Tabla</span>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -157,76 +214,88 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="bo-horariosPreviewGrid">
-            <section className="bo-horariosPreviewBlock" aria-label="Miembros en vivo">
-              <div className="bo-panelTitle">Trabajando ahora</div>
-              <div className="bo-horariosPreviewCards">
-                {liveMembers.map((member) => {
-                  const entry = activeEntriesForDate.get(member.id);
-                  const schedule = schedulesByMember.get(member.id);
-                  return (
-                    <article
-                      key={`live-${member.id}`}
-                      className={`bo-memberCard bo-memberCard--live${schedule ? " bo-memberCard--assigned" : ""}`}
-                      onClick={() => onMemberClick(member)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          onMemberClick(member);
-                        }
-                      }}
-                    >
-                      <div className="bo-memberName">{fullName(member)}</div>
-                      <div className="bo-memberSub">{entry ? elapsedLabel(entry.startAtIso, tick) : "--:--:--"}</div>
-                      <div className="bo-horariosPreviewBadges">
-                        <span className="bo-badge bo-horariosPreviewBadge bo-horariosPreviewBadge--live">En vivo</span>
-                        <span className={`bo-badge bo-horariosPreviewBadge${schedule ? " is-assigned" : " is-unassigned"}`}>
-                          {schedule ? "Asignado hoy" : "Sin asignar"}
-                        </span>
-                      </div>
-                      <div className="bo-memberMeta">{scheduleLabel(schedule)}</div>
-                    </article>
-                  );
-                })}
+          {view === "grid" ? (
+            <div className="bo-horariosPreviewGrid">
+              <section className="bo-horariosPreviewBlock" aria-label="Miembros en vivo">
+                <div className="bo-panelTitle">Trabajando ahora</div>
+                <div className="bo-horariosPreviewCards">
+                  {liveMembers.map((member) => {
+                    const entry = activeEntriesForDate.get(member.id);
+                    const schedule = schedulesByMember.get(member.id);
+                    return (
+                      <article
+                        key={`live-${member.id}`}
+                        className={`bo-memberCard bo-memberCard--live${schedule ? " bo-memberCard--assigned" : ""}`}
+                        onClick={() => onMemberClick(member)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onMemberClick(member);
+                          }
+                        }}
+                      >
+                        <div className="bo-memberName">{fullName(member)}</div>
+                        <div className="bo-memberSub">{entry ? elapsedLabel(entry.startAtIso, tick) : "--:--:--"}</div>
+                        <div className="bo-horariosPreviewBadges">
+                          <span className="bo-badge bo-horariosPreviewBadge bo-horariosPreviewBadge--live">En vivo</span>
+                          <span className={`bo-badge bo-horariosPreviewBadge${schedule ? " is-assigned" : " is-unassigned"}`}>
+                            {schedule ? "Asignado hoy" : "Sin asignar"}
+                          </span>
+                        </div>
+                        <div className="bo-memberMeta">{scheduleLabel(schedule)}</div>
+                      </article>
+                    );
+                  })}
 
-                {liveMembers.length === 0 ? <div className="bo-mutedText">No hay fichajes abiertos para esta fecha.</div> : null}
-              </div>
-            </section>
+                  {liveMembers.length === 0 ? <div className="bo-mutedText">No hay fichajes abiertos para esta fecha.</div> : null}
+                </div>
+              </section>
 
-            <section className="bo-horariosPreviewBlock" aria-label="Miembros fuera de turno">
-              <div className="bo-panelTitle">No trabajando ahora</div>
-              <div className="bo-horariosPreviewCards">
-                {idleMembers.map((member) => {
-                  const schedule = schedulesByMember.get(member.id);
-                  return (
-                    <article
-                      key={`idle-${member.id}`}
-                      className={`bo-memberCard${schedule ? " bo-memberCard--assigned" : ""}`}
-                      onClick={() => onMemberClick(member)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          onMemberClick(member);
-                        }
-                      }}
-                    >
-                      <div className="bo-memberName">{fullName(member)}</div>
-                      <div className="bo-horariosPreviewBadges">
-                        <span className={`bo-badge bo-horariosPreviewBadge${schedule ? " is-assigned" : " is-unassigned"}`}>
-                          {schedule ? "Asignado hoy" : "Sin asignar"}
-                        </span>
-                      </div>
-                      <div className="bo-memberMeta">{scheduleLabel(schedule)}</div>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
+              <section className="bo-horariosPreviewBlock" aria-label="Miembros fuera de turno">
+                <div className="bo-panelTitle">No trabajando ahora</div>
+                <div className="bo-horariosPreviewCards">
+                  {idleMembers.map((member) => {
+                    const schedule = schedulesByMember.get(member.id);
+                    return (
+                      <article
+                        key={`idle-${member.id}`}
+                        className={`bo-memberCard${schedule ? " bo-memberCard--assigned" : ""}`}
+                        onClick={() => onMemberClick(member)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onMemberClick(member);
+                          }
+                        }}
+                      >
+                        <div className="bo-memberName">{fullName(member)}</div>
+                        <div className="bo-horariosPreviewBadges">
+                          <span className={`bo-badge bo-horariosPreviewBadge${schedule ? " is-assigned" : " is-unassigned"}`}>
+                            {schedule ? "Asignado hoy" : "Sin asignar"}
+                          </span>
+                        </div>
+                        <div className="bo-memberMeta">{scheduleLabel(schedule)}</div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            </div>
+          ) : (
+            <HorariosRosterTable
+              rows={rosterRows}
+              nowMs={tick}
+              selectedMemberId={selectedMember?.id ?? null}
+              onRowClick={onMemberClick}
+              onEditMember={onMemberClick}
+              ariaLabel="Tabla de horarios (preview)"
+              emptyLabel="Sin miembros para mostrar."
+            />
+          )}
         </div>
       </div>
 

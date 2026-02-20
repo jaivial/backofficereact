@@ -66,7 +66,7 @@ export const FoodFilters = React.memo(function FoodFilters({
   onReset,
   count,
 }: FoodFiltersProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const reduceMotion = useReducedMotion();
 
   const supportsCategories = foodType === "platos";

@@ -145,6 +145,7 @@ export function Topbar({
             options={restaurantOptions}
             size="sm"
             ariaLabel="Restaurante"
+            menuMinWidthPx={280}
           />
         ) : null}
 
@@ -155,6 +156,7 @@ export function Topbar({
           triggerClassName="bo-avatarBtn"
           triggerContent={<div className="bo-avatar" aria-label="Profile">{initials}</div>}
           items={userMenuItems}
+          menuMinWidthPx={250}
         />
 
         {fichaje.activeEntry ? (

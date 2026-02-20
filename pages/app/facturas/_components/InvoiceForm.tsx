@@ -12,6 +12,7 @@ import { CommentsPanel } from "./CommentsPanel";
 import type { Invoice, InvoiceInput, InvoiceStatus, PaymentMethod, ReservationSearchResult, InvoiceTemplate, CurrencyCode, InvoiceCategory, PdfTemplateType, InvoiceLineItem, InvoiceLineItemInput, InvoiceDepositType } from "../../../../api/types";
 import { CURRENCY_OPTIONS, CURRENCY_SYMBOLS, DEFAULT_CURRENCY_RATES, convertCurrency, INVOICE_CATEGORY_OPTIONS, PDF_TEMPLATE_OPTIONS, INVOICE_DEPOSIT_TYPE_OPTIONS } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
+import { compressImageToWebP } from "../../../../lib/imageCompressor";
 
 export interface InvoiceFormRef {
   save: (shouldSend?: boolean) => void;
@@ -239,6 +240,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [reservationSelectionMode, setReservationSelectionMode] = useState<"full" | "booking">("full");
+  const [pendingReservationSelection, setPendingReservationSelection] = useState(false);
 
   // Backend origin for PDF preview - use relative URL for API proxy
   const backendOrigin = typeof window !== "undefined" ? window.location.origin : "";
@@ -325,8 +328,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     customerPhone: validatePhone(customerPhone),
     customerAddressPostalCode: validatePostalCode(customerAddressPostalCode),
     amount: useLineItems ? null : validateAmount(amount),
-    lineItems: useLineItems && lineItems.length === 0 ? "Añade al menos una linea de factura" :
-      useLineItems && lineItems.some(item => !item.description.trim()) ? "Todas las lineas deben tener descripcion" : null,
+    lineItems: useLineItems && lineItems.length === 0 ? "Añade al menos una linea de factura" : null,
   }), [customerName, customerEmail, customerDniCif, useDni, customerPhone, customerAddressPostalCode, amount, useLineItems, lineItems]);
 
   // Check if field has an error (only after being touched)
@@ -712,8 +714,59 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     setDueDate(dueDateObj.toISOString().split("T")[0]);
     setPaymentDate(new Date().toISOString().split("T")[0]);
     setShowReservationModal(false);
+    setReservationSelectionMode("full");
+    setPendingReservationSelection(false);
     pushToast({ kind: "info", title: "Datos filled", message: "Datos filled desde la reserva" });
   }, [pushToast, paymentTerms]);
+
+  const handleFillFromReservationOnlyBooking = useCallback((reservation: ReservationSearchResult) => {
+    setReservationId(reservation.id);
+    setReservationDate(reservation.reservation_date);
+    setReservationCustomerName(reservation.customer_name);
+    setReservationPartySize(reservation.party_size);
+    setIsReservation(true);
+    setPendingReservationSelection(false);
+    setReservationSelectionMode("full");
+    setShowReservationModal(false);
+    pushToast({ kind: "info", title: "Reserva asignada", message: "Reserva seleccionada para esta factura" });
+  }, [pushToast]);
+
+  const handleCloseReservationModal = useCallback(() => {
+    setShowReservationModal(false);
+    if (reservationSelectionMode === "booking" && pendingReservationSelection) {
+      setIsReservation(false);
+      setReservationId(undefined);
+      setReservationDate("");
+      setReservationCustomerName("");
+      setReservationPartySize(undefined);
+      setPendingReservationSelection(false);
+      setReservationSelectionMode("full");
+    }
+  }, [pendingReservationSelection, reservationSelectionMode]);
+
+  const handleReservationToggle = useCallback((checked: boolean) => {
+    if (checked) {
+      setReservationSelectionMode("booking");
+      setPendingReservationSelection(true);
+      setIsReservation(true);
+      setShowReservationModal(true);
+      return;
+    }
+
+    setIsReservation(false);
+    setReservationId(undefined);
+    setReservationDate("");
+    setReservationCustomerName("");
+    setReservationPartySize(undefined);
+    setReservationSelectionMode("full");
+    setPendingReservationSelection(false);
+  }, []);
+
+  const handleOpenReservationFromTemplate = useCallback(() => {
+    setReservationSelectionMode("full");
+    setPendingReservationSelection(false);
+    setShowReservationModal(true);
+  }, []);
 
   // Effect to auto-calculate due date when invoice date or payment terms change
   useEffect(() => {
@@ -750,19 +803,25 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // Check file size (max 50KB)
-      if (file.size > 50 * 1024) {
-        pushToast({ kind: "error", title: "Error", message: "La imagen es demasiado grande (max 50KB)" });
-        return;
-      }
-
       setUploadingImage(true);
       try {
-        // In a real implementation, we'd compress the image and upload it
-        // For now, just create a local URL
-        const url = URL.createObjectURL(file);
+        let url: string;
+
+        // If image is larger than 30KB, compress to WebP at 30KB
+        if (file.size > 30 * 1024) {
+          url = await compressImageToWebP(file, 30);
+        } else {
+          // For smaller images, just use the original as a data URL
+          url = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
         setAccountImageUrl(url);
-        pushToast({ kind: "success", title: "Imagen cargada", message: "La imagen se ha cargado correctamente" });
+        pushToast({ kind: "success", title: "Imagen cargada", message: "La imagen se ha procesado y cargado correctamente" });
       } catch (err) {
         pushToast({ kind: "error", title: "Error", message: "Error al cargar la imagen" });
       } finally {
@@ -891,7 +950,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           <button
             type="button"
             className="bo-btn bo-btn--ghost bo-btn--sm"
-            onClick={() => setShowReservationModal(true)}
+            onClick={handleOpenReservationFromTemplate}
           >
             <Search size={16} />
             Rellenar desde reserva
@@ -908,6 +967,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       </div>
 
       <div className="bo-invoiceFormGrid">
+        <div className="bo-invoiceFormTopGrid">
         {/* Customer info section */}
         <div className="bo-invoiceFormSection">
           <h3 className="bo-invoiceFormSectionTitle">Datos del cliente</h3>
@@ -984,29 +1044,28 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           <div className="bo-invoiceFormRow bo-invoiceFormRow--dni">
             <div className="bo-field bo-field--switch">
+              <span className="bo-label">CIF</span>
               <Switch checked={useDni} onCheckedChange={setUseDni} />
-              <span className="bo-label">{useDni ? "DNI" : "CIF"}</span>
+              <span className="bo-label">DNI</span>
             </div>
 
-            {useDni && (
-              <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`}>
-                <span className="bo-label">{useDni ? "DNI" : "CIF"}</span>
-                <input
-                  className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
-                  type="text"
-                  value={customerDniCif}
-                  onChange={(e) => setCustomerDniCif(e.target.value)}
-                  onBlur={() => handleBlur("customerDniCif")}
-                  aria-describedby={hasError("customerDniCif") ? "customerDniCif-error" : undefined}
-                  aria-invalid={hasError("customerDniCif")}
-                />
-                {hasError("customerDniCif") && (
-                  <span className="bo-fieldError" id="customerDniCif-error" role="alert">
-                    {getError("customerDniCif")}
-                  </span>
-                )}
-              </label>
-            )}
+            <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`}>
+              <span className="bo-label">{useDni ? "DNI" : "CIF"}</span>
+              <input
+                className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
+                type="text"
+                value={customerDniCif}
+                onChange={(e) => setCustomerDniCif(e.target.value)}
+                onBlur={() => handleBlur("customerDniCif")}
+                aria-describedby={hasError("customerDniCif") ? "customerDniCif-error" : undefined}
+                aria-invalid={hasError("customerDniCif")}
+              />
+              {hasError("customerDniCif") && (
+                <span className="bo-fieldError" id="customerDniCif-error" role="alert">
+                  {getError("customerDniCif")}
+                </span>
+              )}
+            </label>
           </div>
 
           <div className="bo-invoiceFormRow">
@@ -1292,7 +1351,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
           )}
 
-          <div className="bo-invoiceFormRow">
+          <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceDates">
             <label className="bo-field">
               <span className="bo-label">Fecha de factura *</span>
               <DatePicker value={invoiceDate} onChange={setInvoiceDate} />
@@ -1319,6 +1378,14 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </label>
           </div>
 
+        </div>
+
+        </div>
+
+        {/* Invoice state and settings */}
+        <div className="bo-invoiceFormSection">
+          <h3 className="bo-invoiceFormSectionTitle">Estado y configuración</h3>
+
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Estado</span>
@@ -1331,9 +1398,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </label>
           </div>
 
-          <div className="bo-invoiceFormRow">
+            <div className="bo-invoiceFormRow">
             <label className="bo-field bo-field--switch">
-              <Switch checked={isReservation} onCheckedChange={setIsReservation} />
+              <Switch checked={isReservation} onCheckedChange={handleReservationToggle} />
               <span className="bo-label">Es reserva</span>
             </label>
           </div>
@@ -1383,7 +1450,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 ) : (
                   <label className="bo-invoiceImageDrop">
                     <Upload size={24} />
-                    <span>Subir imagen (max 50KB)</span>
+                    <span>Subir imagen (se comprime a 30KB)</span>
                     <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
                   </label>
                 )}
@@ -1626,8 +1693,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       {/* Reservation modal */}
       {showReservationModal && (
         <FillFromReservationModal
-          onClose={() => setShowReservationModal(false)}
-          onSelect={handleFillFromReservation}
+          onClose={handleCloseReservationModal}
+          onSelect={reservationSelectionMode === "booking" ? handleFillFromReservationOnlyBooking : handleFillFromReservation}
           searchReservations={searchReservations}
         />
       )}
