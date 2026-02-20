@@ -1,13 +1,13 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
-import type { TaxReport, TaxReportQuarterlyBreakdown, CustomerStatement } from "../../../api/types";
-import { formatCurrency, CURRENCY_SYMBOLS } from "../../../api/types";
+import type { TaxReport, TaxReportIVABreakdown, TaxReportQuarterlyBreakdown, TaxReportInvoiceItem, CustomerStatement, InvoicePayment } from "../../../api/types";
+import { formatCurrency, CURRENCY_SYMBOLS, type CurrencyCode } from "../../../api/types";
 import { SimpleTabs, SimpleTabsContent, SimpleTabsList } from "../../../ui/nav/SimpleTabs";
 import { StatCard } from "../../../ui/widgets/StatCard";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
-import { FileText, Filter, FileSpreadsheet, RefreshCw, ChevronDown, ChevronUp, User, Receipt } from "lucide-react";
+import { Download, FileText, Calendar, Filter, Printer, FileSpreadsheet, RefreshCw, ChevronDown, ChevronUp, User, DollarSign, Receipt, CreditCard } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -156,8 +156,7 @@ export default function Page() {
         setCustomerStatement(res.statement);
         pushToast("Estado de cuenta generado correctamente", "success");
       } else {
-        const message = !res.success ? res.message : undefined;
-        errorToast.show(message || "Error al generar el estado de cuenta");
+        errorToast.show(res.message || "Error al generar el estado de cuenta");
       }
     } catch (e) {
       errorToast.show("Error al conectar con el servidor");
@@ -375,8 +374,7 @@ export default function Page() {
         setReport(res.report);
         pushToast("Reporte generado correctamente", "success");
       } else {
-        const message = !res.success ? res.message : undefined;
-        errorToast.show(message || "Error al generar el reporte");
+        errorToast.show(res.message || "Error al generar el reporte");
       }
     } catch (e) {
       errorToast.show("Error al conectar con el servidor");
@@ -702,27 +700,27 @@ export default function Page() {
                     <StatCard
                       title="Saldo Inicial"
                       value={formatCurrency(customerStatement.opening_balance, "EUR")}
-                      icon="clock"
+                      icon={<DollarSign className="w-5 h-5 text-gray-600" />}
                     />
                     <StatCard
                       title="Total Facturado"
                       value={formatCurrency(customerStatement.summary.total_invoiced, "EUR")}
-                      icon="file-text"
+                      icon={<Receipt className="w-5 h-5 text-blue-600" />}
                     />
                     <StatCard
                       title="Total Pagado"
                       value={formatCurrency(customerStatement.summary.total_paid, "EUR")}
-                      icon="check"
+                      icon={<CreditCard className="w-5 h-5 text-green-600" />}
                     />
                     <StatCard
                       title="Pendiente"
                       value={formatCurrency(customerStatement.summary.total_pending, "EUR")}
-                      icon="calendar"
+                      icon={<Calendar className="w-5 h-5 text-yellow-600" />}
                     />
                     <StatCard
                       title="Saldo Final"
                       value={formatCurrency(customerStatement.closing_balance, "EUR")}
-                      icon="trending-up"
+                      icon={<DollarSign className="w-5 h-5 text-red-600" />}
                     />
                   </div>
 
@@ -754,12 +752,11 @@ export default function Page() {
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{formatDate(inv.invoice_date)}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(inv.total, "EUR")}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-center">
-                                    <span className={`px-2 py-1 text-xs rounded-full ${
-                                      inv.status === "pagada" ? "bg-green-100 text-green-800" :
-                                      inv.status === "pendiente" ? "bg-yellow-100 text-yellow-800" :
-                                      inv.status === "enviada" ? "bg-blue-100 text-blue-800" :
-                                      "bg-gray-100 text-gray-800"
-                                    }`}>
+                                    <span className={`px-2 py-1 text-xs rounded-full ${inv.status === "pagada" ? "bg-green-100 text-green-800" :
+                                        inv.status === "pendiente" ? "bg-yellow-100 text-yellow-800" :
+                                          inv.status === "enviada" ? "bg-blue-100 text-blue-800" :
+                                            "bg-gray-100 text-gray-800"
+                                      }`}>
                                       {inv.status}
                                     </span>
                                   </td>
@@ -826,344 +823,345 @@ export default function Page() {
             <div>
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Date preset */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
-            <select
-              value={datePreset}
-              onChange={(e) => handleDatePresetChange(e.target.value as DatePreset)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {DATE_PRESETS.map(preset => (
-                <option key={preset.value} value={preset.value}>{preset.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Date from */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => {
-                setDateFrom(e.target.value);
-                setDatePreset("custom");
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Date to */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => {
-                setDateTo(e.target.value);
-                setDatePreset("custom");
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Include credit notes */}
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeCreditNotes}
-                onChange={(e) => setIncludeCreditNotes(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">Incluir notas de credito</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={handleGenerateReport}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
-            Generar Reporte
-          </button>
-
-          {report && (
-            <>
-              <button
-                onClick={handleExportPDF}
-                disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-              >
-                <FileText className="w-4 h-4" />
-                Exportar PDF
-              </button>
-              <button
-                onClick={handleExportExcel}
-                disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                Exportar Excel
-              </button>
-            </>
-          )}
-	        </div>
-	      </div>
-	      </div>
-
-	      {/* Report Content */}
-	      {report ? (
-        <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <StatCard
-              title="Base Imponible"
-              value={formatCurrency(report.summary.total_base, "EUR")}
-              icon="file-text"
-            />
-            <StatCard
-              title="IVA Acumulado"
-              value={formatCurrency(report.summary.total_iva, "EUR")}
-              icon="calendar"
-            />
-            <StatCard
-              title="Total"
-              value={formatCurrency(report.summary.total, "EUR")}
-              icon="trending-up"
-            />
-            <StatCard
-              title="Facturas"
-              value={String(report.summary.invoice_count)}
-              icon="users"
-            />
-          </div>
-
-          {/* Credit Notes Summary (if included) */}
-          {includeCreditNotes && report.summary.credit_note_count > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-semibold text-yellow-800 mb-3">Notas de Credito</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <span className="text-sm text-yellow-700">Cantidad</span>
-                  <p className="text-xl font-bold text-yellow-900">{report.summary.credit_note_count}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-yellow-700">Base</span>
-                  <p className="text-xl font-bold text-yellow-900">{formatCurrency(report.summary.credit_note_base, "EUR")}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-yellow-700">IVA</span>
-                  <p className="text-xl font-bold text-yellow-900">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-yellow-700">Total</span>
-                  <p className="text-xl font-bold text-yellow-900">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Net Total (after credit notes) */}
-          {includeCreditNotes && report.summary.credit_note_count > 0 && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-semibold text-green-800 mb-3">Total Neto (despues de notas de credito)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <span className="text-sm text-green-700">Base neta</span>
-                  <p className="text-2xl font-bold text-green-900">{formatCurrency(report.summary.net_base, "EUR")}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-green-700">IVA neto</span>
-                  <p className="text-2xl font-bold text-green-900">{formatCurrency(report.summary.net_iva, "EUR")}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-green-700">Total neto</span>
-                  <p className="text-2xl font-bold text-green-900">{formatCurrency(report.summary.net_total, "EUR")}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Tabs for Breakdown and Quarterly */}
-          <SimpleTabs defaultValue="breakdown">
-            <SimpleTabsList>
-              <SimpleTabsContent value="breakdown" trigger="Desglose por IVA" />
-              <SimpleTabsContent value="quarterly" trigger="Trimestral" />
-              <SimpleTabsContent value="invoices" trigger="Facturas" />
-            </SimpleTabsList>
-
-            {/* Breakdown by IVA Rate */}
-            <SimpleTabsContent value="breakdown">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo IVA</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Facturas</th>
-                      {includeCreditNotes && (
-                        <>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Notas Cred.</th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base NC</th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA NC</th>
-                        </>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {report.breakdown_by_rate.map((item, idx) => (
-                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.iva_rate}%</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.base_amount, "EUR")}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.iva_amount, "EUR")}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-semibold">{formatCurrency(item.base_amount + item.iva_amount, "EUR")}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.invoice_count}</td>
-                        {includeCreditNotes && (
-                          <>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.credit_note_count}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">{formatCurrency(item.credit_note_base, "EUR")}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">{formatCurrency(item.credit_note_iva, "EUR")}</td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-gray-100">
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">TOTAL</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.total_base, "EUR")}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.total_iva, "EUR")}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.total, "EUR")}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900">{report.summary.invoice_count}</td>
-                      {includeCreditNotes && (
-                        <>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900">{report.summary.credit_note_count}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.credit_note_base, "EUR")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.credit_note_iva, "EUR")}</td>
-                        </>
-                      )}
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </SimpleTabsContent>
-
-            {/* Quarterly Breakdown */}
-            <SimpleTabsContent value="quarterly">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trimestre</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periodo</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Facturas</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Notas Cred.</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {data.quarterlyBreakdown.length > 0 ? (
-                      data.quarterlyBreakdown.map((item, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.quarterLabel}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(item.start_date)} - {formatDate(item.end_date)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.base_amount, "EUR")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.iva_amount, "EUR")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-semibold">{formatCurrency(item.total, "EUR")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.invoice_count}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.credit_note_count}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                          No hay datos trimestrales disponibles. Genera un reporte para ver el desglose.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </SimpleTabsContent>
-
-            {/* Invoice List */}
-            <SimpleTabsContent value="invoices">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <button
-                  onClick={toggleInvoices}
-                  className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
-                >
-                  <span className="text-sm font-medium text-gray-900">Lista de facturas ({report.invoices.length})</span>
-                  {expandedInvoices ? <ChevronUp className="w-5 h-5 text-gray-600" /> : <ChevronDown className="w-5 h-5 text-gray-600" />}
-                </button>
-                {expandedInvoices && (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factura</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base</th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA Importe</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {report.invoices.map((inv, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{inv.invoice_number || ` #${inv.id}`}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{inv.customer_name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(inv.invoice_date)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(inv.base_amount, "EUR")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{inv.iva_rate}%</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(inv.iva_amount, "EUR")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-semibold">{formatCurrency(inv.total, "EUR")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                            {inv.is_credit_note ? (
-                              <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">NC</span>
-                            ) : (
-                              <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Factura</span>
-                            )}
-                          </td>
-                        </tr>
+                  {/* Date preset */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
+                    <select
+                      value={datePreset}
+                      onChange={(e) => handleDatePresetChange(e.target.value as DatePreset)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {DATE_PRESETS.map(preset => (
+                        <option key={preset.value} value={preset.value}>{preset.label}</option>
                       ))}
-                    </tbody>
-                  </table>
-                )}
+                    </select>
+                  </div>
+
+                  {/* Date from */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => {
+                        setDateFrom(e.target.value);
+                        setDatePreset("custom");
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Date to */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => {
+                        setDateTo(e.target.value);
+                        setDatePreset("custom");
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Include credit notes */}
+                  <div className="flex items-end">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeCreditNotes}
+                        onChange={(e) => setIncludeCreditNotes(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Incluir notas de credito</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={handleGenerateReport}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
+                    Generar Reporte
+                  </button>
+
+                  {report && (
+                    <>
+                      <button
+                        onClick={handleExportPDF}
+                        disabled={exporting}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Exportar PDF
+                      </button>
+                      <button
+                        onClick={handleExportExcel}
+                        disabled={exporting}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                      >
+                        <FileSpreadsheet className="w-4 h-4" />
+                        Exportar Excel
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-	            </SimpleTabsContent>
-	          </SimpleTabs>
-	        </>
-	        ) : (
-	          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay reporte generado</h3>
-            <p className="text-gray-500 mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
-            <button
-              onClick={handleGenerateReport}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
-              Generar Reporte
-            </button>
-          </div>
-        )}
-      </SimpleTabsContent>
-    </SimpleTabs>
-  </div>
-</div>
+
+              {/* Report Content */}
+              {report ? (
+                <>
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <StatCard
+                      title="Base Imponible"
+                      value={formatCurrency(report.summary.total_base, "EUR")}
+                      icon={<FileText className="w-5 h-5 text-blue-600" />}
+                    />
+                    <StatCard
+                      title="IVA Acumulado"
+                      value={formatCurrency(report.summary.total_iva, "EUR")}
+                      icon={<Calendar className="w-5 h-5 text-purple-600" />}
+                    />
+                    <StatCard
+                      title="Total"
+                      value={formatCurrency(report.summary.total, "EUR")}
+                      icon={<Calendar className="w-5 h-5 text-green-600" />}
+                    />
+                    <StatCard
+                      title="Facturas"
+                      value={String(report.summary.invoice_count)}
+                      icon={<FileText className="w-5 h-5 text-orange-600" />}
+                    />
+                  </div>
+
+                  {/* Credit Notes Summary (if included) */}
+                  {includeCreditNotes && report.summary.credit_note_count > 0 && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                      <h3 className="text-lg font-semibold text-yellow-800 mb-3">Notas de Credito</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <span className="text-sm text-yellow-700">Cantidad</span>
+                          <p className="text-xl font-bold text-yellow-900">{report.summary.credit_note_count}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm text-yellow-700">Base</span>
+                          <p className="text-xl font-bold text-yellow-900">{formatCurrency(report.summary.credit_note_base, "EUR")}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm text-yellow-700">IVA</span>
+                          <p className="text-xl font-bold text-yellow-900">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm text-yellow-700">Total</span>
+                          <p className="text-xl font-bold text-yellow-900">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Net Total (after credit notes) */}
+                  {includeCreditNotes && report.summary.credit_note_count > 0 && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                      <h3 className="text-lg font-semibold text-green-800 mb-3">Total Neto (despues de notas de credito)</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <span className="text-sm text-green-700">Base neta</span>
+                          <p className="text-2xl font-bold text-green-900">{formatCurrency(report.summary.net_base, "EUR")}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm text-green-700">IVA neto</span>
+                          <p className="text-2xl font-bold text-green-900">{formatCurrency(report.summary.net_iva, "EUR")}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm text-green-700">Total neto</span>
+                          <p className="text-2xl font-bold text-green-900">{formatCurrency(report.summary.net_total, "EUR")}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tabs for Breakdown and Quarterly */}
+                  <SimpleTabs defaultValue="breakdown">
+                    <SimpleTabsList>
+                      <SimpleTabsContent value="breakdown" trigger="Desglose por IVA" />
+                      <SimpleTabsContent value="quarterly" trigger="Trimestral" />
+                      <SimpleTabsContent value="invoices" trigger="Facturas" />
+                    </SimpleTabsList>
+
+                    {/* Breakdown by IVA Rate */}
+                    <SimpleTabsContent value="breakdown">
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo IVA</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Facturas</th>
+                              {includeCreditNotes && (
+                                <>
+                                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Notas Cred.</th>
+                                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base NC</th>
+                                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA NC</th>
+                                </>
+                              )}
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {report.breakdown_by_rate.map((item, idx) => (
+                              <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.iva_rate}%</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.base_amount, "EUR")}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.iva_amount, "EUR")}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-semibold">{formatCurrency(item.base_amount + item.iva_amount, "EUR")}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.invoice_count}</td>
+                                {includeCreditNotes && (
+                                  <>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.credit_note_count}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">{formatCurrency(item.credit_note_base, "EUR")}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">{formatCurrency(item.credit_note_iva, "EUR")}</td>
+                                  </>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot className="bg-gray-100">
+                            <tr>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">TOTAL</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.total_base, "EUR")}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.total_iva, "EUR")}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.total, "EUR")}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900">{report.summary.invoice_count}</td>
+                              {includeCreditNotes && (
+                                <>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900">{report.summary.credit_note_count}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.credit_note_base, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">{formatCurrency(report.summary.credit_note_iva, "EUR")}</td>
+                                </>
+                              )}
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </SimpleTabsContent>
+
+                    {/* Quarterly Breakdown */}
+                    <SimpleTabsContent value="quarterly">
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trimestre</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periodo</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Facturas</th>
+                              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Notas Cred.</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {data.quarterlyBreakdown.length > 0 ? (
+                              data.quarterlyBreakdown.map((item, idx) => (
+                                <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.quarterLabel}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(item.start_date)} - {formatDate(item.end_date)}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.base_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(item.iva_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-semibold">{formatCurrency(item.total, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.invoice_count}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{item.credit_note_count}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                                  No hay datos trimestrales disponibles. Genera un reporte para ver el desglose.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </SimpleTabsContent>
+
+                    {/* Invoice List */}
+                    <SimpleTabsContent value="invoices">
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <button
+                          onClick={toggleInvoices}
+                          className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
+                        >
+                          <span className="text-sm font-medium text-gray-900">Lista de facturas ({report.invoices.length})</span>
+                          {expandedInvoices ? <ChevronUp className="w-5 h-5 text-gray-600" /> : <ChevronDown className="w-5 h-5 text-gray-600" />}
+                        </button>
+                        {expandedInvoices && (
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factura</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base</th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA Importe</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {report.invoices.map((inv, idx) => (
+                                <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{inv.invoice_number || ` #${inv.id}`}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{inv.customer_name}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(inv.invoice_date)}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(inv.base_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{inv.iva_rate}%</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(inv.iva_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-semibold">{formatCurrency(inv.total, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    {inv.is_credit_note ? (
+                                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">NC</span>
+                                    ) : (
+                                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Factura</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </SimpleTabsContent>
+                  </SimpleTabs>
+                </>
+
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No hay reporte generado</h3>
+                  <p className="text-gray-500 mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
+                  <button
+                    onClick={handleGenerateReport}
+                    disabled={loading}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
+                    Generar Reporte
+                  </button>
+                </div>
+              )}
+            </div>
+          </SimpleTabsContent>
+        </SimpleTabs>
+      </div>
+    </div>
   );
 }

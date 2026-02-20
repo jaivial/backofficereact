@@ -1,290 +1,115 @@
-# Premium Features Implementation Plan (`backofficereact` + backend services)
+# Premium Features Implementation Plan
 
-## 1) Scope and outcome
+This document serves as a comprehensive prompt and execution guide for an AI agent to implement a suite of new Premium Features for the New Villa Carmen Multitenant SaaS. 
 
-Goal: implement Premium features end-to-end and make them production-ready with clear ownership, contracts, and validation:
+**Agent Instructions**: 
+Read this document carefully. You will be implementing complex features involving the Go backend (`backend/`), the React/Vike frontend (`backoffice/`), and custom database schemas. Do not use ORMs; stick to Go's `database/sql` and raw SQL migrations as per the project's existing architecture. Create your implementation plan using a Todo list before starting.
 
-1. AI Website Builder + templates
-2. Cloudflare domain search/registration with 1.5x markup
-3. Table manager using React Flow with live table status updates
-4. WhatsApp messaging for staff via Uazapi
+---
 
-Notes:
-- This repo is **backofficereact** (frontend). Backend/API implementation is expected in the paired backend service repo (same production stack).
-- No secrets are stored in this repository. Runtime secrets come from environment/secret store.
-- Use incremental delivery: backend contract first, then frontend integration, then UI polish.
+## 🎯 Architecture & Core Directives
 
-## 2) Pre-conditions and assumptions
+1. **Frontend (`backoffice/`)**: React 19 + Vike (SSR). Use TailwindCSS, Radix UI, Jotai for state, and React Flow for the table manager.
+2. **Backend (`backend/`)**: Go (`net/http`) + MySQL. All new tables must include `restaurant_id` for multitenancy.
+3. **WebSockets**: Use `gorilla/websocket` in Go. Model your implementation after the existing `/api/admin/fichaje/ws` implementation.
+4. **Billing**: The project uses a custom `recurring_invoices` table (see `BACKEND_RECURRING_BILLING.md`). Premium features must generate invoices here instead of direct Stripe calls.
 
-1. Tenant model exists and every premium feature call includes tenant context (`restaurant_id`).
-2. Existing auth/session middleware remains authoritative for tenant isolation and authorization.
-3. Existing `api/types.ts`, `api/client.ts`, `pages/*` and state layer remain single source for front-back contracts.
-4. Existing premium feature pages are already partially implemented and should be hardened instead of rewritten:
-   - `pages/app/website/+Page.tsx`
-   - `pages/app/reservas/tables/+Page.tsx`
+---
 
-## 3) Security and config baseline
+## 🚀 Epic 1: AI Website Builder & Templates (Premium)
 
-1. Do not commit any provider credential.
-2. Cloudflare token handling:
-   - Set as `CLOUDFLARE_API_TOKEN` in backend secret config.
-3. Uazapi token/secret:
-   - Set as backend secret `UAZAPI_API_TOKEN`.
-4. Secrets never appear in query params or logs.
-5. All calls return correlation IDs (`request_id`) and standardized errors:
-   - `{ code, message, request_id, details? }`.
+**Goal**: Allow restaurants to generate a public website from their backoffice data (menu, hours, contact) either by selecting from 10 premium templates or using an AI HTML builder.
 
-## 4) Source-of-truth contract updates
+### Backend Tasks:
+1. **Migration**: Create `restaurant_websites` table (`id`, `restaurant_id`, `template_id`, `custom_html`, `domain`, `is_published`, `created_at`, `updated_at`).
+2. **Endpoints**:
+   - `GET /api/admin/website`: Fetch current website config.
+   - `PUT /api/admin/website`: Save template selection or custom HTML.
+   - `POST /api/admin/website/ai-generate`: Accept prompt and restaurant context (fetch menus/hours), call an LLM API (OpenAI/Anthropic), and return a complete styled HTML string.
 
-### 4.1 `api/types.ts` (frontend contract file)
+### Frontend Tasks:
+1. **Route**: Create `/pages/admin/website-builder/+Page.tsx`.
+2. **UI Components**:
+   - **Template Selector**: A gallery of 10 hardcoded template designs (thumbnail + name). When selected, it connects to the restaurant's DB to display their menu to the world.
+   - **AI Builder Mode**: A chat/prompt interface where the user describes their desired website. Display the generated `custom_html` inside an isolated `<iframe>` or `dangerouslySetInnerHTML` for preview.
+   - **Publish Button**: Saves the active template/HTML to the backend.
 
-Add/update types for each epic:
+---
 
-- `WebsiteTemplate`
-- `WebsiteDraftRequest`
-- `WebsiteDraftResponse`
-- `DomainSearchQuery`
-- `DomainSearchResult`
-- `DomainQuote`
-- `DomainRegisterRequest`
-- `DomainRegisterResponse`
-- `TableNode`
-- `TableEdge`
-- `TableArea`
-- `TableStatusUpdateEvent`
-- `Member`
-- `RestaurantIntegrations` (ensure WhatsApp fields included)
-- `WhatsAppMessageTemplate`
-- `WhatsAppSendRequest`
-- `WhatsAppSendResponse`
+## 🚀 Epic 2: Domain Registration via Cloudflare
 
-### 4.2 `api/client.ts` endpoint surface
+**Goal**: Allow users to search and buy custom domains directly from the backoffice. The app registers the domain via Cloudflare API but charges the user 1.5x the Cloudflare cost (profit margin).
 
-Add typed endpoints:
+### Backend Tasks:
+1. **Integration**: Implement Cloudflare Registrar API client in `backend/internal/api/cloudflare.go`.
+2. **Endpoints**:
+   - `GET /api/admin/domains/search?query=...`: Call Cloudflare API to check availability and base price. Multiply the returned price by **1.5x** before returning to the frontend.
+   - `POST /api/admin/domains/register`: Accept domain name. 
+     - *Step A*: Call Cloudflare API to register the domain.
+     - *Step B*: Insert a new row into `recurring_invoices` for the marked-up price (yearly frequency) so the company bills the client.
+     - *Step C*: Update `restaurant_websites.domain` with the new domain.
 
-- Website
-  - `GET /api/premium/website`
-  - `POST /api/premium/website`
-  - `POST /api/premium/website/ai-draft`
+### Frontend Tasks:
+1. **UI Components**: Inside the Website Builder, add a "Connect Custom Domain" section.
+2. **Search Flow**: Search bar for domains. Display results with the 1.5x marked-up price (e.g., if Cloudflare charges $10, display $15).
+3. **Checkout Flow**: A confirmation modal explaining the yearly cost. On confirm, hit the register endpoint.
 
-- Domains
-  - `POST /api/premium/domains/search`
-  - `POST /api/premium/domains/quote`
-  - `POST /api/premium/domains/register`
-  - `POST /api/premium/domains/verify`
+---
 
-- Tables
-  - `GET /api/premium/tables`
-  - `PATCH /api/premium/tables/:id`
-  - `PATCH /api/premium/tables/bulk`
-  - `GET /api/premium/tables/ws` (tokenized websocket URL)
+## 🚀 Epic 3: Table Manager (React Flow & WebSockets)
 
-- Members + WhatsApp
-  - `GET /api/premium/members`
-  - `PATCH /api/premium/members/:id`
-  - `GET /api/premium/whatsapp/templates`
-  - `POST /api/premium/whatsapp/send`
-  - `POST /api/premium/whatsapp/webhook`
+**Goal**: A visual table map creator using `reactflow` where restaurants can draw their floor plans, add/move tables, and see live occupancy updates via WebSockets.
 
-## 5) Epic 1 — AI Website Builder & Templates
+### Backend Tasks:
+1. **Migrations**: 
+   - `restaurant_areas` (`id`, `restaurant_id`, `name`, `bg_color`).
+   - `restaurant_tables` (`id`, `restaurant_id`, `area_id`, `name`, `capacity`, `x_pos`, `y_pos`, `status` [available, occupied, reserved]).
+2. **Endpoints**:
+   - `GET /api/admin/tables`: Return areas and tables.
+   - `POST/PUT /api/admin/tables`: Create/update tables (especially X/Y coordinates).
+3. **WebSocket**: 
+   - Implement `/api/admin/tables/ws` in `backend/internal/api/backoffice_tables_ws.go`.
+   - Manage connection pools by `restaurant_id`.
+   - Broadcast `{ type: "table_status_changed", table_id: 123, status: "occupied" }` when a table status updates.
 
-### Backend (service)
+### Frontend Tasks:
+1. **Route**: Create `/pages/admin/tables/+Page.tsx`.
+2. **React Flow Integration**:
+   - Install `reactflow` if not present.
+   - Map `restaurant_tables` to React Flow `nodes`.
+   - Custom Node Component: A stylized table shape showing `name`, `capacity`, and changing color based on `status`.
+   - Implement `onNodeDragStop` to send `PUT` requests updating `x_pos` and `y_pos`.
+3. **Live Updates**: Connect to `/api/admin/tables/ws`. Update the Jotai store or React state when a broadcast is received to instantly change table colors without refreshing.
 
-1. Create/verify DB tables:
-   - `premium_website_profiles` with JSON fields for content, template selection, and publish state.
-2. Add/adjust API endpoints:
-   - `GET /api/premium/website`: return profile, templates metadata, and draft status.
-   - `POST /api/premium/website`: upsert template selection / custom html / published state.
-   - `POST /api/premium/website/ai-draft`: validate prompt + tenant context, call LLM provider, persist draft snapshot.
-3. AI generation requirements:
-   - Sanitize prompt output before storage.
-   - Return strict schema:
-     - `html_content`
-     - `render_css` (if generated)
-     - `meta` (title, lang, theme)
-4. Billing event:
-   - If any AI generation has per-tenant quota/costs, emit recurring invoice note/charge as agreed with finance policy.
-5. Add endpoint tests:
-   - Unauthorized tenant access rejected.
-   - AI provider error surfaces as retryable/non-retryable code.
+---
 
-### Frontend (`backofficereact`)
+## 🚀 Epic 4: Staff/Member Management & Uazapi WhatsApp Integration
 
-1. Refine `pages/app/website/+Page.tsx`:
-   - Split states: `template`, `draft`, `loading`, `error`, `preview`.
-   - Add hard validation for prompt length and forbidden tokens.
-2. Template gallery:
-   - Load from backend template list, no hardcoded arrays.
-   - Show thumbnail, name, and tags.
-3. AI mode:
-   - Prompt input with submit queue and disable on request in-flight.
-   - Display generated preview in sandboxed iframe.
-4. Publish flow:
-   - Save template/draft and mark published state with confirmation modal.
-5. Error handling:
-   - Show inline validation and toast-style persistent summary for generation failures.
+**Goal**: Expand the existing members section to allow full staff control and add a premium "WhatsApp Pack" using Uazapi (a business WhatsApp API provider) with a centralized company account.
 
-Acceptance criteria:
-- A user can select template and publish a complete website payload.
-- AI draft generation returns preview within timeout policy.
-- Any unsafe HTML is blocked or sanitized.
+### Backend Tasks:
+1. **Migrations**: Add `whatsapp_number` to the existing `members` or `restaurant_members` table.
+2. **Uazapi Integration**: Create `backend/internal/api/uazapi.go` for making outbound HTTP requests to the Uazapi/Evolution API endpoints using the central company token.
+3. **Endpoints**:
+   - `GET /api/admin/members`: Return the list of members (ensure `whatsapp_number` is included).
+   - `PUT /api/admin/members/:id`: Update member details.
+   - `POST /api/admin/members/whatsapp/send`: 
+     - *Validation*: Check if the `restaurant_id` has an active Premium WhatsApp subscription (query `recurring_invoices` or a settings table).
+     - *Action*: Call Uazapi to send the template/message to the member's WhatsApp number.
 
-## 6) Epic 2 — Cloudflare domain integration with 1.5x markup
+### Frontend Tasks:
+1. **Route**: Update or create `/pages/admin/members/+Page.tsx` (List of members section).
+2. **UI Enhancements**: 
+   - Add columns for WhatsApp numbers and role/personal control.
+   - Add a "Send WhatsApp Message" action button per row.
+3. **Premium Paywall**: If the restaurant doesn't have the feature active, clicking the WhatsApp button should open a modal: *"Upgrade to the Premium WhatsApp Pack to notify your staff instantly"*, which triggers a subscription creation.
 
-### Backend
+---
 
-1. Domain service with Cloudflare API integration:
-   - `search`: returns availability and base price.
-   - `quote`: calculate `ceil(base_price * 1.5, 2)` (currency preserved).
-   - `register`: idempotent request using `idempotency_key`.
-2. DB/state:
-   - store external domain provider IDs and DNS state fields:
-     - `cf_domain_id`, `cf_zone_id`, `domain_status`.
-   - status flow: `checking`, `pending`, `active`, `failed`.
-3. Billing:
-   - On successful registration create/extend recurring record in `recurring_invoices` for `markup_price`.
-4. Webhook:
-   - Add async reconciliation endpoint for registration verification and finalization.
-5. Error contracts:
-   - explicit provider errors mapped to `{UNAVAILABLE, INVALID_NAME, BILLING_BLOCKED, LIMIT_REACHED}`.
+## 📋 Execution Protocol for the AI Agent
 
-### Frontend
-
-1. Extend `pages/app/website/+Page.tsx` with domain panel:
-   - Search domain and show availability + price.
-   - Quote section explicitly shows:
-     - provider price
-     - 1.5x markup
-     - annual charge
-2. Confirmation flow:
-   - Confirm modal includes one-time cost summary and billing effect.
-   - On success, poll domain status every 5s until `active` (max N attempts).
-3. Failure UX:
-   - Clear copy for blocked domain, invalid name, and provider downtime.
-
-Acceptance criteria:
-- “if provider=$10.00” displays “charged=$15.00”.
-- registration flow is idempotent and safe against duplicate button clicks.
-- domain verification updates UI status and enables website publish domain attachment only when active.
-
-## 7) Epic 3 — Table manager (React Flow + live updates)
-
-### Backend
-
-1. Data model:
-   - `restaurant_areas` with tenant id.
-   - `premium_tables` with coordinates, capacity, status, rotation, shape metadata.
-2. Endpoints:
-   - `GET /api/premium/tables` returns full map state.
-   - `PATCH /api/premium/tables/:id` updates geometry, capacity, status.
-3. WS:
-   - `GET /api/premium/tables/ws` publishes:
-     - `table_status_changed`
-     - `table_position_rebased`
-     - `table_deleted` / `table_created`
-   - Include event sequence and timestamp.
-4. Concurrency:
-   - reject stale client updates using version numbers or last_updated timestamps.
-
-### Frontend
-
-1. Finalize `pages/app/reservas/tables/+Page.tsx`:
-   - Normalize API models to React Flow nodes/edges once and memoize.
-   - Stable callback handlers for drag/reposition, save, status color palette.
-2. Real-time:
-   - connect to websocket, apply inbound events with local optimistic update reconciliation.
-3. UX:
-   - area filtering and quick legend (free/occupied/reserved).
-   - local validation for overlaps outside bounds before save.
-4. Resilience:
-   - auto-reconnect with exponential backoff.
-   - visual banner on offline state.
-
-Acceptance criteria:
-- Table move persists after drag (confirmed by reload).
-- Live status changes from backend appear without refresh.
-- Simultaneous edits are handled with controlled conflict resolution.
-
-## 8) Epic 4 — Staff management + WhatsApp (Uazapi)
-
-### Backend
-
-1. Ensure member model has `whatsapp_number`.
-2. Ensure restaurant integration settings include:
-   - `uazapi_url`
-   - `uazapi_token_ref` / masked credentials pointer
-   - `default_sender_number` (optional)
-3. Implement Uazapi send path:
-   - validate premium entitlement
-   - template/variable validation
-   - enqueue and persist outgoing message with correlation id
-4. Webhook handler:
-   - verify signature / shared secret
-   - update message status (`sent`, `delivered`, `read`, `failed`)
-5. Add audit entries:
-   - actor id, recipient id/phone, template, payload hash, status transitions.
-
-### Frontend
-
-1. Update member page(s):
-   - show/edit `whatsapp_number`
-   - add action “Send message” with per-member dialog.
-2. Template picker:
-   - load templates and preview merge fields.
-3. Premium gating:
-   - if feature inactive show upgrade path and disable send.
-4. Delivery panel:
-   - message timeline and latest status for each send action.
-
-Acceptance criteria:
-- send action triggers backend request and returns message id.
-- inbound webhook updates are reflected in UI.
-- non-premium tenants cannot trigger sends.
-
-## 9) Contract + integration validation matrix
-
-1. Backend-contract checks (required before frontend merge):
-   - all new types compile in `api/types.ts`
-   - frontend client methods cover all new routes
-2. API smoke checks:
-   - website CRUD + AI draft
-   - domain quote/register/verify
-   - table read/update/ws
-   - whatsapp send + webhook
-3. UX checks:
-   - loading/error/retry states on every async endpoint
-   - inline validation for invalid inputs
-   - keyboard focus and aria labels for newly added controls
-
-## 10) Delivery timeline (example)
-
-1. Week 1:
-   - finalize contracts and domain/websocket payloads
-   - implement backend table schemas + website + domain basic endpoints
-2. Week 2:
-   - complete backend for WhatsApp + domain reconciliation
-   - integrate frontend for website and domains
-3. Week 3:
-   - complete tables ws support and frontend mapping
-4. Week 4:
-4. hardening:
-   - entitlement checks, retries, rollback for failed registrations, webhook replay handling
-5. Week 5:
-   - QA, staged deploy, monitoring dashboards, production release notes
-
-## 11) Risks and mitigation
-
-1. External API volatility (Cloudflare/Uazapi changes)
-   - Add provider abstraction and contract tests against mocked responses.
-2. WS state drift during reconnect
-   - full snapshot refresh after reconnect + event replay checkpoint.
-3. Markdown plan/feature drift between docs and implementation
-   - require PR checklist: code, API contract, and docs update in same PR.
-
-## 12) Final artifacts produced
-
-1. `backofficereact/api/types.ts` and `backofficereact/api/client.ts` updated contracts.
-2. Implemented routes in `pages/app/website/+Page.tsx` and `pages/app/reservas/tables/+Page.tsx`.
-3. Backend endpoints/services for all four epics in API service.
-4. Database migrations and recurring invoice updates for domain billing.
-5. This plan doc updated to match code reality and acceptance criteria.
+When you start implementing this plan:
+1. **Use `todowrite`**: Break these 4 epics down into 15-20 atomic tasks. 
+2. **Work Incrementally**: Do not write all the Go code at once. Implement Epic 1 backend, test compilation (`go build`), then Epic 1 frontend, verify with `lsp_diagnostics`, and so on.
+3. **Ask for Clarification**: If the exact Cloudflare Registrar or Uazapi payload isn't known, ask the user for documentation links or sample cURL requests before blindly guessing the JSON structure.
+4. **Follow Conventions**: Strictly use `httpx.WriteJSON` for responses and `database/sql` for queries as seen in existing `backend/internal/api/*.go` files.

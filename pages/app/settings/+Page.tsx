@@ -1,28 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useAtomValue } from "jotai";
-import { Server, SlidersHorizontal } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../api/client";
-import type {
-  RestaurantBranding,
-  RestaurantIntegrations,
-  RestaurantInvoiceSettings,
-  InvoiceNumberFormat,
-  PdfTemplateType,
-  InvoiceRenumberPreview,
-  InvoiceRenumberAudit,
-  UazapiServer,
-  UazapiServerCreateInput,
-  UazapiServerPatchInput,
-} from "../../../api/types";
+import type { RestaurantBranding, RestaurantIntegrations, RestaurantInvoiceSettings, InvoiceNumberFormat, PdfTemplateType, InvoiceRenumberPreview, InvoiceRenumberAudit } from "../../../api/types";
 import { PDF_TEMPLATE_OPTIONS } from "../../../api/types";
-import { sessionAtom } from "../../../state/atoms";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { Select } from "../../../ui/inputs/Select";
-import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
 
 const EVENT_OPTIONS = [
@@ -30,87 +15,6 @@ const EVENT_OPTIONS = [
   { value: "booking.confirmed", label: "booking.confirmed" },
   { value: "booking.cancelled", label: "booking.cancelled" },
 ] as const;
-
-type SettingsTab = "general" | "uazapi-servers";
-
-type UazapiServerFormState = {
-  name: string;
-  baseUrl: string;
-  adminToken: string;
-  capacity: string;
-  priority: string;
-  isActive: boolean;
-  metadata: string;
-};
-
-function defaultUazapiServerFormState(): UazapiServerFormState {
-  return {
-    name: "",
-    baseUrl: "",
-    adminToken: "",
-    capacity: "0",
-    priority: "0",
-    isActive: true,
-    metadata: "",
-  };
-}
-
-function formatMetadataInput(value: unknown): string {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return "";
-  }
-}
-
-function parseMetadataInput(raw: string): { value: Record<string, unknown> | null; error: string | null } {
-  const trimmed = raw.trim();
-  if (!trimmed) return { value: null, error: null };
-  try {
-    const parsed = JSON.parse(trimmed) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return { value: null, error: "Metadata debe ser un objeto JSON válido" };
-    }
-    return { value: parsed as Record<string, unknown>, error: null };
-  } catch {
-    return { value: null, error: "Metadata debe ser JSON válido" };
-  }
-}
-
-function toSafeInt(raw: string, fallback = 0): number {
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.max(0, Math.trunc(parsed));
-}
-
-function maskedTokenFromServer(server: UazapiServer): string {
-  const candidates: unknown[] = [
-    server.adminTokenMasked,
-    (server as { admin_token_masked?: unknown }).admin_token_masked,
-    (server as { maskedToken?: unknown }).maskedToken,
-    (server as { tokenMasked?: unknown }).tokenMasked,
-  ];
-
-  for (const candidate of candidates) {
-    if (typeof candidate !== "string") continue;
-    const trimmed = candidate.trim();
-    if (trimmed) return trimmed;
-  }
-  return "No disponible";
-}
-
-function formStateFromServer(server: UazapiServer): UazapiServerFormState {
-  return {
-    name: server.name || "",
-    baseUrl: server.baseUrl || "",
-    adminToken: "",
-    capacity: String(typeof server.capacity === "number" ? server.capacity : 0),
-    priority: String(typeof server.priority === "number" ? server.priority : 0),
-    isActive: Boolean(server.isActive),
-    metadata: formatMetadataInput((server as { metadata?: unknown }).metadata),
-  };
-}
 
 function defaultIntegrations(): RestaurantIntegrations {
   return {
@@ -183,14 +87,8 @@ function joinRecipients(list: string[] | undefined | null): string {
 export default function Page() {
   const pageContext = usePageContext();
   const data = pageContext.data as Data;
-  const session = useAtomValue(sessionAtom);
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
-  const role = String(session?.user?.role ?? "")
-    .trim()
-    .toLowerCase();
-  const canManageUazapiServers = role === "admin" || role === "root";
-  const tabFromQuery: SettingsTab = pageContext.urlParsed?.search?.tab === "uazapi-servers" ? "uazapi-servers" : "general";
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
@@ -200,17 +98,6 @@ export default function Page() {
   const [invoiceSettings, setInvoiceSettings] = useState<RestaurantInvoiceSettings>(() => data.invoiceSettings ?? defaultInvoiceSettings());
   const [eventsMode, setEventsMode] = useState<"all" | "custom">(() => (integrations.enabledEvents.length ? "custom" : "all"));
   const [recipientsText, setRecipientsText] = useState(() => joinRecipients(integrations.restaurantWhatsappNumbers));
-  const [activeTab, setActiveTab] = useState<SettingsTab>(() =>
-    canManageUazapiServers && tabFromQuery === "uazapi-servers" ? "uazapi-servers" : "general",
-  );
-
-  const [uazapiServers, setUazapiServers] = useState<UazapiServer[]>([]);
-  const [uazapiLoading, setUazapiLoading] = useState(false);
-  const [uazapiLoaded, setUazapiLoaded] = useState(false);
-  const [uazapiBusy, setUazapiBusy] = useState(false);
-  const [createServerForm, setCreateServerForm] = useState<UazapiServerFormState>(() => defaultUazapiServerFormState());
-  const [editServerId, setEditServerId] = useState<number | null>(null);
-  const [editServerForm, setEditServerForm] = useState<UazapiServerFormState | null>(null);
 
   // Renumbering state
   const [renumberStartingNumber, setRenumberStartingNumber] = useState(invoiceSettings.nextNumber);
@@ -236,34 +123,6 @@ export default function Page() {
     [],
   );
 
-  const settingsTabs = useMemo<TabItem[]>(() => {
-    const tabs: TabItem[] = [
-      { id: "general", label: "General", href: "/app/settings?tab=general", icon: <SlidersHorizontal className="bo-ico" /> },
-    ];
-    if (canManageUazapiServers) {
-      tabs.push({ id: "uazapi-servers", label: "UAZAPI Servers", href: "/app/settings?tab=uazapi-servers", icon: <Server className="bo-ico" /> });
-    }
-    return tabs;
-  }, [canManageUazapiServers]);
-
-  useEffect(() => {
-    const nextTab: SettingsTab = canManageUazapiServers && tabFromQuery === "uazapi-servers" ? "uazapi-servers" : "general";
-    setActiveTab(nextTab);
-  }, [canManageUazapiServers, tabFromQuery]);
-
-  const onNavigateSettingsTab = useCallback(
-    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
-      void _href;
-      event.preventDefault();
-      if (id === "uazapi-servers" && canManageUazapiServers) {
-        setActiveTab("uazapi-servers");
-        return;
-      }
-      setActiveTab("general");
-    },
-    [canManageUazapiServers],
-  );
-
   const reload = useCallback(async () => {
     setBusy(true);
     setError(null);
@@ -285,148 +144,6 @@ export default function Page() {
       setBusy(false);
     }
   }, [api, pushToast]);
-
-  const loadUazapiServers = useCallback(async () => {
-    if (!canManageUazapiServers) return;
-    setUazapiLoading(true);
-    try {
-      const res = await api.settings.getUazapiServers();
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudieron cargar los servidores UAZAPI" });
-        return;
-      }
-      setUazapiServers(Array.isArray(res.servers) ? res.servers : []);
-      setUazapiLoaded(true);
-    } catch (e) {
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudieron cargar los servidores UAZAPI" });
-    } finally {
-      setUazapiLoading(false);
-    }
-  }, [api.settings, canManageUazapiServers, pushToast]);
-
-  useEffect(() => {
-    if (!canManageUazapiServers) return;
-    if (activeTab !== "uazapi-servers") return;
-    if (uazapiLoaded || uazapiLoading) return;
-    void loadUazapiServers();
-  }, [activeTab, canManageUazapiServers, loadUazapiServers, uazapiLoaded, uazapiLoading]);
-
-  const createUazapiServer = useCallback(async () => {
-    if (!canManageUazapiServers) return;
-
-    const name = createServerForm.name.trim();
-    const baseUrl = createServerForm.baseUrl.trim();
-    const adminToken = createServerForm.adminToken.trim();
-
-    if (!name || !baseUrl || !adminToken) {
-      pushToast({ kind: "error", title: "Error", message: "Nombre, URL base y token son obligatorios" });
-      return;
-    }
-
-    const metadata = parseMetadataInput(createServerForm.metadata);
-    if (metadata.error) {
-      pushToast({ kind: "error", title: "Error", message: metadata.error });
-      return;
-    }
-
-    const payload: UazapiServerCreateInput = {
-      name,
-      baseUrl,
-      adminToken,
-      capacity: toSafeInt(createServerForm.capacity, 0),
-      priority: toSafeInt(createServerForm.priority, 0),
-      isActive: createServerForm.isActive,
-    };
-    if (metadata.value !== null) payload.metadata = metadata.value;
-
-    setUazapiBusy(true);
-    try {
-      const res = await api.settings.createUazapiServer(payload);
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo crear el servidor" });
-        return;
-      }
-
-      if (res.server) {
-        setUazapiServers((prev) => [res.server, ...prev.filter((server) => server.id !== res.server.id)]);
-      } else {
-        await loadUazapiServers();
-      }
-      setUazapiLoaded(true);
-      setCreateServerForm(defaultUazapiServerFormState());
-      pushToast({ kind: "success", title: "Guardado", message: "Servidor UAZAPI creado" });
-    } catch (e) {
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo crear el servidor" });
-    } finally {
-      setUazapiBusy(false);
-    }
-  }, [api.settings, canManageUazapiServers, createServerForm, loadUazapiServers, pushToast]);
-
-  const startEditUazapiServer = useCallback((server: UazapiServer) => {
-    setEditServerId(server.id);
-    setEditServerForm(formStateFromServer(server));
-  }, []);
-
-  const cancelEditUazapiServer = useCallback(() => {
-    setEditServerId(null);
-    setEditServerForm(null);
-  }, []);
-
-  const saveEditUazapiServer = useCallback(async () => {
-    if (!canManageUazapiServers || editServerId === null || !editServerForm) return;
-
-    const name = editServerForm.name.trim();
-    const baseUrl = editServerForm.baseUrl.trim();
-
-    if (!name || !baseUrl) {
-      pushToast({ kind: "error", title: "Error", message: "Nombre y URL base son obligatorios" });
-      return;
-    }
-
-    const metadata = parseMetadataInput(editServerForm.metadata);
-    if (metadata.error) {
-      pushToast({ kind: "error", title: "Error", message: metadata.error });
-      return;
-    }
-
-    const patch: UazapiServerPatchInput = {
-      name,
-      baseUrl,
-      capacity: toSafeInt(editServerForm.capacity, 0),
-      priority: toSafeInt(editServerForm.priority, 0),
-      isActive: editServerForm.isActive,
-      metadata: metadata.value,
-    };
-    const adminToken = editServerForm.adminToken.trim();
-    if (adminToken) patch.adminToken = adminToken;
-
-    setUazapiBusy(true);
-    try {
-      const res = await api.settings.patchUazapiServer(editServerId, patch);
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar el servidor" });
-        return;
-      }
-
-      if (res.server) {
-        setUazapiServers((prev) => {
-          const exists = prev.some((server) => server.id === res.server.id);
-          if (!exists) return [res.server, ...prev];
-          return prev.map((server) => (server.id === res.server.id ? res.server : server));
-        });
-      } else {
-        await loadUazapiServers();
-      }
-      setUazapiLoaded(true);
-      setEditServerId(null);
-      setEditServerForm(null);
-      pushToast({ kind: "success", title: "Guardado", message: "Servidor UAZAPI actualizado" });
-    } catch (e) {
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo actualizar el servidor" });
-    } finally {
-      setUazapiBusy(false);
-    }
-  }, [api.settings, canManageUazapiServers, editServerForm, editServerId, loadUazapiServers, pushToast]);
 
   const onEventsModeChange = useCallback((v: string) => {
     const mode = v === "custom" ? "custom" : "all";
@@ -608,11 +325,6 @@ export default function Page() {
       .replace("{suffix}", invoiceSettings.format.suffix);
   }, [invoiceSettings]);
 
-  const editingServer = useMemo(() => {
-    if (editServerId === null) return null;
-    return uazapiServers.find((server) => server.id === editServerId) ?? null;
-  }, [editServerId, uazapiServers]);
-
   const primary = branding.primaryColor?.trim() || "transparent";
   const accent = branding.accentColor?.trim() || "transparent";
 
@@ -620,25 +332,15 @@ export default function Page() {
     <section aria-label="Ajustes">
       <div className="bo-toolbar">
         <div className="bo-toolbarLeft">
-          <button
-            className="bo-btn bo-btn--ghost"
-            type="button"
-            onClick={activeTab === "uazapi-servers" ? () => void loadUazapiServers() : reload}
-            disabled={activeTab === "uazapi-servers" ? uazapiLoading || uazapiBusy : busy}
-          >
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={reload} disabled={busy}>
             Recargar
           </button>
         </div>
         <div className="bo-toolbarRight">
-          <div className="bo-mutedText">{busy || uazapiBusy ? "Guardando..." : uazapiLoading ? "Cargando..." : ""}</div>
+          <div className="bo-mutedText">{busy ? "Guardando..." : ""}</div>
         </div>
       </div>
 
-      {settingsTabs.length > 1 ? (
-        <Tabs tabs={settingsTabs} activeId={activeTab} ariaLabel="Secciones de ajustes" className="bo-tabs--reservas" onNavigate={onNavigateSettingsTab} />
-      ) : null}
-
-      {activeTab === "general" ? (
       <div className="bo-stack">
         <div className="bo-panel" aria-label="Integraciones">
           <div className="bo-panelHead">
@@ -1068,260 +770,9 @@ export default function Page() {
           </div>
         </div>
       </div>
-      ) : null}
-
-      {activeTab === "uazapi-servers" && canManageUazapiServers ? (
-        <div className="bo-stack">
-          <div className="bo-panel" aria-label="Servidores UAZAPI">
-            <div className="bo-panelHead">
-              <div className="bo-panelTitle">Pool de servidores UAZAPI</div>
-              <div className="bo-panelMeta">{uazapiLoading ? "Cargando..." : `${uazapiServers.length} servidores`}</div>
-            </div>
-            <div className="bo-panelBody">
-              <div className="bo-stack">
-                <div className="bo-row">
-                  <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void loadUazapiServers()} disabled={uazapiLoading || uazapiBusy}>
-                    {uazapiLoading ? "Cargando..." : "Recargar servidores"}
-                  </button>
-                </div>
-
-                <div className="bo-field">
-                  <div className="bo-label">Crear servidor</div>
-                  <div className="bo-row" style={{ gap: 12, flexWrap: "wrap" }}>
-                    <label className="bo-field" style={{ flex: 1, minWidth: 220 }}>
-                      <div className="bo-label">Nombre</div>
-                      <input
-                        className="bo-input"
-                        value={createServerForm.name}
-                        onChange={(e) => setCreateServerForm((prev) => ({ ...prev, name: e.target.value }))}
-                        placeholder="Servidor principal"
-                      />
-                    </label>
-
-                    <label className="bo-field" style={{ flex: 1, minWidth: 260 }}>
-                      <div className="bo-label">Base URL</div>
-                      <input
-                        className="bo-input"
-                        value={createServerForm.baseUrl}
-                        onChange={(e) => setCreateServerForm((prev) => ({ ...prev, baseUrl: e.target.value }))}
-                        placeholder="https://api.uazapi.com"
-                      />
-                    </label>
-                  </div>
-
-                  <div className="bo-row" style={{ gap: 12, flexWrap: "wrap" }}>
-                    <label className="bo-field" style={{ flex: 1, minWidth: 220 }}>
-                      <div className="bo-label">Admin token</div>
-                      <input
-                        className="bo-input"
-                        type="password"
-                        value={createServerForm.adminToken}
-                        onChange={(e) => setCreateServerForm((prev) => ({ ...prev, adminToken: e.target.value }))}
-                        placeholder="Token de administrador"
-                        autoComplete="new-password"
-                      />
-                    </label>
-
-                    <label className="bo-field" style={{ flex: 1, minWidth: 140 }}>
-                      <div className="bo-label">Capacity</div>
-                      <input
-                        className="bo-input"
-                        type="number"
-                        min="0"
-                        value={createServerForm.capacity}
-                        onChange={(e) => setCreateServerForm((prev) => ({ ...prev, capacity: e.target.value }))}
-                      />
-                    </label>
-
-                    <label className="bo-field" style={{ flex: 1, minWidth: 140 }}>
-                      <div className="bo-label">Priority</div>
-                      <input
-                        className="bo-input"
-                        type="number"
-                        min="0"
-                        value={createServerForm.priority}
-                        onChange={(e) => setCreateServerForm((prev) => ({ ...prev, priority: e.target.value }))}
-                      />
-                    </label>
-                  </div>
-
-                  <label className="bo-field">
-                    <div className="bo-label">Metadata (JSON opcional)</div>
-                    <textarea
-                      className="bo-input bo-textarea"
-                      value={createServerForm.metadata}
-                      onChange={(e) => setCreateServerForm((prev) => ({ ...prev, metadata: e.target.value }))}
-                      placeholder='{"region":"eu-west-1"}'
-                    />
-                  </label>
-
-                  <label className="bo-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={createServerForm.isActive}
-                      onChange={(e) => setCreateServerForm((prev) => ({ ...prev, isActive: e.target.checked }))}
-                    />
-                    <span>Servidor activo</span>
-                  </label>
-
-                  <div className="bo-row">
-                    <button className="bo-btn bo-btn--primary" type="button" onClick={() => void createUazapiServer()} disabled={uazapiBusy || uazapiLoading}>
-                      Crear servidor
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bo-field">
-                  <div className="bo-label">Servidores registrados</div>
-                  {uazapiServers.length === 0 ? (
-                    <div className="bo-mutedText">No hay servidores configurados.</div>
-                  ) : (
-                    <div style={{ overflowX: "auto" }}>
-                      <table className="bo-table" aria-label="Servidores UAZAPI">
-                        <thead>
-                          <tr>
-                            <th>Nombre</th>
-                            <th>Base URL</th>
-                            <th>Token</th>
-                            <th>Capacity</th>
-                            <th>Priority</th>
-                            <th>Estado</th>
-                            <th>Metadata</th>
-                            <th>Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {uazapiServers.map((server) => (
-                            <tr key={server.id}>
-                              <td>{server.name}</td>
-                              <td>{server.baseUrl}</td>
-                              <td>{maskedTokenFromServer(server)}</td>
-                              <td>{server.capacity}</td>
-                              <td>{server.priority}</td>
-                              <td>{server.isActive ? "Activo" : "Inactivo"}</td>
-                              <td>{server.metadata && Object.keys(server.metadata).length ? "Sí" : "No"}</td>
-                              <td>
-                                <button
-                                  className="bo-btn bo-btn--ghost"
-                                  type="button"
-                                  onClick={() => startEditUazapiServer(server)}
-                                  disabled={uazapiBusy}
-                                >
-                                  {editServerId === server.id ? "Editando" : "Editar"}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {editServerForm && editServerId !== null ? (
-            <div className="bo-panel" aria-label="Editar servidor UAZAPI">
-              <div className="bo-panelHead">
-                <div className="bo-panelTitle">Editar servidor</div>
-                <div className="bo-panelMeta">ID {editServerId}</div>
-              </div>
-              <div className="bo-panelBody">
-                <div className="bo-stack">
-                  <div className="bo-mutedText">Token actual: {editingServer ? maskedTokenFromServer(editingServer) : "No disponible"}</div>
-
-                  <div className="bo-row" style={{ gap: 12, flexWrap: "wrap" }}>
-                    <label className="bo-field" style={{ flex: 1, minWidth: 220 }}>
-                      <div className="bo-label">Nombre</div>
-                      <input
-                        className="bo-input"
-                        value={editServerForm.name}
-                        onChange={(e) => setEditServerForm((prev) => (prev ? { ...prev, name: e.target.value } : prev))}
-                      />
-                    </label>
-
-                    <label className="bo-field" style={{ flex: 1, minWidth: 260 }}>
-                      <div className="bo-label">Base URL</div>
-                      <input
-                        className="bo-input"
-                        value={editServerForm.baseUrl}
-                        onChange={(e) => setEditServerForm((prev) => (prev ? { ...prev, baseUrl: e.target.value } : prev))}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="bo-row" style={{ gap: 12, flexWrap: "wrap" }}>
-                    <label className="bo-field" style={{ flex: 1, minWidth: 220 }}>
-                      <div className="bo-label">Admin token (solo para reemplazar)</div>
-                      <input
-                        className="bo-input"
-                        type="password"
-                        value={editServerForm.adminToken}
-                        onChange={(e) => setEditServerForm((prev) => (prev ? { ...prev, adminToken: e.target.value } : prev))}
-                        placeholder="Dejar vacío para mantener token actual"
-                        autoComplete="new-password"
-                      />
-                    </label>
-
-                    <label className="bo-field" style={{ flex: 1, minWidth: 140 }}>
-                      <div className="bo-label">Capacity</div>
-                      <input
-                        className="bo-input"
-                        type="number"
-                        min="0"
-                        value={editServerForm.capacity}
-                        onChange={(e) => setEditServerForm((prev) => (prev ? { ...prev, capacity: e.target.value } : prev))}
-                      />
-                    </label>
-
-                    <label className="bo-field" style={{ flex: 1, minWidth: 140 }}>
-                      <div className="bo-label">Priority</div>
-                      <input
-                        className="bo-input"
-                        type="number"
-                        min="0"
-                        value={editServerForm.priority}
-                        onChange={(e) => setEditServerForm((prev) => (prev ? { ...prev, priority: e.target.value } : prev))}
-                      />
-                    </label>
-                  </div>
-
-                  <label className="bo-field">
-                    <div className="bo-label">Metadata (JSON opcional)</div>
-                    <textarea
-                      className="bo-input bo-textarea"
-                      value={editServerForm.metadata}
-                      onChange={(e) => setEditServerForm((prev) => (prev ? { ...prev, metadata: e.target.value } : prev))}
-                    />
-                  </label>
-
-                  <label className="bo-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={editServerForm.isActive}
-                      onChange={(e) => setEditServerForm((prev) => (prev ? { ...prev, isActive: e.target.checked } : prev))}
-                    />
-                    <span>Servidor activo</span>
-                  </label>
-
-                  <div className="bo-row">
-                    <button className="bo-btn bo-btn--primary" type="button" onClick={() => void saveEditUazapiServer()} disabled={uazapiBusy || uazapiLoading}>
-                      Guardar cambios
-                    </button>
-                    <button className="bo-btn bo-btn--ghost" type="button" onClick={cancelEditUazapiServer} disabled={uazapiBusy}>
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
 
       <ConfirmDialog
-        isOpen={activeTab === "general" && showConfirmApply}
+        isOpen={showConfirmApply}
         title="Confirmar renumeracion"
         message={`Estas seguro de que deseas renumerar ${renumberPreview?.length || 0} facturas? Esta accion no se puede deshacer y se creara un registro de auditoria.`}
         confirmLabel="Renumerar"

@@ -3,6 +3,7 @@ import { CircleDollarSign, Hash, List, Percent, Receipt, Eye, Plus, X, Trash2, C
 import type { InvoiceLineItem, InvoiceLineItemInput } from "../../../../api/types";
 import { CURRENCY_SYMBOLS, type CurrencyCode } from "../../../../api/types";
 import { Modal } from "../../../../ui/overlays/Modal";
+import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 
 export interface LineItemsRef {
   getLineItems: () => InvoiceLineItemInput[];
@@ -249,33 +250,22 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                   </span>
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--actions">
-                  <button
-                    type="button"
-                    className="bo-btn bo-btn--ghost bo-btn--sm bo-lineItemActionBtn"
-                    onClick={() => openLineItemDetails(index)}
-                    disabled={disabled}
-                    title="Ver detalle"
-                    aria-label={`Ver detalle de linea ${index + 1}`}
-                  >
-                    <Eye size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
-                    onClick={() => handleRemoveItem(index)}
-                    disabled={disabled}
-                    title="Eliminar linea"
-                    aria-label={`Eliminar linea ${index + 1}`}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <DropdownMenu
+                    label={`Acciones linea ${index + 1}`}
+                    items={[
+                      { id: "view", label: "Ver detalle", icon: <Eye size={16} />, onSelect: () => { if (!disabled) openLineItemDetails(index); } },
+                      { id: "delete", label: "Eliminar", icon: <Trash2 size={16} />, tone: "danger", onSelect: () => { if (!disabled) handleRemoveItem(index); } },
+                    ]}
+                    menuMinWidthPx={120}
+                    triggerClassName="bo-btn bo-btn--ghost bo-btn--sm bo-lineItemActionBtn"
+                  />
                 </div>
               </div>
             ))}
           </div>
 
           {/* Summary */}
-        <div className="bo-lineItemsSummary">
+          <div className="bo-lineItemsSummary">
             <div className="bo-lineItemsSummaryRow">
               <span className="bo-lineItemsSummaryLabel">Subtotal:</span>
               <span className="bo-lineItemsSummaryValue">{summary.subtotal.toFixed(2)} {currencySymbol}</span>
