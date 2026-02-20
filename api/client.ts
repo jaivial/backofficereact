@@ -47,9 +47,6 @@ import type {
   RestaurantBranding,
   RestaurantIntegrations,
   RestaurantInvoiceSettings,
-  UazapiServer,
-  UazapiServerCreateInput,
-  UazapiServerPatchInput,
   Vino,
   InvoiceTemplate,
   InvoiceTemplateInput,
@@ -58,46 +55,13 @@ import type {
   ReminderSettings,
   InvoiceReminder,
   SendReminderInput,
-  DomainQuote,
-  DomainRegisterRequest,
-  DomainRegisterResponse,
-  DomainSearchQuery,
-  DomainSearchResult,
-  DomainVerificationStatus,
-  PremiumTable,
-  PremiumTableArea,
-  PremiumTableBulkPatchInput,
-  PremiumTableLayoutResponse,
-  PremiumTablePatchInput,
-  TableStatusUpdateEvent,
-  WebsiteConfig,
-  WebsiteDraftRequest,
-  WebsiteDraftResponse,
-  WebsiteTemplate,
-  WhatsAppMessageTemplate,
-  WhatsAppSendRequest,
-  WhatsAppSendResponse,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 
 type ClientOpts = {
-  baseUrl?: string;
+  baseUrl: string;
   fetchImpl?: typeof fetch;
   cookieHeader?: string;
-};
-
-type RequestCompatInit = Omit<RequestInit, "body"> & {
-  body?: BodyInit | Record<string, unknown> | string | null;
-};
-
-type WhatsAppConnectionPayload = {
-  status?: string;
-  connected?: boolean;
-  qr?: string | null;
-  pair_code?: string | null;
-  pairCode?: string | null;
-  connection?: Record<string, unknown> | null;
-  message?: string;
 };
 
 function isBrowser(): boolean {
@@ -113,14 +77,9 @@ async function readJSON(res: Response): Promise<any> {
   }
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object") return false;
-  return Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null;
-}
-
-export function createClient(opts: ClientOpts = {}) {
+export function createClient(opts: ClientOpts) {
   const fetchImpl = opts.fetchImpl ?? fetch;
-  const baseUrl = (opts.baseUrl ?? "").replace(/\/+$/, "");
+  const baseUrl = opts.baseUrl.replace(/\/+$/, "");
 
   async function apiFetch(path: string, init: RequestInit): Promise<Response> {
     const normalizedPath = !isBrowser() && path.startsWith("/api/admin/") ? path.replace(/^\/api\/admin/, "/admin") : path;
@@ -173,45 +132,14 @@ export function createClient(opts: ClientOpts = {}) {
     return qs ? `${path}?${qs}` : path;
   }
 
-  function normalizeCompatPath(path: string): string {
-    if (path.startsWith("/admin/") || path === "/admin") return `/api${path}`;
-    if (path.startsWith("/premium/") || path === "/premium") return `/api${path}`;
-    return path;
-  }
-
-  async function requestJSON<T>(path: string, init: RequestCompatInit = {}): Promise<T> {
-    const normalizedPath = normalizeCompatPath(path);
-    const headers = new Headers(init.headers ?? {});
-    const { body, ...restInit } = init;
-    const nextInit: RequestInit = { ...restInit };
-    const isFormDataBody = typeof FormData !== "undefined" && body instanceof FormData;
-    const isStringBody = typeof body === "string";
-    const isObjectBody = isPlainObject(body);
-
-    if (!isFormDataBody && (isStringBody || isObjectBody) && !headers.has("content-type")) {
-      headers.set("content-type", "application/json");
-    }
-    if (isObjectBody) {
-      nextInit.body = JSON.stringify(body);
-    } else if (body !== undefined) {
-      nextInit.body = body as BodyInit;
-    }
-    nextInit.headers = headers;
-    return json<T>(normalizedPath, nextInit);
-  }
-
   type ComidaListParams = {
     tipo?: string;
     active?: number;
     search?: string;
-    q?: string;
     page?: number;
     limit?: number;
-    pageSize?: number;
     categoria?: string;
     category?: string;
-    alergeno?: string;
-    suplemento?: number;
   };
 
   type ComidaWriteInput = {
@@ -328,7 +256,7 @@ export function createClient(opts: ClientOpts = {}) {
 
   function applyComidaFilters(items: FoodItem[], params?: ComidaListParams): FoodItem[] {
     if (!params) return items;
-    const searchQ = String(params.search ?? params.q ?? "").trim().toLowerCase();
+    const searchQ = String(params.search ?? "").trim().toLowerCase();
     const tipoQ = String(params.tipo ?? "").trim().toLowerCase();
     const activeQ = params.active;
 
@@ -375,40 +303,6 @@ export function createClient(opts: ClientOpts = {}) {
     if (skipPrimary) return fromFallback();
     try {
       return await json(withQuery(primaryPath, params), { method: "GET" });
-    } catch {
-      return fromFallback();
-    }
-  }
-
-  async function getComidaWithFallback(
-    primaryPath: string,
-    fallbackDishPath: string,
-    skipPrimary = false,
-  ): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-    const fromFallback = async (): Promise<APISuccess<{ item: FoodItem }> | APIError> => {
-      const fallbackRes = await json<APISuccess<{ dish?: MenuDish; item?: MenuDish }> | APIError>(fallbackDishPath, { method: "GET" });
-      if (!fallbackRes.success) return fallbackRes;
-      const dish = fallbackRes.dish ?? fallbackRes.item;
-      if (!dish) {
-        return { success: false, message: "No se pudo cargar el elemento" };
-      }
-      return {
-        success: true,
-        item: mapMenuDishToFoodItem(dish),
-      };
-    };
-
-    if (skipPrimary) return fromFallback();
-    try {
-      const primaryRes = await json<
-        APISuccess<{ item?: FoodItem; food?: FoodItem; cafe?: FoodItem; bebida?: FoodItem; plato?: FoodItem }> | APIError
-      >(primaryPath, { method: "GET" });
-      if (!primaryRes.success) return primaryRes;
-      const item = primaryRes.item ?? primaryRes.food ?? primaryRes.cafe ?? primaryRes.bebida ?? primaryRes.plato;
-      if (item) {
-        return { success: true, item };
-      }
-      return fromFallback();
     } catch {
       return fromFallback();
     }
@@ -522,9 +416,6 @@ export function createClient(opts: ClientOpts = {}) {
       async list(params?: { active?: number; search?: string; page?: number; limit?: number }): Promise<APISuccess<{ postres: Postre[] }> | APIError> {
         return json(withQuery("/api/admin/postres", params), { method: "GET" });
       },
-      async get(id: number): Promise<APISuccess<{ postre?: Postre; item?: Postre }> | APIError> {
-        return json(`/api/admin/postres/${id}`, { method: "GET" });
-      },
       async create(input: { descripcion: string; alergenos: string[]; active?: boolean; precio?: number }): Promise<APISuccess<{ postre: Postre }> | APIError> {
         return json("/api/admin/postres", {
           method: "POST",
@@ -553,9 +444,6 @@ export function createClient(opts: ClientOpts = {}) {
     vinos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ vinos: Vino[]; total?: number; page?: number; limit?: number }> | APIError> {
         return json(withQuery("/api/admin/vinos", params), { method: "GET" });
-      },
-      async get(id: number): Promise<APISuccess<{ vino?: Vino; item?: Vino }> | APIError> {
-        return json(`/api/admin/vinos/${id}`, { method: "GET" });
       },
       async create(input: {
         tipo: string;
@@ -611,9 +499,6 @@ export function createClient(opts: ClientOpts = {}) {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
         return listComidaWithFallback("/api/admin/cafes", "/api/admin/menus/finde", params, true, "cafes");
       },
-      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        return getComidaWithFallback(`/api/admin/cafes/${id}`, `/api/admin/menus/finde/dishes/${id}`, true);
-      },
       async create(input: ComidaWriteInput): Promise<APISuccess<{ num: number }> | APIError> {
         return createComidaWithFallback("/api/admin/cafes", "/api/admin/menus/finde/dishes", input, "ENTRANTE", true);
       },
@@ -642,9 +527,6 @@ export function createClient(opts: ClientOpts = {}) {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
         return listComidaWithFallback("/api/admin/bebidas", "/api/admin/menus/finde", params, true, "bebidas");
       },
-      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        return getComidaWithFallback(`/api/admin/bebidas/${id}`, `/api/admin/menus/finde/dishes/${id}`, true);
-      },
       async create(input: ComidaWriteInput): Promise<APISuccess<{ num: number }> | APIError> {
         return createComidaWithFallback("/api/admin/bebidas", "/api/admin/menus/finde/dishes", input, "ENTRANTE", true);
       },
@@ -672,9 +554,6 @@ export function createClient(opts: ClientOpts = {}) {
     platos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
         return listComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia", params, true, "platos");
-      },
-      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        return getComidaWithFallback(`/api/admin/platos/${id}`, `/api/admin/menus/dia/dishes/${id}`, true);
       },
       async create(input: ComidaWriteInput): Promise<APISuccess<{ num: number }> | APIError> {
         return createComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia/dishes", input, "PRINCIPAL", true);
@@ -714,9 +593,6 @@ export function createClient(opts: ClientOpts = {}) {
   };
 
   return {
-    async request<T>(path: string, init: RequestCompatInit = {}): Promise<T> {
-      return requestJSON<T>(path, init);
-    },
     auth: {
       async login(identifier: string, password: string): Promise<APISuccess<{ session: BOSession }> | APIError> {
         return json("/api/admin/login", {
@@ -829,23 +705,6 @@ export function createClient(opts: ClientOpts = {}) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(integrations),
-        });
-      },
-      async getUazapiServers(): Promise<APISuccess<{ servers: UazapiServer[] }> | APIError> {
-        return json("/api/admin/integrations/uazapi/servers", { method: "GET" });
-      },
-      async createUazapiServer(input: UazapiServerCreateInput): Promise<APISuccess<{ server: UazapiServer }> | APIError> {
-        return json("/api/admin/integrations/uazapi/servers", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(input),
-        });
-      },
-      async patchUazapiServer(id: number, patch: UazapiServerPatchInput): Promise<APISuccess<{ server: UazapiServer }> | APIError> {
-        return json(`/api/admin/integrations/uazapi/servers/${id}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(patch),
         });
       },
       async getBranding(): Promise<APISuccess<{ branding: RestaurantBranding }> | APIError> {
@@ -989,388 +848,6 @@ export function createClient(opts: ClientOpts = {}) {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({}),
         });
-      },
-      async whatsappSend(input: WhatsAppSendRequest & { memberId?: number }): Promise<APISuccess<WhatsAppSendResponse> | APIError> {
-        const payload: Record<string, unknown> = { ...input };
-        if (typeof payload.memberId === "number" && typeof payload.member_id !== "number") {
-          payload.member_id = payload.memberId;
-        }
-        delete payload.memberId;
-        return json("/api/admin/members/whatsapp/send", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      },
-      async whatsappSubscribe(): Promise<APISuccess<{ message: string }> | APIError> {
-        return json("/api/admin/members/whatsapp/subscribe", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({}),
-        });
-      },
-      async whatsappConnect(): Promise<APISuccess<WhatsAppConnectionPayload> | APIError> {
-        return json("/api/admin/members/whatsapp/connect", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({}),
-        });
-      },
-      async whatsappConnection(): Promise<APISuccess<WhatsAppConnectionPayload> | APIError> {
-        return json("/api/admin/members/whatsapp/connection", { method: "GET" });
-      },
-      async whatsappDisconnect(): Promise<APISuccess<WhatsAppConnectionPayload> | APIError> {
-        return json("/api/admin/members/whatsapp/disconnect", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({}),
-        });
-      },
-    },
-    premium: {
-      website: {
-        async get(): Promise<APISuccess<{ data: WebsiteConfig | null; templates?: WebsiteTemplate[]; draft?: WebsiteDraftResponse | null }> | APIError> {
-          return jsonWithFallback(
-            ["/api/premium/website", "/api/admin/website"],
-            { method: "GET" },
-          );
-        },
-        async getConfig(): Promise<APISuccess<{ config: WebsiteConfig | null }> | APIError> {
-          const res = await jsonWithFallback<APISuccess<{ data?: WebsiteConfig | null; config?: WebsiteConfig | null }> | APIError>(
-            ["/api/premium/website", "/api/admin/website"],
-            { method: "GET" },
-          );
-          if (!res.success) return res;
-          return {
-            success: true,
-            config: res.data ?? res.config ?? null,
-          };
-        },
-        async save(
-          input: Partial<WebsiteConfig>,
-        ): Promise<APISuccess<{ data: WebsiteConfig | null }> | APIError> {
-          try {
-            return await json("/api/premium/website", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            });
-          } catch {
-            return json("/api/admin/website", {
-              method: "PUT",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            });
-          }
-        },
-        async updateConfig(input: Partial<WebsiteConfig>): Promise<APISuccess<{ config: WebsiteConfig | null }> | APIError> {
-          let res: APISuccess<{ data: WebsiteConfig | null }> | APIError;
-          try {
-            res = await json("/api/premium/website", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            });
-          } catch {
-            res = await json("/api/admin/website", {
-              method: "PUT",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            });
-          }
-          if (!res.success) return res;
-          return {
-            success: true,
-            config: res.data ?? null,
-          };
-        },
-        async generateDraft(input: WebsiteDraftRequest): Promise<APISuccess<{ draft: WebsiteDraftResponse }> | APIError> {
-          return jsonWithFallback(
-            ["/api/premium/website/ai-draft", "/api/admin/website/ai-generate"],
-            {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            },
-          );
-        },
-        async generate(input: WebsiteDraftRequest): Promise<APISuccess<{ html: string; draft?: WebsiteDraftResponse }> | APIError> {
-          const res = await jsonWithFallback<
-            APISuccess<{ draft?: WebsiteDraftResponse; html?: string; custom_html?: string }> | APIError
-          >(
-            ["/api/premium/website/ai-draft", "/api/admin/website/ai-generate"],
-            {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            },
-          );
-          if (!res.success) return res;
-          const draft = res.draft;
-          const html = String(draft?.html_content ?? res.html ?? res.custom_html ?? "").trim();
-          return {
-            success: true,
-            html,
-            draft,
-          };
-        },
-        async listTemplates(): Promise<APISuccess<{ templates: WebsiteTemplate[] }> | APIError> {
-          try {
-            return await jsonWithFallback(
-              ["/api/premium/website/templates", "/api/admin/website/templates"],
-              { method: "GET" },
-            );
-          } catch {
-            const res = await jsonWithFallback<APISuccess<{ templates?: WebsiteTemplate[] }> | APIError>(
-              ["/api/premium/website", "/api/admin/website"],
-              { method: "GET" },
-            );
-            if (!res.success) return res;
-            return {
-              success: true,
-              templates: res.templates ?? [],
-            };
-          }
-        },
-      },
-      domains: {
-        async search(
-          query: DomainSearchQuery,
-        ): Promise<APISuccess<{ domain: DomainSearchResult; results?: DomainSearchResult[]; data?: DomainSearchResult }> | APIError> {
-          try {
-            const res = await json<APISuccess<{ results?: DomainSearchResult[]; data?: DomainSearchResult; domain?: DomainSearchResult }> | APIError>(
-              "/api/premium/domains/search",
-              {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(query),
-              },
-            );
-            if (!res.success) return res;
-            const domain = res.domain ?? res.data ?? res.results?.[0];
-            if (!domain) {
-              return {
-                success: true,
-                domain: {
-                  domain: query.query,
-                  available: false,
-                  provider_price: 0,
-                  marked_price: 0,
-                  currency: "EUR",
-                },
-                results: res.results,
-                data: res.data,
-              };
-            }
-            return {
-              success: true,
-              domain,
-              results: res.results,
-              data: res.data,
-            };
-          } catch {
-            const q = new URLSearchParams();
-            q.set("query", query.query);
-            const legacy = await json<APISuccess<{ data?: DomainSearchResult; domain?: DomainSearchResult }> | APIError>(
-              `/api/admin/domains/search?${q.toString()}`,
-              { method: "GET" },
-            );
-            if (!legacy.success) return legacy;
-            const domain = legacy.domain ?? legacy.data;
-            if (!domain) {
-              return {
-                success: true,
-                domain: {
-                  domain: query.query,
-                  available: false,
-                  provider_price: 0,
-                  marked_price: 0,
-                  currency: "EUR",
-                },
-              };
-            }
-            return {
-              success: true,
-              domain,
-              data: legacy.data,
-            };
-          }
-        },
-        async quote(query: DomainSearchQuery | { domain: string }): Promise<APISuccess<{ quote: DomainQuote }> | APIError> {
-          const normalizedQuery = "domain" in query ? { query: query.domain } : query;
-          try {
-            const res = await jsonWithFallback<APISuccess<{ quote: DomainQuote }> | APIError>(
-              ["/api/premium/domains/quote", "/api/admin/domains/quote"],
-              {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(normalizedQuery),
-              },
-            );
-            if (!res.success) return res;
-            return {
-              success: true,
-              quote: {
-                ...res.quote,
-                available: res.quote.available ?? true,
-              },
-            };
-          } catch {
-            const q = new URLSearchParams();
-            q.set("query", normalizedQuery.query);
-            const lookup = await json<APISuccess<{ data?: DomainSearchResult; domain?: DomainSearchResult }> | APIError>(
-              `/api/admin/domains/search?${q.toString()}`,
-              { method: "GET" },
-            );
-            if (!lookup.success) return lookup;
-            const domain = lookup.domain ?? lookup.data;
-            if (!domain) {
-              return {
-                success: false,
-                message: "No se pudo calcular la cotizacion del dominio",
-              };
-            }
-            return {
-              success: true,
-              quote: {
-                domain: domain.domain,
-                provider_price: domain.provider_price,
-                marked_price: domain.marked_price,
-                currency: domain.currency,
-                available: domain.available,
-              },
-            };
-          }
-        },
-        async register(
-          input: DomainRegisterRequest,
-        ): Promise<APISuccess<{ registration: DomainRegisterResponse; domain: string; status: DomainVerificationStatus }> | APIError> {
-          const res = await jsonWithFallback<
-            APISuccess<{ registration?: DomainRegisterResponse; domain?: string; status?: DomainVerificationStatus; message?: string }> | APIError
-          >(
-            ["/api/premium/domains/register", "/api/admin/domains/register"],
-            {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            },
-          );
-          if (!res.success) return res;
-          const registration: DomainRegisterResponse = res.registration ?? {
-            domain: String(res.domain ?? input.domain),
-            status: res.status ?? "pending",
-            message: res.message,
-          };
-          return {
-            success: true,
-            registration,
-            domain: registration.domain,
-            status: registration.status,
-          };
-        },
-        async verify(input: { domain: string }): Promise<APISuccess<{ status: DomainVerificationStatus }> | APIError> {
-          return jsonWithFallback(
-            ["/api/premium/domains/verify", "/api/admin/domains/verify"],
-            {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            },
-          );
-        },
-      },
-      tables: {
-        async list(): Promise<
-          APISuccess<{ data?: PremiumTableArea[]; layout?: PremiumTableLayoutResponse; events?: TableStatusUpdateEvent[]; tables?: PremiumTable[] }> | APIError
-        > {
-          const res = await jsonWithFallback<APISuccess<{ data?: PremiumTableArea[]; layout?: PremiumTableLayoutResponse; events?: TableStatusUpdateEvent[]; tables?: PremiumTable[] }> | APIError>(
-            ["/api/premium/tables", "/api/admin/tables"],
-            { method: "GET" },
-          );
-          if (!res.success) return res;
-          const areas = Array.isArray(res.data) ? res.data : (Array.isArray(res.layout?.areas) ? res.layout.areas : []);
-          const flattenedFromAreas = areas.flatMap((area) => (Array.isArray(area.tables) ? area.tables : []));
-          const tables = Array.isArray(res.tables) ? res.tables : flattenedFromAreas;
-          return {
-            ...res,
-            data: areas.length ? areas : res.data,
-            tables,
-          };
-        },
-        async patch(id: number, patch: PremiumTablePatchInput): Promise<APISuccess<{ table: PremiumTable }> | APIError> {
-          try {
-            return await json(`/api/premium/tables/${id}`, {
-              method: "PATCH",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(patch),
-            });
-          } catch {
-            return json("/api/admin/tables", {
-              method: "PUT",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ id, ...patch }),
-            });
-          }
-        },
-        async bulkPatch(input: PremiumTableBulkPatchInput): Promise<APISuccess<{ tables?: PremiumTable[] }> | APIError> {
-          return jsonWithFallback(
-            ["/api/premium/tables/bulk", "/api/admin/tables/bulk"],
-            {
-              method: "PATCH",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(input),
-            },
-          );
-        },
-        getWebSocketUrl(): string {
-          if (typeof window === "undefined") return "/api/admin/tables/ws";
-          const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-          return `${protocol}://${window.location.host}/api/admin/tables/ws`;
-        },
-        async getWebSocketInfo(): Promise<APISuccess<{ ws_url: string; token?: string; expires_at?: string }> | APIError> {
-          return jsonWithFallback(
-            ["/api/premium/tables/ws", "/api/admin/tables/ws"],
-            { method: "GET" },
-          );
-        },
-      },
-      whatsapp: {
-        async listTemplates(): Promise<APISuccess<{ templates: WhatsAppMessageTemplate[] }> | APIError> {
-          return jsonWithFallback(
-            ["/api/premium/whatsapp/templates", "/api/admin/whatsapp/templates"],
-            { method: "GET" },
-          );
-        },
-        async send(input: WhatsAppSendRequest & { memberId?: number }): Promise<APISuccess<WhatsAppSendResponse> | APIError> {
-          const payload: Record<string, unknown> = { ...input };
-          if (typeof payload.memberId === "number" && typeof payload.member_id !== "number") {
-            payload.member_id = payload.memberId;
-          }
-          delete payload.memberId;
-          try {
-            return await json("/api/premium/whatsapp/send", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-          } catch {
-            return json("/api/admin/members/whatsapp/send", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-          }
-        },
-        async subscribe(): Promise<APISuccess<{ message: string }> | APIError> {
-          return jsonWithFallback(
-            ["/api/premium/whatsapp/subscribe", "/api/admin/members/whatsapp/subscribe"],
-            {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({}),
-            },
-          );
-        },
       },
     },
     invitations: {
@@ -1752,6 +1229,27 @@ export function createClient(opts: ClientOpts = {}) {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ dishes }),
+          });
+        },
+        async patchSectionDish(
+          id: number,
+          sectionId: number,
+          dishId: number,
+          patch: Partial<{
+            catalog_dish_id: number | null;
+            title: string;
+            description: string;
+            allergens: string[];
+            supplement_enabled: boolean;
+            supplement_price: number | null;
+            price: number | null;
+            active: boolean;
+          }>,
+        ): Promise<APISuccess<{ dish: GroupMenuV2Dish }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dishes/${dishId}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(patch),
           });
         },
         async publish(id: number): Promise<APISuccess | APIError> {
