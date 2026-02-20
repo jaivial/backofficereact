@@ -9,8 +9,7 @@ const BASE_RETRY_MS = 800;
 const MAX_RETRY_MS = 8000;
 
 function normalizedHost(): string {
-  if (window.location.hostname !== "0.0.0.0") return window.location.host;
-  return window.location.port ? `localhost:${window.location.port}` : "localhost";
+  return window.location.host;
 }
 
 function wsURL(): string {
@@ -63,6 +62,7 @@ export function FichajeRealtimeBridge() {
     let closed = false;
     let ws: WebSocket | null = null;
     let attempts = 0;
+    let openedAtLeastOnce = false;
 
     const mergeFromState = (payload: FichajeState) => {
       const byMember = toActiveEntriesByMember(payload.activeEntries);
@@ -120,6 +120,7 @@ export function FichajeRealtimeBridge() {
 
       ws.onopen = () => {
         if (closed || !ws) return;
+        openedAtLeastOnce = true;
         attempts = 0;
         setState((prev) => ({ ...prev, wsConnected: true, wsConnecting: false }));
         ws.send(JSON.stringify({ type: "join_restaurant", restaurantId: session.activeRestaurantId }));
@@ -205,12 +206,53 @@ export function FichajeRealtimeBridge() {
       ws.onclose = () => {
         if (closed) return;
         setState((prev) => ({ ...prev, wsConnected: false, wsConnecting: false }));
+        if (!openedAtLeastOnce) return;
         scheduleReconnect();
       };
     };
 
-    void syncNow();
-    connect();
+    const boot = async () => {
+      try {
+        // Preflight access with the same backend guard used by WS.
+        // If forbidden/unauthorized, skip WS connect and avoid retry/log spam.
+        const res = await api.fichaje.getState();
+        if (closed) return;
+        if (!res.success) {
+          setState((prev) => ({
+            ...prev,
+            wsConnected: false,
+            wsConnecting: false,
+            restaurantId: session.activeRestaurantId,
+            lastSyncAt: null,
+            member: null,
+            activeEntriesByMember: {},
+            activeEntry: null,
+            scheduleToday: null,
+            pendingScheduleUpdates: false,
+          }));
+          return;
+        }
+        mergeFromState(res.state);
+      } catch {
+        if (closed) return;
+        setState((prev) => ({
+          ...prev,
+          wsConnected: false,
+          wsConnecting: false,
+          restaurantId: session.activeRestaurantId,
+          lastSyncAt: null,
+          member: null,
+          activeEntriesByMember: {},
+          activeEntry: null,
+          scheduleToday: null,
+          pendingScheduleUpdates: false,
+        }));
+        return;
+      }
+      connect();
+    };
+
+    void boot();
 
     return () => {
       closed = true;

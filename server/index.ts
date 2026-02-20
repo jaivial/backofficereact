@@ -115,8 +115,13 @@ function isPageContextRequest(pathname: string, originalUrl?: string): boolean {
   return false;
 }
 
-function sendHttpResponse(res: express.Response, httpResponse: { statusCode: number; headers?: Record<string, unknown>; body: unknown; contentType?: string | null }): void {
-  const { body, statusCode, headers = {}, contentType } = httpResponse;
+function sendHttpResponse(
+  res: express.Response,
+  httpResponse: { statusCode: number; headers?: Record<string, unknown>; body: unknown },
+  opts?: { pageContextRequest?: boolean },
+): void {
+  const { body, statusCode, headers = {} } = httpResponse;
+  const pageContextRequest = opts?.pageContextRequest === true;
   let hasContentTypeHeader = false;
   res.status(statusCode);
 
@@ -139,11 +144,7 @@ function sendHttpResponse(res: express.Response, httpResponse: { statusCode: num
   }
 
   if (!hasContentTypeHeader) {
-    if (typeof contentType === "string") {
-      res.type(contentType);
-    } else {
-      res.type("text/html");
-    }
+    res.type(pageContextRequest ? "application/json" : "text/html");
   }
 
   res.send(body as any);
@@ -290,8 +291,19 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
 
       const upstreamURL = wsBase + upstreamPath;
 
+      const skip = new Set([
+        "connection",
+        "upgrade",
+        "sec-websocket-key",
+        "sec-websocket-version",
+        "sec-websocket-extensions",
+        "sec-websocket-protocol",
+        "sec-websocket-accept",
+        "host"
+      ]);
       const headers: Record<string, string> = {};
       for (const [k, v] of Object.entries(req.headers)) {
+        if (skip.has(k.toLowerCase())) continue;
         if (v === undefined) continue;
         if (Array.isArray(v)) headers[k] = v.join(", ");
         else if (typeof v === "string") headers[k] = v;
@@ -624,7 +636,7 @@ async function start() {
           sendFallbackErrorPage(res, 500);
           return;
         }
-        sendHttpResponse(res, httpResponse);
+        sendHttpResponse(res, httpResponse, { pageContextRequest });
         return;
       }
 
@@ -706,7 +718,7 @@ async function start() {
         sendFallbackErrorPage(res, 500);
         return;
       }
-      sendHttpResponse(res, httpResponse);
+      sendHttpResponse(res, httpResponse, { pageContextRequest });
     } catch (err) {
       console.error("[backoffice] SSR error", err);
       next(err);
@@ -755,7 +767,7 @@ async function start() {
             sendFallbackErrorPage(res, 500);
             return;
           }
-          sendHttpResponse(res, { ...httpResponse, statusCode: 500 });
+          sendHttpResponse(res, { ...httpResponse, statusCode: 500 }, { pageContextRequest });
           return;
         }
       } catch {

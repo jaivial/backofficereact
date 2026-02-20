@@ -59,8 +59,10 @@ export default function Page() {
   const [modalOpen, setModalOpen] = useState(false);
   const [view, setView] = useState<HorariosRosterTableView>(() => {
     try {
-      const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
-      if (stored === "table" || stored === "grid") return stored;
+      if (typeof window !== "undefined") {
+        const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
+        if (stored === "table" || stored === "grid") return stored;
+      }
     } catch {
       // ignore
     }

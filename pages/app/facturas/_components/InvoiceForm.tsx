@@ -470,11 +470,11 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       // Line items - only include if using line items mode
       line_items: useLineItems && lineItems.length > 0
         ? lineItems.map(item => ({
-            description: item.description,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            iva_rate: item.iva_rate,
-          }))
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          iva_rate: item.iva_rate,
+        }))
         : undefined,
       // Discount fields
       discount_type: discountType || undefined,
@@ -968,417 +968,417 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
       <div className="bo-invoiceFormGrid">
         <div className="bo-invoiceFormTopGrid">
-        {/* Customer info section */}
-        <div className="bo-invoiceFormSection">
-          <h3 className="bo-invoiceFormSectionTitle">Datos del cliente</h3>
+          {/* Customer info section */}
+          <div className="bo-invoiceFormSection">
+            <h3 className="bo-invoiceFormSectionTitle">Datos del cliente</h3>
 
-          <div className="bo-invoiceFormRow">
-            <label className={`bo-field ${hasError("customerName") ? "bo-field--error" : ""}`}>
-              <span className="bo-label">Nombre *</span>
-              <input
-                className={`bo-input ${hasError("customerName") ? "bo-input--error" : ""}`}
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                onBlur={() => handleBlur("customerName")}
-                required
-                aria-describedby={hasError("customerName") ? "customerName-error" : undefined}
-                aria-invalid={hasError("customerName")}
-              />
-              {hasError("customerName") && (
-                <span className="bo-fieldError" id="customerName-error" role="alert">
-                  {getError("customerName")}
-                </span>
-              )}
-            </label>
+            <div className="bo-invoiceFormRow">
+              <label className={`bo-field ${hasError("customerName") ? "bo-field--error" : ""}`}>
+                <span className="bo-label">Nombre *</span>
+                <input
+                  className={`bo-input ${hasError("customerName") ? "bo-input--error" : ""}`}
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  onBlur={() => handleBlur("customerName")}
+                  required
+                  aria-describedby={hasError("customerName") ? "customerName-error" : undefined}
+                  aria-invalid={hasError("customerName")}
+                />
+                {hasError("customerName") && (
+                  <span className="bo-fieldError" id="customerName-error" role="alert">
+                    {getError("customerName")}
+                  </span>
+                )}
+              </label>
 
-            <label className="bo-field">
-              <span className="bo-label">Apellidos</span>
-              <input
-                className="bo-input"
-                type="text"
-                value={customerSurname}
-                onChange={(e) => setCustomerSurname(e.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="bo-invoiceFormRow">
-            <label className={`bo-field ${hasError("customerEmail") ? "bo-field--error" : ""}`}>
-              <span className="bo-label">Email *</span>
-              <input
-                className={`bo-input ${hasError("customerEmail") ? "bo-input--error" : ""}`}
-                type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                onBlur={() => handleBlur("customerEmail")}
-                required
-                aria-describedby={hasError("customerEmail") ? "customerEmail-error" : undefined}
-                aria-invalid={hasError("customerEmail")}
-              />
-              {hasError("customerEmail") && (
-                <span className="bo-fieldError" id="customerEmail-error" role="alert">
-                  {getError("customerEmail")}
-                </span>
-              )}
-            </label>
-
-            <label className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`}>
-              <span className="bo-label">Teléfono</span>
-              <input
-                className={`bo-input ${hasError("customerPhone") ? "bo-input--error" : ""}`}
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                onBlur={() => handleBlur("customerPhone")}
-                aria-describedby={hasError("customerPhone") ? "customerPhone-error" : undefined}
-                aria-invalid={hasError("customerPhone")}
-              />
-              {hasError("customerPhone") && (
-                <span className="bo-fieldError" id="customerPhone-error" role="alert">
-                  {getError("customerPhone")}
-                </span>
-              )}
-            </label>
-          </div>
-
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--dni">
-            <div className="bo-field bo-field--switch">
-              <span className="bo-label">CIF</span>
-              <Switch checked={useDni} onCheckedChange={setUseDni} />
-              <span className="bo-label">DNI</span>
-            </div>
-
-            <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`}>
-              <span className="bo-label">{useDni ? "DNI" : "CIF"}</span>
-              <input
-                className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
-                type="text"
-                value={customerDniCif}
-                onChange={(e) => setCustomerDniCif(e.target.value)}
-                onBlur={() => handleBlur("customerDniCif")}
-                aria-describedby={hasError("customerDniCif") ? "customerDniCif-error" : undefined}
-                aria-invalid={hasError("customerDniCif")}
-              />
-              {hasError("customerDniCif") && (
-                <span className="bo-fieldError" id="customerDniCif-error" role="alert">
-                  {getError("customerDniCif")}
-                </span>
-              )}
-            </label>
-          </div>
-
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Calle</span>
-              <input
-                className="bo-input"
-                type="text"
-                value={customerAddressStreet}
-                onChange={(e) => setCustomerAddressStreet(e.target.value)}
-              />
-            </label>
-
-            <label className="bo-field bo-field--number">
-              <span className="bo-label">Número</span>
-              <input
-                className="bo-input"
-                type="text"
-                value={customerAddressNumber}
-                onChange={(e) => setCustomerAddressNumber(e.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="bo-invoiceFormRow">
-            <label className={`bo-field ${hasError("customerAddressPostalCode") ? "bo-field--error" : ""}`}>
-              <span className="bo-label">Código Postal</span>
-              <input
-                className={`bo-input ${hasError("customerAddressPostalCode") ? "bo-input--error" : ""}`}
-                type="text"
-                value={customerAddressPostalCode}
-                onChange={(e) => setCustomerAddressPostalCode(e.target.value)}
-                onBlur={() => handleBlur("customerAddressPostalCode")}
-                aria-describedby={hasError("customerAddressPostalCode") ? "customerAddressPostalCode-error" : undefined}
-                aria-invalid={hasError("customerAddressPostalCode")}
-              />
-              {hasError("customerAddressPostalCode") && (
-                <span className="bo-fieldError" id="customerAddressPostalCode-error" role="alert">
-                  {getError("customerAddressPostalCode")}
-                </span>
-              )}
-            </label>
-
-            <label className="bo-field">
-              <span className="bo-label">Localidad</span>
-              <input
-                className="bo-input"
-                type="text"
-                value={customerAddressCity}
-                onChange={(e) => setCustomerAddressCity(e.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Provincia</span>
-              <input
-                className="bo-input"
-                type="text"
-                value={customerAddressProvince}
-                onChange={(e) => setCustomerAddressProvince(e.target.value)}
-              />
-            </label>
-
-            <label className="bo-field">
-              <span className="bo-label">País</span>
-              <input
-                className="bo-input"
-                type="text"
-                value={customerAddressCountry}
-                onChange={(e) => setCustomerAddressCountry(e.target.value)}
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Invoice info section */}
-        <div className="bo-invoiceFormSection">
-          <h3 className="bo-invoiceFormSectionTitle">Datos de la factura</h3>
-
-          {/* Invoice Number Override */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceNumber">
-            <div className="bo-field bo-field--switch">
-              <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} />
-              <span className="bo-label">Personalizar numero de factura</span>
-            </div>
-
-            {overrideInvoiceNumber && (
               <label className="bo-field">
-                <span className="bo-label">Numero de factura</span>
+                <span className="bo-label">Apellidos</span>
                 <input
                   className="bo-input"
                   type="text"
-                  value={invoiceNumber}
-                  onChange={(e) => setInvoiceNumber(e.target.value)}
-                  placeholder="F-2024-0001"
+                  value={customerSurname}
+                  onChange={(e) => setCustomerSurname(e.target.value)}
                 />
-                <div className="bo-mutedText">Deja este campo vacio para usar el numero automatico</div>
               </label>
-            )}
-
-            {!overrideInvoiceNumber && invoice && invoice.invoice_number && (
-              <div className="bo-field">
-                <span className="bo-label">Numero de factura (automatico)</span>
-                <div className="bo-input" style={{ backgroundColor: "var(--bo-bg-muted)", fontFamily: "monospace", fontWeight: 600 }}>
-                  {invoice.invoice_number}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="bo-invoiceFormRow">
-            <div className="bo-field bo-field--switch">
-              <Switch checked={useLineItems} onCheckedChange={setUseLineItems} />
-              <span className="bo-label"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
             </div>
-          </div>
 
-          {useLineItems ? (
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--lineItems">
-              <LineItems
-                ref={lineItemsRef}
-                items={lineItems}
-                onChange={setLineItems}
-                currency={currency}
-                defaultIvaRate={parseFloat(ivaRate) || 10}
-                disabled={isSubmitting}
-              />
-              {errors.lineItems && (
-                <span className="bo-fieldError" role="alert">
-                  {errors.lineItems}
-                </span>
-              )}
-            </div>
-          ) : (
             <div className="bo-invoiceFormRow">
-            <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`}>
-              <span className="bo-label">Importe *</span>
-              <input
-                className={`bo-input ${hasError("amount") ? "bo-input--error" : ""}`}
-                type="number"
-                step="0.01"
-                min="0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                onBlur={() => handleBlur("amount")}
-                required
-                aria-describedby={`iva-help${hasError("amount") ? " amount-error" : ""}`}
-                aria-invalid={hasError("amount")}
-              />
-              {hasError("amount") && (
-                <span className="bo-fieldError" id="amount-error" role="alert">
-                  {getError("amount")}
-                </span>
-              )}
-            </label>
+              <label className={`bo-field ${hasError("customerEmail") ? "bo-field--error" : ""}`}>
+                <span className="bo-label">Email *</span>
+                <input
+                  className={`bo-input ${hasError("customerEmail") ? "bo-input--error" : ""}`}
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onBlur={() => handleBlur("customerEmail")}
+                  required
+                  aria-describedby={hasError("customerEmail") ? "customerEmail-error" : undefined}
+                  aria-invalid={hasError("customerEmail")}
+                />
+                {hasError("customerEmail") && (
+                  <span className="bo-fieldError" id="customerEmail-error" role="alert">
+                    {getError("customerEmail")}
+                  </span>
+                )}
+              </label>
 
-            <label className="bo-field">
-              <span className="bo-label">Moneda</span>
-              <Select
-                value={currency}
-                onChange={(value) => setCurrency(value as CurrencyCode)}
-                options={CURRENCY_OPTIONS}
-                ariaLabel="Moneda"
-              />
-            </label>
+              <label className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`}>
+                <span className="bo-label">Teléfono</span>
+                <input
+                  className={`bo-input ${hasError("customerPhone") ? "bo-input--error" : ""}`}
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  onBlur={() => handleBlur("customerPhone")}
+                  aria-describedby={hasError("customerPhone") ? "customerPhone-error" : undefined}
+                  aria-invalid={hasError("customerPhone")}
+                />
+                {hasError("customerPhone") && (
+                  <span className="bo-fieldError" id="customerPhone-error" role="alert">
+                    {getError("customerPhone")}
+                  </span>
+                )}
+              </label>
+            </div>
 
-            <label className="bo-field">
-              <span className="bo-label">IVA (%)</span>
-              <input
-                className="bo-input"
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                value={ivaRate}
-                onChange={(e) => setIvaRate(e.target.value)}
-                aria-describedby="iva-help"
-              />
-            </label>
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--dni">
+              <div className="bo-field bo-field--switch">
+                <span className="bo-label">CIF</span>
+                <Switch checked={useDni} onCheckedChange={setUseDni} />
+                <span className="bo-label">DNI</span>
+              </div>
 
-            <label className="bo-field">
-              <span className="bo-label">Método de pago</span>
-              <Select
-                value={paymentMethod}
-                onChange={(value) => setPaymentMethod(value as PaymentMethod | "")}
-                options={PAYMENT_METHOD_OPTIONS}
-                ariaLabel="Método de pago"
-              />
-            </label>
+              <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`}>
+                <span className="bo-label">{useDni ? "DNI" : "CIF"}</span>
+                <input
+                  className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
+                  type="text"
+                  value={customerDniCif}
+                  onChange={(e) => setCustomerDniCif(e.target.value)}
+                  onBlur={() => handleBlur("customerDniCif")}
+                  aria-describedby={hasError("customerDniCif") ? "customerDniCif-error" : undefined}
+                  aria-invalid={hasError("customerDniCif")}
+                />
+                {hasError("customerDniCif") && (
+                  <span className="bo-fieldError" id="customerDniCif-error" role="alert">
+                    {getError("customerDniCif")}
+                  </span>
+                )}
+              </label>
+            </div>
+
+            <div className="bo-invoiceFormRow">
+              <label className="bo-field">
+                <span className="bo-label">Calle</span>
+                <input
+                  className="bo-input"
+                  type="text"
+                  value={customerAddressStreet}
+                  onChange={(e) => setCustomerAddressStreet(e.target.value)}
+                />
+              </label>
+
+              <label className="bo-field bo-field--number">
+                <span className="bo-label">Número</span>
+                <input
+                  className="bo-input"
+                  type="text"
+                  value={customerAddressNumber}
+                  onChange={(e) => setCustomerAddressNumber(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="bo-invoiceFormRow">
+              <label className={`bo-field ${hasError("customerAddressPostalCode") ? "bo-field--error" : ""}`}>
+                <span className="bo-label">Código Postal</span>
+                <input
+                  className={`bo-input ${hasError("customerAddressPostalCode") ? "bo-input--error" : ""}`}
+                  type="text"
+                  value={customerAddressPostalCode}
+                  onChange={(e) => setCustomerAddressPostalCode(e.target.value)}
+                  onBlur={() => handleBlur("customerAddressPostalCode")}
+                  aria-describedby={hasError("customerAddressPostalCode") ? "customerAddressPostalCode-error" : undefined}
+                  aria-invalid={hasError("customerAddressPostalCode")}
+                />
+                {hasError("customerAddressPostalCode") && (
+                  <span className="bo-fieldError" id="customerAddressPostalCode-error" role="alert">
+                    {getError("customerAddressPostalCode")}
+                  </span>
+                )}
+              </label>
+
+              <label className="bo-field">
+                <span className="bo-label">Localidad</span>
+                <input
+                  className="bo-input"
+                  type="text"
+                  value={customerAddressCity}
+                  onChange={(e) => setCustomerAddressCity(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="bo-invoiceFormRow">
+              <label className="bo-field">
+                <span className="bo-label">Provincia</span>
+                <input
+                  className="bo-input"
+                  type="text"
+                  value={customerAddressProvince}
+                  onChange={(e) => setCustomerAddressProvince(e.target.value)}
+                />
+              </label>
+
+              <label className="bo-field">
+                <span className="bo-label">País</span>
+                <input
+                  className="bo-input"
+                  type="text"
+                  value={customerAddressCountry}
+                  onChange={(e) => setCustomerAddressCountry(e.target.value)}
+                />
+              </label>
+            </div>
           </div>
-          )}
 
-          {/* Discount Section */}
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Tipo de descuento</span>
-              <Select
-                value={discountType}
-                onChange={(value) => setDiscountType(value as "percentage" | "fixed" | "")}
-                options={[
-                  { value: "", label: "Sin descuento" },
-                  { value: "percentage", label: "Porcentaje (%)" },
-                  { value: "fixed", label: "Importe fijo" },
-                ]}
-                ariaLabel="Tipo de descuento"
-              />
-            </label>
+          {/* Invoice info section */}
+          <div className="bo-invoiceFormSection">
+            <h3 className="bo-invoiceFormSectionTitle">Datos de la factura</h3>
 
-            {discountType && (
-              <>
+            {/* Invoice Number Override */}
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceNumber">
+              <div className="bo-field bo-field--switch">
+                <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} />
+                <span className="bo-label">Personalizar numero de factura</span>
+              </div>
+
+              {overrideInvoiceNumber && (
                 <label className="bo-field">
-                  <span className="bo-label">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
-                  <input
-                    className="bo-input"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(e.target.value)}
-                    placeholder={discountType === "percentage" ? "10" : "50.00"}
-                  />
-                </label>
-
-                <label className="bo-field">
-                  <span className="bo-label">Razon del descuento</span>
+                  <span className="bo-label">Numero de factura</span>
                   <input
                     className="bo-input"
                     type="text"
-                    value={discountReason}
-                    onChange={(e) => setDiscountReason(e.target.value)}
-                    placeholder="Descuento por..."
+                    value={invoiceNumber}
+                    onChange={(e) => setInvoiceNumber(e.target.value)}
+                    placeholder="F-2024-0001"
                   />
+                  <div className="bo-mutedText">Deja este campo vacio para usar el numero automatico</div>
                 </label>
-              </>
-            )}
-          </div>
+              )}
 
-          {/* IVA Summary */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="iva-help">
-            <div className="bo-ivaSummary">
-              {discountAmount > 0 && (
-                <div className="bo-ivaSummaryItem">
-                  <span className="bo-ivaSummaryLabel">Descuento</span>
-                  <span className="bo-ivaSummaryValue" style={{ color: "var(--bo-color-success)" }}>-{discountAmount.toFixed(2)} {currencySymbol}</span>
+              {!overrideInvoiceNumber && invoice && invoice.invoice_number && (
+                <div className="bo-field">
+                  <span className="bo-label">Numero de factura (automatico)</span>
+                  <div className="bo-input" style={{ backgroundColor: "var(--bo-bg-muted)", fontFamily: "monospace", fontWeight: 600 }}>
+                    {invoice.invoice_number}
+                  </div>
                 </div>
               )}
-              <div className="bo-ivaSummaryItem">
-                <span className="bo-ivaSummaryLabel">Base imponible</span>
-                <span className="bo-ivaSummaryValue">{baseAmount.toFixed(2)} {currencySymbol}</span>
-              </div>
-              <div className="bo-ivaSummaryItem">
-                <span className="bo-ivaSummaryLabel">IVA ({ivaRateValue}%)</span>
-                <span className="bo-ivaSummaryValue">{ivaAmount.toFixed(2)} {currencySymbol}</span>
-              </div>
-              <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                <span className="bo-ivaSummaryLabel">Total</span>
-                <span className="bo-ivaSummaryValue">{totalAmount.toFixed(2)} {currencySymbol}</span>
+            </div>
+
+            <div className="bo-invoiceFormRow">
+              <div className="bo-field bo-field--switch">
+                <Switch checked={useLineItems} onCheckedChange={setUseLineItems} />
+                <span className="bo-label"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
               </div>
             </div>
-          </div>
 
-          {/* Payment Summary - Show only for existing invoices with payments */}
-          {invoice && invoice.id && (invoice.paid_amount !== undefined || invoice.payments) && (
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="payment-help">
+            {useLineItems ? (
+              <div className="bo-invoiceFormRow bo-invoiceFormRow--lineItems">
+                <LineItems
+                  ref={lineItemsRef}
+                  items={lineItems}
+                  onChange={setLineItems}
+                  currency={currency}
+                  defaultIvaRate={parseFloat(ivaRate) || 10}
+                  disabled={isSubmitting}
+                />
+                {errors.lineItems && (
+                  <span className="bo-fieldError" role="alert">
+                    {errors.lineItems}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="bo-invoiceFormRow">
+                <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`}>
+                  <span className="bo-label">Importe *</span>
+                  <input
+                    className={`bo-input ${hasError("amount") ? "bo-input--error" : ""}`}
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    onBlur={() => handleBlur("amount")}
+                    required
+                    aria-describedby={`iva-help${hasError("amount") ? " amount-error" : ""}`}
+                    aria-invalid={hasError("amount")}
+                  />
+                  {hasError("amount") && (
+                    <span className="bo-fieldError" id="amount-error" role="alert">
+                      {getError("amount")}
+                    </span>
+                  )}
+                </label>
+
+                <label className="bo-field">
+                  <span className="bo-label">Moneda</span>
+                  <Select
+                    value={currency}
+                    onChange={(value) => setCurrency(value as CurrencyCode)}
+                    options={CURRENCY_OPTIONS}
+                    ariaLabel="Moneda"
+                  />
+                </label>
+
+                <label className="bo-field">
+                  <span className="bo-label">IVA (%)</span>
+                  <input
+                    className="bo-input"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    value={ivaRate}
+                    onChange={(e) => setIvaRate(e.target.value)}
+                    aria-describedby="iva-help"
+                  />
+                </label>
+
+                <label className="bo-field">
+                  <span className="bo-label">Método de pago</span>
+                  <Select
+                    value={paymentMethod}
+                    onChange={(value) => setPaymentMethod(value as PaymentMethod | "")}
+                    options={PAYMENT_METHOD_OPTIONS}
+                    ariaLabel="Método de pago"
+                  />
+                </label>
+              </div>
+            )}
+
+            {/* Discount Section */}
+            <div className="bo-invoiceFormRow">
+              <label className="bo-field">
+                <span className="bo-label">Tipo de descuento</span>
+                <Select
+                  value={discountType}
+                  onChange={(value) => setDiscountType(value as "percentage" | "fixed" | "")}
+                  options={[
+                    { value: "", label: "Sin descuento" },
+                    { value: "percentage", label: "Porcentaje (%)" },
+                    { value: "fixed", label: "Importe fijo" },
+                  ]}
+                  ariaLabel="Tipo de descuento"
+                />
+              </label>
+
+              {discountType && (
+                <>
+                  <label className="bo-field">
+                    <span className="bo-label">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
+                    <input
+                      className="bo-input"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={discountValue}
+                      onChange={(e) => setDiscountValue(e.target.value)}
+                      placeholder={discountType === "percentage" ? "10" : "50.00"}
+                    />
+                  </label>
+
+                  <label className="bo-field">
+                    <span className="bo-label">Razon del descuento</span>
+                    <input
+                      className="bo-input"
+                      type="text"
+                      value={discountReason}
+                      onChange={(e) => setDiscountReason(e.target.value)}
+                      placeholder="Descuento por..."
+                    />
+                  </label>
+                </>
+              )}
+            </div>
+
+            {/* IVA Summary */}
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="iva-help">
               <div className="bo-ivaSummary">
+                {discountAmount > 0 && (
+                  <div className="bo-ivaSummaryItem">
+                    <span className="bo-ivaSummaryLabel">Descuento</span>
+                    <span className="bo-ivaSummaryValue" style={{ color: "var(--bo-color-success)" }}>-{discountAmount.toFixed(2)} {currencySymbol}</span>
+                  </div>
+                )}
                 <div className="bo-ivaSummaryItem">
-                  <span className="bo-ivaSummaryLabel">Importe total</span>
-                  <span className="bo-ivaSummaryValue">{(invoice.total || invoice.amount).toFixed(2)} {currencySymbol}</span>
+                  <span className="bo-ivaSummaryLabel">Base imponible</span>
+                  <span className="bo-ivaSummaryValue">{baseAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
                 <div className="bo-ivaSummaryItem">
-                  <span className="bo-ivaSummaryLabel">Pagado</span>
-                  <span className="bo-ivaSummaryValue" style={{ color: 'var(--bo-color-success)' }}>{(invoice.paid_amount || 0).toFixed(2)} {currencySymbol}</span>
+                  <span className="bo-ivaSummaryLabel">IVA ({ivaRateValue}%)</span>
+                  <span className="bo-ivaSummaryValue">{ivaAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
                 <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                  <span className="bo-ivaSummaryLabel">Pendiente</span>
-                  <span className="bo-ivaSummaryValue" style={{ color: ((invoice.total || invoice.amount) - (invoice.paid_amount || 0) <= 0) ? 'var(--bo-color-success)' : 'var(--bo-color-warning)' }}>
-                    {Math.max(0, ((invoice.total || invoice.amount) - (invoice.paid_amount || 0))).toFixed(2)} {currencySymbol}
-                  </span>
+                  <span className="bo-ivaSummaryLabel">Total</span>
+                  <span className="bo-ivaSummaryValue">{totalAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
               </div>
             </div>
-          )}
 
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceDates">
-            <label className="bo-field">
-              <span className="bo-label">Fecha de factura *</span>
-              <DatePicker value={invoiceDate} onChange={setInvoiceDate} />
-            </label>
+            {/* Payment Summary - Show only for existing invoices with payments */}
+            {invoice && invoice.id && (invoice.paid_amount !== undefined || invoice.payments) && (
+              <div className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="payment-help">
+                <div className="bo-ivaSummary">
+                  <div className="bo-ivaSummaryItem">
+                    <span className="bo-ivaSummaryLabel">Importe total</span>
+                    <span className="bo-ivaSummaryValue">{(invoice.total || invoice.amount).toFixed(2)} {currencySymbol}</span>
+                  </div>
+                  <div className="bo-ivaSummaryItem">
+                    <span className="bo-ivaSummaryLabel">Pagado</span>
+                    <span className="bo-ivaSummaryValue" style={{ color: 'var(--bo-color-success)' }}>{(invoice.paid_amount || 0).toFixed(2)} {currencySymbol}</span>
+                  </div>
+                  <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
+                    <span className="bo-ivaSummaryLabel">Pendiente</span>
+                    <span className="bo-ivaSummaryValue" style={{ color: ((invoice.total || invoice.amount) - (invoice.paid_amount || 0) <= 0) ? 'var(--bo-color-success)' : 'var(--bo-color-warning)' }}>
+                      {Math.max(0, ((invoice.total || invoice.amount) - (invoice.paid_amount || 0))).toFixed(2)} {currencySymbol}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            <label className="bo-field">
-              <span className="bo-label">Plazo de pago</span>
-              <Select
-                value={paymentTerms}
-                onChange={(value) => setPaymentTerms(value)}
-                options={PAYMENT_TERMS_OPTIONS}
-                ariaLabel="Plazo de pago"
-              />
-            </label>
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceDates">
+              <label className="bo-field">
+                <span className="bo-label">Fecha de factura *</span>
+                <DatePicker value={invoiceDate} onChange={setInvoiceDate} />
+              </label>
 
-            <label className="bo-field">
-              <span className="bo-label">Fecha de vencimiento</span>
-              <DatePicker value={dueDate} onChange={setDueDate} />
-            </label>
+              <label className="bo-field">
+                <span className="bo-label">Plazo de pago</span>
+                <Select
+                  value={paymentTerms}
+                  onChange={(value) => setPaymentTerms(value)}
+                  options={PAYMENT_TERMS_OPTIONS}
+                  ariaLabel="Plazo de pago"
+                />
+              </label>
 
-            <label className="bo-field">
-              <span className="bo-label">Fecha de pago</span>
-              <DatePicker value={paymentDate} onChange={setPaymentDate} />
-            </label>
+              <label className="bo-field">
+                <span className="bo-label">Fecha de vencimiento</span>
+                <DatePicker value={dueDate} onChange={setDueDate} />
+              </label>
+
+              <label className="bo-field">
+                <span className="bo-label">Fecha de pago</span>
+                <DatePicker value={paymentDate} onChange={setPaymentDate} />
+              </label>
+            </div>
+
           </div>
-
-        </div>
 
         </div>
 
@@ -1398,7 +1398,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </label>
           </div>
 
-            <div className="bo-invoiceFormRow">
+          <div className="bo-invoiceFormRow">
             <label className="bo-field bo-field--switch">
               <Switch checked={isReservation} onCheckedChange={handleReservationToggle} />
               <span className="bo-label">Es reserva</span>
@@ -1408,8 +1408,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {isReservation && (
             <div className="bo-invoiceFormRow bo-invoiceFormRow--reservation">
               <label className="bo-field">
-                <span className="bo-label">ID Reserva</span>
-                <input className="bo-input" type="text" value={reservationId || ""} readOnly />
+                <span className="bo-label">Nombre reserva</span>
+                <input className="bo-input" type="text" value={reservationCustomerName || ""} readOnly />
               </label>
 
               <label className="bo-field">
