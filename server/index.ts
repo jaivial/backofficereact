@@ -75,8 +75,7 @@ async function readRequestBody(req: express.Request): Promise<Buffer> {
 async function fetchSession(backendOrigin: string, cookieHeader: string | undefined): Promise<BOSession | null> {
   if (!cookieHeader) return null;
   try {
-    // NOTE: backendOrigin already includes /api prefix, so use /admin/me.
-    const url = new URL("/admin/me", backendOrigin);
+    const url = new URL("/api/admin/me", backendOrigin);
     const res = await fetch(url, {
       method: "GET",
       headers: { cookie: cookieHeader },
@@ -275,14 +274,13 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws")) return;
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
       let upstreamPath = "";
       try {
         const reqURLParsed = new URL(reqURL, "http://local");
-        // Strip /api prefix: /api/admin/... -> /admin/...
-        upstreamPath = reqURLParsed.pathname.replace(/^\/api/, "");
+        upstreamPath = reqURLParsed.pathname;
         upstreamPath += reqURLParsed.search;
       } catch {
         clientWS.close();
@@ -311,11 +309,30 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       headers.host = new URL(backendOrigin).host;
 
       const upstreamWS = new WebSocket(upstreamURL, { headers });
+      const hasSessionCookie = typeof headers.cookie === "string" && headers.cookie.includes("bo_session=");
+      const isBunRuntime = typeof (globalThis as { Bun?: unknown }).Bun !== "undefined";
 
       const closeBoth = () => {
         if (clientWS.readyState === WebSocket.OPEN || clientWS.readyState === WebSocket.CONNECTING) clientWS.close();
         if (upstreamWS.readyState === WebSocket.OPEN || upstreamWS.readyState === WebSocket.CONNECTING) upstreamWS.close();
       };
+
+      if (!isBunRuntime) {
+        upstreamWS.on("unexpected-response", (_request, response) => {
+          const status = response.statusCode ?? 0;
+          console.warn("[backoffice] ws proxy unexpected-response", { upstreamPath, status, hasSessionCookie });
+          if (clientWS.readyState === WebSocket.OPEN || clientWS.readyState === WebSocket.CONNECTING) {
+            if (status === 401 || status === 403) {
+              clientWS.close(4401, "unauthorized");
+            } else {
+              clientWS.close(1011, "upstream-rejected");
+            }
+          }
+          if (upstreamWS.readyState === WebSocket.OPEN || upstreamWS.readyState === WebSocket.CONNECTING) {
+            upstreamWS.close();
+          }
+        });
+      }
 
       clientWS.on("message", (data, isBinary) => {
         if (upstreamWS.readyState !== WebSocket.OPEN) return;
@@ -351,6 +368,15 @@ async function start() {
     .filter(Boolean);
 
   const app = express();
+  const staticRoots = [
+    path.join(appRoot, "dist", "client"),
+    path.join(appRoot, "public"),
+  ];
+
+  for (const root of staticRoots) {
+    app.use("/media", express.static(path.join(root, "media"), { index: false, fallthrough: true }));
+    app.use("/menu-preview", express.static(path.join(root, "menu-preview"), { index: false, fallthrough: true }));
+  }
 
   // Browser fallback: avoid 404s when clients request "/favicon.ico".
   // We keep a single icon source and redirect to the SVG shipped in /public.
@@ -363,9 +389,7 @@ async function start() {
   // If we proxied "/api/*" we'd shadow Vite modules like "/api/client.ts".
   app.use("/api/admin", async (req, res) => {
     try {
-      // Strip /api prefix when forwarding to backend (backend uses /admin/* routes)
-      const upstreamPath = req.originalUrl.replace(/^\/api(\/admin)/, "$1");
-      const upstreamURL = new URL(upstreamPath, backendOrigin);
+      const upstreamURL = new URL(req.originalUrl, backendOrigin);
 
       const headers = new Headers();
       for (const [k, v] of Object.entries(req.headers)) {
