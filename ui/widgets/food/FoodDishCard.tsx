@@ -1,15 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { UtensilsCrossed } from "lucide-react";
+import { Upload, UtensilsCrossed } from "lucide-react";
 
 type FoodDishCardProps = {
   title: string;
   imageUrl?: string | null;
+  mediaLoading?: boolean;
   inactive?: boolean;
   primaryMeta?: string;
   secondaryMeta?: string;
   priceLabel?: string;
   onOpen?: () => void;
   openAriaLabel?: string;
+  onMediaAction?: () => void;
+  mediaActionAriaLabel?: string;
+  mediaActionDisabled?: boolean;
   footerActions?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
@@ -20,12 +24,16 @@ type FoodDishCardProps = {
 export const FoodDishCard = React.memo(function FoodDishCard({
   title,
   imageUrl,
+  mediaLoading,
   inactive,
   primaryMeta,
   secondaryMeta,
   priceLabel,
   onOpen,
   openAriaLabel,
+  onMediaAction,
+  mediaActionAriaLabel,
+  mediaActionDisabled,
   footerActions,
   children,
   className,
@@ -59,6 +67,8 @@ export const FoodDishCard = React.memo(function FoodDishCard({
   });
 
   const clickable = typeof onOpen === "function";
+  const mediaInteractive = typeof onMediaAction === "function";
+  const isMediaLoading = !!mediaLoading;
   const hasImage = !!imageUrl && !imageFailed;
 
   const onKeyDown = useCallback(
@@ -72,6 +82,16 @@ export const FoodDishCard = React.memo(function FoodDishCard({
     [onOpen],
   );
 
+  const onMediaClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!onMediaAction || mediaActionDisabled) return;
+      onMediaAction();
+    },
+    [mediaActionDisabled, onMediaAction],
+  );
+
   return (
     <article
       className={`bo-memberCard bo-foodMemberCard${clickable ? " is-clickable" : ""}${className ? ` ${className}` : ""}`}
@@ -81,12 +101,39 @@ export const FoodDishCard = React.memo(function FoodDishCard({
       onClick={clickable ? onOpen : undefined}
       onKeyDown={clickable ? onKeyDown : undefined}
     >
-      <div className="bo-foodMemberMedia" aria-hidden="true">
-        {hasImage ? (
-          <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
+      <div className="bo-foodMemberMedia">
+        {mediaInteractive ? (
+          <button
+            type="button"
+            className="bo-foodMemberMediaButton"
+            onClick={onMediaClick}
+            aria-label={mediaActionAriaLabel || `Subir imagen de ${title}`}
+            disabled={mediaActionDisabled || isMediaLoading}
+          >
+            {isMediaLoading ? (
+              <div className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
+            ) : hasImage ? (
+              <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
+            ) : (
+              <div className="bo-foodMemberMediaPlaceholder">
+                <UtensilsCrossed size={30} />
+              </div>
+            )}
+            <span className="bo-foodMemberMediaOverlay" aria-hidden="true">
+              <Upload size={22} />
+            </span>
+          </button>
         ) : (
-          <div className="bo-foodMemberMediaPlaceholder">
-            <UtensilsCrossed size={30} />
+          <div aria-hidden="true">
+            {isMediaLoading ? (
+              <div className="bo-foodMemberMediaSkeleton" />
+            ) : hasImage ? (
+              <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
+            ) : (
+              <div className="bo-foodMemberMediaPlaceholder">
+                <UtensilsCrossed size={30} />
+              </div>
+            )}
           </div>
         )}
       </div>

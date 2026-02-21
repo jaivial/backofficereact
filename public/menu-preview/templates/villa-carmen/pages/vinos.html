@@ -1,0 +1,29 @@
+<div class="page menuPage winePage">
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-title">{{WINES_TITLE}}</h1>
+      <p class="page-subtitle">{{WINES_SUBTITLE}}</p>
+    </div>
+  </section>
+
+  <section class="menuBody wineBody">
+    <div class="container">
+      <div class="wineTabsSticky" role="tablist" aria-label="{{WINES_TITLE}}">
+        <div class="wineTabs">
+          <button type="button" class="wineTab is-active" role="tab" aria-selected="true">
+            <span class="wineTabBubble"></span>
+            <span class="wineTabLabel">{{WINES_TAB_RED}}</span>
+          </button>
+          <button type="button" class="wineTab" role="tab" aria-selected="false">
+            <span class="wineTabLabel">{{WINES_TAB_WHITE}}</span>
+          </button>
+          <button type="button" class="wineTab" role="tab" aria-selected="false">
+            <span class="wineTabLabel">{{WINES_TAB_SPARKLING}}</span>
+          </button>
+        </div>
+      </div>
+
+      {{WINES_BODY}}
+    </div>
+  </section>
+</div>

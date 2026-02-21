@@ -14,13 +14,13 @@ import {
   LeafyGreen,
   Milk,
   Nut,
-  PencilLine,
   Plus,
   Repeat2,
   Search,
   Settings2,
   Shell,
   Shrimp,
+  Sparkles,
   Sprout,
   Trash2,
   Upload,
@@ -30,7 +30,8 @@ import { motion, Reorder, useDragControls, useReducedMotion } from "motion/react
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
-import type { DishCatalogItem, GroupMenuV2, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../api/types";
+import type { DishCatalogItem, GroupMenuV2, GroupMenuV2AIDish, GroupMenuV2AIImages, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../api/types";
+import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../lib/dishImageCrop";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { useToasts } from "../../../../ui/feedback/useToasts";
@@ -60,6 +61,20 @@ type EditorDish = {
   active: boolean;
   position: number;
   foto_url?: string;
+  ai_requested: boolean;
+  ai_generating: boolean;
+  ai_generated_img?: string | null;
+};
+
+type MenuAIDishTracker = {
+  dish_id: number;
+  ai_requested: boolean;
+  ai_generating: boolean;
+  ai_generated_img?: string | null;
+};
+
+type MenuAITrackerState = {
+  dishes: MenuAIDishTracker[];
 };
 
 type EditorSection = {
@@ -71,6 +86,9 @@ type EditorSection = {
   dishes: EditorDish[];
   expanded?: boolean;
 };
+
+type PersistedEditorSection = EditorSection & { id: number };
+type PersistedEditorDish = EditorDish & { id: number };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -89,6 +107,7 @@ type BasicsDraft = {
   active: boolean;
   menuType: string;
   subtitles: string[];
+  showDishImages: boolean;
   includedCoffee: boolean;
   beverageType: string;
   beveragePrice: string;
@@ -106,6 +125,7 @@ type BasicsPayload = {
   active: boolean;
   menu_type: string;
   menu_subtitle: string[];
+  show_dish_images: boolean;
   included_coffee: boolean;
   beverage: {
     type: string;
@@ -117,6 +137,13 @@ type BasicsPayload = {
   min_party_size: number;
   main_dishes_limit: boolean;
   main_dishes_limit_number: number;
+};
+
+type PreviewThemeConfig = {
+  assigned: boolean;
+  default_theme_id: string;
+  overrides: Record<string, string>;
+  themes: { id: string; name?: string }[];
 };
 
 const MENU_TYPE_HINTS: Record<string, string> = {
@@ -162,6 +189,307 @@ const beverageTypeOptions: { value: string; label: string }[] = [
   { value: "opcion", label: "Opcion bebida ilimitada" },
   { value: "ilimitada", label: "Bebida ilimitada" },
 ];
+
+const dishVisibilityOptions: { value: string; label: string }[] = [
+  { value: "without_image", label: "Sin imagen" },
+  { value: "with_image", label: "Con imagen" },
+];
+
+const DISH_IMAGE_AI_MAX_KB = 150;
+const MENU_AI_TRACE_PREFIX = "[MENU_AI_TRACE]";
+
+function logMenuAITrace(event: string, payload?: Record<string, unknown>): void {
+  if (payload) {
+    console.log(`${MENU_AI_TRACE_PREFIX} ${event}`, payload);
+    return;
+  }
+  console.log(`${MENU_AI_TRACE_PREFIX} ${event}`);
+}
+
+function parseLooseBool(value: unknown, fallback = false): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  const text = String(value ?? "").trim().toLowerCase();
+  if (!text) return fallback;
+  if (text === "1" || text === "true" || text === "yes" || text === "si" || text === "on") return true;
+  if (text === "0" || text === "false" || text === "no" || text === "off") return false;
+  return fallback;
+}
+
+function normalizeMenuAIDish(raw: unknown): MenuAIDishTracker | null {
+  if (!raw || typeof raw !== "object") return null;
+  const row = raw as Record<string, unknown>;
+  const dishIdRaw = row.dish_id ?? row.dishId ?? row.id;
+  const dishId = Number(dishIdRaw);
+  if (!Number.isFinite(dishId) || dishId <= 0) return null;
+  const aiGeneratedImgRaw = row.ai_generated_img ?? row.aiGeneratedImg;
+  return {
+    dish_id: dishId,
+    ai_requested: parseLooseBool(row.ai_requested ?? row.aiRequested ?? row.ai_requested_img ?? row.aiRequestedImg, false),
+    ai_generating: parseLooseBool(row.ai_generating ?? row.aiGenerating ?? row.ai_generating_img ?? row.aiGeneratingImg, false),
+    ai_generated_img: typeof aiGeneratedImgRaw === "string" && aiGeneratedImgRaw.trim()
+      ? aiGeneratedImgRaw.trim()
+      : null,
+  };
+}
+
+function mergeMenuAIDishes(items: MenuAIDishTracker[]): MenuAIDishTracker[] {
+  const map = new Map<number, MenuAIDishTracker>();
+  for (const item of items) {
+    const prev = map.get(item.dish_id);
+    if (!prev) {
+      map.set(item.dish_id, item);
+      continue;
+    }
+    map.set(item.dish_id, {
+      dish_id: item.dish_id,
+      ai_requested: item.ai_requested || prev.ai_requested,
+      ai_generating: item.ai_generating,
+      ai_generated_img: item.ai_generated_img ?? prev.ai_generated_img ?? null,
+    });
+  }
+  return Array.from(map.values());
+}
+
+function trackerFromAIImages(raw: GroupMenuV2AIImages | GroupMenuV2AIDish[] | null | undefined): MenuAIDishTracker[] {
+  if (!raw) return [];
+  const rows: MenuAIDishTracker[] = [];
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      const normalized = normalizeMenuAIDish(item);
+      if (normalized) rows.push(normalized);
+    }
+    return mergeMenuAIDishes(rows);
+  }
+
+  if (Array.isArray(raw.dishes)) {
+    for (const item of raw.dishes) {
+      const normalized = normalizeMenuAIDish(item);
+      if (normalized) rows.push(normalized);
+    }
+  }
+
+  if (Array.isArray(raw.items)) {
+    for (const item of raw.items) {
+      const normalized = normalizeMenuAIDish(item);
+      if (normalized) rows.push(normalized);
+    }
+  }
+
+  const byDish = raw.by_dish;
+  if (byDish && typeof byDish === "object") {
+    for (const item of Object.values(byDish)) {
+      const normalized = normalizeMenuAIDish(item);
+      if (normalized) rows.push(normalized);
+    }
+  }
+
+  return mergeMenuAIDishes(rows);
+}
+
+function buildGroupMenuAIWSURL(menuId: number): string {
+  const wsURL = new URL("/api/admin/group-menus-v2/ws", window.location.href);
+  wsURL.protocol = wsURL.protocol === "https:" ? "wss:" : "ws:";
+  wsURL.searchParams.set("menuId", String(menuId));
+  return wsURL.toString();
+}
+
+function trackerFromSections(sections: GroupMenuV2Section[] | EditorSection[]): MenuAIDishTracker[] {
+  const rows: MenuAIDishTracker[] = [];
+  for (const section of sections) {
+    const dishes = Array.isArray(section.dishes) ? section.dishes : [];
+    for (const dish of dishes as Array<GroupMenuV2Dish | EditorDish>) {
+      if (!dish?.id) continue;
+      const rawDish = dish as GroupMenuV2Dish & { ai_requested_img?: unknown; ai_generating_img?: unknown };
+      rows.push({
+        dish_id: dish.id,
+        ai_requested: parseLooseBool(dish.ai_requested ?? rawDish.ai_requested_img, false),
+        ai_generating: parseLooseBool(dish.ai_generating ?? rawDish.ai_generating_img, false),
+        ai_generated_img: typeof dish.ai_generated_img === "string" && dish.ai_generated_img.trim()
+          ? dish.ai_generated_img.trim()
+          : null,
+      });
+    }
+  }
+  return mergeMenuAIDishes(rows);
+}
+
+function buildMenuAITracker(
+  menu: GroupMenuV2 | null | undefined,
+  fallbackSections: EditorSection[] = [],
+): MenuAITrackerState {
+  const fromMenu = menu ? trackerFromAIImages(menu.ai_images) : [];
+  const fromSections = menu?.sections?.length ? trackerFromSections(menu.sections) : trackerFromSections(fallbackSections);
+  return { dishes: mergeMenuAIDishes([...fromMenu, ...fromSections]) };
+}
+
+function trackerFromWSPayload(raw: unknown): MenuAIDishTracker[] {
+  if (!raw || typeof raw !== "object") return [];
+  const payload = raw as Record<string, unknown>;
+  const rows: MenuAIDishTracker[] = [];
+
+  const direct = normalizeMenuAIDish(payload);
+  if (direct) rows.push(direct);
+
+  if (Array.isArray(payload.dishes)) {
+    for (const row of payload.dishes) {
+      const normalized = normalizeMenuAIDish(row);
+      if (normalized) rows.push(normalized);
+    }
+  }
+
+  if (Array.isArray(payload.ai_dishes)) {
+    for (const row of payload.ai_dishes) {
+      const normalized = normalizeMenuAIDish(row);
+      if (normalized) rows.push(normalized);
+    }
+  }
+
+  if (payload.tracker && typeof payload.tracker === "object") {
+    const tracker = payload.tracker as Record<string, unknown>;
+    if (Array.isArray(tracker.items)) {
+      for (const row of tracker.items) {
+        const normalized = normalizeMenuAIDish(row);
+        if (normalized) rows.push(normalized);
+      }
+    }
+    if (Array.isArray(tracker.dishes)) {
+      for (const row of tracker.dishes) {
+        const normalized = normalizeMenuAIDish(row);
+        if (normalized) rows.push(normalized);
+      }
+    }
+  }
+
+  if (payload.ai_images) {
+    rows.push(...trackerFromAIImages(payload.ai_images as GroupMenuV2AIImages | GroupMenuV2AIDish[]));
+  }
+
+  if (payload.menu && typeof payload.menu === "object") {
+    const menu = payload.menu as Record<string, unknown>;
+    rows.push(...trackerFromAIImages(menu.ai_images as GroupMenuV2AIImages | GroupMenuV2AIDish[]));
+    if (Array.isArray(menu.sections)) {
+      rows.push(...trackerFromSections(menu.sections as GroupMenuV2Section[]));
+    }
+  }
+
+  return mergeMenuAIDishes(rows);
+}
+
+function updateMenuAITrackerDish(
+  prev: MenuAITrackerState,
+  dishId: number,
+  patch: Partial<MenuAIDishTracker>,
+): MenuAITrackerState {
+  if (!Number.isFinite(dishId) || dishId <= 0) return prev;
+  let changed = false;
+  let hasDish = false;
+  const nextDishes = prev.dishes.map((dish) => {
+    if (dish.dish_id !== dishId) return dish;
+    hasDish = true;
+    const nextDish: MenuAIDishTracker = {
+      dish_id: dishId,
+      ai_requested: patch.ai_requested ?? dish.ai_requested,
+      ai_generating: patch.ai_generating ?? dish.ai_generating,
+      ai_generated_img: patch.ai_generated_img ?? dish.ai_generated_img ?? null,
+    };
+    if (
+      nextDish.ai_requested === dish.ai_requested
+      && nextDish.ai_generating === dish.ai_generating
+      && nextDish.ai_generated_img === dish.ai_generated_img
+    ) {
+      return dish;
+    }
+    changed = true;
+    return nextDish;
+  });
+  if (!hasDish) {
+    changed = true;
+    nextDishes.push({
+      dish_id: dishId,
+      ai_requested: patch.ai_requested ?? false,
+      ai_generating: patch.ai_generating ?? false,
+      ai_generated_img: patch.ai_generated_img ?? null,
+    });
+  }
+  return changed ? { dishes: mergeMenuAIDishes(nextDishes) } : prev;
+}
+
+async function fileToImage(file: File): Promise<HTMLImageElement> {
+  const objectUrl = URL.createObjectURL(file);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("No se pudo leer la imagen"));
+    };
+    img.src = objectUrl;
+  });
+}
+
+async function canvasToWebPBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("No se pudo procesar la imagen"));
+        return;
+      }
+      resolve(blob);
+    }, "image/webp", quality);
+  });
+}
+
+function webpOutputName(fileName: string): string {
+  const base = String(fileName || "dish-image").replace(/\.[^.]+$/, "").trim() || "dish-image";
+  return `${base.replace(/\s+/g, "-")}.webp`;
+}
+
+async function preprocessDishImageToWebp(file: File, maxSizeKB = DISH_IMAGE_AI_MAX_KB): Promise<File> {
+  if (!isSupportedDishImageFile(file)) {
+    throw new Error("Formato no soportado. Usa JPG, PNG, WEBP o GIF.");
+  }
+  const maxBytes = Math.max(1, Math.round(maxSizeKB * 1024));
+  const img = await fileToImage(file);
+  const naturalWidth = Math.max(1, img.naturalWidth || img.width || 1);
+  const naturalHeight = Math.max(1, img.naturalHeight || img.height || 1);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No se pudo preparar la imagen");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  const maxEdge = 1600;
+  const longest = Math.max(naturalWidth, naturalHeight);
+  const baseScale = longest > maxEdge ? maxEdge / longest : 1;
+  const scaleSteps = [1, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52];
+  const qualitySteps = [0.92, 0.86, 0.8, 0.74, 0.68, 0.62, 0.56, 0.5, 0.44, 0.38, 0.32];
+
+  let bestBlob: Blob | null = null;
+  for (const scaleStep of scaleSteps) {
+    const scale = Math.max(0.15, baseScale * scaleStep);
+    const width = Math.max(1, Math.round(naturalWidth * scale));
+    const height = Math.max(1, Math.round(naturalHeight * scale));
+    canvas.width = width;
+    canvas.height = height;
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+
+    for (const quality of qualitySteps) {
+      const blob = await canvasToWebPBlob(canvas, quality);
+      bestBlob = blob;
+      if (blob.size <= maxBytes) {
+        return new File([blob], webpOutputName(file.name), { type: "image/webp" });
+      }
+    }
+  }
+
+  if (!bestBlob) throw new Error("No se pudo procesar la imagen");
+  throw new Error("No se pudo reducir la imagen por debajo de 150KB");
+}
 
 function uid(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
@@ -276,12 +604,447 @@ function debugMenuPerf(event: string, payload?: Record<string, unknown>) {
   console.log("[menus/crear perf]", event, payload ?? {});
 }
 
+type DishImageCropDraft = {
+  sectionClientId: string;
+  dishClientId: string;
+  file: File;
+  objectUrl: string;
+};
+
+type DishImageCropConfirm = {
+  zoom: number;
+  offsetX: number;
+  offsetY: number;
+  viewportSize: number;
+};
+
+function clampDishCropValue(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+type DishImageAdvisorModalProps = {
+  open: boolean;
+  imageUrl: string;
+  imageKB: number;
+  busy: boolean;
+  onClose: () => void;
+  onContinueWithoutAI: () => void;
+  onImproveWithAI: () => void;
+};
+
+function DishImageAdvisorModal({
+  open,
+  imageUrl,
+  imageKB,
+  busy,
+  onClose,
+  onContinueWithoutAI,
+  onImproveWithAI,
+}: DishImageAdvisorModalProps) {
+  return (
+    <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
+      <div className="bo-modalHead">
+        <div className="bo-modalTitle">Asesor IA de imagen</div>
+        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>
+          ×
+        </button>
+      </div>
+
+      <div className="bo-modalBody bo-dishAIAdvisorBody">
+        <div className="bo-dishAIAdvisorCopy">
+          <p className="bo-dishAIAdvisorLead">
+            Mejorar esta foto con IA puede elevar la presentacion del plato y hacer tu menu mas atractivo para el cliente.
+          </p>
+          <p className="bo-dishAIAdvisorHint">
+            Imagen optimizada para subir: {Math.max(1, imageKB)}KB · WebP.
+          </p>
+        </div>
+        <div className="bo-dishAIAdvisorPreviewWrap">
+          <img className="bo-dishAIAdvisorPreview" src={imageUrl} alt="Previsualizacion de imagen optimizada" />
+        </div>
+      </div>
+
+      <div className="bo-modalActions bo-dishAIAdvisorActions">
+        <button
+          className="bo-btn bo-btn--advisorSecondary"
+          type="button"
+          onClick={onContinueWithoutAI}
+          disabled={busy}
+        >
+          Continuar sin mejorar
+        </button>
+        <button
+          className="bo-btn bo-btn--advisorPrimary"
+          type="button"
+          onClick={onImproveWithAI}
+          disabled={busy}
+          aria-label={busy ? "Mejorando con IA" : "Mejorar con IA"}
+        >
+          <Sparkles size={15} />
+          <span>{busy ? "Mejorando con IA..." : "Mejorar con IA"}</span>
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+type DishImageCropModalProps = {
+  open: boolean;
+  imageUrl: string;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: (payload: DishImageCropConfirm) => void;
+};
+
+function DishImageCropModal({ open, imageUrl, busy, onClose, onConfirm }: DishImageCropModalProps) {
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const pointerDragRef = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
+  const touchRef = useRef<
+    | {
+        mode: "drag";
+        startX: number;
+        startY: number;
+        originX: number;
+        originY: number;
+      }
+    | {
+        mode: "pinch";
+        startDistance: number;
+        startZoom: number;
+        startCenterX: number;
+        startCenterY: number;
+        startOffsetX: number;
+        startOffsetY: number;
+      }
+    | null
+  >(null);
+
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 });
+  const [viewportSize, setViewportSize] = useState(0);
+
+  useEffect(() => {
+    if (!open) return;
+    setZoom(1);
+    setOffset({ x: 0, y: 0 });
+    setNaturalSize({ width: 1, height: 1 });
+    pointerDragRef.current = null;
+    touchRef.current = null;
+  }, [imageUrl, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const node = viewportRef.current;
+    if (!node) return;
+    const update = () => {
+      setViewportSize(Math.max(1, Math.round(node.clientWidth || 0)));
+    };
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(update);
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [open]);
+
+  const baseScale = useMemo(() => {
+    if (viewportSize <= 0) return 1;
+    return Math.max(viewportSize / naturalSize.width, viewportSize / naturalSize.height);
+  }, [naturalSize.height, naturalSize.width, viewportSize]);
+
+  const getOffsetBounds = useCallback(
+    (nextZoom: number) => {
+      const renderedWidth = naturalSize.width * baseScale * nextZoom;
+      const renderedHeight = naturalSize.height * baseScale * nextZoom;
+      return {
+        x: Math.max(0, (renderedWidth - viewportSize) / 2),
+        y: Math.max(0, (renderedHeight - viewportSize) / 2),
+      };
+    },
+    [baseScale, naturalSize.height, naturalSize.width, viewportSize],
+  );
+
+  const clampOffset = useCallback(
+    (x: number, y: number, nextZoom = zoom) => {
+      const bounds = getOffsetBounds(nextZoom);
+      return {
+        x: clampDishCropValue(x, -bounds.x, bounds.x),
+        y: clampDishCropValue(y, -bounds.y, bounds.y),
+      };
+    },
+    [getOffsetBounds, zoom],
+  );
+
+  useEffect(() => {
+    setOffset((prev) => {
+      const next = clampOffset(prev.x, prev.y, zoom);
+      if (next.x === prev.x && next.y === prev.y) return prev;
+      return next;
+    });
+  }, [clampOffset, naturalSize.height, naturalSize.width, viewportSize, zoom]);
+
+  const applyZoom = useCallback(
+    (nextRawZoom: number) => {
+      const nextZoom = clampDishCropValue(nextRawZoom, 1, 4);
+      setZoom(nextZoom);
+      setOffset((prev) => clampOffset(prev.x, prev.y, nextZoom));
+    },
+    [clampOffset],
+  );
+
+  const onPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (busy || event.pointerType === "touch") return;
+      if (event.button !== 0) return;
+      event.preventDefault();
+      pointerDragRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: offset.x,
+        originY: offset.y,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    [busy, offset.x, offset.y],
+  );
+
+  const onPointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      const drag = pointerDragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      const dx = event.clientX - drag.startX;
+      const dy = event.clientY - drag.startY;
+      setOffset(clampOffset(drag.originX + dx, drag.originY + dy));
+    },
+    [clampOffset],
+  );
+
+  const onPointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = pointerDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    pointerDragRef.current = null;
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Ignore if pointer capture is already released by browser.
+    }
+  }, []);
+
+  const onWheel = useCallback(
+    (event: React.WheelEvent<HTMLDivElement>) => {
+      if (busy) return;
+      event.preventDefault();
+      const delta = event.deltaY < 0 ? 0.08 : -0.08;
+      applyZoom(zoom + delta);
+    },
+    [applyZoom, busy, zoom],
+  );
+
+  const onTouchStart = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (busy) return;
+      const touches = event.touches;
+      if (touches.length === 1) {
+        const t = touches[0];
+        touchRef.current = {
+          mode: "drag",
+          startX: t.clientX,
+          startY: t.clientY,
+          originX: offset.x,
+          originY: offset.y,
+        };
+        return;
+      }
+      if (touches.length >= 2) {
+        const t1 = touches[0];
+        const t2 = touches[1];
+        const dx = t2.clientX - t1.clientX;
+        const dy = t2.clientY - t1.clientY;
+        touchRef.current = {
+          mode: "pinch",
+          startDistance: Math.hypot(dx, dy) || 1,
+          startZoom: zoom,
+          startCenterX: (t1.clientX + t2.clientX) / 2,
+          startCenterY: (t1.clientY + t2.clientY) / 2,
+          startOffsetX: offset.x,
+          startOffsetY: offset.y,
+        };
+      }
+    },
+    [busy, offset.x, offset.y, zoom],
+  );
+
+  const onTouchMove = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (busy) return;
+      const state = touchRef.current;
+      if (!state) return;
+      if (state.mode === "drag" && event.touches.length === 1) {
+        event.preventDefault();
+        const t = event.touches[0];
+        const dx = t.clientX - state.startX;
+        const dy = t.clientY - state.startY;
+        setOffset(clampOffset(state.originX + dx, state.originY + dy));
+        return;
+      }
+      if (state.mode === "pinch" && event.touches.length >= 2) {
+        event.preventDefault();
+        const t1 = event.touches[0];
+        const t2 = event.touches[1];
+        const dx = t2.clientX - t1.clientX;
+        const dy = t2.clientY - t1.clientY;
+        const distance = Math.hypot(dx, dy) || 1;
+        const ratio = distance / state.startDistance;
+        const nextZoom = clampDishCropValue(state.startZoom * ratio, 1, 4);
+        const centerX = (t1.clientX + t2.clientX) / 2;
+        const centerY = (t1.clientY + t2.clientY) / 2;
+        const nextOffset = clampOffset(
+          state.startOffsetX + (centerX - state.startCenterX),
+          state.startOffsetY + (centerY - state.startCenterY),
+          nextZoom,
+        );
+        setZoom(nextZoom);
+        setOffset(nextOffset);
+      }
+    },
+    [busy, clampOffset],
+  );
+
+  const onTouchEnd = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (busy) return;
+      if (event.touches.length === 0) {
+        touchRef.current = null;
+        return;
+      }
+      if (event.touches.length === 1) {
+        const t = event.touches[0];
+        touchRef.current = {
+          mode: "drag",
+          startX: t.clientX,
+          startY: t.clientY,
+          originX: offset.x,
+          originY: offset.y,
+        };
+        return;
+      }
+      const t1 = event.touches[0];
+      const t2 = event.touches[1];
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      touchRef.current = {
+        mode: "pinch",
+        startDistance: Math.hypot(dx, dy) || 1,
+        startZoom: zoom,
+        startCenterX: (t1.clientX + t2.clientX) / 2,
+        startCenterY: (t1.clientY + t2.clientY) / 2,
+        startOffsetX: offset.x,
+        startOffsetY: offset.y,
+      };
+    },
+    [busy, offset.x, offset.y, zoom],
+  );
+
+  return (
+    <Modal open={open} title="Recortar imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
+      <div className="bo-modalHead">
+        <div className="bo-modalTitle">Recorte 1:1</div>
+        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>
+          ×
+        </button>
+      </div>
+
+      <div className="bo-modalBody bo-dishCropBody">
+        <div className="bo-dishCropViewportWrap">
+          <div
+            ref={viewportRef}
+            className="bo-dishCropViewport"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onWheel={onWheel}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            <img
+              src={imageUrl}
+              alt="Previsualizacion del recorte"
+              className="bo-dishCropImage"
+              draggable={false}
+              style={{ transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${zoom})` }}
+              onLoad={(event) => {
+                const img = event.currentTarget;
+                setNaturalSize({
+                  width: Math.max(1, img.naturalWidth || img.width || 1),
+                  height: Math.max(1, img.naturalHeight || img.height || 1),
+                });
+              }}
+            />
+            <div className="bo-dishCropFrame" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div className="bo-dishCropControls">
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy}>
+            -
+          </button>
+          <input
+            className="bo-dishCropRange"
+            type="range"
+            min={1}
+            max={4}
+            step={0.01}
+            value={zoom}
+            onChange={(event) => applyZoom(Number(event.target.value))}
+            disabled={busy}
+            aria-label="Control de zoom"
+          />
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy}>
+            +
+          </button>
+          <button
+            className="bo-btn bo-btn--ghost bo-btn--sm"
+            type="button"
+            onClick={() => {
+              setOffset({ x: 0, y: 0 });
+              setZoom(1);
+            }}
+            disabled={busy}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div className="bo-modalActions">
+        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} disabled={busy}>
+          Cancelar
+        </button>
+        <button
+          className="bo-btn bo-btn--primary"
+          type="button"
+          onClick={() => onConfirm({ zoom, offsetX: offset.x, offsetY: offset.y, viewportSize })}
+          disabled={busy || viewportSize <= 0}
+        >
+          {busy ? "Procesando..." : "Guardar imagen"}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 type MenuDishEditorCardProps = {
   sectionClientId: string;
   dish: EditorDish;
   dishIdx: number;
   isALaCarte: boolean;
+  mediaLoading: boolean;
   startDishDrag: (event: React.PointerEvent<Element>) => void;
+  pickDishImage: (sectionClientId: string, dishClientId: string) => void;
   setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
   removeDish: (sectionClientId: string, dishClientId: string) => void;
   updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => void;
@@ -293,7 +1056,9 @@ const MenuDishEditorCard = React.memo(
     dish,
     dishIdx,
     isALaCarte,
+    mediaLoading,
     startDishDrag,
+    pickDishImage,
     setAllergenModal,
     removeDish,
     updateDish,
@@ -307,6 +1072,9 @@ const MenuDishEditorCard = React.memo(
         debugId={`section:${sectionClientId}:dish:${dish.clientId}`}
         title={dishLabel}
         imageUrl={dish.foto_url}
+        mediaLoading={mediaLoading}
+        onMediaAction={() => pickDishImage(sectionClientId, dish.clientId)}
+        mediaActionAriaLabel={`Subir imagen para ${dishLabel}`}
         inactive={!dish.active}
         priceLabel={isALaCarte ? formatEuro(dish.price ?? 0) : undefined}
         footerActions={(
@@ -366,12 +1134,12 @@ const MenuDishEditorCard = React.memo(
               ref={(node) => {
                 if (!node) return;
                 node.style.height = "auto";
-                node.style.height = `${Math.max(node.scrollHeight, 40)}px`;
+                node.style.height = `${node.scrollHeight}px`;
               }}
               onInput={(e) => {
                 const node = e.currentTarget;
                 node.style.height = "auto";
-                node.style.height = `${Math.max(node.scrollHeight, 40)}px`;
+                node.style.height = `${node.scrollHeight}px`;
               }}
               onChange={(e) => updateDish(sectionClientId, dish.clientId, { title: e.target.value })}
               placeholder="Titulo plato"
@@ -418,51 +1186,52 @@ const MenuDishEditorCard = React.memo(
                 />
               </div>
             ) : null}
+            <div className="bo-dishFieldsSide">
+              {dish.allergens.length > 0 ? (
+                <div className="bo-allergenRow">
+                  {dish.allergens.map((name) => (
+                    <span key={`${dish.clientId}-${name}`} className="bo-allergenPill">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
 
-            <div className="bo-dishRow">
-              <div className="bo-dishRowInlineControls">
-                <label className="bo-checkRow">
-                  <Switch
-                    checked={dish.supplement_enabled}
-                    onCheckedChange={(checked) => {
-                      debugMenuPerf("ui-toggle-supplement", {
-                        sectionClientId,
-                        dishClientId: dish.clientId,
-                        checked,
-                      });
-                      updateDish(sectionClientId, dish.clientId, {
-                        supplement_enabled: checked,
-                        supplement_price: checked ? dish.supplement_price : null,
-                      });
-                    }}
-                  />
-                  <span>Suplemento</span>
-                </label>
-                {dish.supplement_enabled ? (
-                  <input
-                    className="bo-input bo-suppInput"
-                    inputMode="decimal"
-                    value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
-                    onChange={(e) =>
-                      updateDish(sectionClientId, dish.clientId, {
-                        supplement_price: toNumOrNull(e.target.value),
-                      })
-                    }
-                    placeholder="0.00"
-                  />
-                ) : null}
+              <div className="bo-dishRow">
+                <div className="bo-dishRowInlineControls">
+                  <label className="bo-checkRow">
+                    <Switch
+                      checked={dish.supplement_enabled}
+                      onCheckedChange={(checked) => {
+                        debugMenuPerf("ui-toggle-supplement", {
+                          sectionClientId,
+                          dishClientId: dish.clientId,
+                          checked,
+                        });
+                        updateDish(sectionClientId, dish.clientId, {
+                          supplement_enabled: checked,
+                          supplement_price: checked ? dish.supplement_price : null,
+                        });
+                      }}
+                    />
+                    <span>Suplemento</span>
+                  </label>
+                  {dish.supplement_enabled ? (
+                    <input
+                      className="bo-input bo-suppInput"
+                      inputMode="decimal"
+                      value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
+                      onChange={(e) =>
+                        updateDish(sectionClientId, dish.clientId, {
+                          supplement_price: toNumOrNull(e.target.value),
+                        })
+                      }
+                      placeholder="0.00"
+                    />
+                  ) : null}
+                </div>
               </div>
             </div>
-
-            {dish.allergens.length > 0 ? (
-              <div className="bo-allergenRow">
-                {dish.allergens.map((name) => (
-                  <span key={`${dish.clientId}-${name}`} className="bo-allergenPill">
-                    {name}
-                  </span>
-                ))}
-              </div>
-            ) : null}
           </div>
         </div>
       </FoodDishCard>
@@ -473,10 +1242,12 @@ const MenuDishEditorCard = React.memo(
     && areEditorDishesEqual(prev.dish, next.dish)
     && prev.dishIdx === next.dishIdx
     && prev.isALaCarte === next.isALaCarte
+    && prev.mediaLoading === next.mediaLoading
   ),
 );
 
 const EMPTY_SEARCH_RESULTS: DishCatalogItem[] = [];
+type SectionDishTab = "active" | "inactive";
 
 type MenuSectionEditorPanelProps = {
   sec: EditorSection;
@@ -494,6 +1265,7 @@ type MenuSectionEditorPanelProps = {
   setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
   removeDish: (sectionClientId: string, dishClientId: string) => void;
   updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => void;
+  pickDishImage: (sectionClientId: string, dishClientId: string) => void;
   addDish: (sectionClientId: string, fromCatalog?: DishCatalogItem) => void;
   handleSearch: (sectionClientId: string, term: string) => void;
   searchTerm: string;
@@ -517,11 +1289,69 @@ const MenuSectionEditorPanel = React.memo(
     setAllergenModal,
     removeDish,
     updateDish,
+    pickDishImage,
     addDish,
     handleSearch,
     searchTerm,
     searchItems,
   }: MenuSectionEditorPanelProps) {
+    const [dishTab, setDishTab] = useState<SectionDishTab>("active");
+    const sectionLabel = sec.title.trim() || `seccion ${secIdx + 1}`;
+    const activeDishCount = useMemo(() => sec.dishes.reduce((total, dish) => total + (dish.active ? 1 : 0), 0), [sec.dishes]);
+    const inactiveDishCount = sec.dishes.length - activeDishCount;
+    const visibleDishes = useMemo(
+      () => sec.dishes.filter((dish) => (dishTab === "active" ? dish.active : !dish.active)),
+      [dishTab, sec.dishes],
+    );
+    const activeTabId = `bo-section-dishes-active-${sec.clientId}`;
+    const inactiveTabId = `bo-section-dishes-inactive-${sec.clientId}`;
+    const dishPanelId = `bo-section-dishes-panel-${sec.clientId}`;
+
+    useEffect(() => {
+      if (dishTab === "active" && activeDishCount > 0) return;
+      if (dishTab === "inactive" && inactiveDishCount > 0) return;
+      if (activeDishCount > 0) {
+        setDishTab("active");
+        return;
+      }
+      if (inactiveDishCount > 0) {
+        setDishTab("inactive");
+      }
+    }, [activeDishCount, dishTab, inactiveDishCount]);
+
+    const handleDishTabChange = useCallback((nextTab: SectionDishTab) => {
+      setDishTab(nextTab);
+    }, []);
+
+    const handleAddDish = useCallback(() => {
+      setDishTab("active");
+      addDish(sec.clientId);
+    }, [addDish, sec.clientId]);
+
+    const handleAddDishFromCatalog = useCallback(
+      (item: DishCatalogItem) => {
+        setDishTab("active");
+        addDish(sec.clientId, item);
+      },
+      [addDish, sec.clientId],
+    );
+
+    const handleReorderVisibleDishes = useCallback(
+      (orderedVisibleClientIds: string[]) => {
+        if (orderedVisibleClientIds.length !== visibleDishes.length) return;
+        let visibleCursor = 0;
+        const nextOrder = sec.dishes.map((dish) => {
+          const matchesTab = dishTab === "active" ? dish.active : !dish.active;
+          if (!matchesTab) return dish.clientId;
+          const nextClientId = orderedVisibleClientIds[visibleCursor];
+          visibleCursor += 1;
+          return nextClientId ?? dish.clientId;
+        });
+        reorderDishes(sec.clientId, nextOrder);
+      },
+      [dishTab, reorderDishes, sec.clientId, sec.dishes, visibleDishes.length],
+    );
+
     return (
       <ReorderItemContainer
         value={sec.clientId}
@@ -590,38 +1420,84 @@ const MenuSectionEditorPanel = React.memo(
 
             {sec.expanded !== false ? (
               <div className="bo-panelBody">
-                <Reorder.Group
-                  axis="y"
-                  values={sec.dishes.map((dish) => dish.clientId)}
-                  onReorder={(orderedDishClientIds) => reorderDishes(sec.clientId, orderedDishClientIds)}
-                  className="bo-dishesStack bo-reorderGroup"
+                <div className="bo-sectionDishTabs" role="tablist" aria-label={`Filtro de platos en ${sectionLabel}`}>
+                  <button
+                    id={activeTabId}
+                    className={`bo-sectionDishTab ${dishTab === "active" ? "is-active" : ""}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={dishTab === "active"}
+                    aria-controls={dishPanelId}
+                    tabIndex={dishTab === "active" ? 0 : -1}
+                    onClick={() => handleDishTabChange("active")}
+                  >
+                    <span>Activos</span>
+                    <span className="bo-sectionDishTabCount">{activeDishCount}</span>
+                  </button>
+                  <button
+                    id={inactiveTabId}
+                    className={`bo-sectionDishTab ${dishTab === "inactive" ? "is-active" : ""}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={dishTab === "inactive"}
+                    aria-controls={dishPanelId}
+                    tabIndex={dishTab === "inactive" ? 0 : -1}
+                    onClick={() => handleDishTabChange("inactive")}
+                  >
+                    <span>Inactivos</span>
+                    <span className="bo-sectionDishTabCount">{inactiveDishCount}</span>
+                  </button>
+                </div>
+
+                <div
+                  id={dishPanelId}
+                  className="bo-sectionDishTabPanel"
+                  role="tabpanel"
+                  aria-labelledby={dishTab === "active" ? activeTabId : inactiveTabId}
                 >
-                  {sec.dishes.map((dish, dishIdx) => (
-                    <ReorderItemContainer
-                      key={dish.clientId}
-                      value={dish.clientId}
-                      className="bo-dishReorderItem bo-reorderItem"
-                      transition={reorderTransition}
-                      whileDrag={reorderWhileDrag}
+                  {visibleDishes.length > 0 ? (
+                    <Reorder.Group
+                      axis="y"
+                      values={visibleDishes.map((dish) => dish.clientId)}
+                      onReorder={handleReorderVisibleDishes}
+                      className="bo-dishesStack bo-reorderGroup"
                     >
-                      {(startDishDrag) => (
-                        <MenuDishEditorCard
-                          sectionClientId={sec.clientId}
-                          dish={dish}
-                          dishIdx={dishIdx}
-                          isALaCarte={isALaCarte}
-                          startDishDrag={startDishDrag}
-                          setAllergenModal={setAllergenModal}
-                          removeDish={removeDish}
-                          updateDish={updateDish}
-                        />
-                      )}
-                    </ReorderItemContainer>
-                  ))}
-                </Reorder.Group>
+                      {visibleDishes.map((dish, dishIdx) => (
+                        <ReorderItemContainer
+                          key={dish.clientId}
+                          value={dish.clientId}
+                          className="bo-dishReorderItem bo-reorderItem"
+                          transition={reorderTransition}
+                          whileDrag={reorderWhileDrag}
+                        >
+                          {(startDishDrag) => (
+                            <MenuDishEditorCard
+                              sectionClientId={sec.clientId}
+                              dish={dish}
+                              dishIdx={dishIdx}
+                              isALaCarte={isALaCarte}
+                              mediaLoading={dish.ai_generating}
+                              startDishDrag={startDishDrag}
+                              pickDishImage={pickDishImage}
+                              setAllergenModal={setAllergenModal}
+                              removeDish={removeDish}
+                              updateDish={updateDish}
+                            />
+                          )}
+                        </ReorderItemContainer>
+                      ))}
+                    </Reorder.Group>
+                  ) : (
+                    <div className="bo-dishesEmpty" role="status" aria-live="polite">
+                      {dishTab === "active"
+                        ? "No hay platos activos en esta seccion."
+                        : "No hay platos inactivos en esta seccion."}
+                    </div>
+                  )}
+                </div>
 
                 <div className="bo-dishAddRow">
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-dishAddBtn" type="button" onClick={() => addDish(sec.clientId)}>
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-dishAddBtn" type="button" onClick={handleAddDish}>
                     <Plus size={12} /> Añadir plato
                   </button>
                 </div>
@@ -643,7 +1519,7 @@ const MenuSectionEditorPanel = React.memo(
                           key={`${sec.clientId}-${item.id}`}
                           type="button"
                           className="bo-searchResultBtn"
-                          onClick={() => addDish(sec.clientId, item)}
+                          onClick={() => handleAddDishFromCatalog(item)}
                         >
                           <span>{item.title}</span>
                           <span className="bo-mutedText">Añadir</span>
@@ -681,6 +1557,7 @@ function buildBasicsPayload(draft: BasicsDraft): BasicsPayload {
     active: draft.active,
     menu_type: draft.menuType,
     menu_subtitle: draft.subtitles.map((s) => s.trim()).filter(Boolean),
+    show_dish_images: draft.showDishImages,
     included_coffee: draft.includedCoffee,
     beverage: {
       type: draft.beverageType,
@@ -815,6 +1692,9 @@ function areEditorDishesEqual(prev: EditorDish, next: EditorDish): boolean {
     && prev.active === next.active
     && prev.position === next.position
     && prev.foto_url === next.foto_url
+    && prev.ai_requested === next.ai_requested
+    && prev.ai_generating === next.ai_generating
+    && prev.ai_generated_img === next.ai_generated_img
   );
 }
 
@@ -834,6 +1714,9 @@ function mergeDishFromServer(prev: EditorDish | undefined, server: GroupMenuV2Di
     && prev.active === next.active
     && prev.position === next.position
     && prev.foto_url === next.foto_url
+    && prev.ai_requested === next.ai_requested
+    && prev.ai_generating === next.ai_generating
+    && prev.ai_generated_img === next.ai_generated_img
   ) {
     return prev;
   }
@@ -843,6 +1726,11 @@ function mergeDishFromServer(prev: EditorDish | undefined, server: GroupMenuV2Di
 function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
   const description = d.description || "";
   const hasDescription = description.trim().length > 0;
+  const aiGeneratedImg = typeof d.ai_generated_img === "string" && d.ai_generated_img.trim()
+    ? d.ai_generated_img.trim()
+    : (prev?.ai_generated_img ?? null);
+  const aiGenerating = parseLooseBool(d.ai_generating ?? d.ai_generating_img, prev?.ai_generating ?? false);
+  const aiRequested = parseLooseBool(d.ai_requested ?? d.ai_requested_img, prev?.ai_requested ?? aiGenerating);
   return {
     clientId: prev?.clientId || uid("dish"),
     id: d.id,
@@ -856,7 +1744,10 @@ function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
     price: d.price ?? null,
     active: d.active !== false,
     position: d.position || 0,
-    foto_url: d.foto_url || d.image_url || prev?.foto_url,
+    foto_url: d.foto_url || d.image_url || aiGeneratedImg || prev?.foto_url,
+    ai_requested: !!aiRequested,
+    ai_generating: !!aiGenerating,
+    ai_generated_img: aiGeneratedImg,
   };
 }
 
@@ -897,6 +1788,7 @@ function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []): {
     main_dishes_limit: boolean;
     main_dishes_limit_number: number;
   };
+  showDishImages: boolean;
 } {
   const prevByID = new Map<number, EditorSection>();
   for (const sec of prevSections) {
@@ -911,6 +1803,7 @@ function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []): {
     active: !!menu.active,
     menuType: menu.menu_type || "closed_conventional",
     subtitles: menu.menu_subtitle || [],
+    showDishImages: !!menu.show_dish_images,
     sections,
     settings: {
       included_coffee: !!menu.settings?.included_coffee,
@@ -944,6 +1837,7 @@ export default function Page() {
   const [price, setPrice] = useState<string>(data.menu?.price || "0");
   const [subtitles, setSubtitles] = useState<string[]>(data.menu?.menu_subtitle?.length ? data.menu.menu_subtitle : [""]);
   const [active, setActive] = useState<boolean>(data.menu?.active ?? false);
+  const [showDishImages, setShowDishImages] = useState<boolean>(!!data.menu?.show_dish_images);
   const [sections, setSections] = useState<EditorSection[]>([]);
 
   const [includedCoffee, setIncludedCoffee] = useState<boolean>(false);
@@ -966,16 +1860,34 @@ export default function Page() {
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
   const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(true);
   const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
-  const [previewOrigin, setPreviewOrigin] = useState<string>((import.meta as any).env?.VITE_PREVIEW_WEB_ORIGIN || "http://localhost:5173");
+  const [previewThemeConfig, setPreviewThemeConfig] = useState<PreviewThemeConfig | null>(null);
+  const [previewThemeLoading, setPreviewThemeLoading] = useState(true);
 
   const [allergenModal, setAllergenModal] = useState<{ open: boolean; sectionClientId: string; dishClientId: string } | null>(null);
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [searchResults, setSearchResults] = useState<Record<string, DishCatalogItem[]>>({});
+  const [menuAITracker, setMenuAITracker] = useState<MenuAITrackerState>(() => buildMenuAITracker(data.menu));
+  const [dishImageTarget, setDishImageTarget] = useState<{ sectionClientId: string; dishClientId: string } | null>(null);
+  const [dishImageAdvisorDraft, setDishImageAdvisorDraft] = useState<DishImageCropDraft | null>(null);
+  const [dishImageAdvisorBusy, setDishImageAdvisorBusy] = useState(false);
+  const [dishImageCropDraft, setDishImageCropDraft] = useState<DishImageCropDraft | null>(null);
+  const [dishImageBusy, setDishImageBusy] = useState(false);
 
   const searchTimerRef = useRef<Record<string, number>>({});
+  const dishImageInputRef = useRef<HTMLInputElement | null>(null);
   const previewDockTimerRef = useRef<number | null>(null);
+  const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const syncTimerRef = useRef<number | null>(null);
   const basicsTimerRef = useRef<number | null>(null);
+  const menuAIWSRetryRef = useRef<number | null>(null);
+  const menuAIWSSocketRef = useRef<WebSocket | null>(null);
+  const menuAIWSAttemptsRef = useRef(0);
+  const menuAIWSAuthToastShownRef = useRef(false);
+  const dishImageAdvisorDraftRef = useRef<DishImageCropDraft | null>(null);
+  const dishImageCropDraftRef = useRef<DishImageCropDraft | null>(null);
+  const pushToastRef = useRef(pushToast);
+  const menuAITrackerRef = useRef<MenuAITrackerState>(menuAITracker);
+  const sectionsRef = useRef<EditorSection[]>([]);
   const renderCountRef = useRef(0);
   const lastSavedBasicsRef = useRef<string>("");
   const inFlightBasicsRef = useRef<string | null>(null);
@@ -999,6 +1911,7 @@ export default function Page() {
       active,
       menuType,
       subtitles,
+      showDishImages,
       includedCoffee,
       beverageType,
       beveragePrice,
@@ -1022,6 +1935,7 @@ export default function Page() {
       menuType,
       minPartySize,
       price,
+      showDishImages,
       subtitles,
       title,
     ],
@@ -1031,6 +1945,18 @@ export default function Page() {
   const sectionsFingerprint = useMemo(() => getSectionsFingerprint(sections), [sections]);
   const shouldReduceMotion = useReducedMotion();
   const sectionOrder = useMemo(() => sections.map((sec) => sec.clientId), [sections]);
+  const menuAIDishesById = useMemo(() => {
+    const map = new Map<number, MenuAIDishTracker>();
+    for (const row of menuAITracker.dishes) {
+      if (!row || !Number.isFinite(row.dish_id) || row.dish_id <= 0) continue;
+      map.set(row.dish_id, row);
+    }
+    return map;
+  }, [menuAITracker]);
+  const dishImageAdvisorPreviewKB = useMemo(
+    () => (dishImageAdvisorDraft?.file?.size ? Math.round(dishImageAdvisorDraft.file.size / 1024) : 0),
+    [dishImageAdvisorDraft],
+  );
   const loadingSectionTitles = useMemo(() => {
     const fromMenu = Array.isArray(data.menu?.sections) ? data.menu.sections : [];
     if (fromMenu.length > 0) {
@@ -1058,6 +1984,405 @@ export default function Page() {
       sections: sections.length,
     });
   }, [sectionsFingerprint, sections.length]);
+
+  useEffect(() => {
+    sectionsRef.current = sections;
+  }, [sections]);
+
+  useEffect(() => {
+    dishImageAdvisorDraftRef.current = dishImageAdvisorDraft;
+  }, [dishImageAdvisorDraft]);
+
+  useEffect(() => {
+    dishImageCropDraftRef.current = dishImageCropDraft;
+  }, [dishImageCropDraft]);
+
+  useEffect(() => {
+    pushToastRef.current = pushToast;
+  }, [pushToast]);
+
+  useEffect(() => {
+    menuAITrackerRef.current = menuAITracker;
+  }, [menuAITracker]);
+
+  const applyDishAIState = useCallback(
+    (
+      dishId: number,
+      patch: Partial<MenuAIDishTracker> & {
+        foto_url?: string | null;
+      },
+    ) => {
+      if (!Number.isFinite(dishId) || dishId <= 0) return;
+      logMenuAITrace("applyDishAIState", {
+        dishId,
+        ai_requested: patch.ai_requested,
+        ai_generating: patch.ai_generating,
+        ai_generated_img: patch.ai_generated_img ?? null,
+        foto_url: patch.foto_url ?? null,
+      });
+      setMenuAITracker((prev) => updateMenuAITrackerDish(prev, dishId, patch));
+      setSections((prev) => {
+        let changed = false;
+        const next = prev.map((section) => {
+          let sectionChanged = false;
+          const dishes = section.dishes.map((dish) => {
+            if (dish.id !== dishId) return dish;
+            const nextDish: EditorDish = {
+              ...dish,
+              ai_requested: patch.ai_requested ?? dish.ai_requested,
+              ai_generating: patch.ai_generating ?? dish.ai_generating,
+              ai_generated_img: patch.ai_generated_img ?? dish.ai_generated_img ?? null,
+              foto_url: patch.foto_url
+                ?? (!patch.ai_generating && patch.ai_generated_img ? patch.ai_generated_img : dish.foto_url),
+            };
+            if (
+              nextDish.ai_requested === dish.ai_requested
+              && nextDish.ai_generating === dish.ai_generating
+              && nextDish.ai_generated_img === dish.ai_generated_img
+              && nextDish.foto_url === dish.foto_url
+            ) {
+              return dish;
+            }
+            sectionChanged = true;
+            changed = true;
+            return nextDish;
+          });
+          return sectionChanged ? { ...section, dishes } : section;
+        });
+        return changed ? next : prev;
+      });
+    },
+    [],
+  );
+
+  const applyAITrackerSnapshot = useCallback((rows: MenuAIDishTracker[]) => {
+    if (!rows.length) return;
+    const mergedRows = mergeMenuAIDishes(rows);
+    const currentByDish = new Map<number, MenuAIDishTracker>();
+    for (const row of menuAITrackerRef.current.dishes) {
+      if (!Number.isFinite(row.dish_id) || row.dish_id <= 0) continue;
+      currentByDish.set(row.dish_id, row);
+    }
+    const changedDishIds: number[] = [];
+    for (const row of mergedRows) {
+      const prev = currentByDish.get(row.dish_id);
+      if (
+        !prev
+        || prev.ai_requested !== row.ai_requested
+        || prev.ai_generating !== row.ai_generating
+        || prev.ai_generated_img !== row.ai_generated_img
+      ) {
+        changedDishIds.push(row.dish_id);
+      }
+    }
+    if (changedDishIds.length === 0) {
+      logMenuAITrace("applyAITrackerSnapshot:skip-no-change", {
+        rows: mergedRows.length,
+      });
+      return;
+    }
+    logMenuAITrace("applyAITrackerSnapshot", {
+      rows: mergedRows.length,
+      changedRows: changedDishIds.length,
+      changedDishIds: changedDishIds.slice(0, 12),
+    });
+    const byDish = new Map<number, MenuAIDishTracker>();
+    for (const row of mergedRows) {
+      byDish.set(row.dish_id, row);
+    }
+    setMenuAITracker((prev) => ({ dishes: mergeMenuAIDishes([...prev.dishes, ...mergedRows]) }));
+    setSections((prev) => {
+      let changed = false;
+      const next = prev.map((section) => {
+        let sectionChanged = false;
+        const dishes = section.dishes.map((dish) => {
+          if (!dish.id) return dish;
+          const tracked = byDish.get(dish.id);
+          if (!tracked) return dish;
+          const nextDish: EditorDish = {
+            ...dish,
+            ai_requested: tracked.ai_requested,
+            ai_generating: tracked.ai_generating,
+            ai_generated_img: tracked.ai_generated_img ?? null,
+            foto_url: (!tracked.ai_generating && tracked.ai_generated_img) ? (tracked.ai_generated_img || dish.foto_url) : dish.foto_url,
+          };
+          if (
+            nextDish.ai_requested === dish.ai_requested
+            && nextDish.ai_generating === dish.ai_generating
+            && nextDish.ai_generated_img === dish.ai_generated_img
+            && nextDish.foto_url === dish.foto_url
+          ) {
+            return dish;
+          }
+          changed = true;
+          sectionChanged = true;
+          return nextDish;
+        });
+        return sectionChanged ? { ...section, dishes } : section;
+      });
+      return changed ? next : prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!menuId) return;
+    logMenuAITrace("wsEffect:start", { menuId });
+
+    let disposed = false;
+    let socket: WebSocket | null = null;
+    let openAtMs = 0;
+
+    const clearRetryTimer = () => {
+      if (menuAIWSRetryRef.current) {
+        window.clearTimeout(menuAIWSRetryRef.current);
+        menuAIWSRetryRef.current = null;
+        logMenuAITrace("ws:retryTimer:cleared", { menuId });
+      }
+    };
+
+    const parseEventKind = (rawType: string): "started" | "completed" | "failed" | null => {
+      const type = rawType.trim().toLowerCase();
+      if (!type) return null;
+      if (type === "started" || type === "ai_image_started") return "started";
+      if (type === "completed" || type === "ai_image_completed") return "completed";
+      if (type === "failed" || type === "ai_image_failed") return "failed";
+      return null;
+    };
+
+    const applyMessageTracker = (payload: unknown) => {
+      const rows = trackerFromWSPayload(payload);
+      if (rows.length > 0) {
+        applyAITrackerSnapshot(rows);
+      }
+    };
+
+    const scheduleReconnect = () => {
+      if (disposed) return;
+      menuAIWSAttemptsRef.current += 1;
+      const attempt = menuAIWSAttemptsRef.current;
+      const backoffMs = Math.min(12000, 700 * (2 ** Math.max(0, attempt - 1)));
+      const jitterMs = Math.round(Math.random() * 280);
+      clearRetryTimer();
+      logMenuAITrace("ws:reconnect:scheduled", {
+        menuId,
+        attempt,
+        backoffMs,
+        jitterMs,
+      });
+      menuAIWSRetryRef.current = window.setTimeout(() => {
+        if (disposed) return;
+        logMenuAITrace("ws:reconnect:tick", { menuId, attempt });
+        connect();
+      }, backoffMs + jitterMs);
+    };
+
+    const connect = () => {
+      if (disposed) return;
+      let nextSocket: WebSocket | null = null;
+      const wsURL = buildGroupMenuAIWSURL(menuId);
+      logMenuAITrace("ws:connect:attempt", { menuId, wsURL });
+      try {
+        nextSocket = new WebSocket(wsURL);
+      } catch {
+        logMenuAITrace("ws:connect:constructor-error", { menuId, wsURL });
+        scheduleReconnect();
+        return;
+      }
+      socket = nextSocket;
+      menuAIWSSocketRef.current = socket;
+
+      socket.addEventListener("open", () => {
+        if (disposed) {
+          try {
+            socket?.close();
+          } catch {
+            // ignore
+          }
+          logMenuAITrace("ws:open:disposed", { menuId });
+          return;
+        }
+        logMenuAITrace("ws:open", { menuId, attempts: menuAIWSAttemptsRef.current });
+        openAtMs = Date.now();
+        clearRetryTimer();
+        logMenuAITrace("ws:open:awaiting-server-hello", { menuId });
+      });
+
+      socket.addEventListener("message", (event) => {
+        if (disposed) return;
+        if (menuAIWSAttemptsRef.current !== 0) {
+          menuAIWSAttemptsRef.current = 0;
+          logMenuAITrace("ws:attempts:reset-on-message", { menuId });
+        }
+        let payload: Record<string, unknown> | null = null;
+        try {
+          payload = JSON.parse(String(event.data ?? "")) as Record<string, unknown>;
+        } catch {
+          payload = null;
+        }
+        if (!payload) return;
+
+        const rawType = String(payload.type ?? "").trim().toLowerCase();
+        const messageDishIdRaw = payload.dish_id ?? payload.dishId ?? payload.id;
+        const messageDishId = Number(messageDishIdRaw ?? 0);
+        logMenuAITrace("ws:message", {
+          menuId,
+          type: rawType || "unknown",
+          dish_id: Number.isFinite(messageDishId) && messageDishId > 0 ? messageDishId : null,
+        });
+        if (rawType === "hello" || rawType === "snapshot") {
+          applyMessageTracker(payload);
+          return;
+        }
+
+        const eventKind = parseEventKind(rawType);
+        if (eventKind) {
+          const dishId = Number(payload.dish_id ?? payload.dishId ?? payload.id);
+          const aiGeneratedRaw = payload.ai_generated_img ?? payload.aiGeneratedImg;
+          const aiGeneratedImg = typeof aiGeneratedRaw === "string" && aiGeneratedRaw.trim()
+            ? aiGeneratedRaw.trim()
+            : null;
+          const fotoRaw = payload.foto_url ?? payload.fotoUrl ?? aiGeneratedRaw;
+          const fotoURL = typeof fotoRaw === "string" && fotoRaw.trim()
+            ? fotoRaw.trim()
+            : undefined;
+          if (Number.isFinite(dishId) && dishId > 0) {
+            if (eventKind === "started") {
+              applyDishAIState(dishId, {
+                ai_requested: true,
+                ai_generating: true,
+              });
+            } else if (eventKind === "completed") {
+              applyDishAIState(dishId, {
+                ai_requested: true,
+                ai_generating: false,
+                ai_generated_img: aiGeneratedImg,
+                foto_url: fotoURL ?? aiGeneratedImg ?? undefined,
+              });
+            } else if (eventKind === "failed") {
+              applyDishAIState(dishId, {
+                ai_requested: true,
+                ai_generating: false,
+              });
+              const errorMessage = typeof payload.message === "string" && payload.message.trim()
+                ? payload.message.trim()
+                : "No se pudo completar la mejora con IA";
+              pushToastRef.current({
+                kind: "error",
+                title: "Mejora IA fallida",
+                message: errorMessage,
+              });
+            }
+          }
+          applyMessageTracker(payload);
+          return;
+        }
+
+        applyMessageTracker(payload);
+      });
+
+      socket.addEventListener("error", () => {
+        logMenuAITrace("ws:error", { menuId });
+        // Let browser transition to "close" naturally to avoid noisy CONNECTING close warnings.
+      });
+
+      socket.addEventListener("close", (event) => {
+        if (disposed) return;
+        const openForMs = openAtMs > 0 ? Date.now() - openAtMs : 0;
+        const unauthorized = event.code === 4401 || event.code === 1008;
+        logMenuAITrace("ws:close", {
+          menuId,
+          code: event.code,
+          reason: event.reason || null,
+          wasClean: event.wasClean,
+          openForMs,
+          unauthorized,
+        });
+        if (openForMs >= 1500) {
+          menuAIWSAttemptsRef.current = 0;
+        }
+        if (menuAIWSSocketRef.current === socket) {
+          menuAIWSSocketRef.current = null;
+        }
+        if (unauthorized) {
+          if (!menuAIWSAuthToastShownRef.current) {
+            menuAIWSAuthToastShownRef.current = true;
+            pushToastRef.current({
+              kind: "error",
+              title: "Sesion no autorizada para tiempo real",
+              message: "Recarga la pagina o vuelve a iniciar sesion para reactivar las actualizaciones IA.",
+            });
+          }
+          return;
+        }
+        if (!disposed) {
+          scheduleReconnect();
+        }
+      });
+    };
+
+    connect();
+
+    return () => {
+      disposed = true;
+      logMenuAITrace("wsEffect:cleanup", { menuId });
+      clearRetryTimer();
+      if (menuAIWSSocketRef.current === socket) {
+        menuAIWSSocketRef.current = null;
+      }
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        try {
+          socket.close();
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, [applyAITrackerSnapshot, applyDishAIState, menuId, pushToastRef]);
+
+  useEffect(() => {
+    const sectionRows = trackerFromSections(sections);
+    const ids = new Set<number>();
+    for (const section of sections) {
+      for (const dish of section.dishes) {
+        if (dish.id) ids.add(dish.id);
+      }
+    }
+    setMenuAITracker((prev) => {
+      const kept = prev.dishes.filter((dish) => ids.has(dish.dish_id));
+      const merged = mergeMenuAIDishes([...kept, ...sectionRows]);
+      if (merged.length === prev.dishes.length && merged.every((row, idx) => (
+        row.dish_id === prev.dishes[idx]?.dish_id
+        && row.ai_requested === prev.dishes[idx]?.ai_requested
+        && row.ai_generating === prev.dishes[idx]?.ai_generating
+        && row.ai_generated_img === prev.dishes[idx]?.ai_generated_img
+      ))) {
+        return prev;
+      }
+      return { dishes: merged };
+    });
+  }, [sections]);
+
+  useEffect(() => {
+    return () => {
+      const advisorURL = dishImageAdvisorDraftRef.current?.objectUrl;
+      const cropURL = dishImageCropDraftRef.current?.objectUrl;
+      if (advisorURL) URL.revokeObjectURL(advisorURL);
+      if (cropURL && cropURL !== advisorURL) URL.revokeObjectURL(cropURL);
+      if (menuAIWSRetryRef.current) {
+        window.clearTimeout(menuAIWSRetryRef.current);
+        menuAIWSRetryRef.current = null;
+      }
+      const socket = menuAIWSSocketRef.current;
+      menuAIWSSocketRef.current = null;
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        try {
+          socket.close();
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, []);
   const paneLayoutTransition = useMemo(
     () =>
       shouldReduceMotion
@@ -1102,6 +2427,7 @@ export default function Page() {
       lastSavedSectionDishSyncRef.current = {};
       inFlightSectionsRef.current = null;
       syncRequestSeqRef.current = 0;
+      setMenuAITracker({ dishes: [] });
       setHydrated(true);
       return;
     }
@@ -1113,7 +2439,9 @@ export default function Page() {
     setActive(mapped.active);
     setMenuType(mapped.menuType);
     setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
+    setShowDishImages(mapped.showDishImages);
     setSections(mapped.sections);
+    setMenuAITracker(buildMenuAITracker(data.menu, mapped.sections));
     setIncludedCoffee(mapped.settings.included_coffee);
     setBeverageType(mapped.settings.beverage.type);
     setBeveragePrice(mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person));
@@ -1130,6 +2458,7 @@ export default function Page() {
       active: mapped.active,
       menuType: mapped.menuType,
       subtitles: mapped.subtitles.length ? mapped.subtitles : [""],
+      showDishImages: mapped.showDishImages,
       includedCoffee: mapped.settings.included_coffee,
       beverageType: mapped.settings.beverage.type,
       beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
@@ -1183,13 +2512,161 @@ export default function Page() {
     };
   }, [desktopPreviewOpen]);
 
-  const previewUrl = useMemo(() => {
-    const q = new URLSearchParams();
-    q.set("boPreview", "1");
-    if (menuId) q.set("menuId", String(menuId));
-    q.set("_bo_preview_origin", previewOrigin);
-    return `/preview-web/menufindesemana?${q.toString()}`;
-  }, [menuId, previewOrigin]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setPreviewThemeLoading(true);
+      try {
+        const res = await api.settings.getWebsiteMenuTemplates();
+        if (cancelled || !res.success) return;
+        const overrides = (res.overrides as Record<string, string>) || {};
+        const assigned = typeof res.assigned === "boolean"
+          ? res.assigned
+          : (Boolean((res.default_theme_id || "").trim()) || Object.keys(overrides).length > 0);
+        setPreviewThemeConfig({
+          assigned,
+          default_theme_id: res.default_theme_id || "villa-carmen",
+          overrides,
+          themes: Array.isArray(res.themes) ? res.themes : [],
+        });
+      } catch {
+        if (!cancelled) setPreviewThemeConfig(null);
+      } finally {
+        if (!cancelled) setPreviewThemeLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
+
+  const normalizePreviewThemeId = useCallback((rawThemeId?: string | null): string => {
+    const raw = String(rawThemeId || "").trim().toLowerCase();
+    if (!raw) return "villa-carmen";
+    const alias = raw
+      .replace(/[_\s]+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    const compact = alias.replace(/-/g, "");
+    if (alias === "preact-copy" || alias === "preactcopy") return "villa-carmen";
+    if (alias === "villa-carmen" || compact === "villacarmen" || compact === "villacaren") return "villa-carmen";
+    return alias || "villa-carmen";
+  }, []);
+
+  const previewThemeId = useMemo(() => {
+    if (!previewThemeConfig) return "villa-carmen";
+    const fromOverride = previewThemeConfig.overrides[menuType || "closed_conventional"];
+    return normalizePreviewThemeId(fromOverride || previewThemeConfig.default_theme_id || "villa-carmen");
+  }, [menuType, normalizePreviewThemeId, previewThemeConfig]);
+
+  const previewThemeLabel = useMemo(() => {
+    if (!previewThemeConfig) return "Plantilla no disponible";
+    const options = Array.isArray(previewThemeConfig.themes) ? previewThemeConfig.themes : [];
+    const match = options.find((theme) => theme.id === previewThemeId);
+    return match?.name || previewThemeId;
+  }, [previewThemeConfig, previewThemeId]);
+
+  const previewNeedsUpgrade = useMemo(() => {
+    if (!previewThemeConfig) return false;
+    return previewThemeConfig.assigned === false;
+  }, [previewThemeConfig]);
+
+  const previewUrl = "/menu-preview/index.html";
+
+  const previewMenuPayload = useMemo(
+    () => ({
+      id: menuId,
+      menu_title: title,
+      menu_type: menuType || "closed_conventional",
+      price,
+      active,
+      menu_subtitle: subtitles,
+      show_dish_images: showDishImages,
+      settings: {
+        included_coffee: includedCoffee,
+        beverage: {
+          type: beverageType,
+          price_per_person: toNumOrNull(beveragePrice),
+          has_supplement: beverageHasSupplement,
+          supplement_price: toNumOrNull(beverageSupplementPrice),
+        },
+        comments,
+        min_party_size: Number.parseInt(minPartySize || "0", 10) || 0,
+        main_dishes_limit: mainLimit,
+        main_dishes_limit_number: Number.parseInt(mainLimitNum || "0", 10) || 0,
+      },
+      ai_images: menuAITracker,
+      sections: sections.map((section, sectionIdx) => ({
+        id: section.id ?? null,
+        title: section.title,
+        kind: section.kind,
+        position: section.position ?? sectionIdx,
+        dishes: section.dishes.map((dish, dishIdx) => {
+          const tracked = dish.id ? menuAIDishesById.get(dish.id) : null;
+          const aiRequested = tracked?.ai_requested ?? dish.ai_requested;
+          const aiGenerating = tracked?.ai_generating ?? dish.ai_generating;
+          const aiGeneratedImg = tracked?.ai_generated_img ?? dish.ai_generated_img ?? null;
+          return {
+            id: dish.id ?? null,
+            title: dish.title,
+            description: dish.description,
+            description_enabled: dish.description_enabled,
+            allergens: dish.allergens,
+            supplement_enabled: dish.supplement_enabled,
+            supplement_price: dish.supplement_price,
+            active: dish.active,
+            price: dish.price,
+            position: dish.position ?? dishIdx,
+            foto_url: dish.foto_url,
+            ai_requested: aiRequested,
+            ai_generating: aiGenerating,
+            ai_requested_img: aiRequested,
+            ai_generating_img: aiGenerating,
+            ai_generated_img: aiGeneratedImg,
+          };
+        }),
+      })),
+      special_menu_image_url: specialMenuImage || "",
+    }),
+    [
+      active,
+      beverageHasSupplement,
+      beveragePrice,
+      beverageSupplementPrice,
+      beverageType,
+      comments,
+      includedCoffee,
+      mainLimit,
+      mainLimitNum,
+      menuAIDishesById,
+      menuAITracker,
+      menuId,
+      menuType,
+      minPartySize,
+      price,
+      sections,
+      showDishImages,
+      specialMenuImage,
+      subtitles,
+      title,
+    ],
+  );
+
+  useEffect(() => {
+    if (previewThemeLoading || previewNeedsUpgrade) return;
+    const win = previewFrameRef.current?.contentWindow;
+    if (!win) return;
+    win.postMessage(
+      {
+        type: "vc_preview:update",
+        theme_id: previewThemeId,
+        menu_type: menuType || "closed_conventional",
+        menu: previewMenuPayload,
+      },
+      "*",
+    );
+  }, [menuType, previewMenuPayload, previewThemeId, previewThemeLoading, previewNeedsUpgrade]);
 
   const patchBasics = useCallback(
     async ({ payload, fingerprint, force = false }: { payload: BasicsPayload; fingerprint: string; force?: boolean }) => {
@@ -1229,10 +2706,10 @@ export default function Page() {
       fingerprint: string;
       force?: boolean;
     }) => {
-      if (!menuId || sectionsSnapshot.length === 0) return;
+      if (!menuId || sectionsSnapshot.length === 0) return sectionsSnapshot;
 
       if (!force && (lastSavedSectionsRef.current === fingerprint || inFlightSectionsRef.current === fingerprint)) {
-        return;
+        return sectionsSnapshot;
       }
 
       const requestSeq = syncRequestSeqRef.current + 1;
@@ -1473,7 +2950,7 @@ export default function Page() {
           lastSavedSectionDishSyncRef.current[section.clientId] = getSectionDishSyncState(section, isALaCarte);
         }
 
-        if (syncRequestSeqRef.current !== requestSeq) return;
+        if (syncRequestSeqRef.current !== requestSeq) return sectionsSnapshot;
 
         if (needsStateReconcile) {
           setSections(rebuilt);
@@ -1489,6 +2966,7 @@ export default function Page() {
           sections: rebuilt.length,
           needsStateReconcile,
         });
+        return savedSource;
       } finally {
         if (inFlightSectionsRef.current === fingerprint) {
           inFlightSectionsRef.current = null;
@@ -1558,7 +3036,9 @@ export default function Page() {
       setPrice(mapped.price || "0");
       setActive(mapped.active);
       setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
+      setShowDishImages(mapped.showDishImages);
       setSections(mapped.sections);
+      setMenuAITracker(buildMenuAITracker(loaded.menu, mapped.sections));
       setIncludedCoffee(mapped.settings.included_coffee);
       setBeverageType(mapped.settings.beverage.type);
       setBeveragePrice(mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person));
@@ -1575,6 +3055,7 @@ export default function Page() {
         active: mapped.active,
         menuType: mapped.menuType,
         subtitles: mapped.subtitles.length ? mapped.subtitles : [""],
+        showDishImages: mapped.showDishImages,
         includedCoffee: mapped.settings.included_coffee,
         beverageType: mapped.settings.beverage.type,
         beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
@@ -1732,6 +3213,9 @@ export default function Page() {
           active: true,
           position: sec.dishes.length,
           foto_url: fromCatalog?.foto_url || fromCatalog?.image_url,
+          ai_requested: false,
+          ai_generating: false,
+          ai_generated_img: null,
         };
         return { ...sec, dishes: [...sec.dishes, dish] };
       }),
@@ -1814,6 +3298,326 @@ export default function Page() {
       }, 240);
     },
     [api],
+  );
+
+  const closeDishImageAdvisor = useCallback((opts?: { keepTarget?: boolean }) => {
+    logMenuAITrace("advisor:close", { keepTarget: !!opts?.keepTarget });
+    setDishImageAdvisorDraft((prev) => {
+      if (prev?.objectUrl) URL.revokeObjectURL(prev.objectUrl);
+      return null;
+    });
+    setDishImageAdvisorBusy(false);
+    if (!opts?.keepTarget) {
+      setDishImageTarget(null);
+    }
+  }, []);
+
+  const closeDishImageCropper = useCallback((opts?: { keepTarget?: boolean }) => {
+    logMenuAITrace("cropper:close", { keepTarget: !!opts?.keepTarget });
+    setDishImageCropDraft((prev) => {
+      if (prev?.objectUrl) URL.revokeObjectURL(prev.objectUrl);
+      return null;
+    });
+    setDishImageBusy(false);
+    if (!opts?.keepTarget) {
+      setDishImageTarget(null);
+    }
+  }, []);
+
+  const resolvePersistedDishTarget = useCallback(
+    async (
+      target: { sectionClientId: string; dishClientId: string },
+    ): Promise<{ section: PersistedEditorSection; dish: PersistedEditorDish }> => {
+      logMenuAITrace("resolvePersistedDishTarget:start", {
+        sectionClientId: target.sectionClientId,
+        dishClientId: target.dishClientId,
+      });
+      let latestSections = sectionsRef.current;
+      let section = latestSections.find((row) => row.clientId === target.sectionClientId);
+      let dish = section?.dishes.find((row) => row.clientId === target.dishClientId);
+      if (!section || !dish) {
+        throw new Error("No se encontro el plato seleccionado");
+      }
+
+      if (!section.id || !dish.id) {
+        const synced = await syncSectionsAndDishes({
+          sectionsSnapshot: latestSections,
+          fingerprint: getSectionsFingerprint(latestSections),
+          force: true,
+        });
+        if (Array.isArray(synced)) latestSections = synced;
+        section = latestSections.find((row) => row.clientId === target.sectionClientId);
+        dish = section?.dishes.find((row) => row.clientId === target.dishClientId);
+      }
+
+      if (!section?.id || !dish?.id) {
+        logMenuAITrace("resolvePersistedDishTarget:missing-id", {
+          sectionClientId: target.sectionClientId,
+          dishClientId: target.dishClientId,
+        });
+        throw new Error("Guarda el plato antes de subir la imagen");
+      }
+
+      logMenuAITrace("resolvePersistedDishTarget:ok", {
+        sectionId: section.id,
+        dishId: dish.id,
+      });
+      return {
+        section: section as PersistedEditorSection,
+        dish: dish as PersistedEditorDish,
+      };
+    },
+    [syncSectionsAndDishes],
+  );
+
+  const moveDishImageAdvisorToCrop = useCallback(() => {
+    logMenuAITrace("advisor:continue-without-ai");
+    setDishImageAdvisorDraft((advisorDraft) => {
+      if (!advisorDraft) return null;
+      setDishImageCropDraft((prevCrop) => {
+        if (prevCrop?.objectUrl && prevCrop.objectUrl !== advisorDraft.objectUrl) {
+          URL.revokeObjectURL(prevCrop.objectUrl);
+        }
+        return advisorDraft;
+      });
+      return null;
+    });
+    setDishImageAdvisorBusy(false);
+  }, []);
+
+  const requestMenuAITrackerSync = useCallback(() => {
+    const ws = menuAIWSSocketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN || !menuId) {
+      logMenuAITrace("ws:sync:skipped", {
+        menuId,
+        hasSocket: !!ws,
+        readyState: ws?.readyState ?? null,
+      });
+      return;
+    }
+    try {
+      ws.send(JSON.stringify({ type: "sync", menuId }));
+      logMenuAITrace("ws:sync:sent", { menuId });
+    } catch {
+      logMenuAITrace("ws:sync:send-error", { menuId });
+      // Ignore transient websocket send errors.
+    }
+  }, [menuId]);
+
+  const pickDishImage = useCallback((sectionClientId: string, dishClientId: string) => {
+    logMenuAITrace("pickDishImage", { sectionClientId, dishClientId });
+    setDishImageTarget({ sectionClientId, dishClientId });
+    const input = dishImageInputRef.current;
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }, []);
+
+  const onDishImageFileSelected = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.currentTarget.value = "";
+      if (!file || !dishImageTarget) return;
+      logMenuAITrace("image:selected", {
+        sectionClientId: dishImageTarget.sectionClientId,
+        dishClientId: dishImageTarget.dishClientId,
+        fileName: file.name,
+        fileType: file.type,
+        fileBytes: file.size,
+      });
+
+      if (!isSupportedDishImageFile(file)) {
+        pushToast({ kind: "error", title: "Error", message: "Formato no soportado. Usa JPG, PNG, WEBP o GIF." });
+        return;
+      }
+      if (file.size > MAX_DISH_IMAGE_INPUT_BYTES) {
+        pushToast({ kind: "error", title: "Error", message: "La imagen excede 15MB." });
+        return;
+      }
+
+      const nextTarget = { ...dishImageTarget };
+      setDishImageAdvisorBusy(true);
+      closeDishImageCropper({ keepTarget: true });
+      closeDishImageAdvisor({ keepTarget: true });
+
+      void (async () => {
+        try {
+          logMenuAITrace("image:preprocess:start", {
+            maxKB: DISH_IMAGE_AI_MAX_KB,
+          });
+          const preprocessed = await preprocessDishImageToWebp(file, DISH_IMAGE_AI_MAX_KB);
+          const objectUrl = URL.createObjectURL(preprocessed);
+          logMenuAITrace("image:preprocess:done", {
+            outputType: preprocessed.type,
+            outputBytes: preprocessed.size,
+            sectionClientId: nextTarget.sectionClientId,
+            dishClientId: nextTarget.dishClientId,
+          });
+          setDishImageAdvisorDraft((prev) => {
+            if (prev?.objectUrl) URL.revokeObjectURL(prev.objectUrl);
+            return {
+              sectionClientId: nextTarget.sectionClientId,
+              dishClientId: nextTarget.dishClientId,
+              file: preprocessed,
+              objectUrl,
+            };
+          });
+        } catch (error) {
+          logMenuAITrace("image:preprocess:error", {
+            message: error instanceof Error ? error.message : "unknown",
+          });
+          pushToast({
+            kind: "error",
+            title: "Error",
+            message: error instanceof Error ? error.message : "No se pudo procesar la imagen",
+          });
+          setDishImageTarget(null);
+        } finally {
+          setDishImageAdvisorBusy(false);
+        }
+      })();
+    },
+    [closeDishImageAdvisor, closeDishImageCropper, dishImageTarget, pushToast],
+  );
+
+  const onDishImageAdvisorImprove = useCallback(async () => {
+    if (!dishImageAdvisorDraft || !menuId) return;
+    const draft = dishImageAdvisorDraft;
+    logMenuAITrace("advisor:improve:click", {
+      menuId,
+      sectionClientId: draft.sectionClientId,
+      dishClientId: draft.dishClientId,
+      fileBytes: draft.file.size,
+      fileType: draft.file.type,
+    });
+    setDishImageAdvisorBusy(true);
+    let targetDishId: number | null = null;
+    try {
+      const { section, dish } = await resolvePersistedDishTarget({
+        sectionClientId: draft.sectionClientId,
+        dishClientId: draft.dishClientId,
+      });
+      targetDishId = dish.id;
+
+      applyDishAIState(dish.id, {
+        ai_requested: true,
+        ai_generating: true,
+      });
+      logMenuAITrace("advisor:improve:request:start", {
+        menuId,
+        sectionId: section.id,
+        dishId: dish.id,
+      });
+
+      const res = await api.menus.gruposV2.uploadSectionDishImageAI(menuId, section.id, dish.id, draft.file);
+      if (!res.success) {
+        logMenuAITrace("advisor:improve:request:failed", {
+          menuId,
+          sectionId: section.id,
+          dishId: dish.id,
+          message: res.message || "unknown",
+        });
+        throw new Error(res.message || "No se pudo iniciar la mejora con IA");
+      }
+      logMenuAITrace("advisor:improve:request:accepted", {
+        menuId,
+        sectionId: section.id,
+        dishId: dish.id,
+      });
+
+      closeDishImageAdvisor();
+      requestMenuAITrackerSync();
+      pushToast({
+        kind: "success",
+        title: "Mejora iniciada",
+        message: "La imagen se esta procesando con IA en segundo plano.",
+      });
+    } catch (error) {
+      logMenuAITrace("advisor:improve:error", {
+        targetDishId,
+        message: error instanceof Error ? error.message : "unknown",
+      });
+      if (targetDishId) {
+        applyDishAIState(targetDishId, { ai_generating: false });
+      }
+      pushToast({
+        kind: "error",
+        title: "Error",
+        message: error instanceof Error ? error.message : "No se pudo iniciar la mejora con IA",
+      });
+    } finally {
+      setDishImageAdvisorBusy(false);
+    }
+  }, [
+    api,
+    applyDishAIState,
+    closeDishImageAdvisor,
+    dishImageAdvisorDraft,
+    menuId,
+    pushToast,
+    requestMenuAITrackerSync,
+    resolvePersistedDishTarget,
+  ]);
+
+  const onDishImageCropConfirm = useCallback(
+    async (crop: DishImageCropConfirm) => {
+      if (!dishImageCropDraft || !menuId) return;
+      logMenuAITrace("crop:confirm:start", {
+        menuId,
+        sectionClientId: dishImageCropDraft.sectionClientId,
+        dishClientId: dishImageCropDraft.dishClientId,
+      });
+      setDishImageBusy(true);
+
+      try {
+        const webpFile = await cropSquareImageToWebp(dishImageCropDraft.file, {
+          ...crop,
+          outputSizePx: 1024,
+          maxSizeKB: 150,
+        });
+        const { section, dish } = await resolvePersistedDishTarget({
+          sectionClientId: dishImageCropDraft.sectionClientId,
+          dishClientId: dishImageCropDraft.dishClientId,
+        });
+        logMenuAITrace("crop:confirm:upload:start", {
+          menuId,
+          sectionId: section.id,
+          dishId: dish.id,
+          webpBytes: webpFile.size,
+        });
+
+        const res = await api.menus.gruposV2.uploadSectionDishImage(menuId, section.id, dish.id, webpFile);
+        if (!res.success) throw new Error(res.message || "No se pudo subir la imagen");
+        logMenuAITrace("crop:confirm:upload:done", {
+          menuId,
+          sectionId: section.id,
+          dishId: dish.id,
+          foto_url: res.dish?.foto_url || res.dish?.image_url || null,
+        });
+
+        updateDish(dishImageCropDraft.sectionClientId, dishImageCropDraft.dishClientId, {
+          foto_url: res.dish?.foto_url || res.dish?.image_url || undefined,
+        });
+        closeDishImageCropper();
+        pushToast({
+          kind: "success",
+          title: "Imagen actualizada",
+          message: `Imagen optimizada (${Math.max(1, Math.round(webpFile.size / 1024))}KB)`,
+        });
+      } catch (error) {
+        logMenuAITrace("crop:confirm:error", {
+          message: error instanceof Error ? error.message : "unknown",
+        });
+        pushToast({
+          kind: "error",
+          title: "Error",
+          message: error instanceof Error ? error.message : "No se pudo actualizar la imagen",
+        });
+      } finally {
+        setDishImageBusy(false);
+      }
+    },
+    [api, closeDishImageCropper, dishImageCropDraft, menuId, pushToast, resolvePersistedDishTarget, updateDish],
   );
 
   const onPublish = useCallback(async () => {
@@ -2096,7 +3900,7 @@ export default function Page() {
         <div
           className={[
             "bo-menuWizardFinal",
-            desktopPreviewOpen ? "" : "is-previewHidden",
+            desktopPreviewOpen ? "is-previewOpen" : "is-previewHidden",
             desktopPreviewDocked ? "" : "is-previewUndocked",
           ]
             .filter(Boolean)
@@ -2116,11 +3920,9 @@ export default function Page() {
 
           <div className="bo-previewSwitchGlass">
             <button className={`bo-previewSwitchBtn ${mobileTab === "editor" ? "is-active" : ""}`} type="button" onClick={() => setMobileTab("editor")}>
-              <PencilLine size={14} aria-hidden="true" />
               <span>Editor</span>
             </button>
             <button className={`bo-previewSwitchBtn ${mobileTab === "preview" ? "is-active" : ""}`} type="button" onClick={() => setMobileTab("preview")}>
-              <Eye size={14} aria-hidden="true" />
               <span>Preview</span>
             </button>
           </div>
@@ -2193,6 +3995,17 @@ export default function Page() {
                     </div>
                   </div>
                 ) : null}
+                <div className="bo-field">
+                  <div className="bo-label">Visibilidad de platos</div>
+                  <Select
+                    className="bo-menuSettingSelect"
+                    value={showDishImages ? "with_image" : "without_image"}
+                    onChange={(value) => setShowDishImages(value === "with_image")}
+                    options={dishVisibilityOptions}
+                    size="sm"
+                    ariaLabel="Visibilidad de platos en preview"
+                  />
+                </div>
                 <div className="bo-menuBasicsSwitchRow">
                   <button
                     className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
@@ -2248,6 +4061,7 @@ export default function Page() {
                   setAllergenModal={setAllergenModal}
                   removeDish={removeDish}
                   updateDish={updateDish}
+                  pickDishImage={pickDishImage}
                   addDish={addDish}
                   handleSearch={handleSearch}
                   searchTerm={searchTerms[sec.clientId] || ""}
@@ -2388,29 +4202,89 @@ export default function Page() {
             <div className="bo-previewHead">
               <div>
                 <div className="bo-panelTitle">Preview web</div>
-                <div className="bo-panelMeta">Plantilla menufindesemana en tiempo real</div>
+                <div className="bo-panelMeta">
+                  {previewNeedsUpgrade
+                    ? "Activa premium para desbloquear plantillas"
+                    : "Plantilla web asignada en configuracion"}
+                </div>
               </div>
-              <div className="bo-previewOriginSwitch">
-                <button
-                  className={`bo-chip bo-menuOriginChip ${previewOrigin.includes(":5173") ? "is-on" : ""}`}
-                  type="button"
-                  onClick={() => setPreviewOrigin("http://localhost:5173")}
-                >
-                  :5173
-                </button>
-                <button
-                  className={`bo-chip bo-menuOriginChip ${previewOrigin.includes(":5174") ? "is-on" : ""}`}
-                  type="button"
-                  onClick={() => setPreviewOrigin("http://localhost:5174")}
-                >
-                  :5174
-                </button>
+              <div className="bo-previewThemeSummary">
+                <span className={`bo-chip bo-menuOriginChip ${previewNeedsUpgrade ? "" : "is-on"}`}>
+                  {previewNeedsUpgrade ? "Sin plantilla asignada" : previewThemeLabel}
+                </span>
               </div>
             </div>
-            <iframe className="bo-previewFrame" title="Preview menu" src={previewUrl} />
+            {previewThemeLoading ? (
+              <div className="bo-previewLoading" role="status" aria-live="polite">
+                <LoadingSpinner size="lg" label="Cargando plantilla" />
+                <span>Cargando plantilla del restaurante...</span>
+              </div>
+            ) : previewNeedsUpgrade ? (
+              <section className="bo-previewUpgrade" aria-label="Upgrade premium">
+                <div className="bo-previewUpgradeAura bo-previewUpgradeAura--one" aria-hidden="true" />
+                <div className="bo-previewUpgradeAura bo-previewUpgradeAura--two" aria-hidden="true" />
+                <div className="bo-previewUpgradeAura bo-previewUpgradeAura--three" aria-hidden="true" />
+                <div className="bo-previewUpgradeBadge">Premium</div>
+                <h3 className="bo-previewUpgradeTitle">Desbloquea la web de menus premium</h3>
+                <p className="bo-previewUpgradeText">
+                  Este restaurante todavia no tiene una plantilla web asignada. Activa la suscripcion premium para mostrar
+                  el preview en tiempo real con el tema elegido.
+                </p>
+                <div className="bo-previewUpgradeActions" aria-label="Acciones premium">
+                  <button className="bo-previewUpgradeBtn bo-previewUpgradeBtn--primary" type="button" aria-label="Accion principal de upgrade" />
+                  <button className="bo-previewUpgradeBtn" type="button" aria-label="Accion secundaria de upgrade" />
+                </div>
+              </section>
+            ) : (
+              <iframe
+                ref={previewFrameRef}
+                className="bo-previewFrame"
+                title="Preview menu"
+                src={previewUrl}
+                onLoad={() => {
+                  const win = previewFrameRef.current?.contentWindow;
+                  if (!win) return;
+                  win.postMessage(
+                    {
+                      type: "vc_preview:init",
+                      theme_id: previewThemeId,
+                      menu_type: menuType || "closed_conventional",
+                      menu: previewMenuPayload,
+                    },
+                    "*",
+                  );
+                }}
+              />
+            )}
           </aside>
         </div>
       ) : null}
+
+      <input
+        ref={dishImageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="bo-hiddenFileInput"
+        onChange={onDishImageFileSelected}
+      />
+
+      <DishImageAdvisorModal
+        open={!!dishImageAdvisorDraft}
+        imageUrl={dishImageAdvisorDraft?.objectUrl || ""}
+        imageKB={dishImageAdvisorPreviewKB}
+        busy={dishImageAdvisorBusy}
+        onClose={() => closeDishImageAdvisor()}
+        onContinueWithoutAI={moveDishImageAdvisorToCrop}
+        onImproveWithAI={() => void onDishImageAdvisorImprove()}
+      />
+
+      <DishImageCropModal
+        open={!!dishImageCropDraft}
+        imageUrl={dishImageCropDraft?.objectUrl || ""}
+        busy={dishImageBusy}
+        onClose={() => closeDishImageCropper()}
+        onConfirm={(payload) => void onDishImageCropConfirm(payload)}
+      />
 
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620}>
         <div className="bo-modalHead">

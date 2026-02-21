@@ -2,7 +2,17 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../api/client";
-import type { RestaurantBranding, RestaurantIntegrations, RestaurantInvoiceSettings, InvoiceNumberFormat, PdfTemplateType, InvoiceRenumberPreview, InvoiceRenumberAudit } from "../../../api/types";
+import type {
+  RestaurantBranding,
+  RestaurantIntegrations,
+  RestaurantInvoiceSettings,
+  InvoiceNumberFormat,
+  PdfTemplateType,
+  InvoiceRenumberPreview,
+  InvoiceRenumberAudit,
+  MenuTemplateType,
+  RestaurantWebsiteMenuTemplatesConfig,
+} from "../../../api/types";
 import { PDF_TEMPLATE_OPTIONS } from "../../../api/types";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
@@ -15,6 +25,28 @@ const EVENT_OPTIONS = [
   { value: "booking.confirmed", label: "booking.confirmed" },
   { value: "booking.cancelled", label: "booking.cancelled" },
 ] as const;
+
+const MENU_TYPE_OPTIONS: { value: MenuTemplateType; label: string }[] = [
+  { value: "closed_conventional", label: "Menu cerrado convencional" },
+  { value: "a_la_carte", label: "Menu carta convencional" },
+  { value: "closed_group", label: "Menu cerrado grupo" },
+  { value: "a_la_carte_group", label: "Menu carta grupo" },
+  { value: "special", label: "Menu especial" },
+];
+
+function defaultWebsiteMenuTemplates(): RestaurantWebsiteMenuTemplatesConfig {
+  return {
+    default_theme_id: "villa-carmen",
+    overrides: {},
+    themes: [
+      { id: "villa-carmen", name: "Villa Carmen", active: true },
+      { id: "lumen-gold", name: "Lumen Gold", active: true },
+      { id: "terra-olive", name: "Terra Olive", active: true },
+      { id: "nocturne-copper", name: "Nocturne Copper", active: true },
+      { id: "sea-breeze", name: "Sea Breeze", active: true },
+    ],
+  };
+}
 
 function defaultIntegrations(): RestaurantIntegrations {
   return {
@@ -96,6 +128,12 @@ export default function Page() {
   const [integrations, setIntegrations] = useState<RestaurantIntegrations>(() => data.integrations ?? defaultIntegrations());
   const [branding, setBranding] = useState<RestaurantBranding>(() => data.branding ?? defaultBranding());
   const [invoiceSettings, setInvoiceSettings] = useState<RestaurantInvoiceSettings>(() => data.invoiceSettings ?? defaultInvoiceSettings());
+  const [websiteMenuTemplates, setWebsiteMenuTemplates] = useState<RestaurantWebsiteMenuTemplatesConfig>(
+    () => data.websiteMenuTemplates ?? defaultWebsiteMenuTemplates(),
+  );
+  const [websiteTemplateUsePerType, setWebsiteTemplateUsePerType] = useState<boolean>(
+    () => Object.keys((data.websiteMenuTemplates?.overrides || {})).length > 0,
+  );
   const [eventsMode, setEventsMode] = useState<"all" | "custom">(() => (integrations.enabledEvents.length ? "custom" : "all"));
   const [recipientsText, setRecipientsText] = useState(() => joinRecipients(integrations.restaurantWhatsappNumbers));
 
@@ -127,14 +165,22 @@ export default function Page() {
     setBusy(true);
     setError(null);
     try {
-      const [a, b, c] = await Promise.all([api.settings.getIntegrations(), api.settings.getBranding(), api.settings.getInvoiceSettings()]);
+      const [a, b, c, d] = await Promise.all([
+        api.settings.getIntegrations(),
+        api.settings.getBranding(),
+        api.settings.getInvoiceSettings(),
+        api.settings.getWebsiteMenuTemplates(),
+      ]);
       if (!a.success) throw new Error(a.message || "Error cargando integraciones");
       if (!b.success) throw new Error(b.message || "Error cargando branding");
       if (!c.success) throw new Error(c.message || "Error cargando configuracion de facturas");
+      if (!d.success) throw new Error(d.message || "Error cargando pagina web");
 
       setIntegrations(a.integrations);
       setBranding(b.branding);
       setInvoiceSettings(c.settings);
+      setWebsiteMenuTemplates(d);
+      setWebsiteTemplateUsePerType(Object.keys(d.overrides || {}).length > 0);
       setEventsMode(a.integrations.enabledEvents.length ? "custom" : "all");
       setRecipientsText(joinRecipients(a.integrations.restaurantWhatsappNumbers));
       pushToast({ kind: "success", title: "Actualizado" });
@@ -238,6 +284,33 @@ export default function Page() {
     }
   }, [api, invoiceSettings, pushToast]);
 
+  const saveWebsiteMenuTemplates = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const overrides = websiteTemplateUsePerType ? websiteMenuTemplates.overrides : {};
+      const res = await api.settings.setWebsiteMenuTemplates({
+        default_theme_id: websiteMenuTemplates.default_theme_id,
+        overrides,
+      });
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
+        return;
+      }
+      setWebsiteMenuTemplates({
+        default_theme_id: res.default_theme_id,
+        overrides: res.overrides || {},
+        themes: res.themes || [],
+      });
+      setWebsiteTemplateUsePerType(Object.keys(res.overrides || {}).length > 0);
+      pushToast({ kind: "success", title: "Guardado", message: "Pagina web actualizada" });
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar" });
+    } finally {
+      setBusy(false);
+    }
+  }, [api, pushToast, websiteMenuTemplates, websiteTemplateUsePerType]);
+
   // Renumbering handlers
   const previewRenumber = useCallback(async () => {
     setRenumberLoading(true);
@@ -324,6 +397,11 @@ export default function Page() {
       .replace("{prefix}", invoiceSettings.format.prefix)
       .replace("{suffix}", invoiceSettings.format.suffix);
   }, [invoiceSettings]);
+
+  const websiteThemeOptions = useMemo(
+    () => (websiteMenuTemplates.themes || []).map((theme) => ({ value: theme.id, label: theme.name || theme.id })),
+    [websiteMenuTemplates.themes],
+  );
 
   const primary = branding.primaryColor?.trim() || "transparent";
   const accent = branding.accentColor?.trim() || "transparent";
@@ -485,6 +563,70 @@ export default function Page() {
               <div className="bo-row">
                 <button className="bo-btn bo-btn--primary" type="button" onClick={saveBranding} disabled={busy}>
                   Guardar branding
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bo-panel" aria-label="Pagina web">
+          <div className="bo-panelHead">
+            <div className="bo-panelTitle">Pagina web</div>
+            <div className="bo-panelMeta">Plantillas premium para menus por tipo</div>
+          </div>
+          <div className="bo-panelBody">
+            <div className="bo-stack">
+              <label className="bo-field">
+                <div className="bo-label">Plantilla por defecto</div>
+                <Select
+                  value={websiteMenuTemplates.default_theme_id}
+                  onChange={(value) => setWebsiteMenuTemplates((prev) => ({ ...prev, default_theme_id: value }))}
+                  options={websiteThemeOptions}
+                  size="sm"
+                  ariaLabel="Plantilla por defecto"
+                />
+                <div className="bo-mutedText">Se aplica a toda la web premium y sirve como fallback para tipos sin override.</div>
+              </label>
+
+              <div className="bo-field">
+                <label className="bo-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={websiteTemplateUsePerType}
+                    onChange={(e) => setWebsiteTemplateUsePerType(e.target.checked)}
+                  />
+                  <span>Usar plantilla distinta por tipo de menu</span>
+                </label>
+              </div>
+
+              {websiteTemplateUsePerType ? (
+                <div className="bo-stack">
+                  {MENU_TYPE_OPTIONS.map((menuTypeOption) => (
+                    <label className="bo-field" key={menuTypeOption.value}>
+                      <div className="bo-label">{menuTypeOption.label}</div>
+                      <Select
+                        value={websiteMenuTemplates.overrides[menuTypeOption.value] || websiteMenuTemplates.default_theme_id}
+                        onChange={(value) =>
+                          setWebsiteMenuTemplates((prev) => ({
+                            ...prev,
+                            overrides: {
+                              ...prev.overrides,
+                              [menuTypeOption.value]: value,
+                            },
+                          }))
+                        }
+                        options={websiteThemeOptions}
+                        size="sm"
+                        ariaLabel={`Plantilla para ${menuTypeOption.label}`}
+                      />
+                    </label>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className="bo-row">
+                <button className="bo-btn bo-btn--primary" type="button" onClick={saveWebsiteMenuTemplates} disabled={busy}>
+                  Guardar pagina web
                 </button>
               </div>
             </div>

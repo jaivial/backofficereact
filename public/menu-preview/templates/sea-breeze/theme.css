@@ -1,0 +1,13 @@
+:root {
+  --vc-bg: #eaf8fb;
+  --vc-surface: #ffffff;
+  --vc-panel: #ffffff;
+  --vc-border: rgba(29, 102, 128, 0.2);
+  --vc-text: #0d2a36;
+  --vc-muted: rgba(13, 42, 54, 0.6);
+  --vc-accent: #0a7a9a;
+  --vc-radius: 26px;
+}
+.vc-hero {
+  background: linear-gradient(120deg, rgba(88, 194, 220, 0.24), rgba(255, 255, 255, 0));
+}

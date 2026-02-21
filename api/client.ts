@@ -47,6 +47,8 @@ import type {
   RestaurantBranding,
   RestaurantIntegrations,
   RestaurantInvoiceSettings,
+  RestaurantWebsiteMenuTemplatesConfig,
+  MenuTemplateType,
   Vino,
   InvoiceTemplate,
   InvoiceTemplateInput,
@@ -82,8 +84,7 @@ export function createClient(opts: ClientOpts) {
   const baseUrl = opts.baseUrl.replace(/\/+$/, "");
 
   async function apiFetch(path: string, init: RequestInit): Promise<Response> {
-    const normalizedPath = !isBrowser() && path.startsWith("/api/admin/") ? path.replace(/^\/api\/admin/, "/admin") : path;
-    const url = baseUrl + normalizedPath;
+    const url = baseUrl + path;
     const headers = new Headers(init.headers ?? {});
 
     if (!isBrowser()) {
@@ -727,6 +728,19 @@ export function createClient(opts: ClientOpts) {
           body: JSON.stringify(settings),
         });
       },
+      async getWebsiteMenuTemplates(): Promise<APISuccess<RestaurantWebsiteMenuTemplatesConfig> | APIError> {
+        return json("/api/admin/website/menu-templates", { method: "GET" });
+      },
+      async setWebsiteMenuTemplates(input: {
+        default_theme_id: string;
+        overrides: Partial<Record<MenuTemplateType, string>>;
+      }): Promise<APISuccess<RestaurantWebsiteMenuTemplatesConfig> | APIError> {
+        return json("/api/admin/website/menu-templates", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
     },
     members: {
       async list(): Promise<APISuccess<{ members: Member[] }> | APIError> {
@@ -1175,6 +1189,7 @@ export function createClient(opts: ClientOpts) {
             is_draft: boolean;
             menu_type: string;
             menu_subtitle: string[];
+            show_dish_images: boolean;
             beverage: {
               type: string;
               price_per_person?: number | null;
@@ -1250,6 +1265,32 @@ export function createClient(opts: ClientOpts) {
             method: "PATCH",
             headers: { "content-type": "application/json" },
             body: JSON.stringify(patch),
+          });
+        },
+        async uploadSectionDishImage(
+          id: number,
+          sectionId: number,
+          dishId: number,
+          file: File,
+        ): Promise<APISuccess<{ dish: GroupMenuV2Dish }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || "dish-image.webp");
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dishes/${dishId}/image`, {
+            method: "POST",
+            body: form,
+          });
+        },
+        async uploadSectionDishImageAI(
+          id: number,
+          sectionId: number,
+          dishId: number,
+          file: File,
+        ): Promise<APISuccess<{ dish_id: number; message?: string }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || "dish-image.webp");
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dishes/${dishId}/image/ai`, {
+            method: "POST",
+            body: form,
           });
         },
         async publish(id: number): Promise<APISuccess | APIError> {

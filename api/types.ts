@@ -213,6 +213,22 @@ export type GroupMenuV2Summary = {
   modified_at?: string;
 };
 
+export type GroupMenuV2AIDish = {
+  dish_id: number;
+  ai_requested: boolean;
+  ai_generating: boolean;
+  ai_requested_img?: boolean;
+  ai_generating_img?: boolean;
+  ai_generated_img?: string | null;
+};
+
+export type GroupMenuV2AIImages = {
+  enabled?: boolean;
+  dishes?: GroupMenuV2AIDish[];
+  by_dish?: Record<string, GroupMenuV2AIDish>;
+  [key: string]: unknown;
+};
+
 export type GroupMenuV2Dish = {
   id: number;
   section_id: number;
@@ -227,6 +243,11 @@ export type GroupMenuV2Dish = {
   position: number;
   foto_url?: string;
   image_url?: string;
+  ai_requested?: boolean;
+  ai_generating?: boolean;
+  ai_requested_img?: boolean;
+  ai_generating_img?: boolean;
+  ai_generated_img?: string | null;
 };
 
 export type GroupMenuV2Section = {
@@ -259,6 +280,8 @@ export type GroupMenuV2 = {
   is_draft: boolean;
   menu_type: string;
   menu_subtitle: string[];
+  show_dish_images: boolean;
+  ai_images?: GroupMenuV2AIImages | GroupMenuV2AIDish[] | null;
   settings: GroupMenuV2Settings;
   sections: GroupMenuV2Section[];
 };
@@ -916,6 +939,27 @@ export type RestaurantInvoiceSettings = {
   nextNumber: number;
   defaultPdfTemplate?: PdfTemplateType;
   default_payment_terms?: number;
+};
+
+export type MenuTemplateType =
+  | "closed_conventional"
+  | "closed_group"
+  | "a_la_carte"
+  | "a_la_carte_group"
+  | "special";
+
+export type WebsiteThemeOption = {
+  id: string;
+  name: string;
+  thumbnail_url?: string;
+  active?: boolean;
+};
+
+export type RestaurantWebsiteMenuTemplatesConfig = {
+  default_theme_id: string;
+  overrides: Partial<Record<MenuTemplateType, string>>;
+  themes: WebsiteThemeOption[];
+  assigned?: boolean;
 };
 
 export type InvoiceTemplate = {
