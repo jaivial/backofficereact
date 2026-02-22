@@ -375,6 +375,7 @@ button {
   justify-content: space-between;
   gap: var(--bo-space-4);
   position: relative;
+  z-index: 170;
 }
 
 .bo-topbarHeading {
@@ -384,6 +385,10 @@ button {
   gap: var(--bo-space-1);
   padding-top: var(--bo-space-2);
   padding-right: clamp(210px, 34vw, 520px);
+}
+
+.bo-topbarHeading--actionsInline {
+  padding-right: var(--bo-space-4);
 }
 
 .bo-title {
@@ -472,6 +477,14 @@ button {
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  pointer-events: auto;
+}
+
+.bo-topbarActions {
+  position: static;
+  margin-left: auto;
+  max-width: 100%;
+  z-index: 2;
 }
 
 .bo-actionBtn {
@@ -3052,6 +3065,10 @@ tr.is-inactive {
     padding-top: 2.2rem;
   }
 
+  .bo-app--page .bo-topbarHeading--actionsInline {
+    padding-top: var(--bo-space-2);
+  }
+
   .bo-app--page .bo-breadcrumbLink {
     min-height: calc(var(--bo-space-5) + var(--bo-space-5) - var(--bo-space-1));
   }
@@ -3065,6 +3082,11 @@ tr.is-inactive {
     right: max(8px, env(safe-area-inset-right));
     max-width: calc(100vw - 16px);
     padding: 0;
+  }
+
+  .bo-app--page .bo-topbarActions {
+    width: 100%;
+    margin-left: 0;
   }
 
   .bo-app--page .bo-selectLabel {
