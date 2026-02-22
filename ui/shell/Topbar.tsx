@@ -133,11 +133,11 @@ export function Topbar({
 
   return (
     <header className="bo-topbar" aria-label="Topbar">
-      <div className="bo-topbarHeading">
+      <div className="bo-topbarHeading bo-topbarHeading--actionsInline">
         <div className="bo-title">{title}</div>
         {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}
       </div>
-      <div className="bo-actions">
+      <div className="bo-actions bo-topbarActions">
         {session?.restaurants?.length ? (
           <Select
             value={String(session.activeRestaurantId || session.restaurants[0]?.id || "")}
