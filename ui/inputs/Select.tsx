@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 type Option = { value: string; label: string; icon?: React.ReactNode };
-type Pos = { top: number; left: number; width: number };
+type Pos = { top: number; left: number; width: number; maxHeight: number; direction: "up" | "down" };
 
 function portalEl(): HTMLElement | null {
   return document.getElementById("bo-portal") || document.body;
@@ -65,14 +65,36 @@ export function Select({
     if (!el) return;
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const viewportPadding = 8;
+    const gap = 8;
     const minWidth = typeof menuMinWidthPx === "number" ? menuMinWidthPx : 180;
     const width = Math.max(minWidth, r.width);
-    const top = r.bottom + 8;
-    const left = clamp(r.left, 8, vw - width - 8);
-    setPos({ top, left, width });
+    const left = clamp(r.left, viewportPadding, vw - width - viewportPadding);
+
+    const availableBelow = Math.max(0, vh - r.bottom - gap - viewportPadding);
+    const availableAbove = Math.max(0, r.top - gap - viewportPadding);
+    const defaultDesiredHeight = typeof listMaxHeightPx === "number"
+      ? listMaxHeightPx
+      : Math.min(320, options.length * 44 + 12);
+    const minimumOpenHeight = Math.min(160, defaultDesiredHeight);
+    const shouldOpenUp = availableBelow < minimumOpenHeight && availableAbove > availableBelow;
+    const availableForDirection = shouldOpenUp ? availableAbove : availableBelow;
+    const maxHeight = Math.max(120, Math.min(defaultDesiredHeight, availableForDirection));
+    const top = shouldOpenUp
+      ? clamp(r.top - gap - maxHeight, viewportPadding, vh - maxHeight - viewportPadding)
+      : clamp(r.bottom + gap, viewportPadding, vh - maxHeight - viewportPadding);
+
+    setPos({
+      top,
+      left,
+      width,
+      maxHeight,
+      direction: shouldOpenUp ? "up" : "down",
+    });
     const idx = Math.max(0, options.findIndex((o) => o.value === value));
     setActiveIdx(idx);
-  }, [menuMinWidthPx, open, options, value]);
+  }, [listMaxHeightPx, menuMinWidthPx, open, options, value]);
 
   useEffect(() => {
     if (!open) return;
@@ -143,17 +165,17 @@ export function Select({
           role="listbox"
           tabIndex={-1}
           onKeyDown={onListKey}
-          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: pos.direction === "up" ? -6 : 6 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+          exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: pos.direction === "up" ? -6 : 6 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
           style={{
             top: pos.top,
             left: pos.left,
             width: pos.width,
-            maxHeight: typeof listMaxHeightPx === "number" ? `${listMaxHeightPx}px` : undefined,
-            overflowY: typeof listMaxHeightPx === "number" ? "scroll" : undefined,
-            overflowX: typeof listMaxHeightPx === "number" ? "hidden" : undefined,
+            maxHeight: `${pos.maxHeight}px`,
+            overflowY: "auto",
+            overflowX: "hidden",
           }}
         >
           {options.map((o, idx) => {

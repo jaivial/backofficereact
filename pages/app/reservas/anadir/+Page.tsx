@@ -1,7 +1,8 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
+import type { ConfigFloor } from "../../../../api/types";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { BookingEditor, type BookingEditorDraft } from "../_components/BookingEditor";
@@ -15,8 +16,26 @@ export default function Page() {
   const { pushToast } = useToasts();
 
   const [busy, setBusy] = useState(false);
+  const [floors, setFloors] = useState<ConfigFloor[]>([]);
   const [error, setError] = useState<string | null>(null);
   useErrorToast(error);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.config
+      .getFloors(data.date)
+      .then((res) => {
+        if (cancelled || !res.success) return;
+        setFloors(res.floors || []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFloors([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api.config, data.date]);
 
   const initial = useMemo<BookingEditorDraft>(
     () => ({
@@ -30,6 +49,7 @@ export default function Page() {
       table_number: "",
       babyStrollers: 0,
       highChairs: 0,
+      preferred_floor_number: null,
       special_menu: false,
       menu_de_grupo_id: null,
       principales: [],
@@ -65,7 +85,7 @@ export default function Page() {
 
   return (
     <section aria-label="Añadir reserva">
-      <BookingEditor api={api} initial={initial} busy={busy} submitLabel="Crear" onSubmit={submit} />
+      <BookingEditor api={api} initial={initial} busy={busy} submitLabel="Crear" onSubmit={submit} floors={floors} />
     </section>
   );
 }

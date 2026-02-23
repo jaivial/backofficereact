@@ -27,10 +27,12 @@ export type APIError = {
   success: false;
   message: string;
   code?: string;
+  moving_expiration_date?: string;
 };
 
 export type APISuccess<T extends Record<string, unknown> = Record<string, never>> = {
   success: true;
+  moving_expiration_date?: string;
 } & T;
 
 export type Booking = {
@@ -49,6 +51,7 @@ export type Booking = {
   babyStrollers: number | null;
   highChairs: number | null;
   table_number: string | null;
+  preferred_floor_number: number | null;
   added_date: string | null;
   special_menu: boolean;
   menu_de_grupo_id: number | null;
@@ -255,6 +258,7 @@ export type GroupMenuV2Section = {
   title: string;
   kind: string;
   position: number;
+  annotations: string[];
   dishes: GroupMenuV2Dish[];
 };
 
@@ -272,6 +276,16 @@ export type GroupMenuV2Settings = {
   main_dishes_limit_number: number;
 };
 
+export type GroupMenuV2MenuPreview = {
+  show_menu_preview_image?: boolean;
+  menu_preview_image_url?: string;
+  menu_preview_ai_requested?: boolean;
+  menu_preview_ai_generating?: boolean;
+  ai_requested_img?: boolean;
+  ai_generating_img?: boolean;
+  ai_generated_img?: string | null;
+};
+
 export type GroupMenuV2 = {
   id: number;
   menu_title: string;
@@ -281,7 +295,16 @@ export type GroupMenuV2 = {
   menu_type: string;
   menu_subtitle: string[];
   show_dish_images: boolean;
+  show_menu_preview_image?: boolean;
   ai_images?: GroupMenuV2AIImages | GroupMenuV2AIDish[] | null;
+  menu_preview_image_url?: string;
+  menu_preview_ai_requested?: boolean;
+  menu_preview_ai_generating?: boolean;
+  ai_requested_img?: boolean;
+  ai_generating_img?: boolean;
+  ai_generated_img?: string | null;
+  menu_preview?: GroupMenuV2MenuPreview | null;
+  special_menu_image_url?: string;
   settings: GroupMenuV2Settings;
   sections: GroupMenuV2Section[];
 };
@@ -366,6 +389,33 @@ export type ConfigFloor = {
   name: string;
   isGround: boolean;
   active: boolean;
+};
+
+export type TableMapItem = {
+  id: number;
+  restaurant_id: number;
+  area_id: number;
+  name: string;
+  capacity: number;
+  status: "available" | "occupied" | "reserved";
+  x_pos: number;
+  y_pos: number;
+  shape: "round" | "square";
+  fill_color: string;
+  outline_color: string;
+  style_preset: string;
+  texture_image_url: string;
+  metadata?: Record<string, unknown>;
+  updated_at?: string;
+};
+
+export type TableMapArea = {
+  id: number;
+  restaurant_id: number;
+  name: string;
+  bg_color?: string;
+  metadata?: Record<string, unknown>;
+  tables: TableMapItem[];
 };
 
 export type RestaurantIntegrations = {

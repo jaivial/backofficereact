@@ -309,8 +309,6 @@ export default function Page() {
 
   const toggleFloorDefault = useCallback(
     async (floor: ConfigFloor, explicitValue?: boolean) => {
-      if (floor.isGround) return;
-
       const nextActive = typeof explicitValue === "boolean" ? explicitValue : !floor.active;
 
       setBusy(true);
@@ -370,7 +368,7 @@ export default function Page() {
         plantaLabel: floor.name,
         salonLabel: floor.isGround ? "Salón principal" : `Salón ${floor.floorNumber}`,
         statusLabel: floor.active ? "Abierto" : "Cerrado",
-        defaultLabel: `${floor.active ? "Abierto por defecto" : "Cerrado por defecto"}${floor.isGround ? " (siempre abierto)" : ""}`,
+        defaultLabel: `${floor.active ? "Abierto por defecto" : "Cerrado por defecto"}`,
         keyPrefix: `${floor.id}`,
       })),
     [floors],
@@ -674,9 +672,8 @@ export default function Page() {
                           <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
                           <Switch
                             checked={floor.floor.active}
-                            disabled={busy || floor.floor.isGround}
+                            disabled={busy}
                             onCheckedChange={(checked) => {
-                              if (floor.floor.isGround) return;
                               void toggleFloorDefault(floor.floor, checked);
                             }}
                             aria-label={`Estado por defecto de ${salonLabel}`}
@@ -707,9 +704,8 @@ export default function Page() {
                         <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
                         <Switch
                           checked={floor.floor.active}
-                          disabled={busy || floor.floor.isGround}
+                          disabled={busy}
                           onCheckedChange={(checked) => {
-                            if (floor.floor.isGround) return;
                             void toggleFloorDefault(floor.floor, checked);
                           }}
                           aria-label={`Estado por defecto de ${salonLabel}`}

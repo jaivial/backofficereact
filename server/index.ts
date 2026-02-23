@@ -36,7 +36,75 @@ type BOSession = {
 type BOPageContext = {
   theme: "dark" | "light";
   session: BOSession | null;
+  movingExpirationDate?: string | null;
 };
+
+const LOCAL_BACKEND_START_CMD = "cd ../backend && go run ./cmd/server";
+const backendHelpLogged = new Set<string>();
+
+function isBackendConnectionError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const errorLike = err as {
+    code?: unknown;
+    errno?: unknown;
+    message?: unknown;
+    cause?: { message?: unknown } | null;
+  };
+
+  const code = typeof errorLike.code === "string" ? errorLike.code.toUpperCase() : "";
+  if (code === "ECONNREFUSED" || code === "ERR_CONNECTION_REFUSED") {
+    return true;
+  }
+
+  if (typeof errorLike.errno === "number" && errorLike.errno === 0) {
+    const message = typeof errorLike.message === "string" ? errorLike.message.toLowerCase() : "";
+    if (message.includes("unable to connect")) return true;
+  }
+
+  const message = typeof errorLike.message === "string" ? errorLike.message.toLowerCase() : "";
+  if (message.includes("econnrefused") || message.includes("connectionrefused") || message.includes("connection refused")) {
+    return true;
+  }
+
+  const causeMessage = typeof errorLike.cause?.message === "string" ? errorLike.cause.message.toLowerCase() : "";
+  if (causeMessage.includes("econnrefused") || causeMessage.includes("connection refused")) {
+    return true;
+  }
+
+  return false;
+}
+
+function logBackendUnavailable(scope: string, backendOrigin: string, err?: unknown): void {
+  const key = `${scope}|${backendOrigin}`;
+  if (backendHelpLogged.has(key)) return;
+  backendHelpLogged.add(key);
+
+  console.error(`[backoffice] ${scope}: backend unreachable at ${backendOrigin}`);
+  console.error(`[backoffice] local dev (sin Docker): run \`${LOCAL_BACKEND_START_CMD}\``);
+
+  if (!err || typeof err !== "object") return;
+  const errorLike = err as { code?: unknown; path?: unknown };
+  const code = typeof errorLike.code === "string" ? errorLike.code : "";
+  const pathValue = typeof errorLike.path === "string" ? errorLike.path : "";
+  const meta = [code ? `code=${code}` : "", pathValue ? `path=${pathValue}` : ""].filter(Boolean).join(" ");
+  if (meta) {
+    console.error(`[backoffice] ${scope}: ${meta}`);
+  }
+}
+
+async function isBackendReachable(backendOrigin: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1800);
+  try {
+    const url = new URL("/healthz", backendOrigin);
+    const res = await fetch(url, { method: "GET", signal: controller.signal });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function parseCookies(cookieHeader: string | undefined): Record<string, string> {
   const out: Record<string, string> = {};
@@ -72,21 +140,64 @@ async function readRequestBody(req: express.Request): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-async function fetchSession(backendOrigin: string, cookieHeader: string | undefined): Promise<BOSession | null> {
-  if (!cookieHeader) return null;
+type FetchSessionResult = {
+  session: BOSession | null;
+  movingExpirationDate: string | null;
+  setCookies: string[];
+};
+
+function readSetCookies(headers: Headers): string[] {
+  const getSetCookie = (headers as any).getSetCookie as undefined | (() => string[]);
+  if (typeof getSetCookie === "function") {
+    return getSetCookie.call(headers).filter((value) => typeof value === "string" && value.trim() !== "");
+  }
+  const fallback = headers.get("set-cookie");
+  if (!fallback || fallback.trim() === "") return [];
+  return [fallback];
+}
+
+function normalizeMovingExpirationDate(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Date.parse(trimmed);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
+}
+
+async function fetchSession(
+  backendOrigin: string,
+  cookieHeader: string | undefined,
+  pagePath: string | undefined,
+): Promise<FetchSessionResult> {
+  if (!cookieHeader) return { session: null, movingExpirationDate: null, setCookies: [] };
   try {
     const url = new URL("/api/admin/me", backendOrigin);
+    const headers: Record<string, string> = { cookie: cookieHeader };
+    if (typeof pagePath === "string" && pagePath.trim() !== "") {
+      headers["x-bo-page-path"] = pagePath.trim();
+    }
     const res = await fetch(url, {
       method: "GET",
-      headers: { cookie: cookieHeader },
+      headers,
     });
-    if (!res.ok) return null;
+    const setCookies = readSetCookies(res.headers);
+    if (!res.ok) return { session: null, movingExpirationDate: null, setCookies };
     const json = (await res.json()) as any;
-    if (!json || json.success !== true || !json.session) return null;
-    return json.session as BOSession;
+    if (!json || json.success !== true || !json.session) {
+      return { session: null, movingExpirationDate: normalizeMovingExpirationDate(json?.moving_expiration_date), setCookies };
+    }
+    return {
+      session: json.session as BOSession,
+      movingExpirationDate: normalizeMovingExpirationDate(json?.moving_expiration_date),
+      setCookies,
+    };
   } catch (err) {
-    console.error("[backoffice] fetchSession error", err);
-    return null;
+    if (isBackendConnectionError(err)) {
+      logBackendUnavailable("fetchSession", backendOrigin, err);
+    } else {
+      console.error("[backoffice] fetchSession error", err);
+    }
+    return { session: null, movingExpirationDate: null, setCookies: [] };
   }
 }
 
@@ -349,7 +460,11 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
 
       clientWS.on("error", closeBoth);
       upstreamWS.on("error", (err) => {
-        console.error("[backoffice] ws proxy upstream error", err);
+        if (isBackendConnectionError(err)) {
+          logBackendUnavailable("ws proxy", backendOrigin, err);
+        } else {
+          console.error("[backoffice] ws proxy upstream error", err);
+        }
         closeBoth();
       });
     });
@@ -366,6 +481,10 @@ async function start() {
     .split(",")
     .map((x) => x.trim())
     .filter(Boolean);
+
+  if (!isProd && !(await isBackendReachable(backendOrigin))) {
+    logBackendUnavailable("startup", backendOrigin);
+  }
 
   const app = express();
   const staticRoots = [
@@ -451,8 +570,16 @@ async function start() {
       const buf = Buffer.from(await upstream.arrayBuffer());
       res.send(buf);
     } catch (err) {
-      console.error("[backoffice] proxy error", err);
-      res.status(502).json({ success: false, message: "Upstream error" });
+      if (isBackendConnectionError(err)) {
+        logBackendUnavailable("proxy", backendOrigin, err);
+        res.status(502).json({
+          success: false,
+          message: `Backend unavailable at ${backendOrigin}. Run: ${LOCAL_BACKEND_START_CMD}`,
+        });
+      } else {
+        console.error("[backoffice] proxy error", err);
+        res.status(502).json({ success: false, message: "Upstream error" });
+      }
     }
   });
 
@@ -507,8 +634,16 @@ async function start() {
       const buf = Buffer.from(await upstream.arrayBuffer());
       res.send(buf);
     } catch (err) {
-      console.error("[backoffice] public invoice proxy error", err);
-      res.status(502).json({ success: false, message: "Upstream error" });
+      if (isBackendConnectionError(err)) {
+        logBackendUnavailable("public invoice proxy", backendOrigin, err);
+        res.status(502).json({
+          success: false,
+          message: `Backend unavailable at ${backendOrigin}. Run: ${LOCAL_BACKEND_START_CMD}`,
+        });
+      } else {
+        console.error("[backoffice] public invoice proxy error", err);
+        res.status(502).json({ success: false, message: "Upstream error" });
+      }
     }
   });
 
@@ -637,7 +772,14 @@ async function start() {
       const theme = cookies.bo_theme === "light" ? "light" : "dark";
       const cookieHeader = typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
       console.log(`[SSR] ${req.path} cookieHeader=${cookieHeader ? "present" : "null"}`);
-      const session = await fetchSession(backendOrigin, cookieHeader);
+      const sessionFetch = await fetchSession(backendOrigin, cookieHeader, req.path);
+      const session = sessionFetch.session;
+      const movingExpirationDate = sessionFetch.movingExpirationDate;
+      if (sessionFetch.setCookies.length) {
+        for (const cookie of sessionFetch.setCookies) {
+          res.append("set-cookie", cookie);
+        }
+      }
       console.log(`[SSR] ${req.path} session=${session ? "valid" : "null"}`);
 
       const pageContextRequest = isPageContextRequest(req.path, req.originalUrl);
@@ -648,7 +790,7 @@ async function start() {
         const pageContextInit: any = {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
-          bo: { theme, session: null } satisfies BOPageContext,
+          bo: { theme, session: null, movingExpirationDate: null } satisfies BOPageContext,
           boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
         };
 
@@ -730,7 +872,7 @@ async function start() {
       const pageContextInit: any = {
         urlOriginal: req.originalUrl,
         headersOriginal: req.headers,
-        bo: { theme, session } satisfies BOPageContext,
+        bo: { theme, session, movingExpirationDate } satisfies BOPageContext,
         boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
       };
 
@@ -777,7 +919,7 @@ async function start() {
         const pageContextInit: any = {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
-          bo: { theme: "dark", session: null },
+          bo: { theme: "dark", session: null, movingExpirationDate: null },
           boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
           is404: false,
           is500: true,

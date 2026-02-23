@@ -369,6 +369,14 @@ button {
   width: 100%;
 }
 
+.bo-main--immersive {
+  padding: 0 !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  position: relative;
+  min-height: 0;
+}
+
 .bo-topbar {
   display: flex;
   align-items: flex-start;
@@ -2016,20 +2024,33 @@ button {
 }
 
 .bo-phoneCC {
-  min-width: 130px;
-  flex: 0 0 130px;
+  width: fit-content;
+  min-width: fit-content;
+  flex: 0 0 auto;
   text-align: center;
 }
 
-.bo-phoneCC .bo-selectBtn {
+.bo-selectBtn.bo-phoneCC {
   justify-content: center;
   padding: 0 12px;
+  width: fit-content;
 }
 
 .bo-phoneNum {
   max-width: fit-content;
   flex: 1 1 auto;
   min-width: 160px;
+}
+
+@media (max-width: 768px) {
+  .bo-selectBtn.bo-phoneCC {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .bo-selectBtn.bo-phoneCC .bo-selectLabel {
+    display: none;
+  }
 }
 
 .bo-textarea {
@@ -2381,6 +2402,81 @@ tr.is-inactive {
   margin-top: 14px;
   padding: 16px;
   border-top: 1px solid var(--bo-border);
+}
+
+.bo-modalActions--reservas {
+  opacity: 1;
+  padding-bottom: 0;
+  margin-left: -14px;
+  margin-right: -14px;
+  margin-bottom: -14px;
+  padding-left: 14px;
+  padding-right: 14px;
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.18)),
+    color-mix(in srgb, var(--bo-surface-2) 78%, transparent);
+}
+
+.bo-reservasModal {
+  display: flex;
+  flex-direction: column;
+  max-height: min(88vh, 980px);
+  overflow: hidden;
+}
+
+.bo-reservasModal--details {
+  padding-bottom: 0;
+}
+
+.bo-reservasModal--edit {
+  padding-bottom: 0;
+}
+
+.bo-reservasModal .bo-modalHead {
+  flex: 0 0 auto;
+}
+
+.bo-reservasModal .bo-modalOutline {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.bo-reservasModal--details .bo-modalActions--reservas {
+  padding-bottom: 1rem;
+}
+
+.bo-reservasModal--edit .bo-modalActions--reservas {
+  padding-bottom: 1rem;
+}
+
+.bo-bookingEditor--stickyFooter {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.bo-bookingEditorBody {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.bo-reservasModal--edit .bo-modalOutline {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.bo-reservasModal--edit .bo-bookingEditorBody {
+  display: grid;
+  gap: 14px;
+  overflow: auto;
+  padding-bottom: 14px;
+}
+
+.bo-reservasModal--edit .bo-bookingEditorFooter {
+  margin-top: auto;
 }
 
 .bo-hiddenFileInput {
@@ -3258,6 +3354,647 @@ tr.is-inactive {
   height: 0;
 }
 
+.bo-tableMapLoading {
+  min-height: calc(100vh - 140px);
+  display: grid;
+  place-items: center;
+  color: var(--bo-muted);
+}
+
+.bo-tableMapPage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 560px at 75% 12%, color-mix(in srgb, var(--bo-accent-2) 14%, transparent), transparent 60%),
+    radial-gradient(1000px 620px at 15% 0%, color-mix(in srgb, var(--bo-accent) 14%, transparent), transparent 65%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-surface-2) 74%, transparent), color-mix(in srgb, var(--bo-surface-3) 82%, transparent));
+}
+
+.bo-tableMapTopControls {
+  position: absolute;
+  top: var(--bo-space-4);
+  left: var(--bo-space-4);
+  right: var(--bo-space-4);
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: start;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.bo-tableMapTopControls > * {
+  pointer-events: auto;
+}
+
+.bo-tableMapTopCenter {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.bo-tableMapTooltip {
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 30;
+  width: min(560px, calc(100vw - 28px));
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.16)),
+    color-mix(in srgb, var(--bo-surface) 86%, transparent);
+  box-shadow: var(--bo-shadow-soft);
+  padding: var(--bo-space-4);
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapTooltipHead {
+  display: grid;
+  gap: 2px;
+  padding-bottom: var(--bo-space-2);
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-tableMapTooltipTitle {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableMapTooltipSub {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+}
+
+.bo-tableMapTooltipActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapDrawTools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapTooltipStats {
+  display: grid;
+  gap: var(--bo-space-1);
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-tableMapFloorTabs {
+  display: flex;
+  gap: var(--bo-space-2);
+  flex-wrap: wrap;
+}
+
+.bo-tableMapFloorTab {
+  border: 1px solid var(--bo-border);
+  background: transparent;
+  color: var(--bo-muted);
+  height: 32px;
+  border-radius: var(--bo-radius-sm);
+  padding: 0 12px;
+  cursor: pointer;
+  transition: color var(--bo-transition-base) var(--bo-ease), border-color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-tableMapFloorTab.is-active {
+  color: var(--bo-text);
+  border-color: color-mix(in srgb, var(--bo-accent) 56%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+}
+
+.bo-tableMapFlowWrap {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+}
+
+.bo-tableMapFlow {
+  width: 100%;
+  height: 100%;
+}
+
+.bo-tableMapFlow .react-flow__renderer {
+  background: transparent;
+}
+
+.bo-tableMapFlow .react-flow__controls {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.16)),
+    color-mix(in srgb, var(--bo-surface-2) 88%, transparent);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-tableMapFlow .react-flow__controls-button {
+  background: transparent;
+  border-bottom: 1px solid var(--bo-border);
+  color: var(--bo-text);
+}
+
+.bo-tableMapFlow .react-flow__controls-button:hover {
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+}
+
+.bo-tableMapFlow .react-flow__controls-button.is-active {
+  color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+}
+
+.bo-tableMapFlow .react-flow__background {
+  opacity: 0.56;
+}
+
+.bo-tableMapNode {
+  width: 104px;
+  min-height: 104px;
+  border-radius: 999px;
+  border: 2px solid var(--bo-table-outline, var(--bo-border-2));
+  background:
+    var(--bo-table-texture, none) center/cover no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.22)),
+    var(--bo-table-fill, var(--bo-surface-2));
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  color: var(--bo-text);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-tableMapChair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border-2);
+  background: color-mix(in srgb, var(--bo-accent-3) 44%, var(--bo-surface-2));
+}
+
+.bo-tableMapNode.is-square {
+  border-radius: 22px;
+}
+
+.bo-tableMapNodeName {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableMapNodeCap {
+  font-size: var(--bo-text-xl);
+  line-height: 1;
+  font-weight: var(--bo-weight-bold);
+}
+
+.bo-tableMapNodeStatus {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+
+.bo-tableMapNodeStatus.is-available {
+  color: var(--bo-color-success);
+}
+
+.bo-tableMapNodeStatus.is-reserved {
+  color: var(--bo-color-warning);
+}
+
+.bo-tableMapNodeStatus.is-occupied {
+  color: var(--bo-color-danger);
+}
+
+.bo-tableMapSheet {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(360px, calc(100vw - 18px));
+  height: 100%;
+  border-left: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.14)),
+    color-mix(in srgb, var(--bo-surface) 88%, transparent);
+  box-shadow: var(--bo-shadow-soft);
+  z-index: 16;
+  transform: translateX(104%);
+  transition: transform var(--bo-transition-slow) var(--bo-ease-out);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.bo-tableMapSheet.is-open {
+  transform: translateX(0);
+}
+
+.bo-tableMapSheetHead {
+  padding: var(--bo-space-4);
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-tableMapSheetBody {
+  padding: var(--bo-space-4);
+  overflow: auto;
+  display: grid;
+  gap: var(--bo-space-4);
+}
+
+.bo-tableMapCalendarToggle {
+  width: 100%;
+}
+
+.bo-tableMapBookingsList {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableMapBookingRow {
+  display: grid;
+  gap: var(--bo-space-1);
+  text-align: left;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3) var(--bo-space-4);
+  background: color-mix(in srgb, var(--bo-surface-2) 78%, transparent);
+  transition:
+    border-color var(--bo-transition-base) var(--bo-ease),
+    background-color var(--bo-transition-base) var(--bo-ease),
+    transform var(--bo-transition-fast) var(--bo-ease-out);
+}
+
+.bo-tableMapBookingRow:hover {
+  transform: translateY(-1px);
+}
+
+.bo-tableMapBookingRow.is-seated {
+  border-color: color-mix(in srgb, var(--bo-color-success) 42%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface-2));
+}
+
+.bo-tableMapBookingRow.is-pending {
+  border-color: color-mix(in srgb, var(--bo-color-warning) 34%, var(--bo-border));
+}
+
+.bo-tableMapBookingMain {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapBookingMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--bo-space-2);
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-tableMapLegend {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+}
+
+.bo-tableMapTableStateRow {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapTableStateRow.is-free {
+  background: color-mix(in srgb, var(--bo-color-success) 10%, var(--bo-surface-2));
+}
+
+.bo-tableMapTableStateRow.is-booked {
+  background: color-mix(in srgb, var(--bo-color-warning) 11%, var(--bo-surface-2));
+}
+
+.bo-tableMapTableStateRow.is-seated {
+  background: color-mix(in srgb, var(--bo-color-info) 12%, var(--bo-surface-2));
+}
+
+.bo-drawElementNode {
+  border: 1px dashed var(--bo-border-2);
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface-2) 80%, transparent);
+  color: var(--bo-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-2);
+}
+
+.bo-drawElementNodeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bo-drawElementNode.is-wall {
+  border-style: solid;
+  background: color-mix(in srgb, var(--bo-accent) 16%, var(--bo-surface-2));
+}
+
+.bo-drawElementNode.is-image {
+  background: color-mix(in srgb, var(--bo-accent-2) 16%, var(--bo-surface-2));
+}
+
+.bo-drawElementNodeLabel {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-tableMapSheetRow {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: color-mix(in srgb, var(--bo-surface-2) 74%, transparent);
+  padding: var(--bo-space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapSheetName {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableMapSheetMeta {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableMapDrawPanel {
+  position: absolute;
+  top: 72px;
+  right: var(--bo-space-4);
+  width: min(320px, calc(100vw - 24px));
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.14)),
+    color-mix(in srgb, var(--bo-surface) 88%, transparent);
+  box-shadow: var(--bo-shadow-soft);
+  z-index: 18;
+  transform: translateX(110%);
+  opacity: 0;
+  transition:
+    transform var(--bo-transition-slow) var(--bo-ease-out),
+    opacity var(--bo-transition-base) var(--bo-ease-out);
+}
+
+.bo-tableMapDrawPanel.is-open {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.bo-tableMapDrawPanelHead {
+  padding: var(--bo-space-3) var(--bo-space-4);
+  border-bottom: 1px solid var(--bo-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapDrawPanelBody {
+  padding: var(--bo-space-4);
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableMapDrawHint {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-relaxed);
+}
+
+.bo-tableEditorModal .bo-modal {
+  max-height: 88vh;
+}
+
+.bo-tableEditorGrid {
+  margin-top: var(--bo-space-3);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bo-space-4);
+}
+
+.bo-tableEditorPreviewWrap {
+  border: 0;
+  background: transparent;
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--bo-space-5);
+}
+
+.bo-tableEditorRotate {
+  display: flex;
+  gap: var(--bo-space-3);
+  margin-bottom: var(--bo-space-3);
+  transform: translateY(-10px);
+}
+
+.bo-tableEditorRotateBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-tableEditorPreviewTable {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  border: 2px solid var(--bo-table-outline, var(--bo-border));
+  background:
+    var(--bo-table-texture, none) center/cover no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.2)),
+    var(--bo-table-fill, var(--bo-surface-2));
+  display: grid;
+  place-items: center;
+}
+
+.bo-tableEditorPreviewTable.is-square {
+  border-radius: 26px;
+}
+
+.bo-tableEditorCapacity {
+  position: relative;
+  z-index: 2;
+  font-size: var(--bo-text-2xl);
+  font-weight: var(--bo-weight-bold);
+}
+
+.bo-tableEditorChair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -6px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border-2);
+  background: color-mix(in srgb, var(--bo-accent-3) 44%, var(--bo-surface-2));
+}
+
+.bo-tableEditorChair--short {
+  appearance: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    border-color var(--bo-transition-fast) var(--bo-ease),
+    background-color var(--bo-transition-fast) var(--bo-ease),
+    box-shadow var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-tableEditorChairAction {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: color-mix(in srgb, var(--bo-color-danger) 82%, #000 18%);
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity var(--bo-transition-fast) var(--bo-ease),
+    transform var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-tableEditorChair--short:hover .bo-tableEditorChairAction,
+.bo-tableEditorChair--short:focus-visible .bo-tableEditorChairAction,
+.bo-tableEditorChair--short.is-armed .bo-tableEditorChairAction {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.bo-tableEditorChair--short:hover,
+.bo-tableEditorChair--short:focus-visible,
+.bo-tableEditorChair--short.is-armed {
+  border-color: color-mix(in srgb, var(--bo-color-danger) 68%, var(--bo-border-2));
+  background: color-mix(in srgb, var(--bo-color-danger) 52%, var(--bo-surface-2));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bo-color-danger) 25%, transparent);
+}
+
+.bo-tableEditorSideAction {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  border-radius: 999px;
+  border: 1px dashed var(--bo-border-2);
+  background: color-mix(in srgb, var(--bo-surface-2) 74%, transparent);
+  color: var(--bo-muted);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    opacity var(--bo-transition-fast) var(--bo-ease),
+    border-color var(--bo-transition-fast) var(--bo-ease),
+    background-color var(--bo-transition-fast) var(--bo-ease),
+    color var(--bo-transition-fast) var(--bo-ease),
+    transform var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-tableEditorPreviewTable:hover .bo-tableEditorSideAction,
+.bo-tableEditorSideAction:focus-visible,
+.bo-tableEditorSideAction.is-armed {
+  opacity: 1;
+}
+
+.bo-tableEditorSideAction--add:hover,
+.bo-tableEditorSideAction--add:focus-visible,
+.bo-tableEditorSideAction--add.is-armed {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--bo-accent) 78%, var(--bo-border-2));
+  background: color-mix(in srgb, var(--bo-accent) 34%, var(--bo-surface-2));
+  color: var(--bo-text);
+}
+
+.bo-tableEditorConfig {
+  background: color-mix(in srgb, var(--bo-surface-2) 84%, transparent);
+  border: 1px solid var(--bo-border);
+  border-radius: 1.4rem;
+  margin: var(--bo-space-3);
+  padding: var(--bo-space-4);
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableEditorShapeBtns {
+  display: flex;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableEditorPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--bo-space-2);
+}
+
+.bo-tableColorPreset {
+  width: 100%;
+  height: 34px;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-preset-outline, var(--bo-border));
+  background: var(--bo-preset-fill, var(--bo-surface));
+  cursor: pointer;
+}
+
+.bo-tableColorPreset.is-active {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 1px;
+}
+
+.bo-tableUploadBtn {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
+@media (max-width: 767px) {
+  .bo-tableEditorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-tableEditorPreviewWrap {
+    min-height: 260px;
+  }
+
+  .bo-tableMapSheet {
+    width: min(320px, calc(100vw - 10px));
+  }
+}
+
 /* Facturas dark style tabs */
 .bo-tabs--facturas {
   background: rgba(0, 0, 0, 0.2);
@@ -3340,6 +4077,43 @@ tr.is-inactive {
   font-size: 14px;
   font-weight: 720;
   letter-spacing: 0.02em;
+}
+
+.bo-tabs--compact {
+  width: 100%;
+  padding: 4px;
+}
+
+.bo-tabs--compact .bo-tab {
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.bo-tabs--compact .bo-tabLabel {
+  font-size: var(--bo-text-sm);
+}
+
+.bo-tabs--compact .bo-tabIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.bo-tableMapBookingModalHero {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  background: color-mix(in srgb, var(--bo-surface-2) 74%, transparent);
+}
+
+.bo-tableMapBookingTableNumber {
+  font-size: var(--bo-text-2xl);
+  font-weight: var(--bo-weight-bold);
+}
+
+.bo-tableMapBookingHeroMeta {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
 }
 
 @media (max-width: 460px) {
@@ -5777,6 +6551,14 @@ tr.is-inactive {
   width: fit-content;
 }
 
+.bo-menuWizardPage .bo-panelBody {
+  padding: 0 7px 16px;
+}
+
+.bo-menuWizardPage .bo-memberCard.bo-dishCard--horizontal {
+  padding: 14px 0;
+}
+
 .bo-menuWizardTop {
   display: flex;
   align-items: center;
@@ -6034,6 +6816,84 @@ tr.is-inactive {
   white-space: nowrap;
 }
 
+.bo-menuPreviewUploadBlock {
+  display: grid;
+  gap: var(--bo-space-2);
+  width: min(100%, 560px);
+  margin-inline: auto;
+}
+
+.bo-menuPreviewDropzone,
+.bo-menuPreviewImageCard {
+  border: 1px dashed var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  background:
+    radial-gradient(circle at 10% 15%, rgba(147, 239, 231, 0.14), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
+    var(--bo-surface-2);
+}
+
+.bo-menuPreviewDropzone {
+  display: grid;
+  gap: var(--bo-space-2);
+  justify-items: center;
+  text-align: center;
+}
+
+.bo-menuPreviewImageCard {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-menuPreviewSkeletonCard {
+  border: 1px dashed var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  background:
+    radial-gradient(circle at 10% 15%, rgba(147, 239, 231, 0.12), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
+    var(--bo-surface-2);
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-menuPreviewSkeletonMedia {
+  width: 100%;
+  height: clamp(160px, 24vw, 260px);
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+}
+
+.bo-menuPreviewSkeletonLines {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-menuPreviewSkeletonLines .bo-skeletonLine {
+  margin: 0;
+}
+
+.bo-menuPreviewImage {
+  display: block;
+  width: 100%;
+  height: clamp(160px, 24vw, 260px);
+  max-height: none;
+  object-fit: cover;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-3) 80%, transparent);
+}
+
+.bo-menuPreviewActions {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-menuPreviewStatus {
+  text-align: center;
+}
+
 .bo-field--full {
   grid-column: 1 / -1;
 }
@@ -6237,6 +7097,17 @@ tr.is-inactive {
   transition: background 160ms ease, color 160ms ease;
 }
 
+.bo-previewSwitchBtnLabel {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bo-previewSwitchBtnIcon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
 .bo-previewSwitchBtn.is-active {
   background: rgba(185, 168, 255, 0.24);
   color: var(--bo-text);
@@ -6355,6 +7226,17 @@ tr.is-inactive {
   transition:
     background var(--bo-transition-base) var(--bo-ease),
     color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-sectionDishTabLabel {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bo-sectionDishTabIcon {
+  display: none;
+  align-items: center;
+  justify-content: center;
 }
 
 .bo-sectionDishTab:hover {
@@ -6592,7 +7474,7 @@ tr.is-inactive {
 }
 
 .bo-suppInput {
-  width: 108px;
+  width: 50px;
 }
 
 .bo-dishRowInlineControls .bo-suppInput {
@@ -7468,7 +8350,7 @@ tr.is-inactive {
   }
 
   .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide .bo-suppInput {
-    width: 92px;
+    width: 50px;
   }
 
   .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
@@ -7574,6 +8456,34 @@ tr.is-inactive {
 
   .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
     display: block;
+  }
+
+  .bo-sectionDishTab {
+    min-width: 40px;
+    padding: 0 var(--bo-space-2);
+  }
+
+  .bo-sectionDishTabLabel {
+    display: none;
+  }
+
+  .bo-sectionDishTabIcon {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .bo-previewSwitchBtn {
+    min-width: 40px;
+    padding: 0 var(--bo-space-2);
+  }
+
+  .bo-previewSwitchBtnLabel {
+    display: none;
+  }
+
+  .bo-previewSwitchBtnIcon {
+    display: inline-flex;
   }
 }
 
@@ -15824,43 +16734,353 @@ tr.is-inactive {
   gap: var(--bo-space-2);
 }
 
-.bo-foodDetailPanel {
+.bo-foodDetailPage {
   gap: var(--bo-space-4);
 }
 
-.bo-foodDetailHead {
+.bo-foodDetailTopbar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--bo-space-3);
+  gap: var(--bo-space-2);
+  flex-wrap: wrap;
 }
 
-.bo-foodDetailPrice {
-  font-size: var(--bo-text-xl);
-  font-weight: var(--bo-weight-bold);
-  color: var(--bo-accent);
-}
-
-.bo-foodDetailGrid {
+.bo-foodDetailHero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--bo-space-3);
+  grid-template-columns: minmax(180px, 300px) minmax(0, 1fr);
+  gap: var(--bo-space-4);
+  padding: var(--bo-space-3);
+  align-items: stretch;
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--bo-accent) 22%, var(--bo-border-2) 78%);
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--bo-accent) 22%, transparent), transparent 42%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--bo-accent-2) 18%, transparent), transparent 56%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-surface-2) 92%, transparent), color-mix(in srgb, var(--bo-surface) 96%, transparent)),
+    var(--bo-surface);
 }
 
-.bo-foodDetailField {
+:root[data-theme="light"] .bo-foodDetailHero {
+  border-color: color-mix(in srgb, var(--bo-accent) 26%, var(--bo-border) 74%);
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--bo-accent) 16%, transparent), transparent 42%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--bo-accent-2) 14%, transparent), transparent 56%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-surface-2) 96%, transparent), color-mix(in srgb, var(--bo-surface) 100%, transparent)),
+    var(--bo-surface);
+}
+
+.bo-foodDetailMedia {
+  width: 100%;
+  height: 100%;
+  min-height: clamp(220px, 28vw, 320px);
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border-2);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(185, 168, 255, 0.24), transparent 62%),
+    linear-gradient(142deg, var(--bo-surface-2), var(--bo-surface));
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--bo-border-2) 82%, transparent),
+    0 14px 28px color-mix(in srgb, var(--bo-bg) 26%, transparent);
+}
+
+.bo-foodDetailMedia::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-text) 10%, transparent), transparent 34%, color-mix(in srgb, var(--bo-bg) 22%, transparent));
+  opacity: 0.26;
+}
+
+.bo-foodDetailMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bo-foodDetailMediaPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--bo-faint);
+}
+
+.bo-foodDetailHeroBody {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--bo-space-4);
+  min-width: 0;
+  padding-block: 2px;
+}
+
+.bo-foodDetailHeroIdentity {
+  display: grid;
+  gap: var(--bo-space-2);
+  min-width: 0;
+}
+
+.bo-foodDetailEyebrow {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-medium);
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bo-foodDetailTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  min-width: 0;
+}
+
+.bo-foodDetailTypeIcon {
+  color: var(--bo-accent);
+  flex-shrink: 0;
+}
+
+.bo-foodDetailTitle {
+  margin: 0;
+  font-size: clamp(var(--bo-text-lg), 2.2vw, var(--bo-text-2xl));
+  line-height: var(--bo-leading-tight);
+  overflow-wrap: anywhere;
+}
+
+.bo-foodDetailBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bo-foodDetailPriceWrap {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--bo-accent) 16%, transparent), transparent 60%),
+    color-mix(in srgb, var(--bo-surface-2) 84%, transparent);
+  padding: var(--bo-space-3);
   display: grid;
   gap: var(--bo-space-1);
-  font-size: var(--bo-text-sm);
-  color: var(--bo-text);
+  align-content: start;
+  min-width: min(230px, 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--bo-text) 10%, transparent),
+    0 8px 20px color-mix(in srgb, var(--bo-bg) 18%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent) 30%, var(--bo-border) 70%);
 }
 
-.bo-foodDetailLabel {
+.bo-foodDetailPriceLabel {
+  font-size: var(--bo-text-sm);
   color: var(--bo-muted);
   font-weight: var(--bo-weight-medium);
 }
 
-.bo-foodDetailField--full {
+.bo-foodDetailPrice {
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1;
+  font-weight: var(--bo-weight-bold);
+  color: var(--bo-accent);
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bo-text) 18%, transparent);
+}
+
+.bo-foodDetailHeroSections {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--bo-space-3);
+}
+
+.bo-foodDetailHeroSection {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  background: color-mix(in srgb, var(--bo-surface) 88%, transparent);
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-foodDetailBodyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--bo-space-4);
+  align-items: start;
+}
+
+.bo-foodDetailPanel {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-foodDetailFactsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: var(--bo-space-2);
+}
+
+.bo-foodDetailFact {
+  min-height: 72px;
+}
+
+.bo-foodDetailDescription {
+  margin: 0;
+  color: var(--bo-text);
+  font-size: var(--bo-text-base);
+  line-height: var(--bo-leading-relaxed);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.bo-foodDetailDescription.is-empty {
+  color: var(--bo-muted);
+}
+
+.bo-foodDetailPanel--allergens .bo-panelBody {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-foodDetailAllergenHead {
+  align-items: center;
+  gap: var(--bo-space-3);
+}
+
+.bo-foodDetailTags {
+  margin-top: 0;
+  gap: 8px;
+}
+
+.bo-foodDetailTag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bo-accent-2) 16%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent-2) 32%, transparent);
+  color: color-mix(in srgb, var(--bo-accent-2) 72%, white 28%);
+  font-size: var(--bo-text-sm);
+}
+
+:root[data-theme="light"] .bo-foodDetailTag {
+  color: color-mix(in srgb, var(--bo-accent-2) 88%, black 12%);
+}
+
+.bo-foodDetailEmptyNote {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-foodDetailQuickEditor {
+  gap: var(--bo-space-2);
+}
+
+.bo-foodDetailQuickHead {
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
+.bo-foodDetailQuickGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bo-space-3);
+}
+
+.bo-foodDetailQuickDescription {
   grid-column: 1 / -1;
+}
+
+.bo-foodDetailQuickDescription .bo-textarea {
+  min-height: 112px;
+}
+
+.bo-foodDetailSelect {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-foodDetailQuickStatus {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface-2) 86%, transparent);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  min-height: 40px;
+}
+
+.bo-foodDetailQuickStatusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-foodDetailQuickSupplement {
+  display: grid;
+  align-content: start;
+  justify-content: normal;
+  gap: var(--bo-space-2);
+}
+
+.bo-foodDetailQuickSupplementField {
+  margin: 0;
+}
+
+.bo-foodDetailEditorActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--bo-space-2);
+  padding: var(--bo-space-2) var(--bo-space-3) var(--bo-space-3);
+  border-top: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  border-bottom-left-radius: var(--bo-radius-lg);
+  border-bottom-right-radius: var(--bo-radius-lg);
+}
+
+.bo-foodDetailSpinIcon {
+  animation: bo-food-detail-spin 0.8s linear infinite;
+}
+
+@keyframes bo-food-detail-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bo-foodDetailHotkey {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--bo-text) 22%, transparent);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-faint);
+}
+
+@media (max-width: 1100px) {
+  .bo-foodDetailHero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bo-foodDetailMedia {
+    min-height: 210px;
+    max-height: 320px;
+  }
+
+  .bo-foodDetailBodyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-foodDetailHeroSections {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Spinner */
@@ -15911,6 +17131,40 @@ tr.is-inactive {
     grid-template-columns: 1fr;
   }
 
+  .bo-foodDetailTopbar {
+    align-items: flex-start;
+  }
+
+  .bo-foodDetailHero {
+    gap: var(--bo-space-3);
+  }
+
+  .bo-foodDetailMedia {
+    min-height: 190px;
+    max-height: 260px;
+  }
+
+  .bo-foodDetailTitle {
+    font-size: var(--bo-text-lg);
+  }
+
+  .bo-foodDetailFactsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bo-foodDetailQuickGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-foodDetailEditorActions {
+    justify-content: stretch;
+  }
+
+  .bo-foodDetailEditorActions .bo-btn {
+    flex: 1 1 160px;
+    justify-content: center;
+  }
+
   .bo-foodTabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -15919,6 +17173,24 @@ tr.is-inactive {
     width: 100%;
     justify-content: space-between;
     flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 520px) {
+  .bo-foodDetailFactsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-foodDetailEditorActions {
+    padding: var(--bo-space-2);
+  }
+
+  .bo-foodDetailHotkey {
+    display: none;
+  }
+
+  .bo-foodDetailPrice {
+    font-size: clamp(20px, 8vw, 28px);
   }
 }
 

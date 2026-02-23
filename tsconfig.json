@@ -5,10 +5,10 @@
     "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals"],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["pages", "server", "ui", "api", "state", "lib"]
+  "include": ["pages", "server", "ui", "api", "state", "lib", "vitest.setup.ts", "vitest.config.ts"]
 }
