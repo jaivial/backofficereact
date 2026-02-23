@@ -6,6 +6,7 @@ import { createClient } from "../../../../api/client";
 import type { FoodCategory, FoodItem, Vino } from "../../../../api/types";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
+import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { Select } from "../../../../ui/inputs/Select";
@@ -63,7 +64,7 @@ export default function Page() {
   const [alergenoFilter, setAlergenoFilter] = useState(data.filters?.alergeno || "");
   const [suplementoFilter, setSuplementoFilter] = useState<SuplementoFilter>(data.filters?.suplemento || "all");
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ListItem | null>(null);
@@ -197,6 +198,20 @@ export default function Page() {
   useEffect(() => {
     void loadItems();
   }, [loadItems]);
+
+  useEffect(() => {
+    if (foodType !== "platos") return;
+    let cancelled = false;
+    void api.comida.platos.categories.list()
+      .then((res) => {
+        if (cancelled || !res.success) return;
+        setCategories(Array.isArray(res.categories) ? res.categories : []);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [api.comida.platos.categories, foodType]);
 
   const onResetFilters = useCallback(() => {
     setSearch("");
@@ -374,8 +389,7 @@ export default function Page() {
 
         {loading ? (
           <div className="bo-foodLoading">
-            <div className="bo-spinner" />
-            <span>Cargando...</span>
+            <LoadingSpinner centered size="sm" label="Cargando..." />
           </div>
         ) : items.length === 0 ? (
           <div className="bo-foodEmpty">

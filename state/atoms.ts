@@ -4,6 +4,7 @@ import type { BOSession, FichajeActiveEntry, FichajeMemberRef, FichajeSchedule }
 export type ThemeMode = "dark" | "light";
 
 export const sessionAtom = atom<BOSession | null>(null);
+export const sessionMovingExpirationAtom = atom<string | null>(null);
 export const themeAtom = atom<ThemeMode>("dark");
 
 export type ToastKind = "success" | "error" | "info";

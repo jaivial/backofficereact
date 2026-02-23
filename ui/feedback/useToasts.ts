@@ -11,6 +11,7 @@ export function useToasts() {
   const [toasts, setToasts] = useAtom(toastsAtom);
 
   type ToastInput = { kind: ToastKind; title: string; message?: string; timeoutMs?: number };
+  type LegacyToastInput = { title: string; description?: string; kind?: ToastKind; timeoutMs?: number };
 
   const pushToast = useCallback(
     (input: ToastInput | string, legacyKind: ToastKind = "info") => {
@@ -38,5 +39,20 @@ export function useToasts() {
     [setToasts],
   );
 
-  return { toasts, pushToast, dismissToast };
+  const addToast = useCallback(
+    (input: LegacyToastInput | string) => {
+      if (typeof input === "string") {
+        return pushToast({ kind: "info", title: input });
+      }
+      return pushToast({
+        kind: input.kind ?? "info",
+        title: input.title,
+        message: input.description,
+        timeoutMs: input.timeoutMs,
+      });
+    },
+    [pushToast],
+  );
+
+  return { toasts, pushToast, addToast, dismissToast };
 }

@@ -33,6 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const qs = `?date=${encodeURIComponent(date)}`;
   const reduceMotion = useReducedMotion();
   const activeId = activeTabId(pathname);
+  const isTablesRoute = pathname.startsWith("/app/reservas/tables");
   const [isNavigatingOut, setIsNavigatingOut] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
@@ -80,6 +81,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       window.location.assign(href);
     }, TAB_NAVIGATION_WAIT_MS);
   }, [isNavigatingOut, pendingHref, reduceMotion]);
+
+  if (isTablesRoute) {
+    return <>{children}</>;
+  }
 
   return (
     <>

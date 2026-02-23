@@ -3,7 +3,7 @@ import { Minus, Plus } from "lucide-react";
 import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 
 import { createClient } from "../../../../api/client";
-import type { GroupMenu, GroupMenuSummary } from "../../../../api/types";
+import type { ConfigFloor, GroupMenu, GroupMenuSummary } from "../../../../api/types";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { TimePicker } from "../../../../ui/inputs/TimePicker";
 import { Select } from "../../../../ui/inputs/Select";
@@ -66,6 +66,7 @@ export type BookingEditorDraft = {
   table_number: string;
   babyStrollers: number;
   highChairs: number;
+  preferred_floor_number: number | null;
 
   special_menu: boolean;
   menu_de_grupo_id: number | null;
@@ -83,6 +84,8 @@ export function BookingEditor({
   submitLabel,
   onSubmit,
   onCancel,
+  stickyFooter = false,
+  floors = [],
 }: {
   api: API;
   initial: BookingEditorDraft;
@@ -90,6 +93,8 @@ export function BookingEditor({
   submitLabel: string;
   onSubmit: (payload: any) => Promise<void>;
   onCancel?: () => void;
+  stickyFooter?: boolean;
+  floors?: ConfigFloor[];
 }) {
   const [draft, setDraft] = useState<BookingEditorDraft>(initial);
   const [formError, setFormError] = useState<string | null>(null);
@@ -114,6 +119,13 @@ export function BookingEditor({
     () => [{ value: "", label: "Selecciona…" }, ...riceTypes.map((t) => ({ value: t, label: t }))],
     [riceTypes],
   );
+  const floorOptions = useMemo(() => {
+    const activeFloors = floors.filter((floor) => floor.active);
+    return [
+      { value: "", label: "Sin preferencia" },
+      ...activeFloors.map((floor) => ({ value: String(floor.floorNumber), label: floor.name })),
+    ];
+  }, [floors]);
 
   useEffect(() => {
     if (!draft.special_menu) return;
@@ -269,6 +281,7 @@ export function BookingEditor({
       table_number: String(draft.table_number || "").trim(),
       babyStrollers: clampInt(Number(draft.babyStrollers || 0), 0, 100),
       highChairs: clampInt(Number(draft.highChairs || 0), 0, 100),
+      preferred_floor_number: draft.preferred_floor_number,
       special_menu: Boolean(draft.special_menu),
     };
 
@@ -310,8 +323,9 @@ export function BookingEditor({
   }, [draft, onSubmit]);
 
   return (
-    <div className="bo-stack" style={{ gap: 14 }}>
+    <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }}>
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
+      <div className={stickyFooter ? "bo-bookingEditorBody" : undefined}>
 
       <div className="bo-panel">
         <div className="bo-panelHead">
@@ -386,6 +400,17 @@ export function BookingEditor({
               max={100}
               onChange={(v) => setField("highChairs", v)}
             />
+            <div className="bo-field" style={{ flex: "1 1 260px" }}>
+              <div className="bo-label">Salón</div>
+              <Select
+                className="bo-selectBtn--sm"
+                size="sm"
+                value={draft.preferred_floor_number != null ? String(draft.preferred_floor_number) : ""}
+                onChange={(v) => setField("preferred_floor_number", v ? Number(v) : null)}
+                options={floorOptions}
+                ariaLabel="Salón"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -517,8 +542,12 @@ export function BookingEditor({
           </div>
         </div>
       ) : null}
+      </div>
 
-      <div className="bo-row" style={{ justifyContent: "flex-end" }}>
+      <div
+        className={stickyFooter ? "bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" : "bo-row"}
+        style={stickyFooter ? undefined : { justifyContent: "flex-end" }}
+      >
         {onCancel ? (
           <button className="bo-btn bo-btn--ghost" type="button" onClick={onCancel} disabled={busy}>
             Cerrar

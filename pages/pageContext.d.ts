@@ -3,7 +3,7 @@ import type { BOSession } from "../api/types";
 declare global {
   namespace Vike {
     interface PageContext {
-      bo?: { theme: "dark" | "light"; session: BOSession | null };
+      bo?: { theme: "dark" | "light"; session: BOSession | null; movingExpirationDate?: string | null };
     }
 
     interface PageContextServer {
@@ -13,4 +13,3 @@ declare global {
 }
 
 export {};
-

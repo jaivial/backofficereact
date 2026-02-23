@@ -4,6 +4,7 @@ import { useToasts } from "./useToasts";
 
 type ErrorToastController = {
   show: (message?: string | null) => void;
+  handleError: (error: unknown, fallbackMessage?: string) => void;
 };
 
 export function useErrorToast(error?: string | null, title = "Error"): ErrorToastController {
@@ -27,5 +28,17 @@ export function useErrorToast(error?: string | null, title = "Error"): ErrorToas
     lastMessageRef.current = "";
   }, [error]);
 
-  return { show };
+  const handleError = useCallback((errorValue: unknown, fallbackMessage = "Error inesperado") => {
+    if (errorValue instanceof Error && errorValue.message.trim() !== "") {
+      show(errorValue.message);
+      return;
+    }
+    if (typeof errorValue === "string" && errorValue.trim() !== "") {
+      show(errorValue);
+      return;
+    }
+    show(fallbackMessage);
+  }, [show]);
+
+  return { show, handleError };
 }

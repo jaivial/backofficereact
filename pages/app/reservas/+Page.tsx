@@ -4,7 +4,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { Download, FileText, Filter, Pencil, XCircle } from "lucide-react";
 
 import { createClient } from "../../../api/client";
-import type { Booking, CalendarDay, ConfigDailyLimit, DashboardMetrics } from "../../../api/types";
+import type { Booking, CalendarDay, ConfigDailyLimit, ConfigFloor, DashboardMetrics } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
 import { Select } from "../../../ui/inputs/Select";
 import { DropdownMenu } from "../../../ui/inputs/DropdownMenu";
@@ -24,6 +24,7 @@ import { arrozRowsFromBooking, principalesRowsFromBooking } from "./_components/
 type PageData = {
   date: string;
   bookings: Booking[];
+  floors: ConfigFloor[];
   total_count: number;
   page: number;
   count: number;
@@ -115,6 +116,7 @@ export default function Page() {
   useErrorToast(error);
 
   const [rows, setRows] = useState<Booking[]>(normalizeBookings(data.bookings));
+  const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
   const [totalCount, setTotalCount] = useState<number>(data.total_count || 0);
 
   const [confirm, setConfirm] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
@@ -177,6 +179,7 @@ export default function Page() {
           return;
         }
         setRows(normalizeBookings(res.bookings));
+        setFloors(Array.isArray(res.floors) ? res.floors : []);
         setTotalCount(res.total_count || res.total || 0);
         setPage(res.page || next.page);
         setCount(res.count || next.count);
@@ -367,6 +370,7 @@ export default function Page() {
       arroz_enabled: !b.special_menu && arroz.length > 0,
       arroz,
       commentary: b.commentary || "",
+      preferred_floor_number: typeof b.preferred_floor_number === "number" ? b.preferred_floor_number : null,
     };
   }, [edit.booking]);
 
@@ -381,7 +385,7 @@ export default function Page() {
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
           return;
         }
-        pushToast({ kind: "success", title: "Guardado", message: `Reserva #${b.id} actualizada` });
+        pushToast({ kind: "success", title: "Guardado", message: "Reserva actualizada" });
         closeEdit();
         void loadBookings({ date, status, q, sort, dir, page, count });
         void loadSummary(date);
@@ -568,7 +572,7 @@ export default function Page() {
         onConfirm={doCancel}
       />
 
-      <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820}>
+      <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details">
         <div className="bo-modalHead">
           <div className="bo-modalTitle">Reserva completa</div>
           <button className="bo-modalX" type="button" onClick={closeDetails} aria-label="Close">
@@ -576,9 +580,9 @@ export default function Page() {
           </button>
         </div>
         <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-          {details.booking ? <BookingDetails booking={details.booking} /> : null}
+          {details.booking ? <BookingDetails booking={details.booking} floors={floors} /> : null}
         </div>
-        <div className="bo-modalActions">
+        <div className="bo-modalActions bo-modalActions--reservas">
           <button className="bo-btn bo-btn--ghost" type="button" onClick={closeDetails}>
             Cerrar
           </button>
@@ -597,7 +601,7 @@ export default function Page() {
         </div>
       </Modal>
 
-      <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040}>
+      <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit">
         <div className="bo-modalHead">
           <div className="bo-modalTitle">Editar reserva</div>
           <button className="bo-modalX" type="button" onClick={closeEdit} aria-label="Close">
@@ -606,7 +610,16 @@ export default function Page() {
         </div>
         <div className="bo-modalOutline" style={{ marginTop: 10 }}>
           {edit.booking && editInitial ? (
-            <BookingEditor api={api} initial={editInitial} busy={busy} submitLabel="Guardar" onSubmit={submitEdit} onCancel={closeEdit} />
+            <BookingEditor
+              api={api}
+              initial={editInitial}
+              busy={busy}
+              submitLabel="Guardar"
+              onSubmit={submitEdit}
+              onCancel={closeEdit}
+              stickyFooter
+              floors={floors}
+            />
           ) : (
             <InlineAlert kind="info" title="Cargando" message="Preparando editor..." />
           )}
@@ -713,12 +726,17 @@ function statusLabel(status: string | null | undefined): string {
   return status ? String(status) : "—";
 }
 
-function BookingDetails({ booking }: { booking: Booking }) {
+function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigFloor[] }) {
   const arroz = formatArrozShort(booking.arroz_type, booking.arroz_servings);
   const added = formatAddedDate(booking.added_date);
   const time = formatHHMM(booking.reservation_time);
   const phone = formatPhone(booking.contact_phone_country_code, booking.contact_phone);
   const status = statusLabel(booking.status);
+  const preferredFloorLabel = useMemo(() => {
+    if (typeof booking.preferred_floor_number !== "number") return "Sin preferencia";
+    const match = floors.find((floor) => floor.floorNumber === booking.preferred_floor_number);
+    return match ? match.name : `Salón ${booking.preferred_floor_number}`;
+  }, [booking.preferred_floor_number, floors]);
   const badgeCls =
     booking.status === "confirmed"
       ? "bo-badge bo-badge--ok"
@@ -763,6 +781,10 @@ function BookingDetails({ booking }: { booking: Booking }) {
             <div className="bo-kv">
               <div className="bo-kvLabel">Teléfono</div>
               <div className="bo-kvValue">{phone || "—"}</div>
+            </div>
+            <div className="bo-kv">
+              <div className="bo-kvLabel">Salón</div>
+              <div className="bo-kvValue">{preferredFloorLabel}</div>
             </div>
           </div>
         </div>

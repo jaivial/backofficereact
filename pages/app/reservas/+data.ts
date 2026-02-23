@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../api/client";
-import type { CalendarDay, ConfigDailyLimit, DashboardMetrics } from "../../../api/types";
+import type { CalendarDay, ConfigDailyLimit, ConfigFloor, DashboardMetrics } from "../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -44,7 +44,7 @@ export async function data(pageContext: PageContextServer) {
         const month = Number.isFinite(m) ? m : new Date().getMonth() + 1;
         return api.calendar.getMonth({ year, month });
       })(),
-      { success: false, message: "Error consultando calendario", data: [] },
+      { success: false, message: "Error consultando calendario" },
     ),
     safeCall(api.config.getDailyLimit(date), { success: false, message: "Error consultando límite diario" }),
     safeCall(api.dashboard.getMetrics(date), { success: false, message: "Error consultando métricas" }),
@@ -52,6 +52,7 @@ export async function data(pageContext: PageContextServer) {
 
   let error: string | null = null;
   const bookings = bookingsRes.success ? (bookingsRes as any).bookings : [];
+  const floors: ConfigFloor[] = bookingsRes.success ? ((bookingsRes as any).floors || []) : [];
   const total_count = bookingsRes.success ? bookingsRes.total_count : 0;
   const page = bookingsRes.success ? bookingsRes.page : 1;
   const count = bookingsRes.success ? bookingsRes.count : 15;
@@ -70,6 +71,7 @@ export async function data(pageContext: PageContextServer) {
   return {
     date,
     bookings,
+    floors,
     total_count,
     page,
     count,

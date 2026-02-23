@@ -344,7 +344,6 @@ export default function Page() {
 
   const setFloorActive = useCallback(
     async (floor: ConfigFloor, active: boolean) => {
-      if (floor.isGround && !active) return;
       setBusy(true);
       setError(null);
       try {
@@ -549,13 +548,12 @@ export default function Page() {
                 <div key={floor.id} className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
                   <div className="bo-floorRowName">
                     {floor.name}
-                    {floor.isGround ? <span className="bo-floorRowHint"> (siempre activa)</span> : null}
                   </div>
                   <div className="bo-floorRowState">
                     <span className="bo-floorRowStateText">{floor.active ? "Activa" : "Inactiva"}</span>
                     <Switch
                       checked={floor.active}
-                      disabled={busy || floor.isGround}
+                      disabled={busy}
                       onCheckedChange={(checked) => void setFloorActive(floor, checked)}
                       aria-label={`Activar o desactivar ${floor.name}`}
                     />

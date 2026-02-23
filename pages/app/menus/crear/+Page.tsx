@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   Bean,
@@ -8,14 +8,15 @@ import {
   CircleDot,
   Egg,
   Eye,
+  EyeOff,
   Fish,
   FlaskConical,
   GripVertical,
   LeafyGreen,
+  MessageSquareText,
   Milk,
   Nut,
   Plus,
-  Repeat2,
   Search,
   Settings2,
   Shell,
@@ -39,7 +40,6 @@ import { Select } from "../../../../ui/inputs/Select";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { FoodDishCard } from "../../../../ui/widgets/food/FoodDishCard";
-import { MenuTypeChangeModal } from "../../../../ui/widgets/menus/MenuTypeChangeModal";
 import { MENU_TYPE_PANELS } from "../../../../ui/widgets/menus/menuPresentation";
 
 type PageData = {
@@ -77,14 +77,32 @@ type MenuAITrackerState = {
   dishes: MenuAIDishTracker[];
 };
 
+type MenuPreviewTrackerPatch = {
+  show_menu_preview_image?: boolean;
+  menu_preview_image_url?: string;
+  ai_requested?: boolean;
+  ai_generating?: boolean;
+  ai_generated_img?: string | null;
+};
+
+type MenuPreviewResolvedState = {
+  showMenuPreviewImage: boolean;
+  menuPreviewImageUrl: string;
+  menuPreviewAIRequested: boolean;
+  menuPreviewAIGenerating: boolean;
+};
+
 type EditorSection = {
   clientId: string;
   id?: number;
   title: string;
   kind: string;
   position: number;
+  annotations: string[];
   dishes: EditorDish[];
   expanded?: boolean;
+  dishesLoaded?: boolean;
+  dishesLoading?: boolean;
 };
 
 type PersistedEditorSection = EditorSection & { id: number };
@@ -108,6 +126,7 @@ type BasicsDraft = {
   menuType: string;
   subtitles: string[];
   showDishImages: boolean;
+  showMenuPreviewImage: boolean;
   includedCoffee: boolean;
   beverageType: string;
   beveragePrice: string;
@@ -126,6 +145,7 @@ type BasicsPayload = {
   menu_type: string;
   menu_subtitle: string[];
   show_dish_images: boolean;
+  show_menu_preview_image: boolean;
   included_coffee: boolean;
   beverage: {
     type: string;
@@ -159,6 +179,10 @@ const MENU_TYPES = MENU_TYPE_PANELS.map((panel) => ({
   enabled: true,
   hint: MENU_TYPE_HINTS[panel.value] ?? "Plantilla lista para editar",
 }));
+
+const menuTypeOptions: { value: string; label: string }[] = MENU_TYPES
+  .filter((panel) => panel.enabled)
+  .map((panel) => ({ value: panel.value, label: panel.label }));
 
 const DEFAULT_BEVERAGE = {
   type: "no_incluida",
@@ -195,6 +219,11 @@ const dishVisibilityOptions: { value: string; label: string }[] = [
   { value: "with_image", label: "Con imagen" },
 ];
 
+const menuPreviewVisibilityOptions: { value: string; label: string }[] = [
+  { value: "without_preview", label: "Sin imagen" },
+  { value: "with_preview", label: "Con imagen" },
+];
+
 const DISH_IMAGE_AI_MAX_KB = 150;
 const MENU_AI_TRACE_PREFIX = "[MENU_AI_TRACE]";
 
@@ -214,6 +243,121 @@ function parseLooseBool(value: unknown, fallback = false): boolean {
   if (text === "1" || text === "true" || text === "yes" || text === "si" || text === "on") return true;
   if (text === "0" || text === "false" || text === "no" || text === "off") return false;
   return fallback;
+}
+
+function normalizeMenuPreviewPatch(raw: unknown): MenuPreviewTrackerPatch | null {
+  if (!raw || typeof raw !== "object") return null;
+  const row = raw as Record<string, unknown>;
+  const patch: MenuPreviewTrackerPatch = {};
+
+  const showRaw = row.show_menu_preview_image ?? row.showMenuPreviewImage;
+  if (showRaw !== undefined) {
+    patch.show_menu_preview_image = parseLooseBool(showRaw, false);
+  }
+
+  const imageRaw = row.menu_preview_image_url ?? row.menuPreviewImageUrl;
+  if (typeof imageRaw === "string" && imageRaw.trim()) {
+    patch.menu_preview_image_url = imageRaw.trim();
+  } else if (imageRaw === null) {
+    patch.menu_preview_image_url = "";
+  }
+
+  const aiRequestedRaw = row.menu_preview_ai_requested
+    ?? row.menuPreviewAIRequested
+    ?? row.ai_requested_img
+    ?? row.aiRequestedImg
+    ?? row.ai_requested
+    ?? row.aiRequested;
+  if (aiRequestedRaw !== undefined) {
+    patch.ai_requested = parseLooseBool(aiRequestedRaw, false);
+  }
+
+  const aiGeneratingRaw = row.menu_preview_ai_generating
+    ?? row.menuPreviewAIGenerating
+    ?? row.ai_generating_img
+    ?? row.aiGeneratingImg
+    ?? row.ai_generating
+    ?? row.aiGenerating;
+  if (aiGeneratingRaw !== undefined) {
+    patch.ai_generating = parseLooseBool(aiGeneratingRaw, false);
+  }
+
+  const aiGeneratedRaw = row.ai_generated_img ?? row.aiGeneratedImg;
+  if (typeof aiGeneratedRaw === "string" && aiGeneratedRaw.trim()) {
+    patch.ai_generated_img = aiGeneratedRaw.trim();
+    if (!patch.menu_preview_image_url) {
+      patch.menu_preview_image_url = patch.ai_generated_img;
+    }
+  } else if (aiGeneratedRaw === null) {
+    patch.ai_generated_img = null;
+  }
+
+  return Object.keys(patch).length > 0 ? patch : null;
+}
+
+function mergeMenuPreviewPatches(patches: Array<MenuPreviewTrackerPatch | null | undefined>): MenuPreviewTrackerPatch | null {
+  const merged: MenuPreviewTrackerPatch = {};
+  let hasAny = false;
+  for (const patch of patches) {
+    if (!patch) continue;
+    if (patch.show_menu_preview_image !== undefined) {
+      merged.show_menu_preview_image = patch.show_menu_preview_image;
+      hasAny = true;
+    }
+    if (patch.menu_preview_image_url !== undefined) {
+      merged.menu_preview_image_url = patch.menu_preview_image_url;
+      hasAny = true;
+    }
+    if (patch.ai_requested !== undefined) {
+      merged.ai_requested = patch.ai_requested;
+      hasAny = true;
+    }
+    if (patch.ai_generating !== undefined) {
+      merged.ai_generating = patch.ai_generating;
+      hasAny = true;
+    }
+    if (patch.ai_generated_img !== undefined) {
+      merged.ai_generated_img = patch.ai_generated_img;
+      hasAny = true;
+    }
+  }
+  return hasAny ? merged : null;
+}
+
+function resolveMenuPreviewState(menu: GroupMenuV2 | null | undefined): MenuPreviewResolvedState {
+  const merged = mergeMenuPreviewPatches([
+    normalizeMenuPreviewPatch(menu),
+    normalizeMenuPreviewPatch(menu?.menu_preview),
+  ]);
+  const menuPreviewImageUrl = String(
+    merged?.menu_preview_image_url
+      ?? (typeof merged?.ai_generated_img === "string" ? merged.ai_generated_img : "")
+      ?? "",
+  ).trim();
+  const menuPreviewAIRequested = merged?.ai_requested ?? false;
+  const menuPreviewAIGenerating = merged?.ai_generating ?? false;
+  const showMenuPreviewImage = merged?.show_menu_preview_image
+    ?? (menuPreviewImageUrl.length > 0 || menuPreviewAIRequested || menuPreviewAIGenerating);
+  return {
+    showMenuPreviewImage,
+    menuPreviewImageUrl,
+    menuPreviewAIRequested,
+    menuPreviewAIGenerating,
+  };
+}
+
+function trackerMenuPreviewFromWSPayload(raw: unknown): MenuPreviewTrackerPatch | null {
+  if (!raw || typeof raw !== "object") return null;
+  const payload = raw as Record<string, unknown>;
+  const nestedMenu = payload.menu && typeof payload.menu === "object"
+    ? (payload.menu as Record<string, unknown>)
+    : null;
+  return mergeMenuPreviewPatches([
+    normalizeMenuPreviewPatch(payload),
+    normalizeMenuPreviewPatch(payload.menu_preview),
+    normalizeMenuPreviewPatch(nestedMenu),
+    normalizeMenuPreviewPatch(nestedMenu?.menu_preview),
+  ]);
 }
 
 function normalizeMenuAIDish(raw: unknown): MenuAIDishTracker | null {
@@ -611,6 +755,11 @@ type DishImageCropDraft = {
   objectUrl: string;
 };
 
+type MenuPreviewImageDraft = {
+  file: File;
+  objectUrl: string;
+};
+
 type DishImageCropConfirm = {
   zoom: number;
   offsetX: number;
@@ -627,6 +776,7 @@ type DishImageAdvisorModalProps = {
   imageUrl: string;
   imageKB: number;
   busy: boolean;
+  subjectLabel?: string;
   onClose: () => void;
   onContinueWithoutAI: () => void;
   onImproveWithAI: () => void;
@@ -637,10 +787,12 @@ function DishImageAdvisorModal({
   imageUrl,
   imageKB,
   busy,
+  subjectLabel,
   onClose,
   onContinueWithoutAI,
   onImproveWithAI,
 }: DishImageAdvisorModalProps) {
+  const label = subjectLabel || "plato";
   return (
     <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
       <div className="bo-modalHead">
@@ -653,7 +805,7 @@ function DishImageAdvisorModal({
       <div className="bo-modalBody bo-dishAIAdvisorBody">
         <div className="bo-dishAIAdvisorCopy">
           <p className="bo-dishAIAdvisorLead">
-            Mejorar esta foto con IA puede elevar la presentacion del plato y hacer tu menu mas atractivo para el cliente.
+            Mejorar esta foto con IA puede elevar la presentacion de {label} y hacer tu menu mas atractivo para el cliente.
           </p>
           <p className="bo-dishAIAdvisorHint">
             Imagen optimizada para subir: {Math.max(1, imageKB)}KB · WebP.
@@ -1042,6 +1194,7 @@ type MenuDishEditorCardProps = {
   dish: EditorDish;
   dishIdx: number;
   isALaCarte: boolean;
+  showDishImages: boolean;
   mediaLoading: boolean;
   startDishDrag: (event: React.PointerEvent<Element>) => void;
   pickDishImage: (sectionClientId: string, dishClientId: string) => void;
@@ -1056,6 +1209,7 @@ const MenuDishEditorCard = React.memo(
     dish,
     dishIdx,
     isALaCarte,
+    showDishImages,
     mediaLoading,
     startDishDrag,
     pickDishImage,
@@ -1064,6 +1218,20 @@ const MenuDishEditorCard = React.memo(
     updateDish,
   }: MenuDishEditorCardProps) {
     const dishLabel = dish.title || `Plato ${dishIdx + 1}`;
+    const titleTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    const syncTitleTextareaHeight = useCallback(() => {
+      const node = titleTextareaRef.current;
+      if (!node) return;
+      node.style.height = "auto";
+      node.style.height = `${node.scrollHeight}px`;
+    }, []);
+
+    useLayoutEffect(() => {
+      syncTitleTextareaHeight();
+      const rafId = window.requestAnimationFrame(syncTitleTextareaHeight);
+      return () => window.cancelAnimationFrame(rafId);
+    }, [dish.title, syncTitleTextareaHeight]);
 
     return (
       <FoodDishCard
@@ -1072,6 +1240,7 @@ const MenuDishEditorCard = React.memo(
         debugId={`section:${sectionClientId}:dish:${dish.clientId}`}
         title={dishLabel}
         imageUrl={dish.foto_url}
+        showMedia={showDishImages}
         mediaLoading={mediaLoading}
         onMediaAction={() => pickDishImage(sectionClientId, dish.clientId)}
         mediaActionAriaLabel={`Subir imagen para ${dishLabel}`}
@@ -1131,11 +1300,7 @@ const MenuDishEditorCard = React.memo(
               className="bo-input bo-textarea bo-dishTitleTextarea"
               rows={1}
               value={dish.title}
-              ref={(node) => {
-                if (!node) return;
-                node.style.height = "auto";
-                node.style.height = `${node.scrollHeight}px`;
-              }}
+              ref={titleTextareaRef}
               onInput={(e) => {
                 const node = e.currentTarget;
                 node.style.height = "auto";
@@ -1226,7 +1391,7 @@ const MenuDishEditorCard = React.memo(
                           supplement_price: toNumOrNull(e.target.value),
                         })
                       }
-                      placeholder="0.00"
+                      placeholder="€"
                     />
                   ) : null}
                 </div>
@@ -1242,34 +1407,41 @@ const MenuDishEditorCard = React.memo(
     && areEditorDishesEqual(prev.dish, next.dish)
     && prev.dishIdx === next.dishIdx
     && prev.isALaCarte === next.isALaCarte
+    && prev.showDishImages === next.showDishImages
     && prev.mediaLoading === next.mediaLoading
   ),
 );
 
 const EMPTY_SEARCH_RESULTS: DishCatalogItem[] = [];
-type SectionDishTab = "active" | "inactive";
+type SectionDishTab = "active" | "inactive" | "annotations";
 
 type MenuSectionEditorPanelProps = {
   sec: EditorSection;
   secIdx: number;
   sectionsCount: number;
   isALaCarte: boolean;
+  showDishImages: boolean;
   reorderTransition: any;
   reorderWhileDrag: any;
   chevronHover: any;
   chevronTapUp: any;
   chevronTapDown: any;
   moveSection: (from: number, to: number) => void;
+  handleSectionToggle: (clientId: string, willExpand: boolean) => void;
   updateSection: (clientId: string, patch: Partial<EditorSection>) => void;
   reorderDishes: (sectionClientId: string, orderedClientIds: string[]) => void;
   setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
   removeDish: (sectionClientId: string, dishClientId: string) => void;
   updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => void;
+  updateSectionAnnotation: (sectionClientId: string, annotationIdx: number, value: string) => void;
+  addSectionAnnotation: (sectionClientId: string) => void;
+  removeSectionAnnotation: (sectionClientId: string, annotationIdx: number) => void;
   pickDishImage: (sectionClientId: string, dishClientId: string) => void;
   addDish: (sectionClientId: string, fromCatalog?: DishCatalogItem) => void;
   handleSearch: (sectionClientId: string, term: string) => void;
   searchTerm: string;
   searchItems: DishCatalogItem[];
+  sectionLoadingState?: "loading" | "error" | null;
 };
 
 const MenuSectionEditorPanel = React.memo(
@@ -1278,36 +1450,47 @@ const MenuSectionEditorPanel = React.memo(
     secIdx,
     sectionsCount,
     isALaCarte,
+    showDishImages,
     reorderTransition,
     reorderWhileDrag,
     chevronHover,
     chevronTapUp,
     chevronTapDown,
     moveSection,
+    handleSectionToggle,
     updateSection,
     reorderDishes,
     setAllergenModal,
     removeDish,
     updateDish,
+    updateSectionAnnotation,
+    addSectionAnnotation,
+    removeSectionAnnotation,
     pickDishImage,
     addDish,
     handleSearch,
     searchTerm,
     searchItems,
+    sectionLoadingState,
   }: MenuSectionEditorPanelProps) {
     const [dishTab, setDishTab] = useState<SectionDishTab>("active");
     const sectionLabel = sec.title.trim() || `seccion ${secIdx + 1}`;
     const activeDishCount = useMemo(() => sec.dishes.reduce((total, dish) => total + (dish.active ? 1 : 0), 0), [sec.dishes]);
     const inactiveDishCount = sec.dishes.length - activeDishCount;
+    const annotationCount = useMemo(() => normalizeSectionAnnotations(sec.annotations).length, [sec.annotations]);
     const visibleDishes = useMemo(
-      () => sec.dishes.filter((dish) => (dishTab === "active" ? dish.active : !dish.active)),
+      () => (dishTab === "annotations"
+        ? []
+        : sec.dishes.filter((dish) => (dishTab === "active" ? dish.active : !dish.active))),
       [dishTab, sec.dishes],
     );
     const activeTabId = `bo-section-dishes-active-${sec.clientId}`;
     const inactiveTabId = `bo-section-dishes-inactive-${sec.clientId}`;
+    const annotationsTabId = `bo-section-dishes-annotations-${sec.clientId}`;
     const dishPanelId = `bo-section-dishes-panel-${sec.clientId}`;
 
     useEffect(() => {
+      if (dishTab === "annotations") return;
       if (dishTab === "active" && activeDishCount > 0) return;
       if (dishTab === "inactive" && inactiveDishCount > 0) return;
       if (activeDishCount > 0) {
@@ -1404,7 +1587,7 @@ const MenuSectionEditorPanel = React.memo(
               <button
                 className="bo-accordionHead"
                 type="button"
-                onClick={() => updateSection(sec.clientId, { expanded: !sec.expanded })}
+                onClick={() => handleSectionToggle(sec.clientId, !sec.expanded)}
               >
                 <span className="bo-accordionHeadLeft">
                   <input
@@ -1414,7 +1597,13 @@ const MenuSectionEditorPanel = React.memo(
                     onChange={(e) => updateSection(sec.clientId, { title: e.target.value })}
                   />
                 </span>
-                {sec.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {sectionLoadingState === "loading" ? (
+                  <LoadingSpinner size="sm" aria-label="Cargando platos" />
+                ) : sec.expanded ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
               </button>
             </div>
 
@@ -1426,12 +1615,14 @@ const MenuSectionEditorPanel = React.memo(
                     className={`bo-sectionDishTab ${dishTab === "active" ? "is-active" : ""}`}
                     type="button"
                     role="tab"
+                    aria-label="Activos"
                     aria-selected={dishTab === "active"}
                     aria-controls={dishPanelId}
                     tabIndex={dishTab === "active" ? 0 : -1}
                     onClick={() => handleDishTabChange("active")}
                   >
-                    <span>Activos</span>
+                    <span className="bo-sectionDishTabLabel">Activos</span>
+                    <span className="bo-sectionDishTabIcon" aria-hidden="true"><Check size={14} /></span>
                     <span className="bo-sectionDishTabCount">{activeDishCount}</span>
                   </button>
                   <button
@@ -1439,13 +1630,30 @@ const MenuSectionEditorPanel = React.memo(
                     className={`bo-sectionDishTab ${dishTab === "inactive" ? "is-active" : ""}`}
                     type="button"
                     role="tab"
+                    aria-label="Inactivos"
                     aria-selected={dishTab === "inactive"}
                     aria-controls={dishPanelId}
                     tabIndex={dishTab === "inactive" ? 0 : -1}
                     onClick={() => handleDishTabChange("inactive")}
                   >
-                    <span>Inactivos</span>
+                    <span className="bo-sectionDishTabLabel">Inactivos</span>
+                    <span className="bo-sectionDishTabIcon" aria-hidden="true"><EyeOff size={14} /></span>
                     <span className="bo-sectionDishTabCount">{inactiveDishCount}</span>
+                  </button>
+                  <button
+                    id={annotationsTabId}
+                    className={`bo-sectionDishTab ${dishTab === "annotations" ? "is-active" : ""}`}
+                    type="button"
+                    role="tab"
+                    aria-label="Anotaciones"
+                    aria-selected={dishTab === "annotations"}
+                    aria-controls={dishPanelId}
+                    tabIndex={dishTab === "annotations" ? 0 : -1}
+                    onClick={() => handleDishTabChange("annotations")}
+                  >
+                    <span className="bo-sectionDishTabLabel">Anotaciones</span>
+                    <span className="bo-sectionDishTabIcon" aria-hidden="true"><MessageSquareText size={14} /></span>
+                    <span className="bo-sectionDishTabCount">{annotationCount}</span>
                   </button>
                 </div>
 
@@ -1453,9 +1661,46 @@ const MenuSectionEditorPanel = React.memo(
                   id={dishPanelId}
                   className="bo-sectionDishTabPanel"
                   role="tabpanel"
-                  aria-labelledby={dishTab === "active" ? activeTabId : inactiveTabId}
+                  aria-labelledby={
+                    dishTab === "active"
+                      ? activeTabId
+                      : dishTab === "inactive"
+                        ? inactiveTabId
+                        : annotationsTabId
+                  }
                 >
-                  {visibleDishes.length > 0 ? (
+                  {dishTab === "annotations" ? (
+                    <div className="bo-field bo-field--full">
+                      <div className="bo-stackFields">
+                        {sec.annotations.map((line, idx) => (
+                          <div key={`${sec.clientId}-annotation-${idx}`} className="bo-inlineField">
+                            <input
+                              className="bo-input"
+                              value={line}
+                              onChange={(e) => updateSectionAnnotation(sec.clientId, idx, e.target.value)}
+                              placeholder="Anotacion"
+                            />
+                            <button
+                              className="bo-btn bo-btn--ghost"
+                              type="button"
+                              aria-label={`Eliminar anotacion ${idx + 1} de ${sectionLabel}`}
+                              disabled={sec.annotations.length <= 1}
+                              onClick={() => removeSectionAnnotation(sec.clientId, idx)}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          className="bo-btn bo-btn--ghost bo-commentAddBtn"
+                          type="button"
+                          onClick={() => addSectionAnnotation(sec.clientId)}
+                        >
+                          <Plus size={14} /> Añadir anotacion
+                        </button>
+                      </div>
+                    </div>
+                  ) : visibleDishes.length > 0 ? (
                     <Reorder.Group
                       axis="y"
                       values={visibleDishes.map((dish) => dish.clientId)}
@@ -1476,6 +1721,7 @@ const MenuSectionEditorPanel = React.memo(
                               dish={dish}
                               dishIdx={dishIdx}
                               isALaCarte={isALaCarte}
+                              showDishImages={showDishImages}
                               mediaLoading={dish.ai_generating}
                               startDishDrag={startDishDrag}
                               pickDishImage={pickDishImage}
@@ -1496,38 +1742,42 @@ const MenuSectionEditorPanel = React.memo(
                   )}
                 </div>
 
-                <div className="bo-dishAddRow">
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-dishAddBtn" type="button" onClick={handleAddDish}>
-                    <Plus size={12} /> Añadir plato
-                  </button>
-                </div>
-
-                <div className="bo-searchCatalogRow">
-                  <div className="bo-searchCatalogInputWrap">
-                    <Search size={14} className="bo-searchCatalogIcon" aria-hidden="true" />
-                    <input
-                      className="bo-input bo-searchCatalogInput"
-                      placeholder="Buscar plato en base de datos"
-                      value={searchTerm}
-                      onChange={(e) => handleSearch(sec.clientId, e.target.value)}
-                    />
-                  </div>
-                  {searchItems.length > 0 ? (
-                    <div className="bo-searchResults">
-                      {searchItems.map((item) => (
-                        <button
-                          key={`${sec.clientId}-${item.id}`}
-                          type="button"
-                          className="bo-searchResultBtn"
-                          onClick={() => handleAddDishFromCatalog(item)}
-                        >
-                          <span>{item.title}</span>
-                          <span className="bo-mutedText">Añadir</span>
-                        </button>
-                      ))}
+                {dishTab !== "annotations" ? (
+                  <>
+                    <div className="bo-dishAddRow">
+                      <button className="bo-btn bo-btn--ghost bo-btn--sm bo-dishAddBtn" type="button" onClick={handleAddDish}>
+                        <Plus size={12} /> Añadir plato
+                      </button>
                     </div>
-                  ) : null}
-                </div>
+
+                    <div className="bo-searchCatalogRow">
+                      <div className="bo-searchCatalogInputWrap">
+                        <Search size={14} className="bo-searchCatalogIcon" aria-hidden="true" />
+                        <input
+                          className="bo-input bo-searchCatalogInput"
+                          placeholder="Buscar plato en base de datos"
+                          value={searchTerm}
+                          onChange={(e) => handleSearch(sec.clientId, e.target.value)}
+                        />
+                      </div>
+                      {searchItems.length > 0 ? (
+                        <div className="bo-searchResults">
+                          {searchItems.map((item) => (
+                            <button
+                              key={`${sec.clientId}-${item.id}`}
+                              type="button"
+                              className="bo-searchResultBtn"
+                              onClick={() => handleAddDishFromCatalog(item)}
+                            >
+                              <span>{item.title}</span>
+                              <span className="bo-mutedText">Añadir</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </>
+                ) : null}
               </div>
             ) : null}
           </>
@@ -1540,6 +1790,7 @@ const MenuSectionEditorPanel = React.memo(
     && prev.secIdx === next.secIdx
     && prev.sectionsCount === next.sectionsCount
     && prev.isALaCarte === next.isALaCarte
+    && prev.showDishImages === next.showDishImages
     && prev.reorderTransition === next.reorderTransition
     && prev.reorderWhileDrag === next.reorderWhileDrag
     && prev.chevronHover === next.chevronHover
@@ -1558,6 +1809,7 @@ function buildBasicsPayload(draft: BasicsDraft): BasicsPayload {
     menu_type: draft.menuType,
     menu_subtitle: draft.subtitles.map((s) => s.trim()).filter(Boolean),
     show_dish_images: draft.showDishImages,
+    show_menu_preview_image: draft.showMenuPreviewImage,
     included_coffee: draft.includedCoffee,
     beverage: {
       type: draft.beverageType,
@@ -1572,12 +1824,40 @@ function buildBasicsPayload(draft: BasicsDraft): BasicsPayload {
   };
 }
 
+function toEditorSectionAnnotations(raw: unknown, fallback: string[] = []): string[] {
+  if (Array.isArray(raw)) {
+    const annotations = raw.map((value) => String(value ?? ""));
+    return annotations.length > 0 ? annotations : [""];
+  }
+  return fallback.length > 0 ? fallback : [""];
+}
+
+function normalizeSectionAnnotations(values: string[] | null | undefined): string[] {
+  if (!Array.isArray(values)) return [];
+  return values
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
+function getSectionAnnotationsFingerprint(section: EditorSection): string {
+  return JSON.stringify(normalizeSectionAnnotations(section.annotations));
+}
+
+function getSectionsAnnotationsFingerprintMap(sections: EditorSection[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const section of sections) {
+    map[section.clientId] = getSectionAnnotationsFingerprint(section);
+  }
+  return map;
+}
+
 function getSectionsFingerprint(sections: EditorSection[]): string {
   return JSON.stringify(
     sections.map((sec) => ({
       id: sec.id || null,
       title: sec.title,
       kind: sec.kind,
+      annotations: sec.annotations,
       dishes: sec.dishes.map((d) => ({
         id: d.id || null,
         catalog: d.catalog_dish_id || null,
@@ -1763,7 +2043,8 @@ function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): EditorSecti
     title: s.title,
     kind: s.kind,
     position: s.position || 0,
-    expanded: prev?.expanded ?? true,
+    annotations: toEditorSectionAnnotations(s.annotations, prev?.annotations),
+    expanded: prev?.expanded ?? false,
     dishes: (s.dishes || []).map((dish) => mapApiDish(dish, dish.id ? prevDishByID.get(dish.id) : undefined)),
   };
 }
@@ -1789,6 +2070,10 @@ function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []): {
     main_dishes_limit_number: number;
   };
   showDishImages: boolean;
+  showMenuPreviewImage: boolean;
+  menuPreviewImageUrl: string;
+  menuPreviewAIRequested: boolean;
+  menuPreviewAIGenerating: boolean;
 } {
   const prevByID = new Map<number, EditorSection>();
   for (const sec of prevSections) {
@@ -1796,6 +2081,7 @@ function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []): {
   }
 
   const sections = (menu.sections || []).map((sec) => mapApiSection(sec, sec.id ? prevByID.get(sec.id) : undefined));
+  const previewState = resolveMenuPreviewState(menu);
 
   return {
     title: menu.menu_title || "",
@@ -1804,6 +2090,10 @@ function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []): {
     menuType: menu.menu_type || "closed_conventional",
     subtitles: menu.menu_subtitle || [],
     showDishImages: !!menu.show_dish_images,
+    showMenuPreviewImage: previewState.showMenuPreviewImage,
+    menuPreviewImageUrl: previewState.menuPreviewImageUrl,
+    menuPreviewAIRequested: previewState.menuPreviewAIRequested,
+    menuPreviewAIGenerating: previewState.menuPreviewAIGenerating,
     sections,
     settings: {
       included_coffee: !!menu.settings?.included_coffee,
@@ -1826,6 +2116,7 @@ export default function Page() {
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
+  const initialMenuPreviewState = resolveMenuPreviewState(data.menu);
 
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);
@@ -1838,6 +2129,7 @@ export default function Page() {
   const [subtitles, setSubtitles] = useState<string[]>(data.menu?.menu_subtitle?.length ? data.menu.menu_subtitle : [""]);
   const [active, setActive] = useState<boolean>(data.menu?.active ?? false);
   const [showDishImages, setShowDishImages] = useState<boolean>(!!data.menu?.show_dish_images);
+  const [showMenuPreviewImage, setShowMenuPreviewImage] = useState<boolean>(initialMenuPreviewState.showMenuPreviewImage);
   const [sections, setSections] = useState<EditorSection[]>([]);
 
   const [includedCoffee, setIncludedCoffee] = useState<boolean>(false);
@@ -1850,13 +2142,14 @@ export default function Page() {
   const [mainLimitNum, setMainLimitNum] = useState<string>("1");
   const [comments, setComments] = useState<string[]>([""]);
   const [specialMenuImage, setSpecialMenuImage] = useState<string | null>(null);
+  const [menuPreviewImageUrl, setMenuPreviewImageUrl] = useState<string>(initialMenuPreviewState.menuPreviewImageUrl);
+  const [menuPreviewAIRequested, setMenuPreviewAIRequested] = useState<boolean>(initialMenuPreviewState.menuPreviewAIRequested);
+  const [menuPreviewAIGenerating, setMenuPreviewAIGenerating] = useState<boolean>(initialMenuPreviewState.menuPreviewAIGenerating);
+  const [menuPreviewImageBusy, setMenuPreviewImageBusy] = useState(false);
 
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [menuTypeModalOpen, setMenuTypeModalOpen] = useState(false);
-  const [menuTypePendingValue, setMenuTypePendingValue] = useState<string>(data.menu?.menu_type || "closed_conventional");
-  const [menuTypeChanging, setMenuTypeChanging] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
   const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(true);
   const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
@@ -1866,18 +2159,35 @@ export default function Page() {
   const [allergenModal, setAllergenModal] = useState<{ open: boolean; sectionClientId: string; dishClientId: string } | null>(null);
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [searchResults, setSearchResults] = useState<Record<string, DishCatalogItem[]>>({});
+  const [sectionLoadedDishes, setSectionLoadedDishes] = useState<Set<string>>(() => {
+    // Sections with persisted ID already have dishes loaded from the menu endpoint
+    const persisted = new Set<string>();
+    if (data.menu?.sections) {
+      for (const sec of data.menu.sections) {
+        if (sec.id) persisted.add(String(sec.id));
+      }
+    }
+    return persisted;
+  });
+  const [sectionLoadingState, setSectionLoadingState] = useState<Record<string, "loading" | "error" | null>>({});
   const [menuAITracker, setMenuAITracker] = useState<MenuAITrackerState>(() => buildMenuAITracker(data.menu));
   const [dishImageTarget, setDishImageTarget] = useState<{ sectionClientId: string; dishClientId: string } | null>(null);
   const [dishImageAdvisorDraft, setDishImageAdvisorDraft] = useState<DishImageCropDraft | null>(null);
   const [dishImageAdvisorBusy, setDishImageAdvisorBusy] = useState(false);
   const [dishImageCropDraft, setDishImageCropDraft] = useState<DishImageCropDraft | null>(null);
   const [dishImageBusy, setDishImageBusy] = useState(false);
+  const [menuPreviewImageAdvisorDraft, setMenuPreviewImageAdvisorDraft] = useState<MenuPreviewImageDraft | null>(null);
+  const [menuPreviewImageAdvisorBusy, setMenuPreviewImageAdvisorBusy] = useState(false);
+  const [menuPreviewImageCropDraft, setMenuPreviewImageCropDraft] = useState<MenuPreviewImageDraft | null>(null);
+  const [menuPreviewImageCropBusy, setMenuPreviewImageCropBusy] = useState(false);
 
   const searchTimerRef = useRef<Record<string, number>>({});
   const dishImageInputRef = useRef<HTMLInputElement | null>(null);
+  const menuPreviewImageInputRef = useRef<HTMLInputElement | null>(null);
   const previewDockTimerRef = useRef<number | null>(null);
   const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const syncTimerRef = useRef<number | null>(null);
+  const annotationsTimerRef = useRef<number | null>(null);
   const basicsTimerRef = useRef<number | null>(null);
   const menuAIWSRetryRef = useRef<number | null>(null);
   const menuAIWSSocketRef = useRef<WebSocket | null>(null);
@@ -1885,6 +2195,8 @@ export default function Page() {
   const menuAIWSAuthToastShownRef = useRef(false);
   const dishImageAdvisorDraftRef = useRef<DishImageCropDraft | null>(null);
   const dishImageCropDraftRef = useRef<DishImageCropDraft | null>(null);
+  const menuPreviewImageAdvisorDraftRef = useRef<MenuPreviewImageDraft | null>(null);
+  const menuPreviewImageCropDraftRef = useRef<MenuPreviewImageDraft | null>(null);
   const pushToastRef = useRef(pushToast);
   const menuAITrackerRef = useRef<MenuAITrackerState>(menuAITracker);
   const sectionsRef = useRef<EditorSection[]>([]);
@@ -1894,8 +2206,10 @@ export default function Page() {
   const lastSavedSectionsRef = useRef<string>("");
   const lastSavedSectionsStructureRef = useRef<string>("");
   const lastSavedSectionDishesRef = useRef<Record<string, string>>({});
+  const lastSavedSectionAnnotationsRef = useRef<Record<string, string>>({});
   const lastSavedSectionDishSyncRef = useRef<Record<string, SectionDishSyncState>>({});
   const inFlightSectionsRef = useRef<string | null>(null);
+  const inFlightSectionAnnotationsRef = useRef<Record<string, string>>({});
   const syncRequestSeqRef = useRef(0);
 
   const steps = [0, 1, 2, 3];
@@ -1912,6 +2226,7 @@ export default function Page() {
       menuType,
       subtitles,
       showDishImages,
+      showMenuPreviewImage,
       includedCoffee,
       beverageType,
       beveragePrice,
@@ -1936,6 +2251,7 @@ export default function Page() {
       minPartySize,
       price,
       showDishImages,
+      showMenuPreviewImage,
       subtitles,
       title,
     ],
@@ -1956,6 +2272,10 @@ export default function Page() {
   const dishImageAdvisorPreviewKB = useMemo(
     () => (dishImageAdvisorDraft?.file?.size ? Math.round(dishImageAdvisorDraft.file.size / 1024) : 0),
     [dishImageAdvisorDraft],
+  );
+  const menuPreviewImageAdvisorPreviewKB = useMemo(
+    () => (menuPreviewImageAdvisorDraft?.file?.size ? Math.round(menuPreviewImageAdvisorDraft.file.size / 1024) : 0),
+    [menuPreviewImageAdvisorDraft],
   );
   const loadingSectionTitles = useMemo(() => {
     const fromMenu = Array.isArray(data.menu?.sections) ? data.menu.sections : [];
@@ -1996,6 +2316,14 @@ export default function Page() {
   useEffect(() => {
     dishImageCropDraftRef.current = dishImageCropDraft;
   }, [dishImageCropDraft]);
+
+  useEffect(() => {
+    menuPreviewImageAdvisorDraftRef.current = menuPreviewImageAdvisorDraft;
+  }, [menuPreviewImageAdvisorDraft]);
+
+  useEffect(() => {
+    menuPreviewImageCropDraftRef.current = menuPreviewImageCropDraft;
+  }, [menuPreviewImageCropDraft]);
 
   useEffect(() => {
     pushToastRef.current = pushToast;
@@ -2054,6 +2382,35 @@ export default function Page() {
     },
     [],
   );
+
+  const applyMenuPreviewAIState = useCallback((patch: MenuPreviewTrackerPatch) => {
+    if (patch.show_menu_preview_image !== undefined) {
+      setShowMenuPreviewImage((prev) => (prev === patch.show_menu_preview_image ? prev : patch.show_menu_preview_image!));
+    }
+    if (patch.ai_requested !== undefined) {
+      setMenuPreviewAIRequested((prev) => (prev === patch.ai_requested ? prev : patch.ai_requested!));
+    }
+    if (patch.ai_generating !== undefined) {
+      setMenuPreviewAIGenerating((prev) => (prev === patch.ai_generating ? prev : patch.ai_generating!));
+    }
+
+    const nextURLRaw = patch.menu_preview_image_url
+      ?? (typeof patch.ai_generated_img === "string" ? patch.ai_generated_img : undefined);
+    if (nextURLRaw !== undefined) {
+      const nextURL = String(nextURLRaw || "").trim();
+      setMenuPreviewImageUrl((prev) => (prev === nextURL ? prev : nextURL));
+      if (nextURL) {
+        setShowMenuPreviewImage(true);
+      }
+    }
+
+    if (
+      patch.show_menu_preview_image === undefined
+      && (patch.ai_requested || patch.ai_generating)
+    ) {
+      setShowMenuPreviewImage(true);
+    }
+  }, []);
 
   const applyAITrackerSnapshot = useCallback((rows: MenuAIDishTracker[]) => {
     if (!rows.length) return;
@@ -2149,10 +2506,26 @@ export default function Page() {
       return null;
     };
 
+    const parsePreviewEventKind = (rawType: string): "started" | "completed" | "failed" | null => {
+      const type = rawType.trim().toLowerCase();
+      if (!type) return null;
+      if (type === "preview_image_started") return "started";
+      if (type === "preview_image_completed") return "completed";
+      if (type === "preview_image_failed") return "failed";
+      return null;
+    };
+
     const applyMessageTracker = (payload: unknown) => {
       const rows = trackerFromWSPayload(payload);
       if (rows.length > 0) {
         applyAITrackerSnapshot(rows);
+      }
+    };
+
+    const applyMessageMenuPreview = (payload: unknown) => {
+      const patch = trackerMenuPreviewFromWSPayload(payload);
+      if (patch) {
+        applyMenuPreviewAIState(patch);
       }
     };
 
@@ -2231,6 +2604,44 @@ export default function Page() {
         });
         if (rawType === "hello" || rawType === "snapshot") {
           applyMessageTracker(payload);
+          applyMessageMenuPreview(payload);
+          return;
+        }
+
+        const previewEventKind = parsePreviewEventKind(rawType);
+        if (previewEventKind) {
+          const patch = trackerMenuPreviewFromWSPayload(payload) || {};
+          if (previewEventKind === "started") {
+            applyMenuPreviewAIState({
+              ...patch,
+              show_menu_preview_image: true,
+              ai_requested: true,
+              ai_generating: true,
+            });
+          } else if (previewEventKind === "completed") {
+            applyMenuPreviewAIState({
+              ...patch,
+              show_menu_preview_image: true,
+              ai_requested: true,
+              ai_generating: false,
+            });
+          } else if (previewEventKind === "failed") {
+            applyMenuPreviewAIState({
+              ...patch,
+              ai_requested: true,
+              ai_generating: false,
+            });
+            const errorMessage = typeof payload.message === "string" && payload.message.trim()
+              ? payload.message.trim()
+              : "No se pudo completar la mejora IA de la foto preview";
+            pushToastRef.current({
+              kind: "error",
+              title: "Mejora IA fallida",
+              message: errorMessage,
+            });
+          }
+          applyMessageTracker(payload);
+          applyMessageMenuPreview(payload);
           return;
         }
 
@@ -2274,10 +2685,12 @@ export default function Page() {
             }
           }
           applyMessageTracker(payload);
+          applyMessageMenuPreview(payload);
           return;
         }
 
         applyMessageTracker(payload);
+        applyMessageMenuPreview(payload);
       });
 
       socket.addEventListener("error", () => {
@@ -2337,7 +2750,7 @@ export default function Page() {
         }
       }
     };
-  }, [applyAITrackerSnapshot, applyDishAIState, menuId, pushToastRef]);
+  }, [applyAITrackerSnapshot, applyDishAIState, applyMenuPreviewAIState, menuId, pushToastRef]);
 
   useEffect(() => {
     const sectionRows = trackerFromSections(sections);
@@ -2366,8 +2779,12 @@ export default function Page() {
     return () => {
       const advisorURL = dishImageAdvisorDraftRef.current?.objectUrl;
       const cropURL = dishImageCropDraftRef.current?.objectUrl;
+      const previewAdvisorURL = menuPreviewImageAdvisorDraftRef.current?.objectUrl;
+      const previewCropURL = menuPreviewImageCropDraftRef.current?.objectUrl;
       if (advisorURL) URL.revokeObjectURL(advisorURL);
       if (cropURL && cropURL !== advisorURL) URL.revokeObjectURL(cropURL);
+      if (previewAdvisorURL) URL.revokeObjectURL(previewAdvisorURL);
+      if (previewCropURL && previewCropURL !== previewAdvisorURL) URL.revokeObjectURL(previewCropURL);
       if (menuAIWSRetryRef.current) {
         window.clearTimeout(menuAIWSRetryRef.current);
         menuAIWSRetryRef.current = null;
@@ -2424,10 +2841,15 @@ export default function Page() {
       lastSavedSectionsRef.current = "";
       lastSavedSectionsStructureRef.current = "";
       lastSavedSectionDishesRef.current = {};
+      lastSavedSectionAnnotationsRef.current = {};
       lastSavedSectionDishSyncRef.current = {};
       inFlightSectionsRef.current = null;
+      inFlightSectionAnnotationsRef.current = {};
       syncRequestSeqRef.current = 0;
       setMenuAITracker({ dishes: [] });
+      setMenuPreviewImageUrl("");
+      setMenuPreviewAIRequested(false);
+      setMenuPreviewAIGenerating(false);
       setHydrated(true);
       return;
     }
@@ -2440,6 +2862,10 @@ export default function Page() {
     setMenuType(mapped.menuType);
     setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
     setShowDishImages(mapped.showDishImages);
+    setShowMenuPreviewImage(mapped.showMenuPreviewImage);
+    setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
+    setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
+    setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
     setSections(mapped.sections);
     setMenuAITracker(buildMenuAITracker(data.menu, mapped.sections));
     setIncludedCoffee(mapped.settings.included_coffee);
@@ -2459,6 +2885,7 @@ export default function Page() {
       menuType: mapped.menuType,
       subtitles: mapped.subtitles.length ? mapped.subtitles : [""],
       showDishImages: mapped.showDishImages,
+      showMenuPreviewImage: mapped.showMenuPreviewImage,
       includedCoffee: mapped.settings.included_coffee,
       beverageType: mapped.settings.beverage.type,
       beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
@@ -2473,18 +2900,15 @@ export default function Page() {
     lastSavedSectionsRef.current = getSectionsFingerprint(mapped.sections);
     lastSavedSectionsStructureRef.current = getSectionsStructureFingerprint(mapped.sections);
     lastSavedSectionDishesRef.current = getSectionsDishFingerprintMap(mapped.sections);
+    lastSavedSectionAnnotationsRef.current = getSectionsAnnotationsFingerprintMap(mapped.sections);
     lastSavedSectionDishSyncRef.current = getSectionsDishSyncStateMap(mapped.sections, mappedIsALaCarte);
     inFlightBasicsRef.current = null;
     inFlightSectionsRef.current = null;
+    inFlightSectionAnnotationsRef.current = {};
     syncRequestSeqRef.current = 0;
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (menuTypeModalOpen) return;
-    setMenuTypePendingValue(menuType || "closed_conventional");
-  }, [menuType, menuTypeModalOpen]);
 
   useEffect(() => {
     if (previewDockTimerRef.current) {
@@ -2583,6 +3007,13 @@ export default function Page() {
       active,
       menu_subtitle: subtitles,
       show_dish_images: showDishImages,
+      show_menu_preview_image: showMenuPreviewImage,
+      menu_preview_image_url: menuPreviewImageUrl || "",
+      menu_preview_ai_requested: menuPreviewAIRequested,
+      menu_preview_ai_generating: menuPreviewAIGenerating,
+      ai_requested_img: menuPreviewAIRequested,
+      ai_generating_img: menuPreviewAIGenerating,
+      ai_generated_img: menuPreviewImageUrl || null,
       settings: {
         included_coffee: includedCoffee,
         beverage: {
@@ -2602,6 +3033,7 @@ export default function Page() {
         title: section.title,
         kind: section.kind,
         position: section.position ?? sectionIdx,
+        annotations: normalizeSectionAnnotations(section.annotations),
         dishes: section.dishes.map((dish, dishIdx) => {
           const tracked = dish.id ? menuAIDishesById.get(dish.id) : null;
           const aiRequested = tracked?.ai_requested ?? dish.ai_requested;
@@ -2647,6 +3079,10 @@ export default function Page() {
       price,
       sections,
       showDishImages,
+      showMenuPreviewImage,
+      menuPreviewImageUrl,
+      menuPreviewAIRequested,
+      menuPreviewAIGenerating,
       specialMenuImage,
       subtitles,
       title,
@@ -2747,6 +3183,7 @@ export default function Page() {
             title: sec.title.trim() || "Seccion",
             kind: sec.kind,
             position: idx,
+            annotations: normalizeSectionAnnotations(sec.annotations),
           }));
 
           debugMenuPerf("api-call", {
@@ -2959,6 +3396,7 @@ export default function Page() {
         lastSavedSectionsRef.current = needsStateReconcile ? getSectionsFingerprint(savedSource) : fingerprint;
         lastSavedSectionsStructureRef.current = getSectionsStructureFingerprint(savedSource);
         lastSavedSectionDishesRef.current = getSectionsDishFingerprintMap(savedSource);
+        lastSavedSectionAnnotationsRef.current = getSectionsAnnotationsFingerprintMap(savedSource);
         lastSavedSectionDishSyncRef.current = getSectionsDishSyncStateMap(savedSource, isALaCarte);
         setSaveState("saved");
         debugMenuPerf("sync-sections:done", {
@@ -3020,6 +3458,69 @@ export default function Page() {
     };
   }, [hydrated, menuId, pushToast, sections, sectionsFingerprint, step, syncSectionsAndDishes]);
 
+  useEffect(() => {
+    if (!hydrated || !menuId || step < 3) return;
+
+    const changedSections = sections
+      .filter((section): section is PersistedEditorSection => !!section.id)
+      .map((section) => {
+        const annotations = normalizeSectionAnnotations(section.annotations);
+        const fingerprint = JSON.stringify(annotations);
+        return {
+          id: section.id,
+          clientId: section.clientId,
+          annotations,
+          fingerprint,
+        };
+      })
+      .filter(({ clientId, fingerprint }) => (
+        fingerprint !== (lastSavedSectionAnnotationsRef.current[clientId] || "")
+        && fingerprint !== (inFlightSectionAnnotationsRef.current[clientId] || "")
+      ));
+
+    if (changedSections.length === 0) return;
+
+    if (annotationsTimerRef.current) window.clearTimeout(annotationsTimerRef.current);
+    annotationsTimerRef.current = window.setTimeout(() => {
+      void (async () => {
+        setSaveState("saving");
+        for (const section of changedSections) {
+          inFlightSectionAnnotationsRef.current[section.clientId] = section.fingerprint;
+        }
+
+        try {
+          for (const section of changedSections) {
+            const res = await api.menus.gruposV2.patchSectionAnnotations(menuId, section.id, section.annotations);
+            if (!res.success) {
+              throw new Error(res.message || "No se pudieron guardar las anotaciones");
+            }
+            const persistedFingerprint = JSON.stringify(normalizeSectionAnnotations(res.annotations ?? section.annotations));
+            lastSavedSectionAnnotationsRef.current[section.clientId] = persistedFingerprint;
+            delete inFlightSectionAnnotationsRef.current[section.clientId];
+          }
+          setSaveState("saved");
+        } catch (e) {
+          setSaveState("error");
+          pushToast({
+            kind: "error",
+            title: "Error",
+            message: e instanceof Error ? e.message : "No se pudieron guardar las anotaciones",
+          });
+        } finally {
+          for (const section of changedSections) {
+            if (inFlightSectionAnnotationsRef.current[section.clientId] === section.fingerprint) {
+              delete inFlightSectionAnnotationsRef.current[section.clientId];
+            }
+          }
+        }
+      })();
+    }, 600);
+
+    return () => {
+      if (annotationsTimerRef.current) window.clearTimeout(annotationsTimerRef.current);
+    };
+  }, [api, hydrated, menuId, pushToast, sections, step]);
+
   const createDraftAndContinue = useCallback(async () => {
     setBusy(true);
     try {
@@ -3037,6 +3538,10 @@ export default function Page() {
       setActive(mapped.active);
       setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
       setShowDishImages(mapped.showDishImages);
+      setShowMenuPreviewImage(mapped.showMenuPreviewImage);
+      setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
+      setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
+      setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
       setSections(mapped.sections);
       setMenuAITracker(buildMenuAITracker(loaded.menu, mapped.sections));
       setIncludedCoffee(mapped.settings.included_coffee);
@@ -3056,6 +3561,7 @@ export default function Page() {
         menuType: mapped.menuType,
         subtitles: mapped.subtitles.length ? mapped.subtitles : [""],
         showDishImages: mapped.showDishImages,
+        showMenuPreviewImage: mapped.showMenuPreviewImage,
         includedCoffee: mapped.settings.included_coffee,
         beverageType: mapped.settings.beverage.type,
         beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
@@ -3071,8 +3577,10 @@ export default function Page() {
       lastSavedSectionsRef.current = getSectionsFingerprint(mapped.sections);
       lastSavedSectionsStructureRef.current = getSectionsStructureFingerprint(mapped.sections);
       lastSavedSectionDishesRef.current = getSectionsDishFingerprintMap(mapped.sections);
+      lastSavedSectionAnnotationsRef.current = getSectionsAnnotationsFingerprintMap(mapped.sections);
       lastSavedSectionDishSyncRef.current = getSectionsDishSyncStateMap(mapped.sections, mappedIsALaCarte);
       inFlightSectionsRef.current = null;
+      inFlightSectionAnnotationsRef.current = {};
       syncRequestSeqRef.current = 0;
       setSaveState("idle");
 
@@ -3085,58 +3593,6 @@ export default function Page() {
     }
   }, [api, menuType]);
 
-  const openMenuTypeModal = useCallback(() => {
-    setMenuTypePendingValue(menuType || "closed_conventional");
-    setMenuTypeModalOpen(true);
-  }, [menuType]);
-
-  const closeMenuTypeModal = useCallback(() => {
-    if (menuTypeChanging) return;
-    setMenuTypeModalOpen(false);
-    setMenuTypePendingValue(menuType || "closed_conventional");
-  }, [menuType, menuTypeChanging]);
-
-  const confirmMenuTypeChange = useCallback(async () => {
-    if (!menuId) return;
-
-    const previousType = menuType || "closed_conventional";
-    const requestedType = menuTypePendingValue || previousType;
-    if (requestedType === previousType) {
-      closeMenuTypeModal();
-      return;
-    }
-
-    setMenuTypeChanging(true);
-    setMenuType(requestedType);
-
-    try {
-      const res = await api.menus.gruposV2.patchMenuType(menuId, requestedType);
-      if (!res.success) {
-        throw new Error(res.message || "No se pudo cambiar el tipo de menu");
-      }
-
-      const savedType = res.menu_type || requestedType;
-      setMenuType(savedType);
-      setMenuTypePendingValue(savedType);
-      setMenuTypeModalOpen(false);
-      pushToast({ kind: "success", title: "Tipo actualizado" });
-    } catch (error) {
-      setMenuType(previousType);
-      setMenuTypePendingValue(previousType);
-      pushToast({
-        kind: "error",
-        title: "Error",
-        message: error instanceof Error ? error.message : "No se pudo cambiar el tipo de menu",
-      });
-    } finally {
-      setMenuTypeChanging(false);
-    }
-  }, [api, closeMenuTypeModal, menuId, menuType, menuTypePendingValue, pushToast]);
-
-  const handleMenuTypePendingChange = useCallback((value: string) => {
-    setMenuTypePendingValue(value);
-  }, []);
-
   const addSection = useCallback(() => {
     setSections((prev) => [
       ...prev,
@@ -3145,6 +3601,7 @@ export default function Page() {
         title: "Nueva seccion",
         kind: "custom",
         position: prev.length,
+        annotations: [""],
         dishes: [],
         expanded: true,
       },
@@ -3173,6 +3630,98 @@ export default function Page() {
       });
       return changed ? next : prev;
     });
+  }, []);
+
+  const fetchSectionDishes = useCallback(
+    async (clientId: string) => {
+      const section = sections.find((s) => s.clientId === clientId);
+      if (!section || !section.id || !menuId) return;
+      const cacheKey = String(section.id);
+      if (sectionLoadedDishes.has(cacheKey)) return;
+      if (sectionLoadingState[clientId] === "loading") return;
+
+      setSectionLoadingState((prev) => ({ ...prev, [clientId]: "loading" }));
+      try {
+        const res = await api.menus.gruposV2.getSectionDishes(menuId, section.id);
+        if (res.success && res.dishes) {
+          setSections((prev) =>
+            prev.map((sec) => {
+              if (sec.clientId !== clientId) return sec;
+              return {
+                ...sec,
+                dishes: sec.dishes.map((existingDish) => {
+                  const updated = res.dishes.find((d: GroupMenuV2Dish) => d.id === existingDish.id);
+                  return updated ? mapApiDish(updated, existingDish) : existingDish;
+                }),
+              };
+            }),
+          );
+          setSectionLoadedDishes((prev) => new Set(prev).add(cacheKey));
+          setSectionLoadingState((prev) => ({ ...prev, [clientId]: null }));
+        } else {
+          setSectionLoadingState((prev) => ({ ...prev, [clientId]: "error" }));
+          const message = res.success ? "No se pudieron cargar los platos" : (res.message || "No se pudieron cargar los platos");
+          pushToast({ kind: "error", title: "Error", message });
+        }
+      } catch (err) {
+        setSectionLoadingState((prev) => ({ ...prev, [clientId]: "error" }));
+        pushToast({ kind: "error", title: "Error", message: err instanceof Error ? err.message : "Error al cargar platos" });
+      }
+    },
+    [api, menuId, sections, sectionLoadedDishes, sectionLoadingState, pushToast],
+  );
+
+  const handleSectionToggle = useCallback(
+    (clientId: string, willExpand: boolean) => {
+      if (willExpand) {
+        const section = sections.find((s) => s.clientId === clientId);
+        if (section?.id && menuId) {
+          const cacheKey = String(section.id);
+          if (!sectionLoadedDishes.has(cacheKey)) {
+            fetchSectionDishes(clientId);
+          }
+        }
+      }
+      updateSection(clientId, { expanded: willExpand });
+    },
+    [sections, menuId, sectionLoadedDishes, fetchSectionDishes, updateSection],
+  );
+
+  const updateSectionAnnotation = useCallback((sectionClientId: string, annotationIdx: number, value: string) => {
+    setSections((prev) => {
+      let changed = false;
+      const next = prev.map((sec) => {
+        if (sec.clientId !== sectionClientId) return sec;
+        if (annotationIdx < 0 || annotationIdx >= sec.annotations.length) return sec;
+        if (sec.annotations[annotationIdx] === value) return sec;
+        const annotations = [...sec.annotations];
+        annotations[annotationIdx] = value;
+        changed = true;
+        return { ...sec, annotations };
+      });
+      return changed ? next : prev;
+    });
+  }, []);
+
+  const addSectionAnnotation = useCallback((sectionClientId: string) => {
+    setSections((prev) =>
+      prev.map((sec) => {
+        if (sec.clientId !== sectionClientId) return sec;
+        return { ...sec, annotations: [...sec.annotations, ""] };
+      }),
+    );
+  }, []);
+
+  const removeSectionAnnotation = useCallback((sectionClientId: string, annotationIdx: number) => {
+    setSections((prev) =>
+      prev.map((sec) => {
+        if (sec.clientId !== sectionClientId) return sec;
+        if (sec.annotations.length <= 1) return sec;
+        if (annotationIdx < 0 || annotationIdx >= sec.annotations.length) return sec;
+        const annotations = sec.annotations.filter((_, idx) => idx !== annotationIdx);
+        return { ...sec, annotations: annotations.length > 0 ? annotations : [""] };
+      }),
+    );
   }, []);
 
   const moveSection = useCallback((from: number, to: number) => {
@@ -3324,6 +3873,24 @@ export default function Page() {
     }
   }, []);
 
+  const closeMenuPreviewImageAdvisor = useCallback(() => {
+    logMenuAITrace("preview-advisor:close");
+    setMenuPreviewImageAdvisorDraft((prev) => {
+      if (prev?.objectUrl) URL.revokeObjectURL(prev.objectUrl);
+      return null;
+    });
+    setMenuPreviewImageAdvisorBusy(false);
+  }, []);
+
+  const closeMenuPreviewImageCropper = useCallback(() => {
+    logMenuAITrace("preview-cropper:close");
+    setMenuPreviewImageCropDraft((prev) => {
+      if (prev?.objectUrl) URL.revokeObjectURL(prev.objectUrl);
+      return null;
+    });
+    setMenuPreviewImageCropBusy(false);
+  }, []);
+
   const resolvePersistedDishTarget = useCallback(
     async (
       target: { sectionClientId: string; dishClientId: string },
@@ -3385,6 +3952,21 @@ export default function Page() {
     setDishImageAdvisorBusy(false);
   }, []);
 
+  const moveMenuPreviewImageAdvisorToCrop = useCallback(() => {
+    logMenuAITrace("preview-advisor:continue-without-ai");
+    setMenuPreviewImageAdvisorDraft((advisorDraft) => {
+      if (!advisorDraft) return null;
+      setMenuPreviewImageCropDraft((prevCrop) => {
+        if (prevCrop?.objectUrl && prevCrop.objectUrl !== advisorDraft.objectUrl) {
+          URL.revokeObjectURL(prevCrop.objectUrl);
+        }
+        return advisorDraft;
+      });
+      return null;
+    });
+    setMenuPreviewImageAdvisorBusy(false);
+  }, []);
+
   const requestMenuAITrackerSync = useCallback(() => {
     const ws = menuAIWSSocketRef.current;
     if (!ws || ws.readyState !== WebSocket.OPEN || !menuId) {
@@ -3403,6 +3985,156 @@ export default function Page() {
       // Ignore transient websocket send errors.
     }
   }, [menuId]);
+
+  const openMenuPreviewImagePicker = useCallback(() => {
+    const input = menuPreviewImageInputRef.current;
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }, []);
+
+  const onMenuPreviewImageFileSelected = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.currentTarget.value = "";
+      if (!file) return;
+      if (!menuId) {
+        pushToast({ kind: "error", title: "Error", message: "Guarda primero el menú para subir imagen." });
+        return;
+      }
+
+      if (!isSupportedDishImageFile(file)) {
+        pushToast({ kind: "error", title: "Error", message: "Formato no soportado. Usa JPG, PNG, WEBP o GIF." });
+        return;
+      }
+      if (file.size > MAX_DISH_IMAGE_INPUT_BYTES) {
+        pushToast({ kind: "error", title: "Error", message: "La imagen excede 15MB." });
+        return;
+      }
+
+      setShowMenuPreviewImage(true);
+      setMenuPreviewImageBusy(true);
+      closeMenuPreviewImageCropper();
+      closeMenuPreviewImageAdvisor();
+      setMenuPreviewImageAdvisorBusy(true);
+      void (async () => {
+        try {
+          const preprocessed = await preprocessDishImageToWebp(file, DISH_IMAGE_AI_MAX_KB);
+          const objectUrl = URL.createObjectURL(preprocessed);
+          setMenuPreviewImageAdvisorDraft((prev) => {
+            if (prev?.objectUrl) URL.revokeObjectURL(prev.objectUrl);
+            return {
+              file: preprocessed,
+              objectUrl,
+            };
+          });
+        } catch (error) {
+          pushToast({
+            kind: "error",
+            title: "Error",
+            message: error instanceof Error ? error.message : "No se pudo procesar la imagen",
+          });
+        } finally {
+          setMenuPreviewImageAdvisorBusy(false);
+          setMenuPreviewImageBusy(false);
+        }
+      })();
+    },
+    [closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper, menuId, pushToast],
+  );
+
+  const onMenuPreviewImageAdvisorImprove = useCallback(async () => {
+    if (!menuPreviewImageAdvisorDraft || !menuId) return;
+    setMenuPreviewImageAdvisorBusy(true);
+    setMenuPreviewImageBusy(true);
+    setSaveState("saving");
+    applyMenuPreviewAIState({
+      show_menu_preview_image: true,
+      ai_requested: true,
+      ai_generating: true,
+    });
+    try {
+      const res = await api.menus.gruposV2.uploadMenuPreviewImageAI(menuId, menuPreviewImageAdvisorDraft.file);
+      if (!res.success) {
+        throw new Error(res.message || "No se pudo iniciar la mejora con IA");
+      }
+
+      closeMenuPreviewImageAdvisor();
+      requestMenuAITrackerSync();
+      setSaveState("saved");
+      pushToast({
+        kind: "success",
+        title: "Mejora iniciada",
+        message: "La imagen preview se esta procesando con IA en segundo plano.",
+      });
+    } catch (error) {
+      applyMenuPreviewAIState({
+        ai_generating: false,
+      });
+      setSaveState("error");
+      pushToast({
+        kind: "error",
+        title: "Error",
+        message: error instanceof Error ? error.message : "No se pudo iniciar la mejora con IA",
+      });
+    } finally {
+      setMenuPreviewImageAdvisorBusy(false);
+      setMenuPreviewImageBusy(false);
+    }
+  }, [
+    api,
+    applyMenuPreviewAIState,
+    closeMenuPreviewImageAdvisor,
+    menuId,
+    menuPreviewImageAdvisorDraft,
+    pushToast,
+    requestMenuAITrackerSync,
+  ]);
+
+  const onMenuPreviewImageCropConfirm = useCallback(
+    async (crop: DishImageCropConfirm) => {
+      if (!menuPreviewImageCropDraft || !menuId) return;
+      setMenuPreviewImageCropBusy(true);
+      setMenuPreviewImageBusy(true);
+      setSaveState("saving");
+      try {
+        const webpFile = await cropSquareImageToWebp(menuPreviewImageCropDraft.file, {
+          ...crop,
+          outputSizePx: 1024,
+          maxSizeKB: 150,
+        });
+        const res = await api.menus.gruposV2.uploadMenuPreviewImage(menuId, webpFile);
+        if (!res.success) {
+          throw new Error(res.message || "No se pudo subir la imagen");
+        }
+        applyMenuPreviewAIState({
+          show_menu_preview_image: true,
+          menu_preview_image_url: res.imageUrl || "",
+          ai_requested: false,
+          ai_generating: false,
+          ai_generated_img: res.imageUrl || null,
+        });
+        closeMenuPreviewImageCropper();
+        setSaveState("saved");
+        pushToast({
+          kind: "success",
+          title: "Imagen actualizada",
+          message: `Imagen optimizada (${Math.max(1, Math.round(webpFile.size / 1024))}KB)`,
+        });
+      } catch (error) {
+        setSaveState("error");
+        pushToast({
+          kind: "error",
+          title: "Error",
+          message: error instanceof Error ? error.message : "No se pudo actualizar la imagen",
+        });
+      } finally {
+        setMenuPreviewImageCropBusy(false);
+        setMenuPreviewImageBusy(false);
+      }
+    },
+    [api, applyMenuPreviewAIState, closeMenuPreviewImageCropper, menuId, menuPreviewImageCropDraft, pushToast],
+  );
 
   const pickDishImage = useCallback((sectionClientId: string, dishClientId: string) => {
     logMenuAITrace("pickDishImage", { sectionClientId, dishClientId });
@@ -3637,6 +4369,68 @@ export default function Page() {
     }
   }, [api, basicsFingerprint, basicsPayload, menuId, patchBasics, pushToast, sections, sectionsFingerprint, syncSectionsAndDishes]);
 
+  const menuPreviewUploadDisabled = !menuId
+    || menuPreviewImageBusy
+    || menuPreviewImageAdvisorBusy
+    || menuPreviewImageCropBusy
+    || menuPreviewAIGenerating;
+
+  const renderMenuPreviewUploadArea = () => {
+    if (!showMenuPreviewImage) return null;
+    const statusMessage = menuPreviewAIGenerating
+      ? "Generando imagen con IA..."
+      : menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy
+        ? "Procesando imagen..."
+        : "JPG, PNG, WEBP o GIF. Se optimiza a WebP de hasta 150KB.";
+    const actionLabel = menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy
+      ? "Procesando..."
+      : "Cambiar imagen";
+    const uploadLabel = menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy
+      ? "Procesando..."
+      : "Subir imagen";
+
+    return (
+      <div className="bo-field bo-field--full">
+        <div className="bo-label">Foto preview del menu</div>
+        <div className="bo-menuPreviewUploadBlock">
+          {menuPreviewAIGenerating ? (
+            <div className="bo-menuPreviewSkeletonCard" role="status" aria-live="polite">
+              <div className="bo-menuPreviewSkeletonMedia bo-skeleton" />
+            </div>
+          ) : menuPreviewImageUrl ? (
+            <div className="bo-menuPreviewImageCard">
+              <img className="bo-menuPreviewImage" src={menuPreviewImageUrl} alt="Preview image" />
+              <div className="bo-menuPreviewActions">
+                <button
+                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  type="button"
+                  disabled={menuPreviewUploadDisabled}
+                  onClick={openMenuPreviewImagePicker}
+                >
+                  <Upload size={14} /> {actionLabel}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bo-menuPreviewDropzone">
+              <Upload size={18} aria-hidden="true" />
+              <div className="bo-mutedText">Sube una imagen para mostrarla en la cabecera del menu.</div>
+              <button
+                className="bo-btn bo-btn--ghost bo-btn--sm"
+                type="button"
+                disabled={menuPreviewUploadDisabled}
+                onClick={openMenuPreviewImagePicker}
+              >
+                <Upload size={14} /> {uploadLabel}
+              </button>
+            </div>
+          )}
+          <div className="bo-menuPreviewStatus bo-mutedText">{statusMessage}</div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className="bo-menuWizardPage" aria-label="Editor de menu">
       <div className="bo-menuWizardTop">
@@ -3762,17 +4556,30 @@ export default function Page() {
               </div>
             ) : null}
 
+            <div className="bo-field">
+              <div className="bo-label">Cambiar tipo de menu</div>
+              <Select
+                className="bo-menuSettingSelect"
+                value={menuType}
+                onChange={setMenuType}
+                options={menuTypeOptions}
+                size="sm"
+                ariaLabel="Seleccionar tipo de menu"
+              />
+            </div>
+
             <div className="bo-menuBasicsSwitchRow">
-              <button
-                className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
-                type="button"
-                disabled={!menuId || busy || menuTypeChanging}
-                onClick={openMenuTypeModal}
-                aria-label="Cambiar tipo de menu"
-                title="Cambiar tipo"
-              >
-                <Repeat2 size={14} aria-hidden="true" focusable={false} />
-              </button>
+              <div className="bo-field">
+                <div className="bo-label">Añadir foto preview</div>
+                <Select
+                  className="bo-menuSettingSelect"
+                  value={showMenuPreviewImage ? "with_preview" : "without_preview"}
+                  onChange={(value) => setShowMenuPreviewImage(value === "with_preview")}
+                  options={menuPreviewVisibilityOptions}
+                  size="sm"
+                  ariaLabel="Visibilidad de foto preview"
+                />
+              </div>
             </div>
 
             <div className="bo-menuBasicsSwitchRow">
@@ -3782,6 +4589,8 @@ export default function Page() {
                 <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
               </label>
             </div>
+
+            {renderMenuPreviewUploadArea()}
           </div>
 
           <div className="bo-menuWizardActions">
@@ -3919,11 +4728,27 @@ export default function Page() {
           </div>
 
           <div className="bo-previewSwitchGlass">
-            <button className={`bo-previewSwitchBtn ${mobileTab === "editor" ? "is-active" : ""}`} type="button" onClick={() => setMobileTab("editor")}>
-              <span>Editor</span>
+            <button
+              className={`bo-previewSwitchBtn ${mobileTab === "editor" ? "is-active" : ""}`}
+              type="button"
+              onClick={() => setMobileTab("editor")}
+              aria-label="Editor"
+            >
+              <span className="bo-previewSwitchBtnLabel">Editor</span>
+              <span className="bo-previewSwitchBtnIcon" aria-hidden="true">
+                <Settings2 size={14} />
+              </span>
             </button>
-            <button className={`bo-previewSwitchBtn ${mobileTab === "preview" ? "is-active" : ""}`} type="button" onClick={() => setMobileTab("preview")}>
-              <span>Preview</span>
+            <button
+              className={`bo-previewSwitchBtn ${mobileTab === "preview" ? "is-active" : ""}`}
+              type="button"
+              onClick={() => setMobileTab("preview")}
+              aria-label="Preview"
+            >
+              <span className="bo-previewSwitchBtnLabel">Preview</span>
+              <span className="bo-previewSwitchBtnIcon" aria-hidden="true">
+                <Eye size={14} />
+              </span>
             </button>
           </div>
 
@@ -4006,18 +4831,29 @@ export default function Page() {
                     ariaLabel="Visibilidad de platos en preview"
                   />
                 </div>
-                <div className="bo-menuBasicsSwitchRow">
-                  <button
-                    className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
-                    type="button"
-                    disabled={!menuId || busy || menuTypeChanging}
-                    onClick={openMenuTypeModal}
-                    aria-label="Cambiar tipo de menu"
-                    title="Cambiar tipo"
-                  >
-                    <Repeat2 size={14} aria-hidden="true" focusable={false} />
-                  </button>
+                <div className="bo-field">
+                  <div className="bo-label">Añadir foto preview</div>
+                  <Select
+                    className="bo-menuSettingSelect"
+                    value={showMenuPreviewImage ? "with_preview" : "without_preview"}
+                    onChange={(value) => setShowMenuPreviewImage(value === "with_preview")}
+                    options={menuPreviewVisibilityOptions}
+                    size="sm"
+                    ariaLabel="Visibilidad de foto preview en editor final"
+                  />
                 </div>
+                <div className="bo-field">
+                  <div className="bo-label">Cambiar tipo de menu</div>
+                  <Select
+                    className="bo-menuSettingSelect"
+                    value={menuType}
+                    onChange={setMenuType}
+                    options={menuTypeOptions}
+                    size="sm"
+                    ariaLabel="Seleccionar tipo de menu en editor final"
+                  />
+                </div>
+
                 <div className="bo-menuBasicsSwitchRow">
                   <label className="bo-menuBasicsActiveToggle">
                     <span className="bo-label">Activo</span>
@@ -4025,6 +4861,8 @@ export default function Page() {
                     <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
                   </label>
                 </div>
+
+                {renderMenuPreviewUploadArea()}
               </div>
             </motion.div>
 
@@ -4050,22 +4888,28 @@ export default function Page() {
                   secIdx={secIdx}
                   sectionsCount={sections.length}
                   isALaCarte={isALaCarte}
+                  showDishImages={showDishImages}
                   reorderTransition={reorderTransition}
                   reorderWhileDrag={reorderWhileDrag}
                   chevronHover={chevronHover}
                   chevronTapUp={chevronTapUp}
                   chevronTapDown={chevronTapDown}
                   moveSection={moveSection}
+                  handleSectionToggle={handleSectionToggle}
                   updateSection={updateSection}
                   reorderDishes={reorderDishes}
                   setAllergenModal={setAllergenModal}
                   removeDish={removeDish}
                   updateDish={updateDish}
+                  updateSectionAnnotation={updateSectionAnnotation}
+                  addSectionAnnotation={addSectionAnnotation}
+                  removeSectionAnnotation={removeSectionAnnotation}
                   pickDishImage={pickDishImage}
                   addDish={addDish}
                   handleSearch={handleSearch}
                   searchTerm={searchTerms[sec.clientId] || ""}
                   searchItems={searchResults[sec.clientId] ?? EMPTY_SEARCH_RESULTS}
+                  sectionLoadingState={sectionLoadingState[sec.clientId]}
                 />
               ))}
               </Reorder.Group>
@@ -4172,30 +5016,6 @@ export default function Page() {
               </div>
             </motion.div>
 
-            <motion.div
-              layout
-              transition={paneLayoutTransition}
-              className="bo-menuWizardActions bo-menuWizardActions--final bo-menuWizardActions--iconOnlyInline"
-            >
-              <button
-                className="bo-btn bo-btn--ghost bo-btn--sm bo-menuFinalIconBtn"
-                type="button"
-                aria-label="Volver al paso de secciones"
-                onClick={() => setStep(2)}
-                disabled={busy}
-              >
-                <ArrowLeft size={16} />
-              </button>
-              <button
-                className="bo-btn bo-btn--primary bo-btn--sm bo-menuFinalIconBtn"
-                type="button"
-                aria-label="Añadir menu"
-                onClick={() => void onPublish()}
-                disabled={busy}
-              >
-                <Check size={16} />
-              </button>
-            </motion.div>
           </motion.div>
 
           <aside className={`bo-previewPane ${mobileTab === "preview" ? "is-mobileActive" : ""}`}>
@@ -4267,12 +5087,20 @@ export default function Page() {
         className="bo-hiddenFileInput"
         onChange={onDishImageFileSelected}
       />
+      <input
+        ref={menuPreviewImageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="bo-hiddenFileInput"
+        onChange={onMenuPreviewImageFileSelected}
+      />
 
       <DishImageAdvisorModal
         open={!!dishImageAdvisorDraft}
         imageUrl={dishImageAdvisorDraft?.objectUrl || ""}
         imageKB={dishImageAdvisorPreviewKB}
         busy={dishImageAdvisorBusy}
+        subjectLabel="plato"
         onClose={() => closeDishImageAdvisor()}
         onContinueWithoutAI={moveDishImageAdvisorToCrop}
         onImproveWithAI={() => void onDishImageAdvisorImprove()}
@@ -4284,6 +5112,25 @@ export default function Page() {
         busy={dishImageBusy}
         onClose={() => closeDishImageCropper()}
         onConfirm={(payload) => void onDishImageCropConfirm(payload)}
+      />
+
+      <DishImageAdvisorModal
+        open={!!menuPreviewImageAdvisorDraft}
+        imageUrl={menuPreviewImageAdvisorDraft?.objectUrl || ""}
+        imageKB={menuPreviewImageAdvisorPreviewKB}
+        busy={menuPreviewImageAdvisorBusy}
+        subjectLabel="la portada del menu"
+        onClose={closeMenuPreviewImageAdvisor}
+        onContinueWithoutAI={moveMenuPreviewImageAdvisorToCrop}
+        onImproveWithAI={() => void onMenuPreviewImageAdvisorImprove()}
+      />
+
+      <DishImageCropModal
+        open={!!menuPreviewImageCropDraft}
+        imageUrl={menuPreviewImageCropDraft?.objectUrl || ""}
+        busy={menuPreviewImageCropBusy}
+        onClose={closeMenuPreviewImageCropper}
+        onConfirm={(payload) => void onMenuPreviewImageCropConfirm(payload)}
       />
 
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620}>
@@ -4323,17 +5170,6 @@ export default function Page() {
           </div>
         </div>
       </Modal>
-
-      <MenuTypeChangeModal
-        open={menuTypeModalOpen}
-        title="Cambiar tipo de menu"
-        currentType={menuType || "closed_conventional"}
-        nextType={menuTypePendingValue}
-        saving={menuTypeChanging}
-        onClose={closeMenuTypeModal}
-        onNextTypeChange={handleMenuTypePendingChange}
-        onConfirm={() => void confirmMenuTypeChange()}
-      />
 
       {step === 4 && isSpecial ? (
         <div className="bo-menuWizardPanel">

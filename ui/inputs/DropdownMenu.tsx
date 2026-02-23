@@ -108,7 +108,7 @@ export function DropdownMenu({
           initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
-          transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeInOut" }}
           style={{ top: pos.top, left: pos.left, minWidth: pos.minWidth }}
         >
           {items.map((it) => (

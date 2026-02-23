@@ -152,9 +152,13 @@ export default function Page() {
         date_from: statementDateFrom,
         date_to: statementDateTo,
       });
-      if (res.success && res.statement) {
-        setCustomerStatement(res.statement);
-        pushToast("Estado de cuenta generado correctamente", "success");
+      if (res.success) {
+        if (res.statement) {
+          setCustomerStatement(res.statement);
+          pushToast("Estado de cuenta generado correctamente", "success");
+        } else {
+          errorToast.show("No se pudo generar el estado de cuenta");
+        }
       } else {
         errorToast.show(res.message || "Error al generar el estado de cuenta");
       }
@@ -370,9 +374,13 @@ export default function Page() {
         date_to: dateTo,
         include_credit_notes: includeCreditNotes,
       });
-      if (res.success && res.report) {
-        setReport(res.report);
-        pushToast("Reporte generado correctamente", "success");
+      if (res.success) {
+        if (res.report) {
+          setReport(res.report);
+          pushToast("Reporte generado correctamente", "success");
+        } else {
+          errorToast.show("No se pudo generar el reporte");
+        }
       } else {
         errorToast.show(res.message || "Error al generar el reporte");
       }
@@ -700,27 +708,27 @@ export default function Page() {
                     <StatCard
                       title="Saldo Inicial"
                       value={formatCurrency(customerStatement.opening_balance, "EUR")}
-                      icon={<DollarSign className="w-5 h-5 text-gray-600" />}
+                      icon="calendar"
                     />
                     <StatCard
                       title="Total Facturado"
                       value={formatCurrency(customerStatement.summary.total_invoiced, "EUR")}
-                      icon={<Receipt className="w-5 h-5 text-blue-600" />}
+                      icon="file-text"
                     />
                     <StatCard
                       title="Total Pagado"
                       value={formatCurrency(customerStatement.summary.total_paid, "EUR")}
-                      icon={<CreditCard className="w-5 h-5 text-green-600" />}
+                      icon="check"
                     />
                     <StatCard
                       title="Pendiente"
                       value={formatCurrency(customerStatement.summary.total_pending, "EUR")}
-                      icon={<Calendar className="w-5 h-5 text-yellow-600" />}
+                      icon="clock"
                     />
                     <StatCard
                       title="Saldo Final"
                       value={formatCurrency(customerStatement.closing_balance, "EUR")}
-                      icon={<DollarSign className="w-5 h-5 text-red-600" />}
+                      icon="trending-up"
                     />
                   </div>
 
@@ -921,22 +929,22 @@ export default function Page() {
                     <StatCard
                       title="Base Imponible"
                       value={formatCurrency(report.summary.total_base, "EUR")}
-                      icon={<FileText className="w-5 h-5 text-blue-600" />}
+                      icon="file-text"
                     />
                     <StatCard
                       title="IVA Acumulado"
                       value={formatCurrency(report.summary.total_iva, "EUR")}
-                      icon={<Calendar className="w-5 h-5 text-purple-600" />}
+                      icon="calendar"
                     />
                     <StatCard
                       title="Total"
                       value={formatCurrency(report.summary.total, "EUR")}
-                      icon={<Calendar className="w-5 h-5 text-green-600" />}
+                      icon="trending-up"
                     />
                     <StatCard
                       title="Facturas"
                       value={String(report.summary.invoice_count)}
-                      icon={<FileText className="w-5 h-5 text-orange-600" />}
+                      icon="users"
                     />
                   </div>
 

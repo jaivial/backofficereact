@@ -11,6 +11,8 @@ import type {
   ConfigFloor,
   ConfigOpeningHours,
   ConfigSalonCondesa,
+  TableMapArea,
+  TableMapItem,
   WeekdayOpen,
   DashboardMetrics,
   CalendarDay,
@@ -59,6 +61,7 @@ import type {
   SendReminderInput,
 } from "./types";
 import type { BORole } from "../lib/rbac";
+import { emitSessionExpired, emitSessionExpirationUpdate } from "../lib/session-expiration";
 
 type ClientOpts = {
   baseUrl: string;
@@ -79,16 +82,27 @@ async function readJSON(res: Response): Promise<any> {
   }
 }
 
-export function createClient(opts: ClientOpts) {
-  const fetchImpl = opts.fetchImpl ?? fetch;
-  const baseUrl = opts.baseUrl.replace(/\/+$/, "");
+export function createClient(opts: ClientOpts = { baseUrl: "" }) {
+  const normalizedOpts: ClientOpts = {
+    baseUrl: opts?.baseUrl ?? "",
+    fetchImpl: opts?.fetchImpl,
+    cookieHeader: opts?.cookieHeader,
+  };
+  const fetchImpl = normalizedOpts.fetchImpl ?? fetch;
+  const baseUrl = normalizedOpts.baseUrl.replace(/\/+$/, "");
+
+  function normalizeLegacyAdminPath(path: string): string {
+    if (path.startsWith("/api/admin/")) return path;
+    if (path.startsWith("/admin/")) return `/api${path}`;
+    return path;
+  }
 
   async function apiFetch(path: string, init: RequestInit): Promise<Response> {
     const url = baseUrl + path;
     const headers = new Headers(init.headers ?? {});
 
     if (!isBrowser()) {
-      if (opts.cookieHeader) headers.set("cookie", opts.cookieHeader);
+      if (normalizedOpts.cookieHeader) headers.set("cookie", normalizedOpts.cookieHeader);
     }
     // Browser: always include cookies (same-origin via /api proxy).
     const withCreds = isBrowser() ? { credentials: "include" as RequestCredentials } : {};
@@ -103,6 +117,10 @@ export function createClient(opts: ClientOpts) {
   async function json<T>(path: string, init: RequestInit): Promise<T> {
     const res = await apiFetch(path, init);
     const data = await readJSON(res);
+    emitSessionExpirationUpdate((data as any)?.moving_expiration_date ?? res.headers.get("x-moving-expiration-date"));
+    if (res.status === 401) {
+      emitSessionExpired();
+    }
     if (!res.ok) {
       const msg = data?.message || `HTTP ${res.status}`;
       throw new Error(msg);
@@ -137,10 +155,14 @@ export function createClient(opts: ClientOpts) {
     tipo?: string;
     active?: number;
     search?: string;
+    q?: string;
     page?: number;
     limit?: number;
+    pageSize?: number;
     categoria?: string;
     category?: string;
+    alergeno?: string;
+    suplemento?: number;
   };
 
   type ComidaWriteInput = {
@@ -257,7 +279,7 @@ export function createClient(opts: ClientOpts) {
 
   function applyComidaFilters(items: FoodItem[], params?: ComidaListParams): FoodItem[] {
     if (!params) return items;
-    const searchQ = String(params.search ?? "").trim().toLowerCase();
+    const searchQ = String(params.search ?? params.q ?? "").trim().toLowerCase();
     const tipoQ = String(params.tipo ?? "").trim().toLowerCase();
     const activeQ = params.active;
 
@@ -271,6 +293,18 @@ export function createClient(opts: ClientOpts) {
       }
       return true;
     });
+  }
+
+  function normalizeComidaListParams(params?: ComidaListParams): ComidaListParams | undefined {
+    if (!params) return undefined;
+    const next: ComidaListParams = { ...params };
+    if (!next.search && typeof next.q === "string" && next.q.trim() !== "") {
+      next.search = next.q;
+    }
+    if (!next.limit && typeof next.pageSize === "number" && Number.isFinite(next.pageSize) && next.pageSize > 0) {
+      next.limit = next.pageSize;
+    }
+    return next;
   }
 
   async function listComidaWithFallback(
@@ -414,8 +448,8 @@ export function createClient(opts: ClientOpts) {
 
   const comidaApi = {
     postres: {
-      async list(params?: { active?: number; search?: string; page?: number; limit?: number }): Promise<APISuccess<{ postres: Postre[] }> | APIError> {
-        return json(withQuery("/api/admin/postres", params), { method: "GET" });
+      async list(params?: ComidaListParams): Promise<APISuccess<{ postres: Postre[]; total?: number; page?: number; limit?: number }> | APIError> {
+        return json(withQuery("/api/admin/postres", normalizeComidaListParams(params)), { method: "GET" });
       },
       async create(input: { descripcion: string; alergenos: string[]; active?: boolean; precio?: number }): Promise<APISuccess<{ postre: Postre }> | APIError> {
         return json("/api/admin/postres", {
@@ -441,10 +475,29 @@ export function createClient(opts: ClientOpts) {
           body: JSON.stringify({ active }),
         });
       },
+      async get(id: number): Promise<APISuccess<{ postre: Postre; item?: FoodItem }> | APIError> {
+        const res = await comidaApi.postres.list({ page: 1, limit: 500 });
+        if (!res.success) return res;
+        const postre = (res.postres ?? []).find((entry) => Number(entry?.num) === Number(id));
+        if (!postre) return { success: false, message: "Postre no encontrado" };
+        const item: FoodItem = {
+          num: postre.num,
+          tipo: "POSTRE",
+          nombre: postre.descripcion,
+          precio: Number(postre.precio ?? 0),
+          descripcion: postre.descripcion,
+          titulo: "",
+          suplemento: 0,
+          alergenos: Array.isArray(postre.alergenos) ? postre.alergenos : [],
+          active: !!postre.active,
+          has_foto: false,
+        };
+        return { success: true, postre, item };
+      },
     },
     vinos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ vinos: Vino[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return json(withQuery("/api/admin/vinos", params), { method: "GET" });
+        return json(withQuery("/api/admin/vinos", normalizeComidaListParams(params)), { method: "GET" });
       },
       async create(input: {
         tipo: string;
@@ -495,6 +548,13 @@ export function createClient(opts: ClientOpts) {
           body: JSON.stringify({ active }),
         });
       },
+      async get(id: number): Promise<APISuccess<{ vino: Vino; item?: Vino }> | APIError> {
+        const res = await comidaApi.vinos.list({ page: 1, limit: 500 });
+        if (!res.success) return res;
+        const vino = (res.vinos ?? []).find((entry) => Number(entry?.num) === Number(id));
+        if (!vino) return { success: false, message: "Vino no encontrado" };
+        return { success: true, vino, item: vino };
+      },
     },
     cafes: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
@@ -522,6 +582,13 @@ export function createClient(opts: ClientOpts) {
           active,
           true,
         );
+      },
+      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
+        const res = await comidaApi.cafes.list({ page: 1, limit: 500 });
+        if (!res.success) return res;
+        const item = (res.items ?? []).find((entry) => Number(entry?.num) === Number(id));
+        if (!item) return { success: false, message: "Cafe no encontrado" };
+        return { success: true, item };
       },
     },
     bebidas: {
@@ -551,6 +618,13 @@ export function createClient(opts: ClientOpts) {
           true,
         );
       },
+      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
+        const res = await comidaApi.bebidas.list({ page: 1, limit: 500 });
+        if (!res.success) return res;
+        const item = (res.items ?? []).find((entry) => Number(entry?.num) === Number(id));
+        if (!item) return { success: false, message: "Bebida no encontrada" };
+        return { success: true, item };
+      },
     },
     platos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
@@ -567,6 +641,13 @@ export function createClient(opts: ClientOpts) {
       },
       async toggle(id: number, active = true): Promise<APISuccess<{ active: boolean }> | APIError> {
         return toggleComidaWithFallback(`/api/admin/platos/${id}/toggle`, `/api/admin/menus/dia/dishes/${id}`, active, true);
+      },
+      async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
+        const res = await comidaApi.platos.list({ page: 1, limit: 500 });
+        if (!res.success) return res;
+        const item = (res.items ?? []).find((entry) => Number(entry?.num) === Number(id));
+        if (!item) return { success: false, message: "Plato no encontrado" };
+        return { success: true, item };
       },
       categories: {
         async list(): Promise<APISuccess<{ categories: FoodCategory[] }> | APIError> {
@@ -594,6 +675,9 @@ export function createClient(opts: ClientOpts) {
   };
 
   return {
+    request: async <T = any>(path: string, init: RequestInit): Promise<T> => {
+      return json<T>(normalizeLegacyAdminPath(path), init);
+    },
     auth: {
       async login(identifier: string, password: string): Promise<APISuccess<{ session: BOSession }> | APIError> {
         return json("/api/admin/login", {
@@ -689,6 +773,44 @@ export function createClient(opts: ClientOpts) {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(patch),
+        });
+      },
+    },
+    tables: {
+      async list(params?: { date?: string; floor_number?: number }): Promise<APISuccess<{ data: TableMapArea[]; areas: TableMapArea[]; tables: TableMapItem[]; layout?: Record<string, unknown> }> | APIError> {
+        const q = new URLSearchParams();
+        if (params?.date) q.set("date", params.date);
+        if (typeof params?.floor_number === "number") q.set("floor_number", String(params.floor_number));
+        const suffix = q.toString();
+        return json(`/api/admin/tables${suffix ? `?${suffix}` : ""}`, { method: "GET" });
+      },
+      async create(input: Partial<TableMapItem> & { entity?: "table" | "area"; area_id?: number; name?: string; date?: string; floor_number?: number }): Promise<APISuccess<{ item: any; table?: TableMapItem; entity: string }> | APIError> {
+        return json("/api/admin/tables", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async update(input: Partial<TableMapItem> & { id?: number; entity?: "table" | "area" | "layout"; area_id?: number; name?: string; date?: string; floor_number?: number; metadata?: Record<string, unknown> }): Promise<APISuccess<{ item?: any; table?: TableMapItem; entity: string; layout?: Record<string, unknown> }> | APIError> {
+        return json("/api/admin/tables", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async saveLayout(input: { date: string; floor_number: number; metadata: Record<string, unknown> }): Promise<APISuccess<{ entity: "layout"; layout: Record<string, unknown> }> | APIError> {
+        return json("/api/admin/tables", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ entity: "layout", ...input }),
+        });
+      },
+      async uploadTextureImage(id: number, file: File): Promise<APISuccess<{ id: number; imageUrl: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "table-texture.webp");
+        return json(`/api/admin/tables/${id}/texture-image`, {
+          method: "POST",
+          body: form,
         });
       },
     },
@@ -1190,6 +1312,7 @@ export function createClient(opts: ClientOpts) {
             menu_type: string;
             menu_subtitle: string[];
             show_dish_images: boolean;
+            show_menu_preview_image: boolean;
             beverage: {
               type: string;
               price_per_person?: number | null;
@@ -1218,12 +1341,31 @@ export function createClient(opts: ClientOpts) {
         },
         async putSections(
           id: number,
-          sections: Array<{ id?: number; title: string; kind: string; position?: number }>,
+          sections: Array<{ id?: number; title: string; kind: string; position?: number; annotations?: string[] }>,
         ): Promise<APISuccess<{ sections: GroupMenuV2Section[] }> | APIError> {
           return json(`/api/admin/group-menus-v2/${id}/sections`, {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ sections }),
+          });
+        },
+        async patchSectionAnnotations(
+          id: number,
+          sectionId: number,
+          annotations: string[],
+        ): Promise<APISuccess<{ section_id: number; annotations: string[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/annotations`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ annotations }),
+          });
+        },
+        async getSectionDishes(
+          id: number,
+          sectionId: number,
+        ): Promise<APISuccess<{ dishes: GroupMenuV2Dish[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dishes`, {
+            method: "GET",
           });
         },
         async putSectionDishes(
@@ -1293,6 +1435,28 @@ export function createClient(opts: ClientOpts) {
             body: form,
           });
         },
+        async uploadMenuPreviewImage(
+          id: number,
+          file: File,
+        ): Promise<APISuccess<{ imageUrl: string }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || "menu-preview.webp");
+          return json(`/api/admin/group-menus-v2/${id}/preview-image`, {
+            method: "POST",
+            body: form,
+          });
+        },
+        async uploadMenuPreviewImageAI(
+          id: number,
+          file: File,
+        ): Promise<APISuccess<{ menu_id: number; message?: string }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || "menu-preview.webp");
+          return json(`/api/admin/group-menus-v2/${id}/preview-image/ai`, {
+            method: "POST",
+            body: form,
+          });
+        },
         async publish(id: number): Promise<APISuccess | APIError> {
           return json(`/api/admin/group-menus-v2/${id}/publish`, {
             method: "POST",
@@ -1315,7 +1479,7 @@ export function createClient(opts: ClientOpts) {
           file: File,
         ): Promise<APISuccess<{ imageUrl: string }> | APIError> {
           const form = new FormData();
-          form.append("image", file, file.name || "menu-special.jpg");
+          form.append("image", file, file.name || "menu-special.webp");
           return json(`/api/admin/group-menus-v2/${menuId}/special-image`, {
             method: "POST",
             body: form,
@@ -1563,7 +1727,12 @@ export function createClient(opts: ClientOpts) {
           method: "POST",
           body: formData,
         });
-        return readJSON(res);
+        const data = await readJSON(res);
+        emitSessionExpirationUpdate((data as any)?.moving_expiration_date ?? res.headers.get("x-moving-expiration-date"));
+        if (res.status === 401) {
+          emitSessionExpired();
+        }
+        return data;
       },
 
       async getHistory(id: number): Promise<import("./types").InvoiceHistoryListResponse | import("./types").APIError> {
@@ -2110,6 +2279,7 @@ export function createClient(opts: ClientOpts) {
         const q = new URLSearchParams({ job_type: jobType });
         return json(`/api/admin/jobs/status?${q.toString()}`, { method: "GET" });
       },
+
     },
 
     // Public Invoice API (for customer-facing invoice lookup)
