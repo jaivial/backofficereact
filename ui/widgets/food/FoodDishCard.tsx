@@ -4,6 +4,7 @@ import { Upload, UtensilsCrossed } from "lucide-react";
 type FoodDishCardProps = {
   title: string;
   imageUrl?: string | null;
+  showMedia?: boolean;
   mediaLoading?: boolean;
   inactive?: boolean;
   primaryMeta?: string;
@@ -24,6 +25,7 @@ type FoodDishCardProps = {
 export const FoodDishCard = React.memo(function FoodDishCard({
   title,
   imageUrl,
+  showMedia = true,
   mediaLoading,
   inactive,
   primaryMeta,
@@ -101,42 +103,44 @@ export const FoodDishCard = React.memo(function FoodDishCard({
       onClick={clickable ? onOpen : undefined}
       onKeyDown={clickable ? onKeyDown : undefined}
     >
-      <div className="bo-foodMemberMedia">
-        {mediaInteractive ? (
-          <button
-            type="button"
-            className="bo-foodMemberMediaButton"
-            onClick={onMediaClick}
-            aria-label={mediaActionAriaLabel || `Subir imagen de ${title}`}
-            disabled={mediaActionDisabled || isMediaLoading}
-          >
-            {isMediaLoading ? (
-              <div className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
-            ) : hasImage ? (
-              <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
-            ) : (
-              <div className="bo-foodMemberMediaPlaceholder">
-                <UtensilsCrossed size={30} />
-              </div>
-            )}
-            <span className="bo-foodMemberMediaOverlay" aria-hidden="true">
-              <Upload size={22} />
-            </span>
-          </button>
-        ) : (
-          <div aria-hidden="true">
-            {isMediaLoading ? (
-              <div className="bo-foodMemberMediaSkeleton" />
-            ) : hasImage ? (
-              <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
-            ) : (
-              <div className="bo-foodMemberMediaPlaceholder">
-                <UtensilsCrossed size={30} />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {showMedia ? (
+        <div className="bo-foodMemberMedia">
+          {mediaInteractive ? (
+            <button
+              type="button"
+              className="bo-foodMemberMediaButton"
+              onClick={onMediaClick}
+              aria-label={mediaActionAriaLabel || `Subir imagen de ${title}`}
+              disabled={mediaActionDisabled || isMediaLoading}
+            >
+              {isMediaLoading ? (
+                <div className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
+              ) : hasImage ? (
+                <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
+              ) : (
+                <div className="bo-foodMemberMediaPlaceholder">
+                  <UtensilsCrossed size={30} />
+                </div>
+              )}
+              <span className="bo-foodMemberMediaOverlay" aria-hidden="true">
+                <Upload size={22} />
+              </span>
+            </button>
+          ) : (
+            <>
+              {isMediaLoading ? (
+                <div className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
+              ) : hasImage ? (
+                <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} aria-hidden="true" />
+              ) : (
+                <div className="bo-foodMemberMediaPlaceholder" aria-hidden="true">
+                  <UtensilsCrossed size={30} />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      ) : null}
 
       <div className={`bo-foodMemberBody${bodyClassName ? ` ${bodyClassName}` : ""}`}>
         <div className="bo-foodMemberTitleRow">

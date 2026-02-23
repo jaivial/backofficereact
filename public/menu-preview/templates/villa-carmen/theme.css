@@ -1827,6 +1827,24 @@ svg {
     color: rgba(20, 37, 32, 0.82);
 }
 
+.menuSectionAnnotations {
+    margin: 12px 0 0;
+    padding: 0 0 0 20px;
+    list-style: disc;
+    color: var(--pine);
+    opacity: 0.5;
+}
+
+.menuSectionAnnotation {
+    font-style: oblique;
+    line-height: 1.5;
+    font-size: 13px;
+}
+
+.menuSectionAnnotation + .menuSectionAnnotation {
+    margin-top: 6px;
+}
+
 .dishGrid {
     display: grid;
     grid-template-columns: 1fr;
@@ -1885,10 +1903,6 @@ svg {
 .dishCard.dishCard--withImage.dishCard--pickable {
     padding-right: 0;
     padding-bottom: 0;
-}
-
-.dishCard.dishCard--withImage.dishCard--pickable .dishCardInfo {
-    padding-right: 62px;
 }
 
 .dishCardMedia {

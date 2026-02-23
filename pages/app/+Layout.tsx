@@ -27,6 +27,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const session = useAtomValue(sessionAtom);
   const reduceMotion = useReducedMotion();
   const pathname = pageContext.urlPathname ?? "/";
+  const isReservasTables = pathname.startsWith("/app/reservas/tables");
   const title = useMemo(() => titleForPath(pathname), [pathname]);
   const prevRestaurant = useRef<number | null>(null);
 
@@ -54,8 +55,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         sectionAccess={session.user.sectionAccess}
         roleImportance={session.user.roleImportance}
       />
-      <main className="bo-main">
-        <Topbar title={title} />
+      <main className={`bo-main${isReservasTables ? " bo-main--immersive" : ""}`}>
+        {isReservasTables ? null : <Topbar title={title} />}
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

@@ -98,6 +98,24 @@ body {
   gap: 6px;
 }
 
+.menuSectionAnnotations {
+  margin: 10px 0 0;
+  padding: 0 0 0 18px;
+  list-style: disc;
+  color: var(--pine, var(--vc-text));
+  opacity: 0.5;
+}
+
+.menuSectionAnnotation {
+  font-style: oblique;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.menuSectionAnnotation + .menuSectionAnnotation {
+  margin-top: 4px;
+}
+
 .vc-item {
   font-size: 14px;
   line-height: 1.45;

@@ -400,6 +400,12 @@
     };
   }
 
+  function normalizeSectionAnnotations(raw) {
+    return (Array.isArray(raw) ? raw : [])
+      .map(function (item) { return String(item || "").trim(); })
+      .filter(Boolean);
+  }
+
   function getMenuViewSections(menu) {
     const rows = Array.isArray(menu.sections) ? menu.sections : [];
     const sortedRows = rows.slice().sort(function (a, b) {
@@ -431,6 +437,7 @@
         id: Number.isFinite(rawId) ? rawId : rowIdx,
         title: title,
         kind: String((row && row.kind) || "").toLowerCase().trim() || "custom",
+        annotations: normalizeSectionAnnotations(row && row.annotations),
         dishes: dishes,
         position: parsePosition(row && row.position, rowIdx),
       });
@@ -537,7 +544,7 @@
     return "Suplemento";
   }
 
-  function renderDishMetaBlocks(dish) {
+  function renderDishMetaBlocks(dish, options) {
     const blocks = [];
     if (dish && dish.description_enabled && dish.description) {
       blocks.push('<div class="dishDescriptionExtra">' + escapeHtml(dish.description) + "</div>");
@@ -545,6 +552,12 @@
     const supplement = supplementLabel(dish);
     if (supplement) {
       blocks.push('<div class="dishSupplementInfo">' + escapeHtml(supplement) + "</div>");
+    }
+    if (options && options.showPriceLabel) {
+      const price = renderDishPriceLabel(dish && dish.price);
+      if (price) {
+        blocks.push('<div class="dishSupplementInfo">' + escapeHtml(price) + "</div>");
+      }
     }
     return blocks.join("");
   }
@@ -623,7 +636,7 @@
             '<div class="dishCardInfo">' +
             '<div class="dishCardBody">' +
             '<div class="dishDescription">' + escapeHtml(dish.descripcion) + "</div>" +
-            renderDishMetaBlocks(dish) +
+            renderDishMetaBlocks(dish, options || {}) +
             "</div>" +
             renderAllergenIcons(dish.alergenos) +
             "</div>" +
@@ -637,7 +650,7 @@
         return (
           '<li class="' + cls + '">' +
           '<div class="dishDescription">' + escapeHtml(dish.descripcion) + "</div>" +
-          renderDishMetaBlocks(dish) +
+          renderDishMetaBlocks(dish, options || {}) +
           renderAllergenIcons(dish.alergenos) +
           addBtn +
           "</li>"
@@ -647,12 +660,21 @@
     return '<ul class="dishGrid" role="list">' + cards + "</ul>";
   }
 
+  function renderSectionAnnotations(annotations) {
+    if (!Array.isArray(annotations) || annotations.length === 0) return "";
+    const rows = annotations
+      .map(function (annotation) { return '<li class="menuSectionAnnotation">' + escapeHtml(annotation) + "</li>"; })
+      .join("");
+    return rows ? '<ul class="menuSectionAnnotations" role="list">' + rows + "</ul>" : "";
+  }
+
   function renderMenuSectionVC(title, dishes, notes, options) {
     if (!Array.isArray(dishes) || dishes.length === 0) return "";
     const notesHtml = Array.isArray(notes) && notes.length
       ? '<ul class="menuSectionNotes" role="list">' + notes.map(function (note) { return '<li class="menuSectionNote">' + escapeHtml(note) + "</li>"; }).join("") + "</ul>"
       : "";
-    return '<section class="menuSection"><h2 class="menuSectionHeading">' + escapeHtml(title) + "</h2>" + renderDishGrid(dishes, options) + notesHtml + "</section>";
+    const annotationsHtml = renderSectionAnnotations(options && options.annotations);
+    return '<section class="menuSection"><h2 class="menuSectionHeading">' + escapeHtml(title) + "</h2>" + renderDishGrid(dishes, options) + notesHtml + annotationsHtml + "</section>";
   }
 
   function renderMenuPriceCardVC(priceLabel) {
@@ -829,6 +851,7 @@
           html += renderMenuSectionVC(section.title, section.dishes, isRice ? riceNotes : null, {
             pickable: isPickable,
             showImages: showDishImages,
+            annotations: section.annotations,
           });
           return html;
         })
@@ -861,6 +884,7 @@
     if (state.menuType === "a_la_carte") {
       const sections = getMenuViewSections(menu);
       const comments = Array.isArray(menu.settings.comments) ? menu.settings.comments.filter(Boolean) : [];
+      const showDishImages = !!menu.show_dish_images;
       let body = "";
 
       if (sections.length === 0) {
@@ -868,26 +892,29 @@
       } else {
         const cards = sections
           .map(function (section) {
-            const dishRows = section.dishes
-              .map(function (dish) {
-                return renderMenuDishItem(dish, { withAllergens: true, showPriceLabel: true });
-              })
-              .join("");
-            return '<article class="menuSectionCard"><h2 class="menuSectionTitle">' + escapeHtml(section.title) + '</h2><ul class="menuDishList">' + dishRows + "</ul></article>";
+            if (showDishImages) {
+              return '<article class="menuSectionCard"><h2 class="menuSectionTitle">' + escapeHtml(section.title) + "</h2>" + renderDishGrid(section.dishes, {
+                showImages: true,
+                showPriceLabel: true,
+              }) + renderSectionAnnotations(section.annotations) + "</article>";
+            }
+
+            const rows = section.dishes.map(function (dish) {
+              return renderMenuDishItem(dish, { withAllergens: true, showPriceLabel: true });
+            }).join("");
+            return '<article class="menuSectionCard"><h2 class="menuSectionTitle">' + escapeHtml(section.title) + '</h2><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</article>";
           })
           .join("");
 
-        const formattedPrice = formatMenuPrice(menu.price);
-        const notes = comments.map(function (comment) { return '<p class="menuDishText menuMuted">' + escapeHtml(comment) + "</p>"; }).join("");
-        const priceCard =
-          '<article class="menuSectionCard menuSectionCard--price">' +
-          '<h2 class="menuSectionTitle">Precio</h2>' +
-          '<p class="menuPrice">' + (formattedPrice ? escapeHtml(formattedPrice + "€") : "&#8212;") + "</p>" +
-          '<p class="menuDishText menuMuted">' + escapeHtml(beverageLabel(menu.settings)) + "</p>" +
-          notes +
-          '</article>';
+        const notesLines = ['<p class="menuDishText menuMuted">' + escapeHtml(beverageLabel(menu.settings)) + "</p>"];
+        comments.forEach(function (comment) {
+          notesLines.push('<p class="menuDishText menuMuted">' + escapeHtml(comment) + "</p>");
+        });
+        const notesCard = notesLines.length
+          ? '<article class="menuSectionCard"><h2 class="menuSectionTitle">Condiciones</h2>' + notesLines.join("") + "</article>"
+          : "";
 
-        body = '<div class="menuGrid">' + cards + priceCard + "</div>";
+        body = '<div class="menuGrid">' + cards + notesCard + "</div>";
       }
 
       return mountVillaTemplate({
@@ -900,35 +927,66 @@
 
     if (state.menuType === "a_la_carte_group") {
       const sections = getMenuViewSections(menu);
+      const subtitles = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle.filter(Boolean) : [];
       const comments = Array.isArray(menu.settings.comments) ? menu.settings.comments.filter(Boolean) : [];
-      const price = Number(menu.price);
+      const showDishImages = !!menu.show_dish_images;
+      const beverageLines = groupBeverageLines(menu);
       let body = "";
 
       if (sections.length === 0) {
         body = '<div class="menuState">No hay contenido disponible.</div>';
       } else {
-        const cards = sections
+        const sectionsHtml = sections
           .map(function (section) {
-            const dishRows = section.dishes
-              .map(function (dish) {
-                return renderMenuDishItem(dish, { withAllergens: false, showPriceLabel: false });
-              })
-              .join("");
-            return '<article class="menuSectionCard"><h2 class="menuSectionTitle">' + escapeHtml(section.title) + '</h2><ul class="menuDishList">' + dishRows + "</ul></article>";
+            if (showDishImages) {
+              return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + "</h3>" + renderDishGrid(section.dishes, {
+                showImages: true,
+                showPriceLabel: true,
+              }) + renderSectionAnnotations(section.annotations) + "</section>";
+            }
+            const rows = section.dishes.map(function (dish) {
+              return renderMenuDishItem(dish, { withAllergens: false, showPriceLabel: true });
+            }).join("");
+            return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + '</h3><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</section>";
           })
           .join("");
 
-        const commentsHtml = comments.map(function (comment) { return '<p class="menuDishText menuMuted">' + escapeHtml(comment) + "</p>"; }).join("");
-        const priceCard =
-          '<article class="menuSectionCard menuSectionCard--price">' +
-          '<h2 class="menuSectionTitle">Precio</h2>' +
-          '<p class="menuPrice">' + (Number.isFinite(price) ? escapeHtml(formatEuro(price) + " / pax") : escapeHtml(String(menu.price || ""))) + "</p>" +
-          '<p class="menuDishText menuMuted">' + escapeHtml(beverageLabel(menu.settings)) + "</p>" +
-          '<p class="menuDishText menuMuted">' + (menu.settings.included_coffee ? "Café incluido" : "Café no incluido") + "</p>" +
-          commentsHtml +
-          '</article>';
+        const subtitleBlock = subtitles.length
+          ? '<div class="groupSubtitles">' + subtitles.map(function (line) { return '<p class="menuDishText menuMuted">' + escapeHtml(line) + "</p>"; }).join("") + "</div>"
+          : '<p class="menuDishText menuMuted">(A partir de ' + escapeHtml(String(menu.settings.min_party_size || 8)) + ' personas)</p>';
 
-        body = '<div class="menuGrid">' + cards + priceCard + "</div>";
+        const forecastBlock =
+          '<section class="menuSubSection">' +
+          '<h3 class="menuSubTitle">Previsión</h3>' +
+          '<p class="menuDishText">Cada persona elige platos de esta carta y paga según el precio de cada plato.</p>' +
+          '<p class="menuDishText menuMuted">No existe un precio cerrado único para todo el menú.</p>' +
+          "</section>";
+
+        const beverageLinesHtml = beverageLines.map(function (line, idx) {
+          return '<p class="' + (idx === 0 ? "menuDishText" : "menuDishText menuMuted") + '">' + escapeHtml(line) + "</p>";
+        }).join("");
+
+        const commentsSection = comments.length
+          ? '<section class="menuSubSection"><h3 class="menuSubTitle">Comentarios</h3>' + comments.map(function (comment) { return '<p class="menuDishText menuMuted">' + escapeHtml(comment) + "</p>"; }).join("") + "</section>"
+          : "";
+
+        body =
+          '<article class="menuSectionCard groupPanel">' +
+          '<div class="menugrupos-decor">' +
+          '<img class="menugrupos-flower-top-left" src="/media/menugrupos/pngegg.png" alt="" loading="lazy" />' +
+          '<img class="menugrupos-flower-bottom-right" src="/media/menugrupos/pngegg2.png" alt="" loading="lazy" />' +
+          '<img class="menugrupos-vine" src="/media/menugrupos/enredadera.png" alt="" loading="lazy" />' +
+          "</div>" +
+          '<h2 class="menuSectionTitle">' + escapeHtml(menu.menu_title || "Menu sin titulo") + "</h2>" +
+          subtitleBlock +
+          '<div class="menuGrid menuGrid--single">' +
+          sectionsHtml +
+          forecastBlock +
+          '<section class="menuSubSection"><h3 class="menuSubTitle">Bebidas</h3>' + beverageLinesHtml + "</section>" +
+          '<section class="menuSubSection"><h3 class="menuSubTitle">Café</h3><p class="menuDishText menuMuted">' + (menu.settings.included_coffee ? "Café incluido" : "Café no incluido") + "</p></section>" +
+          commentsSection +
+          "</div>" +
+          "</article>";
       }
 
       return mountVillaTemplate({
@@ -948,7 +1006,7 @@
       const sectionsHtml = sections
         .map(function (section) {
           const rows = section.dishes.map(function (dish) { return renderMenuDishItem(dish, { withAllergens: false, showPriceLabel: false }); }).join("");
-          return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + '</h3><ul class="menuDishList">' + rows + "</ul></section>";
+          return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + '</h3><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</section>";
         })
         .join("");
 
@@ -983,7 +1041,7 @@
       const specialImageURL = resolveMediaURL(menu.special_menu_image_url || "");
       const hasImage = Boolean(specialImageURL);
       const body = sections.length
-        ? '<div class="menuMain">' + sections.map(function (section) { return renderMenuSectionVC(section.title, section.dishes, null, { showImages: showDishImages }); }).join("") + "</div>"
+        ? '<div class="menuMain">' + sections.map(function (section) { return renderMenuSectionVC(section.title, section.dishes, null, { showImages: showDishImages, annotations: section.annotations }); }).join("") + "</div>"
         : '<div class="menuState">No hay contenido disponible.</div>';
 
       const heroMedia = hasImage
@@ -1012,7 +1070,7 @@
         return '<li class="vc-item"><span>' + escapeHtml(title) + "</span>" + price + "</li>";
       })
       .join("");
-    return '<article class="vc-card"><h3>' + escapeHtml(section.title || "Seccion") + '</h3><ul class="vc-list">' + (rows || '<li class="vc-empty">Sin platos</li>') + "</ul></article>";
+    return '<article class="vc-card"><h3>' + escapeHtml(section.title || "Seccion") + '</h3><ul class="vc-list">' + (rows || '<li class="vc-empty">Sin platos</li>') + "</ul>" + renderSectionAnnotations(normalizeSectionAnnotations(section.annotations)) + "</article>";
   }
 
   function renderGeneric(menu) {
@@ -1021,6 +1079,7 @@
     const comments = Array.isArray(menu.settings.comments)
       ? menu.settings.comments.filter(Boolean).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("")
       : "";
+    const isPerDishMenu = state.menuType === "a_la_carte" || state.menuType === "a_la_carte_group";
 
     const specialImageURL = resolveMediaURL(menu.special_menu_image_url || "");
     const imageBlock = state.menuType === "special" && specialImageURL
@@ -1034,7 +1093,7 @@
     bindText("title", menu.menu_title || "Menu sin titulo");
     bindText("subtitle", subtitle);
     bindHtml("content", content);
-    bindText("price", toMoney(menu.price));
+    bindText("price", isPerDishMenu ? "Precio por plato" : toMoney(menu.price));
     bindText("beverage", beverageLabel(menu.settings));
     bindText("coffee", menu.settings.included_coffee ? "Cafe incluido" : "Cafe no incluido");
     bindHtml("comments", comments || '<li class="vc-empty">Sin comentarios</li>');

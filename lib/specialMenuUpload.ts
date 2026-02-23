@@ -1,16 +1,17 @@
 /**
- * Document conversion utility for special menus
- * Handles conversion of PDF, Word, and TXT files to images for upload to Bunny CDN
+ * File utilities for special menu upload.
+ *
+ * - Accepts images, PDF, Word and TXT inputs.
+ * - Image inputs are normalized to WEBP <= 150KB in frontend when possible.
+ * - Document inputs are sent as-is and converted server-side.
  */
 
 import { compressImageToWebP } from "./imageCompressor";
 
-const MAX_FILE_SIZE_MB = 10;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+export const SPECIAL_MENU_MAX_FILE_MB = 10;
+export const SPECIAL_MENU_MAX_FILE_BYTES = SPECIAL_MENU_MAX_FILE_MB * 1024 * 1024;
+export const SPECIAL_MENU_MAX_WEBP_KB = 150;
 
-/**
- * Supported file types for special menu images
- */
 export const SUPPORTED_MENU_FILE_TYPES = [
   "image/jpeg",
   "image/png",
@@ -24,18 +25,11 @@ export const SUPPORTED_MENU_FILE_TYPES = [
 
 export type SupportedMenuFileType = (typeof SUPPORTED_MENU_FILE_TYPES)[number];
 
-/**
- * Check if a file is a valid type for special menu upload
- */
 export function isValidMenuFileType(file: File): boolean {
   return SUPPORTED_MENU_FILE_TYPES.includes(file.type as SupportedMenuFileType);
 }
 
-/**
- * Check if a file needs conversion (PDF, Word, TXT)
- * These files need server-side processing
- */
-export function fileNeedsConversion(file: File): boolean {
+export function fileNeedsServerConversion(file: File): boolean {
   const conversionTypes = [
     "application/pdf",
     "application/msword",
@@ -45,66 +39,44 @@ export function fileNeedsConversion(file: File): boolean {
   return conversionTypes.includes(file.type);
 }
 
-/**
- * Process a file for special menu upload
- * - For images: compress to WebP if needed
- * - For PDF/Word/TXT: return as-is for server-side conversion
- *
- * @param file - The file to process
- * @returns Processed file ready for upload
- */
+async function dataURLToFile(dataUrl: string, outputName: string): Promise<File> {
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  return new File([blob], outputName, { type: "image/webp" });
+}
+
+function outputWebPName(fileName: string): string {
+  const base = String(fileName || "menu-especial").replace(/\.[^.]+$/, "").trim() || "menu-especial";
+  return `${base.replace(/\s+/g, "-")}.webp`;
+}
+
 export async function processSpecialMenuFile(file: File): Promise<{ file: File; needsServerConversion: boolean }> {
-  // Check file size
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    throw new Error(`El archivo excede el tamaño máximo de ${MAX_FILE_SIZE_MB}MB`);
+  if (file.size > SPECIAL_MENU_MAX_FILE_BYTES) {
+    throw new Error(`El archivo excede el tamaño máximo de ${SPECIAL_MENU_MAX_FILE_MB}MB`);
   }
 
-  // For images, compress if needed
-  if (file.type.startsWith("image/") && !file.type.includes("webp")) {
-    try {
-      const compressedBase64 = await compressImageToWebP(file, 500); // 500KB for menu images
-      // Convert base64 back to File
-      const response = await fetch(compressedBase64);
-      const blob = await response.blob();
-      const processedFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), { type: "image/webp" });
-      return { file: processedFile, needsServerConversion: false };
-    } catch {
-      // If compression fails, return original
-      return { file, needsServerConversion: false };
-    }
+  if (!isValidMenuFileType(file)) {
+    throw new Error("Formato no soportado. Usa imagen, PDF, Word o TXT");
   }
 
-  // For images that are already WebP or don't need conversion
-  if (file.type.startsWith("image/")) {
+  if (fileNeedsServerConversion(file)) {
+    return { file, needsServerConversion: true };
+  }
+
+  const alreadyWebP = file.type === "image/webp";
+  if (alreadyWebP && file.size <= SPECIAL_MENU_MAX_WEBP_KB * 1024) {
     return { file, needsServerConversion: false };
   }
 
-  // For PDF, Word, TXT - needs server-side conversion
-  return { file, needsServerConversion: true };
+  const compressed = await compressImageToWebP(file, SPECIAL_MENU_MAX_WEBP_KB);
+  const webpFile = await dataURLToFile(compressed, outputWebPName(file.name));
+  if (webpFile.size > SPECIAL_MENU_MAX_WEBP_KB * 1024) {
+    throw new Error("No se pudo reducir la imagen por debajo de 150KB");
+  }
+
+  return { file: webpFile, needsServerConversion: false };
 }
 
-/**
- * Get file extension from MIME type
- */
-export function getFileExtension(mimeType: string): string {
-  const extensions: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-    "image/gif": "gif",
-    "application/pdf": "pdf",
-    "application/msword": "doc",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-    "text/plain": "txt",
-  };
-  return extensions[mimeType] || "bin";
-}
-
-/**
- * Generate a unique filename for the special menu image
- */
-export function generateSpecialMenuFileName(menuId: number, originalFileName: string): string {
-  const extension = getFileExtension(originalFileName);
-  const timestamp = Date.now();
-  return `menu-special-${menuId}-${timestamp}.${extension}`;
+export function formatFileSizeKB(bytes: number): string {
+  return `${Math.max(1, Math.round(bytes / 1024))}KB`;
 }
