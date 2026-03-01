@@ -489,10 +489,10 @@ button {
 }
 
 .bo-topbarActions {
-  position: static;
+  position: relative;
   margin-left: auto;
   max-width: 100%;
-  z-index: 2;
+  z-index: 170;
 }
 
 .bo-actionBtn {
@@ -3456,20 +3456,29 @@ tr.is-inactive {
 }
 
 .bo-tableMapFloorTab {
-  border: 1px solid var(--bo-border);
-  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
   color: var(--bo-muted);
-  height: 32px;
-  border-radius: var(--bo-radius-sm);
-  padding: 0 12px;
+  height: 36px;
+  border-radius: var(--bo-radius-pill, 9999px);
+  padding: 0 14px;
   cursor: pointer;
-  transition: color var(--bo-transition-base) var(--bo-ease), border-color var(--bo-transition-base) var(--bo-ease);
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-medium);
+  transition: all var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-tableMapFloorTab:hover:not(.is-active) {
+  background: color-mix(in srgb, var(--bo-surface-2) 64%, transparent);
+  border-color: var(--bo-border);
+  color: var(--bo-text-secondary);
 }
 
 .bo-tableMapFloorTab.is-active {
   color: var(--bo-text);
-  border-color: color-mix(in srgb, var(--bo-accent) 56%, var(--bo-border));
-  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent) 48%, transparent);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 18%, transparent), transparent 62%);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--bo-accent) 20%, transparent);
 }
 
 .bo-tableMapFlowWrap {
@@ -3477,6 +3486,12 @@ tr.is-inactive {
   inset: 0;
   width: auto;
   height: auto;
+  z-index: 1;
+}
+
+/* When dragging, the canvas needs to be above the sidebar */
+body.is-dragging .bo-tableMapFlowWrap {
+  z-index: 100;
 }
 
 .bo-tableMapFlow {
@@ -3594,73 +3609,394 @@ tr.is-inactive {
   transition: transform var(--bo-transition-slow) var(--bo-ease-out);
   display: grid;
   grid-template-rows: auto 1fr;
+  backdrop-filter: blur(var(--bo-glass-blur, 14px));
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur, 14px));
 }
 
 .bo-tableMapSheet.is-open {
   transform: translateX(0);
 }
 
+/* Allow drag events to pass through sidebar during drag */
+.bo-tableMapSheet.drag-active {
+  pointer-events: none;
+}
+
 .bo-tableMapSheetHead {
-  padding: var(--bo-space-4);
+  padding: var(--bo-space-3) var(--bo-space-4);
   border-bottom: 1px solid var(--bo-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-space-3);
+}
+
+.bo-assigningBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 16%, transparent), color-mix(in srgb, var(--bo-surface-2) 78%, transparent));
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 40%, transparent);
+  border-radius: var(--bo-radius-md);
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-assigningBanner strong {
+  color: var(--bo-accent);
+}
+
+.bo-tableMapSheetStats {
+  display: flex;
+  gap: var(--bo-space-2);
+  flex-wrap: wrap;
+}
+
+.bo-tableMapSheetStat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-1);
+  padding: var(--bo-space-1) var(--bo-space-2);
+  border-radius: var(--bo-radius-pill, 9999px);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-medium);
+  background: color-mix(in srgb, var(--bo-surface-2) 64%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
+}
+
+.bo-tableMapSheetStat--total {
+  color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent) 28%, transparent);
+}
+
+.bo-tableMapSheetStat--seated {
+  color: var(--bo-color-success);
+  background: color-mix(in srgb, var(--bo-color-success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--bo-color-success) 28%, transparent);
+}
+
+.bo-tableMapSheetStat--pending {
+  color: var(--bo-color-warning);
+  background: color-mix(in srgb, var(--bo-color-warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--bo-color-warning) 28%, transparent);
+}
+
+.bo-tableMapSheetStatDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.bo-tableMapSheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  margin-top: var(--bo-space-2);
+}
+
+.bo-tableMapSheetHeaderLeft {
+  display: grid;
+  gap: 2px;
+}
+
+.bo-tableMapDateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-1);
+  font-size: var(--bo-text-xs);
+  padding: var(--bo-space-1) var(--bo-space-2);
+  height: auto;
+  border-radius: var(--bo-radius-pill, 9999px);
+  background: color-mix(in srgb, var(--bo-surface-2) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 50%, transparent);
+}
+
+.bo-tableMapDateBtn:hover {
+  background: color-mix(in srgb, var(--bo-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent) 30%, transparent);
 }
 
 .bo-tableMapSheetBody {
-  padding: var(--bo-space-4);
-  overflow: auto;
+  padding: var(--bo-space-3);
   display: grid;
-  gap: var(--bo-space-4);
+  gap: var(--bo-space-3);
+  align-content: start;
+  overflow: hidden;
+}
+
+.bo-tableMapSheetContent {
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  gap: var(--bo-space-3);
+  padding-right: var(--bo-space-1);
+  /* Ensure minimum height to prevent layout shifts */
+  min-height: 200px;
 }
 
 .bo-tableMapCalendarToggle {
   width: 100%;
+  justify-content: flex-start;
+  gap: var(--bo-space-2);
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--bo-border) 50%, transparent);
 }
 
-.bo-tableMapBookingsList {
+.bo-tableMapCalendarToggle:hover {
+  border-color: var(--bo-accent);
+  color: var(--bo-text);
+  background: color-mix(in srgb, var(--bo-accent) 8%, transparent);
+}
+
+.bo-tableMapCalendarWrapper {
+  border: 1px solid color-mix(in srgb, var(--bo-border) 50%, transparent);
+  border-radius: var(--bo-radius-md);
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
+  overflow: hidden;
+}
+
+.bo-tableMapCalendarWrapper .bo-mcal {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: var(--bo-space-2);
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalHead {
+  margin-bottom: var(--bo-space-1);
+  padding-bottom: var(--bo-space-1);
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalTitle {
+  font-size: var(--bo-text-xs);
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalNav .bo-actionBtn {
+  width: 24px;
+  height: 24px;
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalDows {
+  font-size: 9px;
+  margin-bottom: 2px;
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalGrid {
+  gap: 2px;
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalCell {
+  min-height: 24px;
+  padding: 2px;
+  border-radius: var(--bo-radius-sm);
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalNum {
+  font-size: 10px;
+}
+
+.bo-tableMapCalendarWrapper .bo-mcalCell::after {
+  bottom: 2px;
+  width: 3px;
+  height: 3px;
+}
+
+.bo-tableMapSection {
   display: grid;
   gap: var(--bo-space-3);
 }
 
-.bo-tableMapBookingRow {
+.bo-tableMapSectionTitle {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: var(--bo-space-1);
+}
+
+.bo-tableMapEmptyState {
   display: grid;
-  gap: var(--bo-space-1);
-  text-align: left;
-  border: 1px solid var(--bo-border);
+  gap: var(--bo-space-2);
+  padding: var(--bo-space-6) var(--bo-space-4);
+  text-align: center;
+  color: var(--bo-muted);
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
   border-radius: var(--bo-radius-md);
-  padding: var(--bo-space-3) var(--bo-space-4);
-  background: color-mix(in srgb, var(--bo-surface-2) 78%, transparent);
-  transition:
-    border-color var(--bo-transition-base) var(--bo-ease),
-    background-color var(--bo-transition-base) var(--bo-ease),
-    transform var(--bo-transition-fast) var(--bo-ease-out);
+  border: 1px dashed color-mix(in srgb, var(--bo-border) 40%, transparent);
+}
+
+.bo-tableMapEmptyStateIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bo-surface-2) 60%, transparent);
+  color: var(--bo-muted);
+}
+
+.bo-tableMapBookingsList {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapBookingRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: var(--bo-space-2);
+  align-items: center;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
+  border-radius: var(--bo-radius-sm);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-surface-2) 8%, transparent), color-mix(in srgb, var(--bo-surface-2) 78%, transparent));
+}
+
+.bo-bookingDragIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bo-muted);
+  opacity: 0.4;
+  cursor: grab;
+}
+
+.bo-tableMapBookingRow:hover .bo-bookingDragIndicator {
+  opacity: 0.8;
+  color: var(--bo-accent);
+}
+
+.bo-tableMapBookingRow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--bo-muted);
+  transition: background var(--bo-transition-base) var(--bo-ease);
 }
 
 .bo-tableMapBookingRow:hover {
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--bo-border);
+}
+
+.bo-tableMapBookingRow.is-assigning {
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 2px var(--bo-accent), 0 4px 16px color-mix(in srgb, var(--bo-accent) 24%, rgba(0, 0, 0, 0.15));
+  animation: bo-assigning-pulse 2s ease-in-out infinite;
+}
+
+@keyframes bo-assigning-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--bo-accent), 0 4px 16px color-mix(in srgb, var(--bo-accent) 24%, rgba(0, 0, 0, 0.15)); }
+  50% { box-shadow: 0 0 0 3px var(--bo-accent), 0 4px 20px color-mix(in srgb, var(--bo-accent) 32%, rgba(0, 0, 0, 0.2)); }
+}
+
+.bo-tableMapBookingRow.is-draggable {
+  cursor: grab;
+}
+
+.bo-tableMapBookingRow.is-draggable .bo-dragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--bo-muted);
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.bo-tableMapBookingRow .bo-dragPlaceholder {
+  width: 24px;
+  height: 24px;
+}
+
+.bo-tableMapBookingRow.is-draggable:hover .bo-dragHandle {
+  opacity: 1;
+  color: var(--bo-accent);
+}
+
+.bo-tableMapBookingRow.is-draggable:hover {
+  cursor: grabbing;
+  border-color: var(--bo-accent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--bo-accent) 24%, rgba(0, 0, 0, 0.15));
+}
+
+.bo-tableMapBookingRow .bo-tableMapBookingStatusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bo-muted);
+  flex-shrink: 0;
+  margin-left: var(--bo-space-1);
+}
+
+.bo-tableMapBookingRow.is-seated .bo-tableMapBookingStatusDot {
+  background: var(--bo-color-success);
+}
+
+.bo-tableMapBookingRow.is-pending .bo-tableMapBookingStatusDot {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableMapBookingRow .bo-tableMapBookingMain {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.bo-tableMapBookingRow .bo-tableMapBookingMain strong {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-tableMapBookingRow .bo-tableMapBookingMain span {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+
+.bo-tableMapBookingRow .bo-actionBtn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.bo-tableMapBookingRow.is-seated::before {
+  background: var(--bo-color-success);
 }
 
 .bo-tableMapBookingRow.is-seated {
-  border-color: color-mix(in srgb, var(--bo-color-success) 42%, var(--bo-border));
-  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface-2));
+  border-color: color-mix(in srgb, var(--bo-color-success) 32%, var(--bo-border));
+  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-color-success) 8%, transparent), color-mix(in srgb, var(--bo-color-success) 4%, var(--bo-surface-2)));
+}
+
+.bo-tableMapBookingRow.is-seated::before {
+  background: var(--bo-color-success);
+}
+
+.bo-tableMapBookingRow.is-pending::before {
+  background: var(--bo-color-warning);
 }
 
 .bo-tableMapBookingRow.is-pending {
-  border-color: color-mix(in srgb, var(--bo-color-warning) 34%, var(--bo-border));
-}
-
-.bo-tableMapBookingMain {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--bo-space-2);
-}
-
-.bo-tableMapBookingMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--bo-space-2);
-  color: var(--bo-muted);
-  font-size: var(--bo-text-sm);
+  border-color: color-mix(in srgb, var(--bo-color-warning) 24%, var(--bo-border));
 }
 
 .bo-tableMapLegend {
@@ -3668,25 +4004,147 @@ tr.is-inactive {
   font-size: var(--bo-text-xs);
 }
 
-.bo-tableMapTableStateRow {
-  border: 1px solid var(--bo-border);
-  border-radius: var(--bo-radius-sm);
-  padding: var(--bo-space-2) var(--bo-space-3);
+.bo-tableMapTablesGrid {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: var(--bo-space-2);
 }
 
+.bo-tableMapTableCard {
+  position: relative;
+  display: grid;
+  gap: var(--bo-space-1);
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+  border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
+  border-radius: var(--bo-radius-sm);
+  padding: var(--bo-space-2);
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
+  transition: all var(--bo-transition-base) var(--bo-ease);
+  cursor: pointer;
+}
+
+.bo-tableMapTableCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: var(--bo-radius-sm) 0 0 var(--bo-radius-sm);
+  background: var(--bo-muted);
+}
+
+.bo-tableMapTableCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--bo-border);
+}
+
+.bo-tableMapTableCard.is-free::before {
+  background: var(--bo-color-success);
+}
+
+.bo-tableMapTableCard.is-free {
+  border-color: color-mix(in srgb, var(--bo-color-success) 20%, var(--bo-border));
+}
+
+.bo-tableMapTableCard.is-booked::before {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableMapTableCard.is-booked {
+  border-color: color-mix(in srgb, var(--bo-color-warning) 20%, var(--bo-border));
+}
+
+.bo-tableMapTableCard.is-seated::before {
+  background: var(--bo-color-info);
+}
+
+.bo-tableMapTableCard.is-seated {
+  border-color: color-mix(in srgb, var(--bo-color-info) 20%, var(--bo-border));
+}
+
+.bo-tableMapTableCardNum {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-bold);
+  color: var(--bo-text);
+}
+
+.bo-tableMapTableCardCap {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+
+.bo-tableMapTableCardOcc {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bo-muted);
+}
+
+.bo-tableMapTableCard.is-booked .bo-tableMapTableCardOcc {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableMapTableCard.is-seated .bo-tableMapTableCardOcc {
+  background: var(--bo-color-info);
+}
+
+.bo-tableMapTableStateRow {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
+  border-radius: var(--bo-radius-sm);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  padding-left: var(--bo-space-4);
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--bo-space-2);
+  align-items: center;
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
+  transition: all var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-tableMapTableStateRow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: var(--bo-radius-sm) 0 0 var(--bo-radius-sm);
+  background: var(--bo-muted);
+}
+
+.bo-tableMapTableStateRow.is-free::before {
+  background: var(--bo-color-success);
+}
+
 .bo-tableMapTableStateRow.is-free {
-  background: color-mix(in srgb, var(--bo-color-success) 10%, var(--bo-surface-2));
+  border-color: color-mix(in srgb, var(--bo-color-success) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-success) 6%, transparent);
+}
+
+.bo-tableMapTableStateRow.is-booked::before {
+  background: var(--bo-color-warning);
 }
 
 .bo-tableMapTableStateRow.is-booked {
-  background: color-mix(in srgb, var(--bo-color-warning) 11%, var(--bo-surface-2));
+  border-color: color-mix(in srgb, var(--bo-color-warning) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-warning) 6%, transparent);
+}
+
+.bo-tableMapTableStateRow.is-seated::before {
+  background: var(--bo-color-info);
 }
 
 .bo-tableMapTableStateRow.is-seated {
-  background: color-mix(in srgb, var(--bo-color-info) 12%, var(--bo-surface-2));
+  border-color: color-mix(in srgb, var(--bo-color-info) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-info) 6%, transparent);
 }
 
 .bo-drawElementNode {
@@ -3995,6 +4453,71 @@ tr.is-inactive {
   }
 }
 
+/* Light theme for tableMapSheet */
+:root[data-theme="light"] .bo-tableMapSheet {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 248, 255, 0.88)),
+    color-mix(in srgb, var(--bo-surface) 92%, transparent);
+  border-left-color: color-mix(in srgb, var(--bo-border) 80%, rgba(0, 0, 0, 0.1));
+}
+
+:root[data-theme="light"] .bo-tableMapSheetHead {
+  border-bottom-color: color-mix(in srgb, var(--bo-border) 70%, rgba(0, 0, 0, 0.1));
+}
+
+:root[data-theme="light"] .bo-tableMapSheetStat {
+  background: color-mix(in srgb, var(--bo-surface-2) 64%, rgba(0, 0, 0, 0.04));
+  border-color: color-mix(in srgb, var(--bo-border) 40%, rgba(0, 0, 0, 0.1));
+}
+
+:root[data-theme="light"] .bo-tableMapDateBtn {
+  background: color-mix(in srgb, var(--bo-surface-2) 50%, rgba(0, 0, 0, 0.04));
+  border-color: color-mix(in srgb, var(--bo-border) 40%, rgba(0, 0, 0, 0.08));
+}
+
+:root[data-theme="light"] .bo-tableMapDateBtn:hover {
+  background: color-mix(in srgb, var(--bo-accent) 10%, rgba(0, 0, 0, 0.04));
+  border-color: color-mix(in srgb, var(--bo-accent) 24%, rgba(0, 0, 0, 0.08));
+}
+
+:root[data-theme="light"] .bo-tableMapFloorTab {
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, rgba(0, 0, 0, 0.04));
+  border-color: color-mix(in srgb, var(--bo-border) 40%, rgba(0, 0, 0, 0.08));
+}
+
+:root[data-theme="light"] .bo-tableMapFloorTab.is-active {
+  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 14%, white), transparent 62%);
+}
+
+:root[data-theme="light"] .bo-tableMapBookingRow {
+  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-surface-2) 8%, white), color-mix(in srgb, var(--bo-surface-2) 78%, rgba(0, 0, 0, 0.04)));
+  border-color: color-mix(in srgb, var(--bo-border) 60%, rgba(0, 0, 0, 0.08));
+}
+
+:root[data-theme="light"] .bo-tableMapBookingRow:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .bo-tableMapCalendarWrapper {
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, rgba(0, 0, 0, 0.04));
+  border-color: color-mix(in srgb, var(--bo-border) 40%, rgba(0, 0, 0, 0.08));
+}
+
+:root[data-theme="light"] .bo-tableMapSectionTitle {
+  color: var(--bo-text-secondary);
+}
+
+:root[data-theme="light"] .bo-tableMapEmptyState {
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, rgba(0, 0, 0, 0.04));
+  border-color: color-mix(in srgb, var(--bo-border) 30%, rgba(0, 0, 0, 0.08));
+  color: var(--bo-text-secondary);
+}
+
+:root[data-theme="light"] .bo-tableMapEmptyStateIcon {
+  background: color-mix(in srgb, var(--bo-surface-2) 60%, rgba(0, 0, 0, 0.04));
+}
+
 /* Facturas dark style tabs */
 .bo-tabs--facturas {
   background: rgba(0, 0, 0, 0.2);
@@ -4082,12 +4605,20 @@ tr.is-inactive {
 .bo-tabs--compact {
   width: 100%;
   padding: 4px;
+  justify-content: center;
+}
+
+.bo-tabs--compact .bo-tabsList {
+  width: 100%;
+  justify-content: center;
 }
 
 .bo-tabs--compact .bo-tab {
   min-height: 36px;
-  padding: 8px 10px;
+  padding: 8px 16px;
   border-radius: 10px;
+  flex: 1;
+  justify-content: center;
 }
 
 .bo-tabs--compact .bo-tabLabel {
@@ -4589,6 +5120,92 @@ tr.is-inactive {
   .bo-mcalSub {
     gap: 4px;
   }
+}
+
+/* Sidebar compact calendar variant */
+.bo-mcal--sidebar {
+  padding: var(--bo-space-2);
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-mcal--sidebar .bo-mcalHead {
+  margin-bottom: var(--bo-space-2);
+  padding-bottom: var(--bo-space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--bo-border) 40%, transparent);
+}
+
+.bo-mcal--sidebar .bo-mcalTitle {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-mcal--sidebar .bo-mcalMeta {
+  display: none;
+}
+
+.bo-mcal--sidebar .bo-mcalNav {
+  gap: var(--bo-space-1);
+}
+
+.bo-mcal--sidebar .bo-mcalNav .bo-actionBtn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+.bo-mcal--sidebar .bo-mcalDows {
+  font-size: var(--bo-text-xs);
+  margin-bottom: var(--bo-space-1);
+  gap: 2px;
+  padding: 0;
+}
+
+.bo-mcal--sidebar .bo-mcalGrid {
+  gap: 2px;
+}
+
+.bo-mcal--sidebar .bo-mcalCell {
+  min-height: 28px;
+  padding: 2px;
+  border-radius: var(--bo-radius-sm);
+}
+
+.bo-mcal--sidebar .bo-mcalNum {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-bold);
+}
+
+.bo-mcal--sidebar .bo-mcalSub {
+  display: none;
+}
+
+.bo-mcal--sidebar .bo-mcalCell::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.bo-mcal--sidebar .bo-mcalCell.occ-50::after {
+  background: var(--bo-color-warning);
+}
+
+.bo-mcal--sidebar .bo-mcalCell.occ-75::after,
+.bo-mcal--sidebar .bo-mcalCell.occ-85::after {
+  background: #f97316;
+}
+
+.bo-mcal--sidebar .bo-mcalCell.occ-100::after {
+  background: var(--bo-color-danger);
+}
+
+.bo-mcal--sidebar .bo-mcalCell {
+  position: relative;
 }
 
 @media (max-width: 360px) {
@@ -8543,11 +9160,17 @@ tr.is-inactive {
   }
 
   .bo-inlineField {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
   }
 
   .bo-inlineField .bo-btn {
-    width: 100%;
+    width: auto;
+    min-width: 40px;
+  }
+
+  .bo-subtitleAddBtn {
+    display: flex;
+    margin-inline: auto;
   }
 
   .bo-dishRow {
@@ -10541,6 +11164,10 @@ tr.is-inactive {
 .bo-menuSettingSelect {
   width: 100%;
   justify-content: space-between;
+}
+
+.bo-menuSettingSelect .bo-selectLabel {
+  max-width: 320px;
 }
 
 .bo-horariosPreview {
@@ -14522,6 +15149,19 @@ tr.is-inactive {
   place-items: center;
   font-size: 13px;
   font-weight: 740;
+}
+
+.bo-principalesCounter {
+  background: transparent !important;
+  border: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  gap: 4px;
+}
+
+.bo-principalesCounter .bo-timeAdjustCounterLabel {
+  display: none;
 }
 
 /* Shift Modal Wheels */

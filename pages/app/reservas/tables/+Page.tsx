@@ -7,13 +7,14 @@ import ReactFlow, {
   type Node,
   type NodeChange,
   NodeResizer,
+  ReactFlowProvider,
   applyNodeChanges,
   type XYPosition,
   useEdgesState,
   useNodesState,
 } from "reactflow";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarDays, ChevronLeft, DoorOpen, Ellipsis, FileText, Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil, Plus, RotateCcw, RotateCw, Sofa, Square, Trash2, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical, Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil, Plus, RotateCcw, RotateCw, Sofa, Square, Trash2, X, CalendarRange, Users, LayoutGrid } from "lucide-react";
 import "reactflow/dist/style.css";
 import { usePageContext } from "vike-react/usePageContext";
 
@@ -464,11 +465,30 @@ export default function TableManagerPage() {
   const [interactionMode, setInteractionMode] = useState<"select" | "pan">("select");
   const [calendarExpanded, setCalendarExpanded] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [bookingForAssignment, setBookingForAssignment] = useState<Booking | null>(null);
   const [bookingTableDraft, setBookingTableDraft] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuTooltipStyle, setMenuTooltipStyle] = useState<React.CSSProperties>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Toggle body class for drag state
+  useEffect(() => {
+    if (isDragging) {
+      document.body.classList.add("is-dragging");
+    } else {
+      document.body.classList.remove("is-dragging");
+    }
+    return () => {
+      document.body.classList.remove("is-dragging");
+    };
+  }, [isDragging]);
+
   useErrorToast(error);
 
   const [nodes, setNodes] = useNodesState<any>([]);
@@ -618,6 +638,20 @@ export default function TableManagerPage() {
 
   const visibleAreas = useMemo(() => floorAreas.get(selectedFloor) || [], [floorAreas, selectedFloor]);
   const visibleTables = useMemo(() => visibleAreas.flatMap((a) => a.tables || []), [visibleAreas]);
+
+  const bookingStats = useMemo(() => {
+    const total = bookings.length;
+    let seated = 0;
+    let pending = 0;
+    for (const b of bookings) {
+      if (bookingStates[String(b.id)]?.seated) {
+        seated++;
+      } else {
+        pending++;
+      }
+    }
+    return { total, seated, pending };
+  }, [bookings, bookingStates]);
 
   const nextTableNumber = useMemo(() => {
     const total = areas.flatMap((a) => a.tables || []).length;
@@ -848,18 +882,24 @@ export default function TableManagerPage() {
       );
       try {
         await api.tables.update({ id: tableId, x_pos: nextX, y_pos: nextY, date: selectedDate, floor_number: selectedFloor });
-      } catch {
-        // keep UX smooth, websocket snapshot will reconcile if needed
+      } catch (err) {
+        console.error("Failed to save table position:", err);
+        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la posición" });
       }
     },
-    [api.tables, selectedDate, selectedFloor],
+    [api.tables, pushToast, selectedDate, selectedFloor],
   );
 
   const persistLayout = useCallback(
     async (patch: Record<string, unknown>) => {
-      await api.tables.saveLayout({ date: selectedDate, floor_number: selectedFloor, metadata: patch });
+      try {
+        await api.tables.saveLayout({ date: selectedDate, floor_number: selectedFloor, metadata: patch });
+      } catch (err) {
+        console.error("Failed to save layout:", err);
+        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar el layout" });
+      }
     },
-    [api.tables, selectedDate, selectedFloor],
+    [api.tables, pushToast, selectedDate, selectedFloor],
   );
 
   const queuePersistLayout = useCallback(
@@ -887,9 +927,19 @@ export default function TableManagerPage() {
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       const activeDrawElements = drawElementsRef.current;
+      
       setNodes((nds) => {
         const next = applyNodeChanges(changes, nds) as Node<any>[];
         for (const c of changes as any[]) {
+          // Handle drag end for tables - get position from updated nodes
+          if (c.type === "position" && c.dragging === false && !c.position) {
+            const node = next.find((n) => n.id === c.id);
+            if (node && node.type === "restaurantTable" && node.position) {
+              // Call savePosition directly here to ensure correct closure
+              void savePosition(c.id, node.position.x, node.position.y);
+            }
+            continue;
+          }
           if (c.type !== "position" || !c.position) continue;
           const prevNode = nds.find((n) => n.id === c.id);
           const node = next.find((n) => n.id === c.id);
@@ -921,6 +971,7 @@ export default function TableManagerPage() {
 
       for (const c of changes as any[]) {
         if (c.type === "position" && c.dragging === false && c.position) {
+          // This branch handles cases where position is included in the change
           if (String(c.id).startsWith("draw-")) {
             if (mapMode !== "draw") continue;
             const x = Math.round(c.position.x);
@@ -967,6 +1018,97 @@ export default function TableManagerPage() {
     },
     [mapMode, queuePersistLayout, savePosition, setNodes],
   );
+
+  // Drag and drop handlers - only available on client
+  const screenToFlowPosition = useMemo(() => {
+    if (!isMounted) return null;
+    // We'll get this from useReactFlow in the effect below
+    return null;
+  }, [isMounted]);
+
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDropBooking = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      const bookingId = event.dataTransfer.getData("application/booking-id");
+      const currentTable = event.dataTransfer.getData("application/booking-current-table");
+      if (!bookingId) return;
+      if (!reactFlowInstance) return;
+
+      // Get drop position and find the table at that position
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      // Find the table node at drop position
+      const targetNode = nodes.find((n) => {
+        if (n.type !== "restaurantTable" || !n.position) return false;
+        const data = n.data as TableNodeData;
+        const width = data.capacity >= 6 ? 80 : 60;
+        const height = data.capacity >= 6 ? 80 : 60;
+        return (
+          position.x >= n.position.x &&
+          position.x <= n.position.x + width &&
+          position.y >= n.position.y &&
+          position.y <= n.position.y + height
+        );
+      });
+
+      if (!targetNode) {
+        pushToast({ kind: "error", title: "Error", message: "Suelta la reserva sobre una mesa" });
+        return;
+      }
+
+      const tableName = (targetNode.data as TableNodeData).name;
+      const booking = bookings.find((b) => String(b.id) === bookingId);
+      if (!booking) return;
+
+      // Optimistic update
+      setBookings((prev) =>
+        prev.map((b) => (b.id === Number(bookingId) ? { ...b, table_number: tableName } : b))
+      );
+
+      // Send via WebSocket
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        ws.current.send(
+          JSON.stringify({
+            type: "assign_booking_to_table",
+            booking_id: Number(bookingId),
+            table_id: targetNode.id,
+            table_name: tableName,
+            date: selectedDate,
+          })
+        );
+        pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} → ${tableName}` });
+      } else {
+        pushToast({ kind: "error", title: "Error", message: "Conexión no disponible" });
+        // Revert optimistic update on error
+        setBookings((prev) =>
+          prev.map((b) => (b.id === Number(bookingId) ? { ...b, table_number: booking.table_number } : b))
+        );
+      }
+    },
+    [bookings, nodes, pushToast, reactFlowInstance, selectedDate]
+  );
+
+  const onDragStart = useCallback((event: React.DragEvent, booking: Booking) => {
+    // Allow dragging all bookings to reassign to different tables
+    event.dataTransfer.setData("application/booking-id", String(booking.id));
+    event.dataTransfer.setData("application/booking-current-table", booking.table_number || "");
+    event.dataTransfer.effectAllowed = "move";
+    setIsDragging(true);
+  }, []);
+
+  const onDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
 
   const openAddModal = useCallback(() => {
     setEditingTableId(null);
@@ -1181,7 +1323,7 @@ export default function TableManagerPage() {
   const reservasTabItems = useMemo<TabItem[]>(
     () => [
       { id: "reservas", label: "Reservas", href: "#reservas", icon: <CalendarDays className="bo-ico" /> },
-      { id: "mesas", label: "Mesas", href: "#mesas", icon: <Square className="bo-ico" /> },
+      { id: "mesas", label: "Mesas", href: "#mesas", icon: <LayoutGrid className="bo-ico" /> },
     ],
     [],
   );
@@ -1225,6 +1367,59 @@ export default function TableManagerPage() {
     [api.reservas, pushToast],
   );
 
+  const assignBookingToTable = useCallback(
+    async (booking: Booking, tableName: string, tableId: string) => {
+      // Optimistic update
+      setBookings((prev) =>
+        prev.map((b) => (b.id === booking.id ? { ...b, table_number: tableName } : b))
+      );
+      setBookingForAssignment(null);
+
+      // Send via WebSocket
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        ws.current.send(
+          JSON.stringify({
+            type: "assign_booking_to_table",
+            booking_id: booking.id,
+            table_id: Number(tableId),
+            table_name: tableName,
+            date: selectedDate,
+          })
+        );
+        pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} → ${tableName}` });
+      } else {
+        // Fallback to API
+        const res = await api.reservas.patch(booking.id, { table_number: tableName });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo asignar" });
+          // Revert
+          setBookings((prev) =>
+            prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b))
+          );
+        } else {
+          pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} → ${tableName}` });
+        }
+      }
+    },
+    [api.reservas, pushToast, selectedDate, ws]
+  );
+
+  const cancelAssignmentMode = useCallback(() => {
+    setBookingForAssignment(null);
+  }, []);
+
+  // ESC key handler to cancel assignment mode
+  useEffect(() => {
+    if (!bookingForAssignment) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        cancelAssignmentMode();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [bookingForAssignment, cancelAssignmentMode]);
+
   useEffect(() => {
     if (!menuVisible) return;
     const updateMenuPosition = () => {
@@ -1265,7 +1460,8 @@ export default function TableManagerPage() {
   }
 
   return (
-    <section className="bo-tableMapPage" aria-label="Mapa de mesas">
+    <ReactFlowProvider>
+      <section className="bo-tableMapPage" aria-label="Mapa de mesas">
       <div className="bo-tableMapTopControls">
         <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
           <ChevronLeft size={18} strokeWidth={1.8} />
@@ -1365,6 +1561,15 @@ export default function TableManagerPage() {
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
+          onInit={setReactFlowInstance}
+          onNodeClick={(_event, node) => {
+            if (bookingForAssignment && node.type === "restaurantTable") {
+              const tableData = node.data as TableNodeData;
+              assignBookingToTable(bookingForAssignment, tableData.name, node.id);
+            }
+          }}
+          onDragOver={onDragOver}
+          onDrop={onDropBooking}
           nodeTypes={nodeTypes}
           fitView
           nodeExtent={MAP_EXTENT}
@@ -1412,45 +1617,72 @@ export default function TableManagerPage() {
         </div>
       </aside>
 
-      <aside className={`bo-tableMapSheet${rightSheetOpen ? " is-open" : ""}`} aria-label="Panel de mesas">
+      <aside className={`bo-tableMapSheet${rightSheetOpen ? " is-open" : ""}${isDragging ? " drag-active" : ""}`} aria-label="Panel de reservas">
         <div className="bo-tableMapSheetHead">
-          <div className="bo-panelTitle">Booking manager</div>
-          <div className="bo-panelMeta">{selectedDate} · {visibleTables.length} mesas</div>
+          {bookingForAssignment ? (
+            <div className="bo-assigningBanner">
+              <span>Asignando: <strong>{bookingForAssignment.customer_name}</strong></span>
+              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={cancelAssignmentMode}>Cancelar</button>
+            </div>
+          ) : (
+            <div className="bo-tableMapSheetStats">
+              <span className="bo-tableMapSheetStat bo-tableMapSheetStat--total">
+                <span className="bo-tableMapSheetStatDot" />{bookingStats.total} reservas
+              </span>
+              <span className="bo-tableMapSheetStat bo-tableMapSheetStat--seated">
+                <span className="bo-tableMapSheetStatDot" />{bookingStats.seated} sentadas
+              </span>
+              <span className="bo-tableMapSheetStat bo-tableMapSheetStat--pending">
+                <span className="bo-tableMapSheetStatDot" />{bookingStats.pending} pendientes
+              </span>
+            </div>
+          )}
+          <div className="bo-tableMapSheetHeader">
+            <div className="bo-tableMapSheetHeaderLeft">
+              <div className="bo-panelTitle">Booking manager</div>
+              <div className="bo-panelMeta">{visibleTables.length} mesas</div>
+            </div>
+            <button className="bo-btn bo-btn--ghost bo-tableMapDateBtn" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
+              <CalendarRange size={14} />
+              <span>{selectedDate}</span>
+            </button>
+          </div>
         </div>
         <div className="bo-tableMapSheetBody">
-          <button className="bo-btn bo-btn--ghost bo-tableMapCalendarToggle" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
-            {calendarExpanded ? "Ocultar calendario" : "Cambiar fecha"}
-          </button>
           {calendarExpanded ? (
-            <MonthCalendar
-              year={calendarView.year}
-              month={calendarView.month}
-              days={calendarDays}
-              selectedDateISO={selectedDate}
-              onSelectDate={onSelectDate}
-              onPrevMonth={onPrevMonth}
-              onNextMonth={onNextMonth}
-              loading={loading}
-            />
+            <div className="bo-tableMapCalendarWrapper">
+              <MonthCalendar
+                year={calendarView.year}
+                month={calendarView.month}
+                days={calendarDays}
+                selectedDateISO={selectedDate}
+                onSelectDate={(date) => { onSelectDate(date); setCalendarExpanded(false); }}
+                onPrevMonth={onPrevMonth}
+                onNextMonth={onNextMonth}
+                loading={loading}
+              />
+            </div>
           ) : null}
 
-          <div className="bo-tableMapFloorTabs" role="tablist" aria-label="Seleccionar salon/planta">
-            {floorTabs.map((floor) => {
-              const active = floor.floorNumber === selectedFloor;
-              return (
-                <button
-                  key={`sheet-floor-${floor.floorNumber}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  className={`bo-tableMapFloorTab${active ? " is-active" : ""}`}
-                  onClick={() => setSelectedFloor(floor.floorNumber)}
-                >
-                  {floor.label}
-                </button>
-              );
-            })}
-          </div>
+          {floorTabs.length > 1 && (
+            <div className="bo-tableMapFloorTabs" role="tablist" aria-label="Seleccionar salon/planta">
+              {floorTabs.map((floor) => {
+                const active = floor.floorNumber === selectedFloor;
+                return (
+                  <button
+                    key={`sheet-floor-${floor.floorNumber}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    className={`bo-tableMapFloorTab${active ? " is-active" : ""}`}
+                    onClick={() => setSelectedFloor(floor.floorNumber)}
+                  >
+                    {floor.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <Tabs
             tabs={reservasTabItems}
@@ -1463,49 +1695,82 @@ export default function TableManagerPage() {
             }}
           />
 
-          {sheetTab === "reservas" ? (
-            <div className="bo-tableMapBookingsList">
-              {bookings.map((booking) => {
-                const seated = bookingStates[String(booking.id)]?.seated;
-                return (
-                  <button key={booking.id} className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}`} type="button" onClick={() => setSelectedBooking(booking)}>
-                    <div className="bo-tableMapBookingMain">
-                      <strong>{booking.table_number || "—"}</strong>
-                      <span>{booking.customer_name}</span>
-                    </div>
-                    <div className="bo-tableMapBookingMeta">
-                      <span>{booking.party_size} pax · {formatHHMM(booking.reservation_time)}</span>
-                      <DropdownMenu
-                        label="Acciones reserva"
-                        triggerClassName="bo-actionBtn bo-actionBtn--glass"
-                        items={[
-                          { id: "details", label: "Reserva completa", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => setSelectedBooking(booking) },
-                          { id: "edit", label: "Editar reserva", icon: <Pencil size={16} strokeWidth={1.8} />, onSelect: () => setSelectedBooking(booking) },
-                          { id: "cancel", label: "Cancelar", tone: "danger", icon: <Trash2 size={16} strokeWidth={1.8} />, onSelect: () => void cancelBooking(booking) },
-                        ]}
-                      />
-                    </div>
-                  </button>
-                );
-              })}
+          <div className="bo-tableMapSheetContent">
+            {sheetTab === "reservas" ? (
+            <div className="bo-tableMapSection">
+              <div className="bo-tableMapSectionTitle">Reservas del día</div>
+              {bookings.length === 0 ? (
+                <div className="bo-tableMapEmptyState">
+                  <div className="bo-tableMapEmptyStateIcon"><CalendarDays size={24} /></div>
+                  <div>No hay reservas para esta fecha</div>
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => setSelectedDate(todayISO())}>Ver hoy</button>
+                </div>
+              ) : (
+                <div className="bo-tableMapBookingsList">
+                  {bookings.map((booking) => {
+                    const seated = bookingStates[String(booking.id)]?.seated;
+                    const isUnassigned = !booking.table_number;
+                    const isAssigning = bookingForAssignment?.id === booking.id;
+                    return (
+                      <div
+                        key={booking.id}
+                        className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}`}
+                        onClick={() => {
+                          if (bookingForAssignment?.id === booking.id) {
+                            setBookingForAssignment(null);
+                          } else {
+                            setSelectedBooking(booking);
+                          }
+                        }}
+                      >
+                        <span className="bo-bookingDragIndicator"><GripVertical size={16} /></span>
+                        <span className="bo-tableMapBookingStatusDot" />
+                        <div className="bo-tableMapBookingMain">
+                          <strong>{booking.table_number || "—"} · {booking.customer_name}</strong>
+                          <span>{booking.party_size} pax · {formatHHMM(booking.reservation_time)}</span>
+                        </div>
+                        <DropdownMenu
+                          label="Acciones reserva"
+                          triggerClassName="bo-actionBtn bo-actionBtn--glass"
+                          items={[
+                            { id: "details", label: "Ver", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => setSelectedBooking(booking) },
+                            { id: "cancel", label: "Cancelar", tone: "danger", icon: <Trash2 size={16} strokeWidth={1.8} />, onSelect: () => void cancelBooking(booking) },
+                          ]}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="bo-tableMapTablesState">
-              <div className="bo-tableMapLegend">Libre · Reservada · Reservada + sentada</div>
-              {visibleTables.map((table) => {
-                const key = String(table.name || table.id).replace(/^Mesa\s+/i, "");
-                const occ = tableOccupancyMap.get(key);
-                const cls = occ ? (occ.seated > 0 ? "is-seated" : "is-booked") : "is-free";
-                return (
-                  <div key={`table-state-${table.id}`} className={`bo-tableMapTableStateRow ${cls}`}>
-                    <strong>{table.name}</strong>
-                    <span>{table.capacity} pax</span>
-                    <span>{occ ? `${occ.booked} ocup.` : "Libre"}</span>
-                  </div>
-                );
-              })}
+            <div className="bo-tableMapSection">
+              <div className="bo-tableMapSectionTitle">Estado de mesas</div>
+              {visibleTables.length === 0 ? (
+                <div className="bo-tableMapEmptyState">
+                  <div className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
+                  <div>No hay mesas en este salón</div>
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => setEditorOpen(true)}>Crear mesa</button>
+                </div>
+              ) : (
+                <div className="bo-tableMapTablesGrid">
+                  {visibleTables.map((table) => {
+                    const key = String(table.name || table.id).replace(/^Mesa\s+/i, "");
+                    const occ = tableOccupancyMap.get(key);
+                    const cls = occ ? (occ.seated > 0 ? "is-seated" : "is-booked") : "is-free";
+                    return (
+                      <div key={`table-card-${table.id}`} className={`bo-tableMapTableCard ${cls}`}>
+                        <span className="bo-tableMapTableCardOcc" />
+                        <span className="bo-tableMapTableCardNum">{table.name}</span>
+                        <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
+          </div>
         </div>
       </aside>
 
@@ -1729,5 +1994,6 @@ export default function TableManagerPage() {
         ) : null}
       </Modal>
     </section>
+    </ReactFlowProvider>
   );
 }
