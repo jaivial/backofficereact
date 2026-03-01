@@ -50,10 +50,14 @@ export function Select({
   const btnClass = size === "sm" ? "bo-selectBtn bo-selectBtn--sm" : "bo-selectBtn";
 
   const close = useCallback(() => setOpen(false), []);
-  const toggle = useCallback(() => {
-    if (disabled) return;
-    setOpen((v) => !v);
-  }, [disabled]);
+  const toggle = useCallback(
+    (ev?: React.MouseEvent) => {
+      ev?.stopPropagation();
+      if (disabled) return;
+      setOpen((v) => !v);
+    },
+    [disabled],
+  );
 
   useEffect(() => {
     if (disabled) setOpen(false);
