@@ -8,6 +8,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { renderPage } from "vike/server";
 import { WebSocket, WebSocketServer } from "ws";
+import { readSetCookies } from "../lib/http/readSetCookies";
 import { firstAllowedPath, isPathAllowed } from "../lib/rbac";
 
 type BOUser = {
@@ -146,16 +147,6 @@ type FetchSessionResult = {
   setCookies: string[];
 };
 
-function readSetCookies(headers: Headers): string[] {
-  const getSetCookie = (headers as any).getSetCookie as undefined | (() => string[]);
-  if (typeof getSetCookie === "function") {
-    return getSetCookie.call(headers).filter((value) => typeof value === "string" && value.trim() !== "");
-  }
-  const fallback = headers.get("set-cookie");
-  if (!fallback || fallback.trim() === "") return [];
-  return [fallback];
-}
-
 function normalizeMovingExpirationDate(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -171,7 +162,7 @@ async function fetchSession(
 ): Promise<FetchSessionResult> {
   if (!cookieHeader) return { session: null, movingExpirationDate: null, setCookies: [] };
   try {
-    const url = new URL("/api/admin/me", backendOrigin);
+    const url = new URL("/admin/me", backendOrigin);
     const headers: Record<string, string> = { cookie: cookieHeader };
     if (typeof pagePath === "string" && pagePath.trim() !== "") {
       headers["x-bo-page-path"] = pagePath.trim();
@@ -372,6 +363,14 @@ function wsOriginFromBackend(backendOrigin: string): string {
   return origin.endsWith("/") ? origin.slice(0, -1) : origin;
 }
 
+function toBackendAdminPath(pathWithQuery: string): string {
+  if (pathWithQuery === "/api/admin") return "/admin";
+  if (pathWithQuery.startsWith("/api/admin/")) {
+    return pathWithQuery.replace(/^\/api\/admin\//, "/admin/");
+  }
+  return pathWithQuery;
+}
+
 function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin: string) {
   const wss = new WebSocketServer({ noServer: true });
   const wsBase = wsOriginFromBackend(backendOrigin);
@@ -393,6 +392,7 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
         const reqURLParsed = new URL(reqURL, "http://local");
         upstreamPath = reqURLParsed.pathname;
         upstreamPath += reqURLParsed.search;
+        upstreamPath = toBackendAdminPath(upstreamPath);
       } catch {
         clientWS.close();
         return;
@@ -508,7 +508,7 @@ async function start() {
   // If we proxied "/api/*" we'd shadow Vite modules like "/api/client.ts".
   app.use("/api/admin", async (req, res) => {
     try {
-      const upstreamURL = new URL(req.originalUrl, backendOrigin);
+      const upstreamURL = new URL(toBackendAdminPath(req.originalUrl), backendOrigin);
 
       const headers = new Headers();
       for (const [k, v] of Object.entries(req.headers)) {
@@ -538,11 +538,8 @@ async function start() {
       const upstream = await fetch(upstreamURL, init);
       res.status(upstream.status);
 
-      const getSetCookie = (upstream.headers as any).getSetCookie as undefined | (() => string[]);
-      if (getSetCookie) {
-        for (const c of getSetCookie.call(upstream.headers)) {
-          res.append("set-cookie", c);
-        }
+      for (const cookie of readSetCookies(upstream.headers)) {
+        res.append("set-cookie", cookie);
       }
 
       // Do not forward hop-by-hop headers. Also avoid forwarding content framing
