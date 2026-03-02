@@ -92,13 +92,21 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
   const baseUrl = normalizedOpts.baseUrl.replace(/\/+$/, "");
 
   function normalizeLegacyAdminPath(path: string): string {
-    if (path.startsWith("/api/admin/")) return path;
+    const isDirectBackendBaseURL = /^https?:\/\//i.test(baseUrl);
+
+    if (isDirectBackendBaseURL) {
+      if (path === "/api/admin") return "/admin";
+      if (path.startsWith("/api/admin/")) return path.replace(/^\/api\/admin\//, "/admin/");
+      return path;
+    }
+
+    if (path === "/admin") return "/api/admin";
     if (path.startsWith("/admin/")) return `/api${path}`;
     return path;
   }
 
   async function apiFetch(path: string, init: RequestInit): Promise<Response> {
-    const url = baseUrl + path;
+    const url = baseUrl + normalizeLegacyAdminPath(path);
     const headers = new Headers(init.headers ?? {});
 
     if (!isBrowser()) {
@@ -676,7 +684,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
 
   return {
     request: async <T = any>(path: string, init: RequestInit): Promise<T> => {
-      return json<T>(normalizeLegacyAdminPath(path), init);
+      return json<T>(path, init);
     },
     auth: {
       async login(identifier: string, password: string): Promise<APISuccess<{ session: BOSession }> | APIError> {
