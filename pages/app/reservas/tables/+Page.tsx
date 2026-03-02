@@ -58,6 +58,8 @@ type TableNodeData = {
   textureImageUrl: string;
   rotationDeg: number;
   rectShortSides: RectShortSides;
+  assignMode?: boolean;
+  isSelected?: boolean;
 };
 
 type DrawElementKind = "wall" | "obstacle" | "image";
@@ -191,7 +193,10 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
     height: `${geom.height}px`,
   };
   return (
-    <div className={`bo-tableMapNode ${shape}`} style={style}>
+    <div 
+      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}`} 
+      style={style}
+    >
       {geom.chairs.map((chair, idx) => (
         <span key={`node-chair-${idx}`} className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }} />
       ))}
@@ -466,6 +471,9 @@ export default function TableManagerPage() {
   const [calendarExpanded, setCalendarExpanded] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookingForAssignment, setBookingForAssignment] = useState<Booking | null>(null);
+  const [assignMode, setAssignMode] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [bookingTableDraft, setBookingTableDraft] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuTooltipStyle, setMenuTooltipStyle] = useState<React.CSSProperties>({});
@@ -512,6 +520,7 @@ export default function TableManagerPage() {
   const persistLayoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flowWrapRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const assignmentInProgress = useRef(false);
   const geom = useMemo(
     () => previewGeometry(draft.shape, draft.capacity, draft.rectShortSides),
     [draft.capacity, draft.rectShortSides, draft.shape],
@@ -653,6 +662,8 @@ export default function TableManagerPage() {
     return { total, seated, pending };
   }, [bookings, bookingStates]);
 
+  const hasUnassignedBookings = useMemo(() => bookings.some(b => !b.table_number), [bookings]);
+
   const nextTableNumber = useMemo(() => {
     const total = areas.flatMap((a) => a.tables || []).length;
     return total + 1;
@@ -779,28 +790,56 @@ export default function TableManagerPage() {
     setSelectedFloor(nextFloor);
   }, [floorTabs, selectedFloor]);
 
+  // Helper to normalize table key for consistent lookups
+  const normalizeTableKey = (name: string | number | null | undefined): string => {
+    return String(name || "").trim();
+  };
+
+  const tableOccupancyMap = useMemo(() => {
+    const out = new Map<string, { booked: number; seated: number }>();
+    for (const booking of bookings) {
+      const key = String(booking.table_number || "").trim();
+      if (!key) continue;
+      const row = out.get(key) || { booked: 0, seated: 0 };
+      row.booked += Number(booking.party_size || 0);
+      if (bookingStates[String(booking.id)]?.seated) row.seated += Number(booking.party_size || 0);
+      out.set(key, row);
+    }
+    return out;
+  }, [bookingStates, bookings]);
+
   useEffect(() => {
     setNodes(
       [
-        ...visibleTables.map((table) => ({
-          id: String(table.id),
-          type: "restaurantTable",
-          draggable: true,
-          position: { x: table.x_pos || 0, y: table.y_pos || 0 },
-          extent: MAP_EXTENT,
-          data: {
-            id: table.id,
-            name: table.name || `Mesa ${table.id}`,
-            capacity: clampCapacity(table.capacity || 4),
-            status: (table.status || "available") as TableMapItem["status"],
-            shape: (table.shape || "round") as TableShape,
-            fillColor: table.fill_color || "",
-            outlineColor: table.outline_color || "",
-            textureImageUrl: table.texture_image_url || "",
-            rotationDeg: Number((table.metadata as any)?.rotation_deg || 0),
-            rectShortSides: shortSidesFromMetadata((table.metadata as any)?.short_side_seats, table.capacity || 4),
-          } as TableNodeData,
-        })),
+        ...visibleTables.map((table) => {
+          const tableKey = normalizeTableKey(table.name);
+          const occ = tableOccupancyMap.get(tableKey);
+          const hasBookings = occ && occ.booked > 0;
+          const hasSeated = occ && occ.seated > 0;
+          // Override status based on bookings if there are any
+          const nodeStatus = hasSeated ? "occupied" : hasBookings ? "reserved" : (table.status || "available");
+          return {
+            id: String(table.id),
+            type: "restaurantTable",
+            draggable: true,
+            position: { x: table.x_pos || 0, y: table.y_pos || 0 },
+            extent: MAP_EXTENT,
+            data: {
+              id: table.id,
+              name: table.name || `Mesa ${table.id}`,
+              capacity: clampCapacity(table.capacity || 4),
+              status: nodeStatus as TableMapItem["status"],
+              shape: (table.shape || "round") as TableShape,
+              fillColor: table.fill_color || "",
+              outlineColor: table.outline_color || "",
+              textureImageUrl: table.texture_image_url || "",
+              rotationDeg: Number((table.metadata as any)?.rotation_deg || 0),
+              rectShortSides: shortSidesFromMetadata((table.metadata as any)?.short_side_seats, table.capacity || 4),
+              assignMode,
+              isSelected: selectedTableId === table.id,
+            } as TableNodeData,
+          };
+        }),
         ...drawElements.map((item) => ({
           id: item.id,
           type: "drawElement",
@@ -820,7 +859,7 @@ export default function TableManagerPage() {
         })),
       ],
     );
-  }, [drawElements, mapMode, setNodes, visibleTables]);
+  }, [assignMode, drawElements, mapMode, selectedTableId, setNodes, tableOccupancyMap, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -1328,19 +1367,6 @@ export default function TableManagerPage() {
     [],
   );
 
-  const tableOccupancyMap = useMemo(() => {
-    const out = new Map<string, { booked: number; seated: number }>();
-    for (const booking of bookings) {
-      const key = String(booking.table_number || "").trim();
-      if (!key) continue;
-      const row = out.get(key) || { booked: 0, seated: 0 };
-      row.booked += Number(booking.party_size || 0);
-      if (bookingStates[String(booking.id)]?.seated) row.seated += Number(booking.party_size || 0);
-      out.set(key, row);
-    }
-    return out;
-  }, [bookingStates, bookings]);
-
   const cancelBooking = useCallback(
     async (booking: Booking) => {
       const res = await api.reservas.cancel(booking.id);
@@ -1404,8 +1430,53 @@ export default function TableManagerPage() {
     [api.reservas, pushToast, selectedDate, ws]
   );
 
+  const handleAssignModeSelect = useCallback(async (bookingId: number, tableId: number) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    const table = visibleTables.find(t => t.id === tableId);
+    
+    if (!booking || !table) return;
+
+    // Optimistic update
+    setBookings((prev) =>
+      prev.map((b) => (b.id === booking.id ? { ...b, table_number: table.name } : b))
+    );
+
+    // Use API - PATCH /api/admin/bookings/{id}
+    const res = await api.reservas.patch(booking.id, { table_number: table.name });
+    if (!res.success) {
+      pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo asignar" });
+      // Revert
+      setBookings((prev) =>
+        prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b))
+      );
+    } else {
+      pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} → ${table.name}` });
+    }
+    
+    // Reset selections
+    setSelectedBookingId(null);
+    setSelectedTableId(null);
+    setAssignMode(false);
+  }, [api.reservas, bookings, pushToast, visibleTables]);
+
+  // Auto-trigger assignment when both booking and table are selected
+  useEffect(() => {
+    if (assignmentInProgress.current) return;
+    if (assignMode && selectedBookingId && selectedTableId) {
+      assignmentInProgress.current = true;
+      handleAssignModeSelect(selectedBookingId, selectedTableId);
+      // Reset ref after a delay to allow next assignment
+      setTimeout(() => {
+        assignmentInProgress.current = false;
+      }, 100);
+    }
+  }, [assignMode, selectedBookingId, selectedTableId, handleAssignModeSelect]);
+
   const cancelAssignmentMode = useCallback(() => {
     setBookingForAssignment(null);
+    setAssignMode(false);
+    setSelectedBookingId(null);
+    setSelectedTableId(null);
   }, []);
 
   // ESC key handler to cancel assignment mode
@@ -1563,9 +1634,14 @@ export default function TableManagerPage() {
           onNodesChange={onNodesChange}
           onInit={setReactFlowInstance}
           onNodeClick={(_event, node) => {
-            if (bookingForAssignment && node.type === "restaurantTable") {
+            if (node.type === "restaurantTable") {
               const tableData = node.data as TableNodeData;
-              assignBookingToTable(bookingForAssignment, tableData.name, node.id);
+              // Priority: new assignMode takes precedence
+              if (assignMode) {
+                setSelectedTableId(prev => prev === tableData.id ? null : tableData.id);
+              } else if (bookingForAssignment) {
+                assignBookingToTable(bookingForAssignment, tableData.name, node.id);
+              }
             }
           }}
           onDragOver={onDragOver}
@@ -1698,7 +1774,27 @@ export default function TableManagerPage() {
           <div className="bo-tableMapSheetContent">
             {sheetTab === "reservas" ? (
             <div className="bo-tableMapSection">
-              <div className="bo-tableMapSectionTitle">Reservas del día</div>
+              <div className="bo-tableMapSectionHeader">
+                <div className="bo-tableMapSectionTitle">Reservas del día</div>
+                {bookings.length > 0 && hasUnassignedBookings && !assignMode && (
+                  <button
+                    className="bo-btn bo-btn--primary bo-btn--sm"
+                    type="button"
+                    onClick={() => setAssignMode(true)}
+                  >
+                    Asignar mesa
+                  </button>
+                )}
+                {assignMode && (
+                  <button
+                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    type="button"
+                    onClick={cancelAssignmentMode}
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
               {bookings.length === 0 ? (
                 <div className="bo-tableMapEmptyState">
                   <div className="bo-tableMapEmptyStateIcon"><CalendarDays size={24} /></div>
@@ -1707,23 +1803,51 @@ export default function TableManagerPage() {
                 </div>
               ) : (
                 <div className="bo-tableMapBookingsList">
-                  {bookings.map((booking) => {
+                  {assignMode && hasUnassignedBookings && (
+                    <div className="bo-tableMapAssignModeHint">Selecciona una reserva sin mesa asignada</div>
+                  )}
+                  {assignMode && !hasUnassignedBookings && (
+                    <div className="bo-tableMapEmptyState">
+                      <div className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
+                      <div>Todas las reservas tienen mesa asignada</div>
+                    </div>
+                  )}
+                  {(bookings.filter(b => !assignMode || !b.table_number) || []).map((booking) => {
                     const seated = bookingStates[String(booking.id)]?.seated;
                     const isUnassigned = !booking.table_number;
                     const isAssigning = bookingForAssignment?.id === booking.id;
+                    const isSelected = selectedBookingId === booking.id;
                     return (
                       <div
                         key={booking.id}
-                        className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}`}
+                        className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}${assignMode && !isUnassigned ? " is-disabled" : ""}`}
                         onClick={() => {
-                          if (bookingForAssignment?.id === booking.id) {
+                          if (assignMode && !isUnassigned) return; // Can't select assigned bookings in assign mode
+                          if (assignMode) {
+                            setSelectedBookingId(isSelected ? null : booking.id);
+                          } else if (bookingForAssignment?.id === booking.id) {
                             setBookingForAssignment(null);
                           } else {
                             setSelectedBooking(booking);
                           }
                         }}
                       >
-                        <span className="bo-bookingDragIndicator"><GripVertical size={16} /></span>
+                        {assignMode ? (
+                          <label className="bo-checkboxContainer" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setSelectedBookingId(isSelected ? null : booking.id);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <span className="bo-checkboxMark" />
+                          </label>
+                        ) : (
+                          <span className="bo-bookingDragIndicator"><GripVertical size={16} /></span>
+                        )}
                         <span className="bo-tableMapBookingStatusDot" />
                         <div className="bo-tableMapBookingMain">
                           <strong>{booking.table_number || "—"} · {booking.customer_name}</strong>
@@ -1745,7 +1869,9 @@ export default function TableManagerPage() {
             </div>
           ) : (
             <div className="bo-tableMapSection">
-              <div className="bo-tableMapSectionTitle">Estado de mesas</div>
+              <div className="bo-tableMapSectionHeader">
+                <div className="bo-tableMapSectionTitle">Estado de mesas</div>
+              </div>
               {visibleTables.length === 0 ? (
                 <div className="bo-tableMapEmptyState">
                   <div className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
@@ -1755,11 +1881,34 @@ export default function TableManagerPage() {
               ) : (
                 <div className="bo-tableMapTablesGrid">
                   {visibleTables.map((table) => {
-                    const key = String(table.name || table.id).replace(/^Mesa\s+/i, "");
+                    const key = normalizeTableKey(table.name);
                     const occ = tableOccupancyMap.get(key);
                     const cls = occ ? (occ.seated > 0 ? "is-seated" : "is-booked") : "is-free";
+                    const isSelected = selectedTableId === table.id;
                     return (
-                      <div key={`table-card-${table.id}`} className={`bo-tableMapTableCard ${cls}`}>
+                      <div 
+                        key={`table-card-${table.id}`} 
+                        className={`bo-tableMapTableCard ${cls}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
+                        onClick={() => {
+                          if (assignMode) {
+                            setSelectedTableId(isSelected ? null : table.id);
+                          }
+                        }}
+                      >
+                        {assignMode && (
+                          <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setSelectedTableId(isSelected ? null : table.id);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <span className="bo-checkboxMark" />
+                          </label>
+                        )}
                         <span className="bo-tableMapTableCardOcc" />
                         <span className="bo-tableMapTableCardNum">{table.name}</span>
                         <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
