@@ -3861,9 +3861,33 @@ body.is-dragging .bo-tableMapFlowWrap {
   color: var(--bo-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding-left: var(--bo-space-1);
-  height: 24px;
-  line-height: 24px;
+}
+
+.bo-tableMapSectionSummary {
+  display: flex;
+  gap: var(--bo-space-2);
+  font-size: var(--bo-text-xs);
+}
+
+.bo-tableMapSummaryItem {
+  padding: 2px 6px;
+  border-radius: var(--bo-radius-xs);
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-tableMapSummaryItem--free {
+  background: color-mix(in srgb, var(--bo-color-success) 12%, transparent);
+  color: var(--bo-color-success);
+}
+
+.bo-tableMapSummaryItem--booked {
+  background: color-mix(in srgb, var(--bo-color-warning) 12%, transparent);
+  color: var(--bo-color-warning);
+}
+
+.bo-tableMapSummaryItem--seated {
+  background: color-mix(in srgb, var(--bo-color-info) 12%, transparent);
+  color: var(--bo-color-info);
 }
 
 .bo-tableMapEmptyState {
@@ -4055,6 +4079,28 @@ body.is-dragging .bo-tableMapFlowWrap {
   gap: var(--bo-space-2);
 }
 
+.bo-tableMapTablesByStatus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-space-4);
+}
+
+.bo-tableMapTablesStatusGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapTablesStatusGroupTitle {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: var(--bo-space-1);
+  border-bottom: 1px solid color-mix(in srgb, var(--bo-border) 40%, transparent);
+}
+
 .bo-tableMapTableCard {
   position: relative;
   display: grid;
@@ -4118,6 +4164,16 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableMapTableCardCap {
   font-size: var(--bo-text-xs);
   color: var(--bo-muted);
+}
+
+.bo-tableMapTableCardBooking {
+  grid-column: 1 / -1;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .bo-tableMapTableCardOcc {
