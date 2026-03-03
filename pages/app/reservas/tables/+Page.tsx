@@ -795,6 +795,40 @@ export default function TableManagerPage() {
     return String(name || "").trim();
   };
 
+  // Get bookings for a specific table
+  const getTableBookings = useCallback((tableName: string): Booking[] => {
+    const key = normalizeTableKey(tableName);
+    return bookings.filter(b => normalizeTableKey(b.table_number) === key);
+  }, [bookings]);
+
+  // Group tables by status
+  const tablesByStatus = useMemo(() => {
+    const free: typeof visibleTables = [];
+    const booked: typeof visibleTables = [];
+    const seated: typeof visibleTables = [];
+    
+    for (const table of visibleTables) {
+      const key = normalizeTableKey(table.name);
+      const occ = tableOccupancyMap.get(key);
+      if (occ?.seated > 0) {
+        seated.push(table);
+      } else if (occ?.booked > 0) {
+        booked.push(table);
+      } else {
+        free.push(table);
+      }
+    }
+    return { free, booked, seated };
+  }, [visibleTables, tableOccupancyMap]);
+
+  // Summary counts
+  const tableSummary = useMemo(() => ({
+    total: visibleTables.length,
+    free: tablesByStatus.free.length,
+    booked: tablesByStatus.booked.length,
+    seated: tablesByStatus.seated.length,
+  }), [visibleTables.length, tablesByStatus]);
+
   const tableOccupancyMap = useMemo(() => {
     const out = new Map<string, { booked: number; seated: number }>();
     for (const booking of bookings) {
@@ -1871,6 +1905,11 @@ export default function TableManagerPage() {
             <div className="bo-tableMapSection">
               <div className="bo-tableMapSectionHeader">
                 <div className="bo-tableMapSectionTitle">Estado de mesas</div>
+                <div className="bo-tableMapSectionSummary">
+                  <span className="bo-tableMapSummaryItem bo-tableMapSummaryItem--free">{tableSummary.free} libres</span>
+                  <span className="bo-tableMapSummaryItem bo-tableMapSummaryItem--booked">{tableSummary.booked} reservadas</span>
+                  <span className="bo-tableMapSummaryItem bo-tableMapSummaryItem--seated">{tableSummary.seated} ocupadas</span>
+                </div>
               </div>
               {visibleTables.length === 0 ? (
                 <div className="bo-tableMapEmptyState">
@@ -1879,42 +1918,138 @@ export default function TableManagerPage() {
                   <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => setEditorOpen(true)}>Crear mesa</button>
                 </div>
               ) : (
-                <div className="bo-tableMapTablesGrid">
-                  {visibleTables.map((table) => {
-                    const key = normalizeTableKey(table.name);
-                    const occ = tableOccupancyMap.get(key);
-                    const cls = occ ? (occ.seated > 0 ? "is-seated" : "is-booked") : "is-free";
-                    const isSelected = selectedTableId === table.id;
-                    return (
-                      <div 
-                        key={`table-card-${table.id}`} 
-                        className={`bo-tableMapTableCard ${cls}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
-                        onClick={() => {
-                          if (assignMode) {
-                            setSelectedTableId(isSelected ? null : table.id);
-                          }
-                        }}
-                      >
-                        {assignMode && (
-                          <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                setSelectedTableId(isSelected ? null : table.id);
+                <div className="bo-tableMapTablesByStatus">
+                  {tablesByStatus.seated.length > 0 && (
+                    <div className="bo-tableMapTablesStatusGroup">
+                      <div className="bo-tableMapTablesStatusGroupTitle">Ocupadas</div>
+                      <div className="bo-tableMapTablesGrid">
+                        {tablesByStatus.seated.map((table) => {
+                          const tableBookings = getTableBookings(table.name);
+                          const currentBooking = tableBookings[0];
+                          const isSelected = selectedTableId === table.id;
+                          return (
+                            <div 
+                              key={`table-card-${table.id}`} 
+                              className={`bo-tableMapTableCard is-seated${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
+                              onClick={() => {
+                                if (assignMode) {
+                                  setSelectedTableId(isSelected ? null : table.id);
+                                }
                               }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <span className="bo-checkboxMark" />
-                          </label>
-                        )}
-                        <span className="bo-tableMapTableCardOcc" />
-                        <span className="bo-tableMapTableCardNum">{table.name}</span>
-                        <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                            >
+                              {assignMode && (
+                                <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedTableId(isSelected ? null : table.id);
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <span className="bo-checkboxMark" />
+                                </label>
+                              )}
+                              <span className="bo-tableMapTableCardOcc" />
+                              <span className="bo-tableMapTableCardNum">{table.name}</span>
+                              <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                              {currentBooking && (
+                                <span className="bo-tableMapTableCardBooking">
+                                  {currentBooking.customer_name?.split(' ')[0]} · {formatHHMM(currentBooking.reservation_time)}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
+                  {tablesByStatus.booked.length > 0 && (
+                    <div className="bo-tableMapTablesStatusGroup">
+                      <div className="bo-tableMapTablesStatusGroupTitle">Reservadas</div>
+                      <div className="bo-tableMapTablesGrid">
+                        {tablesByStatus.booked.map((table) => {
+                          const tableBookings = getTableBookings(table.name);
+                          const currentBooking = tableBookings[0];
+                          const isSelected = selectedTableId === table.id;
+                          return (
+                            <div 
+                              key={`table-card-${table.id}`} 
+                              className={`bo-tableMapTableCard is-booked${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
+                              onClick={() => {
+                                if (assignMode) {
+                                  setSelectedTableId(isSelected ? null : table.id);
+                                }
+                              }}
+                            >
+                              {assignMode && (
+                                <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedTableId(isSelected ? null : table.id);
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <span className="bo-checkboxMark" />
+                                </label>
+                              )}
+                              <span className="bo-tableMapTableCardOcc" />
+                              <span className="bo-tableMapTableCardNum">{table.name}</span>
+                              <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                              {currentBooking && (
+                                <span className="bo-tableMapTableCardBooking">
+                                  {currentBooking.customer_name?.split(' ')[0]} · {formatHHMM(currentBooking.reservation_time)}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {tablesByStatus.free.length > 0 && (
+                    <div className="bo-tableMapTablesStatusGroup">
+                      <div className="bo-tableMapTablesStatusGroupTitle">Libres</div>
+                      <div className="bo-tableMapTablesGrid">
+                        {tablesByStatus.free.map((table) => {
+                          const isSelected = selectedTableId === table.id;
+                          return (
+                            <div 
+                              key={`table-card-${table.id}`} 
+                              className={`bo-tableMapTableCard is-free${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
+                              onClick={() => {
+                                if (assignMode) {
+                                  setSelectedTableId(isSelected ? null : table.id);
+                                }
+                              }}
+                            >
+                              {assignMode && (
+                                <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedTableId(isSelected ? null : table.id);
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <span className="bo-checkboxMark" />
+                                </label>
+                              )}
+                              <span className="bo-tableMapTableCardOcc" />
+                              <span className="bo-tableMapTableCardNum">{table.name}</span>
+                              <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
