@@ -795,6 +795,20 @@ export default function TableManagerPage() {
     return String(name || "").trim();
   };
 
+  // Table occupancy map - must be declared before tablesByStatus
+  const tableOccupancyMap = useMemo(() => {
+    const out = new Map<string, { booked: number; seated: number }>();
+    for (const booking of bookings) {
+      const key = String(booking.table_number || "").trim();
+      if (!key) continue;
+      const row = out.get(key) || { booked: 0, seated: 0 };
+      row.booked += Number(booking.party_size || 0);
+      if (bookingStates[String(booking.id)]?.seated) row.seated += Number(booking.party_size || 0);
+      out.set(key, row);
+    }
+    return out;
+  }, [bookingStates, bookings]);
+
   // Get bookings for a specific table
   const getTableBookings = useCallback((tableName: string): Booking[] => {
     const key = normalizeTableKey(tableName);
@@ -810,9 +824,9 @@ export default function TableManagerPage() {
     for (const table of visibleTables) {
       const key = normalizeTableKey(table.name);
       const occ = tableOccupancyMap.get(key);
-      if (occ?.seated > 0) {
+      if ((occ?.seated ?? 0) > 0) {
         seated.push(table);
-      } else if (occ?.booked > 0) {
+      } else if ((occ?.booked ?? 0) > 0) {
         booked.push(table);
       } else {
         free.push(table);
@@ -828,19 +842,6 @@ export default function TableManagerPage() {
     booked: tablesByStatus.booked.length,
     seated: tablesByStatus.seated.length,
   }), [visibleTables.length, tablesByStatus]);
-
-  const tableOccupancyMap = useMemo(() => {
-    const out = new Map<string, { booked: number; seated: number }>();
-    for (const booking of bookings) {
-      const key = String(booking.table_number || "").trim();
-      if (!key) continue;
-      const row = out.get(key) || { booked: 0, seated: 0 };
-      row.booked += Number(booking.party_size || 0);
-      if (bookingStates[String(booking.id)]?.seated) row.seated += Number(booking.party_size || 0);
-      out.set(key, row);
-    }
-    return out;
-  }, [bookingStates, bookings]);
 
   useEffect(() => {
     setNodes(
