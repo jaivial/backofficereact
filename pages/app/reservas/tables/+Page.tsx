@@ -3,7 +3,6 @@ import ReactFlow, {
   Background,
   ControlButton,
   Controls,
-  type CoordinateExtent,
   type Node,
   type NodeChange,
   NodeResizer,
@@ -14,7 +13,7 @@ import ReactFlow, {
   useNodesState,
 } from "reactflow";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarDays, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical, Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil, Plus, RotateCcw, RotateCw, Sofa, Square, Trash2, X, CalendarRange, Users, LayoutGrid } from "lucide-react";
+import { CalendarDays, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical, Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil, Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle, CalendarRange, Users, LayoutGrid, MapPin } from "lucide-react";
 import "reactflow/dist/style.css";
 import { usePageContext } from "vike-react/usePageContext";
 
@@ -29,6 +28,27 @@ import { Modal } from "../../../../ui/overlays/Modal";
 import { MonthCalendar } from "../../../../ui/widgets/MonthCalendar";
 import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 import { compressImageToWebP, isValidImageFile } from "../../../../lib/imageCompressor";
+import {
+  drawElementSizeForPreset,
+  drawPresetAssetImageUrl,
+  drawPresetKind,
+  drawPresetLabel,
+  normalizeDrawElementDisplayMode,
+  normalizeDrawElementKind,
+  normalizeDrawElementPreset,
+  type DrawElementDisplayMode,
+  type DrawElementKind,
+  type DrawElementPreset,
+} from "./drawPresets";
+import { projectFlowPointToOverlay, type FlowViewportTransform, type LinePoint } from "./lineDrawing";
+import {
+  findNearestRectInsideLimitArea,
+  hasClosedLimitArea,
+  isRectInsideLimitArea,
+  normalizeLimitPoints,
+  type RectSize,
+} from "./mapLimits";
+import { areaMetadata, floorNumberForArea, limitAreaTemplatePointsForFloor, normalizeTableArea } from "./areaLayout";
 
 type TableShape = "round" | "square";
 type RectShortSide = "left" | "right";
@@ -62,14 +82,11 @@ type TableNodeData = {
   isSelected?: boolean;
 };
 
-type DrawElementKind = "wall" | "obstacle" | "image";
-
-type DrawElementPreset = "wall" | "plant" | "door" | "arch_door" | "sofa";
-
 type DrawElement = {
   id: string;
   kind: DrawElementKind;
   preset: DrawElementPreset;
+  displayMode: DrawElementDisplayMode;
   x: number;
   y: number;
   width: number;
@@ -82,11 +99,18 @@ type DrawNodeData = {
   id: string;
   kind: DrawElementKind;
   preset: DrawElementPreset;
+  displayMode: DrawElementDisplayMode;
+  isSelected?: boolean;
   label: string;
   width: number;
   height: number;
   rotationDeg: number;
   editable: boolean;
+};
+
+type LineDrawingState = {
+  points: LinePoint[];
+  isDrawing: boolean;
 };
 
 type BookingState = {
@@ -119,10 +143,7 @@ function clampCapacity(n: number): number {
 }
 
 const RECT_SEAT_OFFSET = 18;
-const MAP_EXTENT: CoordinateExtent = [
-  [0, 0],
-  [1800, 1200],
-];
+const DRAW_ROTATE_STEP = 10;
 
 function maxRectShortSeatsForCapacity(capacity: number): number {
   const c = clampCapacity(capacity);
@@ -209,23 +230,33 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
 
 const TableNode = ({ data }: { data: TableNodeData }) => tableFromRFNode(data);
 
-const DRAW_PRESET_LABEL: Record<DrawElementPreset, string> = {
-  wall: "Muro",
-  plant: "Planta",
-  door: "Puerta",
-  arch_door: "Puerta arco",
-  sofa: "Sofa",
-};
-
 const DRAW_PRESET_ICON: Record<DrawElementPreset, React.JSX.Element> = {
   wall: <Square size={15} strokeWidth={1.8} />,
+  wall_corner: <Square size={15} strokeWidth={1.8} />,
+  wall_window: <Square size={15} strokeWidth={1.8} />,
   plant: <Leaf size={15} strokeWidth={1.8} />,
+  plant_tall: <Leaf size={15} strokeWidth={1.8} />,
+  chair: <Users size={15} strokeWidth={1.8} />,
+  bench: <Sofa size={15} strokeWidth={1.8} />,
+  column: <GripVertical size={15} strokeWidth={1.8} />,
+  lamp: <Circle size={15} strokeWidth={1.8} />,
+  trashcan: <Trash2 size={15} strokeWidth={1.8} />,
   door: <DoorOpen size={15} strokeWidth={1.8} />,
+  door_wide: <DoorOpen size={15} strokeWidth={1.8} />,
   arch_door: <DoorOpen size={15} strokeWidth={1.8} />,
   sofa: <Sofa size={15} strokeWidth={1.8} />,
 };
 
+const DRAW_PANEL_GROUPS: Array<{ id: string; title: string; presets: DrawElementPreset[] }> = [
+  { id: "structure", title: "Estructura", presets: ["wall", "wall_corner", "wall_window", "column"] },
+  { id: "obstacles", title: "Obstáculos", presets: ["plant", "plant_tall", "lamp", "chair", "bench", "trashcan"] },
+  { id: "openings", title: "Aberturas y muebles", presets: ["door", "door_wide", "arch_door", "sofa"] },
+];
+
 const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
+  const assetImageUrl = drawPresetAssetImageUrl(data.preset);
+  const showAsset = data.displayMode === "asset" || data.displayMode === "both";
+  const showText = data.displayMode === "text" || data.displayMode === "both";
   const style: React.CSSProperties = {
     width: `${data.width}px`,
     height: `${data.height}px`,
@@ -233,7 +264,7 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
   };
   const cls = data.kind === "wall" ? "is-wall" : data.kind === "image" ? "is-image" : "is-obstacle";
   return (
-    <div className={`bo-drawElementNode ${cls}`} style={style}>
+    <div className={`bo-drawElementNode ${cls}${data.isSelected ? " is-selected" : ""}${assetImageUrl && showAsset ? " has-asset" : ""}${showText ? " has-text" : " no-text"}`} style={style}>
       <NodeResizer
         isVisible={data.editable}
         minWidth={24}
@@ -241,8 +272,14 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
         lineStyle={{ borderColor: "var(--bo-accent)" }}
         handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
       />
-      <span className="bo-drawElementNodeIcon" aria-hidden="true">{DRAW_PRESET_ICON[data.preset]}</span>
-      <span className="bo-drawElementNodeLabel">{data.label}</span>
+      {showAsset ? (
+        assetImageUrl ? (
+          <img className="bo-drawElementNodeAsset" src={assetImageUrl} alt="" aria-hidden="true" />
+        ) : (
+          <span className="bo-drawElementNodeIcon" aria-hidden="true">{DRAW_PRESET_ICON[data.preset]}</span>
+        )
+      ) : null}
+      {showText ? <span className="bo-drawElementNodeLabel">{data.label}</span> : null}
     </div>
   );
 };
@@ -251,13 +288,6 @@ const NODE_TYPES = {
   restaurantTable: TableNode,
   drawElement: DrawElementNode,
 };
-
-function floorNumberForArea(area: TableMapArea): number {
-  const m = (area.metadata || {}) as Record<string, unknown>;
-  const fromMeta = Number(m.floorNumber);
-  if (Number.isFinite(fromMeta) && fromMeta >= 0) return fromMeta;
-  return 0;
-}
 
 function defaultDraft(nextNumber: number): TableDraft {
   const preset = COLOR_PRESETS[0];
@@ -407,19 +437,24 @@ function normalizeDateView(iso: string): { year: number; month: number } {
   };
 }
 
+function drawElementSize(preset: DrawElementPreset): RectSize {
+  return drawElementSizeForPreset(preset);
+}
+
 function makeDrawElement(kind: DrawElementKind, preset: DrawElementPreset, base: XYPosition, index: number): DrawElement {
   const id = `draw-${kind}-${Date.now()}-${index}`;
-  const dims = kind === "wall" ? { w: 220, h: 26 } : kind === "image" ? { w: 92, h: 92 } : { w: 128, h: 92 };
+  const dims = drawElementSize(preset);
   return {
     id,
     kind,
     preset,
+    displayMode: "both",
     x: base.x,
     y: base.y,
-    width: dims.w,
-    height: dims.h,
+    width: dims.width,
+    height: dims.height,
     rotationDeg: 0,
-    label: DRAW_PRESET_LABEL[preset],
+    label: drawPresetLabel(preset),
   };
 }
 
@@ -433,16 +468,90 @@ function elementIntersectsRect(el: DrawElement, left: number, top: number, width
   return left < elRight && right > elLeft && top < elBottom && bottom > elTop;
 }
 
-function clampToExtent(position: XYPosition, extent: CoordinateExtent, size: { width: number; height: number }): XYPosition {
-  const minX = extent[0][0];
-  const minY = extent[0][1];
-  const maxX = extent[1][0] - size.width;
-  const maxY = extent[1][1] - size.height;
+function cloneLinePoints(points: LinePoint[]): LinePoint[] {
+  return points.map((point) => ({ x: point.x, y: point.y }));
+}
+
+function interpolatePosition(a: XYPosition, b: XYPosition, t: number): XYPosition {
   return {
-    x: Math.max(minX, Math.min(maxX, position.x)),
-    y: Math.max(minY, Math.min(maxY, position.y)),
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t,
   };
 }
+
+function clampRectMoveToLimit(
+  from: XYPosition,
+  to: XYPosition,
+  size: RectSize,
+  polygon: LinePoint[],
+): XYPosition {
+  const toRectInside = isRectInsideLimitArea({ x: to.x, y: to.y, width: size.width, height: size.height }, polygon);
+  if (toRectInside) return to;
+
+  const fromRectInside = isRectInsideLimitArea({ x: from.x, y: from.y, width: size.width, height: size.height }, polygon);
+  if (!fromRectInside) {
+    return findNearestRectInsideLimitArea(to, size, polygon) || findNearestRectInsideLimitArea(from, size, polygon) || from;
+  }
+
+  let low = 0;
+  let high = 1;
+  for (let i = 0; i < 14; i += 1) {
+    const mid = (low + high) / 2;
+    const point = interpolatePosition(from, to, mid);
+    const inside = isRectInsideLimitArea({ x: point.x, y: point.y, width: size.width, height: size.height }, polygon);
+    if (inside) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+  const candidate = interpolatePosition(from, to, low);
+  if (isRectInsideLimitArea({ x: candidate.x, y: candidate.y, width: size.width, height: size.height }, polygon)) {
+    return candidate;
+  }
+  return findNearestRectInsideLimitArea(candidate, size, polygon) || findNearestRectInsideLimitArea(from, size, polygon) || from;
+}
+
+function rotatedRectFrameFromPosition(
+  position: XYPosition,
+  width: number,
+  height: number,
+  rotationDeg: number,
+  padding: number,
+): { x: number; y: number; width: number; height: number } {
+  const paddedWidth = width + padding * 2;
+  const paddedHeight = height + padding * 2;
+  const rad = (rotationDeg * Math.PI) / 180;
+  const absCos = Math.abs(Math.cos(rad));
+  const absSin = Math.abs(Math.sin(rad));
+  const bboxWidth = paddedWidth * absCos + paddedHeight * absSin;
+  const bboxHeight = paddedWidth * absSin + paddedHeight * absCos;
+
+  const centerX = position.x + width / 2;
+  const centerY = position.y + height / 2;
+
+  return {
+    x: centerX - bboxWidth / 2,
+    y: centerY - bboxHeight / 2,
+    width: bboxWidth,
+    height: bboxHeight,
+  };
+}
+
+function positionFromRectFrame(
+  frame: { x: number; y: number; width: number; height: number },
+  width: number,
+  height: number,
+): XYPosition {
+  const centerX = frame.x + frame.width / 2;
+  const centerY = frame.y + frame.height / 2;
+  return {
+    x: centerX - width / 2,
+    y: centerY - height / 2,
+  };
+}
+
+const TABLE_LIMIT_PADDING = 40;
 
 export default function TableManagerPage() {
   const pageContext = usePageContext();
@@ -467,23 +576,25 @@ export default function TableManagerPage() {
   const [drawElements, setDrawElements] = useState<DrawElement[]>([]);
   const [sheetTab, setSheetTab] = useState<"reservas" | "mesas">("reservas");
   const [mapMode, setMapMode] = useState<"tables" | "draw">("tables");
-  const [interactionMode, setInteractionMode] = useState<"select" | "pan">("select");
+  const [lineDrawing, setLineDrawing] = useState<LineDrawingState>({ points: [], isDrawing: false });
+  const [isEditingLimitArea, setIsEditingLimitArea] = useState(false);
+  const [draggingLimitVertexIndex, setDraggingLimitVertexIndex] = useState<number | null>(null);
+  const [interactionMode, setInteractionMode] = useState<"select" | "pan">("pan");
   const [calendarExpanded, setCalendarExpanded] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookingForAssignment, setBookingForAssignment] = useState<Booking | null>(null);
   const [assignMode, setAssignMode] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+  const [selectedDrawElementId, setSelectedDrawElementId] = useState<string | null>(null);
   const [bookingTableDraft, setBookingTableDraft] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuTooltipStyle, setMenuTooltipStyle] = useState<React.CSSProperties>({});
+  const [drawPanelHover, setDrawPanelHover] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [savingLimitTemplate, setSavingLimitTemplate] = useState(false);
 
   // Toggle body class for drag state
   useEffect(() => {
@@ -516,8 +627,11 @@ export default function TableManagerPage() {
 
   const ws = useRef<WebSocket | null>(null);
   const drawElementsRef = useRef<DrawElement[]>([]);
+  const lineDrawingPointsRef = useRef<LinePoint[]>([]);
+  const limitEditHistoryRef = useRef<LinePoint[][]>([]);
   const bookingStatesRef = useRef<Record<string, BookingState>>({});
   const persistLayoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const drawPanelHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flowWrapRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const assignmentInProgress = useRef(false);
@@ -546,8 +660,18 @@ export default function TableManagerPage() {
   }, [drawElements]);
 
   useEffect(() => {
+    if (!selectedDrawElementId) return;
+    if (drawElements.some((item) => item.id === selectedDrawElementId)) return;
+    setSelectedDrawElementId(null);
+  }, [drawElements, selectedDrawElementId]);
+
+  useEffect(() => {
     bookingStatesRef.current = bookingStates;
   }, [bookingStates]);
+
+  useEffect(() => {
+    lineDrawingPointsRef.current = lineDrawing.points;
+  }, [lineDrawing.points]);
 
   const setDraftCapacity = useCallback((nextCapacity: number) => {
     const capacity = clampCapacity(nextCapacity);
@@ -647,6 +771,10 @@ export default function TableManagerPage() {
 
   const visibleAreas = useMemo(() => floorAreas.get(selectedFloor) || [], [floorAreas, selectedFloor]);
   const visibleTables = useMemo(() => visibleAreas.flatMap((a) => a.tables || []), [visibleAreas]);
+  const selectedFloorTemplatePoints = useMemo(
+    () => limitAreaTemplatePointsForFloor(areas, selectedFloor),
+    [areas, selectedFloor],
+  );
 
   const bookingStats = useMemo(() => {
     const total = bookings.length;
@@ -693,7 +821,7 @@ export default function TableManagerPage() {
       if (!tablesRes.success) {
         setError(tablesRes.message || "Error cargando mesas");
       } else {
-        loadedAreas = (tablesRes.areas || tablesRes.data || []).map((a: any) => ({ ...a, tables: Array.isArray(a.tables) ? a.tables : [] }));
+        loadedAreas = (tablesRes.areas || tablesRes.data || []).map((a: any) => normalizeTableArea(a));
         setAreas(loadedAreas);
         const mapLayout = ((tablesRes.layout as any)?.map || (tablesRes.layout as any) || {}) as Record<string, unknown>;
         const loadedElements = Array.isArray(mapLayout.elements)
@@ -701,27 +829,34 @@ export default function TableManagerPage() {
               .map((item) => {
                 const id = String(item?.id || "").trim();
                 if (!id) return null;
-                const kind = item?.kind === "wall" || item?.kind === "image" ? item.kind : "obstacle";
-                const preset: DrawElementPreset =
-                  item?.preset === "wall" || item?.preset === "plant" || item?.preset === "door" || item?.preset === "arch_door" || item?.preset === "sofa"
-                    ? item.preset
-                    : "wall";
+                const kind = normalizeDrawElementKind(item?.kind);
+                const preset = normalizeDrawElementPreset(item?.preset);
+                const displayMode = normalizeDrawElementDisplayMode(item?.display_mode ?? item?.displayMode);
+                const defaultSize = drawElementSizeForPreset(preset);
                 return {
                   id,
                   kind,
                   preset,
+                  displayMode,
                   x: Number(item?.x || 0),
                   y: Number(item?.y || 0),
-                  width: Math.max(24, Number(item?.width || 92)),
-                  height: Math.max(24, Number(item?.height || 92)),
+                  width: Math.max(24, Number(item?.width || defaultSize.width)),
+                  height: Math.max(24, Number(item?.height || defaultSize.height)),
                   rotationDeg: Number(item?.rotationDeg || 0),
-                  label: String(item?.label || DRAW_PRESET_LABEL[preset]),
+                  label: String(item?.label || drawPresetLabel(preset)),
                 } as DrawElement;
               })
               .filter(Boolean) as DrawElement[]
           : [];
         drawElementsRef.current = loadedElements;
         setDrawElements(loadedElements);
+
+        const loadedLimitPoints = normalizeLimitPoints(mapLayout.limit_points);
+        const templateLimitPoints = limitAreaTemplatePointsForFloor(loadedAreas, selectedFloor);
+        const activeLimitPoints = hasClosedLimitArea(loadedLimitPoints) ? loadedLimitPoints : templateLimitPoints;
+        lineDrawingPointsRef.current = activeLimitPoints;
+        limitEditHistoryRef.current = [];
+        setLineDrawing({ points: activeLimitPoints, isDrawing: false });
 
         const loadedBookingStates: Record<string, BookingState> = {};
         const rawBookingStates = mapLayout.booking_states as Record<string, unknown> | undefined;
@@ -858,7 +993,6 @@ export default function TableManagerPage() {
             type: "restaurantTable",
             draggable: true,
             position: { x: table.x_pos || 0, y: table.y_pos || 0 },
-            extent: MAP_EXTENT,
             data: {
               id: table.id,
               name: table.name || `Mesa ${table.id}`,
@@ -880,11 +1014,12 @@ export default function TableManagerPage() {
           type: "drawElement",
           draggable: mapMode === "draw",
           position: { x: item.x, y: item.y },
-          extent: MAP_EXTENT,
           data: {
             id: item.id,
             kind: item.kind,
             preset: item.preset,
+            displayMode: item.displayMode,
+            isSelected: selectedDrawElementId === item.id,
             label: item.label,
             width: item.width,
             height: item.height,
@@ -894,7 +1029,7 @@ export default function TableManagerPage() {
         })),
       ],
     );
-  }, [assignMode, drawElements, mapMode, selectedTableId, setNodes, tableOccupancyMap, visibleTables]);
+  }, [assignMode, drawElements, mapMode, selectedDrawElementId, selectedTableId, setNodes, tableOccupancyMap, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -906,20 +1041,25 @@ export default function TableManagerPage() {
       try {
         const payload = JSON.parse(event.data);
         if (payload.type === "snapshot" && Array.isArray(payload.areas)) {
-          setAreas(payload.areas.map((a: any) => ({ ...a, tables: Array.isArray(a.tables) ? a.tables : [] })));
+          setAreas(payload.areas.map((a: any) => normalizeTableArea(a)));
           return;
         }
         if (payload.type === "table_created" || payload.type === "table_updated") {
           const table = payload.table as TableMapItem | undefined;
           if (!table?.id) return;
           setAreas((prev) => {
+            const existingTable = prev.flatMap((area) => area.tables || []).find((entry) => entry.id === table.id);
+            const mergedTable = existingTable
+              ? ({ ...existingTable, ...table, x_pos: existingTable.x_pos, y_pos: existingTable.y_pos } as TableMapItem)
+              : ({ ...table } as TableMapItem);
             const next = prev.map((area) => ({ ...area, tables: [...(area.tables || [])] }));
             for (const area of next) {
               area.tables = area.tables.filter((t) => t.id !== table.id);
             }
-            const target = next.find((area) => area.id === table.area_id);
+            const targetAreaID = Number(mergedTable.area_id || existingTable?.area_id || 0);
+            const target = next.find((area) => area.id === targetAreaID);
             if (target) {
-              target.tables.push({ ...table });
+              target.tables.push(mergedTable);
             }
             return next;
           });
@@ -977,14 +1117,18 @@ export default function TableManagerPage() {
   );
 
   const queuePersistLayout = useCallback(
-    (elements: DrawElement[], states: Record<string, BookingState>) => {
+    (elements: DrawElement[], states: Record<string, BookingState>, limitPoints: LinePoint[]) => {
       if (persistLayoutTimerRef.current) {
         clearTimeout(persistLayoutTimerRef.current);
       }
       // Debounce layout persistence to avoid network spam from drag/resize event bursts.
       persistLayoutTimerRef.current = setTimeout(() => {
         persistLayoutTimerRef.current = null;
-        void persistLayout({ elements, booking_states: states });
+        const layoutElements = elements.map((item) => ({
+          ...item,
+          display_mode: item.displayMode,
+        }));
+        void persistLayout({ elements: layoutElements, booking_states: states, limit_points: limitPoints });
       }, 120);
     },
     [persistLayout],
@@ -1001,42 +1145,192 @@ export default function TableManagerPage() {
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       const activeDrawElements = drawElementsRef.current;
-      
+      const activeLimitPoints = hasClosedLimitArea(lineDrawingPointsRef.current)
+        ? lineDrawingPointsRef.current
+        : null;
+      let nextNodesSnapshot: Node<any>[] = [];
+
       setNodes((nds) => {
         const next = applyNodeChanges(changes, nds) as Node<any>[];
         for (const c of changes as any[]) {
-          // Handle drag end for tables - get position from updated nodes
-          if (c.type === "position" && c.dragging === false && !c.position) {
+          if (c.type === "position") {
+            const prevNode = nds.find((n) => n.id === c.id);
             const node = next.find((n) => n.id === c.id);
-            if (node && node.type === "restaurantTable" && node.position) {
-              // Call savePosition directly here to ensure correct closure
-              void savePosition(c.id, node.position.x, node.position.y);
-            }
-            continue;
-          }
-          if (c.type !== "position" || !c.position) continue;
-          const prevNode = nds.find((n) => n.id === c.id);
-          const node = next.find((n) => n.id === c.id);
-          if (!node || !prevNode) continue;
+            if (!node || !prevNode || !node.position) continue;
 
-          if (node.type === "restaurantTable") {
-            const data = node.data as TableNodeData;
-            const geom = previewGeometry(data.shape, data.capacity, data.rectShortSides);
-            const clamped = clampToExtent(node.position, MAP_EXTENT, { width: geom.width, height: geom.height });
-            const blocked = activeDrawElements.some((el) => elementIntersectsRect(el, clamped.x, clamped.y, geom.width, geom.height));
-            node.position = blocked ? prevNode.position : clamped;
-            continue;
-          }
-
-          if (node.type === "drawElement") {
-            if (mapMode !== "draw") {
-              node.position = prevNode.position;
+            if (node.type === "restaurantTable") {
+              const data = node.data as TableNodeData;
+              const geom = previewGeometry(data.shape, data.capacity, data.rectShortSides);
+              const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+              const fromFrame = rotatedRectFrameFromPosition(
+                prevNode.position,
+                geom.width,
+                geom.height,
+                rotationDeg,
+                TABLE_LIMIT_PADDING,
+              );
+              const toFrame = rotatedRectFrameFromPosition(
+                node.position,
+                geom.width,
+                geom.height,
+                rotationDeg,
+                TABLE_LIMIT_PADDING,
+              );
+              const constrainedFramePosition = activeLimitPoints
+                ? clampRectMoveToLimit(
+                    { x: fromFrame.x, y: fromFrame.y },
+                    { x: toFrame.x, y: toFrame.y },
+                    { width: toFrame.width, height: toFrame.height },
+                    activeLimitPoints,
+                  )
+                : { x: fromFrame.x, y: fromFrame.y };
+              const constrainedPosition = activeLimitPoints
+                ? positionFromRectFrame(
+                    {
+                      x: constrainedFramePosition.x,
+                      y: constrainedFramePosition.y,
+                      width: toFrame.width,
+                      height: toFrame.height,
+                    },
+                    geom.width,
+                    geom.height,
+                  )
+                : prevNode.position;
+              const blockedByObstacle = activeDrawElements.some((el) =>
+                elementIntersectsRect(el, constrainedPosition.x, constrainedPosition.y, geom.width, geom.height),
+              );
+              node.position = blockedByObstacle ? prevNode.position : constrainedPosition;
               continue;
             }
-            const data = node.data as DrawNodeData;
-            node.position = clampToExtent(node.position, MAP_EXTENT, { width: data.width, height: data.height });
+
+            if (node.type === "drawElement") {
+              if (mapMode !== "draw") {
+                node.position = prevNode.position;
+                continue;
+              }
+              const data = node.data as DrawNodeData;
+              const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+              const fromFrame = rotatedRectFrameFromPosition(prevNode.position, data.width, data.height, rotationDeg, 0);
+              const toFrame = rotatedRectFrameFromPosition(node.position, data.width, data.height, rotationDeg, 0);
+              node.position = activeLimitPoints
+                ? positionFromRectFrame(
+                    {
+                      ...(clampRectMoveToLimit(
+                        { x: fromFrame.x, y: fromFrame.y },
+                        { x: toFrame.x, y: toFrame.y },
+                        { width: toFrame.width, height: toFrame.height },
+                        activeLimitPoints,
+                      )),
+                      width: toFrame.width,
+                      height: toFrame.height,
+                    },
+                    data.width,
+                    data.height,
+                  )
+                : prevNode.position;
+            }
+            continue;
+          }
+
+          if (c.type === "dimensions" && String(c.id).startsWith("draw-")) {
+            const prevNode = nds.find((n) => n.id === c.id);
+            const node = next.find((n) => n.id === c.id);
+            if (!node || !prevNode || node.type !== "drawElement" || !node.position) continue;
+
+            const prevData = prevNode.data as DrawNodeData;
+            const nextWidth = Math.max(24, Number(c.dimensions?.width || prevData.width));
+            const nextHeight = Math.max(24, Number(c.dimensions?.height || prevData.height));
+            const rotationDeg = Number.isFinite(prevData.rotationDeg) ? prevData.rotationDeg : 0;
+
+            if (mapMode !== "draw") {
+              node.data = { ...node.data, width: prevData.width, height: prevData.height };
+              continue;
+            }
+
+            const nextFrame = rotatedRectFrameFromPosition(node.position, nextWidth, nextHeight, rotationDeg, 0);
+            const insideLimit = activeLimitPoints
+              ? isRectInsideLimitArea(
+                  { x: nextFrame.x, y: nextFrame.y, width: nextFrame.width, height: nextFrame.height },
+                  activeLimitPoints,
+                )
+              : false;
+            if (!insideLimit) {
+              node.data = { ...node.data, width: prevData.width, height: prevData.height };
+            } else {
+              node.data = { ...node.data, width: nextWidth, height: nextHeight };
+            }
           }
         }
+
+        if (activeLimitPoints) {
+          for (const node of next) {
+            if (!node.position) continue;
+            const prevNode = nds.find((n) => n.id === node.id) || node;
+
+            if (node.type === "restaurantTable") {
+              const data = node.data as TableNodeData;
+              const geom = previewGeometry(data.shape, data.capacity, data.rectShortSides);
+              const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+              const frame = rotatedRectFrameFromPosition(
+                node.position,
+                geom.width,
+                geom.height,
+                rotationDeg,
+                TABLE_LIMIT_PADDING,
+              );
+
+              if (!isRectInsideLimitArea(frame, activeLimitPoints)) {
+                const nearestFrame = findNearestRectInsideLimitArea(
+                  { x: frame.x, y: frame.y },
+                  { width: frame.width, height: frame.height },
+                  activeLimitPoints,
+                );
+                if (!nearestFrame) {
+                  node.position = prevNode.position;
+                } else {
+                  node.position = positionFromRectFrame(
+                    { ...nearestFrame, width: frame.width, height: frame.height },
+                    geom.width,
+                    geom.height,
+                  );
+                }
+              }
+
+              const blockedByObstacle = activeDrawElements.some((el) =>
+                elementIntersectsRect(el, node.position.x, node.position.y, geom.width, geom.height),
+              );
+              if (blockedByObstacle) {
+                node.position = prevNode.position;
+              }
+              continue;
+            }
+
+            if (node.type === "drawElement") {
+              if (mapMode !== "draw") {
+                node.position = prevNode.position;
+                continue;
+              }
+              const data = node.data as DrawNodeData;
+              const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+              const frame = rotatedRectFrameFromPosition(node.position, data.width, data.height, rotationDeg, 0);
+              if (!isRectInsideLimitArea(frame, activeLimitPoints)) {
+                const nearestFrame = findNearestRectInsideLimitArea(
+                  { x: frame.x, y: frame.y },
+                  { width: frame.width, height: frame.height },
+                  activeLimitPoints,
+                );
+                node.position = nearestFrame
+                  ? positionFromRectFrame(
+                      { ...nearestFrame, width: frame.width, height: frame.height },
+                      data.width,
+                      data.height,
+                    )
+                  : prevNode.position;
+              }
+            }
+          }
+        }
+        nextNodesSnapshot = next;
         return next;
       });
 
@@ -1044,12 +1338,14 @@ export default function TableManagerPage() {
       let drawElementsChanged = false;
 
       for (const c of changes as any[]) {
-        if (c.type === "position" && c.dragging === false && c.position) {
-          // This branch handles cases where position is included in the change
-          if (String(c.id).startsWith("draw-")) {
+        if (c.type === "position" && c.dragging !== true) {
+          const updatedNode = nextNodesSnapshot.find((n) => n.id === c.id);
+          if (!updatedNode?.position) continue;
+
+          if (String(c.id).startsWith("draw-") && updatedNode.type === "drawElement") {
             if (mapMode !== "draw") continue;
-            const x = Math.round(c.position.x);
-            const y = Math.round(c.position.y);
+            const x = Math.round(updatedNode.position.x);
+            const y = Math.round(updatedNode.position.y);
             let changed = false;
             const updated = nextDrawElements.map((el) => {
               if (el.id !== c.id) return el;
@@ -1061,18 +1357,21 @@ export default function TableManagerPage() {
               nextDrawElements = updated;
               drawElementsChanged = true;
             }
-          } else {
-            void savePosition(c.id, c.position.x, c.position.y);
+          } else if (updatedNode.type === "restaurantTable") {
+            void savePosition(c.id, updatedNode.position.x, updatedNode.position.y);
           }
         }
         if (c.type === "dimensions" && String(c.id).startsWith("draw-")) {
           if (mapMode !== "draw") continue;
-          if (c.resizing !== false || !c.dimensions) continue;
+          if (c.resizing !== false) continue;
+          const updatedNode = nextNodesSnapshot.find((n) => n.id === c.id);
+          if (!updatedNode || updatedNode.type !== "drawElement") continue;
+          const updatedData = updatedNode.data as DrawNodeData;
           let changed = false;
           const updated = nextDrawElements.map((el) => {
             if (el.id !== c.id) return el;
-            const width = Math.max(24, Number(c.dimensions.width || el.width));
-            const height = Math.max(24, Number(c.dimensions.height || el.height));
+            const width = Math.max(24, Number(updatedData.width || el.width));
+            const height = Math.max(24, Number(updatedData.height || el.height));
             if (el.width === width && el.height === height) return el;
             changed = true;
             return { ...el, width, height };
@@ -1087,20 +1386,14 @@ export default function TableManagerPage() {
       if (drawElementsChanged) {
         drawElementsRef.current = nextDrawElements;
         setDrawElements(nextDrawElements);
-        queuePersistLayout(nextDrawElements, bookingStatesRef.current);
+        queuePersistLayout(nextDrawElements, bookingStatesRef.current, lineDrawingPointsRef.current);
       }
     },
-    [mapMode, queuePersistLayout, savePosition, setNodes],
+    [lineDrawing.isDrawing, mapMode, queuePersistLayout, savePosition, setNodes],
   );
 
-  // Drag and drop handlers - only available on client
-  const screenToFlowPosition = useMemo(() => {
-    if (!isMounted) return null;
-    // We'll get this from useReactFlow in the effect below
-    return null;
-  }, [isMounted]);
-
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  const [flowViewport, setFlowViewport] = useState<FlowViewportTransform>({ x: 0, y: 0, zoom: 1 });
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -1278,8 +1571,27 @@ export default function TableManagerPage() {
           );
         }
       } else {
-        payload.x_pos = 140 + visibleTables.length * 24;
-        payload.y_pos = 140 + visibleTables.length * 24;
+        const activeLimitPoints = hasClosedLimitArea(lineDrawing.points) ? lineDrawing.points : null;
+        if (!activeLimitPoints) {
+          pushToast({ kind: "error", title: "Límites requeridos", message: "Dibuja y cierra el área de límites primero." });
+          return;
+        }
+
+        const normalizedCapacity = clampCapacity(draft.capacity);
+        const tableGeom = previewGeometry(draft.shape, normalizedCapacity, normalizeRectShortSides(draft.capacity, draft.rectShortSides));
+        const preferredPosition = { x: 140 + visibleTables.length * 24, y: 140 + visibleTables.length * 24 };
+        const boundedPosition = findNearestRectInsideLimitArea(
+          preferredPosition,
+          { width: tableGeom.width, height: tableGeom.height },
+          activeLimitPoints,
+        );
+        if (!boundedPosition) {
+          pushToast({ kind: "error", title: "Sin espacio", message: "No hay espacio dentro del área límite para una nueva mesa." });
+          return;
+        }
+
+        payload.x_pos = Math.round(boundedPosition.x);
+        payload.y_pos = Math.round(boundedPosition.y);
         payload.date = selectedDate;
         payload.floor_number = selectedFloor;
         const res = await api.tables.create(payload);
@@ -1313,7 +1625,7 @@ export default function TableManagerPage() {
     } finally {
       setSaving(false);
     }
-  }, [api.tables, draft, draftTextureFile, editingTableId, ensureAreaForFloor, pushToast, selectedDate, selectedFloor, visibleTables.length]);
+  }, [api.tables, draft, draftTextureFile, editingTableId, ensureAreaForFloor, lineDrawing.isDrawing, lineDrawing.points, pushToast, selectedDate, selectedFloor, visibleTables.length]);
 
   const onPickPreset = useCallback((presetId: string) => {
     const preset = COLOR_PRESETS.find((p) => p.id === presetId);
@@ -1375,23 +1687,82 @@ export default function TableManagerPage() {
       const next = { ...bookingStatesRef.current, [String(booking.id)]: { seated } };
       bookingStatesRef.current = next;
       setBookingStates(next);
-      queuePersistLayout(drawElementsRef.current, next);
+      queuePersistLayout(drawElementsRef.current, next, lineDrawingPointsRef.current);
     },
     [queuePersistLayout],
   );
 
   const addDrawElement = useCallback(
-    (kind: DrawElementKind, preset: DrawElementPreset) => {
+    (preset: DrawElementPreset) => {
+      const activeLimitPoints = hasClosedLimitArea(lineDrawing.points) ? lineDrawing.points : null;
+      if (!activeLimitPoints) {
+        pushToast({ kind: "error", title: "Límites requeridos", message: "Dibuja y cierra el área de límites primero." });
+        return;
+      }
       const current = drawElementsRef.current;
-      const next = makeDrawElement(kind, preset, { x: 180 + current.length * 24, y: 180 + current.length * 24 }, current.length + 1);
+      const kind = drawPresetKind(preset);
+      const size = drawElementSize(preset);
+      const preferred = { x: 180 + current.length * 24, y: 180 + current.length * 24 };
+      const base = findNearestRectInsideLimitArea(preferred, size, activeLimitPoints);
+      if (!base) {
+        pushToast({ kind: "error", title: "Sin espacio", message: "No hay espacio dentro del área límite para ese elemento." });
+        return;
+      }
+      const next = makeDrawElement(kind, preset, base, current.length + 1);
       const updated = [...current, next];
       drawElementsRef.current = updated;
       setDrawElements(updated);
-      queuePersistLayout(updated, bookingStatesRef.current);
+      setSelectedDrawElementId(next.id);
+      queuePersistLayout(updated, bookingStatesRef.current, activeLimitPoints);
       setMapMode("draw");
       setMenuVisible(false);
     },
-    [queuePersistLayout],
+    [lineDrawing.isDrawing, lineDrawing.points, pushToast, queuePersistLayout],
+  );
+
+  const selectedDrawElement = useMemo(
+    () => (selectedDrawElementId ? drawElements.find((item) => item.id === selectedDrawElementId) || null : null),
+    [drawElements, selectedDrawElementId],
+  );
+
+  const updateSelectedDrawElementDisplayMode = useCallback(
+    (displayMode: DrawElementDisplayMode) => {
+      if (!selectedDrawElementId) return;
+      const current = drawElementsRef.current;
+      let changed = false;
+      const updated = current.map((item) => {
+        if (item.id !== selectedDrawElementId) return item;
+        if (item.displayMode === displayMode) return item;
+        changed = true;
+        return { ...item, displayMode };
+      });
+      if (!changed) return;
+      drawElementsRef.current = updated;
+      setDrawElements(updated);
+      queuePersistLayout(updated, bookingStatesRef.current, lineDrawingPointsRef.current);
+    },
+    [queuePersistLayout, selectedDrawElementId],
+  );
+
+  const rotateSelectedDrawElement = useCallback(
+    (direction: -1 | 1) => {
+      if (!selectedDrawElementId) return;
+      const current = drawElementsRef.current;
+      let changed = false;
+      const updated = current.map((item) => {
+        if (item.id !== selectedDrawElementId) return item;
+        const base = Math.round((Number.isFinite(item.rotationDeg) ? item.rotationDeg : 0) / DRAW_ROTATE_STEP) * DRAW_ROTATE_STEP;
+        const next = ((base + direction * DRAW_ROTATE_STEP) % 360 + 360) % 360;
+        if (next === item.rotationDeg) return item;
+        changed = true;
+        return { ...item, rotationDeg: next };
+      });
+      if (!changed) return;
+      drawElementsRef.current = updated;
+      setDrawElements(updated);
+      queuePersistLayout(updated, bookingStatesRef.current, lineDrawingPointsRef.current);
+    },
+    [queuePersistLayout, selectedDrawElementId],
   );
 
   const reservasTabItems = useMemo<TabItem[]>(
@@ -1556,10 +1927,208 @@ export default function TableManagerPage() {
     });
   }, []);
 
+  const openDrawPanelHover = useCallback(() => {
+    if (drawPanelHoverTimerRef.current) {
+      clearTimeout(drawPanelHoverTimerRef.current);
+      drawPanelHoverTimerRef.current = null;
+    }
+    setDrawPanelHover(true);
+  }, []);
+
+  const closeDrawPanelHoverSoon = useCallback(() => {
+    if (drawPanelHoverTimerRef.current) {
+      clearTimeout(drawPanelHoverTimerRef.current);
+    }
+    drawPanelHoverTimerRef.current = setTimeout(() => {
+      drawPanelHoverTimerRef.current = null;
+      setDrawPanelHover(false);
+    }, 140);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (!drawPanelHoverTimerRef.current) return;
+      clearTimeout(drawPanelHoverTimerRef.current);
+      drawPanelHoverTimerRef.current = null;
+    };
+  }, []);
+
   const onToggleDrawMode = useCallback(() => {
-    setMapMode((prev) => (prev === "draw" ? "tables" : "draw"));
+    setMapMode((prev) => {
+      const next = prev === "draw" ? "tables" : "draw";
+      if (next !== "draw") {
+        setSelectedDrawElementId(null);
+        setIsEditingLimitArea(false);
+        setDraggingLimitVertexIndex(null);
+        limitEditHistoryRef.current = [];
+      }
+      return next;
+    });
     setMenuVisible(false);
   }, []);
+
+  const closeDrawPanel = useCallback(() => {
+    setSelectedDrawElementId(null);
+    setIsEditingLimitArea(false);
+    setDraggingLimitVertexIndex(null);
+    limitEditHistoryRef.current = [];
+    setMapMode("tables");
+  }, []);
+
+  const startLineDrawing = useCallback(() => {
+    setIsEditingLimitArea(false);
+    setDraggingLimitVertexIndex(null);
+    limitEditHistoryRef.current = [];
+    setLineDrawing({ points: [], isDrawing: true });
+    lineDrawingPointsRef.current = [];
+    setMapMode("draw");
+    setMenuVisible(false);
+  }, []);
+
+  const addLinePoint = useCallback((point: LinePoint) => {
+    setLineDrawing((prev) => ({
+      ...prev,
+      points: [...prev.points, point],
+    }));
+  }, []);
+
+  const undoCreateAreaLastAction = useCallback(() => {
+    setLineDrawing((prev) => {
+      if (!prev.isDrawing || prev.points.length === 0) return prev;
+      const nextPoints = prev.points.slice(0, -1);
+      lineDrawingPointsRef.current = nextPoints;
+      return { ...prev, points: nextPoints };
+    });
+  }, []);
+
+  const closeLineDrawing = useCallback(() => {
+    if (lineDrawing.points.length < 3) {
+      pushToast({ kind: "error", title: "Área inválida", message: "Necesitas al menos 3 puntos para cerrar el área." });
+      return;
+    }
+    const closedPoints = cloneLinePoints(lineDrawing.points);
+    lineDrawingPointsRef.current = closedPoints;
+    setIsEditingLimitArea(false);
+    setLineDrawing({ points: closedPoints, isDrawing: false });
+    limitEditHistoryRef.current = [];
+    queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, closedPoints);
+  }, [lineDrawing.points, pushToast, queuePersistLayout]);
+
+  const cancelLineDrawing = useCallback(() => {
+    setIsEditingLimitArea(false);
+    setDraggingLimitVertexIndex(null);
+    limitEditHistoryRef.current = [];
+    setLineDrawing({ points: [], isDrawing: false });
+    lineDrawingPointsRef.current = [];
+    queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, []);
+  }, [queuePersistLayout]);
+
+  const startLimitAreaEditing = useCallback(() => {
+    if (!hasClosedLimitArea(lineDrawing.points) || lineDrawing.isDrawing) return;
+    limitEditHistoryRef.current = [];
+    setIsEditingLimitArea(true);
+    setMapMode("draw");
+    setMenuVisible(false);
+  }, [lineDrawing.isDrawing, lineDrawing.points]);
+
+  const stopLimitAreaEditing = useCallback(() => {
+    setIsEditingLimitArea(false);
+    setDraggingLimitVertexIndex(null);
+    limitEditHistoryRef.current = [];
+    queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, lineDrawingPointsRef.current);
+  }, [queuePersistLayout]);
+
+  const saveLimitAreaTemplate = useCallback(async () => {
+    if (lineDrawing.isDrawing || !hasClosedLimitArea(lineDrawing.points)) {
+      pushToast({ kind: "error", title: "Área inválida", message: "Cierra el área antes de guardar la plantilla." });
+      return;
+    }
+
+    setSavingLimitTemplate(true);
+    try {
+      const areaId = await ensureAreaForFloor();
+      if (!areaId) return;
+
+      const currentArea = (floorAreas.get(selectedFloor) || []).find((area) => area.id === areaId) || null;
+      const metadata: Record<string, unknown> = {
+        ...areaMetadata(currentArea),
+        floorNumber: selectedFloor,
+        limit_area_template_points: cloneLinePoints(lineDrawing.points),
+      };
+
+      const res = await api.tables.update({
+        entity: "area",
+        id: areaId,
+        metadata,
+      });
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la plantilla" });
+        return;
+      }
+
+      setAreas((prev) => prev.map((area) => (area.id === areaId ? { ...area, metadata } : area)));
+      pushToast({
+        kind: "success",
+        title: "Plantilla guardada",
+        message: "Se aplicará por defecto para este salón en todos los días.",
+      });
+    } finally {
+      setSavingLimitTemplate(false);
+    }
+  }, [api.tables, ensureAreaForFloor, floorAreas, lineDrawing.isDrawing, lineDrawing.points, pushToast, selectedFloor]);
+
+  const undoEditAreaLastAction = useCallback(() => {
+    if (!isEditingLimitArea || lineDrawing.isDrawing) return;
+    const previous = limitEditHistoryRef.current.pop();
+    if (!previous) return;
+    const restoredPoints = cloneLinePoints(previous);
+    lineDrawingPointsRef.current = restoredPoints;
+    setDraggingLimitVertexIndex(null);
+    setLineDrawing((prev) => ({ ...prev, points: restoredPoints, isDrawing: false }));
+    queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, restoredPoints);
+  }, [isEditingLimitArea, lineDrawing.isDrawing, queuePersistLayout]);
+
+  const onLimitVertexMouseDown = useCallback(
+    (index: number, event: React.MouseEvent<SVGCircleElement>) => {
+      if (!isEditingLimitArea || !reactFlowInstance) return;
+      event.preventDefault();
+      event.stopPropagation();
+      limitEditHistoryRef.current.push(cloneLinePoints(lineDrawingPointsRef.current));
+      setDraggingLimitVertexIndex(index);
+    },
+    [isEditingLimitArea, reactFlowInstance],
+  );
+
+  useEffect(() => {
+    if (draggingLimitVertexIndex === null || !isEditingLimitArea || !reactFlowInstance) return;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const flowPoint = reactFlowInstance.screenToFlowPosition({ x: event.clientX, y: event.clientY }) as LinePoint;
+      setLineDrawing((prev) => {
+        if (!prev.points[draggingLimitVertexIndex]) return prev;
+        const nextPoints = prev.points.map((point, idx) => (idx === draggingLimitVertexIndex ? flowPoint : point));
+        lineDrawingPointsRef.current = nextPoints;
+        return { ...prev, points: nextPoints, isDrawing: false };
+      });
+    };
+
+    const handleMouseUp = () => {
+      setDraggingLimitVertexIndex(null);
+      queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, lineDrawingPointsRef.current);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [draggingLimitVertexIndex, isEditingLimitArea, queuePersistLayout, reactFlowInstance]);
+
+  const lineOverlayPoints = useMemo(
+    () => lineDrawing.points.map((point) => projectFlowPointToOverlay(point, flowViewport)),
+    [flowViewport, lineDrawing.points],
+  );
 
   if (loading) {
     return <div className="bo-tableMapLoading">Cargando mapa...</div>;
@@ -1650,16 +2219,31 @@ export default function TableManagerPage() {
             ) : null}
           </AnimatePresence>
         </div>
-
-        <button
-          className="bo-actionBtn bo-actionBtn--glass"
-          type="button"
-          aria-label="Abrir panel derecho"
-          aria-expanded={rightSheetOpen}
-          onClick={() => setRightSheetOpen((v) => !v)}
-        >
-          {rightSheetOpen ? <PanelRightClose size={18} strokeWidth={1.8} /> : <PanelRightOpen size={18} strokeWidth={1.8} />}
-        </button>
+        <div className="bo-tableMapTopRight">
+          <div
+            className="bo-tableMapDrawTrigger"
+            onMouseEnter={openDrawPanelHover}
+            onMouseLeave={closeDrawPanelHoverSoon}
+          >
+            <button
+              className={`bo-actionBtn bo-actionBtn--glass${mapMode === "draw" ? " is-active" : ""}`}
+              type="button"
+              aria-label="Modo dibujo"
+              onClick={onToggleDrawMode}
+            >
+              <Pencil size={18} strokeWidth={1.8} />
+            </button>
+          </div>
+          <button
+            className="bo-actionBtn bo-actionBtn--glass"
+            type="button"
+            aria-label="Abrir panel derecho"
+            aria-expanded={rightSheetOpen}
+            onClick={() => setRightSheetOpen((v) => !v)}
+          >
+            {rightSheetOpen ? <PanelRightClose size={18} strokeWidth={1.8} /> : <PanelRightOpen size={18} strokeWidth={1.8} />}
+          </button>
+        </div>
       </div>
 
       <div ref={flowWrapRef} className="bo-tableMapFlowWrap">
@@ -1667,9 +2251,16 @@ export default function TableManagerPage() {
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
-          onInit={setReactFlowInstance}
+          onInit={(instance) => {
+            setReactFlowInstance(instance);
+            setFlowViewport(instance.getViewport());
+          }}
+          onMove={(_event, viewport) => {
+            setFlowViewport({ x: viewport.x, y: viewport.y, zoom: viewport.zoom });
+          }}
           onNodeClick={(_event, node) => {
             if (node.type === "restaurantTable") {
+              setSelectedDrawElementId(null);
               const tableData = node.data as TableNodeData;
               // Priority: new assignMode takes precedence
               if (assignMode) {
@@ -1677,13 +2268,28 @@ export default function TableManagerPage() {
               } else if (bookingForAssignment) {
                 assignBookingToTable(bookingForAssignment, tableData.name, node.id);
               }
+              return;
+            }
+            if (node.type === "drawElement") {
+              if (mapMode !== "draw") return;
+              setSelectedDrawElementId((prev) => (prev === node.id ? null : node.id));
+            }
+          }}
+          onPaneClick={(event) => {
+            setSelectedDrawElementId(null);
+            if (lineDrawing.isDrawing && reactFlowInstance && !isEditingLimitArea) {
+              const position = reactFlowInstance.screenToFlowPosition({
+                x: event.clientX,
+                y: event.clientY,
+              });
+              addLinePoint(position);
             }
           }}
           onDragOver={onDragOver}
           onDrop={onDropBooking}
           nodeTypes={nodeTypes}
           fitView
-          nodeExtent={MAP_EXTENT}
+          minZoom={0.08}
           nodesDraggable={interactionMode === "select"}
           panOnDrag={interactionMode === "pan"}
           selectionOnDrag={interactionMode === "select"}
@@ -1709,21 +2315,227 @@ export default function TableManagerPage() {
             </ControlButton>
           </Controls>
         </ReactFlow>
+
+        {lineDrawing.points.length > 0 && (
+          <svg
+            className="bo-tableMapLineDrawOverlay"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: isEditingLimitArea && mapMode === "draw" ? "auto" : "none",
+              overflow: "visible",
+            }}
+          >
+            {lineOverlayPoints.map((point, idx) => (
+              <g key={idx}>
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={isEditingLimitArea && mapMode === "draw" ? 9 : 6}
+                  fill={isEditingLimitArea && mapMode === "draw" ? "color-mix(in srgb, var(--bo-accent) 70%, var(--bo-surface))" : "var(--bo-accent)"}
+                  stroke="var(--bo-surface)"
+                  strokeWidth={2}
+                  style={{
+                    cursor: isEditingLimitArea && mapMode === "draw" ? "grab" : "default",
+                    pointerEvents: isEditingLimitArea && mapMode === "draw" ? "all" : "none",
+                  }}
+                  onMouseDown={(event) => onLimitVertexMouseDown(idx, event)}
+                />
+                {idx > 0 && (
+                  <line
+                    x1={lineOverlayPoints[idx - 1].x}
+                    y1={lineOverlayPoints[idx - 1].y}
+                    x2={point.x}
+                    y2={point.y}
+                    stroke="var(--bo-accent)"
+                    strokeWidth={2}
+                    strokeDasharray={lineDrawing.isDrawing ? "5,5" : "none"}
+                  />
+                )}
+              </g>
+            ))}
+            {lineDrawing.points.length >= 2 && !lineDrawing.isDrawing && (
+              <polygon
+                points={lineOverlayPoints.map((p) => `${p.x},${p.y}`).join(" ")}
+                fill="none"
+                stroke="var(--bo-accent)"
+                strokeWidth={2}
+              />
+            )}
+          </svg>
+        )}
       </div>
 
-      <aside className={`bo-tableMapDrawPanel${mapMode === "draw" ? " is-open" : ""}`} aria-label="Panel de dibujo">
+      <aside
+        className={`bo-tableMapDrawPanel${mapMode === "draw" || drawPanelHover ? " is-open" : ""}`}
+        aria-label="Panel de dibujo"
+        onMouseEnter={openDrawPanelHover}
+        onMouseLeave={closeDrawPanelHoverSoon}
+      >
         <div className="bo-tableMapDrawPanelHead">
           <div className="bo-panelTitle">Dibujo</div>
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setMapMode("tables")}>Cerrar</button>
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={closeDrawPanel}>Cerrar</button>
         </div>
         <div className="bo-tableMapDrawPanelBody">
           <div className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
-          <div className="bo-tableMapDrawTools" aria-label="Herramientas de dibujo">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => addDrawElement("wall", "wall")}>Muro</button>
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => addDrawElement("obstacle", "plant")}>Planta</button>
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => addDrawElement("image", "door")}>Puerta</button>
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => addDrawElement("image", "arch_door")}>Puerta arco</button>
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => addDrawElement("image", "sofa")}>Sofa</button>
+
+          <div className="bo-tableMapDrawSection">
+            <div className="bo-tableMapDrawSectionHead">
+              <div className="bo-tableMapDrawSectionTitle">Elementos</div>
+              <div className="bo-tableMapDrawHint">Añade objetos con un solo click. Los nuevos quedan seleccionados.</div>
+            </div>
+            <div className="bo-drawPresetGroups" aria-label="Herramientas de dibujo">
+              {DRAW_PANEL_GROUPS.map((group) => (
+                <section key={group.id} className="bo-drawPresetGroup" aria-label={group.title}>
+                  <div className="bo-drawPresetGroupTitle">{group.title}</div>
+                  <div className="bo-drawPresetGrid">
+                    {group.presets.map((preset) => {
+                      const previewUrl = drawPresetAssetImageUrl(preset);
+                      const isActivePreset = selectedDrawElement?.preset === preset;
+                      return (
+                        <button
+                          key={preset}
+                          className={`bo-drawPresetBtn${isActivePreset ? " is-active" : ""}`}
+                          type="button"
+                          onClick={() => addDrawElement(preset)}
+                        >
+                          <span className="bo-drawPresetBtnIcon" aria-hidden="true">
+                            {previewUrl ? (
+                              <img className="bo-drawPresetBtnAsset" src={previewUrl} alt="" />
+                            ) : (
+                              DRAW_PRESET_ICON[preset]
+                            )}
+                          </span>
+                          <span className="bo-drawPresetBtnLabel">{drawPresetLabel(preset)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </div>
+
+          <div className="bo-tableMapDrawSection">
+            <div className="bo-tableMapDrawSectionTitle">Visual del elemento</div>
+            {selectedDrawElement ? (
+              <>
+                <div className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                  Seleccionado: <strong>{selectedDrawElement.label}</strong>
+                </div>
+                <div className="bo-drawRotationControls" role="group" aria-label="Rotación del elemento">
+                  <button className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(-1)}>
+                    <RotateCcw size={14} />
+                    -10°
+                  </button>
+                  <div className="bo-drawRotationValue">{Math.round(selectedDrawElement.rotationDeg)}°</div>
+                  <button className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(1)}>
+                    +10°
+                    <RotateCw size={14} />
+                  </button>
+                </div>
+                <div className="bo-drawDisplayModePicker" role="group" aria-label="Modo de visualización del elemento">
+                  <button
+                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "both" ? " is-active" : ""}`}
+                    type="button"
+                    onClick={() => updateSelectedDrawElementDisplayMode("both")}
+                  >
+                    Ambos
+                  </button>
+                  <button
+                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "asset" ? " is-active" : ""}`}
+                    type="button"
+                    onClick={() => updateSelectedDrawElementDisplayMode("asset")}
+                  >
+                    Solo asset
+                  </button>
+                  <button
+                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "text" ? " is-active" : ""}`}
+                    type="button"
+                    onClick={() => updateSelectedDrawElementDisplayMode("text")}
+                  >
+                    Solo texto
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="bo-tableMapDrawHint">Selecciona un elemento del mapa para cambiar su visual.</div>
+            )}
+          </div>
+
+          <div className="bo-tableMapDrawSection">
+            <div className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
+            <div className="bo-tableMapDrawHint">Dibuja el perimetro del area</div>
+            {hasClosedLimitArea(selectedFloorTemplatePoints) ? (
+              <div className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">Hay una plantilla guardada para este salón.</div>
+            ) : null}
+            {!lineDrawing.isDrawing && lineDrawing.points.length === 0 ? (
+              <button className="bo-btn bo-btn--primary" type="button" onClick={startLineDrawing}>
+                <MapPin size={16} />
+                Dibujar limites
+              </button>
+            ) : (
+              <div className="bo-tableMapLineDrawControls">
+                {lineDrawing.isDrawing && (
+                  <div className="bo-tableMapLineDrawStatus">
+                    <Circle size={12} className="bo-tableMapLineDrawStatusDot" />
+                    <span>{lineDrawing.points.length} puntos</span>
+                  </div>
+                )}
+                {lineDrawing.isDrawing && lineDrawing.points.length > 0 && (
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoCreateAreaLastAction}>
+                    <Undo size={14} />
+                    Deshacer ultimo punto
+                  </button>
+                )}
+                {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !isEditingLimitArea && (
+                  <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={startLimitAreaEditing}>
+                    Editar area
+                  </button>
+                )}
+                {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && isEditingLimitArea && (
+                  <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={stopLimitAreaEditing}>
+                    Guardar edición
+                  </button>
+                )}
+                {isEditingLimitArea && (
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoEditAreaLastAction}>
+                    <Undo size={14} />
+                    Deshacer ultimo cambio
+                  </button>
+                )}
+                {lineDrawing.points.length >= 3 && lineDrawing.isDrawing && (
+                  <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={closeLineDrawing}>
+                    <SquareMinus size={14} />
+                    Cerrar area
+                  </button>
+                )}
+                {lineDrawing.points.length > 0 && (
+                  <button
+                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    type="button"
+                    onClick={isEditingLimitArea ? stopLimitAreaEditing : cancelLineDrawing}
+                  >
+                    <Undo size={14} />
+                    {isEditingLimitArea ? "Salir edición" : "Cancelar"}
+                  </button>
+                )}
+                {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
+                  <button
+                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    type="button"
+                    onClick={() => void saveLimitAreaTemplate()}
+                    disabled={savingLimitTemplate}
+                  >
+                    <MapPin size={14} />
+                    {savingLimitTemplate ? "Guardando plantilla..." : "Guardar plantilla salón"}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </aside>
@@ -2073,16 +2885,26 @@ export default function TableManagerPage() {
               <button
                 type="button"
                 className="bo-actionBtn bo-actionBtn--glass bo-tableEditorRotateBtn"
-                onClick={() => setDraft((prev) => ({ ...prev, rotationDeg: Math.max(-180, prev.rotationDeg - 22.5) }))}
-                aria-label="Girar 22,5 grados a la izquierda"
+                onClick={() =>
+                  setDraft((prev) => {
+                    const base = Math.round(prev.rotationDeg / DRAW_ROTATE_STEP) * DRAW_ROTATE_STEP;
+                    return { ...prev, rotationDeg: Math.max(-180, base - DRAW_ROTATE_STEP) };
+                  })
+                }
+                aria-label="Girar 10 grados a la izquierda"
               >
                 <RotateCcw size={16} strokeWidth={1.9} />
               </button>
               <button
                 type="button"
                 className="bo-actionBtn bo-actionBtn--glass bo-tableEditorRotateBtn"
-                onClick={() => setDraft((prev) => ({ ...prev, rotationDeg: Math.min(180, prev.rotationDeg + 22.5) }))}
-                aria-label="Girar 22,5 grados a la derecha"
+                onClick={() =>
+                  setDraft((prev) => {
+                    const base = Math.round(prev.rotationDeg / DRAW_ROTATE_STEP) * DRAW_ROTATE_STEP;
+                    return { ...prev, rotationDeg: Math.min(180, base + DRAW_ROTATE_STEP) };
+                  })
+                }
+                aria-label="Girar 10 grados a la derecha"
               >
                 <RotateCw size={16} strokeWidth={1.9} />
               </button>
