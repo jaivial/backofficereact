@@ -325,7 +325,7 @@ export function BookingEditor({
   return (
     <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }}>
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
-      <div className={stickyFooter ? "bo-bookingEditorBody" : undefined}>
+      <div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`}>
 
       <div className="bo-panel">
         <div className="bo-panelHead">
