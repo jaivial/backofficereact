@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { Download, FileText, Filter, Pencil, XCircle } from "lucide-react";
@@ -79,7 +79,9 @@ function formatAddedDate(ts: string | null | undefined): string {
 }
 
 function normalizeTableNumber(v: string): string {
-  return String(v || "").trim();
+  const raw = String(v || "").trim();
+  if (!raw) return "";
+  return raw.replace(/^mesa\b[\s#:\-]*/i, "").trim();
 }
 
 function normalizeBookings(v: unknown): Booking[] {
@@ -361,7 +363,7 @@ export default function Page() {
       contact_phone: b.contact_phone || "",
       contact_phone_country_code: b.contact_phone_country_code || "34",
       contact_email: b.contact_email || "",
-      table_number: b.table_number || "",
+      table_number: normalizeTableNumber(b.table_number || ""),
       babyStrollers: b.babyStrollers || 0,
       highChairs: b.highChairs || 0,
       special_menu: Boolean(b.special_menu),
@@ -647,13 +649,20 @@ const BookingRow = React.memo(function BookingRow({
   const arroz = useMemo(() => formatArrozShort(booking.arroz_type, booking.arroz_servings), [booking.arroz_servings, booking.arroz_type]);
   const added = useMemo(() => formatAddedDate(booking.added_date), [booking.added_date]);
 
-  const [draftMesa, setDraftMesa] = useState<string>(booking.table_number || "");
+  const [draftMesa, setDraftMesa] = useState<string>(() => normalizeTableNumber(booking.table_number || ""));
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraftMesa(normalizeTableNumber(booking.table_number || ""));
+  }, [booking.table_number]);
 
   const save = useCallback(async () => {
     const next = normalizeTableNumber(draftMesa);
     const cur = normalizeTableNumber(booking.table_number || "");
-    if (next === cur) return;
+    if (next === cur) {
+      if (draftMesa !== next) setDraftMesa(next);
+      return;
+    }
     setSaving(true);
     try {
       const ok = await onSaveTable(booking, next);
@@ -772,7 +781,7 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
             </div>
             <div className="bo-kv">
               <div className="bo-kvLabel">Mesa</div>
-              <div className="bo-kvValue">{booking.table_number || "—"}</div>
+              <div className="bo-kvValue">{normalizeTableNumber(booking.table_number || "") || "—"}</div>
             </div>
             <div className="bo-kv">
               <div className="bo-kvLabel">Añadida</div>

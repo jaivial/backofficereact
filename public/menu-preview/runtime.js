@@ -1036,24 +1036,18 @@
     }
 
     if (state.menuType === "special") {
-      const showDishImages = !!menu.show_dish_images;
-      const sections = getMenuViewSections(menu);
       const specialImageURL = resolveMediaURL(menu.special_menu_image_url || "");
       const hasImage = Boolean(specialImageURL);
-      const body = sections.length
-        ? '<div class="menuMain">' + sections.map(function (section) { return renderMenuSectionVC(section.title, section.dishes, null, { showImages: showDishImages, annotations: section.annotations }); }).join("") + "</div>"
-        : '<div class="menuState">No hay contenido disponible.</div>';
-
-      const heroMedia = hasImage
-        ? '<img class="menuHeroShot is-active is-reduced" src="' + escapeHtml(specialImageURL) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" />'
-        : renderMenuHeroSliderVC({ auto: true });
+      const body = hasImage
+        ? '<div class="menuMain"><section class="menuSubSection"><div class="menuHeroSlider"><div class="menuHeroSliderStage"><img class="menuHeroShot is-active is-reduced" src="' + escapeHtml(specialImageURL) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div></div></section></div>'
+        : '<div class="menuState">Sube una imagen para este menu especial.</div>';
 
       return mountVillaTemplate({
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
         MENU_SUBTITLE: escapeHtml(menu.menu_subtitle[0] || "Menu especial"),
-        MENU_HERO_MEDIA: heroMedia,
+        MENU_HERO_MEDIA: "",
         MENU_BODY: body,
-        ALLERGENS_LEGEND: renderAllergensLegendVC(),
+        ALLERGENS_LEGEND: "",
       });
     }
 

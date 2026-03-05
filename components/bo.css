@@ -514,6 +514,12 @@ button {
   color: var(--bo-text);
 }
 
+.bo-actionBtn.is-active {
+  background: var(--bo-accent);
+  border-color: var(--bo-accent);
+  color: var(--bo-surface);
+}
+
 .bo-actionBtn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -2462,6 +2468,11 @@ tr.is-inactive {
   min-height: 0;
 }
 
+.bo-bookingEditorBody--inline {
+  display: grid;
+  gap: 14px;
+}
+
 .bo-reservasModal--edit .bo-modalOutline {
   display: flex;
   flex-direction: column;
@@ -3381,7 +3392,7 @@ tr.is-inactive {
   left: var(--bo-space-4);
   right: var(--bo-space-4);
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 44px 1fr auto;
   align-items: start;
   z-index: 20;
   pointer-events: none;
@@ -3397,56 +3408,11 @@ tr.is-inactive {
   justify-content: center;
 }
 
-.bo-tableMapTooltip {
-  position: fixed;
-  transform: translateX(-50%);
-  z-index: 30;
-  width: min(560px, calc(100vw - 28px));
-  border-radius: var(--bo-radius-lg);
-  border: 1px solid var(--bo-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.16)),
-    color-mix(in srgb, var(--bo-surface) 86%, transparent);
-  box-shadow: var(--bo-shadow-soft);
-  padding: var(--bo-space-4);
-  display: grid;
+.bo-tableMapTopRight {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
   gap: var(--bo-space-2);
-}
-
-.bo-tableMapTooltipHead {
-  display: grid;
-  gap: 2px;
-  padding-bottom: var(--bo-space-2);
-  border-bottom: 1px solid var(--bo-border);
-}
-
-.bo-tableMapTooltipTitle {
-  font-size: var(--bo-text-base);
-  font-weight: var(--bo-weight-semibold);
-}
-
-.bo-tableMapTooltipSub {
-  color: var(--bo-muted);
-  font-size: var(--bo-text-xs);
-}
-
-.bo-tableMapTooltipActions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--bo-space-2);
-}
-
-.bo-tableMapDrawTools {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--bo-space-2);
-}
-
-.bo-tableMapTooltipStats {
-  display: grid;
-  gap: var(--bo-space-1);
-  color: var(--bo-muted);
-  font-size: var(--bo-text-sm);
 }
 
 .bo-tableMapFloorTabs {
@@ -3487,6 +3453,7 @@ tr.is-inactive {
   width: auto;
   height: auto;
   z-index: 1;
+  overflow: hidden;
 }
 
 /* When dragging, the canvas needs to be above the sidebar */
@@ -4255,6 +4222,18 @@ body.is-dragging .bo-tableMapFlowWrap {
   align-items: center;
   justify-content: center;
   gap: var(--bo-space-2);
+  padding: var(--bo-space-1);
+  overflow: hidden;
+  text-align: center;
+}
+
+.bo-drawElementNode.has-asset {
+  gap: var(--bo-space-1);
+}
+
+.bo-drawElementNode.is-selected {
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bo-accent) 35%, transparent);
 }
 
 .bo-drawElementNodeIcon {
@@ -4262,6 +4241,19 @@ body.is-dragging .bo-tableMapFlowWrap {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.bo-drawElementNodeAsset {
+  width: min(58px, 100%);
+  max-height: calc(100% - 18px);
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.25));
+}
+
+.bo-drawElementNode.no-text .bo-drawElementNodeAsset {
+  width: min(72px, 100%);
+  max-height: 100%;
 }
 
 .bo-drawElementNode.is-wall {
@@ -4303,12 +4295,12 @@ body.is-dragging .bo-tableMapFlowWrap {
   position: absolute;
   top: 72px;
   right: var(--bo-space-4);
-  width: min(320px, calc(100vw - 24px));
+  width: min(430px, calc(100vw - 24px));
   border: 1px solid var(--bo-border);
   border-radius: var(--bo-radius-lg);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.14)),
-    color-mix(in srgb, var(--bo-surface) 88%, transparent);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.18)),
+    color-mix(in srgb, var(--bo-surface) 90%, transparent);
   box-shadow: var(--bo-shadow-soft);
   z-index: 18;
   transform: translateX(110%);
@@ -4335,7 +4327,348 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableMapDrawPanelBody {
   padding: var(--bo-space-4);
   display: grid;
+  gap: var(--bo-space-4);
+  max-height: min(72vh, 690px);
+  overflow: auto;
+}
+
+.bo-tableMapDrawSection {
+  display: grid;
+  gap: var(--bo-space-2);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 86%, transparent);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  background: color-mix(in srgb, var(--bo-surface-2) 46%, transparent);
+}
+
+.bo-tableMapDrawSectionHead {
+  display: grid;
+  gap: var(--bo-space-1);
+}
+
+.bo-tableMapDrawSectionTitle {
+  font-weight: var(--bo-weight-semibold);
+  font-size: var(--bo-text-sm);
+  color: var(--bo-text);
+}
+
+.bo-tableMapDrawTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bo-space-2);
+}
+
+.bo-drawPresetGroups {
+  display: grid;
   gap: var(--bo-space-3);
+}
+
+.bo-drawPresetGroup {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-drawPresetGroupTitle {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--bo-text) 78%, var(--bo-muted));
+}
+
+.bo-drawPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bo-space-2);
+}
+
+.bo-drawPresetBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 92%, transparent);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-2);
+  min-height: 52px;
+  background: color-mix(in srgb, var(--bo-surface) 76%, transparent);
+  color: var(--bo-text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--bo-transition-fast) ease, background var(--bo-transition-fast) ease, transform var(--bo-transition-fast) ease;
+}
+
+.bo-drawPresetBtn:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 8%, var(--bo-surface));
+}
+
+.bo-drawPresetBtn:active {
+  transform: translateY(1px);
+}
+
+.bo-drawPresetBtn.is-active {
+  border-color: color-mix(in srgb, var(--bo-accent) 58%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 12%, var(--bo-surface));
+}
+
+.bo-drawPresetBtnIcon {
+  width: 40px;
+  height: 36px;
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface-2) 72%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bo-drawPresetBtnAsset {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.bo-drawPresetBtnLabel {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-medium);
+  line-height: var(--bo-leading-tight);
+}
+
+.bo-tableMapDrawHint--compact {
+  margin-bottom: var(--bo-space-1);
+}
+
+.bo-drawRotationControls {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--bo-space-2);
+  align-items: center;
+  margin-bottom: var(--bo-space-1);
+}
+
+.bo-drawRotateBtn {
+  border: 1px solid color-mix(in srgb, var(--bo-border) 90%, transparent);
+  border-radius: var(--bo-radius-sm);
+  padding: var(--bo-space-2);
+  background: color-mix(in srgb, var(--bo-surface) 74%, transparent);
+  color: var(--bo-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-1);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-medium);
+  cursor: pointer;
+  transition: border-color var(--bo-transition-fast) ease, background var(--bo-transition-fast) ease;
+}
+
+.bo-drawRotateBtn:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 42%, var(--bo-border));
+}
+
+.bo-drawRotationValue {
+  border: 1px solid color-mix(in srgb, var(--bo-border) 84%, transparent);
+  border-radius: var(--bo-radius-sm);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  min-width: 70px;
+  text-align: center;
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  background: color-mix(in srgb, var(--bo-surface-2) 62%, transparent);
+  color: var(--bo-text);
+}
+
+.bo-drawDisplayModePicker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bo-space-2);
+}
+
+.bo-drawDisplayModeBtn {
+  border: 1px solid color-mix(in srgb, var(--bo-border) 90%, transparent);
+  border-radius: var(--bo-radius-sm);
+  padding: var(--bo-space-2) var(--bo-space-1);
+  background: color-mix(in srgb, var(--bo-surface) 74%, transparent);
+  color: var(--bo-text);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-medium);
+  cursor: pointer;
+  transition: border-color var(--bo-transition-fast) ease, background var(--bo-transition-fast) ease;
+}
+
+.bo-drawDisplayModeBtn:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 42%, var(--bo-border));
+}
+
+.bo-drawDisplayModeBtn.is-active {
+  border-color: color-mix(in srgb, var(--bo-accent) 62%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 13%, var(--bo-surface));
+}
+
+@media (max-width: 560px) {
+  .bo-tableMapDrawPanel {
+    width: calc(100vw - 20px);
+    right: 10px;
+  }
+
+  .bo-drawPresetGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-drawDisplayModePicker {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-drawRotationControls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bo-tableMapDrawTrigger {
+  position: relative;
+}
+
+.bo-tableMapDrawPanelHover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg);
+  padding: var(--bo-space-3);
+  min-width: 200px;
+  box-shadow: var(--bo-shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--bo-transition-fast) ease, visibility var(--bo-transition-fast) ease;
+  z-index: 20;
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapDrawTrigger:hover .bo-tableMapDrawPanelHover {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bo-tableMapTopRight .bo-tableMapDrawPanelHover {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.bo-tableMapDrawPanelHoverTitle {
+  font-weight: var(--bo-weight-semibold);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-tableMapDrawPanelHoverHint {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+
+.bo-tableMapLineDrawControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bo-space-2);
+  align-items: center;
+}
+
+.bo-tableMapLineDrawStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  font-size: var(--bo-text-sm);
+  color: var(--bo-accent);
+}
+
+.bo-tableMapLineDrawStatusDot {
+  animation: bo-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bo-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.bo-tableMapTooltip {
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-xl);
+  padding: var(--bo-space-4);
+  min-width: 240px;
+  box-shadow: var(--bo-shadow-xl);
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableMapTooltipHead {
+  display: grid;
+  gap: 2px;
+  padding-bottom: var(--bo-space-2);
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-tableMapTooltipTitle {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableMapTooltipSub {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+}
+
+.bo-tableMapTooltipActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bo-space-2);
+}
+
+.bo-menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+  cursor: pointer;
+  transition: background var(--bo-transition-fast) ease, border-color var(--bo-transition-fast) ease;
+}
+
+.bo-menuItem:hover {
+  background: var(--bo-surface-2);
+  border-color: var(--bo-accent);
+}
+
+.bo-menuIcon {
+  display: flex;
+  color: var(--bo-muted);
+}
+
+.bo-menuLabel {
+  flex: 1;
+  text-align: left;
+}
+
+.bo-tableMapTooltipStats {
+  display: grid;
+  gap: var(--bo-space-1);
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+  padding-top: var(--bo-space-2);
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-tableMapTooltipStats strong {
+  color: var(--bo-text);
 }
 
 .bo-tableMapDrawHint {
