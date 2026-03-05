@@ -33,6 +33,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../../api/client";
 import type { DishCatalogItem, GroupMenuV2, GroupMenuV2AIDish, GroupMenuV2AIImages, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../lib/dishImageCrop";
+import { processSpecialMenuFile } from "../../../../lib/specialMenuUpload";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { useToasts } from "../../../../ui/feedback/useToasts";
@@ -2074,6 +2075,7 @@ function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []): {
   menuPreviewImageUrl: string;
   menuPreviewAIRequested: boolean;
   menuPreviewAIGenerating: boolean;
+  specialMenuImageUrl: string;
 } {
   const prevByID = new Map<number, EditorSection>();
   for (const sec of prevSections) {
@@ -2094,6 +2096,7 @@ function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []): {
     menuPreviewImageUrl: previewState.menuPreviewImageUrl,
     menuPreviewAIRequested: previewState.menuPreviewAIRequested,
     menuPreviewAIGenerating: previewState.menuPreviewAIGenerating,
+    specialMenuImageUrl: menu.special_menu_image_url || "",
     sections,
     settings: {
       included_coffee: !!menu.settings?.included_coffee,
@@ -2141,11 +2144,12 @@ export default function Page() {
   const [mainLimit, setMainLimit] = useState<boolean>(false);
   const [mainLimitNum, setMainLimitNum] = useState<string>("1");
   const [comments, setComments] = useState<string[]>([""]);
-  const [specialMenuImage, setSpecialMenuImage] = useState<string | null>(null);
+  const [specialMenuImage, setSpecialMenuImage] = useState<string | null>(data.menu?.special_menu_image_url || null);
   const [menuPreviewImageUrl, setMenuPreviewImageUrl] = useState<string>(initialMenuPreviewState.menuPreviewImageUrl);
   const [menuPreviewAIRequested, setMenuPreviewAIRequested] = useState<boolean>(initialMenuPreviewState.menuPreviewAIRequested);
   const [menuPreviewAIGenerating, setMenuPreviewAIGenerating] = useState<boolean>(initialMenuPreviewState.menuPreviewAIGenerating);
   const [menuPreviewImageBusy, setMenuPreviewImageBusy] = useState(false);
+  const [specialMenuImageBusy, setSpecialMenuImageBusy] = useState(false);
 
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [busy, setBusy] = useState(false);
@@ -2184,6 +2188,7 @@ export default function Page() {
   const searchTimerRef = useRef<Record<string, number>>({});
   const dishImageInputRef = useRef<HTMLInputElement | null>(null);
   const menuPreviewImageInputRef = useRef<HTMLInputElement | null>(null);
+  const specialMenuImageInputRef = useRef<HTMLInputElement | null>(null);
   const previewDockTimerRef = useRef<number | null>(null);
   const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const syncTimerRef = useRef<number | null>(null);
@@ -2216,7 +2221,7 @@ export default function Page() {
 
   const isALaCarte = menuType === "a_la_carte" || menuType === "a_la_carte_group";
   const isSpecial = menuType === "special";
-  const hasSecondaryBasicsField = (!isALaCarte && !isSpecial) || isSpecial;
+  const hasSecondaryBasicsField = !isALaCarte && !isSpecial;
 
   const basicsDraft = useMemo<BasicsDraft>(
     () => ({
@@ -2847,6 +2852,7 @@ export default function Page() {
       inFlightSectionAnnotationsRef.current = {};
       syncRequestSeqRef.current = 0;
       setMenuAITracker({ dishes: [] });
+      setSpecialMenuImage(null);
       setMenuPreviewImageUrl("");
       setMenuPreviewAIRequested(false);
       setMenuPreviewAIGenerating(false);
@@ -2866,6 +2872,7 @@ export default function Page() {
     setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
     setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
     setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
+    setSpecialMenuImage(mapped.specialMenuImageUrl || null);
     setSections(mapped.sections);
     setMenuAITracker(buildMenuAITracker(data.menu, mapped.sections));
     setIncludedCoffee(mapped.settings.included_coffee);
@@ -3986,6 +3993,57 @@ export default function Page() {
     }
   }, [menuId]);
 
+  const openSpecialMenuImagePicker = useCallback(() => {
+    if (!menuId || specialMenuImageBusy || busy) return;
+    const input = specialMenuImageInputRef.current;
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }, [busy, menuId, specialMenuImageBusy]);
+
+  const onSpecialMenuImageFileSelected = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFile = event.target.files?.[0];
+      event.currentTarget.value = "";
+      if (!selectedFile) return;
+      if (!menuId) {
+        pushToast({ kind: "error", title: "Error", message: "Guarda primero el menu para subir imagen." });
+        return;
+      }
+
+      setSpecialMenuImageBusy(true);
+      setSaveState("saving");
+      void (async () => {
+        try {
+          const { file } = await processSpecialMenuFile(selectedFile);
+          const res = await api.menus.gruposV2.uploadSpecialMenuImage(menuId, file);
+          if (!res.success) {
+            throw new Error(res.message || "No se pudo subir la imagen del menu especial");
+          }
+
+          const imageUrl = String(res.imageUrl || "").trim();
+          if (!imageUrl) {
+            throw new Error("No se recibio la URL de la imagen subida");
+          }
+
+          setSpecialMenuImage(imageUrl);
+          setSaveState("saved");
+          pushToast({ kind: "success", title: "Imagen actualizada", message: "Imagen del menu especial subida correctamente." });
+        } catch (error) {
+          setSaveState("error");
+          pushToast({
+            kind: "error",
+            title: "Error",
+            message: error instanceof Error ? error.message : "No se pudo subir la imagen del menu especial",
+          });
+        } finally {
+          setSpecialMenuImageBusy(false);
+        }
+      })();
+    },
+    [api, menuId, pushToast],
+  );
+
   const openMenuPreviewImagePicker = useCallback(() => {
     const input = menuPreviewImageInputRef.current;
     if (!input) return;
@@ -4369,11 +4427,54 @@ export default function Page() {
     }
   }, [api, basicsFingerprint, basicsPayload, menuId, patchBasics, pushToast, sections, sectionsFingerprint, syncSectionsAndDishes]);
 
+  const specialMenuUploadDisabled = !menuId || specialMenuImageBusy || busy;
   const menuPreviewUploadDisabled = !menuId
     || menuPreviewImageBusy
     || menuPreviewImageAdvisorBusy
     || menuPreviewImageCropBusy
     || menuPreviewAIGenerating;
+
+  const renderSpecialMenuImageUploadArea = () => (
+    <div className="bo-specialImageUpload">
+      {specialMenuImage ? (
+        <div className="bo-specialImagePreview">
+          <img src={specialMenuImage} alt="Menu especial" />
+          <div className="bo-menuPreviewActions">
+            <button
+              className="bo-btn bo-btn--ghost bo-btn--sm"
+              type="button"
+              disabled={specialMenuUploadDisabled}
+              onClick={openSpecialMenuImagePicker}
+            >
+              <Upload size={14} /> {specialMenuImageBusy ? "Procesando..." : "Cambiar imagen"}
+            </button>
+            <button
+              className="bo-btn bo-btn--ghost bo-btn--danger"
+              type="button"
+              disabled={specialMenuUploadDisabled}
+              onClick={() => setSpecialMenuImage(null)}
+            >
+              <Trash2 size={14} /> Eliminar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="bo-specialImageDropzone">
+          <Upload size={48} />
+          <p>Sube la imagen del menu especial</p>
+          <p className="bo-mutedText">PDF, Word, TXT, PNG, JPG, WEBP o GIF hasta 10MB</p>
+          <button
+            className="bo-btn bo-btn--ghost bo-btn--sm"
+            type="button"
+            disabled={specialMenuUploadDisabled}
+            onClick={openSpecialMenuImagePicker}
+          >
+            <Upload size={14} /> {specialMenuImageBusy ? "Procesando..." : "Subir imagen"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   const renderMenuPreviewUploadArea = () => {
     if (!showMenuPreviewImage) return null;
@@ -4505,22 +4606,6 @@ export default function Page() {
                   <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
                 </div>
               ) : null}
-
-              {isSpecial ? (
-                <div className="bo-field bo-menuBasicsField bo-menuBasicsPriceToggle">
-                  <div className="bo-label">¿Tiene precio fijo?</div>
-                  <Switch checked={!!Number(price)} onCheckedChange={(checked) => setPrice(checked ? "0" : "")} />
-                  {Number(price) > 0 ? (
-                    <input
-                      className="bo-input bo-menuBasicsPriceInput"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      inputMode="decimal"
-                      placeholder="Precio"
-                    />
-                  ) : null}
-                </div>
-              ) : null}
             </div>
 
             {!isSpecial ? (
@@ -4556,17 +4641,19 @@ export default function Page() {
               </div>
             ) : null}
 
-            <div className="bo-field">
-              <div className="bo-label">Cambiar tipo de menu</div>
-              <Select
-                className="bo-menuSettingSelect"
-                value={menuType}
-                onChange={setMenuType}
-                options={menuTypeOptions}
-                size="sm"
-                ariaLabel="Seleccionar tipo de menu"
-              />
-            </div>
+            {!isSpecial ? (
+              <div className="bo-field">
+                <div className="bo-label">Cambiar tipo de menu</div>
+                <Select
+                  className="bo-menuSettingSelect"
+                  value={menuType}
+                  onChange={setMenuType}
+                  options={menuTypeOptions}
+                  size="sm"
+                  ariaLabel="Seleccionar tipo de menu"
+                />
+              </div>
+            ) : null}
 
             <div className="bo-menuBasicsSwitchRow">
               <div className="bo-field">
@@ -4772,21 +4859,6 @@ export default function Page() {
                       <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
                     </div>
                   ) : null}
-                  {isSpecial ? (
-                    <div className="bo-field bo-menuBasicsField bo-menuBasicsPriceToggle">
-                      <div className="bo-label">¿Tiene precio fijo?</div>
-                      <Switch checked={!!Number(price)} onCheckedChange={(checked) => setPrice(checked ? "0" : "")} />
-                      {Number(price) > 0 ? (
-                        <input
-                          className="bo-input bo-menuBasicsPriceInput"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          inputMode="decimal"
-                          placeholder="Precio"
-                        />
-                      ) : null}
-                    </div>
-                  ) : null}
                 </div>
                 {!isSpecial ? (
                   <div className="bo-field bo-field--full">
@@ -4820,17 +4892,19 @@ export default function Page() {
                     </div>
                   </div>
                 ) : null}
-                <div className="bo-field">
-                  <div className="bo-label">Visibilidad de platos</div>
-                  <Select
-                    className="bo-menuSettingSelect"
-                    value={showDishImages ? "with_image" : "without_image"}
-                    onChange={(value) => setShowDishImages(value === "with_image")}
-                    options={dishVisibilityOptions}
-                    size="sm"
-                    ariaLabel="Visibilidad de platos en preview"
-                  />
-                </div>
+                {!isSpecial ? (
+                  <div className="bo-field">
+                    <div className="bo-label">Visibilidad de platos</div>
+                    <Select
+                      className="bo-menuSettingSelect"
+                      value={showDishImages ? "with_image" : "without_image"}
+                      onChange={(value) => setShowDishImages(value === "with_image")}
+                      options={dishVisibilityOptions}
+                      size="sm"
+                      ariaLabel="Visibilidad de platos en preview"
+                    />
+                  </div>
+                ) : null}
                 <div className="bo-field">
                   <div className="bo-label">Añadir foto preview</div>
                   <Select
@@ -4842,17 +4916,19 @@ export default function Page() {
                     ariaLabel="Visibilidad de foto preview en editor final"
                   />
                 </div>
-                <div className="bo-field">
-                  <div className="bo-label">Cambiar tipo de menu</div>
-                  <Select
-                    className="bo-menuSettingSelect"
-                    value={menuType}
-                    onChange={setMenuType}
-                    options={menuTypeOptions}
-                    size="sm"
-                    ariaLabel="Seleccionar tipo de menu en editor final"
-                  />
-                </div>
+                {!isSpecial ? (
+                  <div className="bo-field">
+                    <div className="bo-label">Cambiar tipo de menu</div>
+                    <Select
+                      className="bo-menuSettingSelect"
+                      value={menuType}
+                      onChange={setMenuType}
+                      options={menuTypeOptions}
+                      size="sm"
+                      ariaLabel="Seleccionar tipo de menu en editor final"
+                    />
+                  </div>
+                ) : null}
 
                 <div className="bo-menuBasicsSwitchRow">
                   <label className="bo-menuBasicsActiveToggle">
@@ -4866,7 +4942,16 @@ export default function Page() {
               </div>
             </motion.div>
 
-            {!hydrated ? (
+            {isSpecial ? (
+              <div className="bo-panel bo-accordionSection bo-sectionsEditor">
+                <div className="bo-panelHead">
+                  <div className="bo-panelTitle">Contenido del menu especial</div>
+                </div>
+                <div className="bo-panelBody">
+                  {renderSpecialMenuImageUploadArea()}
+                </div>
+              </div>
+            ) : !hydrated ? (
               <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true">
                 {loadingSectionTitles.map((sectionTitle, idx) => (
                   <div key={`section-loading-${idx}`} className="bo-panel bo-accordionSection">
@@ -4881,140 +4966,142 @@ export default function Page() {
               </div>
             ) : (
               <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsEditor bo-reorderGroup">
-              {sections.map((sec, secIdx) => (
-                <MenuSectionEditorPanel
-                  key={sec.clientId}
-                  sec={sec}
-                  secIdx={secIdx}
-                  sectionsCount={sections.length}
-                  isALaCarte={isALaCarte}
-                  showDishImages={showDishImages}
-                  reorderTransition={reorderTransition}
-                  reorderWhileDrag={reorderWhileDrag}
-                  chevronHover={chevronHover}
-                  chevronTapUp={chevronTapUp}
-                  chevronTapDown={chevronTapDown}
-                  moveSection={moveSection}
-                  handleSectionToggle={handleSectionToggle}
-                  updateSection={updateSection}
-                  reorderDishes={reorderDishes}
-                  setAllergenModal={setAllergenModal}
-                  removeDish={removeDish}
-                  updateDish={updateDish}
-                  updateSectionAnnotation={updateSectionAnnotation}
-                  addSectionAnnotation={addSectionAnnotation}
-                  removeSectionAnnotation={removeSectionAnnotation}
-                  pickDishImage={pickDishImage}
-                  addDish={addDish}
-                  handleSearch={handleSearch}
-                  searchTerm={searchTerms[sec.clientId] || ""}
-                  searchItems={searchResults[sec.clientId] ?? EMPTY_SEARCH_RESULTS}
-                  sectionLoadingState={sectionLoadingState[sec.clientId]}
-                />
-              ))}
+                {sections.map((sec, secIdx) => (
+                  <MenuSectionEditorPanel
+                    key={sec.clientId}
+                    sec={sec}
+                    secIdx={secIdx}
+                    sectionsCount={sections.length}
+                    isALaCarte={isALaCarte}
+                    showDishImages={showDishImages}
+                    reorderTransition={reorderTransition}
+                    reorderWhileDrag={reorderWhileDrag}
+                    chevronHover={chevronHover}
+                    chevronTapUp={chevronTapUp}
+                    chevronTapDown={chevronTapDown}
+                    moveSection={moveSection}
+                    handleSectionToggle={handleSectionToggle}
+                    updateSection={updateSection}
+                    reorderDishes={reorderDishes}
+                    setAllergenModal={setAllergenModal}
+                    removeDish={removeDish}
+                    updateDish={updateDish}
+                    updateSectionAnnotation={updateSectionAnnotation}
+                    addSectionAnnotation={addSectionAnnotation}
+                    removeSectionAnnotation={removeSectionAnnotation}
+                    pickDishImage={pickDishImage}
+                    addDish={addDish}
+                    handleSearch={handleSearch}
+                    searchTerm={searchTerms[sec.clientId] || ""}
+                    searchItems={searchResults[sec.clientId] ?? EMPTY_SEARCH_RESULTS}
+                    sectionLoadingState={sectionLoadingState[sec.clientId]}
+                  />
+                ))}
               </Reorder.Group>
             )}
 
-            <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
-              <div className="bo-panelHead">
-                <div className="bo-panelTitle">
-                  <Settings2 size={15} /> Configuracion
-                </div>
-              </div>
-              <div className="bo-panelBody bo-form bo-form--menuWizard">
-                <div className="bo-field">
-                  <div className="bo-label">Bebida</div>
-                  <Select
-                    className="bo-menuSettingSelect"
-                    value={beverageType}
-                    onChange={setBeverageType}
-                    options={beverageTypeOptions}
-                    size="sm"
-                    ariaLabel="Tipo de bebida"
-                  />
-                </div>
-
-                {beverageType !== "no_incluida" ? (
-                  <div className="bo-field">
-                    <div className="bo-label">Precio por persona</div>
-                    <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" />
+            {!isSpecial ? (
+              <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
+                <div className="bo-panelHead">
+                  <div className="bo-panelTitle">
+                    <Settings2 size={15} /> Configuracion
                   </div>
-                ) : null}
+                </div>
+                <div className="bo-panelBody bo-form bo-form--menuWizard">
+                  <div className="bo-field">
+                    <div className="bo-label">Bebida</div>
+                    <Select
+                      className="bo-menuSettingSelect"
+                      value={beverageType}
+                      onChange={setBeverageType}
+                      options={beverageTypeOptions}
+                      size="sm"
+                      ariaLabel="Tipo de bebida"
+                    />
+                  </div>
 
-                {beverageType === "ilimitada" ? (
-                  <>
+                  {beverageType !== "no_incluida" ? (
                     <div className="bo-field">
-                      <div className="bo-label">Tiene suplemento</div>
-                      <Switch checked={beverageHasSupplement} onCheckedChange={setBeverageHasSupplement} />
+                      <div className="bo-label">Precio por persona</div>
+                      <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" />
                     </div>
-                    {beverageHasSupplement ? (
+                  ) : null}
+
+                  {beverageType === "ilimitada" ? (
+                    <>
                       <div className="bo-field">
-                        <div className="bo-label">Valor suplemento</div>
-                        <input
-                          className="bo-input"
-                          value={beverageSupplementPrice}
-                          onChange={(e) => setBeverageSupplementPrice(e.target.value)}
-                          inputMode="decimal"
-                        />
+                        <div className="bo-label">Tiene suplemento</div>
+                        <Switch checked={beverageHasSupplement} onCheckedChange={setBeverageHasSupplement} />
                       </div>
-                    ) : null}
-                  </>
-                ) : null}
+                      {beverageHasSupplement ? (
+                        <div className="bo-field">
+                          <div className="bo-label">Valor suplemento</div>
+                          <input
+                            className="bo-input"
+                            value={beverageSupplementPrice}
+                            onChange={(e) => setBeverageSupplementPrice(e.target.value)}
+                            inputMode="decimal"
+                          />
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
 
-                <div className="bo-field">
-                  <div className="bo-label">Minimo personas para reservar</div>
-                  <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
-                </div>
-
-                <div className="bo-field">
-                  <div className="bo-label">Limite maximo de principales por mesa</div>
-                  <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
-                </div>
-
-                {mainLimit ? (
                   <div className="bo-field">
-                    <div className="bo-label">Numero de principales</div>
-                    <input className="bo-input" value={mainLimitNum} onChange={(e) => setMainLimitNum(e.target.value)} inputMode="numeric" />
+                    <div className="bo-label">Minimo personas para reservar</div>
+                    <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
                   </div>
-                ) : null}
 
-                <div className="bo-field">
-                  <div className="bo-label">Cafe incluido</div>
-                  <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
-                </div>
+                  <div className="bo-field">
+                    <div className="bo-label">Limite maximo de principales por mesa</div>
+                    <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
+                  </div>
 
-                <div className="bo-field bo-field--full">
-                  <div className="bo-label">Comentarios</div>
-                  <div className="bo-stackFields">
-                    {comments.map((line, idx) => (
-                      <div key={`comment-${idx}`} className="bo-inlineField">
-                        <input
-                          className="bo-input"
-                          value={line}
-                          onChange={(e) => {
-                            const next = [...comments];
-                            next[idx] = e.target.value;
-                            setComments(next);
-                          }}
-                        />
-                        <button
-                          className="bo-btn bo-btn--ghost"
-                          type="button"
-                          aria-label={`Eliminar comentario ${idx + 1}`}
-                          disabled={comments.length <= 1}
-                          onClick={() => setComments((prev) => prev.filter((_, i) => i !== idx))}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    ))}
-                    <button className="bo-btn bo-btn--ghost bo-commentAddBtn" type="button" onClick={() => setComments((prev) => [...prev, ""])}>
-                      <Plus size={14} /> Añadir comentario
-                    </button>
+                  {mainLimit ? (
+                    <div className="bo-field">
+                      <div className="bo-label">Numero de principales</div>
+                      <input className="bo-input" value={mainLimitNum} onChange={(e) => setMainLimitNum(e.target.value)} inputMode="numeric" />
+                    </div>
+                  ) : null}
+
+                  <div className="bo-field">
+                    <div className="bo-label">Cafe incluido</div>
+                    <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
+                  </div>
+
+                  <div className="bo-field bo-field--full">
+                    <div className="bo-label">Comentarios</div>
+                    <div className="bo-stackFields">
+                      {comments.map((line, idx) => (
+                        <div key={`comment-${idx}`} className="bo-inlineField">
+                          <input
+                            className="bo-input"
+                            value={line}
+                            onChange={(e) => {
+                              const next = [...comments];
+                              next[idx] = e.target.value;
+                              setComments(next);
+                            }}
+                          />
+                          <button
+                            className="bo-btn bo-btn--ghost"
+                            type="button"
+                            aria-label={`Eliminar comentario ${idx + 1}`}
+                            disabled={comments.length <= 1}
+                            onClick={() => setComments((prev) => prev.filter((_, i) => i !== idx))}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                      <button className="bo-btn bo-btn--ghost bo-commentAddBtn" type="button" onClick={() => setComments((prev) => [...prev, ""])}>
+                        <Plus size={14} /> Añadir comentario
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            ) : null}
 
           </motion.div>
 
@@ -5093,6 +5180,13 @@ export default function Page() {
         accept="image/jpeg,image/png,image/webp,image/gif"
         className="bo-hiddenFileInput"
         onChange={onMenuPreviewImageFileSelected}
+      />
+      <input
+        ref={specialMenuImageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+        className="bo-hiddenFileInput"
+        onChange={onSpecialMenuImageFileSelected}
       />
 
       <DishImageAdvisorModal
@@ -5175,40 +5269,10 @@ export default function Page() {
         <div className="bo-menuWizardPanel">
           <h2 className="bo-sectionTitle">Imagen del menu</h2>
           <p className="bo-mutedText" style={{ marginBottom: 16 }}>
-            Sube una imagen del menu especial (PDF, Word, imagen)
+            Sube una imagen del menu especial para mostrarla en la plantilla web.
           </p>
 
-          <div className="bo-specialImageUpload">
-            {specialMenuImage ? (
-              <div className="bo-specialImagePreview">
-                <img src={specialMenuImage} alt="Menu especial" />
-                <button
-                  className="bo-btn bo-btn--ghost bo-btn--danger"
-                  type="button"
-                  onClick={() => setSpecialMenuImage(null)}
-                >
-                  <Trash2 size={14} /> Eliminar
-                </button>
-              </div>
-            ) : (
-              <div className="bo-specialImageDropzone">
-                <Upload size={48} />
-                <p>Arrastra una imagen o haz clic para seleccionar</p>
-                <p className="bo-mutedText">PDF, Word, PNG, JPG hasta 10MB</p>
-                <input
-                  type="file"
-                  accept="image/*,.pdf,.doc,.docx,.txt"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      // TODO: Handle file upload
-                      setSpecialMenuImage(URL.createObjectURL(file));
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          {renderSpecialMenuImageUploadArea()}
 
           <div className="bo-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)}>
