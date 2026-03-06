@@ -206,35 +206,44 @@ export default function Page() {
       syncURLDate(d);
 
       const nextView = parseYearMonth(d);
-      const changedMonth = nextView.year !== view.year || nextView.month !== view.month;
-      if (changedMonth) {
-        setView(nextView);
-        void loadMonth(nextView.year, nextView.month);
-      }
+      setView((currentView) => {
+        const changedMonth = nextView.year !== currentView.year || nextView.month !== currentView.month;
+        if (changedMonth) {
+          void loadMonth(nextView.year, nextView.month);
+          return nextView;
+        }
+        return currentView;
+      });
 
       const nextPage = 1;
       setPage(nextPage);
       void loadBookings({ date: d, status, q, sort, dir, page: nextPage, count });
       void loadSummary(d);
     },
-    [count, dir, loadBookings, loadMonth, loadSummary, q, sort, status, syncURLDate, view.month, view.year],
+    [count, dir, loadBookings, loadMonth, loadSummary, q, sort, status, syncURLDate],
   );
 
   const onPrevMonth = useCallback(() => {
-    const y = view.year;
-    const m = view.month;
-    const next = m === 1 ? { year: y - 1, month: 12 } : { year: y, month: m - 1 };
-    setView(next);
-    void loadMonth(next.year, next.month);
-  }, [loadMonth, view.month, view.year]);
+    setView((currentView) => {
+      const next =
+        currentView.month === 1
+          ? { year: currentView.year - 1, month: 12 }
+          : { year: currentView.year, month: currentView.month - 1 };
+      void loadMonth(next.year, next.month);
+      return next;
+    });
+  }, [loadMonth]);
 
   const onNextMonth = useCallback(() => {
-    const y = view.year;
-    const m = view.month;
-    const next = m === 12 ? { year: y + 1, month: 1 } : { year: y, month: m + 1 };
-    setView(next);
-    void loadMonth(next.year, next.month);
-  }, [loadMonth, view.month, view.year]);
+    setView((currentView) => {
+      const next =
+        currentView.month === 12
+          ? { year: currentView.year + 1, month: 1 }
+          : { year: currentView.year, month: currentView.month + 1 };
+      void loadMonth(next.year, next.month);
+      return next;
+    });
+  }, [loadMonth]);
 
   const applyFilters = useCallback(
     () => {
