@@ -106,7 +106,7 @@ export default function Page() {
     if (!selectedMember || !message.trim()) return;
     try {
       setSending(true);
-      const res = await fetch("/admin/members/whatsapp/send", {
+      const res = await fetch("/api/admin/members/whatsapp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ member_id: selectedMember.id, message }),
@@ -130,7 +130,7 @@ export default function Page() {
   const handleSubscribe = async () => {
     try {
       setSubscribing(true);
-      const res = await fetch("/admin/members/whatsapp/subscribe", {
+      const res = await fetch("/api/admin/members/whatsapp/subscribe", {
         method: "POST",
       });
       const data = await res.json();
