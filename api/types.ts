@@ -42,6 +42,7 @@ export type Booking = {
   reservation_date: string;
   reservation_time: string;
   party_size: number;
+  children: number;
   contact_phone: string | null;
   contact_phone_country_code: string | null;
   status: string | null;
