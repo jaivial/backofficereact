@@ -1927,6 +1927,15 @@ export default function TableManagerPage() {
     });
   }, []);
 
+  const openRightSheet = useCallback(() => {
+    setMenuVisible(false);
+    setRightSheetOpen(true);
+  }, []);
+
+  const closeRightSheet = useCallback(() => {
+    setRightSheetOpen(false);
+  }, []);
+
   const openDrawPanelHover = useCallback(() => {
     if (drawPanelHoverTimerRef.current) {
       clearTimeout(drawPanelHoverTimerRef.current);
@@ -2234,15 +2243,17 @@ export default function TableManagerPage() {
               <Pencil size={18} strokeWidth={1.8} />
             </button>
           </div>
-          <button
-            className="bo-actionBtn bo-actionBtn--glass"
-            type="button"
-            aria-label="Abrir panel derecho"
-            aria-expanded={rightSheetOpen}
-            onClick={() => setRightSheetOpen((v) => !v)}
-          >
-            {rightSheetOpen ? <PanelRightClose size={18} strokeWidth={1.8} /> : <PanelRightOpen size={18} strokeWidth={1.8} />}
-          </button>
+          {!rightSheetOpen ? (
+            <button
+              className="bo-actionBtn bo-actionBtn--glass"
+              type="button"
+              aria-label="Abrir panel derecho"
+              aria-expanded={rightSheetOpen}
+              onClick={openRightSheet}
+            >
+              <PanelRightOpen size={18} strokeWidth={1.8} />
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -2565,10 +2576,20 @@ export default function TableManagerPage() {
               <div className="bo-panelTitle">Booking manager</div>
               <div className="bo-panelMeta">{visibleTables.length} mesas</div>
             </div>
-            <button className="bo-btn bo-btn--ghost bo-tableMapDateBtn" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
-              <CalendarRange size={14} />
-              <span>{selectedDate}</span>
-            </button>
+            <div className="bo-tableMapSheetHeaderActions">
+              <button className="bo-btn bo-btn--ghost bo-tableMapDateBtn" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
+                <CalendarRange size={14} />
+                <span>{selectedDate}</span>
+              </button>
+              <button
+                className="bo-actionBtn bo-actionBtn--glass bo-tableMapSheetToggleBtn"
+                type="button"
+                aria-label="Colapsar panel derecho"
+                onClick={closeRightSheet}
+              >
+                <PanelRightClose size={18} strokeWidth={1.8} />
+              </button>
+            </div>
           </div>
         </div>
         <div className="bo-tableMapSheetBody">

@@ -975,14 +975,14 @@ button {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.13)),
     var(--bo-surface);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: none;
   box-shadow: var(--bo-shadow-soft);
 }
 
 :root[data-theme="light"] .bo-panel {
   border-radius: var(--bo-radius-lg);
   background: linear-gradient(180deg, rgb(121 115 115 / 27%), rgb(57 41 80 / 29%)), #fffffff7;
-  border: 1px solid rgb(0 0 0 / 21%);
+  border: none;
   box-shadow: var(--bo-shadow-soft);
 }
 
@@ -2106,6 +2106,8 @@ tr.is-inactive {
   z-index: 320;
   border-radius: 14px;
   border: 1px solid var(--bo-border);
+  display: grid;
+  gap: var(--bo-space-1);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
     var(--bo-surface);
@@ -2433,6 +2435,11 @@ tr.is-inactive {
 
 .bo-reservasModal--details {
   padding-bottom: 0;
+}
+
+.bo-modal.bo-modal--glass.bo-reservasModal.bo-reservasModal--details .bo-panelHead,
+.bo-modal.bo-modal--glass.bo-reservasModal.bo-reservasModal--details .bo-panelBody {
+  padding-inline: 0;
 }
 
 .bo-reservasModal--edit {
@@ -3608,6 +3615,7 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 .bo-tableMapSheet.is-open {
   transform: translateX(0);
+  z-index: 24;
 }
 
 /* Allow drag events to pass through sidebar during drag */
@@ -3694,6 +3702,17 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableMapSheetHeaderLeft {
   display: grid;
   gap: 2px;
+}
+
+.bo-tableMapSheetHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(var(--bo-space-1) + 1px);
+}
+
+.bo-tableMapSheetToggleBtn {
+  flex-shrink: 0;
 }
 
 .bo-tableMapDateBtn {
@@ -5062,6 +5081,12 @@ body.is-dragging .bo-tableMapFlowWrap {
   height: 16px;
 }
 
+@media (max-width: 769px) {
+  .bo-tabs--glass.bo-tabs--reservas {
+    justify-content: center;
+  }
+}
+
 .bo-tableMapBookingModalHero {
   border: 1px solid var(--bo-border);
   border-radius: var(--bo-radius-md);
@@ -6181,6 +6206,11 @@ body.is-dragging .bo-tableMapFlowWrap {
   width: 72px;
 }
 
+.bo-table--reservas th.col-children,
+.bo-table--reservas td.col-children {
+  width: 72px;
+}
+
 .bo-table--reservas th.col-phone,
 .bo-table--reservas td.col-phone {
   width: 130px;
@@ -6213,6 +6243,14 @@ body.is-dragging .bo-tableMapFlowWrap {
 
   .bo-table--reservas th.col-phone,
   .bo-table--reservas td.col-phone {
+    display: none;
+  }
+}
+
+@media (max-width: 1280px) {
+
+  .bo-table--reservas th.col-children,
+  .bo-table--reservas td.col-children {
     display: none;
   }
 }

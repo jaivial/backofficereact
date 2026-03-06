@@ -527,6 +527,7 @@ export default function Page() {
                 <th className="col-client">Cliente</th>
                 <th className="col-status">Estado</th>
                 <th className="num">Pax</th>
+                <th className="col-children num">Niños</th>
                 <th className="col-phone">Teléfono</th>
                 <th className="col-rice">Arroz</th>
                 <th className="col-comment">Comentario</th>
@@ -547,7 +548,7 @@ export default function Page() {
               ))}
               {!rows.length ? (
                 <tr>
-                  <td colSpan={10} style={{ padding: 16, color: "var(--bo-muted)" }}>
+                  <td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>
                     {busy ? "Cargando..." : "No hay reservas para este filtro."}
                   </td>
                 </tr>
@@ -716,6 +717,7 @@ const BookingRow = React.memo(function BookingRow({
       <td className="col-client">{booking.customer_name}</td>
       <td className="col-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
       <td className="num">{booking.party_size}</td>
+      <td className="col-children num">{booking.children ?? 0}</td>
       <td className="col-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
       <td className="col-rice">{arroz}</td>
       <td className="col-comment">{booking.commentary || ""}</td>
@@ -803,6 +805,10 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
             <div className="bo-kv">
               <div className="bo-kvLabel">Salón</div>
               <div className="bo-kvValue">{preferredFloorLabel}</div>
+            </div>
+            <div className="bo-kv">
+              <div className="bo-kvLabel">Niños</div>
+              <div className="bo-kvValue">{String(booking.children ?? 0)}</div>
             </div>
           </div>
         </div>
