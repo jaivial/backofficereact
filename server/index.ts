@@ -162,7 +162,7 @@ async function fetchSession(
 ): Promise<FetchSessionResult> {
   if (!cookieHeader) return { session: null, movingExpirationDate: null, setCookies: [] };
   try {
-    const url = new URL("/admin/me", backendOrigin);
+    const url = new URL("/api/admin/me", backendOrigin);
     const headers: Record<string, string> = { cookie: cookieHeader };
     if (typeof pagePath === "string" && pagePath.trim() !== "") {
       headers["x-bo-page-path"] = pagePath.trim();
@@ -364,10 +364,8 @@ function wsOriginFromBackend(backendOrigin: string): string {
 }
 
 function toBackendAdminPath(pathWithQuery: string): string {
-  if (pathWithQuery === "/api/admin") return "/admin";
-  if (pathWithQuery.startsWith("/api/admin/")) {
-    return pathWithQuery.replace(/^\/api\/admin\//, "/admin/");
-  }
+  if (pathWithQuery === "/admin") return "/api/admin";
+  if (pathWithQuery.startsWith("/admin/")) return `/api${pathWithQuery}`;
   return pathWithQuery;
 }
 
