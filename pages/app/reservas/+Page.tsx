@@ -754,7 +754,7 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
         : "bo-badge";
 
   return (
-    <div className="bo-stack" style={{ gap: 12 }}>
+    <div className="bo-stack" style={{ gap: 12, marginBottom: "2rem" }}>
       <div className="bo-panel">
         <div className="bo-panelHead">
           <div className="bo-panelTitle">{booking.customer_name || "Reserva"}</div>
