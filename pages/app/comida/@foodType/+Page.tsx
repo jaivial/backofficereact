@@ -93,6 +93,7 @@ export default function Page() {
 
   const categoryOptions = useMemo(() => {
     const options = [{ value: "", label: "Todas las categorias" }];
+    if (!Array.isArray(categories)) return options;
     categories.forEach((category) => {
       options.push({ value: String(category.id), label: category.name });
     });

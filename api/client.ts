@@ -652,13 +652,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       categories: {
         async list(): Promise<APISuccess<{ categories: FoodCategory[] }> | APIError> {
           return jsonWithFallback(
-            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            ["/api/admin/comida/platos/categorias", "/api/admin/comida/platos/categories", "/api/admin/platos/categorias"],
             { method: "GET" },
           );
         },
         async create(input: { name: string; slug?: string }): Promise<APISuccess<{ category: FoodCategory }> | APIError> {
           return jsonWithFallback(
-            ["/api/admin/platos/categories", "/api/admin/platos/categorias", "/api/admin/platos/tipos"],
+            ["/api/admin/comida/platos/categorias", "/api/admin/comida/platos/categories", "/api/admin/platos/categorias"],
             {
               method: "POST",
               headers: { "content-type": "application/json" },
