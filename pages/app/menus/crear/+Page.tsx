@@ -39,6 +39,7 @@ import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
 import { Modal } from "../../../../ui/overlays/Modal";
+import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { FoodDishCard } from "../../../../ui/widgets/food/FoodDishCard";
 import { MENU_TYPE_PANELS } from "../../../../ui/widgets/menus/menuPresentation";
@@ -5047,58 +5048,47 @@ export default function Page() {
                     </>
                   ) : null}
 
-                  <div className="bo-field">
-                    <div className="bo-label">Minimo personas para reservar</div>
-                    <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
-                  </div>
+                <div className="bo-field">
+                  <div className="bo-label">Minimo personas para reservar</div>
+                  <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
+                </div>
 
-                  <div className="bo-field">
-                    <div className="bo-label">Limite maximo de principales por mesa</div>
-                    <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
-                  </div>
-
+                <div className="bo-field bo-field--inline">
+                  <div className="bo-label" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
+                  <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
                   {mainLimit ? (
-                    <div className="bo-field">
-                      <div className="bo-label">Numero de principales</div>
-                      <input className="bo-input" value={mainLimitNum} onChange={(e) => setMainLimitNum(e.target.value)} inputMode="numeric" />
-                    </div>
+                    <PlusMinusCounter
+                      label="Numero de principales"
+                      value={mainLimitNum}
+                      onDecrease={() => setMainLimitNum(String(Math.max(1, Number(mainLimitNum) - 1)))}
+                      onIncrease={() => setMainLimitNum(String(Number(mainLimitNum) + 1))}
+                      canDecrease={Number(mainLimitNum) > 1}
+                      className="bo-principalesCounter"
+                    />
                   ) : null}
+                </div>
 
-                  <div className="bo-field">
-                    <div className="bo-label">Cafe incluido</div>
-                    <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
-                  </div>
+                <div className="bo-field">
+                  <div className="bo-label">Cafe incluido</div>
+                  <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
+                </div>
 
-                  <div className="bo-field bo-field--full">
-                    <div className="bo-label">Comentarios</div>
-                    <div className="bo-stackFields">
-                      {comments.map((line, idx) => (
-                        <div key={`comment-${idx}`} className="bo-inlineField">
-                          <input
-                            className="bo-input"
-                            value={line}
-                            onChange={(e) => {
-                              const next = [...comments];
-                              next[idx] = e.target.value;
-                              setComments(next);
-                            }}
-                          />
-                          <button
-                            className="bo-btn bo-btn--ghost"
-                            type="button"
-                            aria-label={`Eliminar comentario ${idx + 1}`}
-                            disabled={comments.length <= 1}
-                            onClick={() => setComments((prev) => prev.filter((_, i) => i !== idx))}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                      <button className="bo-btn bo-btn--ghost bo-commentAddBtn" type="button" onClick={() => setComments((prev) => [...prev, ""])}>
-                        <Plus size={14} /> Añadir comentario
-                      </button>
-                    </div>
-                  </div>
+                <div className="bo-field bo-field--full">
+                  <div className="bo-label">Comentarios</div>
+                  <textarea
+                    className="bo-input bo-textarea"
+                    value={comments.join("\n")}
+                    onChange={(e) => setComments(e.target.value.split("\n").filter((line) => line.trim() !== ""))}
+                    placeholder="Añade comentarios..."
+                    rows={2}
+                    onInput={(e) => {
+                      const node = e.currentTarget;
+                      node.style.height = "auto";
+                      node.style.height = `${node.scrollHeight}px`;
+                    }}
+                    style={{ minHeight: "60px", resize: "vertical" }}
+                  />
+                </div>
                 </div>
               </motion.div>
             ) : null}

@@ -280,10 +280,10 @@ button {
 }
 
 .bo-topbarActions {
-  position: static;
+  position: relative;
   margin-left: auto;
   max-width: 100%;
-  z-index: 2;
+  z-index: 170;
 }
 
 .bo-actionBtn {
