@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../api/client";
-import type { CalendarDay, ConfigDailyLimit, ConfigFloor, DashboardMetrics } from "../../../api/types";
+import type { CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics } from "../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -32,7 +32,7 @@ export async function data(pageContext: PageContextServer) {
     }
   };
 
-  const [bookingsRes, calRes, limitRes, metricsRes] = await Promise.all([
+  const [bookingsRes, calRes, limitRes, metricsRes, dayRes] = await Promise.all([
     safeCall(
       api.reservas.list({ date, page: 1, count: 15, sort: "reservation_time", dir: "asc" }),
       { success: false, message: "Error consultando reservas" },
@@ -48,6 +48,7 @@ export async function data(pageContext: PageContextServer) {
     ),
     safeCall(api.config.getDailyLimit(date), { success: false, message: "Error consultando límite diario" }),
     safeCall(api.dashboard.getMetrics(date), { success: false, message: "Error consultando métricas" }),
+    safeCall(api.config.getDay(date), { success: false, message: "Error consultando estado del día" }),
   ]);
 
   let error: string | null = null;
@@ -61,11 +62,13 @@ export async function data(pageContext: PageContextServer) {
   const calendarDays: CalendarDay[] = calRes.success ? (calRes as any).data : [];
   const dailyLimit: ConfigDailyLimit | null = limitRes.success ? (limitRes as any) : null;
   const metrics: DashboardMetrics | null = metricsRes.success ? (metricsRes as any).metrics : null;
+  const day: ConfigDayStatus | null = dayRes.success ? (dayRes as any) : null;
 
   if (!error) {
     if (!calRes.success) error = calRes.message || "Error consultando calendario";
     if (!limitRes.success) error = error || limitRes.message || "Error consultando límite diario";
     if (!metricsRes.success) error = error || metricsRes.message || "Error consultando métricas";
+    if (!dayRes.success) error = error || dayRes.message || "Error consultando estado del día";
   }
 
   return {
@@ -78,6 +81,7 @@ export async function data(pageContext: PageContextServer) {
     calendarDays,
     dailyLimit,
     metrics,
+    day,
     error,
   };
 }

@@ -18,7 +18,7 @@ import "reactflow/dist/style.css";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
-import type { Booking, CalendarDay, ConfigDailyLimit, ConfigFloor, DashboardMetrics, TableMapArea, TableMapItem } from "../../../../api/types";
+import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics, TableMapArea, TableMapItem } from "../../../../api/types";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
@@ -27,6 +27,7 @@ import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { MonthCalendar } from "../../../../ui/widgets/MonthCalendar";
 import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
+import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
 import { compressImageToWebP, isValidImageFile } from "../../../../lib/imageCompressor";
 import {
   drawElementSizeForPreset,
@@ -144,6 +145,10 @@ function clampCapacity(n: number): number {
 
 const RECT_SEAT_OFFSET = 18;
 const DRAW_ROTATE_STEP = 10;
+const DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS = {
+  padding: 0.5,
+  maxZoom: 0.45,
+};
 
 function maxRectShortSeatsForCapacity(capacity: number): number {
   const c = clampCapacity(capacity);
@@ -569,6 +574,7 @@ export default function TableManagerPage() {
 
   const [areas, setAreas] = useState<TableMapArea[]>([]);
   const [floors, setFloors] = useState<ConfigFloor[]>([]);
+  const [day, setDay] = useState<ConfigDayStatus | null>(null);
   const [dailyLimit, setDailyLimit] = useState<ConfigDailyLimit | null>(null);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -592,6 +598,7 @@ export default function TableManagerPage() {
   const [menuTooltipStyle, setMenuTooltipStyle] = useState<React.CSSProperties>({});
   const [drawPanelHover, setDrawPanelHover] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [dayBusy, setDayBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [savingLimitTemplate, setSavingLimitTemplate] = useState(false);
@@ -624,6 +631,8 @@ export default function TableManagerPage() {
   const [shortSideHover, setShortSideHover] = useState<RectShortSide | null>(null);
   const nodeTypes = useMemo(() => NODE_TYPES, []);
   const reduceMotion = useReducedMotion();
+  const isDayOpen = day?.isOpen !== false;
+  const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
 
   const ws = useRef<WebSocket | null>(null);
   const drawElementsRef = useRef<DrawElement[]>([]);
@@ -808,13 +817,14 @@ export default function TableManagerPage() {
     setLoading(true);
     setError(null);
     try {
-      const [tablesRes, floorsRes, limitRes, metricsRes, monthRes, bookingsRes] = await Promise.all([
+      const [tablesRes, floorsRes, limitRes, metricsRes, monthRes, bookingsRes, dayRes] = await Promise.all([
         api.tables.list({ date: selectedDate, floor_number: Number.isFinite(selectedFloor) ? selectedFloor : 0 }),
         api.config.getFloors(selectedDate),
         api.config.getDailyLimit(selectedDate),
         api.dashboard.getMetrics(selectedDate),
         api.calendar.getMonth({ year: calendarView.year, month: calendarView.month }),
         api.reservas.exportDay(selectedDate),
+        api.config.getDay(selectedDate),
       ]);
 
       let loadedAreas: TableMapArea[] = [];
@@ -900,6 +910,11 @@ export default function TableManagerPage() {
       if (bookingsRes.success) {
         setBookings((bookingsRes.bookings || []) as Booking[]);
       }
+      if (dayRes.success) {
+        setDay(dayRes);
+      } else {
+        setDay(null);
+      }
     } catch (err) {
       if (err instanceof Error && err.message.trim()) {
         setError(err.message);
@@ -914,6 +929,22 @@ export default function TableManagerPage() {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (day?.isOpen !== false) return;
+    setMenuVisible(false);
+    setDrawPanelHover(false);
+    setRightSheetOpen(false);
+    setCalendarExpanded(false);
+    setAssignMode(false);
+    setBookingForAssignment(null);
+    setSelectedBooking(null);
+    setSelectedBookingId(null);
+    setSelectedTableId(null);
+    setSelectedDrawElementId(null);
+    setEditorOpen(false);
+    setMapMode("tables");
+  }, [day?.isOpen]);
 
   useEffect(() => {
     if (!floorTabs.length) return;
@@ -1658,9 +1689,30 @@ export default function TableManagerPage() {
     window.location.assign(`/app/reservas?date=${encodeURIComponent(selectedDate)}`);
   }, [selectedDate]);
 
+  const openDay = useCallback(async () => {
+    if (day?.isOpen) return;
+    setDayBusy(true);
+    setError(null);
+    try {
+      const res = await api.config.setDay(selectedDate, true);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo abrir el día" });
+        return;
+      }
+      setDay(res);
+      pushToast({ kind: "success", title: "Guardado", message: "Día abierto" });
+      void loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo abrir el día");
+    } finally {
+      setDayBusy(false);
+    }
+  }, [api.config, day?.isOpen, loadData, pushToast, selectedDate]);
+
   const onSelectDate = useCallback(
     (nextDate: string) => {
       setSelectedDate(nextDate);
+      setDay(null);
       const nextView = normalizeDateView(nextDate);
       if (nextView.year !== calendarView.year || nextView.month !== calendarView.month) {
         setCalendarView(nextView);
@@ -2146,6 +2198,15 @@ export default function TableManagerPage() {
   return (
     <ReactFlowProvider>
       <section className="bo-tableMapPage" aria-label="Mapa de mesas">
+        <AnimatePresence mode="wait" initial={false}>
+          {isDayOpen ? (
+            <motion.div
+              key="table-map-open"
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={dayVisibilityTransition}
+            >
       <div className="bo-tableMapTopControls">
         <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
           <ChevronLeft size={18} strokeWidth={1.8} />
@@ -2300,6 +2361,7 @@ export default function TableManagerPage() {
           onDrop={onDropBooking}
           nodeTypes={nodeTypes}
           fitView
+          fitViewOptions={DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS}
           minZoom={0.08}
           nodesDraggable={interactionMode === "select"}
           panOnDrag={interactionMode === "pan"}
@@ -3121,6 +3183,35 @@ export default function TableManagerPage() {
           </div>
         ) : null}
       </Modal>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="table-map-closed"
+              className="bo-tableMapClosedShell"
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={dayVisibilityTransition}
+            >
+              <div className="bo-tableMapClosedTop">
+                <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
+                  <ChevronLeft size={18} strokeWidth={1.8} />
+                </button>
+              </div>
+              <div className="bo-tableMapClosedBody">
+                <ReservationDayPanel
+                  title="Día cerrado"
+                  meta={selectedDate}
+                  day={day ?? { date: selectedDate, isOpen: false }}
+                  busy={dayBusy}
+                  onToggleDay={openDay}
+                  actionMode="openOnly"
+                  bodyClassName="bo-configDayLimitRow--single"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
     </section>
     </ReactFlowProvider>
   );

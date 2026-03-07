@@ -1782,6 +1782,7 @@ tr.is-inactive {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  padding-block: 0.5rem;
 }
 
 .bo-selectIcon {
