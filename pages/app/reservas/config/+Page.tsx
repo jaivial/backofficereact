@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Lock, LockOpen, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
 import type {
@@ -18,6 +19,7 @@ import { Switch } from "../../../../ui/shadcn/Switch";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
+import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
 
 type PageData = {
   date: string;
@@ -86,6 +88,12 @@ function sortServiceHours(hours: string[]): string[] {
   });
 }
 
+function mergeHoursByOpeningMode(mode: OpeningMode, morningHours: string[], nightHours: string[]): string[] {
+  if (mode === "morning") return sortServiceHours(morningHours);
+  if (mode === "night") return sortServiceHours(nightHours);
+  return sortServiceHours([...morningHours, ...nightHours]);
+}
+
 function toggleHour(current: string[], hour: string): string[] {
   const set = new Set(current);
   if (set.has(hour)) set.delete(hour);
@@ -103,6 +111,7 @@ export default function Page() {
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
+  const reduceMotion = useReducedMotion();
 
   const [date, setDate] = useState(data.date);
   const [busy, setBusy] = useState(false);
@@ -112,6 +121,7 @@ export default function Page() {
   const [day, setDay] = useState<ConfigDayStatus | null>(data.day);
   const [dailyLimit, setDailyLimit] = useState<ConfigDailyLimit | null>(data.dailyLimit);
   const [openingHours, setOpeningHours] = useState<ConfigOpeningHours | null>(data.openingHours);
+  const [openingModeDraft, setOpeningModeDraft] = useState<OpeningMode>(data.openingHours?.openingMode ?? "both");
   const [mesasDeDos, setMesasDeDos] = useState<ConfigMesasDeDos | null>(data.mesasDeDos);
   const [mesasDeTres, setMesasDeTres] = useState<ConfigMesasDeTres | null>(data.mesasDeTres);
   const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
@@ -119,11 +129,30 @@ export default function Page() {
   const [draftLimit, setDraftLimit] = useState(() => String(data.dailyLimit?.limit ?? 45));
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
   const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
+  const morningHourCards = useMemo(() => {
+    const active = new Set(openingHours?.morningHours || []);
+    return morningSlots.map((slot) => ({
+      ...slot,
+      active: active.has(slot.value),
+    }));
+  }, [openingHours?.morningHours, morningSlots]);
+  const nightHourCards = useMemo(() => {
+    const active = new Set(openingHours?.nightHours || []);
+    return nightSlots.map((slot) => ({
+      ...slot,
+      active: active.has(slot.value),
+    }));
+  }, [openingHours?.nightHours, nightSlots]);
 
   useEffect(() => {
     if (!dailyLimit) return;
     setDraftLimit(String(dailyLimit.limit));
   }, [dailyLimit?.limit]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!openingHours) return;
+    setOpeningModeDraft(openingHours.openingMode);
+  }, [openingHours?.openingMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const mesasOptions = useMemo(() => {
     const out = [{ value: "999", label: "Sin límite" }];
@@ -277,21 +306,36 @@ export default function Page() {
       successMessage: string,
     ) => {
       if (!openingHours) return;
+      const previous = openingHours;
+      const nextOpeningMode = patch.openingMode ?? openingHours.openingMode;
+      const nextMorningHours = patch.morningHours ?? openingHours.morningHours;
+      const nextNightHours = patch.nightHours ?? openingHours.nightHours;
+
+      setOpeningHours({
+        ...openingHours,
+        openingMode: nextOpeningMode,
+        morningHours: nextMorningHours,
+        nightHours: nextNightHours,
+        hours: mergeHoursByOpeningMode(nextOpeningMode, nextMorningHours, nextNightHours),
+        source: "override",
+      });
       setBusy(true);
       setError(null);
       try {
         const res = await api.config.setOpeningHours(date, {
-          openingMode: patch.openingMode ?? openingHours.openingMode,
-          morningHours: patch.morningHours ?? openingHours.morningHours,
-          nightHours: patch.nightHours ?? openingHours.nightHours,
+          openingMode: nextOpeningMode,
+          morningHours: nextMorningHours,
+          nightHours: nextNightHours,
         });
         if (!res.success) {
+          setOpeningHours(previous);
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar horarios" });
           return;
         }
         setOpeningHours(res);
         pushSuccess(successMessage);
       } catch (e) {
+        setOpeningHours(previous);
         setError(e instanceof Error ? e.message : "No se pudo guardar horarios");
       } finally {
         setBusy(false);
@@ -363,6 +407,40 @@ export default function Page() {
     [api.config, date, pushSuccess, pushToast],
   );
 
+  const showMorningHours = openingModeDraft !== "night";
+  const showNightHours = openingModeDraft !== "morning";
+
+  const handleOpeningModeChange = useCallback(
+    (value: string) => {
+      const nextMode = value === "morning" || value === "night" ? value : "both";
+      setOpeningModeDraft(nextMode);
+      void saveOpeningHours({ openingMode: nextMode }, "Modo de apertura actualizado");
+    },
+    [saveOpeningHours],
+  );
+
+  const handleMorningHour = useCallback(
+    (hour: string) => {
+      void saveOpeningHours(
+        { morningHours: toggleHour(openingHours?.morningHours || [], hour) },
+        "Horario de mañana actualizado",
+      );
+    },
+    [openingHours?.morningHours, saveOpeningHours],
+  );
+
+  const handleNightHour = useCallback(
+    (hour: string) => {
+      void saveOpeningHours(
+        { nightHours: toggleHour(openingHours?.nightHours || [], hour) },
+        "Horario de noche actualizado",
+      );
+    },
+    [openingHours?.nightHours, saveOpeningHours],
+  );
+
+  const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
+
   if (!day || !dailyLimit || !openingHours || !mesasDeDos || !mesasDeTres) {
     return <InlineAlert kind="info" title="Cargando" message="Preparando configuración..." />;
   }
@@ -372,197 +450,193 @@ export default function Page() {
       <div className="bo-toolbar">
         <div className="bo-toolbarLeft">
           <DatePicker value={date} onChange={onDateChange} />
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void loadAll(date)} disabled={busy}>
+          <button className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy}>
             Recargar
           </button>
-        </div>
-        <div className="bo-toolbarRight">
-          <div className="bo-mutedText">{busy ? "Actualizando..." : "Override por fecha"}</div>
         </div>
       </div>
 
       <div className="bo-stack">
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Estado del día y límite</div>
-            <div className="bo-panelMeta">
-              {dailyLimit.totalPeople}/{dailyLimit.limit} pax
-            </div>
-          </div>
-          <div className="bo-panelBody bo-configDayLimitRow">
-            <div className="bo-configDayState">
-              <div className="bo-label">Estado del día</div>
-              <div className="bo-configStatus">
-                {day.isOpen ? <LockOpen size={16} strokeWidth={1.8} /> : <Lock size={16} strokeWidth={1.8} />}
-                <span>{day.isOpen ? "Abierto" : "Cerrado"}</span>
-              </div>
-              <button className="bo-btn bo-btn--primary bo-btn--fit" type="button" onClick={toggleDay} disabled={busy}>
-                {day.isOpen ? "Cerrar día" : "Abrir día"}
-              </button>
-            </div>
-
-            <div className="bo-configDayDailyLimit">
-              <div className="bo-label">Límite diario</div>
-              <div className="bo-counter bo-configLimitCounter">
-                <button
-                  className="bo-counterBtn"
-                  type="button"
-                  onClick={() => stepDailyLimit(-1)}
-                  disabled={busy || Number(draftLimit || 0) <= 0}
-                  aria-label="Reducir límite diario"
+        <ReservationDayPanel
+          title="Estado del día y límite"
+          meta={day.isOpen ? `${dailyLimit.totalPeople}/${dailyLimit.limit} pax` : "Día cerrado"}
+          day={day}
+          busy={busy}
+          onToggleDay={toggleDay}
+          bodyClassName={day.isOpen ? undefined : "bo-configDayLimitRow--single"}
+          rightSlot={
+            <AnimatePresence initial={false}>
+              {day.isOpen ? (
+                <motion.div
+                  key="config-daily-limit"
+                  className="bo-configDayDailyLimit"
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  transition={dayVisibilityTransition}
                 >
-                  <Minus size={14} strokeWidth={2.2} />
-                </button>
-                <input
-                  className="bo-input bo-input--sm bo-counterInput bo-configLimitInput"
-                  value={draftLimit}
-                  inputMode="numeric"
-                  onChange={(e) => setDraftLimit(e.target.value.replace(/[^\d]/g, ""))}
-                  onBlur={saveDailyLimitFromDraft}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      (e.target as HTMLInputElement).blur();
-                    }
-                  }}
-                />
-                <button
-                  className="bo-counterBtn"
-                  type="button"
-                  onClick={() => stepDailyLimit(1)}
-                  disabled={busy || Number(draftLimit || 0) >= 500}
-                  aria-label="Aumentar límite diario"
-                >
-                  <Plus size={14} strokeWidth={2.2} />
-                </button>
-              </div>
-              <div className="bo-mutedText">Libres: {dailyLimit.freeBookingSeats}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Horario del día</div>
-            <div className="bo-panelMeta">{openingHours.source === "default" ? "Usando default" : "Override diario"}</div>
-          </div>
-          <div className="bo-panelBody" style={{ display: "grid", gap: 14 }}>
-            <div className="bo-row">
-              <Select
-                value={openingHours.openingMode}
-                onChange={(v) => void saveOpeningHours({ openingMode: (v as OpeningMode) || "both" }, "Modo de apertura actualizado")}
-                options={openingModeOptions as any}
-                size="sm"
-                ariaLabel="Modo de apertura"
-              />
-            </div>
-
-            <div className="bo-field">
-              <div className="bo-label">Mañana (08:00 - 17:00)</div>
-              <div className="bo-hourCards bo-hourCards--slots">
-                {morningSlots.map((slot) => {
-                  const on = (openingHours.morningHours || []).includes(slot.value);
-                  return (
+                  <div className="bo-label">Límite diario</div>
+                  <div className="bo-counter bo-configLimitCounter">
                     <button
-                      key={slot.id}
+                      className="bo-counterBtn"
                       type="button"
-                      className={`bo-hourCard bo-hourCard--slot${on ? " is-on" : ""}`}
-                      onClick={() =>
-                        void saveOpeningHours(
-                          { morningHours: toggleHour(openingHours.morningHours || [], slot.value) },
-                          "Horario de mañana actualizado",
-                        )
-                      }
-                      disabled={busy}
+                      onClick={() => stepDailyLimit(-1)}
+                      disabled={busy || Number(draftLimit || 0) <= 0}
+                      aria-label="Reducir límite diario"
                     >
-                      {slot.label}
+                      <Minus size={14} strokeWidth={2.2} />
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="bo-field">
-              <div className="bo-label">Noche (17:30 - 01:00)</div>
-              <div className="bo-hourCards bo-hourCards--slots">
-                {nightSlots.map((slot) => {
-                  const on = (openingHours.nightHours || []).includes(slot.value);
-                  return (
+                    <input
+                      className="bo-input bo-input--sm bo-counterInput bo-configLimitInput"
+                      value={draftLimit}
+                      inputMode="numeric"
+                      onChange={(e) => setDraftLimit(e.target.value.replace(/[^\d]/g, ""))}
+                      onBlur={saveDailyLimitFromDraft}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          (e.target as HTMLInputElement).blur();
+                        }
+                      }}
+                    />
                     <button
-                      key={slot.id}
+                      className="bo-counterBtn"
                       type="button"
-                      className={`bo-hourCard bo-hourCard--slot${on ? " is-on" : ""}`}
-                      onClick={() =>
-                        void saveOpeningHours(
-                          { nightHours: toggleHour(openingHours.nightHours || [], slot.value) },
-                          "Horario de noche actualizado",
-                        )
-                      }
-                      disabled={busy}
+                      onClick={() => stepDailyLimit(1)}
+                      disabled={busy || Number(draftLimit || 0) >= 500}
+                      aria-label="Aumentar límite diario"
                     >
-                      {slot.label}
+                      <Plus size={14} strokeWidth={2.2} />
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Mesas</div>
-            <div className="bo-panelMeta">Guardado automático</div>
-          </div>
-          <div className="bo-panelBody bo-row">
-            <div className="bo-field bo-field--inline">
-              <div className="bo-label">Mesas de 2</div>
-              <Select
-                value={mesasDeDos.limit || "999"}
-                onChange={(v) => void setMesasDos(v)}
-                options={mesasOptions}
-                size="sm"
-                ariaLabel="Mesas de 2"
-              />
-            </div>
-            <div className="bo-field bo-field--inline">
-              <div className="bo-label">Mesas de 3</div>
-              <Select
-                value={mesasDeTres.limit || "999"}
-                onChange={(v) => void setMesasTres(v)}
-                options={mesasOptions}
-                size="sm"
-                ariaLabel="Mesas de 3"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Plantas activas del día</div>
-            <div className="bo-panelMeta">{floors.length} plantas</div>
-          </div>
-          <div className="bo-panelBody">
-            <div className="bo-floorRows">
-              {floors.map((floor) => (
-                <div key={floor.id} className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
-                  <div className="bo-floorRowName">
-                    {floor.name}
                   </div>
-                  <div className="bo-floorRowState">
-                    <span className="bo-floorRowStateText">{floor.active ? "Activa" : "Inactiva"}</span>
-                    <Switch
-                      checked={floor.active}
-                      disabled={busy}
-                      onCheckedChange={(checked) => void setFloorActive(floor, checked)}
-                      aria-label={`Activar o desactivar ${floor.name}`}
+                  <div className="bo-mutedText">Libres: {dailyLimit.freeBookingSeats}</div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          }
+        />
+
+        <AnimatePresence initial={false}>
+          {day.isOpen ? (
+            <motion.div
+              key="config-open-sections"
+              className="bo-stack"
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={dayVisibilityTransition}
+            >
+              <div className="bo-panel">
+                <div className="bo-panelHead">
+                  <div className="bo-panelTitle">Horario del día</div>
+                </div>
+                <div className="bo-panelBody" style={{ display: "grid", gap: 14 }}>
+                  <div className="bo-row">
+                    <Select
+                      value={openingModeDraft}
+                      onChange={handleOpeningModeChange}
+                      options={openingModeOptions as any}
+                      size="sm"
+                      ariaLabel="Modo de apertura"
+                    />
+                  </div>
+
+                  {showMorningHours ? (
+                    <div className="bo-field">
+                      <div className="bo-label">Mañana (08:00 - 17:00)</div>
+                      <div className="bo-hourCards bo-hourCards--slots">
+                        {morningHourCards.map((slot) => (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                            onClick={() => handleMorningHour(slot.value)}
+                            disabled={busy}
+                          >
+                            {slot.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {showNightHours ? (
+                    <div className="bo-field">
+                      <div className="bo-label">Noche (17:30 - 01:00)</div>
+                      <div className="bo-hourCards bo-hourCards--slots">
+                        {nightHourCards.map((slot) => (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                            onClick={() => handleNightHour(slot.value)}
+                            disabled={busy}
+                          >
+                            {slot.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="bo-panel">
+                <div className="bo-panelHead">
+                  <div className="bo-panelTitle">Mesas</div>
+                </div>
+                <div className="bo-panelBody bo-row bo-configTableLimitsRow">
+                  <div className="bo-field bo-field--inline bo-configTableLimitField">
+                    <div className="bo-label">Mesas de 2</div>
+                    <Select
+                      value={mesasDeDos.limit || "999"}
+                      onChange={(v) => void setMesasDos(v)}
+                      options={mesasOptions}
+                      size="sm"
+                      ariaLabel="Mesas de 2"
+                    />
+                  </div>
+                  <div className="bo-field bo-field--inline bo-configTableLimitField">
+                    <div className="bo-label">Mesas de 3</div>
+                    <Select
+                      value={mesasDeTres.limit || "999"}
+                      onChange={(v) => void setMesasTres(v)}
+                      options={mesasOptions}
+                      size="sm"
+                      ariaLabel="Mesas de 3"
                     />
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+              </div>
+
+              <div className="bo-panel">
+                <div className="bo-panelHead">
+                  <div className="bo-panelTitle">Plantas activas del día</div>
+                  <div className="bo-panelMeta">{floors.length} plantas</div>
+                </div>
+                <div className="bo-panelBody">
+                  <div className="bo-floorRows">
+                    {floors.map((floor) => (
+                      <div key={floor.id} className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
+                        <div className="bo-floorRowName">
+                          {floor.name}
+                        </div>
+                        <div className="bo-floorRowState">
+                          <span className="bo-floorRowStateText">{floor.active ? "Activa" : "Inactiva"}</span>
+                          <Switch
+                            checked={floor.active}
+                            disabled={busy}
+                            onCheckedChange={(checked) => void setFloorActive(floor, checked)}
+                            aria-label={`Activar o desactivar ${floor.name}`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     </section>
   );

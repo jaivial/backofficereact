@@ -1867,6 +1867,7 @@ button {
 .bo-btn--primary {
   border-color: rgba(185, 168, 255, 0.30);
   background: rgba(185, 168, 255, 0.16);
+  margin: 0 auto;
 }
 
 .bo-btn--ghost {
@@ -2086,6 +2087,14 @@ button {
   gap: 8px;
 }
 
+.bo-bookingBinaryChips {
+  justify-content: center;
+}
+
+.bo-bookingBinaryChips .bo-chip {
+  justify-content: center;
+}
+
 .bo-chip.is-on {
   border-color: rgba(185, 168, 255, 0.26);
   background: rgba(185, 168, 255, 0.12);
@@ -2162,6 +2171,8 @@ tr.is-inactive {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  width: 100%;
+  padding-block: 0.5rem;
 }
 
 .bo-selectIcon {
@@ -2182,7 +2193,8 @@ tr.is-inactive {
   font-size: 12px;
   font-weight: 720;
   color: var(--bo-text);
-  max-width: 220px;
+  width: 100%;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2270,7 +2282,7 @@ tr.is-inactive {
 
 .bo-datePop {
   position: fixed;
-  z-index: 90;
+  z-index: 320;
   width: 280px;
   border-radius: var(--bo-radius-lg);
   border: 1px solid var(--bo-border);
@@ -2344,7 +2356,7 @@ tr.is-inactive {
 
 .bo-modalOutline .bo-panel {
   background: transparent;
-  border: 1px solid var(--bo-border);
+  border: none;
   box-shadow: none;
 }
 
@@ -2478,6 +2490,179 @@ tr.is-inactive {
 .bo-bookingEditorBody--inline {
   display: grid;
   gap: 14px;
+}
+
+.bo-bookingRow--schedule,
+.bo-bookingRow--contact,
+.bo-bookingRow--extras {
+  align-items: flex-end;
+}
+
+.bo-bookingChoiceRow {
+  align-items: center;
+}
+
+.bo-selectBtn.bo-bookingChoiceSelect {
+  flex: 1 1 0px;
+}
+
+.bo-selectBtn.bo-bookingChoiceSelect .bo-selectLabel {
+  width: 100%;
+  max-width: 70vw;
+}
+
+.bo-bookingChoiceActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.bo-bookingChoiceServings {
+  width: 96px;
+  text-align: center;
+}
+
+@media (max-width: 550px) {
+  .bo-bookingPanel--customer .bo-panelHead {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--bo-space-2);
+    text-align: center;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField {
+    justify-items: center;
+    text-align: center;
+    width: min(100%, 340px);
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client,
+  .bo-bookingPanel--customer .bo-bookingField--phone,
+  .bo-bookingPanel--customer .bo-bookingField--email,
+  .bo-bookingPanel--customer .bo-bookingField--salon {
+    display: flex;
+    flex: 1 1 0px !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: min(100%, 340px);
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client .bo-label,
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-label,
+  .bo-bookingPanel--customer .bo-bookingField--email .bo-label,
+  .bo-bookingPanel--customer .bo-bookingField--salon .bo-label {
+    margin: 0;
+    white-space: normal;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField > .bo-input,
+  .bo-bookingPanel--customer .bo-bookingField > .bo-selectBtn,
+  .bo-bookingPanel--customer .bo-bookingField > .bo-dateBtn {
+    width: 100%;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client,
+  .bo-bookingPanel--customer .bo-bookingField--email,
+  .bo-bookingPanel--customer .bo-bookingField--salon,
+  .bo-bookingPanel--customer .bo-bookingField--phone {
+    width: 100%;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client > .bo-input,
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-phoneNum {
+    width: 100% !important;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField .bo-counter {
+    justify-content: center;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-phone {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: none;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-phoneNum {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--strollers,
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--highchairs {
+    flex: 1 1 calc(50% - 10px);
+    width: calc(50% - 10px);
+    max-width: 165px;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--table,
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--salon {
+    flex: 1 1 100%;
+    width: min(100%, 340px);
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--date {
+    order: 1;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--time {
+    order: 2;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--party {
+    order: 3;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--strollers {
+    order: 1;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--highchairs {
+    order: 2;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--table {
+    order: 3;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--salon {
+    order: 4;
+  }
+
+  .bo-bookingChoiceRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-bookingChoiceRow .bo-bookingChoiceSelect {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bo-bookingChoiceActions {
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 .bo-reservasModal--edit .bo-modalOutline {
@@ -3391,6 +3576,35 @@ tr.is-inactive {
     radial-gradient(900px 560px at 75% 12%, color-mix(in srgb, var(--bo-accent-2) 14%, transparent), transparent 60%),
     radial-gradient(1000px 620px at 15% 0%, color-mix(in srgb, var(--bo-accent) 14%, transparent), transparent 65%),
     linear-gradient(180deg, color-mix(in srgb, var(--bo-surface-2) 74%, transparent), color-mix(in srgb, var(--bo-surface-3) 82%, transparent));
+}
+
+.bo-tableMapClosedShell {
+  position: absolute;
+  inset: 0;
+  padding: var(--bo-space-4);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+}
+
+.bo-tableMapClosedTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.bo-tableMapClosedBody {
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.bo-tableMapClosedBody .bo-panel {
+  width: min(520px, 100%);
+}
+
+.bo-dayStatePanel {
+  width: 100%;
 }
 
 .bo-tableMapTopControls {
@@ -5386,6 +5600,14 @@ body.is-dragging .bo-tableMapFlowWrap {
   align-items: start;
 }
 
+.bo-reservasGrid--closed {
+  grid-template-columns: 1fr;
+}
+
+.bo-reservasClosedGate {
+  margin-top: var(--bo-space-4);
+}
+
 @media (max-width: 980px) {
   .bo-reservasGrid {
     grid-template-columns: 1fr;
@@ -7049,6 +7271,10 @@ body.is-dragging .bo-tableMapFlowWrap {
   align-items: start;
 }
 
+.bo-configDayLimitRow--single {
+  grid-template-columns: 1fr;
+}
+
 .bo-configDayState,
 .bo-configDayDailyLimit {
   display: grid;
@@ -7063,6 +7289,14 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-configLimitInput {
   width: 92px;
   text-align: center;
+}
+
+.bo-configTableLimitsRow {
+  justify-content: flex-start;
+}
+
+.bo-configTableLimitField {
+  min-width: 0;
 }
 
 .bo-floorRows {
@@ -7119,6 +7353,13 @@ body.is-dragging .bo-tableMapFlowWrap {
 @media (max-width: 630px) {
   .bo-configDayLimitRow {
     grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .bo-configDayState,
+  .bo-configDayDailyLimit {
+    justify-items: center;
+    text-align: center;
   }
 
   .bo-floorRow {
@@ -7128,6 +7369,19 @@ body.is-dragging .bo-tableMapFlowWrap {
   .bo-floorRowState {
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+@media (max-width: 440px) {
+  .bo-configTableLimitsRow {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .bo-configTableLimitField {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 }
 
