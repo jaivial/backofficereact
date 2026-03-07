@@ -123,47 +123,52 @@
 }
 
 :root[data-theme="light"] {
-  --bo-bg: #f4f6fb;
+  /* Light theme - Clean, modern, high readability */
+  --bo-bg: #f8fafc;
   --bo-shell: #ffffff;
   --bo-surface: #ffffff;
-  --bo-surface-2: #fbfcff;
-  --bo-surface-3: #f2f4fb;
+  --bo-surface-2: #f1f5f9;
+  --bo-surface-3: #e2e8f0;
   --bo-sidebar: #ffffff;
 
-  --bo-border: rgba(0, 0, 0, 0.08);
-  --bo-border-2: rgba(0, 0, 0, 0.12);
+  /* Improved borders for light mode - more visible */
+  --bo-border: rgba(15, 23, 42, 0.10);
+  --bo-border-2: rgba(15, 23, 42, 0.16);
 
-  --bo-text: rgba(20, 21, 26, 0.95);
-  --bo-muted: rgba(20, 21, 26, 0.62);
-  --bo-faint: rgba(20, 21, 26, 0.46);
+  /* Improved text colors with better contrast (WCAG AA+) */
+  --bo-text: #0f172a;
+  --bo-muted: #475569;
+  --bo-faint: #64748b;
 
   /* Accent overrides for better contrast on light backgrounds */
-  --bo-accent: #7c5ce7;
+  --bo-accent: #6d28d9;
   --bo-accent-2: #0d9488;
-  --bo-accent-3: #5eead4;
+  --bo-accent-3: #ccfbf1;
 
   --bo-primary: var(--bo-accent);
-  --bo-primary-rgb: 124, 92, 231;
-  --bo-primary-alpha: rgba(124, 92, 231, 0.16);
-  --bo-primary-hover: color-mix(in srgb, var(--bo-accent) 90%, black 10%);
+  --bo-primary-rgb: 109, 40, 217;
+  --bo-primary-alpha: rgba(109, 40, 217, 0.12);
+  --bo-primary-hover: color-mix(in srgb, var(--bo-accent) 88%, black 12%);
   --bo-primary-fg: var(--bo-shell);
   --bo-fg-inverted: var(--bo-shell);
-  --bo-bg-hover: color-mix(in srgb, var(--bo-surface) 90%, var(--bo-accent) 10%);
-  --bo-bg-selected: rgba(124, 92, 231, 0.14);
-  --bo-bg-selected-hover: rgba(124, 92, 231, 0.2);
-  --bo-bg-primary: rgba(124, 92, 231, 0.14);
-  --bo-success-bg: color-mix(in srgb, var(--bo-color-success) 14%, transparent);
-  --bo-warning-bg: color-mix(in srgb, var(--bo-color-warning) 14%, transparent);
-  --bo-muted-bg: color-mix(in srgb, var(--bo-muted) 14%, transparent);
-  --bo-accent-alpha: rgba(124, 92, 231, 0.16);
+  --bo-bg-hover: color-mix(in srgb, var(--bo-surface) 92%, var(--bo-accent) 8%);
+  --bo-bg-selected: rgba(109, 40, 217, 0.12);
+  --bo-bg-selected-hover: rgba(109, 40, 217, 0.18);
+  --bo-bg-primary: rgba(109, 40, 217, 0.12);
+  --bo-success-bg: color-mix(in srgb, var(--bo-color-success) 12%, transparent);
+  --bo-warning-bg: color-mix(in srgb, var(--bo-color-warning) 12%, transparent);
+  --bo-muted-bg: color-mix(in srgb, var(--bo-muted) 10%, transparent);
+  --bo-accent-alpha: rgba(109, 40, 217, 0.12);
 
-  --bo-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);
-  --bo-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.10);
+  /* Modern shadows - softer, more layered */
+  --bo-shadow: 0 20px 60px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
+  --bo-shadow-soft: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
 
+  /* Clean body background with subtle warmth */
   --bo-body-bg:
-    radial-gradient(1100px 640px at 18% -10%, rgba(185, 168, 255, 0.20), transparent 62%),
-    radial-gradient(900px 600px at 72% 15%, rgba(147, 239, 231, 0.16), transparent 55%),
-    linear-gradient(135deg, #f5f6ff 0%, #ffffff 55%, #f1f2ff 100%);
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(109, 40, 217, 0.06), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(13, 148, 136, 0.05), transparent 50%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 *,
@@ -188,11 +193,12 @@ body {
 :focus-visible {
   outline: 2px solid var(--bo-accent);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 :root[data-theme="light"] :focus-visible {
-  outline-color: rgba(124, 92, 231, 0.9);
-  /* Darker accent for visibility on light */
+  outline-color: var(--bo-accent);
+  outline-width: 2px;
 }
 
 /* Ensure buttons have visible focus */
@@ -200,21 +206,36 @@ button:focus-visible,
 [role="button"]:focus-visible {
   outline: 2px solid var(--bo-accent);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--bo-accent-alpha);
+}
+
+:root[data-theme="light"] button:focus-visible,
+:root[data-theme="light"] [role="button"]:focus-visible {
+  outline-color: var(--bo-accent);
+  box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.15);
 }
 
 /* Links focus */
 a:focus-visible {
   outline: 2px solid var(--bo-accent);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 /* Input focus */
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--bo-accent);
-  outline-offset: 0;
+  outline: none;
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 3px var(--bo-accent-alpha);
+}
+
+:root[data-theme="light"] input:focus-visible,
+:root[data-theme="light"] textarea:focus-visible,
+:root[data-theme="light"] select:focus-visible {
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.15);
 }
 
 a {
@@ -311,26 +332,30 @@ button {
 .bo-navBtn {
   width: 44px;
   height: 44px;
-  border-radius: 16px;
+  border-radius: var(--bo-radius-md);
   border: 1px solid transparent;
   background: transparent;
   color: var(--bo-muted);
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  transition: background var(--bo-transition-base) var(--bo-ease),
+              border-color var(--bo-transition-base) var(--bo-ease),
+              color var(--bo-transition-base) var(--bo-ease),
+              transform var(--bo-transition-fast) var(--bo-ease-out);
 }
 
 .bo-navBtn:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   border-color: var(--bo-border-2);
   color: var(--bo-text);
+  transform: scale(1.02);
 }
 
 .bo-navBtn.is-active {
-  background: rgba(185, 168, 255, 0.12);
-  border-color: rgba(185, 168, 255, 0.26);
-  color: var(--bo-text);
+  background: rgba(185, 168, 255, 0.14);
+  border-color: rgba(185, 168, 255, 0.30);
+  color: var(--bo-accent);
 }
 
 .bo-navBtn:disabled {
@@ -593,7 +618,324 @@ button {
 
 /* Avatar light theme */
 :root[data-theme="light"] .bo-avatar {
-  background: linear-gradient(135deg, rgba(185, 168, 255, 0.32), rgba(147, 239, 231, 0.24));
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.18), rgba(13, 148, 136, 0.14));
+  color: var(--bo-accent);
+}
+
+/* ============================================
+   Light Theme Component Overrides
+   Clean, modern styling for better readability
+   ============================================ */
+
+/* Cards in light mode */
+:root[data-theme="light"] .bo-card {
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+:root[data-theme="light"] .bo-statIcon {
+  background: rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.15);
+  color: var(--bo-accent);
+}
+
+:root[data-theme="light"] .bo-statLabel {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-statValue {
+  color: var(--bo-text);
+}
+
+/* Obligation card in light mode */
+:root[data-theme="light"] .bo-cardOb {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(109, 40, 217, 0.06));
+  border-color: rgba(13, 148, 136, 0.20);
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-cardOb .bo-statLabel {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-cardObIcon {
+  background: rgba(13, 148, 136, 0.12);
+  border-color: rgba(13, 148, 136, 0.20);
+  color: var(--bo-accent-2);
+}
+
+/* Inputs in light mode */
+:root[data-theme="light"] .bo-input {
+  background: var(--bo-surface);
+  border-color: var(--bo-border);
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-input:hover {
+  border-color: var(--bo-border-2);
+  background: var(--bo-surface-2);
+}
+
+:root[data-theme="light"] .bo-input:focus {
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+}
+
+:root[data-theme="light"] .bo-input::placeholder {
+  color: var(--bo-faint);
+}
+
+/* Buttons in light mode */
+:root[data-theme="light"] .bo-btn {
+  background: var(--bo-surface);
+  border-color: var(--bo-border);
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-btn:not(:disabled):hover {
+  background: var(--bo-surface-2);
+  border-color: var(--bo-border-2);
+}
+
+:root[data-theme="light"] .bo-btn--primary {
+  background: rgba(109, 40, 217, 0.10);
+  border-color: rgba(109, 40, 217, 0.25);
+  color: var(--bo-accent);
+}
+
+:root[data-theme="light"] .bo-btn--primary:not(:disabled):hover {
+  background: rgba(109, 40, 217, 0.16);
+  border-color: rgba(109, 40, 217, 0.35);
+}
+
+/* Action buttons in light mode */
+:root[data-theme="light"] .bo-actionBtn {
+  background: var(--bo-surface);
+  border-color: var(--bo-border);
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-actionBtn:hover {
+  background: var(--bo-surface-2);
+  border-color: var(--bo-border-2);
+  color: var(--bo-text);
+}
+
+/* Nav buttons in light mode */
+:root[data-theme="light"] .bo-navBtn {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-navBtn:hover {
+  background: var(--bo-surface-2);
+  border-color: var(--bo-border);
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-navBtn.is-active {
+  background: rgba(109, 40, 217, 0.10);
+  border-color: rgba(109, 40, 217, 0.20);
+  color: var(--bo-accent);
+}
+
+/* Table in light mode */
+:root[data-theme="light"] .bo-table tbody tr {
+  border-top-color: var(--bo-border);
+}
+
+:root[data-theme="light"] .bo-table tbody tr:hover {
+  background: var(--bo-surface-2);
+}
+
+:root[data-theme="light"] .bo-table thead th {
+  color: var(--bo-muted);
+}
+
+/* Sidebar in light mode */
+:root[data-theme="light"] .bo-sidebar {
+  background: var(--bo-sidebar);
+  border-right-color: var(--bo-border);
+}
+
+/* Window/shell in light mode */
+:root[data-theme="light"] .bo-window {
+  background: var(--bo-shell);
+  border-color: var(--bo-border);
+}
+
+/* Calendar in light mode */
+:root[data-theme="light"] .bo-calDay {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-calDay:hover {
+  background: var(--bo-surface-2);
+}
+
+:root[data-theme="light"] .bo-calDay.is-selected {
+  background: var(--bo-accent);
+  color: white;
+}
+
+:root[data-theme="light"] .bo-calDows {
+  color: var(--bo-faint);
+}
+
+/* Mini cards in light mode */
+:root[data-theme="light"] .bo-miniCard {
+  background: var(--bo-surface);
+  border-color: var(--bo-border);
+}
+
+:root[data-theme="light"] .bo-miniTitle {
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-miniSub {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-miniTime {
+  color: var(--bo-faint);
+}
+
+/* Chart in light mode */
+:root[data-theme="light"] .bo-chartTicks {
+  color: var(--bo-faint);
+}
+
+:root[data-theme="light"] .bo-chartPlot {
+  border-color: var(--bo-border);
+}
+
+:root[data-theme="light"] .bo-chartGrid {
+  background: repeating-linear-gradient(to top,
+    var(--bo-border),
+    var(--bo-border) 1px,
+    transparent 1px,
+    transparent 52px);
+}
+
+:root[data-theme="light"] .bo-monthLabel {
+  color: var(--bo-faint);
+}
+
+/* Donut chart in light mode */
+:root[data-theme="light"] .bo-donutLabel {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-donutValue {
+  color: var(--bo-text);
+}
+
+/* Tabs in light mode */
+:root[data-theme="light"] .bo-tab {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-tab:hover {
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-tab.is-active {
+  color: var(--bo-accent);
+}
+
+/* Labels in light mode */
+:root[data-theme="light"] .bo-label {
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-mutedText {
+  color: var(--bo-faint);
+}
+
+/* Section titles in light mode */
+:root[data-theme="light"] .bo-sectionTitle,
+:root[data-theme="light"] .bo-rightTitle {
+  color: var(--bo-text);
+}
+
+/* Panel titles in light mode */
+:root[data-theme="light"] .bo-panelTitle {
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-panelMeta {
+  color: var(--bo-faint);
+}
+
+/* Title in light mode */
+:root[data-theme="light"] .bo-title {
+  color: var(--bo-text);
+}
+
+/* Topbar in light mode */
+:root[data-theme="light"] .bo-topbar {
+  background: transparent;
+}
+
+/* Legend in light mode */
+:root[data-theme="light"] .bo-legend {
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-dot {
+  opacity: 0.9;
+}
+
+/* Pills in light mode */
+:root[data-theme="light"] .bo-pill {
+  background: var(--bo-accent);
+  opacity: 0.8;
+}
+
+/* Card head in light mode */
+:root[data-theme="light"] .bo-cardHead {
+  border-bottom-color: var(--bo-border);
+}
+
+:root[data-theme="light"] .bo-cardTitle {
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-cardDesc {
+  color: var(--bo-muted);
+}
+
+/* Fields in light mode */
+:root[data-theme="light"] .bo-field {
+  background: transparent;
+}
+
+/* Textarea in light mode */
+:root[data-theme="light"] .bo-textarea {
+  background: var(--bo-surface);
+  border-color: var(--bo-border);
+}
+
+/* Select native in light mode */
+:root[data-theme="light"] .bo-selectNative {
+  background: var(--bo-surface);
+  border-color: var(--bo-border);
+  color: var(--bo-text);
+}
+
+/* Input icon in light mode */
+:root[data-theme="light"] .bo-inputIcon {
+  color: var(--bo-muted);
+}
+
+/* Brand in light mode */
+:root[data-theme="light"] .bo-brand {
+  background: transparent;
+}
+
+/* Donut wrap in light mode */
+:root[data-theme="light"] .bo-donutWrap {
+  background: transparent;
 }
 
 .bo-avatarBtn {
@@ -611,13 +953,14 @@ button {
 
 .bo-card {
   border-radius: var(--bo-radius-md);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
-    var(--bo-surface-2);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bo-surface-2);
+  border: 1px solid var(--bo-border);
   box-shadow: var(--bo-shadow-soft);
-  padding: 14px 14px 12px;
+  padding: 16px;
   min-height: 88px;
+  transition: transform var(--bo-transition-base) var(--bo-ease-out),
+              box-shadow var(--bo-transition-base) var(--bo-ease-out),
+              border-color var(--bo-transition-base) var(--bo-ease-out);
 }
 
 .bo-card--clickable {
@@ -627,8 +970,8 @@ button {
 
 .bo-card--clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.20), 0 2px 8px rgba(0, 0, 0, 0.12);
+  border-color: var(--bo-accent);
 }
 
 .bo-card--clickable:active {
@@ -642,26 +985,28 @@ button {
 }
 
 .bo-statIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.02);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: rgba(185, 168, 255, 0.08);
   display: grid;
   place-items: center;
-  color: rgba(238, 240, 246, 0.86);
+  color: var(--bo-accent);
 }
 
 .bo-statLabel {
-  font-size: 12px;
+  font-size: var(--bo-text-sm);
   color: var(--bo-muted);
+  font-weight: var(--bo-weight-medium);
 }
 
 .bo-statValue {
-  margin-top: 10px;
-  font-size: 22px;
-  font-weight: 720;
-  letter-spacing: 0.2px;
+  margin-top: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--bo-text);
 }
 
 .bo-cardOb {
@@ -981,8 +1326,8 @@ button {
 
 :root[data-theme="light"] .bo-panel {
   border-radius: var(--bo-radius-lg);
-  background: linear-gradient(180deg, rgb(121 115 115 / 27%), rgb(57 41 80 / 29%)), #fffffff7;
-  border: none;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
   box-shadow: var(--bo-shadow-soft);
 }
 
@@ -1809,20 +2154,21 @@ button {
 
 .bo-input {
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--bo-radius-sm);
   border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bo-surface);
   color: var(--bo-text);
   padding: 0 12px;
   outline: none;
   min-width: 0;
-  transition: border-color var(--bo-transition-base, 150ms) ease,
-    background-color var(--bo-transition-base, 150ms) ease;
+  font-size: var(--bo-text-base);
+  transition: border-color var(--bo-transition-base) var(--bo-ease),
+              background-color var(--bo-transition-base) var(--bo-ease),
+              box-shadow var(--bo-transition-base) var(--bo-ease);
 }
 
 .bo-input:hover {
   border-color: var(--bo-border-2);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .bo-input--sm {
@@ -1831,25 +2177,31 @@ button {
 }
 
 .bo-input:focus {
-  border-color: rgba(185, 168, 255, 0.38);
-  box-shadow: 0 0 0 3px rgba(185, 168, 255, 0.10);
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 3px var(--bo-accent-alpha);
 }
 
 .bo-btn {
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--bo-radius-sm);
   border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bo-surface);
   color: var(--bo-text);
   cursor: pointer;
-  padding: 0 14px;
-  font-weight: 720;
+  padding: 0 16px;
+  font-weight: var(--bo-weight-semibold);
+  font-size: var(--bo-text-base);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   line-height: 1;
   white-space: nowrap;
+  transition: background-color var(--bo-transition-base) var(--bo-ease),
+              border-color var(--bo-transition-base) var(--bo-ease),
+              color var(--bo-transition-base) var(--bo-ease),
+              transform var(--bo-transition-fast) var(--bo-ease-out),
+              box-shadow var(--bo-transition-base) var(--bo-ease);
 }
 
 .bo-btn:disabled {
@@ -1859,14 +2211,16 @@ button {
 
 /* Base button hover state */
 .bo-btn:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bo-surface-2);
   border-color: var(--bo-border-2);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
 }
 
 .bo-btn--primary {
   border-color: rgba(185, 168, 255, 0.30);
-  background: rgba(185, 168, 255, 0.16);
+  background: rgba(185, 168, 255, 0.14);
+  color: var(--bo-accent);
   margin: 0 auto;
 }
 
@@ -2204,9 +2558,16 @@ tr.is-inactive {
   color: var(--bo-muted);
 }
 
+.bo-selectWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
 .bo-selectList {
-  position: fixed;
+  position: absolute;
   z-index: 320;
+  top: calc(100% + 6px);
+  left: 0;
   border-radius: 14px;
   border: 1px solid var(--bo-border);
   background:
@@ -2216,6 +2577,13 @@ tr.is-inactive {
   padding: 6px;
   display: grid;
   gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.bo-selectList--up {
+  top: auto;
+  bottom: calc(100% + 6px);
 }
 
 .bo-timeList {
@@ -6617,9 +6985,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--lila {
-  border-color: rgba(142, 122, 214, 0.40);
-  background: rgba(142, 122, 214, 0.12);
-  color: rgba(74, 54, 141, 0.92);
+  border-color: rgba(109, 40, 217, 0.30);
+  background: rgba(109, 40, 217, 0.10);
+  color: #6d28d9;
 }
 
 /* Cyan Badge */
@@ -6630,9 +6998,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--cyan {
-  border-color: rgba(16, 185, 165, 0.35);
-  background: rgba(16, 185, 165, 0.10);
-  color: rgba(4, 120, 105, 0.92);
+  border-color: rgba(13, 148, 136, 0.30);
+  background: rgba(13, 148, 136, 0.10);
+  color: #0d9488;
 }
 
 /* Green Badge */
@@ -6643,9 +7011,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--green {
-  border-color: rgba(22, 163, 74, 0.35);
+  border-color: rgba(22, 163, 74, 0.30);
   background: rgba(22, 163, 74, 0.10);
-  color: rgba(21, 128, 61, 0.92);
+  color: #16a34a;
 }
 
 /* Red Badge */
@@ -6656,9 +7024,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--red {
-  border-color: rgba(220, 38, 38, 0.35);
+  border-color: rgba(220, 38, 38, 0.30);
   background: rgba(220, 38, 38, 0.10);
-  color: rgba(185, 28, 28, 0.92);
+  color: #dc2626;
 }
 
 /* Yellow Badge */
@@ -6669,9 +7037,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--yellow {
-  border-color: rgba(202, 138, 4, 0.35);
-  background: rgba(202, 138, 4, 0.10);
-  color: rgba(161, 98, 7, 0.92);
+  border-color: rgba(217, 119, 6, 0.30);
+  background: rgba(217, 119, 6, 0.10);
+  color: #b45309;
 }
 
 /* Outlined Badge Variants */
@@ -6687,9 +7055,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--active {
-  border-color: rgba(22, 163, 74, 0.45);
-  background: rgba(22, 163, 74, 0.14);
-  color: rgba(21, 128, 61, 0.92);
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
 }
 
 /* Status Badge: Inactive */
@@ -6700,9 +7068,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--inactive {
-  border-color: rgba(107, 114, 128, 0.30);
-  background: rgba(107, 114, 128, 0.08);
-  color: rgba(75, 85, 99, 0.85);
+  border-color: rgba(100, 116, 139, 0.25);
+  background: rgba(100, 116, 139, 0.08);
+  color: #64748b;
 }
 
 /* Status Badge: Pending */
@@ -6713,9 +7081,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 :root[data-theme="light"] .bo-badge--pending {
-  border-color: rgba(217, 119, 6, 0.40);
-  background: rgba(217, 119, 6, 0.12);
-  color: rgba(180, 83, 9, 0.92);
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(217, 119, 6, 0.10);
+  color: #b45309;
 }
 
 /* Compatibility aliases used by facturas modules */
