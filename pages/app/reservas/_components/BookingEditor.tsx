@@ -8,6 +8,7 @@ import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { TimePicker } from "../../../../ui/inputs/TimePicker";
 import { Select } from "../../../../ui/inputs/Select";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
+import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 
 import { principalesItemsFromMenu, type PrincipalesRow, type RiceRow } from "./bookingDraft";
 
@@ -467,12 +468,14 @@ export function BookingEditor({
                       ariaLabel="Principal"
                     />
                     <div className="bo-bookingChoiceActions">
-                      <input
-                        className="bo-input bo-input--sm bo-bookingChoiceServings"
-                        style={{ width: 96 }}
-                        inputMode="numeric"
-                        value={String(row.servings || 0)}
-                        onChange={(e) => updatePrincipalRow(idx, { servings: Number(e.target.value) })}
+                      <InlineCounter
+                        label="Raciones"
+                        value={row.servings || 0}
+                        onChange={(v) => updatePrincipalRow(idx, { servings: v })}
+                        min={0}
+                        max={draft.party_size}
+                        disabled={busy}
+                        className="bo-bookingChoiceServings"
                       />
                       <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy}>
                         <Trash2 size={18} strokeWidth={1.8} />
@@ -521,12 +524,14 @@ export function BookingEditor({
                       ariaLabel="Tipo de arroz"
                     />
                     <div className="bo-bookingChoiceActions">
-                      <input
-                        className="bo-input bo-input--sm bo-bookingChoiceServings"
-                        style={{ width: 96 }}
-                        inputMode="numeric"
-                        value={String(row.servings || 0)}
-                        onChange={(e) => updateRiceRow(idx, { servings: Number(e.target.value) })}
+                      <InlineCounter
+                        label="Raciones"
+                        value={row.servings || 0}
+                        onChange={(v) => updateRiceRow(idx, { servings: v })}
+                        min={0}
+                        max={draft.party_size}
+                        disabled={busy}
+                        className="bo-bookingChoiceServings"
                       />
                       <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy}>
                         <Trash2 size={18} strokeWidth={1.8} />
