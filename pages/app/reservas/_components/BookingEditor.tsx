@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 
 import { createClient } from "../../../../api/client";
@@ -327,30 +327,37 @@ export function BookingEditor({
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
       <div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`}>
 
-      <div className="bo-panel">
+      <div className="bo-panel bo-bookingPanel--customer">
         <div className="bo-panelHead">
           <div className="bo-panelTitle">Datos</div>
           <div className="bo-panelMeta">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
-        <div className="bo-panelBody" style={{ display: "grid", gap: 12 }}>
-          <div className="bo-row" style={{ alignItems: "flex-end" }}>
-            <div className="bo-field bo-field--inline">
+        <div className="bo-panelBody bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }}>
+          <div className="bo-row bo-bookingRow bo-bookingRow--schedule">
+            <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--date">
               <div className="bo-label">Fecha</div>
               <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
             </div>
-            <div className="bo-field bo-field--inline">
+            <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time">
               <div className="bo-label">Hora</div>
               <TimePicker value={draft.reservation_time} onChange={(v) => setField("reservation_time", v)} ariaLabel="Hora" />
             </div>
-            <CounterField label="Pax" value={draft.party_size || 1} min={1} max={10000} onChange={(v) => setField("party_size", v)} />
+            <CounterField
+              className="bo-bookingField bo-bookingField--party"
+              label="Pax"
+              value={draft.party_size || 1}
+              min={1}
+              max={10000}
+              onChange={(v) => setField("party_size", v)}
+            />
           </div>
 
-          <div className="bo-row" style={{ alignItems: "flex-end" }}>
-            <div className="bo-field" style={{ flex: "1 1 320px" }}>
+          <div className="bo-row bo-bookingRow bo-bookingRow--contact">
+            <div className="bo-field bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }}>
               <div className="bo-label">Cliente</div>
               <input className="bo-input bo-input--sm" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} />
             </div>
-            <div className="bo-field" style={{ flex: "1 1 280px" }}>
+            <div className="bo-field bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }}>
               <div className="bo-label">Teléfono</div>
               <div className="bo-phone">
                 <Select
@@ -370,14 +377,14 @@ export function BookingEditor({
                 />
               </div>
             </div>
-            <div className="bo-field" style={{ flex: "1 1 320px" }}>
+            <div className="bo-field bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }}>
               <div className="bo-label">Email (opcional)</div>
               <input className="bo-input bo-input--sm" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} />
             </div>
           </div>
 
-          <div className="bo-row" style={{ alignItems: "flex-end" }}>
-            <div className="bo-field">
+          <div className="bo-row bo-bookingRow bo-bookingRow--extras">
+            <div className="bo-field bo-bookingField bo-bookingField--table">
               <div className="bo-label">Mesa</div>
               <input
                 className="bo-input bo-input--sm"
@@ -387,6 +394,7 @@ export function BookingEditor({
               />
             </div>
             <CounterField
+              className="bo-bookingField bo-bookingField--strollers"
               label="Carros"
               value={draft.babyStrollers || 0}
               min={0}
@@ -394,13 +402,14 @@ export function BookingEditor({
               onChange={(v) => setField("babyStrollers", v)}
             />
             <CounterField
+              className="bo-bookingField bo-bookingField--highchairs"
               label="Tronas"
               value={draft.highChairs || 0}
               min={0}
               max={100}
               onChange={(v) => setField("highChairs", v)}
             />
-            <div className="bo-field" style={{ flex: "1 1 260px" }}>
+            <div className="bo-field bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }}>
               <div className="bo-label">Salón</div>
               <Select
                 className="bo-selectBtn--sm"
@@ -421,7 +430,7 @@ export function BookingEditor({
           <div className="bo-panelMeta">{draft.special_menu ? "Sí" : "No"}</div>
         </div>
         <div className="bo-panelBody">
-          <div className="bo-chips" role="group" aria-label="Menú de grupo">
+          <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo">
             <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy}>
               No
             </button>
@@ -447,26 +456,28 @@ export function BookingEditor({
               <div className="bo-mutedText">Principales (restantes: {remainingPrincipales})</div>
               <div style={{ display: "grid", gap: 8 }}>
                 {draft.principales.map((row, idx) => (
-                  <div key={idx} className="bo-row" style={{ gap: 8 }}>
+                  <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }}>
                     <Select
-                      className="bo-selectBtn--sm"
+                      className="bo-selectBtn--sm bo-bookingChoiceSelect"
                       size="sm"
-                      style={{ flex: "1 1 260px" }}
+                      style={{ flex: "1 1 0px" }}
                       value={row.name}
                       onChange={(v) => updatePrincipalRow(idx, { name: v })}
                       options={principalOptions}
                       ariaLabel="Principal"
                     />
-                    <input
-                      className="bo-input bo-input--sm"
-                      style={{ width: 96 }}
-                      inputMode="numeric"
-                      value={String(row.servings || 0)}
-                      onChange={(e) => updatePrincipalRow(idx, { servings: Number(e.target.value) })}
-                    />
-                    <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy}>
-                      <Minus size={18} strokeWidth={1.8} />
-                    </button>
+                    <div className="bo-bookingChoiceActions">
+                      <input
+                        className="bo-input bo-input--sm bo-bookingChoiceServings"
+                        style={{ width: 96 }}
+                        inputMode="numeric"
+                        value={String(row.servings || 0)}
+                        onChange={(e) => updatePrincipalRow(idx, { servings: Number(e.target.value) })}
+                      />
+                      <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy}>
+                        <Trash2 size={18} strokeWidth={1.8} />
+                      </button>
+                    </div>
                   </div>
                 ))}
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addPrincipalRow} disabled={busy || !principalesItems.length}>
@@ -486,7 +497,7 @@ export function BookingEditor({
             <div className="bo-panelMeta">{draft.arroz_enabled ? "Sí" : "No"}</div>
           </div>
           <div className="bo-panelBody">
-            <div className="bo-chips" role="group" aria-label="¿Desea arroz?">
+            <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?">
               <button type="button" className={`bo-chip${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy}>
                 No
               </button>
@@ -499,26 +510,28 @@ export function BookingEditor({
             {draft.arroz_enabled ? (
               <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
                 {draft.arroz.map((row, idx) => (
-                  <div key={idx} className="bo-row" style={{ gap: 8 }}>
+                  <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }}>
                     <Select
-                      className="bo-selectBtn--sm"
+                      className="bo-selectBtn--sm bo-bookingChoiceSelect"
                       size="sm"
-                      style={{ flex: "1 1 260px" }}
+                      style={{ flex: "1 1 0px" }}
                       value={row.type}
                       onChange={(v) => updateRiceRow(idx, { type: v })}
                       options={arrozOptions}
                       ariaLabel="Tipo de arroz"
                     />
-                    <input
-                      className="bo-input bo-input--sm"
-                      style={{ width: 96 }}
-                      inputMode="numeric"
-                      value={String(row.servings || 0)}
-                      onChange={(e) => updateRiceRow(idx, { servings: Number(e.target.value) })}
-                    />
-                    <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy}>
-                      <Minus size={18} strokeWidth={1.8} />
-                    </button>
+                    <div className="bo-bookingChoiceActions">
+                      <input
+                        className="bo-input bo-input--sm bo-bookingChoiceServings"
+                        style={{ width: 96 }}
+                        inputMode="numeric"
+                        value={String(row.servings || 0)}
+                        onChange={(e) => updateRiceRow(idx, { servings: Number(e.target.value) })}
+                      />
+                      <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy}>
+                        <Trash2 size={18} strokeWidth={1.8} />
+                      </button>
+                    </div>
                   </div>
                 ))}
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addRiceRow} disabled={busy || !riceTypes.length}>
@@ -567,16 +580,18 @@ function CounterField({
   min,
   max,
   onChange,
+  className,
 }: {
   label: string;
   value: number;
   min: number;
   max: number;
   onChange: (next: number) => void;
+  className?: string;
 }) {
   const safeValue = clampInt(Number(value || 0), min, max);
   return (
-    <div className="bo-field bo-field--counter">
+    <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")}>
       <div className="bo-label">{label}</div>
       <div className="bo-counter">
         <button

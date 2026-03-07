@@ -202,6 +202,8 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
         className="bo-dateBtn bo-dateBtn--glass"
         type="button"
         onClick={toggle}
+        aria-expanded={open}
+        aria-haspopup="dialog"
         aria-label="Select date"
         aria-disabled={disabled}
         disabled={disabled}
