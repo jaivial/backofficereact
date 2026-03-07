@@ -1,18 +1,8 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 type Option = { value: string; label: string; icon?: React.ReactNode };
-type Pos = { top: number; left: number; width: number; maxHeight: number; direction: "up" | "down" };
-
-function portalEl(): HTMLElement | null {
-  return document.getElementById("bo-portal") || document.body;
-}
-
-function clamp(n: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, n));
-}
 
 export function Select({
   value,
@@ -38,13 +28,13 @@ export function Select({
   menuMinWidthPx?: number;
 }) {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState<Pos | null>(null);
+  const [direction, setDirection] = useState<"up" | "down">("down");
   const [activeIdx, setActiveIdx] = useState(0);
   const reduceMotion = useReducedMotion();
 
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const root = useMemo(() => (typeof document !== "undefined" ? portalEl() : null), []);
 
   const selected = useMemo(() => options.find((o) => o.value === value) || options[0], [options, value]);
   const btnClass = size === "sm" ? "bo-selectBtn bo-selectBtn--sm" : "bo-selectBtn";
@@ -63,50 +53,26 @@ export function Select({
     if (disabled) setOpen(false);
   }, [disabled]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!open) return;
-    const el = btnRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const vw = window.innerWidth;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
     const vh = window.innerHeight;
-    const viewportPadding = 8;
-    const gap = 8;
-    const minWidth = typeof menuMinWidthPx === "number" ? menuMinWidthPx : 180;
-    const width = Math.max(minWidth, r.width);
-    const left = clamp(r.left, viewportPadding, vw - width - viewportPadding);
-
-    const availableBelow = Math.max(0, vh - r.bottom - gap - viewportPadding);
-    const availableAbove = Math.max(0, r.top - gap - viewportPadding);
-    const defaultDesiredHeight = typeof listMaxHeightPx === "number"
-      ? listMaxHeightPx
-      : Math.min(320, options.length * 44 + 12);
-    const minimumOpenHeight = Math.min(160, defaultDesiredHeight);
-    const shouldOpenUp = availableBelow < minimumOpenHeight && availableAbove > availableBelow;
-    const availableForDirection = shouldOpenUp ? availableAbove : availableBelow;
-    const maxHeight = Math.max(120, Math.min(defaultDesiredHeight, availableForDirection));
-    const top = shouldOpenUp
-      ? clamp(r.top - gap - maxHeight, viewportPadding, vh - maxHeight - viewportPadding)
-      : clamp(r.bottom + gap, viewportPadding, vh - maxHeight - viewportPadding);
-
-    setPos({
-      top,
-      left,
-      width,
-      maxHeight,
-      direction: shouldOpenUp ? "up" : "down",
-    });
+    const spaceBelow = vh - rect.bottom;
+    const spaceAbove = rect.top;
+    const desiredHeight = typeof listMaxHeightPx === "number" ? listMaxHeightPx : Math.min(320, options.length * 44 + 12);
+    setDirection(spaceBelow < desiredHeight && spaceAbove > spaceBelow ? "up" : "down");
     const idx = Math.max(0, options.findIndex((o) => o.value === value));
     setActiveIdx(idx);
-  }, [listMaxHeightPx, menuMinWidthPx, open, options, value]);
+  }, [listMaxHeightPx, open, options, value]);
 
   useEffect(() => {
     if (!open) return;
     const onDown = (ev: PointerEvent) => {
       const t = ev.target as Node | null;
       if (!t) return;
-      if (btnRef.current?.contains(t)) return;
-      if (listRef.current?.contains(t)) return;
+      if (wrapperRef.current?.contains(t)) return;
       close();
     };
     const onKey = (ev: KeyboardEvent) => {
@@ -160,64 +126,11 @@ export function Select({
     el?.focus();
   }, [activeIdx, open]);
 
-  const list = open && pos && root ? (
-    createPortal(
-      <AnimatePresence>
-        <motion.div
-          ref={listRef}
-          className="bo-selectList"
-          role="listbox"
-          tabIndex={-1}
-          onKeyDown={onListKey}
-          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: pos.direction === "up" ? -6 : 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: pos.direction === "up" ? -6 : 6 }}
-          transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
-          style={{
-            top: pos.top,
-            left: pos.left,
-            width: pos.width,
-            maxHeight: `${pos.maxHeight}px`,
-            overflowY: "auto",
-            overflowX: "hidden",
-          }}
-        >
-          {options.map((o, idx) => {
-            const isSel = o.value === value;
-            const isAct = idx === activeIdx;
-            return (
-              <button
-                key={o.value}
-                type="button"
-                className={`bo-selectItem${isSel ? " is-selected" : ""}${isAct ? " is-active" : ""}`}
-                role="option"
-                aria-selected={isSel}
-                tabIndex={idx === activeIdx ? 0 : -1}
-                data-opt={idx}
-                onMouseEnter={() => setActiveIdx(idx)}
-                onClick={() => {
-                  onChange(o.value);
-                  close();
-                  btnRef.current?.focus();
-                }}
-              >
-                {o.icon ? (
-                  <span className="bo-selectItemIcon" aria-hidden="true">
-                    {o.icon}
-                  </span>
-                ) : null}
-                <span>{o.label}</span>
-              </button>
-            );
-          })}
-        </motion.div>,
-      </AnimatePresence>,
-      root,
-    )
-  ) : null;
+  const maxHeight = typeof listMaxHeightPx === "number" ? listMaxHeightPx : Math.min(320, options.length * 44 + 12);
+  const minWidth = typeof menuMinWidthPx === "number" ? menuMinWidthPx : 180;
 
   return (
-    <>
+    <div ref={wrapperRef} className="bo-selectWrapper" style={style}>
       <button
         ref={btnRef}
         className={[btnClass, className].filter(Boolean).join(" ")}
@@ -226,7 +139,6 @@ export function Select({
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={disabled}
-        style={style}
         onClick={toggle}
         onKeyDown={onBtnKey}
       >
@@ -240,7 +152,54 @@ export function Select({
         </span>
         <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
       </button>
-      {list}
-    </>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            ref={listRef}
+            className={`bo-selectList${direction === "up" ? " bo-selectList--up" : ""}`}
+            role="listbox"
+            tabIndex={-1}
+            onKeyDown={onListKey}
+            initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: direction === "up" ? 6 : -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: direction === "up" ? 6 : -6 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
+            style={{
+              maxHeight: `${maxHeight}px`,
+              minWidth: `${minWidth}px`,
+            }}
+          >
+            {options.map((o, idx) => {
+              const isSel = o.value === value;
+              const isAct = idx === activeIdx;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  className={`bo-selectItem${isSel ? " is-selected" : ""}${isAct ? " is-active" : ""}`}
+                  role="option"
+                  aria-selected={isSel}
+                  tabIndex={idx === activeIdx ? 0 : -1}
+                  data-opt={idx}
+                  onMouseEnter={() => setActiveIdx(idx)}
+                  onClick={() => {
+                    onChange(o.value);
+                    close();
+                    btnRef.current?.focus();
+                  }}
+                >
+                  {o.icon ? (
+                    <span className="bo-selectItemIcon" aria-hidden="true">
+                      {o.icon}
+                    </span>
+                  ) : null}
+                  <span>{o.label}</span>
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
