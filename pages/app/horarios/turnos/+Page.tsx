@@ -50,18 +50,31 @@ function toHHMMFromNow(): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function totalMinutes(entries: EditableTimeEntry[]): number {
   return entries.reduce((acc, it) => acc + Math.max(0, it.minutesWorked), 0);
 }
 
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as PageData;
+  const data = (pageContext.data ?? {
+    date: todayISO(),
+    members: [],
+    schedules: [],
+    error: null,
+  }) as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const realtime = useAtomValue(fichajeRealtimeAtom);
   const { pushToast } = useToasts();
 
-  const [date, setDate] = useState(data.date);
+  const [date, setDate] = useState(data.date || todayISO());
   const [schedules, setSchedules] = useState<FichajeSchedule[]>(data.schedules || []);
   const [memberSearch, setMemberSearch] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(() => {

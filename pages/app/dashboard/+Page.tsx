@@ -15,7 +15,7 @@ function todayISO(): string {
 
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as {
+  const data = (pageContext.data ?? { date: "", metrics: null, invoiceMetrics: null, error: null }) as {
     date: string;
     metrics: DashboardMetrics | null;
     invoiceMetrics: InvoiceDashboardMetrics | null;
