@@ -3000,9 +3000,10 @@ export default function Page() {
   }, [previewThemeConfig, previewThemeId]);
 
   const previewNeedsUpgrade = useMemo(() => {
+    if (menuType === "special") return false;
     if (!previewThemeConfig) return false;
     return previewThemeConfig.assigned === false;
-  }, [previewThemeConfig]);
+  }, [menuType, previewThemeConfig]);
 
   const previewUrl = "/menu-preview/index.html";
 

@@ -3,9 +3,9 @@ export type BORole = string;
 export type BOSection = "reservas" | "menus" | "comida" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estado_cuenta" | "website" | "site-builder";
 
 export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
-  root: ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "site-builder", "fichaje", "facturas", "reportes", "estado_cuenta"],
-  admin: ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "site-builder", "fichaje", "facturas", "reportes", "estado_cuenta"],
-  metre: ["reservas", "menus", "comida", "fichaje", "facturas", "estado_cuenta"],
+  root: ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas"],
+  admin: ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas"],
+  metre: ["reservas", "menus", "comida", "fichaje", "facturas"],
   jefe_cocina: ["reservas", "menus", "comida", "fichaje"],
   arrocero: ["fichaje"],
   pinche_cocina: ["fichaje"],
@@ -32,12 +32,8 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "comida", href: "/app/comida", label: "Carta" },
   { key: "miembros", href: "/app/miembros", label: "Miembros" },
   { key: "horarios", href: "/app/horarios", label: "Horarios" },
-  { key: "ajustes", href: "/app/settings", label: "Ajustes" },
-  { key: "website", href: "/app/site-builder", label: "Website Builder" },
   { key: "fichaje", href: "/app/fichaje", label: "Fichaje" },
   { key: "facturas", href: "/app/facturas", label: "Facturas" },
-  { key: "reportes", href: "/app/reportes", label: "Reportes" },
-  { key: "estado_cuenta", href: "/app/estado-cuenta", label: "Estado de Cuenta" },
 ];
 
 const SECTION_HOME: Record<BOSection, string> = {
@@ -55,7 +51,7 @@ const SECTION_HOME: Record<BOSection, string> = {
   estado_cuenta: "/app/estado-cuenta",
 };
 
-const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "site-builder", "fichaje", "facturas", "reportes", "estado_cuenta"];
+const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas"];
 
 const ROLE_LABELS: Record<string, string> = {
   root: "Root",

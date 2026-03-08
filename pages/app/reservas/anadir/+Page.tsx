@@ -9,9 +9,17 @@ import { BookingEditor, type BookingEditorDraft } from "../_components/BookingEd
 
 type PageData = { date: string };
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as PageData;
+  const data = (pageContext.data ?? { date: todayISO() }) as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
 

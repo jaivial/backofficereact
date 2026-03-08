@@ -59,9 +59,24 @@ function shiftHHMM(value: string, deltaMinutes: number): string | null {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as Data;
+  const data = (pageContext.data ?? {
+    date: todayISO(),
+    isAdminView: false,
+    state: null,
+    members: [],
+    schedules: [],
+    error: null,
+  }) as Data;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const [realtime, setRealtime] = useAtom(fichajeRealtimeAtom);
@@ -75,7 +90,7 @@ export default function Page() {
   const [busyStart, setBusyStart] = useState(false);
   const [busyStop, setBusyStop] = useState(false);
 
-  const [date, setDate] = useState(data.date);
+  const [date, setDate] = useState(data.date || todayISO());
   const [members] = useState<Member[]>(data.members || []);
   const [schedules, setSchedules] = useState<FichajeSchedule[]>(data.schedules || []);
   const [memberSearch, setMemberSearch] = useState("");

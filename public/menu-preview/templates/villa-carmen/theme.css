@@ -1570,6 +1570,24 @@ svg {
     color: var(--muted);
 }
 
+.specialMenuImageWrap {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-soft);
+    background: rgba(0, 0, 0, 0.04);
+    height: auto;
+    width: 100%;
+}
+
+.specialMenuImage {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
 .menuUnavailableCard {
     max-width: 680px;
     margin: 36px auto 0;

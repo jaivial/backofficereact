@@ -90,11 +90,28 @@ function monthCalendarData(year: number, month: number, monthDays: HorarioMonthP
   return out;
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 type HorariosCalendarTab = "miembros" | "reservas";
 
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as Data;
+  const data = (pageContext.data ?? {
+    date: todayISO(),
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+    members: [],
+    schedules: [],
+    monthDays: [],
+    bookingMonthDays: [],
+    error: null,
+  }) as Data;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const realtime = useAtomValue(fichajeRealtimeAtom);
@@ -110,7 +127,7 @@ export default function Page() {
     }
   }, [realtime.pendingScheduleUpdates, busy, setRealtime]);
 
-  const [selectedDate, setSelectedDate] = useState(data.date);
+  const [selectedDate, setSelectedDate] = useState(data.date || todayISO());
   const [year, setYear] = useState(data.year);
   const [month, setMonth] = useState(data.month);
   const [members] = useState<Member[]>(data.members);

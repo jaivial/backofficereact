@@ -1038,16 +1038,14 @@
     if (state.menuType === "special") {
       const specialImageURL = resolveMediaURL(menu.special_menu_image_url || "");
       const hasImage = Boolean(specialImageURL);
-      const body = hasImage
-        ? '<div class="menuMain"><section class="menuSubSection"><div class="menuHeroSlider"><div class="menuHeroSliderStage"><img class="menuHeroShot is-active is-reduced" src="' + escapeHtml(specialImageURL) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div></div></section></div>'
+      const imageSection = hasImage
+        ? '<div class="specialMenuImageWrap"><img class="specialMenuImage" src="' + escapeHtml(specialImageURL) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div>'
         : '<div class="menuState">Sube una imagen para este menu especial.</div>';
 
       return mountVillaTemplate({
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
-        MENU_SUBTITLE: escapeHtml(menu.menu_subtitle[0] || "Menu especial"),
-        MENU_HERO_MEDIA: "",
-        MENU_BODY: body,
-        ALLERGENS_LEGEND: "",
+        SPECIAL_IMAGE_SECTION: imageSection,
+        CURRENT_YEAR: String(new Date().getFullYear()),
       });
     }
 
