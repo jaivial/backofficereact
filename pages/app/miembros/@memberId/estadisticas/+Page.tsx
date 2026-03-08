@@ -38,14 +38,28 @@ function toFiniteNumber(value: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as Data;
+  const data = (pageContext.data ?? {
+    memberId: 0,
+    date: todayISO(),
+    initialStats: null,
+    initialBalance: null,
+    error: null,
+  }) as Data;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
 
   const [view, setView] = useState<StatsView>("weekly");
   const [chartType, setChartType] = useState<ChartType>("bar");
-  const [date, setDate] = useState(data.date);
+  const [date, setDate] = useState(data.date || todayISO());
   const [loadingStats, setLoadingStats] = useState(false);
   const [stats, setStats] = useState<MemberStats | null>(data.initialStats);
   const [balance, setBalance] = useState<MemberTimeBalance | null>(data.initialBalance);

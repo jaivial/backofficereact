@@ -106,14 +106,31 @@ function clampDailyLimit(v: number): number {
   return Math.max(0, Math.min(500, Math.trunc(v)));
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as PageData;
+  const data = (pageContext.data ?? {
+    date: "",
+    day: null,
+    dailyLimit: null,
+    openingHours: null,
+    mesasDeDos: null,
+    mesasDeTres: null,
+    floors: [],
+    error: null,
+  }) as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const reduceMotion = useReducedMotion();
 
-  const [date, setDate] = useState(data.date);
+  const [date, setDate] = useState(data.date || todayISO());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);

@@ -63,6 +63,14 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function parseYearMonth(iso: string): { year: number; month: number } {
   const parts = String(iso).split("-").map((x) => Number(x));
   const year = Number.isFinite(parts[0]) ? parts[0] : new Date().getFullYear();
@@ -93,14 +101,26 @@ function normalizeBookings(v: unknown): Booking[] {
 
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as PageData;
+  const data = (pageContext.data ?? {
+    date: "",
+    bookings: [],
+    floors: [],
+    total_count: 0,
+    page: 1,
+    count: 15,
+    calendarDays: [],
+    dailyLimit: null,
+    metrics: null,
+    day: null,
+    error: null,
+  }) as PageData;
   const session = useAtomValue(sessionAtom);
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const reduceMotion = useReducedMotion();
 
-  const [date, setDate] = useState(data.date);
-  const [view, setView] = useState(() => parseYearMonth(data.date));
+  const [date, setDate] = useState(data.date || todayISO());
+  const [view, setView] = useState(() => parseYearMonth(data.date || todayISO()));
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>(data.calendarDays || []);
 
   const [dailyLimit, setDailyLimit] = useState<ConfigDailyLimit | null>(data.dailyLimit);

@@ -16,15 +16,29 @@ function parseHours(v: string): number | null {
   return n;
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as Data;
+  const data = (pageContext.data ?? {
+    memberId: 0,
+    member: null,
+    initialStats: null,
+    date: todayISO(),
+    error: null,
+  }) as Data;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
 
   const [member, setMember] = useState<Member | null>(data.member);
   const [stats, setStats] = useState<MemberStats | null>(data.initialStats);
-  const [date, setDate] = useState(data.date);
+  const [date, setDate] = useState(data.date || todayISO());
   const [weeklyContractHours, setWeeklyContractHours] = useState(String(data.member?.weeklyContractHours ?? 40));
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);

@@ -44,12 +44,25 @@ function scheduleLabel(schedule: FichajeSchedule | undefined): string {
   return `${schedule.startTime} - ${schedule.endTime}`;
 }
 
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function Page() {
   const pageContext = usePageContext();
-  const data = pageContext.data as PageData;
+  const data = (pageContext.data ?? {
+    date: todayISO(),
+    members: [],
+    schedules: [],
+    error: null,
+  }) as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const realtime = useAtomValue(fichajeRealtimeAtom);
-  const [date, setDate] = useState(data.date);
+  const [date, setDate] = useState(data.date || todayISO());
   const [schedules, setSchedules] = useState<FichajeSchedule[]>(data.schedules || []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
