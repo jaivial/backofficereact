@@ -1,11 +1,13 @@
 import React from "react";
 import {
   BarChart3,
+  Blocks,
   CalendarClock,
   CalendarDays,
   ClipboardCheck,
   CookingPot,
   FileText,
+  Globe,
   Link,
   Receipt,
   Settings,
@@ -35,6 +37,10 @@ export function iconForSidebarItemKey(key: SidebarItemKey, options: BOIconOption
       return <ShieldUser size={size} strokeWidth={strokeWidth} />;
     case "ajustes":
       return <Link size={size} strokeWidth={strokeWidth} />;
+    case "website":
+      return <Globe size={size} strokeWidth={strokeWidth} />;
+    case "site-builder":
+      return <Blocks size={size} strokeWidth={strokeWidth} />;
     case "fichaje":
       return <ClipboardCheck size={size} strokeWidth={strokeWidth} />;
     case "horarios":

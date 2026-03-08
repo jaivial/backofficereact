@@ -1,10 +1,10 @@
 export type BORole = string;
 
-export type BOSection = "reservas" | "menus" | "comida" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estado_cuenta" | "website";
+export type BOSection = "reservas" | "menus" | "comida" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estado_cuenta" | "website" | "site-builder";
 
 export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
-  root: ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "fichaje", "facturas", "reportes", "estado_cuenta"],
-  admin: ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "fichaje", "facturas", "reportes", "estado_cuenta"],
+  root: ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "site-builder", "fichaje", "facturas", "reportes", "estado_cuenta"],
+  admin: ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "site-builder", "fichaje", "facturas", "reportes", "estado_cuenta"],
   metre: ["reservas", "menus", "comida", "fichaje", "facturas", "estado_cuenta"],
   jefe_cocina: ["reservas", "menus", "comida", "fichaje"],
   arrocero: ["fichaje"],
@@ -33,7 +33,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "miembros", href: "/app/miembros", label: "Miembros" },
   { key: "horarios", href: "/app/horarios", label: "Horarios" },
   { key: "ajustes", href: "/app/settings", label: "Ajustes" },
-  { key: "website", href: "/app/website", label: "Website Builder" },
+  { key: "website", href: "/app/site-builder", label: "Website Builder" },
   { key: "fichaje", href: "/app/fichaje", label: "Fichaje" },
   { key: "facturas", href: "/app/facturas", label: "Facturas" },
   { key: "reportes", href: "/app/reportes", label: "Reportes" },
@@ -45,7 +45,8 @@ const SECTION_HOME: Record<BOSection, string> = {
   menus: "/app/menus",
   comida: "/app/comida",
   ajustes: "/app/settings",
-  website: "/app/website",
+  website: "/app/site-builder",
+  "site-builder": "/app/site-builder",
   miembros: "/app/miembros",
   horarios: "/app/horarios",
   fichaje: "/app/fichaje",
@@ -54,7 +55,7 @@ const SECTION_HOME: Record<BOSection, string> = {
   estado_cuenta: "/app/estado-cuenta",
 };
 
-const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "fichaje", "facturas", "reportes", "estado_cuenta"];
+const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "miembros", "horarios", "ajustes", "website", "site-builder", "fichaje", "facturas", "reportes", "estado_cuenta"];
 
 const ROLE_LABELS: Record<string, string> = {
   root: "Root",
@@ -73,7 +74,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 function isSection(value: string): value is BOSection {
-  return value === "reservas" || value === "menus" || value === "comida" || value === "ajustes" || value === "website" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas" || value === "reportes" || value === "estado_cuenta";
+  return value === "reservas" || value === "menus" || value === "comida" || value === "ajustes" || value === "website" || value === "site-builder" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas" || value === "reportes" || value === "estado_cuenta";
 }
 
 function normalizeSectionAccess(sectionAccessRaw: string[] | null | undefined): BOSection[] {
@@ -133,6 +134,7 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/comida")) return "comida";
   if (pathname.startsWith("/app/settings")) return "ajustes";
   if (pathname.startsWith("/app/website")) return "website";
+  if (pathname.startsWith("/app/site-builder")) return "site-builder";
   if (pathname.startsWith("/app/miembros")) return "miembros";
   // /app/miembros/mi-horario is a special route for viewing own schedule
   if (pathname === "/app/miembros/mi-horario") return "horarios";

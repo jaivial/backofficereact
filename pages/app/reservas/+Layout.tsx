@@ -24,13 +24,53 @@ function activeTabId(pathname: string): string {
   return "reservas";
 }
 
+function getCurrentUrlDate(): string | null {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const d = params.get("date");
+  if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  return null;
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pageContext = usePageContext();
   const pathname = pageContext.urlPathname ?? "/app/reservas";
   const dateFromSearch = typeof pageContext.urlParsed?.search?.date === "string" ? pageContext.urlParsed.search.date : "";
   const dateFromData = typeof (pageContext.data as any)?.date === "string" ? String((pageContext.data as any).date) : "";
-  const date = dateFromSearch || dateFromData || todayISO();
-  const qs = `?date=${encodeURIComponent(date)}`;
+  const initialDate = dateFromSearch || dateFromData || todayISO();
+
+  // Track the current date from URL to keep tabs in sync when date changes via replaceState
+  const [currentDate, setCurrentDate] = useState(initialDate);
+
+  // Sync currentDate with URL on mount and on popstate
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncDate = () => {
+      const urlDate = getCurrentUrlDate();
+      if (urlDate) setCurrentDate(urlDate);
+    };
+
+    syncDate();
+    window.addEventListener("popstate", syncDate);
+    return () => window.removeEventListener("popstate", syncDate);
+  }, []);
+
+  // Also poll for URL changes (replaceState doesn't trigger events)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const interval = setInterval(() => {
+      const urlDate = getCurrentUrlDate();
+      if (urlDate && urlDate !== currentDate) {
+        setCurrentDate(urlDate);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [currentDate]);
+
+  const qs = useMemo(() => `?date=${encodeURIComponent(currentDate)}`, [currentDate]);
   const reduceMotion = useReducedMotion();
   const activeId = activeTabId(pathname);
   const isTablesRoute = pathname.startsWith("/app/reservas/tables");
@@ -42,9 +82,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     const url = new URL(window.location.href);
     const cur = url.searchParams.get("date");
     if (cur && /^\d{4}-\d{2}-\d{2}$/.test(cur)) return;
-    url.searchParams.set("date", date);
+    url.searchParams.set("date", currentDate);
     window.history.replaceState(null, "", url.toString());
-  }, [date]);
+  }, [currentDate]);
 
   const tabs = useMemo<TabItem[]>(
     () => [
