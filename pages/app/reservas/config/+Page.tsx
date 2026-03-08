@@ -13,7 +13,7 @@ import type {
   ConfigOpeningHours,
   OpeningMode,
 } from "../../../../api/types";
-import { DatePicker } from "../../../../ui/inputs/DatePicker";
+import { DateDropdown } from "../../../../ui/inputs/DateDropdown";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
@@ -449,7 +449,7 @@ export default function Page() {
     <section aria-label="Configuración diaria reservas">
       <div className="bo-toolbar">
         <div className="bo-toolbarLeft">
-          <DatePicker value={date} onChange={onDateChange} />
+          <DateDropdown value={date} onChange={onDateChange} />
           <button className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy}>
             Recargar
           </button>

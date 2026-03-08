@@ -63,6 +63,8 @@ const TITLE_BY_PATH: Record<string, string> = {
   "/app/facturas": "Facturas",
   "/app/facturas/recurrentes": "Facturacion recurrente",
   "/app/reportes": "Reportes",
+  "/app/website": "Website Builder",
+  "/app/site-builder": "Site Builder",
   "/app/estado-cuenta": "Estado de Cuenta",
 };
 
