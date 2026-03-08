@@ -2563,6 +2563,11 @@ tr.is-inactive {
   display: inline-flex;
 }
 
+.bo-selectWrapper > .bo-selectBtn--sm {
+  width: -webkit-fill-available;
+  width: stretch;
+}
+
 .bo-selectList {
   position: absolute;
   z-index: 320;

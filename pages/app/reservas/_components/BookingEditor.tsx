@@ -447,6 +447,7 @@ export function BookingEditor({
                 <Select
                   className="bo-selectBtn--sm"
                   size="sm"
+                  style={{ width: "100%" }}
                   value={draft.menu_de_grupo_id ? String(draft.menu_de_grupo_id) : ""}
                   onChange={(v) => setField("menu_de_grupo_id", v ? Number(v) : null)}
                   options={menuOptions}
