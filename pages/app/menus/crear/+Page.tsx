@@ -2125,6 +2125,7 @@ export default function Page() {
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);
   const [menuId, setMenuId] = useState<number | null>(data.menu?.id ?? null);
+  const [isDraft, setIsDraft] = useState<boolean>(data.menu?.is_draft ?? false);
 
   const [step, setStep] = useState<number>(data.menu ? 3 : 0);
   const [menuType, setMenuType] = useState<string>(data.menu?.menu_type || "closed_conventional");
@@ -4420,8 +4421,8 @@ export default function Page() {
       await syncSectionsAndDishes({ sectionsSnapshot: sections, fingerprint: sectionsFingerprint, force: true });
       const res = await api.menus.gruposV2.publish(menuId);
       if (!res.success) throw new Error(res.message || "No se pudo publicar");
-      pushToast({ kind: "success", title: "Menu guardado" });
-      window.location.href = "/app/menus";
+      setIsDraft(false);
+      pushToast({ kind: "success", title: "Menu publicado", message: "El menu se ha publicado correctamente" });
     } catch (e) {
       pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo publicar" });
     } finally {
@@ -5092,6 +5093,19 @@ export default function Page() {
                 </div>
                 </div>
               </motion.div>
+            ) : null}
+
+            {isDraft ? (
+              <div className="bo-menuWizardActions bo-menuWizardActions--publishDraft">
+                <button
+                  className="bo-btn bo-btn--primary"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void onPublish()}
+                >
+                  {busy ? "Publicando..." : "Publicar borrador"}
+                </button>
+              </div>
             ) : null}
 
           </motion.div>
