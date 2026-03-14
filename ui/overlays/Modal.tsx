@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 function portalEl(): HTMLElement | null {
-  return document.getElementById("bo-portal") || document.body;
+  return document.getElementById("portal") || document.body;
 }
 
 function useFocusRestore(open: boolean) {
@@ -61,7 +61,7 @@ export function Modal({
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="bo-modalOverlay"
+          className="fixed inset-0 z-[80] bg-black/50 grid place-items-center p-4 overflow-auto [-ms-overflow-style:none] [scrollbar-width:none]"
           initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -72,14 +72,10 @@ export function Modal({
           }}
         >
           <motion.div
-            className={["bo-modal", "bo-modal--glass", className].filter(Boolean).join(" ")}
+            className={["w-full max-w-[520px] max-h-[80vh] overflow-auto rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-card shadow-bo p-3.5 backdrop-blur-md", className].filter(Boolean).join(" ")}
             role="dialog"
             aria-label={title}
-            style={
-              resolvedWidth
-                ? ({ ["--bo-modal-w" as any]: `${resolvedWidth}px` } as React.CSSProperties)
-                : undefined
-            }
+            style={resolvedWidth ? { maxWidth: `${resolvedWidth}px` } : undefined}
             initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}

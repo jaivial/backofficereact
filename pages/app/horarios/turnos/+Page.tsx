@@ -377,49 +377,47 @@ export default function Page() {
   }, []);
 
   return (
-    <section aria-label="Edicion de turnos" className="bo-turnosPage">
-      <div className="bo-panel">
-        <div className="bo-panelHead">
+    <section aria-label="Edicion de turnos" className="grid gap-3.5 w-full">
+      <div className="rounded-xl border border-bo-border bg-bo-surface-2">
+        <div className="flex items-center justify-between p-4 pb-0">
           <div>
-            <div className="bo-panelTitle bo-horariosTitle">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
               <CalendarClock size={16} strokeWidth={1.8} />
               Turnos
             </div>
-            <div className="bo-panelMeta">Editar tiempo registrado por miembro y fecha.</div>
+            <div className="text-xs text-bo-muted mt-0.5">Editar tiempo registrado por miembro y fecha.</div>
           </div>
-          <div className="bo-horariosPreviewActions">
+          <div className="flex items-center gap-3">
             <DatePicker value={date} onChange={(nextDate) => void selectDate(nextDate)} />
-            <div className="bo-horariosDateBadge">{loading ? "Cargando..." : date}</div>
-            <div className="bo-tabs bo-tabs--glass bo-viewTabs" role="tablist" aria-label="Cambiar vista">
+            <div className="h-[30px] rounded-full border border-bo-border px-3 inline-flex items-center text-xs font-medium text-bo-muted">
+              {loading ? "Cargando..." : date}
+            </div>
+            <div className="bo-grid bo-grid-cols-2 bo-p-1" style={{ background: "var(--bo-surface-3)", borderRadius: "var(--bo-radius-sm)" }} role="tablist" aria-label="Cambiar vista">
               <button
                 type="button"
-                className={`bo-tab${view === "grid" ? " is-active" : ""}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "grid" ? "bg-bo-surface text-bo-text" : "text-bo-muted hover:text-bo-text"}`}
                 role="tab"
                 aria-selected={view === "grid"}
                 onClick={() => setView("grid")}
               >
-                {view === "grid" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner">
-                  <span className="bo-tabLabel">Grid</span>
-                </span>
+                {view === "grid" ? <span className="block h-0.5 w-4 bg-bo-accent rounded-full mb-1" /> : null}
+                <span>Grid</span>
               </button>
               <button
                 type="button"
-                className={`bo-tab${view === "table" ? " is-active" : ""}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-bo-surface text-bo-text" : "text-bo-muted hover:text-bo-text"}`}
                 role="tab"
                 aria-selected={view === "table"}
                 onClick={() => setView("table")}
               >
-                {view === "table" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner">
-                  <span className="bo-tabLabel">Tabla</span>
-                </span>
+                {view === "table" ? <span className="block h-0.5 w-4 bg-bo-accent rounded-full mb-1" /> : null}
+                <span>Tabla</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className={`bo-panelBody bo-turnosBody${view === "table" ? " bo-turnosBody--table" : ""}`}>
+        <div className={`bo-p-4 ${view === "table" ? "bo-grid bo-grid-gap-4" : "bo-grid bo-grid-gap-4"}`} style={view === "table" ? { gridTemplateColumns: "280px 1fr" } : {}}>
           {view === "grid" ? (
             <MemberPicker
               title="Miembros"
@@ -431,16 +429,16 @@ export default function Page() {
               emptyLabel="Sin miembros para mostrar."
             />
           ) : (
-            <section className="bo-turnosRoster" aria-label="Tabla de miembros">
-              <div className="bo-turnosRosterHead">
-                <div className="bo-panelTitle">Miembros</div>
-                <div className="bo-memberPickerCount">{tableMembers.length}</div>
+            <section className="rounded-lg border border-bo-border bg-bo-surface-3/30 p-3" aria-label="Tabla de miembros">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-bo-text">Miembros</span>
+                <span className="text-xs text-bo-muted">{tableMembers.length}</span>
               </div>
-              <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro">
-                <Search size={14} strokeWidth={1.8} />
+              <label className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-md bg-bo-surface border border-bo-border" aria-label="Buscar miembro">
+                <Search size={14} strokeWidth={1.8} className="text-bo-muted" />
                 <input
                   type="text"
-                  className="bo-memberPickerSearchInput"
+                  className="flex-1 bg-transparent text-sm text-bo-text placeholder:text-bo-muted focus:outline-none"
                   value={memberSearch}
                   onChange={(ev) => setMemberSearch(ev.target.value)}
                   placeholder="Buscar..."
@@ -456,18 +454,18 @@ export default function Page() {
             </section>
           )}
 
-          <section className="bo-turnosEditor" aria-label="Editor de turnos">
-            <div className="bo-turnosEditorHead">
-              <div className="bo-panelTitle">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
-              <div className="bo-turnosEditorMeta">
+          <section className="rounded-lg border border-bo-border bg-bo-surface-3/30 p-4" aria-label="Editor de turnos">
+            <div className="mb-4">
+              <div className="text-sm font-semibold text-bo-text">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
+              <div className="text-xs text-bo-muted mt-0.5">
                 {selectedSchedule ? `Horario asignado: ${selectedSchedule.startTime} - ${selectedSchedule.endTime}` : "Sin horario asignado para este dia"}
               </div>
             </div>
 
             {selectedMember && selectedSchedule && !isMemberActive && (
-              <div className="bo-turnosFichajeSection">
+              <div className="mb-4">
                 <button
-                  className="bo-btn bo-btn--primary bo-btn--fit"
+                  className="w-full h-10 rounded-md text-sm font-medium bg-bo-accent text-bo-bg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                   type="button"
                   onClick={startFichaje}
                   disabled={busyFichaje || !selectedSchedule}
@@ -479,12 +477,13 @@ export default function Page() {
             )}
 
             {selectedMember && isMemberActive && (
-              <div className="bo-turnosFichajeSection bo-turnosFichajeSection--active">
-                <div className="bo-turnosFichajeActive">
-                  <span className="bo-badge bo-badge--success">En curso</span>
+              <div className="mb-4 flex flex-col gap-2">
+                <div className="flex items-center">
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-success) 10%, transparent)", color: "var(--bo-color-success)" }}>En curso</span>
                 </div>
                 <button
-                  className="bo-btn bo-btn--danger bo-btn--fit"
+                  className="w-full h-10 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  style={{ backgroundColor: "var(--bo-color-danger)", color: "white" }}
                   type="button"
                   onClick={stopFichaje}
                   disabled={busyFichaje}
@@ -502,7 +501,7 @@ export default function Page() {
               onShiftEnd={onShiftEnd}
               onCloseLive={onCloseLive}
             />
-            <div className="bo-turnosTotal">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
+            <div className="mt-4 text-xs text-bo-muted">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
           </section>
         </div>
       </div>

@@ -50,9 +50,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const tabs = useMemo<TabItem[]>(
     () => [
-      { id: "horarios", label: "Horarios", href: `/app/horarios${qs}`, icon: <CalendarClock className="bo-ico" /> },
-      { id: "preview", label: "Preview", href: `/app/horarios/preview${qs}`, icon: <Eye className="bo-ico" /> },
-      { id: "turnos", label: "Turnos", href: `/app/horarios/turnos${qs}`, icon: <Clock3 className="bo-ico" /> },
+      { id: "horarios", label: "Horarios", href: `/app/horarios${qs}`, icon: <CalendarClock className="w-[18px] h-[18px] block" /> },
+      { id: "preview", label: "Preview", href: `/app/horarios/preview${qs}`, icon: <Eye className="w-[18px] h-[18px] block" /> },
+      { id: "turnos", label: "Turnos", href: `/app/horarios/turnos${qs}`, icon: <Clock3 className="w-[18px] h-[18px] block" /> },
     ],
     [qs],
   );
@@ -85,7 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestanas de horarios" className="bo-tabs--horarios" onNavigate={onNavigateTab} />
+      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestanas de horarios" className="min-w-max flex-1 flex-shrink-0 overflow-x-visible" onNavigate={onNavigateTab} />
       <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
         {!isNavigatingOut ? (
           <motion.div

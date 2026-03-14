@@ -13,8 +13,8 @@ export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
   const panelIdPrefix = React.useId();
 
   return (
-    <div className="bo-menuTypePanels">
-      <div className="bo-menuTypePanelsGrid" role="group" aria-label="Tipos de menu">
+    <div className="grid gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" role="group" aria-label="Tipos de menu">
         {MENU_TYPE_PANELS.map((panel) => {
           const Icon = panel.icon;
           const count = countsByType[panel.value] || 0;
@@ -26,7 +26,7 @@ export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
           return (
             <button
               key={panel.value}
-              className={cn("bo-menuTypePanel", "bo-menuGlassPanel", "bo-menuTypePanel--minimalGlass")}
+              className={cn("flex flex-col items-center gap-2 p-4 rounded-lg border border-white/[0.06] bg-white/[0.02] text-center transition-all duration-150 hover:bg-white/[0.04] hover:border-white/[0.12] hover:-translate-y-0.5")}
               type="button"
               onClick={() => onSelect(panel.value)}
               aria-labelledby={labelId}
@@ -34,16 +34,16 @@ export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
               data-menu-type={panel.value}
               data-surface="minimal-glass"
             >
-              <div className="bo-menuTypePanelIcon" aria-hidden="true">
+              <div className="text-primary" aria-hidden="true">
                 <Icon size={28} aria-hidden="true" focusable="false" />
               </div>
-              <div className="bo-menuTypePanelLabel" id={labelId}>
+              <div className="text-sm font-semibold text-foreground" id={labelId}>
                 {panel.label}
               </div>
-              <div className="bo-menuTypePanelDesc" id={descId}>
+              <div className="text-xs text-muted" id={descId}>
                 {panel.description}
               </div>
-              <div className="bo-menuTypePanelCount" id={countId}>
+              <div className="text-xs text-muted" id={countId}>
                 {count} menu{count !== 1 ? "s" : ""}
               </div>
             </button>

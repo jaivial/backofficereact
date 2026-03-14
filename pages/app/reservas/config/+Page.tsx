@@ -464,38 +464,38 @@ export default function Page() {
 
   return (
     <section aria-label="Configuración diaria reservas">
-      <div className="bo-toolbar">
-        <div className="bo-toolbarLeft">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <DateDropdown value={date} onChange={onDateChange} />
-          <button className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy}>
+          <button className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-bo-surface text-[var(--bo-text)] cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={() => void loadAll(date)} disabled={busy}>
             Recargar
           </button>
         </div>
       </div>
 
-      <div className="bo-stack">
+      <div className="flex flex-col gap-4">
         <ReservationDayPanel
           title="Estado del día y límite"
           meta={day.isOpen ? `${dailyLimit.totalPeople}/${dailyLimit.limit} pax` : "Día cerrado"}
           day={day}
           busy={busy}
           onToggleDay={toggleDay}
-          bodyClassName={day.isOpen ? undefined : "bo-configDayLimitRow--single"}
+          bodyClassName={day.isOpen ? undefined : "p-3"}
           rightSlot={
             <AnimatePresence initial={false}>
               {day.isOpen ? (
                 <motion.div
                   key="config-daily-limit"
-                  className="bo-configDayDailyLimit"
+                  className="flex flex-col gap-2"
                   initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
                   transition={dayVisibilityTransition}
                 >
-                  <div className="bo-label">Límite diario</div>
-                  <div className="bo-counter bo-configLimitCounter">
+                  <div className="text-xs text-[var(--bo-muted)] font-semibold">Límite diario</div>
+                  <div className="inline-flex items-center gap-2">
                     <button
-                      className="bo-counterBtn"
+                      className="w-8 h-8 rounded-[12px] border border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] cursor-pointer inline-flex items-center justify-center transition-all duration-150 hover:bg-bo-surface-3"
                       type="button"
                       onClick={() => stepDailyLimit(-1)}
                       disabled={busy || Number(draftLimit || 0) <= 0}
@@ -504,7 +504,7 @@ export default function Page() {
                       <Minus size={14} strokeWidth={2.2} />
                     </button>
                     <input
-                      className="bo-input bo-input--sm bo-counterInput bo-configLimitInput"
+                      className="h-[34px] w-16 rounded-[12px] border border-[var(--bo-border)] bg-bo-surface text-[var(--bo-text)] px-2 outline-none text-center text-sm transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
                       value={draftLimit}
                       inputMode="numeric"
                       onChange={(e) => setDraftLimit(e.target.value.replace(/[^\d]/g, ""))}
@@ -516,7 +516,7 @@ export default function Page() {
                       }}
                     />
                     <button
-                      className="bo-counterBtn"
+                      className="w-8 h-8 rounded-[12px] border border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] cursor-pointer inline-flex items-center justify-center transition-all duration-150 hover:bg-bo-surface-3"
                       type="button"
                       onClick={() => stepDailyLimit(1)}
                       disabled={busy || Number(draftLimit || 0) >= 500}
@@ -525,7 +525,7 @@ export default function Page() {
                       <Plus size={14} strokeWidth={2.2} />
                     </button>
                   </div>
-                  <div className="bo-mutedText">Libres: {dailyLimit.freeBookingSeats}</div>
+                  <div className="text-xs text-[var(--bo-muted)]">Libres: {dailyLimit.freeBookingSeats}</div>
                 </motion.div>
               ) : null}
             </AnimatePresence>
@@ -536,18 +536,18 @@ export default function Page() {
           {day.isOpen ? (
             <motion.div
               key="config-open-sections"
-              className="bo-stack"
+              className="flex flex-col gap-4"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               transition={dayVisibilityTransition}
             >
-              <div className="bo-panel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Horario del día</div>
+              <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+                <div className="flex items-end justify-between p-4 pb-2">
+                  <div className="font-semibold text-sm">Horario del día</div>
                 </div>
-                <div className="bo-panelBody" style={{ display: "grid", gap: 14 }}>
-                  <div className="bo-row">
+                <div className="p-4 pt-0" style={{ display: "grid", gap: 14 }}>
+                  <div className="flex flex-wrap gap-2">
                     <Select
                       value={openingModeDraft}
                       onChange={handleOpeningModeChange}
@@ -558,14 +558,14 @@ export default function Page() {
                   </div>
 
                   {showMorningHours ? (
-                    <div className="bo-field">
-                      <div className="bo-label">Mañana (08:00 - 17:00)</div>
-                      <div className="bo-hourCards bo-hourCards--slots">
+                    <div className="grid gap-2">
+                      <div className="text-xs text-[var(--bo-muted)] font-semibold">Mañana (08:00 - 17:00)</div>
+                      <div className="flex flex-wrap gap-1.5">
                         {morningHourCards.map((slot) => (
                           <button
                             key={slot.id}
                             type="button"
-                            className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                            className={`h-8 px-2.5 rounded-[10px] border text-xs font-medium transition-all duration-150${slot.active ? " border-[var(--bo-accent)] bg-[var(--bo-accent)]/20 text-[var(--bo-accent)]" : " border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] hover:bg-bo-surface-3"}`}
                             onClick={() => handleMorningHour(slot.value)}
                             disabled={busy}
                           >
@@ -577,14 +577,14 @@ export default function Page() {
                   ) : null}
 
                   {showNightHours ? (
-                    <div className="bo-field">
-                      <div className="bo-label">Noche (17:30 - 01:00)</div>
-                      <div className="bo-hourCards bo-hourCards--slots">
+                    <div className="grid gap-2">
+                      <div className="text-xs text-[var(--bo-muted)] font-semibold">Noche (17:30 - 01:00)</div>
+                      <div className="flex flex-wrap gap-1.5">
                         {nightHourCards.map((slot) => (
                           <button
                             key={slot.id}
                             type="button"
-                            className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                            className={`h-8 px-2.5 rounded-[10px] border text-xs font-medium transition-all duration-150${slot.active ? " border-[var(--bo-accent)] bg-[var(--bo-accent)]/20 text-[var(--bo-accent)]" : " border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] hover:bg-bo-surface-3"}`}
                             onClick={() => handleNightHour(slot.value)}
                             disabled={busy}
                           >
@@ -597,13 +597,13 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="bo-panel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Mesas</div>
+              <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+                <div className="flex items-end justify-between p-4 pb-2">
+                  <div className="font-semibold text-sm">Mesas</div>
                 </div>
-                <div className="bo-panelBody bo-row bo-configTableLimitsRow">
-                  <div className="bo-field bo-field--inline bo-configTableLimitField">
-                    <div className="bo-label">Mesas de 2</div>
+                <div className="p-4 pt-0 flex flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-[var(--bo-muted)] font-semibold">Mesas de 2</div>
                     <Select
                       value={mesasDeDos.limit || "999"}
                       onChange={(v) => void setMesasDos(v)}
@@ -612,8 +612,8 @@ export default function Page() {
                       ariaLabel="Mesas de 2"
                     />
                   </div>
-                  <div className="bo-field bo-field--inline bo-configTableLimitField">
-                    <div className="bo-label">Mesas de 3</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-[var(--bo-muted)] font-semibold">Mesas de 3</div>
                     <Select
                       value={mesasDeTres.limit || "999"}
                       onChange={(v) => void setMesasTres(v)}
@@ -625,20 +625,20 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="bo-panel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Plantas activas del día</div>
-                  <div className="bo-panelMeta">{floors.length} plantas</div>
+              <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+                <div className="flex items-end justify-between p-4 pb-2">
+                  <div className="font-semibold text-sm">Plantas activas del día</div>
+                  <div className="text-xs text-[var(--bo-faint)]">{floors.length} plantas</div>
                 </div>
-                <div className="bo-panelBody">
-                  <div className="bo-floorRows">
+                <div className="p-4 pt-0">
+                  <div className="flex flex-col gap-2">
                     {floors.map((floor) => (
-                      <div key={floor.id} className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
-                        <div className="bo-floorRowName">
+                      <div key={floor.id} className={`flex items-center justify-between p-2 rounded-lg${floor.isGround ? " bg-[var(--bo-surface-2)]" : ""}`}>
+                        <div className="text-sm">
                           {floor.name}
                         </div>
-                        <div className="bo-floorRowState">
-                          <span className="bo-floorRowStateText">{floor.active ? "Activa" : "Inactiva"}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[var(--bo-muted)]">{floor.active ? "Activa" : "Inactiva"}</span>
                           <Switch
                             checked={floor.active}
                             disabled={busy}

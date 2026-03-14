@@ -88,10 +88,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const tabs = useMemo<TabItem[]>(
     () => [
-      { id: "reservas", label: "Reservas", href: `/app/reservas${qs}`, icon: <CalendarDays className="bo-ico" /> },
-      { id: "tables", label: "Mapas", href: `/app/reservas/tables${qs}`, icon: <Map className="bo-ico" /> },
-      { id: "config", label: "Configuración", href: `/app/reservas/config${qs}`, icon: <SlidersHorizontal className="bo-ico" /> },
-      { id: "anadir", label: "Añadir", href: `/app/reservas/anadir${qs}`, icon: <PlusCircle className="bo-ico" /> },
+      { id: "reservas", label: "Reservas", href: `/app/reservas${qs}`, icon: <CalendarDays className="w-[18px] h-[18px] block" /> },
+      { id: "tables", label: "Mapas", href: `/app/reservas/tables${qs}`, icon: <Map className="w-[18px] h-[18px] block" /> },
+      { id: "config", label: "Configuración", href: `/app/reservas/config${qs}`, icon: <SlidersHorizontal className="w-[18px] h-[18px] block" /> },
+      { id: "anadir", label: "Añadir", href: `/app/reservas/anadir${qs}`, icon: <PlusCircle className="w-[18px] h-[18px] block" /> },
     ],
     [qs],
   );
@@ -128,7 +128,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestañas reservas" className="bo-tabs--reservas" onNavigate={onNavigateTab} />
+      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestañas reservas" className="min-w-max flex-1 flex-shrink-0 overflow-x-visible" onNavigate={onNavigateTab} />
       <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
         {!isNavigatingOut ? (
           <motion.div

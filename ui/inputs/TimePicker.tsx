@@ -113,10 +113,10 @@ export function TimePicker({
   );
 
   return (
-    <div ref={wrapperRef} className="bo-selectWrapper">
+    <div ref={wrapperRef} className="relative">
       <button
         ref={btnRef}
-        className="bo-dateBtn"
+        className="h-10 px-3 rounded-lg border border-white/[0.06] bg-white/[0.03] text-foreground flex items-center gap-2 transition-colors duration-150 hover:bg-white/[0.06] hover:border-white/[0.12] focus:outline-none focus:border-primary/40"
         type="button"
         aria-label={ariaLabel || "Select time"}
         aria-haspopup="listbox"
@@ -125,13 +125,13 @@ export function TimePicker({
         onKeyDown={onBtnKey}
       >
         <Clock3 size={18} strokeWidth={1.8} aria-hidden="true" />
-        <span className="bo-dateBtnLabel">{selected || "—:—"}</span>
+        <span className="text-sm">{selected || "—:—"}</span>
       </button>
       <AnimatePresence>
         {open && (
           <motion.div
             ref={listRef}
-            className="bo-selectList bo-timeList"
+            className="absolute z-50 mt-1 p-1 rounded-lg border border-white/[0.06] bg-card shadow-lg min-w-[120px] max-h-[200px] overflow-auto"
             role="listbox"
             tabIndex={-1}
             onKeyDown={onListKey}
@@ -147,7 +147,7 @@ export function TimePicker({
                 <button
                   key={t}
                   type="button"
-                  className={`bo-selectItem${isSel ? " is-selected" : ""}${isAct ? " is-active" : ""}`}
+                  className={`w-full px-3 py-2 rounded-md text-sm text-left text-foreground flex items-center gap-2 transition-colors duration-150 hover:bg-white/[0.06] cursor-pointer ${isSel ? "bg-primary/12 text-primary" : ""} ${isAct ? "bg-white/[0.04]" : ""}`}
                   role="option"
                   aria-selected={isSel}
                   tabIndex={idx === activeIdx ? 0 : -1}

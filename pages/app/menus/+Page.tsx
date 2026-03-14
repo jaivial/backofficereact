@@ -98,14 +98,14 @@ const MenuFilters = React.memo(function MenuFilters({
   }, []);
 
   return (
-    <div className="bo-menuV2Filters" aria-label="Filtros de menus">
-      <div className="bo-menuV2FiltersHead">
-        <div className="bo-menuV2FiltersTitle">
+    <div className="bo-panel bo-menuFilters" aria-label="Filtros de menus">
+      <div className="bo-flex bo-items-center bo-justify-between bo-mb-3">
+        <div className="bo-flex bo-items-center bo-gap-2 bo-text-sm bo-weight-medium">
           <Filter size={15} />
           <span>Filtros</span>
         </div>
         <button
-          className="bo-btn bo-btn--ghost bo-btn--sm bo-menuV2FiltersToggle"
+          className="bo-filterToggleBtn"
           type="button"
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
@@ -125,11 +125,11 @@ const MenuFilters = React.memo(function MenuFilters({
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="bo-menuV2FiltersGrid">
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--search">
-                <span className="bo-label">Buscar por titulo</span>
+            <div className="bo-grid bo-grid-cols-1 sm:bo-grid-cols-2 lg:bo-grid-cols-4 bo-grid-gap-3">
+              <label className="bo-flex bo-flex-col bo-gap-2">
+                <span className="bo-text-xs bo-faint bo-weight-medium">Buscar por titulo</span>
                 <input
-                  className="bo-input"
+                  className="bo-input bo-input--menuSearch"
                   type="search"
                   value={searchText}
                   placeholder="Ejemplo: San Valentin"
@@ -137,8 +137,8 @@ const MenuFilters = React.memo(function MenuFilters({
                 />
               </label>
 
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--status">
-                <span className="bo-label">Estado</span>
+              <label className="bo-flex bo-flex-col bo-gap-2">
+                <span className="bo-text-xs bo-faint bo-weight-medium">Estado</span>
                 <Select
                   value={statusFilter}
                   onChange={(value) => onStatusFilterChange(value as MenuStatusFilter)}
@@ -147,22 +147,22 @@ const MenuFilters = React.memo(function MenuFilters({
                 />
               </label>
 
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--type">
-                <span className="bo-label">Tipo de menu</span>
+              <label className="bo-flex bo-flex-col bo-gap-2">
+                <span className="bo-text-xs bo-faint bo-weight-medium">Tipo de menu</span>
                 <Select value={menuTypeFilter} onChange={onMenuTypeFilterChange} options={menuTypeFilterOptions} ariaLabel="Tipo de menu" />
               </label>
 
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--sort">
-                <span className="bo-label">Ordenar</span>
+              <label className="bo-flex bo-flex-col bo-gap-2">
+                <span className="bo-text-xs bo-faint bo-weight-medium">Ordenar</span>
                 <Select value={sortBy} onChange={(value) => onSortByChange(value as MenuSortOption)} options={MENU_SORT_OPTIONS} ariaLabel="Ordenar" />
               </label>
             </div>
 
-            <div className="bo-menuV2FiltersFoot">
-              <div className="bo-mutedText bo-menuV2FiltersCount">{summaryText}</div>
-              <div className="bo-menuV2FiltersActions">
+            <div className="bo-flex bo-items-center bo-justify-between bo-mt-3 bo-pt-3 bo-border-t">
+              <div className="bo-text-xs bo-faint">{summaryText}</div>
+              <div className="bo-flex bo-items-center bo-gap-2">
                 <button
-                  className={cn("bo-btn bo-btn--ghost bo-btn--sm bo-menuV2ClearBtn", !hasFilters && "is-hidden")}
+                  className={cn("bo-btn bo-btn--ghost bo-btn--sm", !hasFilters && "invisible")}
                   type="button"
                   disabled={disableActions || !hasFilters}
                   onClick={onResetFilters}
@@ -399,12 +399,22 @@ export default function Page() {
   }, [resetFilters]);
 
   return (
-    <section aria-label="Menus" className={cn("bo-menuV2Page", showTypeSelector && "is-selector")}>
+    <section
+      aria-label="Menus"
+      className={cn(
+        "bo-stack",
+        showTypeSelector ? "" : "bo-p-4"
+      )}
+    >
       {showTypeSelector ? (
         <MenuTypePanelGrid countsByType={menuTypeCounts} onSelect={handleTypePanelClick} />
       ) : (
         <>
-          <button className="bo-menuBackBtn" type="button" onClick={handleBackToPanels}>
+          <button
+            className="bo-btnLink"
+            type="button"
+            onClick={handleBackToPanels}
+          >
             <ChevronLeft size={16} /> Volver a tipos de menu
           </button>
 
@@ -424,7 +434,7 @@ export default function Page() {
             onResetFilters={resetFilters}
           />
 
-          <div className="bo-menuV2Grid" role="list" aria-label="Lista de menus">
+          <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-2 xl:bo-grid-cols-3 bo-grid-gap-4" role="list" aria-label="Lista de menus">
             {filteredMenus.map((menu) => (
               <MenuSummaryCard
                 key={menu.id}
@@ -439,13 +449,20 @@ export default function Page() {
             ))}
 
             {!filteredMenus.length ? (
-              <div className="bo-menuV2Empty">{menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}</div>
+              <div className="bo-emptyState">
+                {menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}
+              </div>
             ) : null}
           </div>
         </>
       )}
 
-      <button className="bo-menuFab" type="button" aria-label="Crear menu" onClick={() => openEditor()}>
+      <button
+        className="bo-fab bo-fab--menu"
+        type="button"
+        aria-label="Crear menu"
+        onClick={() => openEditor()}
+      >
         <Plus size={26} />
       </button>
 

@@ -38,7 +38,9 @@ export function Select({
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const selected = useMemo(() => options.find((o) => o.value === value) || options[0], [options, value]);
-  const btnClass = size === "sm" ? "bo-selectBtn bo-selectBtn--sm" : "bo-selectBtn";
+  const btnClass = size === "sm" 
+    ? "h-8 px-3 rounded-lg border border-white/[0.06] bg-white/[0.03] text-sm text-foreground flex items-center justify-between gap-2 w-full min-w-[140px] transition-colors duration-150 hover:bg-white/[0.06] hover:border-white/[0.12] focus:outline-none focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)] disabled:opacity-50 disabled:cursor-not-allowed"
+    : "h-10 px-3 rounded-lg border border-white/[0.06] bg-white/[0.03] text-foreground flex items-center justify-between gap-2 w-full min-w-[180px] transition-colors duration-150 hover:bg-white/[0.06] hover:border-white/[0.12] focus:outline-none focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)] disabled:opacity-50 disabled:cursor-not-allowed";
 
   const close = useCallback(() => setOpen(false), []);
   const toggle = useCallback(
@@ -145,7 +147,7 @@ export function Select({
   }, [listMaxHeightPx, maxHeight, minWidth, open, options, value]);
 
   return (
-    <div ref={wrapperRef} className="bo-selectWrapper" style={style}>
+    <div ref={wrapperRef} className="relative" style={style}>
       <button
         ref={btnRef}
         className={[btnClass, className].filter(Boolean).join(" ")}
@@ -157,15 +159,15 @@ export function Select({
         onClick={toggle}
         onKeyDown={onBtnKey}
       >
-        <span className="bo-selectLabelWrap">
+        <span className="flex items-center gap-2 flex-1 min-w-0">
           {selected?.icon ? (
-            <span className="bo-selectIcon" aria-hidden="true">
+            <span className="text-muted" aria-hidden="true">
               {selected.icon}
             </span>
           ) : null}
-          <span className="bo-selectLabel">{selected?.label ?? ""}</span>
+          <span className="text-sm truncate">{selected?.label ?? ""}</span>
         </span>
-        <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
+        <ChevronDown size={16} strokeWidth={1.8} className="text-muted w-4 h-4 flex-shrink-0" aria-hidden="true" />
       </button>
       {typeof window !== "undefined" &&
         createPortal(
@@ -173,7 +175,7 @@ export function Select({
             {open && (
               <motion.div
                 ref={listRef}
-                className={`bo-selectList${direction === "up" ? " bo-selectList--up" : ""}`}
+                className={`absolute z-50 mt-1 p-1 rounded-lg border border-white/[0.06] bg-card shadow-lg overflow-auto min-w-[180px] ${direction === "up" ? "bottom-full mb-1" : ""}`}
                 role="listbox"
                 tabIndex={-1}
                 onKeyDown={onListKey}
@@ -196,7 +198,7 @@ export function Select({
                     <button
                       key={o.value}
                       type="button"
-                      className={`bo-selectItem${isSel ? " is-selected" : ""}${isAct ? " is-active" : ""}`}
+                      className={`w-full px-3 py-2 rounded-md text-sm text-left text-foreground flex items-center gap-2 transition-colors duration-150 hover:bg-white/[0.06] cursor-pointer ${isSel ? "bg-primary/12 text-primary" : ""} ${isAct ? "bg-white/[0.04]" : ""}`}
                       role="option"
                       aria-selected={isSel}
                       tabIndex={idx === activeIdx ? 0 : -1}
@@ -209,7 +211,7 @@ export function Select({
                       }}
                     >
                       {o.icon ? (
-                        <span className="bo-selectItemIcon" aria-hidden="true">
+                        <span className="text-muted w-4 h-4 flex-shrink-0" aria-hidden="true">
                           {o.icon}
                         </span>
                       ) : null}

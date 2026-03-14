@@ -59,38 +59,52 @@ export default function Page() {
   );
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window bo-window--auth">
-        <div className="bo-authCard" role="main" aria-label="Cambiar password">
-          <div className="bo-title">Actualizar password</div>
-          <div className="bo-authSub">Debes establecer una nueva password para continuar.</div>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--bo-bg)" }}>
+      <div style={{ width: 380, maxWidth: "calc(100% - 32px)" }}>
+        <div className="rounded-[var(--bo-radius-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-[var(--bo-border)] shadow-[var(--bo-shadow-soft)] p-[18px]">
+          <div className="text-xl font-semibold leading-tight tracking-tight">Actualizar password</div>
+          <div className="text-xs text-[var(--bo-muted)] mt-1.5">
+            Debes establecer una nueva password para continuar.
+          </div>
 
-          <form onSubmit={onSubmit} className="bo-form">
-            <label className="bo-field">
-              <div className="bo-label">Nueva password</div>
+          <form onSubmit={onSubmit} className="mt-3.5 grid gap-3">
+            <div className="grid gap-1.5">
+              <label htmlFor="password" className="text-xs text-[var(--bo-muted)] font-semibold">
+                Nueva password
+              </label>
               <input
-                className="bo-input"
+                id="password"
                 type="password"
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors duration-150"
+                placeholder="Nueva password"
               />
-            </label>
+            </div>
 
-            <label className="bo-field">
-              <div className="bo-label">Repetir password</div>
+            <div className="grid gap-1.5">
+              <label htmlFor="confirmPassword" className="text-xs text-[var(--bo-muted)] font-semibold">
+                Repetir password
+              </label>
               <input
-                className="bo-input"
+                id="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors duration-150"
+                placeholder="Repetir password"
               />
-            </label>
+            </div>
 
-            <button className="bo-btn bo-btn--primary" type="submit" disabled={busy}>
+            <button
+              type="submit"
+              disabled={busy}
+              className="h-10 w-full rounded-[12px] border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-[var(--bo-text)] cursor-pointer font-bold inline-flex items-center justify-center"
+            >
               {busy ? "Guardando..." : "Confirmar"}
             </button>
           </form>

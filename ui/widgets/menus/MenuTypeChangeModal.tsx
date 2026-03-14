@@ -31,30 +31,30 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
 
   return (
     <Modal open={open} title={title} onClose={onClose} widthPx={520}>
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">{title}</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-base font-semibold text-foreground">{title}</div>
+        <button className="text-muted hover:text-foreground w-8 h-8 flex items-center justify-center" type="button" onClick={onClose} aria-label="Cerrar">
           <X size={16} aria-hidden="true" focusable={false} />
         </button>
       </div>
 
-      <div className="bo-modalBody">
-        <div className="bo-field bo-field--full">
-          <div className="bo-label">Tipo actual</div>
-          <div className="bo-mutedText">{menuTypeLabel(currentType || "closed_conventional")}</div>
+      <div className="mb-6">
+        <div className="grid gap-1.5 mb-4">
+          <div className="text-xs text-muted font-semibold">Tipo actual</div>
+          <div className="text-sm text-foreground">{menuTypeLabel(currentType || "closed_conventional")}</div>
         </div>
 
-        <label className="bo-field bo-field--full">
-          <span className="bo-label">Nuevo tipo</span>
+        <label className="grid gap-1.5">
+          <span className="text-xs text-muted font-semibold">Nuevo tipo</span>
           <Select value={nextType} onChange={onNextTypeChange} options={MENU_TYPE_OPTIONS} ariaLabel="Nuevo tipo de menu" />
         </label>
       </div>
 
-      <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" disabled={saving} onClick={onClose}>
+      <div className="flex justify-end gap-3">
+        <button className="h-10 px-4 rounded-lg border border-transparent bg-transparent text-sm font-bold text-foreground hover:bg-white/[0.06] transition-colors duration-150 disabled:opacity-55 disabled:cursor-not-allowed" type="button" disabled={saving} onClick={onClose}>
           Cancelar
         </button>
-        <button className="bo-btn bo-btn--primary" type="button" disabled={disableConfirm} onClick={onConfirm}>
+        <button className="h-10 px-4 rounded-lg border border-primary/30 bg-primary/16 text-sm font-bold text-foreground hover:bg-primary/24 hover:border-primary/40 transition-all duration-150 disabled:opacity-55 disabled:cursor-not-allowed" type="button" disabled={disableConfirm} onClick={onConfirm}>
           {saving ? "Guardando..." : "Guardar"}
         </button>
       </div>

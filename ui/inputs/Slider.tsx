@@ -33,9 +33,9 @@ export function Slider({
   }, [max, min, normalized]);
 
   return (
-    <div className={["bo-slider", className].filter(Boolean).join(" ")}>
+    <div className={["flex flex-col gap-2", className].filter(Boolean).join(" ")}>
       <input
-        className="bo-sliderInput"
+        className="w-full h-2 rounded-full appearance-none cursor-pointer bg-white/[0.06] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:duration-150 [&::-webkit-slider-thumb]:hover:scale-110"
         type="range"
         min={min}
         max={max}
@@ -44,11 +44,10 @@ export function Slider({
         disabled={disabled}
         onChange={(ev) => onChange(clamp(Number(ev.target.value), min, max))}
         aria-label={ariaLabel}
-        style={{ ["--bo-slider-progress" as any]: `${progress}%` } as React.CSSProperties}
       />
-      <div className="bo-sliderMeta" aria-hidden="true">
+      <div className="flex items-center justify-between text-xs text-muted" aria-hidden="true">
         <span>{min}</span>
-        <strong className="bo-sliderValue">{normalized}</strong>
+        <strong className="text-foreground">{normalized}</strong>
         <span>{max}</span>
       </div>
     </div>

@@ -132,12 +132,12 @@ export function Topbar({
   );
 
   return (
-    <header className="bo-topbar" aria-label="Topbar">
-      <div className="bo-topbarHeading bo-topbarHeading--actionsInline">
-        <div className="bo-title">{title}</div>
+    <header className="flex items-start justify-between gap-4 relative z-[170]" aria-label="Topbar">
+      <div className="min-w-0 flex flex-col gap-1 pt-1 pr-4">
+        <div className="text-xl font-semibold leading-tight tracking-wide">{title}</div>
         {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}
       </div>
-      <div className="bo-actions bo-topbarActions">
+      <div className="relative ml-auto max-w-full z-[170] flex items-center gap-2.5">
         {session?.restaurants?.length ? (
           <Select
             value={String(session.activeRestaurantId || session.restaurants[0]?.id || "")}
@@ -153,16 +153,16 @@ export function Topbar({
 
         <DropdownMenu
           label="User menu"
-          triggerClassName="bo-avatarBtn"
-          triggerContent={<div className="bo-avatar" aria-label="Profile">{initials}</div>}
+          triggerClassName="border-0 bg-transparent p-0 cursor-pointer"
+          triggerContent={<div className="w-9 h-9 rounded-xl border border-border bg-gradient-to-br from-primary/30 to-accent/20 grid place-items-center text-[13px] font-bold text-foreground" aria-label="Profile">{initials}</div>}
           items={userMenuItems}
           menuMinWidthPx={250}
         />
 
         {fichaje.activeEntry ? (
-          <div className={`bo-fichajeTopbarChip${fichaje.wsConnected ? " is-live" : ""}`} aria-live="polite">
-            <span className="bo-fichajeTopbarDot" aria-hidden="true" />
-            <span className="bo-fichajeTopbarTime">{fichajeElapsed || "--:--:--"}</span>
+          <div className={`h-8 min-w-[124px] rounded-full border border-border bg-white/[0.03] inline-flex items-center justify-center gap-1.5 px-2.5 text-xs font-bold ${fichaje.wsConnected ? "border-accent/40 text-accent" : "text-muted-foreground"}`} aria-live="polite">
+            <span className="w-2 h-2 rounded-full bg-current shadow-[0_0_0_3px_rgba(147,239,231,0.16)]" aria-hidden="true" />
+            <span className="inline-flex justify-center w-[9ch] min-w-[9ch] text-center tracking-wide font-mono tabular-nums whitespace-nowrap">{fichajeElapsed || "--:--:--"}</span>
           </div>
         ) : null}
       </div>

@@ -81,10 +81,10 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
   );
 
   return (
-    <div className="bo-mcalGrid" role="grid">
+    <div className="grid grid-cols-7 gap-[3px] sm:gap-1" role="grid">
       {cells.map((cell) => {
         if (cell.kind === "empty") {
-          return <div key={cell.key} className="bo-mcalCell is-empty" aria-hidden="true" />;
+          return <div key={cell.key} className="aspect-[1/1] min-h-[34px] sm:min-h-[40px] md:min-h-[56px] rounded-[10px] sm:rounded-[12px] md:rounded-[16px] border border-transparent bg-transparent cursor-default" aria-hidden="true" />;
         }
 
         return (
@@ -98,9 +98,9 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
             data-date={cell.dateISO}
             onClick={handleSelectDate}
           >
-            <div className="bo-mcalNum">{cell.day}</div>
-            <div className="bo-mcalSub">
-              {!cell.isOpen ? <Lock className="bo-ico" /> : <span className="bo-mcalRatio">{cell.ratioLabel}</span>}
+            <div className="text-[11px] sm:text-[13px] md:text-[16px] font-bold">{cell.day}</div>
+            <div className="flex items-center justify-center">
+              {!cell.isOpen ? <Lock size={10} strokeWidth={1.8} className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <span className="text-[8px] sm:text-[9px] md:text-[10px]">{cell.ratioLabel}</span>}
             </div>
           </button>
         );
@@ -159,11 +159,14 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
           ? `${dateISO}: cerrado`
           : `${dateISO}: ${calendarDay ? `${calendarDay.total_people}/${calendarDay.limit} pax` : "abierto"}`,
         className: [
-          "bo-mcalCell",
-          isSelected ? "is-selected" : "",
-          isToday ? "is-today" : "",
-          !isOpen ? "is-closed" : "is-open",
-          occClass,
+          "aspect-[1/1] min-h-[34px] sm:min-h-[40px] md:min-h-[56px] rounded-[10px] sm:rounded-[12px] md:rounded-[16px] border border-white/[0.06] bg-white/[0.02] text-foreground p-1 sm:p-1.5 md:p-2 flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-120 hover:-translate-y-0.5 hover:border-white/[0.12]",
+          isSelected ? "border-primary/35 shadow-[0_18px_46px_rgba(185,168,255,0.10)]" : "",
+          isToday ? "outline-2 outline-offset-2 outline-cyan-400/30" : "",
+          !isOpen ? "opacity-60" : "",
+          occClass === "occ-100" ? "bg-red-500/20 border-red-500/40" : "",
+          occClass === "occ-85" ? "bg-orange-500/20 border-orange-500/40" : "",
+          occClass === "occ-75" ? "bg-yellow-500/20 border-yellow-500/40" : "",
+          occClass === "occ-50" ? "bg-green-500/20 border-green-500/40" : "",
         ]
           .filter(Boolean)
           .join(" "),
@@ -177,22 +180,22 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
   }, [days, month, selectedDateISO, today, year]);
 
   return (
-    <section className="bo-mcal bo-mcal--glass" aria-label="Calendario mensual" aria-busy={loading}>
-      <header className="bo-mcalHead">
-        <div className="bo-mcalTitle">{monthLabel}</div>
-        <div className="bo-mcalNav">
-          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={handlePrevMonth} aria-label="Mes anterior">
-            <ChevronLeft className="bo-ico" />
+    <section className="rounded-2xl bg-gradient-to-b from-white/[0.04] to-black/[0.10] border border-white/[0.06] shadow-soft p-3.5 min-w-0 overflow-hidden" aria-label="Calendario mensual" aria-busy={loading}>
+      <header className="flex items-center justify-between gap-3 mb-2.5">
+        <div className="font-semibold tracking-wide">{monthLabel}</div>
+        <div className="flex items-center gap-2">
+          <button className="w-9 h-9 rounded-xl border border-white/[0.06] bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground" type="button" onClick={handlePrevMonth} aria-label="Mes anterior">
+            <ChevronLeft size={18} strokeWidth={1.8} />
           </button>
-          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={handleNextMonth} aria-label="Mes siguiente">
-            <ChevronRight className="bo-ico" />
+          <button className="w-9 h-9 rounded-xl border border-white/[0.06] bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground" type="button" onClick={handleNextMonth} aria-label="Mes siguiente">
+            <ChevronRight size={18} strokeWidth={1.8} />
           </button>
         </div>
       </header>
 
-      <div className="bo-mcalDows" aria-hidden="true">
+      <div className="grid grid-cols-7 gap-1 px-0.5 py-1 text-[11px] text-white/50 text-center mb-2" aria-hidden="true">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="bo-mcalDow">
+          <div key={label}>
             {label}
           </div>
         ))}

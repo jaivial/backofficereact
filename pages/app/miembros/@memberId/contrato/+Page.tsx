@@ -8,6 +8,7 @@ import type { Data } from "./+data";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
+import { Button } from "../../../../../ui/actions/Button";
 import { applyLiveToStats, formatElapsedHHMMSS, useMemberLive } from "../_shared/realtime";
 
 function parseHours(v: string): number | null {
@@ -164,10 +165,10 @@ export default function Page() {
             </div>
 
             <div className="bo-memberSaveInline">
-              <button className="bo-btn bo-btn--primary" type="button" onClick={onSave} disabled={saving}>
+              <Button variant="primary" type="button" onClick={onSave} disabled={saving}>
                 <Check size={14} strokeWidth={1.8} />
                 {saving ? "Guardando..." : "Guardar contrato"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

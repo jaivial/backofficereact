@@ -21,9 +21,9 @@ export function PhoneInput({
   numberAriaLabel?: string;
 }) {
   return (
-    <div className="bo-phone">
+    <div className="flex gap-2">
       <Select
-        className="bo-phoneCC"
+        className="w-20"
         value={countryCode || "34"}
         onChange={onCountryCodeChange}
         ariaLabel={countryAriaLabel}
@@ -31,7 +31,7 @@ export function PhoneInput({
         disabled={disabled}
       />
       <input
-        className="bo-input bo-phoneNum"
+        className="h-10 flex-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 text-foreground outline-none transition-colors duration-150 focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)] disabled:opacity-50 disabled:cursor-not-allowed"
         inputMode="tel"
         value={number}
         onChange={(e) => onNumberChange(e.target.value)}

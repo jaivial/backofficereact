@@ -12,11 +12,11 @@ export function MiembrosTabs({
 }) {
   const tabs = useMemo<TabItem[]>(
     () => [
-      { id: "miembros", label: "Miembros", href: "/app/miembros", icon: <ShieldUser className="bo-ico" /> },
-      { id: "roles", label: "Roles", href: "/app/miembros/roles", icon: <Users2 className="bo-ico" /> },
+      { id: "miembros", label: "Miembros", href: "/app/miembros", icon: <ShieldUser className="w-[18px] h-[18px] block" /> },
+      { id: "roles", label: "Roles", href: "/app/miembros/roles", icon: <Users2 className="w-[18px] h-[18px] block" /> },
     ],
     [],
   );
 
-  return <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembros" className="bo-tabs--members" onNavigate={onNavigate} />;
+  return <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembros" className="w-fit" onNavigate={onNavigate} />;
 }

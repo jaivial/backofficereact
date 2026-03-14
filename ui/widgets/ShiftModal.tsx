@@ -287,47 +287,47 @@ export function ShiftModal({
 
   return (
     <Modal open={open} title={fullName(member)} onClose={onClose} widthPx={420}>
-      <div className="bo-shiftModal">
-        {error && <div className="bo-shiftModalError">{error}</div>}
+      <div className="p-4 space-y-4">
+        {error && <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>}
 
         {hasSchedule && !isActive && (
           <>
-            <div className="bo-shiftModalSection">
-              <div className="bo-shiftModalLabel">Turno actual</div>
-              <div className="bo-shiftModalTimeRow">
-                <div className="bo-shiftModalTimeBlock">
+            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
+              <div className="text-sm font-semibold text-foreground mb-3">Turno actual</div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <button
                     type="button"
-                    className="bo-btnIcon bo-btnIcon--sm"
+                    className="w-7 h-7 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] transition-colors"
                     aria-label="Restar 15 minutos a hora de entrada"
                     onClick={() => handleStartTimeAdjust(-15)}
                   >
                     <Minus size={14} strokeWidth={1.8} />
                   </button>
-                  <div className="bo-shiftModalTime">{startTime}</div>
+                  <div className="text-lg font-semibold tabular-nums min-w-[60px] text-center">{startTime}</div>
                   <button
                     type="button"
-                    className="bo-btnIcon bo-btnIcon--sm"
+                    className="w-7 h-7 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] transition-colors"
                     aria-label="Sumar 15 minutos a hora de entrada"
                     onClick={() => handleStartTimeAdjust(15)}
                   >
                     <Plus size={14} strokeWidth={1.8} />
                   </button>
                 </div>
-                <span className="bo-shiftModalSeparator">-</span>
-                <div className="bo-shiftModalTimeBlock">
+                <span className="text-muted-foreground">-</span>
+                <div className="flex items-center gap-1">
                   <button
                     type="button"
-                    className="bo-btnIcon bo-btnIcon--sm"
+                    className="w-7 h-7 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] transition-colors"
                     aria-label="Restar 15 minutos a hora de salida"
                     onClick={() => handleEndTimeAdjust(-15)}
                   >
                     <Minus size={14} strokeWidth={1.8} />
                   </button>
-                  <div className="bo-shiftModalTime">{endTime}</div>
+                  <div className="text-lg font-semibold tabular-nums min-w-[60px] text-center">{endTime}</div>
                   <button
                     type="button"
-                    className="bo-btnIcon bo-btnIcon--sm"
+                    className="w-7 h-7 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] transition-colors"
                     aria-label="Sumar 15 minutos a hora de salida"
                     onClick={() => handleEndTimeAdjust(15)}
                   >
@@ -335,10 +335,10 @@ export function ShiftModal({
                   </button>
                 </div>
               </div>
-              <div className="bo-shiftModalActions">
+              <div className="flex gap-2 mt-4">
                 <button
                   type="button"
-                  className="bo-btn bo-btn--secondary"
+                  className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   onClick={handleUpdateSchedule}
                   disabled={busy}
                 >
@@ -347,7 +347,7 @@ export function ShiftModal({
                 </button>
                 <button
                   type="button"
-                  className="bo-btn bo-btn--danger"
+                  className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={handleDeleteSchedule}
                   disabled={busy}
                 >
@@ -359,7 +359,7 @@ export function ShiftModal({
 
             <button
               type="button"
-              className="bo-btn bo-btn--primary bo-btn--full"
+              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={handleClockIn}
               disabled={busy}
             >
@@ -374,7 +374,7 @@ export function ShiftModal({
             {!showAssignForm ? (
               <button
                 type="button"
-                className="bo-btn bo-btn--primary bo-btn--full"
+                className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => setShowAssignForm(true)}
               >
                 <Plus size={16} strokeWidth={1.8} />
@@ -383,58 +383,58 @@ export function ShiftModal({
             ) : (
               <AnimatePresence>
                 <motion.div
-                  className="bo-shiftModalAssignForm"
+                  className="space-y-4 pt-4"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="bo-shiftModalLabel">Nuevo turno</div>
-                  <div className="bo-shiftModalSpinWheels">
-                    <div className="bo-shiftModalSpinWheelCol">
+                  <div className="text-sm font-semibold text-foreground mb-3">Nuevo turno</div>
+                  <div className="flex items-center gap-2 justify-center">
+                    <div className="flex items-center gap-1">
                       <SpinWheel
                         values={HOUR_VALUES}
                         value={newStartParsed.hours}
                         onChange={(h: string) => setNewStartTime(formatTime(h, newStartParsed.minutes))}
                         ariaLabel="Hora de entrada"
-                        className="bo-shiftModalSpinWheel"
+                        className="w-16"
                       />
-                      <span className="bo-shiftModalSpinWheelColon">:</span>
+                      <span className="text-lg font-semibold">:</span>
                       <SpinWheel
                         values={MINUTE_VALUES}
                         value={newStartParsed.minutes}
                         onChange={(m: string) => setNewStartTime(formatTime(newStartParsed.hours, m))}
                         ariaLabel="Minutos de entrada"
-                        className="bo-shiftModalSpinWheel"
+                        className="w-16"
                       />
                     </div>
-                    <span className="bo-shiftModalSeparator">-</span>
-                    <div className="bo-shiftModalSpinWheelCol">
+                    <span className="text-muted-foreground">-</span>
+                    <div className="flex items-center gap-1">
                       <SpinWheel
                         values={HOUR_VALUES}
                         value={newEndParsed.hours}
                         onChange={(h: string) => setNewEndTime(formatTime(h, newEndParsed.minutes))}
                         ariaLabel="Hora de salida"
-                        className="bo-shiftModalSpinWheel"
+                        className="w-16"
                       />
-                      <span className="bo-shiftModalSpinWheelColon">:</span>
+                      <span className="text-lg font-semibold">:</span>
                       <SpinWheel
                         values={MINUTE_VALUES}
                         value={newEndParsed.minutes}
                         onChange={(m: string) => setNewEndTime(formatTime(newEndParsed.hours, m))}
                         ariaLabel="Minutos de salida"
-                        className="bo-shiftModalSpinWheel"
+                        className="w-16"
                       />
                     </div>
                   </div>
                   {overlapWarning && (
-                    <div className="bo-shiftModalWarning">
+                    <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm">
                       El nuevo turno no puede coincidir con el turno actual
                     </div>
                   )}
                   <button
                     type="button"
-                    className="bo-btn bo-btn--primary bo-btn--full"
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={handleAssignShift}
                     disabled={busy || !!overlapWarning}
                   >
@@ -456,7 +456,7 @@ export function ShiftModal({
             >
               <button
                 type="button"
-                className="bo-btn bo-btn--primary bo-btn--full"
+                className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={handleClockIn}
                 disabled={busy}
               >
@@ -469,11 +469,11 @@ export function ShiftModal({
 
         {isActive && (
           <>
-            <div className="bo-shiftModalSection">
-              <div className="bo-shiftModalLabel">Fichaje activo</div>
-              <div className="bo-shiftModalActiveBadge">
-                <span className="bo-badge bo-badge--success">En vivo</span>
-                <span className="bo-shiftModalActiveTime">
+            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
+              <div className="text-sm font-semibold text-foreground mb-3">Fichaje activo</div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">En vivo</span>
+                <span className="text-sm text-muted-foreground">
                   Entrada: {activeEntry?.startTime || "--:--"}
                 </span>
               </div>
@@ -481,7 +481,7 @@ export function ShiftModal({
 
             <button
               type="button"
-              className="bo-btn bo-btn--danger bo-btn--full"
+              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={handleClockOut}
               disabled={busy}
             >
@@ -492,53 +492,53 @@ export function ShiftModal({
         )}
 
         {hasSchedule && isActive && (
-          <div className="bo-shiftModalAddShift">
-            <div className="bo-shiftModalLabel">Añadir otro turno</div>
-            <div className="bo-shiftModalSpinWheels">
-              <div className="bo-shiftModalSpinWheelCol">
+          <div className="pt-4 border-t border-white/[0.06]">
+            <div className="text-sm font-semibold text-foreground mb-3">Añadir otro turno</div>
+            <div className="flex items-center gap-2 justify-center">
+              <div className="flex items-center gap-1">
                 <SpinWheel
                   values={HOUR_VALUES}
                   value={newStartParsed.hours}
                   onChange={(h: string) => setNewStartTime(formatTime(h, newStartParsed.minutes))}
                   ariaLabel="Hora de entrada"
-                  className="bo-shiftModalSpinWheel"
+                  className="w-16"
                 />
-                <span className="bo-shiftModalSpinWheelColon">:</span>
+                <span className="text-lg font-semibold">:</span>
                 <SpinWheel
                   values={MINUTE_VALUES}
                   value={newStartParsed.minutes}
                   onChange={(m: string) => setNewStartTime(formatTime(newStartParsed.hours, m))}
                   ariaLabel="Minutos de entrada"
-                  className="bo-shiftModalSpinWheel"
+                  className="w-16"
                 />
               </div>
-              <span className="bo-shiftModalSeparator">-</span>
-              <div className="bo-shiftModalSpinWheelCol">
+              <span className="text-muted-foreground">-</span>
+              <div className="flex items-center gap-1">
                 <SpinWheel
                   values={HOUR_VALUES}
                   value={newEndParsed.hours}
                   onChange={(h: string) => setNewEndTime(formatTime(h, newEndParsed.minutes))}
                   ariaLabel="Hora de salida"
-                  className="bo-shiftModalSpinWheel"
+                  className="w-16"
                 />
-                <span className="bo-shiftModalSpinWheelColon">:</span>
+                <span className="text-lg font-semibold">:</span>
                 <SpinWheel
                   values={MINUTE_VALUES}
                   value={newEndParsed.minutes}
                   onChange={(m: string) => setNewEndTime(formatTime(newEndParsed.hours, m))}
                   ariaLabel="Minutos de salida"
-                  className="bo-shiftModalSpinWheel"
+                  className="w-16"
                 />
               </div>
             </div>
             {overlapWarning && (
-              <div className="bo-shiftModalWarning">
+              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm mt-4">
                 El nuevo turno no puede coincidir con el turno actual
               </div>
             )}
             <button
               type="button"
-              className="bo-btn bo-btn--secondary bo-btn--full"
+              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 mt-4"
               onClick={handleAddNewShift}
               disabled={busy || !!overlapWarning}
             >

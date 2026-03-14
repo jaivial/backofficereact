@@ -319,8 +319,8 @@ export default function Page() {
 
   const TABS = useMemo<TabItem[]>(
     () => [
-      { id: "resumen", label: "Resumen", href: "/app/facturas?tab=resumen", icon: <FileText className="bo-ico" /> },
-      { id: "añadir", label: "Añadir", href: "/app/facturas?tab=añadir", icon: <PlusCircle className="bo-ico" /> },
+      { id: "resumen", label: "Resumen", href: "/app/facturas?tab=resumen", icon: <FileText className="w-[18px] h-[18px] block" /> },
+      { id: "añadir", label: "Añadir", href: "/app/facturas?tab=añadir", icon: <PlusCircle className="w-[18px] h-[18px] block" /> },
     ],
     [],
   );
@@ -336,11 +336,11 @@ export default function Page() {
   
 
   return (
-    <div className="bo-facturasPage">
-      <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab} />
+    <div className="bo-stack-large">
+      <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabsWrapper" onNavigate={onNavigateTab} />
       {activeTab === "resumen" ? (
         <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen">
-        <div className="bo-facturasSummary">
+        <div className="bo-stack-large">
           <InvoiceFilters
             searchText={searchText}
             statusFilter={statusFilter}
@@ -405,10 +405,10 @@ export default function Page() {
 
       {activeTab === "añadir" ? (
         <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir">
-        <div className="bo-formContainer">
-          <div className="bo-container bo-facturasFormContainer">
-            <div className="bo-panel bo-facturasFormPanel">
-              <div className="bo-panelBody bo-facturasFormPanelBody">
+        <div className="bo-panelFill">
+          <div className="bo-formContainer">
+            <div className="bo-formCard">
+              <div className="bo-panel">
                 <InvoiceForm
                   invoice={editingInvoice}
                   onSave={handleSaveInvoice}
@@ -420,7 +420,7 @@ export default function Page() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
       ) : null}
 
       {/* Send Email Modal */}

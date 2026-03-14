@@ -186,7 +186,7 @@ export default function Page() {
   const isSelfMember = !!member && (member.isCurrentUser || (currentEmail !== "" && normalizeEmail(member.email) === currentEmail));
 
   return (
-    <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage">
+    <section aria-label="Informacion del miembro" className="bo-stack">
       {!member ? (
         <div className="bo-panel">
           <div className="bo-panelHead">
@@ -196,34 +196,34 @@ export default function Page() {
         </div>
       ) : (
         <>
-          <div className="bo-panel bo-memberHero">
-            <div className="bo-panelHead bo-memberHeroHead">
-              <div className="bo-memberHeroIdentity">
+          <div className="bo-panel">
+            <div className="bo-panelHead">
+              <div className="bo-flex bo-items-start bo-gap-4">
                 <ImageDropInput
-                  className={`bo-memberHeroAvatarDropzone${avatarBusy ? " is-busy" : ""}`}
+                  className={`bo-avatarUpload ${avatarBusy ? "bo-opacity-50" : ""}`}
                   disabled={avatarBusy}
                   ariaLabel="Subir avatar"
                   onSelectFile={onAvatarSelect}
                 >
-                  <Avatar className="bo-memberHeroAvatar">
+                  <Avatar className="bo-avatar bo-avatar--xl">
                     {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={memberName || `Miembro #${member.id}`} /> : null}
-                    <AvatarFallback className="bo-memberAvatarFallback">{initials(member)}</AvatarFallback>
+                    <AvatarFallback className="bo-avatarFallback">{initials(member)}</AvatarFallback>
                   </Avatar>
-                  <span className="bo-memberAvatarUploadOverlay" aria-hidden="true">
-                    {avatarBusy ? <Loader2 size={18} className="bo-memberAvatarUploadIcon is-spinning" /> : <Upload size={18} className="bo-memberAvatarUploadIcon" />}
+                  <span className="bo-avatarOverlay" aria-hidden="true">
+                    {avatarBusy ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
                   </span>
                 </ImageDropInput>
-                <div className="bo-memberHeroTexts">
-                  <div className="bo-memberHeroTitleRow">
-                    <div className="bo-panelTitle bo-memberHeroTitle">{memberName || `Miembro #${member.id}`}</div>
-                    {isSelfMember ? <span className="bo-badge bo-badge--self">Tu</span> : null}
+                <div>
+                  <div className="bo-flex bo-items-center bo-gap-2">
+                    <div className="bo-memberName">{memberName || `Miembro #${member.id}`}</div>
+                    {isSelfMember ? <span className="bo-memberBadge">Tu</span> : null}
                   </div>
-                  <div className="bo-panelMeta">Haz clic o arrastra una imagen sobre el avatar para actualizar la foto de perfil.</div>
+                  <div className="bo-memberHint">Haz clic o arrastra una imagen sobre el avatar para actualizar la foto de perfil.</div>
                 </div>
               </div>
-              <div className="bo-memberHeroActions">
+              <div className="bo-flex bo-items-center bo-gap-2">
                 <button
-                  className="bo-btn bo-btn--ghost"
+                  className="bo-btn"
                   type="button"
                   onClick={() => setConfirmResendOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
@@ -232,7 +232,7 @@ export default function Page() {
                   Reenviar invitación
                 </button>
                 <button
-                  className="bo-btn bo-btn--ghost"
+                  className="bo-btn"
                   type="button"
                   onClick={() => setConfirmResetOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
@@ -240,7 +240,7 @@ export default function Page() {
                   <Mail size={14} strokeWidth={1.8} />
                   Recuperar contraseña
                 </button>
-                <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
+                <button className="bo-btn" type="button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
                   <Pencil size={14} strokeWidth={1.8} />
                   {editing ? "Cancelar" : "Editar"}
                 </button>
@@ -253,23 +253,23 @@ export default function Page() {
               </div>
             </div>
             <div className="bo-panelBody">
-              <div className="bo-memberHeroStats">
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">Contrato semanal</div>
-                  <div className="bo-kvValue">{member.weeklyContractHours.toFixed(2)} h</div>
+              <div className="bo-memberSection">
+                <div className="bo-memberInfoCol">
+                  <div className="bo-memberInfoLabel">Contrato semanal</div>
+                  <div className="bo-memberInfoValue">{member.weeklyContractHours.toFixed(2)} h</div>
                 </div>
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">DNI</div>
-                  <div className="bo-kvValue">{member.dni || "No definido"}</div>
+                <div className="bo-memberInfoCol">
+                  <div className="bo-memberInfoLabel">DNI</div>
+                  <div className="bo-memberInfoValue">{member.dni || "No definido"}</div>
                 </div>
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">Email</div>
-                  <div className="bo-kvValue">{member.email || "No definido"}</div>
+                <div className="bo-memberInfoCol">
+                  <div className="bo-memberInfoLabel">Email</div>
+                  <div className="bo-memberInfoValue">{member.email || "No definido"}</div>
                 </div>
                 {liveEntry ? (
-                  <div className="bo-kv">
-                    <div className="bo-kvLabel">Fichando ahora</div>
-                    <div className="bo-kvValue">{formatElapsedHHMMSS(liveEntry, tick)}</div>
+                  <div className="bo-memberInfoCol">
+                    <div className="bo-memberInfoLabel">Fichando ahora</div>
+                    <div className="bo-memberInfoValue">{formatElapsedHHMMSS(liveEntry, tick)}</div>
                   </div>
                 ) : null}
               </div>
@@ -281,7 +281,7 @@ export default function Page() {
               <div className="bo-panelTitle">Informacion de usuario</div>
             </div>
             <div className="bo-panelBody">
-              <div className="bo-memberFormGrid">
+              <div className="bo-grid bo-grid-cols-auto-fit bo-gap-4">
                 <label className="bo-field">
                   <span className="bo-label">Nombre</span>
                   <input id="firstName" className="bo-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
@@ -298,11 +298,11 @@ export default function Page() {
                   <span className="bo-label">DNI (opcional)</span>
                   <input id="dni" className="bo-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
                 </label>
-                <label className="bo-field bo-field--wide">
+                <label className="bo-field bo-col-span-2">
                   <span className="bo-label">Numero de cuenta (opcional)</span>
                   <input id="bankAccount" className="bo-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
                 </label>
-                <label className="bo-field bo-field--wide">
+                <label className="bo-field bo-col-span-2">
                   <span className="bo-label">Telefono (opcional)</span>
                   <PhoneInput
                     countryCode={phoneCountryCode}

@@ -29,7 +29,7 @@ function formatDateLabel(iso: string): string {
 }
 
 function portalEl(): HTMLElement | null {
-  return document.getElementById("bo-portal") || document.body;
+  return document.getElementById("portal") || document.body;
 }
 
 function clamp(n: number, min: number, max: number): number {
@@ -212,35 +212,35 @@ export function DateDropdown({
     <AnimatePresence>
       <motion.div
         ref={popRef}
-        className="bo-datePop bo-datePop--glass"
-        initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -6 : 6 }}
+        className="fixed z-[9999] w-[280px] rounded-xl border border-border bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-card shadow-soft p-3 border-primary/30 bg-primary/[0.12] bg-secondary/80 backdrop-blur-md"
+        initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -1.5 : 1.5 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -6 : 6 }}
+        exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -1.5 : 1.5 }}
         transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
         style={{ top: pos.top, left: pos.left }}
         role="dialog"
         aria-label="Seleccionar fecha"
       >
-        <div className="bo-dateHead">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
           <button
             type="button"
-            className="bo-actionBtn bo-actionBtn--glass"
+            className="w-9 h-9 rounded-xl border border-border bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground border-primary/30 bg-primary/20"
             onClick={prevMonth}
             aria-label="Mes anterior"
           >
             <ChevronLeft size={18} strokeWidth={1.8} />
           </button>
-          <div className="bo-dateTitle">{monthLabel(viewYear, viewMonth0)}</div>
+          <div className="text-xs font-bold text-foreground capitalize">{monthLabel(viewYear, viewMonth0)}</div>
           <button
             type="button"
-            className="bo-actionBtn bo-actionBtn--glass"
+            className="w-9 h-9 rounded-xl border border-border bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground border-primary/30 bg-primary/20"
             onClick={nextMonth}
             aria-label="Mes siguiente"
           >
             <ChevronRight size={18} strokeWidth={1.8} />
           </button>
         </div>
-        <div className="bo-calDows" aria-hidden="true">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground mb-1" aria-hidden="true">
           <div>L</div>
           <div>M</div>
           <div>M</div>
@@ -249,10 +249,10 @@ export function DateDropdown({
           <div>S</div>
           <div>D</div>
         </div>
-        <div className="bo-calGrid" aria-label="Calendario">
+        <div className="grid grid-cols-7 gap-1" aria-label="Calendario">
           {grid.map((cell, index) => {
             if (!cell.day || !cell.iso) {
-              return <div key={index} className="bo-calDay bo-calDay--empty" aria-hidden="true" />;
+              return <div key={index} className="w-[30px] h-[30px] cursor-default hover:bg-transparent" aria-hidden="true" />;
             }
 
             const iso = cell.iso;
@@ -262,7 +262,7 @@ export function DateDropdown({
               <button
                 key={iso}
                 type="button"
-                className={`bo-calDay${isSelected ? " is-selected" : ""}${isDisabled ? " is-disabled" : ""}`}
+                className={`w-[30px] h-[30px] rounded-full grid place-items-center transition-colors border-0 bg-transparent cursor-pointer text-sm hover:bg-white/[0.03] ${isSelected ? "bg-primary/40 border border-primary/50 shadow-[0_10px_24px_rgba(185,168,255,0.18)] text-foreground" : ""} ${isDisabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
                 disabled={isDisabled}
                 onClick={() => {
                   if (isDisabled) return;
@@ -283,11 +283,11 @@ export function DateDropdown({
 
   return (
     <>
-      <div ref={wrapperRef} className="bo-selectWrapper" style={{ minWidth: 180 }}>
+      <div ref={wrapperRef} className="relative" style={{ minWidth: 180 }}>
         <button
           id={id}
           ref={btnRef}
-          className="bo-dateBtn bo-dateBtn--glass"
+          className="h-9 rounded-xl border border-border bg-white/[0.02] text-foreground px-3 cursor-pointer inline-flex items-center gap-2.5 w-full justify-between border-primary/30 bg-primary/20"
           type="button"
           aria-label="Seleccionar fecha"
           aria-haspopup="dialog"
@@ -297,9 +297,11 @@ export function DateDropdown({
           onKeyDown={onBtnKey}
           data-ui="date-dropdown-btn"
         >
-          <Calendar size={18} strokeWidth={1.8} />
-          <span className="bo-dateBtnLabel">{label}</span>
-          <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
+          <div className="flex items-center gap-2.5">
+            <Calendar size={18} strokeWidth={1.8} />
+            <span className="text-xs font-bold">{label}</span>
+          </div>
+          <ChevronDown size={16} strokeWidth={1.8} className="text-muted-foreground" aria-hidden="true" />
         </button>
       </div>
       {pop}

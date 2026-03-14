@@ -92,7 +92,7 @@ export default function Page() {
   );
 
   return (
-    <section aria-label="Añadir reserva" className="bo-reservaAddPage">
+    <section aria-label="Añadir reserva">
       <BookingEditor api={api} initial={initial} busy={busy} submitLabel="Crear" onSubmit={submit} floors={floors} />
     </section>
   );

@@ -82,28 +82,28 @@ export const MenuDishPreviewCard = React.memo(function MenuDishPreviewCard({
   }, [price]);
 
   return (
-    <article className={cn("bo-menuDishPreviewCard", className)}>
-      <div className="bo-menuDishPreviewMedia">
+    <article className={cn("rounded-lg border border-white/[0.06] bg-white/[0.02] overflow-hidden", className)}>
+      <div className="aspect-[4/3] bg-white/[0.02]">
         {imageUrl ? (
-          <img src={imageUrl} alt="" loading="lazy" decoding="async" />
+          <img src={imageUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         ) : (
-          <div className="bo-menuDishPreviewMediaPlaceholder" aria-hidden="true">
+          <div className="w-full h-full flex items-center justify-center text-white/30" aria-hidden="true">
             <ImageOff size={26} />
           </div>
         )}
       </div>
 
-      <div className="bo-menuDishPreviewBody">
-        <h3 className="bo-menuDishPreviewTitle">{title}</h3>
-        {description ? <p className="bo-menuDishPreviewDescription">{description}</p> : null}
+      <div className="p-2.5">
+        <h3 className="text-sm font-semibold leading-tight">{title}</h3>
+        {description ? <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{description}</p> : null}
 
         {allergenKeys.length > 0 ? (
-          <div className="bo-menuDishPreviewAllergens" aria-label="Alergenos">
+          <div className="flex items-center gap-1.5 mt-2" aria-label="Alergenos">
             {allergenKeys.map((key) => (
               <img
                 key={key}
                 src={ALLERGEN_ICONS[key]}
-                className="bo-menuDishPreviewAllergenIcon"
+                className="w-5 h-5 rounded"
                 alt={ALLERGEN_LABELS[key] || key}
                 title={ALLERGEN_LABELS[key] || key}
                 loading="lazy"
@@ -114,9 +114,9 @@ export const MenuDishPreviewCard = React.memo(function MenuDishPreviewCard({
         ) : null}
 
         {supplementLabel || priceLabel ? (
-          <div className="bo-menuDishPreviewMeta">
-            {supplementLabel ? <span className="bo-menuDishPreviewTag">{supplementLabel}</span> : null}
-            {priceLabel ? <span className="bo-menuDishPreviewTag">{priceLabel}</span> : null}
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {supplementLabel ? <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/20 text-primary border border-primary/30">{supplementLabel}</span> : null}
+            {priceLabel ? <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/20 text-primary border border-primary/30">{priceLabel}</span> : null}
           </div>
         ) : null}
       </div>
