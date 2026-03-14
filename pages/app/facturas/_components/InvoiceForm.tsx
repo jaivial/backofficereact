@@ -909,7 +909,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         <div className="bo-formLoadingOverlay" role="status" aria-live="polite">
           <div className="bo-spinner bo-spinner--glow" />
           <span className="bo-formLoadingOverlayText">Guardando factura...</span>
-          <span className="bo-srOnly">Por favor, espere mientras se guarda la factura</span>
+          <span className="sr-only">Por favor, espere mientras se guarda la factura</span>
         </div>
       )}
       <div className="bo-invoiceFormHeader">
@@ -1164,7 +1164,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     onChange={(e) => setInvoiceNumber(e.target.value)}
                     placeholder="F-2024-0001"
                   />
-                  <div className="bo-mutedText">Deja este campo vacio para usar el numero automatico</div>
+                  <div className="text-mutedText">Deja este campo vacio para usar el numero automatico</div>
                 </label>
               )}
 
@@ -1462,7 +1462,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           <div className="bo-invoiceFormRow bo-invoiceFormRow--notes">
             <label className="bo-field">
               <span className="bo-label">Notas internas</span>
-              <span className="bo-mutedText" style={{ marginBottom: "4px", display: "block" }}>
+              <span className="text-mutedText" style={{ marginBottom: "4px", display: "block" }}>
                 Estas notas solo son visibles en el backoffice y no se incluyen en el PDF
               </span>
               <textarea
@@ -1499,7 +1499,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   </label>
                 ))}
               </div>
-              <div className="bo-mutedText" style={{ marginTop: "4px" }}>
+              <div className="text-mutedText" style={{ marginTop: "4px" }}>
                 Selecciona el diseno del PDF. Si no se selecciona, se usara el diseno predeterminado del restaurante.
               </div>
             </label>

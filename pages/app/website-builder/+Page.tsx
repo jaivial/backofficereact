@@ -85,9 +85,9 @@ export default function Page() {
 
   if (loading && !website) {
     return (
-      <div className="bo-flex bo-items-center bo-justify-center bo-wbLoading" data-ui="loading-state">
+      <div className="flex items-center justify-center bo-wbLoading" data-ui="loading-state">
         <div className="bo-wbLoadingSpinner" />
-        <span className="bo-ml-2 bo-muted">Loading...</span>
+        <span className="bo-ml-2 text-muted">Loading...</span>
       </div>
     );
   }
@@ -106,23 +106,23 @@ export default function Page() {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="bo-wbContainer" data-ui="website-builder">
-        <header className="bo-wbHeader bo-border-b" data-ui="header">
-          <div className="bo-max-w-full bo-px-4 bo-py-3 bo-flex bo-items-center bo-justify-between">
-            <div className="bo-flex bo-items-center bo-gap-4">
-              <h1 className="bo-text-xl bo-weight-semibold bo-wbTitle">
+        <header className="bo-wbHeader border-b" data-ui="header">
+          <div className="bo-max-w-full px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl bo-weight-semibold bo-wbTitle">
                 Website Builder
               </h1>
               {website && (
-                <span className={`bo-px-2 bo-py-1 bo-text-xs bo-radius-full ${
+                <span className={`px-2 py-1 text-xs rounded-full ${
                   website.status === 'published' 
-                    ? 'bo-bg-success bo-text-success' 
-                    : 'bo-bg-warning bo-text-warning'
+                    ? 'bo-bg-success text-success' 
+                    : 'bo-bg-warning text-warning'
                 }`}>
                   {website.status}
                 </span>
               )}
             </div>
-            <div className="bo-flex bo-items-center bo-gap-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setPreviewMode(!previewMode)}
                 className="bo-wbBtn"
@@ -146,11 +146,11 @@ export default function Page() {
           </div>
         </header>
 
-        <div className="bo-flex bo-h-screen-nav">
+        <div className="flex h-screen-nav">
           {!previewMode && (
-            <aside className="bo-wbSidebar bo-border-r" data-ui="sidebar">
-              <div className="bo-p-4">
-                <h2 className="bo-text-sm bo-weight-semibold bo-mb-3 bo-wbTitle">
+            <aside className="bo-wbSidebar border-r" data-ui="sidebar">
+              <div className="p-4">
+                <h2 className="text-sm bo-weight-semibold bo-mb-3 bo-wbTitle">
                   Components
                 </h2>
                 <ComponentLibrary />
@@ -175,7 +175,7 @@ export default function Page() {
           </main>
 
           {!previewMode && selectedComponent && (
-            <aside className="w-80 border-l overflow-y-auto" data-ui="properties-panel" style={{ backgroundColor: 'var(--bo-surface)', borderColor: 'var(--bo-border)' }}>
+            <aside className="w-80 border-l overflow-y-auto" data-ui="properties-panel" style={{ backgroundColor: 'var(--bo-surface)', borderColor: 'var(--border)' }}>
               <div className="p-4">
                 <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--bo-text)' }}>
                   Properties
@@ -211,7 +211,7 @@ const COMPONENT_CATALOG: UIComponent[] = [
 
 function ComponentLibrary() {
   return (
-    <div className="bo-flex bo-flex-col bo-gap-2" data-ui="component-list">
+    <div className="flex flex-col gap-2" data-ui="component-list">
       {COMPONENT_CATALOG.map(comp => (
         <DraggableComponent key={comp.id} component={comp} />
       ))}
@@ -233,18 +233,18 @@ function DraggableComponent({ component }: { component: UIComponent }) {
       ref={(node) => {
         drag(node);
       }}
-      className={`bo-p-2 bo-radius bo-cursor-move ${isDragging ? 'bo-opacity-50' : ''}`}
+      className={`p-2 rounded cursor-move ${isDragging ? 'opacity-50' : ''}`}
       style={{ 
         backgroundColor: 'var(--bo-surface-2)', 
-        border: '1px solid var(--bo-border)',
+        border: '1px solid var(--border)',
         color: 'var(--bo-text)'
       }}
       data-ui="draggable-component"
       data-component-type={component.type}
     >
-      <div className="bo-flex bo-items-center bo-gap-2">
+      <div className="flex items-center gap-2">
         <span style={{ fontSize: '1.125rem' }}>{component.icon}</span>
-        <span className="bo-text-sm" style={{ color: 'var(--bo-text)' }}>{component.name}</span>
+        <span className="text-sm" style={{ color: 'var(--bo-text)' }}>{component.name}</span>
       </div>
     </div>
   );
@@ -316,9 +316,9 @@ function WebsiteCanvas({
 
   if (!website) {
     return (
-      <div className="bo-flex bo-items-center bo-justify-center bo-h-full" data-ui="no-website">
-        <div className="bo-text-center">
-          <p className="bo-mb-4" style={{ color: 'var(--bo-muted)' }}>No website created yet</p>
+      <div className="flex items-center justify-center h-full" data-ui="no-website">
+        <div className="text-center">
+          <p className="bo-mb-4" style={{ color: 'var(--text-muted)' }}>No website created yet</p>
           <button 
             onClick={async () => {
               try {
@@ -328,7 +328,7 @@ function WebsiteCanvas({
                 console.error('Failed to create website:', err);
               }
             }}
-            className="bo-px-4 bo-py-2 bo-radius"
+            className="px-4 py-2 rounded"
             style={{ backgroundColor: 'var(--bo-accent)', color: 'var(--bo-fg-inverted)' }}
           >
             Create Website
@@ -339,16 +339,16 @@ function WebsiteCanvas({
   }
 
   return (
-    <div className="bo-p-6" data-ui="canvas-content">
-      <div className="bo-flex bo-gap-2 bo-mb-4 bo-overflow-x-auto bo-pb-2" data-ui="page-tabs">
+    <div className="p-6" data-ui="canvas-content">
+      <div className="flex gap-2 bo-mb-4 overflow-x-auto pb-2" data-ui="page-tabs">
         {pages.map(page => (
           <button
             key={page.id}
             onClick={() => onSelectPage(String(page.id))}
-            className="bo-px-4 bo-py-2 bo-radius bo-text-sm bo-whitespace-nowrap"
+            className="px-4 py-2 rounded text-sm whitespace-nowrap"
             style={String(page.id) === currentPage 
               ? { backgroundColor: 'var(--bo-accent)', color: '#fff' }
-              : { backgroundColor: 'var(--bo-surface-2)', color: 'var(--bo-muted)', border: '1px solid var(--bo-border)' }
+              : { backgroundColor: 'var(--bo-surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
             }
             data-ui="page-tab"
             data-page-id={page.id}
@@ -373,23 +373,23 @@ function WebsiteCanvas({
               }
             }
           }}
-          className="bo-px-4 bo-py-2 bo-radius bo-text-sm bo-border bo-border-dashed"
-          style={{ backgroundColor: 'var(--bo-surface-2)', color: 'var(--bo-muted)', borderColor: 'var(--bo-border-2)' }}
+          className="px-4 py-2 rounded text-sm border border-dashed"
+          style={{ backgroundColor: 'var(--bo-surface-2)', color: 'var(--text-muted)', borderColor: 'var(--border-2)' }}
           data-ui="add-page-btn"
         >
           + Add Page
         </button>
       </div>
 
-      <div className="bo-radius-lg bo-border bo-p-6" style={{ minHeight: '500px', backgroundColor: 'var(--bo-surface)', borderColor: 'var(--bo-border)' }} data-ui="canvas-area">
+      <div className="rounded-lg border p-6" style={{ minHeight: '500px', backgroundColor: 'var(--bo-surface)', borderColor: 'var(--border)' }} data-ui="canvas-area">
         {loadingSections ? (
-          <div className="bo-flex bo-items-center bo-justify-center" style={{ height: '8rem' }}>
+          <div className="flex items-center justify-center" style={{ height: '8rem' }}>
             <div className="animate-spin rounded-full" style={{ width: '1.5rem', height: '1.5rem', borderBottomColor: 'var(--bo-accent)' }} />
           </div>
         ) : (
-          <div className="bo-flex bo-flex-col bo-gap-4">
+          <div className="flex flex-col gap-4">
             {sections.length === 0 ? (
-              <div className="bo-text-center bo-py-12" style={{ color: 'var(--bo-muted)' }} data-ui="empty-canvas">
+              <div className="text-center py-12" style={{ color: 'var(--text-muted)' }} data-ui="empty-canvas">
                 <p>No sections yet. Add a section to start building.</p>
               </div>
             ) : (
@@ -482,24 +482,24 @@ function SectionDropZone({
       }`}
       style={isOver 
         ? { borderColor: 'var(--bo-accent)', backgroundColor: 'color-mix(in srgb, var(--bo-accent) 8%, transparent)' }
-        : { borderColor: 'var(--bo-border-2)' }
+        : { borderColor: 'var(--border-2)' }
       }
       data-ui="section-drop-zone"
       data-section-id={section.id}
       data-section-type={section.section_type}
     >
-      <div className="bo-flex bo-items-center bo-justify-between bo-mb-3">
-        <h3 className="bo-text-sm bo-weight-medium capitalize" style={{ color: 'var(--bo-text)' }}>
+      <div className="flex items-center justify-between bo-mb-3">
+        <h3 className="text-sm bo-weight-medium capitalize" style={{ color: 'var(--bo-text)' }}>
           {section.section_type}
         </h3>
-        <div className="bo-flex bo-gap-2">
-          <span className="bo-text-xs" style={{ color: 'var(--bo-faint)' }}>
+        <div className="flex gap-2">
+          <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
             {section.is_visible ? 'Visible' : 'Hidden'}
           </span>
           <button 
             onClick={onDelete}
-            className="bo-text-xs"
-            style={{ color: 'var(--bo-text-danger)' }}
+            className="text-xs"
+            style={{ color: 'var(--text-danger)' }}
             aria-label="Delete section"
           >
             🗑️
@@ -507,9 +507,9 @@ function SectionDropZone({
         </div>
       </div>
       
-      <div className="bo-flex bo-flex-col bo-gap-2">
+      <div className="flex flex-col gap-2">
         {components.length === 0 ? (
-          <p className="bo-text-sm bo-text-center bo-py-4" style={{ color: 'var(--bo-faint)' }}>
+          <p className="text-sm text-center py-4" style={{ color: 'var(--text-faint)' }}>
             Drag components here
           </p>
         ) : (
@@ -517,25 +517,25 @@ function SectionDropZone({
             <div
               key={comp.id}
               onClick={() => onSelectComponent(String(comp.id))}
-              className="bo-p-2 bo-radius bo-cursor-pointer"
+              className="p-2 rounded cursor-pointer"
               style={{ 
                 backgroundColor: 'var(--bo-surface-2)', 
-                border: '1px solid var(--bo-border)',
+                border: '1px solid var(--border)',
                 color: 'var(--bo-text)'
               }}
               data-ui="section-component"
               data-component-id={comp.id}
             >
-              <div className="bo-flex bo-items-center bo-justify-between">
-                <div className="bo-flex bo-items-center bo-gap-2">
-                  <span style={{ color: 'var(--bo-muted)' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span style={{ color: 'var(--text-muted)' }}>
                     {comp.dynamic_source ? '🔗' : '📦'}
                   </span>
-                  <span className="bo-text-sm">
+                  <span className="text-sm">
                     {comp.component?.name || `Component ${comp.id}`}
                   </span>
                   {comp.dynamic_source && (
-                    <span className="bo-text-xs" style={{ color: 'var(--bo-accent)' }}>
+                    <span className="text-xs" style={{ color: 'var(--bo-accent)' }}>
                       ({comp.dynamic_source})
                     </span>
                   )}
@@ -545,8 +545,8 @@ function SectionDropZone({
                     e.stopPropagation();
                     handleDeleteComponent(comp.id);
                   }}
-                  className="bo-text-xs"
-                  style={{ color: 'var(--bo-text-danger)' }}
+                  className="text-xs"
+                  style={{ color: 'var(--text-danger)' }}
                   aria-label="Delete component"
                 >
                   ✕
@@ -569,18 +569,18 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="bo-relative" data-ui="add-section-wrapper">
+    <div className="relative" data-ui="add-section-wrapper">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bo-w-full bo-py-3 bo-border-2 bo-border-dashed bo-radius-lg"
-        style={{ borderColor: 'var(--bo-border-2)', color: 'var(--bo-muted)' }}
+        className="w-full py-3 border-2 border-dashed rounded-lg"
+        style={{ borderColor: 'var(--border-2)', color: 'var(--text-muted)' }}
         data-ui="add-section-btn"
       >
         + Add Section
       </button>
       
       {isOpen && (
-        <div className="bo-absolute bo-z-10 bo-mt-2 bo-w-full bo-radius-lg bo-shadow-xl bo-p-2" data-ui="section-type-menu" style={{ backgroundColor: 'var(--bo-surface)', border: '1px solid var(--bo-border)' }}>
+        <div className="absolute z-10 bo-mt-2 w-full rounded-lg shadow-xl p-2" data-ui="section-type-menu" style={{ backgroundColor: 'var(--bo-surface)', border: '1px solid var(--border)' }}>
           {SECTION_TYPES.map(type => (
             <button
               key={type}
@@ -588,7 +588,7 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
                 onAdd(type);
                 setIsOpen(false);
               }}
-              className="bo-w-full bo-text-left bo-px-3 bo-py-2 bo-text-sm bo-radius capitalize"
+              className="w-full text-left px-3 py-2 text-sm rounded capitalize"
               style={{ color: 'var(--bo-text)' }}
               data-ui="section-type-option"
               data-type={type}
@@ -641,67 +641,67 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
   }, [componentId, settings, onUpdate]);
 
   if (loading) {
-    return <div className="bo-text-sm" style={{ color: 'var(--bo-muted)' }}>Loading...</div>;
+    return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>;
   }
 
   return (
-    <div className="bo-flex bo-flex-col bo-gap-4" data-ui="properties-form">
+    <div className="flex flex-col gap-4" data-ui="properties-form">
       <div>
-        <label className="bo-block bo-text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
           Component ID
         </label>
         <input
           type="text"
           value={componentId}
           disabled
-          className="bo-w-full bo-px-3 bo-py-2 bo-radius bo-text-sm"
-          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--bo-border)', color: 'var(--bo-muted)' }}
+          className="w-full px-3 py-2 rounded text-sm"
+          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
         />
       </div>
 
       <div>
-        <label className="bo-block bo-text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
           Title
         </label>
         <input
           type="text"
           value={settings.title || ''}
           onChange={(e) => setSettings({ ...settings, title: e.target.value })}
-          className="bo-w-full bo-px-3 bo-py-2 bo-radius bo-text-sm"
-          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--bo-border)', color: 'var(--bo-text)' }}
+          className="w-full px-3 py-2 rounded text-sm"
+          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--border)', color: 'var(--bo-text)' }}
         />
       </div>
 
       <div>
-        <label className="bo-block bo-text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
           Background Color
         </label>
         <input
           type="color"
           value={settings.bgColor || '#1e293b'}
           onChange={(e) => setSettings({ ...settings, bgColor: e.target.value })}
-          className="bo-w-full bo-h-10 bo-radius bo-cursor-pointer"
-          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--bo-border)' }}
+          className="w-full h-10 rounded cursor-pointer"
+          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--border)' }}
         />
       </div>
 
       <div>
-        <label className="bo-flex bo-items-center bo-gap-2 bo-cursor-pointer">
+        <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={settings.visible !== false}
             onChange={(e) => setSettings({ ...settings, visible: e.target.checked })}
-            className="bo-radius"
-            style={{ borderColor: 'var(--bo-border)', backgroundColor: 'var(--bo-surface-2)', accentColor: 'var(--bo-accent)' }}
+            className="rounded"
+            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bo-surface-2)', accentColor: 'var(--bo-accent)' }}
           />
-          <span className="bo-text-sm" style={{ color: 'var(--bo-text)' }}>Visible</span>
+          <span className="text-sm" style={{ color: 'var(--bo-text)' }}>Visible</span>
         </label>
       </div>
 
       <button
         onClick={handleSave}
         disabled={saving}
-        className="bo-w-full bo-py-2 bo-radius bo-text-sm bo-transition-colors bo-disabled-opacity-50"
+        className="w-full py-2 rounded text-sm transition-colors bo-disabled-opacity-50"
         style={{ backgroundColor: 'var(--bo-accent)', color: 'var(--bo-fg-inverted)' }}
       >
         {saving ? 'Saving...' : 'Save Changes'}
@@ -735,25 +735,25 @@ function WebsitePreview({ website, currentPage }: { website: Website | null; cur
 
   if (loading) {
     return (
-      <div className="bo-flex bo-items-center bo-justify-center bo-h-full" data-ui="preview-loading">
-        <p style={{ color: 'var(--bo-muted)' }}>Loading preview...</p>
+      <div className="flex items-center justify-center h-full" data-ui="preview-loading">
+        <p style={{ color: 'var(--text-muted)' }}>Loading preview...</p>
       </div>
     );
   }
 
   if (!previewUrl) {
     return (
-      <div className="bo-flex bo-items-center bo-justify-center bo-h-full" data-ui="preview-error">
-        <p style={{ color: 'var(--bo-muted)' }}>Failed to load preview</p>
+      <div className="flex items-center justify-center h-full" data-ui="preview-error">
+        <p style={{ color: 'var(--text-muted)' }}>Failed to load preview</p>
       </div>
     );
   }
 
   return (
-    <div className="bo-h-full" data-ui="preview-iframe-container">
+    <div className="h-full" data-ui="preview-iframe-container">
       <iframe 
         src={previewUrl}
-        className="bo-w-full bo-h-full bo-border-0"
+        className="w-full h-full border-0"
         style={{ backgroundColor: 'var(--bo-shell)' }}
         title="Website Preview"
       />

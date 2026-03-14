@@ -61,15 +61,15 @@ export default function Page() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--bo-bg)" }}>
       <div style={{ width: 380, maxWidth: "calc(100% - 32px)" }}>
-        <div className="rounded-[var(--bo-radius-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-[var(--bo-border)] shadow-[var(--bo-shadow-soft)] p-[18px]">
+        <div className="rounded-[var(--rounded-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-[var(--border)] shadow-[var(--shadow-soft)] p-[18px]">
           <div className="text-xl font-semibold leading-tight tracking-tight">Actualizar password</div>
-          <div className="text-xs text-[var(--bo-muted)] mt-1.5">
+          <div className="text-xs text-[var(--text-muted)] mt-1.5">
             Debes establecer una nueva password para continuar.
           </div>
 
           <form onSubmit={onSubmit} className="mt-3.5 grid gap-3">
             <div className="grid gap-1.5">
-              <label htmlFor="password" className="text-xs text-[var(--bo-muted)] font-semibold">
+              <label htmlFor="password" className="text-xs text-[var(--text-muted)] font-semibold">
                 Nueva password
               </label>
               <input
@@ -79,13 +79,13 @@ export default function Page() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors duration-150"
+                className="h-10 rounded-[12px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors duration-150"
                 placeholder="Nueva password"
               />
             </div>
 
             <div className="grid gap-1.5">
-              <label htmlFor="confirmPassword" className="text-xs text-[var(--bo-muted)] font-semibold">
+              <label htmlFor="confirmPassword" className="text-xs text-[var(--text-muted)] font-semibold">
                 Repetir password
               </label>
               <input
@@ -95,7 +95,7 @@ export default function Page() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors duration-150"
+                className="h-10 rounded-[12px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors duration-150"
                 placeholder="Repetir password"
               />
             </div>

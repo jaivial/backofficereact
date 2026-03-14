@@ -65,25 +65,25 @@ export default function Page() {
 
   return (
     <>
-      <section className="bo-grid bo-grid-cols-2 md:bo-grid-cols-3 lg:bo-grid-cols-5 bo-grid-gap-4" aria-label="KPIs de reservas">
+      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 grid-gap-4" aria-label="KPIs de reservas">
         <StatCard label="Reservas" value={String(m.total)} icon="calendar" />
         <StatCard label="Confirmadas" value={String(m.confirmed)} icon="check" />
         <StatCard label="Pendientes" value={String(m.pending)} icon="clock" />
         <StatCard label="Comensales" value={String(m.totalPeople)} icon="users" />
-        <div className="bo-card" aria-label="Resumen">
-          <div className="bo-statTop">
-            <div className="bo-statLabel">Día seleccionado</div>
+        <div className="rounded-md bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-bo-surface-2 border border-white/[0.06] shadow-soft p-[14px_14px_12px] min-h-[88px]" aria-label="Resumen">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-bo-muted">Día seleccionado</div>
             <div aria-hidden="true">
-              <div className="bo-statIcon" style={{ background: "var(--bo-surface-3)", width: 8, height: 8, borderRadius: "50%" }} />
+              <div className="rounded-full" style={{ background: "var(--bo-surface-3)", width: 8, height: 8 }} />
             </div>
           </div>
-          <div className="bo-statValue" style={{ fontSize: "var(--bo-text-lg)", fontWeight: "var(--bo-weight-semibold)" }}>{data.date}</div>
-          <div className="bo-statLabel" style={{ marginTop: "var(--bo-space-1)" }}>Panel inicial del backoffice. Más módulos se agregan aquí.</div>
+          <div className="text-lg text-bo-text font-semibold">{data.date}</div>
+          <div className="text-sm text-bo-muted mt-1">Panel inicial del backoffice. Más módulos se agregan aquí.</div>
         </div>
       </section>
 
       {im && (
-        <section className="bo-grid bo-grid-cols-2 md:bo-grid-cols-3 bo-grid-gap-4 bo-mt-3" aria-label="KPIs de facturas">
+        <section className="grid grid-cols-2 md:grid-cols-3 grid-gap-4 mt-3" aria-label="KPIs de facturas">
           <StatCard
             label="Facturas pendientes de pago"
             value={String(im.pendingCount)}

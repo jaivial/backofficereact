@@ -199,7 +199,7 @@ export default function Page() {
                   </ImageDropInput>
                 </div>
 
-                <div className="bo-grid bo-grid-cols-2 bo-grid-gap-3">
+                <div className="grid grid-cols-2 grid-gap-3">
                   <div className="grid gap-1">
                     <Label htmlFor="firstName" className="text-xs text-muted-foreground">
                       Nombre

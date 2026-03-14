@@ -37,11 +37,11 @@ export default function Page() {
   return (
     <div className="bo-backoffice">
       <header className="bo-backofficeHeader">
-        <div className="bo-text-xs bo-muted">Panel de administración</div>
+        <div className="text-xs text-muted">Panel de administración</div>
         <h1 className="bo-backofficeTitle">
           Bienvenido, <span className="bo-accentText">{firstName}</span>
         </h1>
-        <p className="bo-muted">Selecciona una sección para empezar.</p>
+        <p className="text-muted">Selecciona una sección para empezar.</p>
       </header>
 
       <section className="bo-orbitSection" aria-label="Accesos rápidos">

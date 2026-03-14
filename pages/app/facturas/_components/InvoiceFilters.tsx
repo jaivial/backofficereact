@@ -599,7 +599,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
 
             <div className="bo-invoiceFiltersFoot">
               <div className="bo-invoiceFiltersSummary">
-                <span className="bo-mutedText bo-invoiceFiltersCount">{summaryText}</span>
+                <span className="text-mutedText bo-invoiceFiltersCount">{summaryText}</span>
                 {dateRangeText && (
                   <span className="bo-invoiceFiltersDateRange">
                     <Calendar size={12} />

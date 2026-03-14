@@ -561,15 +561,15 @@ export default function Page() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="bo-flex bo-items-center bo-justify-between" style={{ marginBottom: "var(--bo-space-6)" }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: "var(--bo-space-6)" }}>
         <div>
           <h1 className="text-2xl font-bold bo-text">Reportes</h1>
-          <p className="bo-muted">Reportes de IVA y estados de cuenta de clientes</p>
+          <p className="text-muted">Reportes de IVA y estados de cuenta de clientes</p>
         </div>
       </div>
 
       {/* Main Tabs */}
-      <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border mb-6">
+      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border mb-6">
         <SimpleTabs defaultValue="iva">
           <SimpleTabsList className="border-b">
             <SimpleTabsContent value="iva" trigger="Reportes de IVA" />
@@ -580,8 +580,8 @@ export default function Page() {
           <SimpleTabsContent value="customer">
             <div className="p-6">
               {/* Customer Statement Filters */}
-              <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border p-4 mb-6">
-                <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-4 bo-grid-gap-4">
+              <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Customer Select */}
                   <div>
                     <label className="block text-sm font-medium bo-text mb-1">Cliente</label>
@@ -593,7 +593,7 @@ export default function Page() {
                           loadCustomers();
                         }
                       }}
-                      className="w-full px-3 py-2 border bo-border rounded-[var(--bo-radius-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     >
                       <option value="">Seleccionar cliente...</option>
                       {customers.map((c) => (
@@ -611,7 +611,7 @@ export default function Page() {
                       type="date"
                       value={statementDateFrom}
                       onChange={(e) => setStatementDateFrom(e.target.value)}
-                      className="w-full px-3 py-2 border bo-border rounded-[var(--bo-radius-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
@@ -622,16 +622,16 @@ export default function Page() {
                       type="date"
                       value={statementDateTo}
                       onChange={(e) => setStatementDateTo(e.target.value)}
-                      className="w-full px-3 py-2 border bo-border rounded-[var(--bo-radius-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
                   {/* Load Customers Button */}
-                  <div className="bo-flex bo-items-end">
+                  <div className="flex items-end">
                     <button
                       onClick={loadCustomers}
                       disabled={customersLoading}
-                      className="bo-flex bo-items-center bo-gap-2 px-4 py-2 bg-bo-surface-2 bo-bg rounded-[var(--bo-radius-sm)] hover:bg-bo-surface disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-bo-surface-2 bo-bg rounded-[var(--rounded-sm)] hover:bg-bo-surface disabled:opacity-50"
                     >
                       {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
                       Cargar Clientes
@@ -640,11 +640,11 @@ export default function Page() {
                 </div>
 
                 {/* Actions */}
-                <div className="bo-flex bo-gap-2" style={{ marginTop: "var(--bo-space-4)" }}>
+                <div className="flex gap-2" style={{ marginTop: "var(--bo-space-4)" }}>
                   <button
                     onClick={handleGenerateCustomerStatement}
                     disabled={customerLoading || !selectedCustomer}
-                    className="bo-flex bo-items-center bo-gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--bo-radius-sm)] hover:opacity-90 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
                   >
                     {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
                     Generar Estado de Cuenta
@@ -655,7 +655,7 @@ export default function Page() {
                       <button
                         onClick={handleExportCustomerStatementPDF}
                         disabled={exporting}
-                        className="bo-flex bo-items-center bo-gap-2 px-4 py-2 bo-color-danger bo-bg rounded-[var(--bo-radius-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
                       >
                         <FileText className="w-4 h-4" />
                         Exportar PDF
@@ -663,7 +663,7 @@ export default function Page() {
                       <button
                         onClick={handleExportCustomerStatementCSV}
                         disabled={exporting}
-                        className="bo-flex bo-items-center bo-gap-2 px-4 py-2 bo-color-success bo-bg rounded-[var(--bo-radius-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
                       >
                         <FileSpreadsheet className="w-4 h-4" />
                         Exportar Excel
@@ -677,34 +677,34 @@ export default function Page() {
               {customerStatement ? (
                 <>
                   {/* Customer Info */}
-                  <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border p-4 mb-6">
+                  <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
                     <h3 className="text-lg font-semibold bo-text mb-4">Informacion del Cliente</h3>
-                    <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-2 bo-grid-gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 grid-gap-4">
                       <div>
-                        <span className="text-sm bo-muted">Nombre</span>
+                        <span className="text-sm text-muted">Nombre</span>
                         <p className="text-lg font-medium bo-text">{customerStatement.customer_name}</p>
                       </div>
                       {customerStatement.customer_dni_cif && (
                         <div>
-                          <span className="text-sm bo-muted">DNI/CIF</span>
+                          <span className="text-sm text-muted">DNI/CIF</span>
                           <p className="text-lg font-medium bo-text">{customerStatement.customer_dni_cif}</p>
                         </div>
                       )}
                       {customerStatement.customer_email && (
                         <div>
-                          <span className="text-sm bo-muted">Email</span>
+                          <span className="text-sm text-muted">Email</span>
                           <p className="text-lg font-medium bo-text">{customerStatement.customer_email}</p>
                         </div>
                       )}
                       <div>
-                        <span className="text-sm bo-muted">Periodo</span>
+                        <span className="text-sm text-muted">Periodo</span>
                         <p className="text-lg font-medium bo-text">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Balance Summary */}
-                  <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-5 bo-grid-gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-5 grid-gap-4">
                     <StatCard
                       title="Saldo Inicial"
                       value={formatCurrency(customerStatement.opening_balance, "EUR")}
@@ -733,10 +733,10 @@ export default function Page() {
                   </div>
 
                   {/* Invoices and Payments Tables */}
-                  <div className="bo-grid bo-grid-cols-1 lg:bo-grid-cols-2 bo-grid-gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 grid-gap-6">
                     {/* Invoices */}
-                    <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border overflow-hidden">
-                      <div className="px-6 py-4 border-b bo-border bo-surface-2">
+                    <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="px-6 py-4 border-b border bo-surface-2">
                         <h3 className="text-lg font-semibold bo-text">Facturas ({customerStatement.invoices.length})</h3>
                       </div>
                       {customerStatement.invoices.length > 0 ? (
@@ -744,10 +744,10 @@ export default function Page() {
                           <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bo-surface-2">
                               <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium bo-muted uppercase">Factura</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium bo-muted uppercase">Fecha</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium bo-muted uppercase">Importe</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium bo-muted uppercase">Estado</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
+                                <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">Importe</th>
+                                <th className="px-4 py-3 text-center text-xs font-medium text-muted uppercase">Estado</th>
                               </tr>
                             </thead>
                             <tbody className="bo-surface divide-y divide-gray-200">
@@ -757,7 +757,7 @@ export default function Page() {
                                     {inv.invoice_number || `#${inv.id}`}
                                     {inv.is_credit_note && <span className="bo-creditBadge bo-creditBadge--warning">NC</span>}
                                   </td>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm bo-muted">{formatDate(inv.invoice_date)}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{formatDate(inv.invoice_date)}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(inv.total, "EUR")}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-center">
                                     <span className={`px-2 py-1 text-xs rounded-full ${inv.status === "pagada" ? "" :
@@ -774,15 +774,15 @@ export default function Page() {
                           </table>
                         </div>
                       ) : (
-                        <div className="p-6 text-center bo-muted">
+                        <div className="p-6 text-center text-muted">
                           No hay facturas en este periodo
                         </div>
                       )}
                     </div>
 
                     {/* Payments */}
-                    <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border overflow-hidden">
-                      <div className="px-6 py-4 border-b bo-border bo-surface-2">
+                    <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="px-6 py-4 border-b border bo-surface-2">
                         <h3 className="text-lg font-semibold bo-text">Pagos ({customerStatement.payments.length})</h3>
                       </div>
                       {customerStatement.payments.length > 0 ? (
@@ -790,18 +790,18 @@ export default function Page() {
                           <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bo-surface-2">
                               <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium bo-muted uppercase">Factura</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium bo-muted uppercase">Fecha</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium bo-muted uppercase">Metodo</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium bo-muted uppercase">Importe</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Metodo</th>
+                                <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">Importe</th>
                               </tr>
                             </thead>
                             <tbody className="bo-surface divide-y divide-gray-200">
                               {customerStatement.payments.map((pay, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm bo-text">{pay.invoice_number || `#${pay.invoice_id}`}</td>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm bo-muted">{formatDate(pay.payment_date)}</td>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm bo-muted">{pay.payment_method}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{formatDate(pay.payment_date)}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{pay.payment_method}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(pay.amount, "EUR")}</td>
                                 </tr>
                               ))}
@@ -809,7 +809,7 @@ export default function Page() {
                           </table>
                         </div>
                       ) : (
-                        <div className="p-6 text-center bo-muted">
+                        <div className="p-6 text-center text-muted">
                           No hay pagos en este periodo
                         </div>
                       )}
@@ -817,10 +817,10 @@ export default function Page() {
                   </div>
                 </>
               ) : (
-                <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border p-12 text-center">
-                  <Receipt className="w-12 h-12 bo-faint mx-auto mb-4" />
+                <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
+                  <Receipt className="w-12 h-12 text-faint mx-auto mb-4" />
                   <h3 className="text-lg font-medium bo-text mb-2">Sin estado de cuenta</h3>
-                  <p className="bo-muted mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
+                  <p className="text-muted mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
                 </div>
               )}
             </div>
@@ -829,15 +829,15 @@ export default function Page() {
           {/* IVA Report Tab */}
           <SimpleTabsContent value="iva">
             <div>
-              <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border p-4 mb-6">
-                <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-4 bo-grid-gap-4">
+              <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Date preset */}
                   <div>
                     <label className="block text-sm font-medium bo-text mb-1">Periodo</label>
                     <select
                       value={datePreset}
                       onChange={(e) => handleDatePresetChange(e.target.value as DatePreset)}
-                      className="w-full px-3 py-2 border bo-border rounded-[var(--bo-radius-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     >
                       {DATE_PRESETS.map(preset => (
                         <option key={preset.value} value={preset.value}>{preset.label}</option>
@@ -855,7 +855,7 @@ export default function Page() {
                         setDateFrom(e.target.value);
                         setDatePreset("custom");
                       }}
-                      className="w-full px-3 py-2 border bo-border rounded-[var(--bo-radius-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
@@ -869,18 +869,18 @@ export default function Page() {
                         setDateTo(e.target.value);
                         setDatePreset("custom");
                       }}
-                      className="w-full px-3 py-2 border bo-border rounded-[var(--bo-radius-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
                   {/* Include credit notes */}
-                  <div className="bo-flex bo-items-end">
-                    <label className="bo-flex bo-items-center bo-gap-2 cursor-pointer">
+                  <div className="flex items-end">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={includeCreditNotes}
                         onChange={(e) => setIncludeCreditNotes(e.target.checked)}
-                        className="w-4 h-4 bo-accent bo-border rounded focus:ring-bo-accent"
+                        className="w-4 h-4 bo-accent border rounded focus:ring-bo-accent"
                       />
                       <span className="text-sm bo-text">Incluir notas de credito</span>
                     </label>
@@ -888,11 +888,11 @@ export default function Page() {
                 </div>
 
                 {/* Actions */}
-                <div className="bo-flex bo-gap-2" style={{ marginTop: "var(--bo-space-4)" }}>
+                <div className="flex gap-2" style={{ marginTop: "var(--bo-space-4)" }}>
                   <button
                     onClick={handleGenerateReport}
                     disabled={loading}
-                    className="bo-flex bo-items-center bo-gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--bo-radius-sm)] hover:opacity-90 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
                     Generar Reporte
@@ -903,7 +903,7 @@ export default function Page() {
                       <button
                         onClick={handleExportPDF}
                         disabled={exporting}
-                        className="bo-flex bo-items-center bo-gap-2 px-4 py-2 bo-color-danger bo-bg rounded-[var(--bo-radius-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
                       >
                         <FileText className="w-4 h-4" />
                         Exportar PDF
@@ -911,7 +911,7 @@ export default function Page() {
                       <button
                         onClick={handleExportExcel}
                         disabled={exporting}
-                        className="bo-flex bo-items-center bo-gap-2 px-4 py-2 bo-color-success bo-bg rounded-[var(--bo-radius-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
                       >
                         <FileSpreadsheet className="w-4 h-4" />
                         Exportar Excel
@@ -925,7 +925,7 @@ export default function Page() {
               {report ? (
                 <>
                   {/* Summary Cards */}
-                  <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-4 bo-grid-gap-4 bo-mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4 bo-mb-6">
                     <StatCard
                       title="Base Imponible"
                       value={formatCurrency(report.summary.total_base, "EUR")}
@@ -952,7 +952,7 @@ export default function Page() {
                   {includeCreditNotes && report.summary.credit_note_count > 0 && (
                     <div className="bo-reportCard bo-reportCard--warning">
                       <h3 className="bo-reportCardTitle bo-reportCardTitle--warning">Notas de Credito</h3>
-                      <div className="bo-grid bo-grid-cols-2 md:bo-grid-cols-4 bo-grid-gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 grid-gap-4">
                         <div>
                           <span className="bo-reportStatLabel bo-reportStatLabel--warning">Cantidad</span>
                           <p className="bo-reportStatValue bo-reportStatValue--warning">{report.summary.credit_note_count}</p>
@@ -977,7 +977,7 @@ export default function Page() {
                   {includeCreditNotes && report.summary.credit_note_count > 0 && (
                     <div className="bo-reportCard bo-reportCard--success">
                       <h3 className="bo-reportCardTitle bo-reportCardTitle--success">Total Neto (despues de notas de credito)</h3>
-                      <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-3 bo-grid-gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 grid-gap-4">
                         <div>
                           <span className="bo-reportStatLabel bo-reportStatLabel--success">Base neta</span>
                           <p className="bo-reportStatValue bo-reportStatValue--success bo-reportStatValue--xl">{formatCurrency(report.summary.net_base, "EUR")}</p>
@@ -1004,20 +1004,20 @@ export default function Page() {
 
                     {/* Breakdown by IVA Rate */}
                     <SimpleTabsContent value="breakdown">
-                      <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border overflow-hidden">
+                      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bo-surface-2">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium bo-muted uppercase tracking-wider">Tipo IVA</th>
-                              <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">Base</th>
-                              <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">IVA</th>
-                              <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">Total</th>
-                              <th className="px-6 py-3 text-center text-xs font-medium bo-muted uppercase tracking-wider">Facturas</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Tipo IVA</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Base</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">IVA</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Total</th>
+                              <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Facturas</th>
                               {includeCreditNotes && (
                                 <>
-                                  <th className="px-6 py-3 text-center text-xs font-medium bo-muted uppercase tracking-wider">Notas Cred.</th>
-                                  <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">Base NC</th>
-                                  <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">IVA NC</th>
+                                  <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Notas Cred.</th>
+                                  <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Base NC</th>
+                                  <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">IVA NC</th>
                                 </>
                               )}
                             </tr>
@@ -1029,12 +1029,12 @@ export default function Page() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.base_amount, "EUR")}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.iva_amount, "EUR")}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text font-semibold">{formatCurrency(item.base_amount + item.iva_amount, "EUR")}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center bo-muted">{item.invoice_count}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{item.invoice_count}</td>
                                 {includeCreditNotes && (
                                   <>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center bo-muted">{item.credit_note_count}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-muted">{formatCurrency(item.credit_note_base, "EUR")}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-muted">{formatCurrency(item.credit_note_iva, "EUR")}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{item.credit_note_count}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-muted">{formatCurrency(item.credit_note_base, "EUR")}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-muted">{formatCurrency(item.credit_note_iva, "EUR")}</td>
                                   </>
                                 )}
                               </tr>
@@ -1062,17 +1062,17 @@ export default function Page() {
 
                     {/* Quarterly Breakdown */}
                     <SimpleTabsContent value="quarterly">
-                      <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border overflow-hidden">
+                      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bo-surface-2">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium bo-muted uppercase tracking-wider">Trimestre</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium bo-muted uppercase tracking-wider">Periodo</th>
-                              <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">Base</th>
-                              <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">IVA</th>
-                              <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">Total</th>
-                              <th className="px-6 py-3 text-center text-xs font-medium bo-muted uppercase tracking-wider">Facturas</th>
-                              <th className="px-6 py-3 text-center text-xs font-medium bo-muted uppercase tracking-wider">Notas Cred.</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Trimestre</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Periodo</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Base</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">IVA</th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Total</th>
+                              <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Facturas</th>
+                              <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Notas Cred.</th>
                             </tr>
                           </thead>
                           <tbody className="bo-surface divide-y divide-gray-200">
@@ -1080,17 +1080,17 @@ export default function Page() {
                               data.quarterlyBreakdown.map((item, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium bo-text">{item.quarterLabel}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm bo-muted">{formatDate(item.start_date)} - {formatDate(item.end_date)}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{formatDate(item.start_date)} - {formatDate(item.end_date)}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.base_amount, "EUR")}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.iva_amount, "EUR")}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text font-semibold">{formatCurrency(item.total, "EUR")}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center bo-muted">{item.invoice_count}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center bo-muted">{item.credit_note_count}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{item.invoice_count}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{item.credit_note_count}</td>
                                 </tr>
                               ))
                             ) : (
                               <tr>
-                                <td colSpan={7} className="px-6 py-8 text-center bo-muted">
+                                <td colSpan={7} className="px-6 py-8 text-center text-muted">
                                   No hay datos trimestrales disponibles. Genera un reporte para ver el desglose.
                                 </td>
                               </tr>
@@ -1102,36 +1102,36 @@ export default function Page() {
 
                     {/* Invoice List */}
                     <SimpleTabsContent value="invoices">
-                      <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border overflow-hidden">
+                      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                         <button
                           onClick={toggleInvoices}
                           className="w-full px-6 py-4 flex items-center justify-between bo-surface-2 hover:bo-surface-3"
                         >
                           <span className="text-sm font-medium bo-text">Lista de facturas ({report.invoices.length})</span>
-                          {expandedInvoices ? <ChevronUp className="w-5 h-5 bo-muted" /> : <ChevronDown className="w-5 h-5 bo-muted" />}
+                          {expandedInvoices ? <ChevronUp className="w-5 h-5 text-muted" /> : <ChevronDown className="w-5 h-5 text-muted" />}
                         </button>
                         {expandedInvoices && (
                           <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bo-surface-2">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium bo-muted uppercase tracking-wider">Factura</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium bo-muted uppercase tracking-wider">Cliente</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium bo-muted uppercase tracking-wider">Fecha</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">Base</th>
-                                <th className="px-6 py-3 text-center text-xs font-medium bo-muted uppercase tracking-wider">IVA</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">IVA Importe</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium bo-muted uppercase tracking-wider">Total</th>
-                                <th className="px-6 py-3 text-center text-xs font-medium bo-muted uppercase tracking-wider">Tipo</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Factura</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Cliente</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Fecha</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Base</th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">IVA</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">IVA Importe</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Total</th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Tipo</th>
                               </tr>
                             </thead>
                             <tbody className="bo-surface divide-y divide-gray-200">
                               {report.invoices.map((inv, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm bo-text">{inv.invoice_number || ` #${inv.id}`}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm bo-muted">{inv.customer_name}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm bo-muted">{formatDate(inv.invoice_date)}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{inv.customer_name}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{formatDate(inv.invoice_date)}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(inv.base_amount, "EUR")}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center bo-muted">{inv.iva_rate}%</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{inv.iva_rate}%</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(inv.iva_amount, "EUR")}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text font-semibold">{formatCurrency(inv.total, "EUR")}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
@@ -1152,14 +1152,14 @@ export default function Page() {
                 </>
 
               ) : (
-                <div className="bo-surface rounded-[var(--bo-radius-md)] shadow-soft border bo-border p-12 text-center">
-                  <FileText className="w-12 h-12 bo-faint mx-auto mb-4" />
+                <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
+                  <FileText className="w-12 h-12 text-faint mx-auto mb-4" />
                   <h3 className="text-lg font-medium bo-text mb-2">No hay reporte generado</h3>
-                  <p className="bo-muted mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
+                  <p className="text-muted mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
                   <button
                     onClick={handleGenerateReport}
                     disabled={loading}
-                    className="inline-flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--bo-radius-sm)] hover:opacity-90 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
                     Generar Reporte

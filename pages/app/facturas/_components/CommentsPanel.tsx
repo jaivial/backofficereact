@@ -259,7 +259,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
           <div className="bo-commentsPanelEmpty">
             <MessageSquare size={24} className="bo-commentsPanelEmptyIcon" />
             <p>No hay comentarios todavía</p>
-            <p className="bo-mutedText">Sé el primero en añadir un comentario</p>
+            <p className="text-mutedText">Sé el primero en añadir un comentario</p>
           </div>
         ) : (
           <>

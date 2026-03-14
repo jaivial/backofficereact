@@ -60,6 +60,8 @@ export default {
           warning: "var(--bo-color-warning)",
           danger: "var(--bo-color-danger)",
           info: "var(--bo-color-info)",
+          "bg-selected": "var(--bo-bg-selected)",
+          "surface-hover": "var(--bo-surface-hover)",
         },
       },
       borderRadius: {

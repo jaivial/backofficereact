@@ -160,7 +160,7 @@ export default function WebsiteBuilderPage() {
           <div className="bo-panelBody">
             <div className="bo-loadingState">
               <Loader2 className="bo-spinnerIcon" size={24} />
-              <span className="bo-mutedText">Cargando configuracion...</span>
+              <span className="text-mutedText">Cargando configuracion...</span>
             </div>
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function WebsiteBuilderPage() {
               </div>
               <div className="bo-panelBody">
                 <div className="bo-stack">
-                  <p className="bo-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
+                  <p className="text-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
                   <label className="bo-field">
                     <textarea
                       className="bo-textarea bo-textarea--lg"
@@ -289,7 +289,7 @@ export default function WebsiteBuilderPage() {
                     <div dangerouslySetInnerHTML={{ __html: config.custom_html }} />
                   ) : (
                     <div className="bo-emptyState">
-                      <p className="bo-mutedText">No hay HTML generado aun</p>
+                      <p className="text-mutedText">No hay HTML generado aun</p>
                     </div>
                   )}
                 </div>
@@ -314,7 +314,7 @@ export default function WebsiteBuilderPage() {
                     <div className="bo-websiteDomainName">{config.domain}</div>
                   </div>
                 ) : (
-                  <p className="bo-mutedText">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
+                  <p className="text-mutedText">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
                 )}
 
                 <div className="bo-websiteDomainSearch">
@@ -355,7 +355,7 @@ export default function WebsiteBuilderPage() {
                       <div className="bo-websiteDomainResultActions">
                         <div className="bo-websiteDomainPrice">
                           {domainResult.marked_price.toFixed(2)} {domainResult.currency}
-                          <span className="bo-mutedText"> / ano</span>
+                          <span className="text-mutedText"> / ano</span>
                         </div>
                         <Button variant="primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
                           {registeringDomain ? (

@@ -89,17 +89,17 @@ export default function Page() {
   ];
 
   return (
-    <div className="rounded-[var(--bo-radius-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--bo-surface)] border-none shadow-[var(--bo-shadow-soft)]" aria-label="Mi Horario">
+    <div className="rounded-[var(--rounded-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--bo-surface)] border-none shadow-[var(--shadow-soft)]" aria-label="Mi Horario">
       <div className="flex items-end justify-between p-[16px_18px_10px]">
         <div>
-          <div className="text-sm font-bold bo-flex bo-items-center bo-gap-2">
+          <div className="text-sm font-bold flex items-center gap-2">
             <Clock3 size={16} strokeWidth={1.8} />
             Mi Horario
           </div>
-          <div className="text-xs text-[var(--bo-faint)]">Consulta tus horarios asignados.</div>
+          <div className="text-xs text-[var(--text-faint)]">Consulta tus horarios asignados.</div>
         </div>
         <button
-          className="h-8 px-[10px] rounded-[10px] text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--bo-border)] bg-transparent text-[var(--bo-text)] cursor-pointer leading-none whitespace-nowrap"
+          className="h-8 px-[10px] rounded-[10px] text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-transparent text-[var(--bo-text)] cursor-pointer leading-none whitespace-nowrap"
           onClick={() => void loadSchedules()}
           disabled={loading}
         >
@@ -109,14 +109,14 @@ export default function Page() {
 
       <div className="p-0 [18px_16px]">
         {error ? (
-          <div className="mt-3 rounded-[var(--bo-radius-md)] border border-[rgba(220,53,69,0.32)] bg-[rgba(220,53,69,0.10)] p-3" role="alert">{error}</div>
+          <div className="mt-3 rounded-[var(--rounded-md)] border border-[rgba(220,53,69,0.32)] bg-[rgba(220,53,69,0.10)] p-3" role="alert">{error}</div>
         ) : sortedSchedules.length === 0 ? (
-          <div className="grid justify-items-center text-center gap-3 p-6 rounded-[var(--bo-radius-md)] border border-dashed border-[var(--bo-border-2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.12)),var(--bo-surface-2)] text-[var(--bo-muted)]">
-            <div className="text-[var(--bo-faint)]">
+          <div className="grid justify-items-center text-center gap-3 p-6 rounded-[var(--rounded-md)] border border-dashed border-[var(--border-2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.12)),var(--bo-surface-2)] text-[var(--text-muted)]">
+            <div className="text-[var(--text-faint)]">
               <User size={48} strokeWidth={1} />
             </div>
             <div className="text-base font-semibold leading-tight m-0">No tienes horarios asignados.</div>
-            <div className="text-sm text-[var(--bo-muted)]">Contacta con tu responsable para que asigne tus turnos.</div>
+            <div className="text-sm text-[var(--text-muted)]">Contacta con tu responsable para que asigne tus turnos.</div>
           </div>
         ) : (
           <div className="flex flex-col gap-[18px]">
@@ -131,11 +131,11 @@ export default function Page() {
                   <div className="bo-scheduleGrid">
                     {monthSchedules.map((schedule) => (
                       <div key={schedule.id} className="bo-scheduleItem">
-                        <div className="bo-flex bo-items-center bo-gap-2 bo-scheduleItemText">
+                        <div className="flex items-center gap-2 bo-scheduleItemText">
                           <CalendarDays size={14} strokeWidth={1.8} />
                           {formatDate(schedule.date)}
                         </div>
-                        <div className="bo-flex bo-items-center bo-gap-2 bo-scheduleItemText">
+                        <div className="flex items-center gap-2 bo-scheduleItemText">
                           <Clock3 size={14} strokeWidth={1.8} />
                           {schedule.startTime} - {schedule.endTime}
                           <span className="bo-scheduleHours">
