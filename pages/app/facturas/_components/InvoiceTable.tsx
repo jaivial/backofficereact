@@ -78,19 +78,19 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cheque: "Cheque",
 };
 
-const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; className: string }> = {
-  borrador: { label: "Borrador", className: "bo-badge--muted" },
-  solicitada: { label: "Solicitada", className: "bo-badge--warning" },
-  pendiente: { label: "Pendiente", className: "bo-badge--info" },
-  enviada: { label: "Enviada", className: "bo-badge--success" },
-  pagada: { label: "Pagada", className: "bo-badge--success" },
+const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; style: React.CSSProperties }> = {
+  borrador: { label: "Borrador", style: { backgroundColor: "color-mix(in srgb, var(--bo-faint) 20%, transparent)", color: "var(--bo-muted)" } },
+  solicitada: { label: "Solicitada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
+  pendiente: { label: "Pendiente", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
+  enviada: { label: "Enviada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
+  pagada: { label: "Pagada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
 };
 
 const ALL_STATUSES: InvoiceStatus[] = ["borrador", "solicitada", "pendiente", "enviada", "pagada"];
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
-  const config = INVOICE_STATUS_CONFIG[status] || { label: status, className: "" };
-  return <span className={`bo-badge ${config.className}`}>{config.label}</span>;
+  const config = INVOICE_STATUS_CONFIG[status] || { label: status, style: {} };
+  return <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={config.style}>{config.label}</span>;
 }
 
 function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
@@ -98,7 +98,7 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
   onStatusChange: (invoice: Invoice, newStatus: InvoiceStatus) => void;
   onStatusChangeConfirm: (invoice: Invoice, newStatus: InvoiceStatus) => void;
 }) {
-  const currentConfig = INVOICE_STATUS_CONFIG[invoice.status] || { label: invoice.status, className: "" };
+  const currentConfig = INVOICE_STATUS_CONFIG[invoice.status] || { label: invoice.status, style: {} };
 
   const statusOptions = ALL_STATUSES.map((status) => ({
     id: status,
@@ -112,16 +112,16 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
   }));
 
   return (
-    <div className="bo-tableStatusCell">
+    <div className="bo-flex bo-items-center">
       <DropdownMenu
         label={`Cambiar estado de ${invoice.customer_name}`}
         items={statusOptions}
         triggerContent={
-          <span className={`bo-badge ${currentConfig.className} bo-statusBadge--clickable`}>
+          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer hover:opacity-80" style={currentConfig.style}>
             {currentConfig.label}
           </span>
         }
-        triggerClassName="bo-statusTrigger"
+        triggerClassName="cursor-pointer"
       />
     </div>
   );
@@ -129,7 +129,7 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
 
 function ReservationBadge({ isReservation }: { isReservation: boolean }) {
   return (
-    <span className={`bo-badge ${isReservation ? "bo-badge--info" : "bo-badge--muted"}`}>
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={isReservation ? { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } : { backgroundColor: "color-mix(in srgb, var(--bo-faint) 20%, transparent)", color: "var(--bo-muted)" }}>
       {isReservation ? "Reserva" : "Sin reserva"}
     </span>
   );
@@ -140,42 +140,42 @@ function SplitBadge({ isSplitChild, isSplitParent, percentage }: { isSplitChild?
 
   if (isSplitChild) {
     return (
-      <span className="bo-badge bo-badge--warning" title={`Factura分裂 - Porcentaje: ${percentage || 0}%`}>
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" }} title={`Factura分裂 - Porcentaje: ${percentage || 0}%`}>
         Factura分裂
       </span>
     );
   }
 
   return (
-    <span className="bo-badge bo-badge--info" title="Factura dividida">
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" }} title="Factura dividida">
      分裂 padre
     </span>
   );
 }
 
-const CATEGORY_CONFIG: Record<InvoiceCategory, { label: string; className: string }> = {
-  reserva: { label: "Reserva", className: "bo-badge--info" },
-  productos: { label: "Productos", className: "bo-badge--success" },
-  servicios: { label: "Servicios", className: "bo-badge--warning" },
-  otros: { label: "Otros", className: "bo-badge--muted" },
-  nota_credito: { label: "Nota de credito", className: "bo-badge--warning" },
+const CATEGORY_CONFIG: Record<InvoiceCategory, { label: string; style: React.CSSProperties }> = {
+  reserva: { label: "Reserva", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
+  productos: { label: "Productos", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
+  servicios: { label: "Servicios", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
+  otros: { label: "Otros", style: { backgroundColor: "color-mix(in srgb, var(--bo-faint) 20%, transparent)", color: "var(--bo-muted)" } },
+  nota_credito: { label: "Nota de credito", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
 };
 
 function CategoryBadge({ category }: { category?: InvoiceCategory }) {
   if (!category) return null;
-  const config = CATEGORY_CONFIG[category] || { label: category, className: "bo-badge--muted" };
-  return <span className={`bo-badge ${config.className}`}>{config.label}</span>;
+  const config = CATEGORY_CONFIG[category] || { label: category, style: {} };
+  return <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={config.style}>{config.label}</span>;
 }
 
 function CreditNoteBadge({ invoice }: { invoice: Invoice }) {
   if (!invoice.is_credit_note) return null;
   return (
-    <div className="bo-creditNoteBadge">
-      <span className="bo-badge bo-badge--warning" title="Nota de credito">
+    <div className="bo-flex bo-flex-col bo-gap-1">
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" }} title="Nota de credito">
         Nota de credito
       </span>
       {invoice.original_invoice_number && (
-        <span className="bo-creditNoteRef" title={`Factura original: ${invoice.original_invoice_number}`}>
+        <span className="text-xs text-muted-foreground" title={`Factura original: ${invoice.original_invoice_number}`}>
           de {invoice.original_invoice_number}
         </span>
       )}
@@ -183,29 +183,29 @@ function CreditNoteBadge({ invoice }: { invoice: Invoice }) {
   );
 }
 
-const DEPOSIT_CONFIG: Record<InvoiceDepositType, { label: string; className: string }> = {
-  advance: { label: "Anticipo", className: "bo-badge--info" },
-  deposit: { label: "Seña", className: "bo-badge--warning" },
+const DEPOSIT_CONFIG: Record<InvoiceDepositType, { label: string; style: React.CSSProperties }> = {
+  advance: { label: "Anticipo", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
+  deposit: { label: "Seña", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
 };
 
 function DepositBadge({ invoice }: { invoice: Invoice }) {
   if (!invoice.deposit_type) return null;
-  const config = DEPOSIT_CONFIG[invoice.deposit_type] || { label: invoice.deposit_type, className: "bo-badge--muted" };
+  const config = DEPOSIT_CONFIG[invoice.deposit_type] || { label: invoice.deposit_type, style: {} };
   const remainingBalance = invoice.remaining_balance ?? ((invoice.total ?? invoice.amount) - (invoice.deposit_amount ?? 0));
   const isPaidOff = remainingBalance <= 0;
 
   return (
-    <div className="bo-depositBadge">
-      <span className={`bo-badge ${config.className}`} title={invoice.deposit_type === "advance" ? "Anticipo" : "Seña"}>
+    <div className="bo-flex bo-flex-col bo-gap-1">
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={config.style} title={invoice.deposit_type === "advance" ? "Anticipo" : "Seña"}>
         {config.label}
       </span>
       {invoice.deposit_amount !== undefined && invoice.deposit_amount !== null && (
-        <span className="bo-depositAmount" title={`Pagado: ${formatPrice(invoice.deposit_amount, invoice.currency)}`}>
+        <span className="text-xs text-muted-foreground" title={`Pagado: ${formatPrice(invoice.deposit_amount, invoice.currency)}`}>
           {formatPrice(invoice.deposit_amount, invoice.currency)}
         </span>
       )}
       {invoice.final_invoice_number && (
-        <span className="bo-depositRef" title={`Factura final: ${invoice.final_invoice_number}`}>
+        <span className="text-xs text-muted-foreground" title={`Factura final: ${invoice.final_invoice_number}`}>
           Final: {invoice.final_invoice_number}
         </span>
       )}
@@ -216,15 +216,15 @@ function DepositBadge({ invoice }: { invoice: Invoice }) {
 function TagsList({ tags }: { tags?: string[] }) {
   if (!tags || tags.length === 0) return null;
   return (
-    <div className="bo-tagsList">
+    <div className="bo-flex bo-flex-wrap bo-gap-1">
       {tags.slice(0, 3).map((tag, index) => (
-        <span key={index} className="bo-tagItem bo-tagItem--sm">
+        <span key={index} className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
           <Tag size={10} />
           {tag}
         </span>
       ))}
       {tags.length > 3 && (
-        <span className="bo-tagItem bo-tagItem--sm bo-tagItem--more">+{tags.length - 3}</span>
+        <span className="inline-flex items-center rounded bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">+{tags.length - 3}</span>
       )}
     </div>
   );
@@ -238,14 +238,14 @@ function PaymentProgressCell({ invoice }: { invoice: Invoice }) {
   const isFullyPaid = remaining <= 0;
 
   return (
-    <div className="bo-paymentProgressCell">
-      <span className={`bo-paymentProgressText ${isFullyPaid ? "is-paid" : ""}`}>
+    <div className="bo-flex bo-flex-col bo-gap-1">
+      <span className={`text-xs ${isFullyPaid ? "" : ""}`} style={isFullyPaid ? { color: "var(--bo-color-success)" } : {}}>
         {formatPrice(paidAmount, invoice.currency)} / {formatPrice(totalAmount, invoice.currency)}
       </span>
-      <div className="bo-paymentProgressBar">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
         <div
-          className={`bo-paymentProgressFill ${isFullyPaid ? "is-complete" : ""}`}
-          style={{ width: `${Math.min(percentPaid, 100)}%` }}
+          className="h-full transition-all duration-300"
+          style={{ width: `${Math.min(percentPaid, 100)}%`, backgroundColor: isFullyPaid ? "var(--bo-color-success)" : "var(--bo-accent)" }}
         />
       </div>
     </div>
@@ -254,19 +254,19 @@ function PaymentProgressCell({ invoice }: { invoice: Invoice }) {
 
 function SortIcon({ field, currentField, direction }: { field: SortField; currentField: SortField | null; direction: SortDirection }) {
   if (currentField !== field) {
-    return <ArrowUpDown size={14} className="bo-tableSortIcon bo-tableSortIcon--inactive" />;
+    return <ArrowUpDown size={14} className="text-muted-foreground opacity-50" />;
   }
   if (direction === "asc") {
-    return <ArrowUp size={14} className="bo-tableSortIcon bo-tableSortIcon--active" />;
+    return <ArrowUp size={14} className="text-primary" />;
   }
-  return <ArrowDown size={14} className="bo-tableSortIcon bo-tableSortIcon--active" />;
+  return <ArrowDown size={14} className="text-primary" />;
 }
 
 function SortableHeader({ field, label, currentField, sortDirection, onSort }: { field: SortField; label: string; currentField: SortField | null; sortDirection: SortDirection; onSort: (field: SortField) => void }) {
   return (
     <button
       type="button"
-      className="bo-tableSortBtn"
+      className="inline-flex items-center gap-1 text-left font-medium transition-colors hover:text-primary"
       onClick={() => onSort(field)}
       aria-label={`Ordenar por ${label}`}
       aria-sort={currentField === field ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
@@ -280,43 +280,43 @@ function SortableHeader({ field, label, currentField, sortDirection, onSort }: {
 // Skeleton components for table loading with shimmer effect
 function TableSkeletonRow() {
   return (
-    <tr className="bo-tableRow">
+    <tr className="border-b border-border">
       <td data-label="">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "20px" }} />
+        <div className="h-4 w-5 animate-pulse rounded bg-muted" />
       </td>
       <td data-label="N. Factura">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px" }} />
+        <div className="h-4 w-[60px] animate-pulse rounded bg-muted" />
       </td>
       <td data-label="Cliente">
-        <div className="bo-tableCustomer">
-          <div className="bo-skeleton bo-skeleton--md" style={{ width: "120px" }} />
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "80px", marginTop: "4px" }} />
+        <div className="bo-flex bo-flex-col bo-gap-1">
+          <div className="h-4 w-[120px] animate-pulse rounded bg-muted" />
+          <div className="h-3 w-[80px] animate-pulse rounded bg-muted" />
         </div>
       </td>
       <td data-label="Email">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "140px" }} />
+        <div className="h-4 w-[140px] animate-pulse rounded bg-muted" />
       </td>
       <td data-label="Importe">
-        <div className="bo-skeleton bo-skeleton--md" style={{ width: "80px" }} />
+        <div className="h-4 w-[80px] animate-pulse rounded bg-muted" />
       </td>
       <td data-label="Moneda">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "50px" }} />
+        <div className="h-4 w-[50px] animate-pulse rounded bg-muted" />
       </td>
       <td data-label="Fecha">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px" }} />
+        <div className="h-4 w-[70px] animate-pulse rounded bg-muted" />
       </td>
       <td data-label="Estado">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px", height: "22px" }} />
+        <div className="h-5 w-[60px] animate-pulse rounded-full bg-muted" />
       </td>
       <td data-label="Tipo">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px", height: "22px" }} />
+        <div className="h-5 w-[70px] animate-pulse rounded-full bg-muted" />
       </td>
       <td data-label=""></td>
       <td data-label="">
-        <div className="bo-tableActions">
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
+        <div className="bo-flex bo-gap-1">
+          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
+          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
+          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
         </div>
       </td>
     </tr>
@@ -325,23 +325,22 @@ function TableSkeletonRow() {
 
 function TableSkeleton() {
   return (
-    <div className="bo-tableWrap">
-      <div className="bo-tableScroll">
-        <table className="bo-table bo-table--facturas" aria-label="Cargando facturas...">
+    <div className="overflow-x-auto">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse" aria-label="Cargando facturas...">
           <thead>
             <tr>
-              <th className="col-selection"></th>
-              <th className="col-invoice_number">N. Factura</th>
-              <th className="col-customer_name">Cliente</th>
-              <th className="col-customer_email">Email</th>
-              <th className="col-amount">Importe</th>
-              <th className="col-currency">Moneda</th>
-              <th className="col-payment_progress">Pagado</th>
-              <th className="col-invoice_date">Fecha</th>
-              <th className="col-status">Estado</th>
-              <th className="col-is_reservation">Tipo</th>
-              <th className="col-attachment"></th>
-              <th className="col-actions"></th>
+              <th className="w-10"></th>
+              <th className="text-left">N. Factura</th>
+              <th className="text-left">Cliente</th>
+              <th className="text-left">Email</th>
+              <th className="text-left">Importe</th>
+              <th className="text-left">Moneda</th>
+              <th className="text-left">Fecha</th>
+              <th className="text-left">Estado</th>
+              <th className="text-left">Tipo</th>
+              <th className="w-10"></th>
+              <th className="w-24"></th>
             </tr>
           </thead>
           <tbody>
@@ -351,10 +350,10 @@ function TableSkeleton() {
           </tbody>
         </table>
       </div>
-      <div className="bo-pager is-solo">
-        <div className="bo-pagerText" aria-live="polite">
-          <span className="bo-skeleton bo-skeleton--sm" style={{ width: "100px", display: "inline-block" }} />
-          <span className="bo-srOnly">Cargando...</span>
+      <div className="bo-flex bo-justify-center" style={{ padding: "var(--bo-space-4) 0" }}>
+        <div className="text-sm text-muted-foreground" aria-live="polite">
+          <span className="inline-block w-[100px] animate-pulse rounded bg-muted h-4" />
+          <span className="sr-only">Cargando...</span>
         </div>
       </div>
     </div>
@@ -587,17 +586,17 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
     if (isFirstTime) {
       // Empty state for no invoices at all
       return (
-        <div className="bo-emptyTable" role="status" aria-live="polite">
-          <div className="bo-emptyTableIcon">
-            <FileText size={24} />
+        <div className="flex flex-col items-center justify-center py-12 text-center" role="status" aria-live="polite">
+          <div className="mb-4 rounded-full bg-muted p-3">
+            <FileText size={24} className="text-muted-foreground" />
           </div>
-          <h3 className="bo-emptyTitle">No hay facturas todavia</h3>
-          <p className="bo-emptyDesc">
+          <h3 className="mb-2 text-lg font-semibold">No hay facturas todavia</h3>
+          <p className="mb-6 max-w-md text-sm text-muted-foreground">
             Crea tu primera factura para comenzar a gestionar tus ingresos.
           </p>
-          <div className="bo-emptyActions">
+          <div className="bo-flex bo-gap-2">
             <button
-              className="bo-btn bo-btn--primary bo-btn--sm"
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               type="button"
               onClick={onCreateNew}
             >
@@ -606,17 +605,16 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
             </button>
           </div>
         </div>
-      );
-    }
+    );
+  }
 
-    // Empty state for no search results
-    return (
-      <div className="bo-emptySearch" role="status" aria-live="polite">
-        <div className="bo-emptySearchIcon">
-          <SearchX size={28} />
+  return (
+      <div className="flex flex-col items-center justify-center py-12 text-center" role="status" aria-live="polite">
+        <div className="mb-4 rounded-full bg-muted p-3">
+          <SearchX size={28} className="text-muted-foreground" />
         </div>
-        <h3 className="bo-emptyTitle">No se encontraron facturas</h3>
-        <p className="bo-emptyDesc">
+        <h3 className="mb-2 text-lg font-semibold">No se encontraron facturas</h3>
+        <p className="max-w-md text-sm text-muted-foreground">
           No hay resultados para los filtros aplicados. Intenta ajustar los criterios de busqueda o limpiar los filtros.
         </p>
       </div>
@@ -624,49 +622,48 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
   }
 
   return (
-    <div className="bo-tableWrap">
+    <div className="overflow-x-auto rounded-lg border border-border">
       {/* Bulk Actions Bar */}
       {someSelected && (
-        <div className="bo-bulkBar" role="region" aria-live="polite">
-          <div className="bo-bulkBarContent">
-            <div className="bo-bulkBarInfo">
-              <span className="bo-bulkBarCount">{selectedIds.size} elemento{selectedIds.size !== 1 ? "s" : ""} seleccionado{selectedIds.size !== 1 ? "s" : ""}</span>
-            </div>
-            <div className="bo-bulkBarActions">
-              <button
-                className="bo-btn bo-btn--primary bo-btn--sm"
-                type="button"
-                onClick={() => {
-                  const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
-                  onBulkPrint(selectedInvoices);
-                }}
-              >
-                <Printer size={16} />
-                Imprimir
-              </button>
-              <button
-                className="bo-btn bo-btn--primary bo-btn--sm"
-                type="button"
-                onClick={() => {
-                  const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
-                  onBulkSendEmail(selectedInvoices);
-                }}
-              >
-                <Mail size={16} />
-                Enviar todas
-              </button>
+        <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3" role="region" aria-live="polite">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{selectedIds.size} elemento{selectedIds.size !== 1 ? "s" : ""} seleccionado{selectedIds.size !== 1 ? "s" : ""}</span>
+          </div>
+          <div className="bo-flex bo-gap-2">
+            <button
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              type="button"
+              onClick={() => {
+                const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
+                onBulkPrint(selectedInvoices);
+              }}
+            >
+              <Printer size={16} />
+              Imprimir
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              type="button"
+              onClick={() => {
+                const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
+                onBulkSendEmail(selectedInvoices);
+              }}
+            >
+              <Mail size={16} />
+              Enviar todas
+            </button>
               <DropdownMenu
                 label="Cambiar estado"
                 items={bulkStatusOptions}
                 triggerContent={
-                  <button className="bo-btn bo-btn--secondary bo-btn--sm" type="button">
+                  <button className="inline-flex items-center rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground hover:bg-secondary/80" type="button">
                     Cambiar estado
                   </button>
                 }
                 triggerClassName="bo-bulkAction"
               />
               <button
-                className="bo-btn bo-btn--secondary bo-btn--sm"
+                className="inline-flex items-center rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
                 type="button"
                 onClick={() => {
                   const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
@@ -677,14 +674,14 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 Fusionar
               </button>
               <button
-                className="bo-btn bo-btn--danger bo-btn--sm"
+                className="inline-flex items-center gap-2 rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
                 type="button"
                 onClick={handleBulkDeleteRequest}
               >
                 Eliminar
               </button>
               <button
-                className="bo-btn bo-btn--ghost bo-btn--sm"
+                className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                 type="button"
                 onClick={handleClearSelection}
                 aria-label="Limpiar selección"
@@ -694,30 +691,27 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               </button>
             </div>
           </div>
-        </div>
       )}
       {/* Print All Visible Bar - shown when there are invoices but nothing is selected */}
       {!someSelected && invoices.length > 0 && (
-        <div className="bo-bulkBar" role="region" aria-live="polite">
-          <div className="bo-bulkBarContent">
-            <div className="bo-bulkBarInfo">
-              <span className="bo-bulkBarCount">{invoices.length} facturas en esta pagina</span>
-            </div>
-            <div className="bo-bulkBarActions">
-              <button
-                className="bo-btn bo-btn--primary bo-btn--sm"
-                type="button"
-                onClick={onPrintAllVisible}
-              >
-                <Printer size={16} />
-                Imprimir todas las visibles
-              </button>
-            </div>
+        <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3" role="region" aria-live="polite">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{invoices.length} facturas en esta pagina</span>
+          </div>
+          <div className="bo-flex bo-gap-2">
+            <button
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              type="button"
+              onClick={onPrintAllVisible}
+            >
+              <Printer size={16} />
+              Imprimir todas las visibles
+            </button>
           </div>
         </div>
       )}
-      <div className="bo-tableScroll">
-        <table className="bo-table bo-table--facturas" aria-label="Tabla de facturas">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm" aria-label="Tabla de facturas">
           <thead>
             <tr>
               {columns.map((col) => (
@@ -855,7 +849,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <div className="bo-tableAttachmentCell">
                       {invoice.attachments && invoice.attachments.length > 0 && (
                         <button
-                          className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--attachment"
+                          className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted bo-btn--attachment"
                           type="button"
                           onClick={() => handleOpenAttachments(invoice)}
                           title={`Ver adjuntos (${invoice.attachments.length})`}
@@ -883,7 +877,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 <td className={`col-actions`}>
                   <div className="bo-tableActions">
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                       type="button"
                       onClick={() => onPreview(invoice)}
                       aria-label={`Ver detalles de factura ${invoice.id}`}
@@ -892,7 +886,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       <Eye size={14} />
                     </button>
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                       type="button"
                       onClick={() => onEdit(invoice)}
                       aria-label={`Editar factura ${invoice.id}`}
@@ -901,7 +895,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       <PencilLine size={14} />
                     </button>
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                       type="button"
                       onClick={() => onShowHistory(invoice)}
                       aria-label={`Ver historial de factura ${invoice.id}`}
@@ -910,7 +904,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       <History size={14} />
                     </button>
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                       type="button"
                       onClick={() => onViewNotes(invoice)}
                       aria-label={`Ver notas internas de factura ${invoice.id}`}
@@ -922,7 +916,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     {(invoice.status === "pendiente" || invoice.status === "enviada") && (
                       <>
                         <button
-                          className={`bo-btn bo-btn--ghost bo-btn--sm ${invoice.has_reminder_sent ? "bo-btn--warning" : ""}`}
+                          className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted ${invoice.has_reminder_sent ? "bo-btn--warning" : ""}`}
                           type="button"
                           onClick={() => onSendReminder(invoice)}
                           aria-label={`Enviar recordatorio de pago a ${invoice.customer_name}`}
@@ -932,7 +926,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         </button>
                         {(invoice.reminders_count && invoice.reminders_count > 0) && (
                           <button
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
+                            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                             type="button"
                             onClick={() => onShowReminderHistory(invoice)}
                             aria-label={`Ver historial de recordatorios de factura ${invoice.id}`}
@@ -946,7 +940,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     {/* Marcar como pagada quick action - only show for non-paid invoices */}
                     {(invoice.status === "pendiente" || invoice.status === "enviada") && (
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--success"
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted bo-btn--success"
                         type="button"
                         onClick={() => onStatusChange(invoice, "pagada")}
                         aria-label={`Marcar como pagada la factura ${invoice.id}`}
@@ -956,7 +950,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       </button>
                     )}
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                       type="button"
                       onClick={() => onRegisterPayment(invoice)}
                       aria-label={`Registrar pago de factura ${invoice.id}`}
@@ -965,7 +959,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       <CreditCard size={14} />
                     </button>
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                       type="button"
                       onClick={() => onDuplicate(invoice)}
                       aria-label={`Duplicar factura ${invoice.id}`}
@@ -976,7 +970,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     {/* Create Credit Note button - only show for sent/paid invoices that are not credit notes */}
                     {!invoice.is_credit_note && (invoice.status === "enviada" || invoice.status === "pagada") && onCreateCreditNote && (
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                         type="button"
                         onClick={() => onCreateCreditNote(invoice)}
                         aria-label={`Crear nota de credito para factura ${invoice.id}`}
@@ -988,7 +982,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     {/* Split button - only show for invoices that are not already split children */}
                     {!invoice.is_split_child && (
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                         type="button"
                         onClick={() => onSplit(invoice)}
                         aria-label={`Dividir factura ${invoice.id}`}
@@ -999,7 +993,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     )}
                     {invoice.pdf_url && (
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                         type="button"
                         onClick={() => onDownloadPdf(invoice)}
                         aria-label={`Descargar PDF de factura ${invoice.id}`}
@@ -1010,7 +1004,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     )}
                     {invoice.customer_email && (
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                         type="button"
                         onClick={() => onSendEmail(invoice)}
                         aria-label={`Enviar email de factura ${invoice.id}`}
@@ -1021,7 +1015,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     )}
                     {invoice.customer_phone && (
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                         type="button"
                         onClick={() => onSendWhatsApp(invoice)}
                         aria-label={`Enviar WhatsApp de factura ${invoice.id}`}
@@ -1031,7 +1025,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       </button>
                     )}
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted bo-btn--danger"
                       type="button"
                       onClick={() => onDelete(invoice)}
                       aria-label={`Eliminar factura ${invoice.id}`}

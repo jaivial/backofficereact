@@ -4,7 +4,7 @@ import { Minus, Plus } from "lucide-react";
 import { cn } from "../shadcn/utils";
 
 /**
- * InlineCounter - A counter component matching the bo-field--counter pattern.
+ * InlineCounter - An inline counter component for adjusting values.
  *
  * SOLID Principles:
  * - Single Responsibility: Only handles increment/decrement counter logic
@@ -82,14 +82,14 @@ export function InlineCounter({
 
   return (
     <div
-      className={cn("bo-field", "bo-field--counter", className)}
+      className={cn("grid gap-1.5", className)}
       data-ui="inline-counter"
     >
-      <div className="bo-label">{label}</div>
-      <div className="bo-counter">
+      <div className="text-xs text-muted font-semibold">{label}</div>
+      <div className="inline-flex items-center gap-2">
         <button
           type="button"
-          className="bo-counterBtn"
+          className="h-8 w-8 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] hover:border-white/[0.12] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleDecrease}
           disabled={disabled || !canDecrease}
           aria-label={decrementAriaLabel || `Disminuir ${label}`}
@@ -98,7 +98,7 @@ export function InlineCounter({
           <Minus size={16} strokeWidth={2} />
         </button>
         <input
-          className="bo-input bo-input--sm bo-counterInput"
+          className="h-8.5 w-16 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 text-center text-sm text-foreground outline-none transition-colors duration-150 focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)] disabled:opacity-50 disabled:cursor-not-allowed"
           type="text"
           inputMode="numeric"
           value={String(safeValue)}
@@ -109,7 +109,7 @@ export function InlineCounter({
         />
         <button
           type="button"
-          className="bo-counterBtn"
+          className="h-8 w-8 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] hover:border-white/[0.12] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleIncrease}
           disabled={disabled || !canIncrease}
           aria-label={incrementAriaLabel || `Aumentar ${label}`}

@@ -126,77 +126,77 @@ export function RoleDetailModal({
   }, [onAssignRoleToMembers, role, selectedMemberIds]);
 
   return (
-    <Modal open={open} title={role?.label || "Rol"} onClose={onClose} widthPx={960} className="bo-modal--roleDetail">
+    <Modal open={open} title={role?.label || "Rol"} onClose={onClose} widthPx={960}>
       {role ? (
         <>
-          <div className="bo-modalHead">
-            <div className="bo-modalTitle">
-              <span className="bo-roleModalTitleIcon" aria-hidden="true">
+          <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
+            <div className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <span className="text-primary" aria-hidden="true">
                 <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={18} strokeWidth={1.8} />
               </span>
               {role.label}
             </div>
-            <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close">
+            <button className="w-8 h-8 flex items-center justify-center text-2xl text-muted-foreground hover:text-foreground" type="button" onClick={onClose} aria-label="Close">
               ×
             </button>
           </div>
 
-          <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-            <div className="bo-panel bo-roleModalPanel">
-              <div className="bo-panelHead">
+          <div className="mt-[10px]">
+            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02]">
+              <div className="p-4 border-b border-white/[0.06]">
                 <div>
-                  <div className="bo-panelTitle bo-roleModalInfoTitle">
+                  <div className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
                     <Info size={14} strokeWidth={1.8} />
                     Información del rol
                   </div>
-                  <div className="bo-panelMeta">Gestiona permisos y usuarios asignados a este rol.</div>
+                  <div className="text-xs text-muted-foreground">Gestiona permisos y usuarios asignados a este rol.</div>
                 </div>
               </div>
 
-              <div className="bo-panelBody bo-roleModalInfoBody">
-                <div className="bo-roleMetaRow">
+              <div className="p-4 space-y-4">
+                <div className="flex items-center gap-2">
                   <RoleBadge roleSlug={role.slug} roleName={role.label} importance={role.importance} />
                 </div>
 
-                <div className="bo-field bo-field--wide">
-                  <div className="bo-label">Permisos</div>
-                  <div className="bo-chips bo-chips--dense">
+                <div className="space-y-2">
+                  <div className="text-xs text-muted-foreground font-medium">Permisos</div>
+                  <div className="flex flex-wrap gap-1.5">
                     {role.permissions.map((perm) => (
-                      <span key={perm} className="bo-chip bo-chip--static">
+                      <span key={perm} className="inline-flex items-center px-2 py-1 rounded-md bg-white/[0.04] text-xs text-foreground border border-white/[0.06]">
                         {perm}
                       </span>
                     ))}
-                    {role.permissions.length === 0 ? <span className="bo-mutedText">Sin permisos</span> : null}
+                    {role.permissions.length === 0 ? <span className="text-sm text-muted-foreground">Sin permisos</span> : null}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bo-roleModalGrid">
-            <div className="bo-panel">
-              <div className="bo-panelHead">
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02]">
+              <div className="p-4 border-b border-white/[0.06]">
                 <div>
-                  <div className="bo-panelTitle bo-roleModalUsersTitle">
+                  <div className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
                     <Users size={14} strokeWidth={1.8} />
                     Miembros con este rol
                   </div>
-                  <div className="bo-panelMeta">{membersInRole.length} miembros</div>
+                  <div className="text-xs text-muted-foreground">{membersInRole.length} miembros</div>
                 </div>
               </div>
-              <div className="bo-panelBody bo-roleModalUserList">
+              <div className="p-2 max-h-[300px] overflow-y-auto">
                 {membersInRole.map((member) => {
                   const blockedByImportance = !canManageUser(actorImportance, member.roleImportance);
                   const isBusy = member.userId !== null && busyUserId === member.userId;
                   const disabledSelect = !member.hasUser || blockedByImportance || isBusy;
                   return (
-                    <label key={member.memberId} className="bo-roleUserRow">
-                      <div className="bo-roleUserMain">
-                        <div className="bo-roleUserName">{member.name}</div>
-                        <div className="bo-roleUserEmail">{member.email}</div>
+                    <label key={member.memberId} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/[0.04]">
+                      <div className="flex flex-col">
+                        <div className="text-sm text-foreground">{member.name}</div>
+                        <div className="text-xs text-muted-foreground">{member.email}</div>
                       </div>
                       <select
-                        className="bo-input bo-input--sm bo-selectNative bo-roleUserSelect"
+                        className="h-8 px-2 rounded border border-white/[0.06] bg-white/[0.03] text-sm text-foreground"
                         value={member.role}
                         disabled={disabledSelect}
                         onChange={(ev) => {
@@ -218,20 +218,20 @@ export function RoleDetailModal({
                   );
                 })}
 
-                {membersInRole.length === 0 ? <div className="bo-mutedText">Ningún miembro tiene este rol.</div> : null}
+                {membersInRole.length === 0 ? <div className="text-sm text-muted-foreground">Ningún miembro tiene este rol.</div> : null}
               </div>
             </div>
 
-            <div className="bo-roleAssignBox">
-              <div className="bo-roleAssignHead">
+            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] flex flex-col">
+              <div className="p-4 border-b border-white/[0.06]">
                 <div>
-                  <div className="bo-panelTitle">Asignar este rol</div>
-                  <div className="bo-panelMeta">Lista completa de miembros del restaurante.</div>
+                  <div className="text-sm font-semibold text-foreground mb-1">Asignar este rol</div>
+                  <div className="text-xs text-muted-foreground">Lista completa de miembros del restaurante.</div>
                 </div>
-                <span className="bo-mutedText">{selectedCount} seleccionados</span>
+                <span className="text-sm text-muted-foreground mt-2 block">{selectedCount} seleccionados</span>
               </div>
 
-              <div className="bo-roleModalUserList">
+              <div className="p-2 max-h-[250px] overflow-y-auto flex-1">
                 {membersOutRole.map((member) => {
                   const checked = selectedMemberIds.includes(member.memberId);
                   const blockedByUser = !canManageUser(actorImportance, member.roleImportance);
@@ -246,7 +246,7 @@ export function RoleDetailModal({
                   else if (!member.hasUser) reason = "Se creará usuario backoffice al asignar";
 
                   return (
-                    <label key={member.memberId} className={`bo-roleUserRow bo-roleUserRow--check${disabled ? " is-disabled" : ""}`}>
+                    <label key={member.memberId} className={`flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.04] ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}>
                       <input
                         type="checkbox"
                         checked={checked}
@@ -262,22 +262,22 @@ export function RoleDetailModal({
                           );
                         }}
                       />
-                      <div className="bo-roleUserMain">
-                        <div className="bo-roleUserName">{member.name}</div>
-                        <div className="bo-roleUserEmail">{member.email}</div>
-                        {reason ? <div className="bo-roleUserHint">{reason}</div> : null}
+                      <div className="flex flex-col flex-1">
+                        <div className="text-sm text-foreground">{member.name}</div>
+                        <div className="text-xs text-muted-foreground">{member.email}</div>
+                        {reason ? <div className="text-xs text-yellow-400/80 mt-1">{reason}</div> : null}
                       </div>
-                      <span className="bo-mutedText">{member.roleLabel}</span>
+                      <span className="text-sm text-muted-foreground">{member.roleLabel}</span>
                     </label>
                   );
                 })}
 
-                {membersOutRole.length === 0 ? <div className="bo-mutedText">No hay más miembros disponibles.</div> : null}
+                {membersOutRole.length === 0 ? <div className="text-sm text-muted-foreground">No hay más miembros disponibles.</div> : null}
               </div>
 
-              <div className="bo-roleModalAssignFoot">
+              <div className="p-4 border-t border-white/[0.06]">
                 <button
-                  className="bo-btn bo-btn--primary bo-btn--sm"
+                  className="inline-flex items-center justify-center h-8 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium"
                   type="button"
                   disabled={busyAssign || selectedCount === 0 || !canAssignRole(actorImportance, role.importance)}
                   onClick={() => {

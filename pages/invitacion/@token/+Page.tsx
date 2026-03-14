@@ -68,39 +68,57 @@ export default function Page() {
   }, [api.invitations.onboarding, token]);
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window bo-window--auth bo-onboardingWindow">
-        <div className="bo-authCard" role="main" aria-label="Invitación">
-          {loading ? (
-            <div className="bo-onboardingLoading">
-              <Loader2 size={20} className="is-spinning" />
-              Validando invitación...
+    <div className="flex flex-col items-center text-center max-w-[400px] p-6">
+      <div 
+        className="rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] border border-white/[0.06] shadow-soft p-[18px] w-[380px] max-w-[calc(100%-32px)]"
+        style={{ width: 380, maxWidth: "calc(100% - 32px)" }} 
+        role="main" 
+        aria-label="Invitacion"
+      >
+        {loading ? (
+          <div className="flex flex-col items-center gap-2 py-4 text-muted-foreground">
+            <Loader2 size={20} className="animate-spin" />
+            Validando invitación...
+          </div>
+        ) : error ? (
+          <>
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-500/10 text-red-500 mx-auto mb-4">
+              <CircleAlert size={30} />
             </div>
-          ) : error ? (
-            <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--error">
-                <CircleAlert size={30} />
-              </div>
-              <div className="bo-title">No se pudo validar la invitación</div>
-              <div className="bo-authSub">{error}</div>
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/login")}>
-                Ir a login
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--ok">
-                <CheckCircle2 size={30} />
-              </div>
-              <div className="bo-title">Bienvenido{invitation?.firstName ? `, ${invitation.firstName}` : ""}</div>
-              <div className="bo-authSub">Tu invitación está activa. Pulsa empezar para completar tu onboarding.</div>
+            <div className="text-xl font-semibold leading-tight tracking-tight">
+              No se pudo validar la invitación
+            </div>
+            <div className="mt-1.5 text-xs text-muted-foreground">{error}</div>
+            <button
+              type="button"
+              onClick={() => (window.location.href = "/login")}
+              className="mt-4 h-10 rounded-xl border border-white/[0.06] bg-transparent font-semibold inline-flex items-center justify-center gap-2 transition-all hover:bg-white/[0.06]"
+            >
+              Ir a login
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 text-green-500 mx-auto mb-4">
+              <CheckCircle2 size={30} />
+            </div>
+            <div className="text-xl font-semibold leading-tight tracking-tight">
+              Bienvenido{invitation?.firstName ? `, ${invitation.firstName}` : ""}
+            </div>
+            <div className="mt-1.5 text-xs text-muted-foreground">
+              Tu invitación está activa. Pulsa empezar para completar tu onboarding.
+            </div>
 
-              <button className="bo-btn bo-btn--primary" type="button" disabled={starting} onClick={onStart}>
-                {starting ? "Abriendo..." : "Empezar"}
-              </button>
-            </>
-          )}
-        </div>
+            <button
+              type="button"
+              disabled={starting}
+              onClick={onStart}
+              className="mt-4 h-10 rounded-xl border border-primary/30 bg-primary/16 font-semibold inline-flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-55 disabled:cursor-not-allowed"
+            >
+              {starting ? "Abriendo..." : "Empezar"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -12,7 +12,6 @@ type OrbitItem = SidebarItem & { angleDeg: number };
 export default function Page() {
   const session = useAtomValue(sessionAtom);
 
-  // Guaranteed by server middleware, but keep render stable.
   if (!session) return null;
 
   const { role, sectionAccess, roleImportance, name } = session.user;
@@ -36,50 +35,49 @@ export default function Page() {
   }, [name]);
 
   return (
-    <div className="bo-homePage">
-      <header className="bo-homeHero">
-        <div className="bo-homeKicker">Panel de administracion</div>
-        <h1 className="bo-homeTitle">
-          Bienvenido, <span className="bo-homeTitleAccent">{firstName}</span>
+    <div className="bo-backoffice">
+      <header className="bo-backofficeHeader">
+        <div className="bo-text-xs bo-muted">Panel de administración</div>
+        <h1 className="bo-backofficeTitle">
+          Bienvenido, <span className="bo-accentText">{firstName}</span>
         </h1>
-        <p className="bo-homeSub">Selecciona una seccion para empezar.</p>
+        <p className="bo-muted">Selecciona una sección para empezar.</p>
       </header>
 
-      <section className="bo-homeNav" aria-label="Accesos rapidos">
-        <div className="bo-homeOrbit" role="navigation" aria-label="Secciones del backoffice">
-          <div className="bo-homeRing bo-homeRing--outer" aria-hidden="true" />
-          <div className="bo-homeRing bo-homeRing--inner" aria-hidden="true" />
+      <section className="bo-orbitSection" aria-label="Accesos rápidos">
+        <div className="bo-orbitContainer" role="navigation" aria-label="Secciones del backoffice">
+          <div className="bo-orbitRing bo-orbitRing--outer" aria-hidden="true" />
+          <div className="bo-orbitRing bo-orbitRing--inner" aria-hidden="true" />
 
-          <div className="bo-homeCenter" aria-hidden="true">
-            <ChefHat className="bo-homeCenterIcon" />
+          <div className="bo-orbitCenter" aria-hidden="true">
+            <ChefHat className="bo-orbitIcon" />
           </div>
-
           {orbitItems.map((item, index) => (
             <a
               key={item.key}
-              className="bo-homeNode"
               href={item.href}
+              className="bo-orbitItem"
               style={{
-                ["--bo-home-angle" as any]: `${item.angleDeg}deg`,
-                ["--bo-home-node-delay" as any]: `${index * 42}ms`,
+                transform: `rotate(${item.angleDeg}deg) translateY(-160px) rotate(-${item.angleDeg}deg)`,
+                animationDelay: `${index * 42}ms`,
               }}
             >
-              <span className="bo-homeNodeIcon" aria-hidden="true">
+              <span className="bo-orbitItemIcon" aria-hidden="true">
                 {iconForSidebarItemKey(item.key, { size: 18, strokeWidth: 1.8 })}
               </span>
-              <span className="bo-homeNodeLabel">{item.label}</span>
+              <span className="bo-orbitItemLabel">{item.label}</span>
             </a>
           ))}
         </div>
       </section>
 
-      <section className="bo-homeList" aria-label="Secciones (lista)">
+      <section className="bo-sectionList" aria-label="Secciones (lista)">
         {items.map((item) => (
-          <a key={`list-${item.key}`} className="bo-homeListItem" href={item.href}>
-            <span className="bo-homeListIcon" aria-hidden="true">
+          <a key={`list-${item.key}`} href={item.href} className="bo-sectionItem group">
+            <span className="bo-sectionItemIcon" aria-hidden="true">
               {iconForSidebarItemKey(item.key, { size: 18, strokeWidth: 1.8 })}
             </span>
-            <span className="bo-homeListLabel">{item.label}</span>
+            <span className="bo-sectionItemLabel">{item.label}</span>
           </a>
         ))}
       </section>

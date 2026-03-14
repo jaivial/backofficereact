@@ -121,14 +121,14 @@ export default function RecurringInvoicesPage() {
   const getStatusBadge = (isActive: boolean) => {
     if (isActive) {
       return (
-        <span className="bo-recurringStatus bo-recurringStatus--active">
+        <span className="bo-badge bo-badge--success">
           <CheckCircle size={12} />
           Activa
         </span>
       );
     }
     return (
-      <span className="bo-recurringStatus bo-recurringStatus--paused">
+      <span className="bo-badge bo-badge--warning">
         <Pause size={12} />
         Pausada
       </span>
@@ -136,13 +136,13 @@ export default function RecurringInvoicesPage() {
   };
 
   return (
-    <div className="bo-recurringInvoicesPage">
-      <div className="bo-pageHeader">
-        <div className="bo-pageHeaderTitle">
-          <RefreshCw size={24} />
-          <h1>Facturación Recurrente</h1>
+    <div className="bo-stack bo-p-4">
+      <div className="bo-toolbar">
+        <div className="bo-toolbarLeft">
+          <RefreshCw size={24} className="bo-mutedText" />
+          <h1 className="bo-h3 bo-m-0">Facturación Recurrente</h1>
         </div>
-        <div className="bo-pageHeaderActions">
+        <div className="bo-toolbarRight">
           <button
             className="bo-btn bo-btn--primary"
             onClick={() => navigate("/app/facturas/crear?recurring=true")}
@@ -154,18 +154,18 @@ export default function RecurringInvoicesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="bo-recurringStats">
-        <div className="bo-recurringStatCard">
-          <div className="bo-recurringStatCardValue">{data.total}</div>
-          <div className="bo-recurringStatCardLabel">Total</div>
+      <div className="bo-grid bo-grid-cols-3 bo-grid-gap-4">
+        <div className="bo-card">
+          <div className="bo-statValue bo-text-2xl bo-font-bold">{data.total}</div>
+          <div className="bo-statLabel">Total</div>
         </div>
-        <div className="bo-recurringStatCard bo-recurringStatCard--active">
-          <div className="bo-recurringStatCardValue">{data.activeCount}</div>
-          <div className="bo-recurringStatCardLabel">Activas</div>
+        <div className="bo-card">
+          <div className="bo-statValue bo-text-2xl bo-font-bold bo-text-success">{data.activeCount}</div>
+          <div className="bo-statLabel">Activas</div>
         </div>
-        <div className="bo-recurringStatCard bo-recurringStatCard--paused">
-          <div className="bo-recurringStatCardValue">{data.pausedCount}</div>
-          <div className="bo-recurringStatCardLabel">Pausadas</div>
+        <div className="bo-card">
+          <div className="bo-statValue bo-text-2xl bo-font-bold bo-text-warning">{data.pausedCount}</div>
+          <div className="bo-statLabel">Pausadas</div>
         </div>
       </div>
 
@@ -177,72 +177,70 @@ export default function RecurringInvoicesPage() {
       )}
 
       {/* Recurring Invoices List */}
-      <div className="bo-recurringList">
+      <div className="bo-stack">
         {data.recurringInvoices.length === 0 ? (
           <div className="bo-emptyState">
-            <RefreshCw size={48} />
-            <h3>No hay facturación recurrente</h3>
-            <p>Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
+            <RefreshCw size={48} className="bo-mutedText bo-mb-4" />
+            <h3 className="bo-h4 bo-mb-2">No hay facturación recurrente</h3>
+            <p className="bo-mutedText bo-mb-4 bo-max-w-sm">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
             <button
               className="bo-btn bo-btn--primary"
-              onClick={() => navigate("/app/facturas/crear?recurring=true")}
+              onClick={() => window.location.href = "/app/facturas/crear?recurring=true"}
             >
               <Plus size={16} />
               Crear Facturación Recurrente
             </button>
           </div>
         ) : (
-          <div className="bo-tableContainer">
+          <div className="bo-tableWrapper">
             <table className="bo-table">
               <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Importe</th>
-                  <th>Frecuencia</th>
-                  <th>Próxima facturación</th>
-                  <th>Facturas</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
+                <tr className="bo-tableHeader">
+                  <th className="bo-tableHeaderCell">Cliente</th>
+                  <th className="bo-tableHeaderCell">Importe</th>
+                  <th className="bo-tableHeaderCell">Frecuencia</th>
+                  <th className="bo-tableHeaderCell">Próxima facturación</th>
+                  <th className="bo-tableHeaderCell">Facturas</th>
+                  <th className="bo-tableHeaderCell">Estado</th>
+                  <th className="bo-tableHeaderCell">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recurringInvoices.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <div className="bo-recurringCustomer">
-                        <div className="bo-recurringCustomerName">{item.customer_name}</div>
-                        <div className="bo-recurringCustomerEmail">{item.customer_email}</div>
+                  <tr key={item.id} className="bo-tableRow">
+                    <td className="bo-tableCell">
+                      <div className="bo-stack bo-gap-1">
+                        <span className="bo-weight-medium">{item.customer_name}</span>
+                        <span className="bo-text-xs bo-mutedText">{item.customer_email}</span>
                       </div>
                     </td>
-                    <td>
-                      <div className="bo-recurringAmount">
+                    <td className="bo-tableCell">
+                      <span className="bo-weight-medium">
                         {CURRENCY_SYMBOLS[item.currency] || "€"}{item.amount.toFixed(2)}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="bo-recurringFrequency">
-                        {getFrequencyLabel(item.frequency)}
                       </span>
                     </td>
-                    <td>
-                      <div className="bo-recurringNextDate">
-                        <Calendar size={14} />
+                    <td className="bo-tableCell">
+                      <span>{getFrequencyLabel(item.frequency)}</span>
+                    </td>
+                    <td className="bo-tableCell">
+                      <div className="bo-row bo-gap-1">
+                        <Calendar size={14} className="bo-mutedText" />
                         {item.next_billing_date}
                       </div>
                     </td>
-                    <td>
-                      <div className="bo-recurringCount">
-                        <span className="bo-recurringCountValue">{item.invoice_count}</span>
-                        <span className="bo-recurringCountLabel">facturas</span>
+                    <td className="bo-tableCell">
+                      <div className="bo-row bo-gap-1">
+                        <span className="bo-weight-semibold">{item.invoice_count}</span>
+                        <span className="bo-mutedText">facturas</span>
                       </div>
                     </td>
-                    <td>
+                    <td className="bo-tableCell">
                       {getStatusBadge(item.is_active)}
                     </td>
-                    <td>
-                      <div className="bo-recurringActions">
+                    <td className="bo-tableCell">
+                      <div className="bo-row" style={{ gap: "var(--bo-space-1)" }}>
                         <button
-                          className="bo-btn bo-btn--ghost bo-btn--sm"
+                          className="bo-btnIcon"
                           onClick={() => handleGenerateNow(item.id)}
                           disabled={isLoading || !item.is_active}
                           title="Generar factura ahora"
@@ -250,7 +248,7 @@ export default function RecurringInvoicesPage() {
                           <RefreshCw size={14} />
                         </button>
                         <button
-                          className="bo-btn bo-btn--ghost bo-btn--sm"
+                          className="bo-btnIcon"
                           onClick={() => handleToggleActive(item.id, item.is_active)}
                           disabled={isLoading}
                           title={item.is_active ? "Pausar" : "Reanudar"}
@@ -258,14 +256,14 @@ export default function RecurringInvoicesPage() {
                           {item.is_active ? <Pause size={14} /> : <Play size={14} />}
                         </button>
                         <button
-                          className="bo-btn bo-btn--ghost bo-btn--sm"
-                          onClick={() => navigate(`/app/facturas/${item.id}`)}
+                          className="bo-btnIcon"
+                          onClick={() => window.location.href = `/app/facturas/${item.id}`}
                           title="Ver detalles"
                         >
                           <Eye size={14} />
                         </button>
                         <button
-                          className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
+                          className="bo-btnIcon bo-text-danger"
                           onClick={() => handleDelete(item.id)}
                           disabled={isLoading}
                           title="Eliminar"
@@ -288,18 +286,18 @@ export default function RecurringInvoicesPage() {
           <div className="bo-paginationInfo">
             Mostrando {((data.page - 1) * data.limit) + 1} - {Math.min(data.page * data.limit, data.total)} de {data.total}
           </div>
-          <div className="bo-paginationControls">
+          <div className="bo-paginationButtons">
             <button
               className="bo-btn bo-btn--ghost"
               disabled={data.page <= 1}
-              onClick={() => navigate(`/app/facturas/recurrentes?page=${data.page - 1}`)}
+              onClick={() => window.location.href = `/app/facturas/recurrentes?page=${data.page - 1}`}
             >
               Anterior
             </button>
             <button
               className="bo-btn bo-btn--ghost"
               disabled={data.page * data.limit >= data.total}
-              onClick={() => navigate(`/app/facturas/recurrentes?page=${data.page + 1}`)}
+              onClick={() => window.location.href = `/app/facturas/recurrentes?page=${data.page + 1}`}
             >
               Siguiente
             </button>

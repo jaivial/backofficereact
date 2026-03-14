@@ -38,13 +38,20 @@ export function DonutOccupancy({
     return { dashArray: `${dash} ${c - dash}`, dashOffset: 0 };
   }, [pctArc]);
 
+  const arcColor = {
+    base: "#b9a8ff",
+    y50: "#b9a8ff",
+    o75: "#93efe7",
+    o85: "#d97706",
+    r100: "#dc2626",
+  }[tone];
+
   return (
-    <section className={`bo-donut bo-donut--${tone}`} aria-label="Ocupación">
-      <div className="bo-donutSvg" aria-hidden="true">
+    <section className="flex flex-col items-center p-4 rounded-lg border border-white/[0.06] bg-white/[0.02]" aria-label="Ocupación">
+      <div className="relative" aria-hidden="true">
         <svg viewBox="0 0 120 120" width="120" height="120">
-          <circle className="bo-donutTrack" cx="60" cy="60" r="44" fill="none" strokeWidth="10" />
+          <circle cx="60" cy="60" r="44" fill="none" strokeWidth="10" className="stroke-white/[0.06]" />
           <circle
-            className="bo-donutArc"
             cx="60"
             cy="60"
             r="44"
@@ -54,39 +61,40 @@ export function DonutOccupancy({
             strokeDasharray={dashArray}
             strokeDashoffset={dashOffset}
             transform="rotate(-90 60 60)"
+            className="transition-all duration-500"
+            style={{ stroke: arcColor }}
           />
         </svg>
-        <div className="bo-donutCenter">
-          <div className="bo-donutPct">{pctLabel}%</div>
-          <div className="bo-donutMeta">
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="text-2xl font-bold text-foreground">{pctLabel}%</div>
+          <div className="text-xs text-muted">
             {totalPeople}/{limit} pax
           </div>
         </div>
       </div>
 
-      <div className="bo-donutLegend">
-        <div className="bo-donutRow">
-          <span className="bo-pill bo-pill--used" aria-hidden="true" />
-          <span className="bo-mutedText">Ocupación</span>
-          <span className="bo-donutVal">{totalPeople}</span>
+      <div className="flex flex-col gap-2 mt-4 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-primary" aria-hidden="true" />
+          <span className="text-muted">Ocupación</span>
+          <span className="text-foreground font-medium">{totalPeople}</span>
         </div>
-        <div className="bo-donutRow">
-          <span className="bo-pill bo-pill--free" aria-hidden="true" />
-          <span className="bo-mutedText">Límite</span>
-          <span className="bo-donutVal">{limit}</span>
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-white/[0.2]" aria-hidden="true" />
+          <span className="text-muted">Límite</span>
+          <span className="text-foreground font-medium">{limit}</span>
         </div>
         {typeof totalBookings === "number" ? (
-          <div className="bo-donutRow">
-            <span className="bo-pill" aria-hidden="true" />
-            <span className="bo-mutedText">Reservas</span>
-            <span className="bo-donutVal">{totalBookings}</span>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-accent-2" aria-hidden="true" />
+            <span className="text-muted">Reservas</span>
+            <span className="text-foreground font-medium">{totalBookings}</span>
           </div>
         ) : null}
         {typeof pending === "number" && typeof confirmed === "number" ? (
-          <div className="bo-donutHint">{pending} pendientes · {confirmed} confirmadas</div>
+          <div className="text-xs text-muted mt-1">{pending} pendientes · {confirmed} confirmadas</div>
         ) : null}
       </div>
     </section>
   );
 }
-

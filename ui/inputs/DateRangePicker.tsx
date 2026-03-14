@@ -25,7 +25,7 @@ type RangeDraft = {
 };
 
 function portalEl(): HTMLElement | null {
-  return document.getElementById("bo-portal") || document.body;
+  return document.getElementById("portal") || document.body;
 }
 
 function clamp(n: number, min: number, max: number): number {
@@ -238,25 +238,25 @@ export function DateRangePicker({
       <AnimatePresence>
         <motion.div
           ref={popRef}
-          className="bo-datePop bo-dateRangePop bo-datePop--glass"
-          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -6 : 6 }}
+          className="fixed z-[9999] w-[312px] rounded-xl border border-border bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-card shadow-soft p-3 border-primary/30 bg-primary/[0.12] bg-secondary/80 backdrop-blur-md"
+          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -1.5 : 1.5 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -6 : 6 }}
+          exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: placement === "top" ? -1.5 : 1.5 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
           style={{ top: pos.top, left: pos.left }}
           role="dialog"
           aria-label="Selector de rango de fechas"
         >
-          <div className="bo-dateHead">
-            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={prevMonth} aria-label="Mes anterior">
+          <div className="flex items-center justify-between gap-2 mb-2.5">
+            <button type="button" className="w-9 h-9 rounded-xl border border-border bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground border-primary/30 bg-primary/20" onClick={prevMonth} aria-label="Mes anterior">
               <ChevronLeft size={18} strokeWidth={1.8} />
             </button>
-            <div className="bo-dateTitle">{monthLabel(viewYear, viewMonth0)}</div>
-            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={nextMonth} aria-label="Mes siguiente">
+            <div className="text-xs font-bold text-foreground capitalize">{monthLabel(viewYear, viewMonth0)}</div>
+            <button type="button" className="w-9 h-9 rounded-xl border border-border bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground border-primary/30 bg-primary/20" onClick={nextMonth} aria-label="Mes siguiente">
               <ChevronRight size={18} strokeWidth={1.8} />
             </button>
           </div>
-          <div className="bo-calDows" aria-hidden="true">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground mb-1" aria-hidden="true">
             <div>L</div>
             <div>M</div>
             <div>M</div>
@@ -265,33 +265,26 @@ export function DateRangePicker({
             <div>S</div>
             <div>D</div>
           </div>
-          <div className="bo-calGrid" aria-label="Calendario de rango">
+          <div className="grid grid-cols-7 gap-1" aria-label="Calendario de rango">
             {grid.map((c, idx) => {
-              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" />;
+              if (!c.day || !c.iso) return <div key={idx} className="w-[30px] h-[30px] cursor-default hover:bg-transparent" aria-hidden="true" />;
               const iso = c.iso;
               const isStart = hasDraft && iso === fromISO;
               const isEnd = hasDraft && iso === toISO;
               const isInRange = hasDraft && iso > fromISO && iso < toISO;
-              const cls = [
-                "bo-calDay",
-                isInRange ? "is-inRange" : "",
-                isStart ? "is-rangeStart" : "",
-                isEnd ? "is-rangeEnd" : "",
-              ]
-                .filter(Boolean)
-                .join(" ");
+              const cls = isInRange ? "rounded-lg bg-primary/20 border border-primary/30 shadow-none" : isStart || isEnd ? "bg-primary/40 border border-primary/50 shadow-[0_10px_24px_rgba(185,168,255,0.18)] text-foreground" : "";
               return (
-                <button key={iso} type="button" className={cls} onClick={() => onSelectDay(iso)}>
+                <button key={iso} type="button" className={`w-[30px] h-[30px] rounded-full grid place-items-center transition-colors border-0 bg-transparent cursor-pointer text-sm hover:bg-white/[0.03] ${cls}`} onClick={() => onSelectDay(iso)}>
                   {c.day}
                 </button>
               );
             })}
           </div>
-          <div className="bo-dateRangeActions">
-            <button type="button" className="bo-btn bo-btn--sm bo-btn--ghost" onClick={clear}>
+          <div className="mt-3 flex justify-end gap-2">
+            <button type="button" className="h-8 px-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/[0.03] transition-colors" onClick={clear}>
               Limpiar
             </button>
-            <button type="button" className="bo-btn bo-btn--sm bo-btn--primary" onClick={apply} disabled={!canApply}>
+            <button type="button" className="h-8 px-3 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:brightness-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed" onClick={apply} disabled={!canApply}>
               Aplicar
             </button>
           </div>
@@ -305,7 +298,7 @@ export function DateRangePicker({
     <>
       <button
         ref={btnRef}
-        className={["bo-dateBtn bo-dateBtn--glass bo-dateRangeBtn", className].filter(Boolean).join(" ")}
+        className={["h-9 rounded-xl border border-border bg-white/[0.02] text-foreground px-3 cursor-pointer inline-flex items-center gap-2.5 min-w-[188px] justify-start border-primary/30 bg-primary/20", className].filter(Boolean).join(" ")}
         type="button"
         onClick={toggle}
         aria-label={ariaLabel || buttonLabel}
@@ -314,7 +307,7 @@ export function DateRangePicker({
         disabled={disabled}
       >
         <Calendar size={16} strokeWidth={1.8} />
-        <span className="bo-dateBtnLabel">{label || buttonLabel}</span>
+        <span className="text-xs font-bold">{label || buttonLabel}</span>
       </button>
       {pop}
     </>

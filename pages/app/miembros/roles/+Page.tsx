@@ -229,29 +229,29 @@ export default function Page() {
   );
 
   return (
-    <section aria-label="Roles" className="bo-content-grid bo-membersPage">
-      <div className="bo-panel">
-        <div className="bo-panelHead bo-membersIntroHead">
+    <div className="flex flex-col gap-[18px]">
+      <div className="rounded-[var(--bo-radius-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--bo-surface)] border-none shadow-[var(--bo-shadow-soft)]">
+        <div className="flex items-end justify-between p-[16px_18px_10px]">
           <div>
-            <div className="bo-panelTitle">Roles y jerarquía</div>
-            <div className="bo-panelMeta">Gestiona roles por importancia (0-100), permisos y asignación de usuarios.</div>
+            <div className="text-sm font-bold">Roles y jerarquía</div>
+            <div className="text-xs text-[var(--bo-faint)]">Gestiona roles por importancia (0-100), permisos y asignación de usuarios.</div>
           </div>
-          <div className="bo-membersIntroBadge">
+          <div className="text-xs text-[var(--bo-muted)] bo-flex bo-items-center bo-gap-1">
             <ShieldUser size={16} strokeWidth={1.8} />
             {roles.length} roles
           </div>
         </div>
       </div>
 
-      <div className="bo-roleToolbar">
-        <div className="bo-mutedText">Tu importancia actual: {actorImportance}</div>
-        <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={() => setCreateOpen(true)}>
+      <div className="bo-flex bo-items-center bo-justify-between bo-gap-3">
+        <div className="text-xs text-[var(--bo-muted)]">Tu importancia actual: {actorImportance}</div>
+        <button className="h-8 px-[10px] rounded-[10px] text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--bo-border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] cursor-pointer leading-none whitespace-nowrap" type="button" onClick={() => setCreateOpen(true)}>
           <Plus size={14} strokeWidth={1.8} />
           Nuevo rol
         </button>
       </div>
 
-      <div className="bo-roleGrid">
+      <div className="bo-grid bo-grid-auto-fill bo-grid-gap-3">
         {roles.map((role) => (
           <RoleCard
             key={role.slug}
@@ -283,6 +283,6 @@ export default function Page() {
         busy={busyCreate}
         actorImportance={actorImportance}
       />
-    </section>
+    </div>
   );
 }

@@ -33,27 +33,27 @@ export function TimeEntriesEditor({
   onCloseLive: (entryId: number) => void;
 }) {
   if (entries.length === 0) {
-    return <div className="bo-mutedText bo-timeEntriesEmpty">Sin registros para este miembro y fecha.</div>;
+    return <div className="text-sm text-muted-foreground py-8 text-center">Sin registros para este miembro y fecha.</div>;
   }
 
   return (
-    <div className="bo-timeEntriesList">
+    <div className="space-y-3">
       {entries.map((entry) => {
         const busy = busyEntryId === entry.id;
         return (
-          <section key={entry.id} className="bo-timeEntryCard bo-timeEntryCard--glass" aria-label={`Registro ${entry.id}`}>
-            <div className="bo-timeEntryHead">
-              <div className="bo-timeEntryHeadLeft">
+          <section key={entry.id} className="rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] p-4" aria-label={`Registro ${entry.id}`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-sm text-foreground">
                 <Clock3 size={14} strokeWidth={1.8} />
                 <span>Registro #{entry.id}</span>
               </div>
-              <div className="bo-timeEntryHeadRight">
-                <span className={`bo-badge bo-timeEntrySource${entry.source === "clock_autocut" ? " is-warning" : ""}`}>{entry.source}</span>
-                {entry.isLive ? <span className="bo-badge bo-timeEntryLive">En vivo</span> : null}
+              <div className="flex items-center gap-2">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${entry.source === "clock_autocut" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" : "bg-muted text-muted-foreground"}`}>{entry.source}</span>
+                {entry.isLive ? <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">En vivo</span> : null}
               </div>
             </div>
 
-            <div className="bo-timeEntryBody">
+            <div className="space-y-3">
               <TimeAdjustCounter
                 label="Inicio"
                 value={entry.startTime}
@@ -71,16 +71,16 @@ export function TimeEntriesEditor({
                   disabled={busy}
                 />
               ) : (
-                <div className="bo-timeEntryLiveActions">
-                  <div className="bo-timeAdjustLabel">Fin</div>
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass" type="button" onClick={() => onCloseLive(entry.id)} disabled={busy}>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-muted-foreground">Fin</div>
+                  <button className="inline-flex items-center justify-center gap-2 h-8 px-3 text-sm rounded-lg bg-transparent hover:bg-white/[0.06] bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm" type="button" onClick={() => onCloseLive(entry.id)} disabled={busy}>
                     Cerrar ahora
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="bo-timeEntryFoot">Total registrado: {minutesLabel(entry.minutesWorked)}</div>
+            <div className="text-xs text-muted-foreground mt-3 pt-3 border-t border-white/[0.06]">Total registrado: {minutesLabel(entry.minutesWorked)}</div>
           </section>
         );
       })}

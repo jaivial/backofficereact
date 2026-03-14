@@ -48,14 +48,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [session.activeRestaurantId]);
 
   return (
-    <div className="bo-app bo-app--page">
+    <div className="flex min-h-screen" style={{ background: "var(--bo-body-bg)" }}>
       <Sidebar
         pathname={pathname}
         role={session.user.role}
         sectionAccess={session.user.sectionAccess}
         roleImportance={session.user.roleImportance}
       />
-      <main className={`bo-main${isReservasTables ? " bo-main--immersive" : ""}`}>
+      <main className={isReservasTables 
+        ? "flex-1 overflow-hidden" 
+        : "flex-1 overflow-auto"
+      }>
         {isReservasTables ? null : <Topbar title={title} />}
         <AnimatePresence mode="wait">
           <motion.div

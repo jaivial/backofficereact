@@ -43,6 +43,7 @@ import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { FoodDishCard } from "../../../../ui/widgets/food/FoodDishCard";
 import { MENU_TYPE_PANELS } from "../../../../ui/widgets/menus/menuPresentation";
+import { cn } from "../../../../ui/shadcn/utils";
 
 type PageData = {
   menu: GroupMenuV2 | null;
@@ -797,30 +798,30 @@ function DishImageAdvisorModal({
   const label = subjectLabel || "plato";
   return (
     <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">Asesor IA de imagen</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>
+      <div className="flex items-center justify-between pb-4 border-b border-bo-border">
+        <div className="text-base font-semibold">Asesor IA de imagen</div>
+        <button className="w-7 h-7 rounded-lg text-bo-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors text-lg leading-none" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>
           ×
         </button>
       </div>
 
-      <div className="bo-modalBody bo-dishAIAdvisorBody">
-        <div className="bo-dishAIAdvisorCopy">
-          <p className="bo-dishAIAdvisorLead">
+      <div className="py-4">
+        <div className="mb-4">
+          <p className="text-sm text-bo-text mb-2">
             Mejorar esta foto con IA puede elevar la presentacion de {label} y hacer tu menu mas atractivo para el cliente.
           </p>
-          <p className="bo-dishAIAdvisorHint">
+          <p className="text-xs text-bo-muted">
             Imagen optimizada para subir: {Math.max(1, imageKB)}KB · WebP.
           </p>
         </div>
-        <div className="bo-dishAIAdvisorPreviewWrap">
-          <img className="bo-dishAIAdvisorPreview" src={imageUrl} alt="Previsualizacion de imagen optimizada" />
+        <div className="rounded-xl overflow-hidden border border-bo-border bg-bo-surface-2">
+          <img className="w-full h-auto max-h-[300px] object-contain" src={imageUrl} alt="Previsualizacion de imagen optimizada" />
         </div>
       </div>
 
-      <div className="bo-modalActions bo-dishAIAdvisorActions">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-bo-border">
         <button
-          className="bo-btn bo-btn--advisorSecondary"
+          className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-medium rounded-xl border border-bo-border bg-bo-surface text-bo-muted hover:bg-bo-surface-3 hover:text-bo-text transition-all"
           type="button"
           onClick={onContinueWithoutAI}
           disabled={busy}
@@ -828,7 +829,7 @@ function DishImageAdvisorModal({
           Continuar sin mejorar
         </button>
         <button
-          className="bo-btn bo-btn--advisorPrimary"
+          className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-medium rounded-xl border border-primary/40 bg-primary/20 text-primary hover:bg-primary/30 transition-all"
           type="button"
           onClick={onImproveWithAI}
           disabled={busy}
@@ -1103,18 +1104,18 @@ function DishImageCropModal({ open, imageUrl, busy, onClose, onConfirm }: DishIm
 
   return (
     <Modal open={open} title="Recortar imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">Recorte 1:1</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>
+      <div className="flex items-center justify-between pb-4 border-b border-bo-border">
+        <div className="text-base font-semibold">Recorte 1:1</div>
+        <button className="w-7 h-7 rounded-lg text-bo-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors text-lg leading-none" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>
           ×
         </button>
       </div>
 
-      <div className="bo-modalBody bo-dishCropBody">
-        <div className="bo-dishCropViewportWrap">
+      <div className="py-4">
+        <div className="mb-4">
           <div
             ref={viewportRef}
-            className="bo-dishCropViewport"
+            className="relative w-full aspect-square rounded-xl overflow-hidden border border-bo-border bg-bo-surface-2 cursor-grab active:cursor-grabbing"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -1127,7 +1128,7 @@ function DishImageCropModal({ open, imageUrl, busy, onClose, onConfirm }: DishIm
             <img
               src={imageUrl}
               alt="Previsualizacion del recorte"
-              className="bo-dishCropImage"
+              className="absolute top-1/2 left-1/2 max-w-none w-auto h-auto min-w-full min-h-full object-contain"
               draggable={false}
               style={{ transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${zoom})` }}
               onLoad={(event) => {
@@ -1138,16 +1139,16 @@ function DishImageCropModal({ open, imageUrl, busy, onClose, onConfirm }: DishIm
                 });
               }}
             />
-            <div className="bo-dishCropFrame" aria-hidden="true" />
+            <div className="absolute inset-0 pointer-events-none border-2 border-primary/30 rounded-xl" aria-hidden="true" />
           </div>
         </div>
 
-        <div className="bo-dishCropControls">
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy}>
+        <div className="flex items-center justify-center gap-3">
+          <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all text-lg font-medium" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy}>
             -
           </button>
           <input
-            className="bo-dishCropRange"
+            className="w-32 h-2 bg-bo-surface-3 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
             type="range"
             min={1}
             max={4}
@@ -1157,11 +1158,11 @@ function DishImageCropModal({ open, imageUrl, busy, onClose, onConfirm }: DishIm
             disabled={busy}
             aria-label="Control de zoom"
           />
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy}>
+          <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all text-lg font-medium" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy}>
             +
           </button>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all"
             type="button"
             onClick={() => {
               setOffset({ x: 0, y: 0 });
@@ -1174,12 +1175,12 @@ function DishImageCropModal({ open, imageUrl, busy, onClose, onConfirm }: DishIm
         </div>
       </div>
 
-      <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} disabled={busy}>
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-bo-border">
+        <button className="inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-xl border border-bo-border bg-transparent text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all" type="button" onClick={onClose} disabled={busy}>
           Cancelar
         </button>
         <button
-          className="bo-btn bo-btn--primary"
+          className="inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-xl border border-primary/40 bg-primary/20 text-primary hover:bg-primary/30 transition-all"
           type="button"
           onClick={() => onConfirm({ zoom, offsetX: offset.x, offsetY: offset.y, viewportSize })}
           disabled={busy || viewportSize <= 0}
@@ -1237,8 +1238,8 @@ const MenuDishEditorCard = React.memo(
 
     return (
       <FoodDishCard
-        className="bo-dishCard bo-dishCard--horizontal"
-        bodyClassName="bo-dishCardBody"
+        className="flex flex-col sm:flex-row gap-4 rounded-xl border border-bo-border bg-gradient-to-b from-bo-surface/40 to-bo-surface-3 p-4"
+        bodyClassName="flex-1 min-w-0"
         debugId={`section:${sectionClientId}:dish:${dish.clientId}`}
         title={dishLabel}
         imageUrl={dish.foto_url}
@@ -1249,9 +1250,9 @@ const MenuDishEditorCard = React.memo(
         inactive={!dish.active}
         priceLabel={isALaCarte ? formatEuro(dish.price ?? 0) : undefined}
         footerActions={(
-          <div className="bo-dishRowActionsInline bo-dishRowActionsInline--split">
+          <div className="flex items-center gap-1">
             <button
-              className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishAllergenIconBtn"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all"
               type="button"
               aria-label={`Editar alergenos de ${dishLabel}`}
               onClick={() => setAllergenModal({ open: true, sectionClientId, dishClientId: dish.clientId })}
@@ -1259,7 +1260,8 @@ const MenuDishEditorCard = React.memo(
               <WheatOffIcon size={14} />
             </button>
             <button
-              className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-bo-border bg-bo-surface-2 transition-all"
+              style={{ color: "var(--bo-color-danger)" }}
               type="button"
               aria-label={`Eliminar plato ${dishLabel}`}
               onClick={() => removeDish(sectionClientId, dish.clientId)}
@@ -1269,10 +1271,10 @@ const MenuDishEditorCard = React.memo(
           </div>
         )}
       >
-        <div className="bo-dishEditorContent">
-          <div className="bo-dishCardHead">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
             <button
-              className="bo-dishDrag"
+              className="text-bo-muted hover:text-bo-text cursor-grab active:cursor-grabbing"
               type="button"
               aria-label={`Arrastrar plato ${dishLabel}`}
               onPointerDown={(event) => {
@@ -1282,7 +1284,7 @@ const MenuDishEditorCard = React.memo(
             >
               <GripVertical size={14} />
             </button>
-            <label className="bo-checkRow">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
               <Switch
                 checked={dish.active}
                 onCheckedChange={(checked) => {
@@ -1297,9 +1299,9 @@ const MenuDishEditorCard = React.memo(
               <span>Activo</span>
             </label>
           </div>
-          <div className="bo-dishFields">
+          <div className="flex flex-col gap-3">
             <textarea
-              className="bo-input bo-textarea bo-dishTitleTextarea"
+              className="w-full min-h-[40px] h-auto rounded-xl border border-bo-border bg-bo-surface text-sm text-bo-text px-3 py-2 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all resize-none placeholder:text-bo-muted/50"
               rows={1}
               value={dish.title}
               ref={titleTextareaRef}
@@ -1311,7 +1313,7 @@ const MenuDishEditorCard = React.memo(
               onChange={(e) => updateDish(sectionClientId, dish.clientId, { title: e.target.value })}
               placeholder="Titulo plato"
             />
-            <label className="bo-checkRow">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
               <Switch
                 checked={dish.description_enabled}
                 onCheckedChange={(checked) => {
@@ -1330,7 +1332,7 @@ const MenuDishEditorCard = React.memo(
             </label>
             {dish.description_enabled ? (
               <textarea
-                className="bo-input bo-textarea"
+                className="w-full min-h-[60px] rounded-xl border border-bo-border bg-bo-surface text-sm text-bo-text px-3 py-2 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all resize-none placeholder:text-bo-muted/50"
                 value={dish.description}
                 onChange={(e) => updateDish(sectionClientId, dish.clientId, { description: e.target.value })}
                 placeholder="Descripcion"
@@ -1338,10 +1340,10 @@ const MenuDishEditorCard = React.memo(
             ) : null}
 
             {isALaCarte ? (
-              <div className="bo-dishPriceRow">
-                <label className="bo-label">Precio</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-bo-muted font-medium">Precio</label>
                 <input
-                  className="bo-input bo-priceInput"
+                  className="h-10 rounded-xl border border-bo-border bg-bo-surface text-sm text-bo-text px-3 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-bo-muted/50"
                   inputMode="decimal"
                   value={dish.price == null ? "" : String(dish.price)}
                   onChange={(e) =>
@@ -1353,20 +1355,20 @@ const MenuDishEditorCard = React.memo(
                 />
               </div>
             ) : null}
-            <div className="bo-dishFieldsSide">
+            <div className="flex flex-col gap-3">
               {dish.allergens.length > 0 ? (
-                <div className="bo-allergenRow">
+                <div className="flex flex-wrap gap-1.5">
                   {dish.allergens.map((name) => (
-                    <span key={`${dish.clientId}-${name}`} className="bo-allergenPill">
+                    <span key={`${dish.clientId}-${name}`} className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[var(--bo-surface-2)] text-[var(--bo-muted)] border border-[var(--bo-border)]">
                       {name}
                     </span>
                   ))}
                 </div>
               ) : null}
 
-              <div className="bo-dishRow">
-                <div className="bo-dishRowInlineControls">
-                  <label className="bo-checkRow">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
                     <Switch
                       checked={dish.supplement_enabled}
                       onCheckedChange={(checked) => {
@@ -1385,7 +1387,7 @@ const MenuDishEditorCard = React.memo(
                   </label>
                   {dish.supplement_enabled ? (
                     <input
-                      className="bo-input bo-suppInput"
+                      className="h-8 w-20 rounded-lg border border-bo-border bg-bo-surface text-sm text-bo-text px-2 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-bo-muted/50"
                       inputMode="decimal"
                       value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
                       onChange={(e) =>
@@ -1540,17 +1542,17 @@ const MenuSectionEditorPanel = React.memo(
     return (
       <ReorderItemContainer
         value={sec.clientId}
-        className="bo-panel bo-accordionSection bo-reorderItem"
+        className="rounded-xl border border-bo-border bg-gradient-to-b from-bo-surface/40 to-bo-surface-3 overflow-hidden"
         transition={reorderTransition}
         whileDrag={reorderWhileDrag}
       >
         {(startSectionDrag) => (
           <>
-            <div className="bo-accordionHeadRow">
-              <div className="bo-sectionReorder bo-sectionReorder--accordion">
-                <div className="bo-sectionMoveControls">
+            <div className="flex items-center gap-2 p-3">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1">
                   <motion.button
-                    className="bo-sectionMoveBtn"
+                    className="w-6 h-6 rounded-md text-bo-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
                     type="button"
                     aria-label={`Subir seccion ${sec.title || secIdx + 1}`}
                     disabled={secIdx === 0}
@@ -1562,7 +1564,7 @@ const MenuSectionEditorPanel = React.memo(
                     <ChevronUp size={14} />
                   </motion.button>
                   <motion.button
-                    className="bo-sectionMoveBtn"
+                    className="w-6 h-6 rounded-md text-bo-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
                     type="button"
                     aria-label={`Bajar seccion ${sec.title || secIdx + 1}`}
                     disabled={secIdx === sectionsCount - 1}
@@ -1575,7 +1577,7 @@ const MenuSectionEditorPanel = React.memo(
                   </motion.button>
                 </div>
                 <button
-                  className="bo-sectionDrag"
+                  className="text-bo-muted hover:text-bo-text cursor-grab active:cursor-grabbing mt-1"
                   type="button"
                   aria-label={`Arrastrar seccion ${sec.title || secIdx + 1}`}
                   onPointerDown={(event) => {
@@ -1587,13 +1589,13 @@ const MenuSectionEditorPanel = React.memo(
                 </button>
               </div>
               <button
-                className="bo-accordionHead"
+                className="flex-1 flex items-center justify-between gap-2 min-w-0 text-left"
                 type="button"
                 onClick={() => handleSectionToggle(sec.clientId, !sec.expanded)}
               >
-                <span className="bo-accordionHeadLeft">
+                <span className="min-w-0">
                   <input
-                    className="bo-input"
+                    className="w-full bg-transparent border-none text-sm font-medium text-bo-text placeholder:text-bo-muted/50 outline-none"
                     value={sec.title}
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => updateSection(sec.clientId, { title: e.target.value })}
@@ -1610,11 +1612,11 @@ const MenuSectionEditorPanel = React.memo(
             </div>
 
             {sec.expanded !== false ? (
-              <div className="bo-panelBody">
-                <div className="bo-sectionDishTabs" role="tablist" aria-label={`Filtro de platos en ${sectionLabel}`}>
+              <div className="px-4 pb-4">
+                <div className="flex items-center gap-1 mb-3 pb-3 border-b border-bo-border" role="tablist" aria-label={`Filtro de platos en ${sectionLabel}`}>
                   <button
                     id={activeTabId}
-                    className={`bo-sectionDishTab ${dishTab === "active" ? "is-active" : ""}`}
+                    className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", dishTab === "active" ? "bg-primary/20 text-primary" : "text-bo-muted hover:text-bo-text hover:bg-bo-surface-2")}
                     type="button"
                     role="tab"
                     aria-label="Activos"
@@ -1623,13 +1625,13 @@ const MenuSectionEditorPanel = React.memo(
                     tabIndex={dishTab === "active" ? 0 : -1}
                     onClick={() => handleDishTabChange("active")}
                   >
-                    <span className="bo-sectionDishTabLabel">Activos</span>
-                    <span className="bo-sectionDishTabIcon" aria-hidden="true"><Check size={14} /></span>
-                    <span className="bo-sectionDishTabCount">{activeDishCount}</span>
+                    <span>Activos</span>
+                    <span className="opacity-60" aria-hidden="true"><Check size={14} /></span>
+                    <span className="ml-0.5">{activeDishCount}</span>
                   </button>
                   <button
                     id={inactiveTabId}
-                    className={`bo-sectionDishTab ${dishTab === "inactive" ? "is-active" : ""}`}
+                    className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", dishTab === "inactive" ? "bg-primary/20 text-primary" : "text-bo-muted hover:text-bo-text hover:bg-bo-surface-2")}
                     type="button"
                     role="tab"
                     aria-label="Inactivos"
@@ -1638,13 +1640,13 @@ const MenuSectionEditorPanel = React.memo(
                     tabIndex={dishTab === "inactive" ? 0 : -1}
                     onClick={() => handleDishTabChange("inactive")}
                   >
-                    <span className="bo-sectionDishTabLabel">Inactivos</span>
-                    <span className="bo-sectionDishTabIcon" aria-hidden="true"><EyeOff size={14} /></span>
-                    <span className="bo-sectionDishTabCount">{inactiveDishCount}</span>
+                    <span>Inactivos</span>
+                    <span className="opacity-60" aria-hidden="true"><EyeOff size={14} /></span>
+                    <span className="ml-0.5">{inactiveDishCount}</span>
                   </button>
                   <button
                     id={annotationsTabId}
-                    className={`bo-sectionDishTab ${dishTab === "annotations" ? "is-active" : ""}`}
+                    className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", dishTab === "annotations" ? "bg-primary/20 text-primary" : "text-bo-muted hover:text-bo-text hover:bg-bo-surface-2")}
                     type="button"
                     role="tab"
                     aria-label="Anotaciones"
@@ -1653,15 +1655,15 @@ const MenuSectionEditorPanel = React.memo(
                     tabIndex={dishTab === "annotations" ? 0 : -1}
                     onClick={() => handleDishTabChange("annotations")}
                   >
-                    <span className="bo-sectionDishTabLabel">Anotaciones</span>
-                    <span className="bo-sectionDishTabIcon" aria-hidden="true"><MessageSquareText size={14} /></span>
-                    <span className="bo-sectionDishTabCount">{annotationCount}</span>
+                    <span>Anotaciones</span>
+                    <span className="opacity-60" aria-hidden="true"><MessageSquareText size={14} /></span>
+                    <span className="ml-0.5">{annotationCount}</span>
                   </button>
                 </div>
 
                 <div
                   id={dishPanelId}
-                  className="bo-sectionDishTabPanel"
+                  className="min-h-[100px]"
                   role="tabpanel"
                   aria-labelledby={
                     dishTab === "active"
@@ -1672,18 +1674,18 @@ const MenuSectionEditorPanel = React.memo(
                   }
                 >
                   {dishTab === "annotations" ? (
-                    <div className="bo-field bo-field--full">
-                      <div className="bo-stackFields">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-2">
                         {sec.annotations.map((line, idx) => (
-                          <div key={`${sec.clientId}-annotation-${idx}`} className="bo-inlineField">
+                          <div key={`${sec.clientId}-annotation-${idx}`} className="flex items-center gap-2">
                             <input
-                              className="bo-input"
+                              className="flex-1 h-9 rounded-lg border border-bo-border bg-bo-surface text-sm text-bo-text px-3 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-bo-muted/50"
                               value={line}
                               onChange={(e) => updateSectionAnnotation(sec.clientId, idx, e.target.value)}
                               placeholder="Anotacion"
                             />
                             <button
-                              className="bo-btn bo-btn--ghost"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all"
                               type="button"
                               aria-label={`Eliminar anotacion ${idx + 1} de ${sectionLabel}`}
                               disabled={sec.annotations.length <= 1}
@@ -1694,7 +1696,7 @@ const MenuSectionEditorPanel = React.memo(
                           </div>
                         ))}
                         <button
-                          className="bo-btn bo-btn--ghost bo-commentAddBtn"
+                          className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all self-start"
                           type="button"
                           onClick={() => addSectionAnnotation(sec.clientId)}
                         >
@@ -1707,13 +1709,13 @@ const MenuSectionEditorPanel = React.memo(
                       axis="y"
                       values={visibleDishes.map((dish) => dish.clientId)}
                       onReorder={handleReorderVisibleDishes}
-                      className="bo-dishesStack bo-reorderGroup"
+                      className="flex flex-col gap-3"
                     >
                       {visibleDishes.map((dish, dishIdx) => (
                         <ReorderItemContainer
                           key={dish.clientId}
                           value={dish.clientId}
-                          className="bo-dishReorderItem bo-reorderItem"
+                          className="list-none"
                           transition={reorderTransition}
                           whileDrag={reorderWhileDrag}
                         >
@@ -1736,7 +1738,7 @@ const MenuSectionEditorPanel = React.memo(
                       ))}
                     </Reorder.Group>
                   ) : (
-                    <div className="bo-dishesEmpty" role="status" aria-live="polite">
+                    <div className="py-8 text-center text-sm text-bo-muted" role="status" aria-live="polite">
                       {dishTab === "active"
                         ? "No hay platos activos en esta seccion."
                         : "No hay platos inactivos en esta seccion."}
@@ -1746,33 +1748,33 @@ const MenuSectionEditorPanel = React.memo(
 
                 {dishTab !== "annotations" ? (
                   <>
-                    <div className="bo-dishAddRow">
-                      <button className="bo-btn bo-btn--ghost bo-btn--sm bo-dishAddBtn" type="button" onClick={handleAddDish}>
+                    <div className="mt-4">
+                      <button className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text transition-all" type="button" onClick={handleAddDish}>
                         <Plus size={12} /> Añadir plato
                       </button>
                     </div>
 
-                    <div className="bo-searchCatalogRow">
-                      <div className="bo-searchCatalogInputWrap">
-                        <Search size={14} className="bo-searchCatalogIcon" aria-hidden="true" />
+                    <div className="mt-3">
+                      <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-bo-muted pointer-events-none" aria-hidden="true" />
                         <input
-                          className="bo-input bo-searchCatalogInput"
+                          className="w-full h-9 rounded-lg border border-bo-border bg-bo-surface text-sm text-bo-text pl-9 pr-3 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-bo-muted/50"
                           placeholder="Buscar plato en base de datos"
                           value={searchTerm}
                           onChange={(e) => handleSearch(sec.clientId, e.target.value)}
                         />
                       </div>
                       {searchItems.length > 0 ? (
-                        <div className="bo-searchResults">
+                        <div className="mt-2 rounded-lg border border-bo-border bg-surface overflow-hidden">
                           {searchItems.map((item) => (
                             <button
                               key={`${sec.clientId}-${item.id}`}
                               type="button"
-                              className="bo-searchResultBtn"
+                              className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-bo-surface-2 transition-colors"
                               onClick={() => handleAddDishFromCatalog(item)}
                             >
                               <span>{item.title}</span>
-                              <span className="bo-mutedText">Añadir</span>
+                              <span className="text-xs text-bo-muted">Añadir</span>
                             </button>
                           ))}
                         </div>

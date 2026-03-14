@@ -28,30 +28,30 @@ export default function Page() {
   }, []);
 
   return (
-    <section className="bo-foodHome" aria-label="Categorias de comida">
-      <div className="bo-foodHub">
-        <div className="bo-foodHubGrid" role="list">
+    <section className="bo-p-6" aria-label="Categorias de comida">
+      <div className="bo-card">
+        <div className="bo-grid bo-grid-cols-4 bo-grid-gap-3" role="list">
           {FOOD_ENTRIES.map((entry) => {
             const EntryIcon = entry.icon;
             return (
               <button
                 key={entry.type}
-                className="bo-foodHubCard"
+                className="bo-btnCard"
                 type="button"
                 role="listitem"
                 onClick={() => openCategory(entry.type)}
                 aria-label={`Abrir ${entry.label}`}
               >
-                <EntryIcon className="bo-foodHubIcon" size={20} aria-hidden="true" />
-                <span className="bo-foodHubLabel">{entry.label}</span>
-                <span className="bo-foodHubHint">{entry.hint}</span>
+                <EntryIcon className="bo-accentIcon" size={20} aria-hidden="true" />
+                <span className="bo-cardTitle">{entry.label}</span>
+                <span className="bo-cardMeta">{entry.hint}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      <button className="bo-menuFab" type="button" aria-label="Crear elemento de comida" onClick={openCreate}>
+      <button className="bo-fab" type="button" aria-label="Crear elemento de comida" onClick={openCreate}>
         <Plus size={26} />
       </button>
     </section>

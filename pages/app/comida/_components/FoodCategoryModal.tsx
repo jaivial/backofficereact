@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { Modal } from "../../../../ui/overlays/Modal";
+import { Button } from "../../../../ui/actions/Button";
+import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 
 interface FoodCategoryModalProps {
   open: boolean;
@@ -31,11 +33,11 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
   return (
     <Modal open={open} onClose={onClose} title="Anadir categoria custom" size="sm">
       <form onSubmit={onSubmit}>
-        <div className="bo-field">
-          <label className="bo-label" htmlFor="food-category-name">Nombre categoria *</label>
+        <div className="grid gap-1.5">
+          <label className="text-xs text-[var(--bo-muted)] font-semibold" htmlFor="food-category-name">Nombre categoria *</label>
           <input
             id="food-category-name"
-            className="bo-input"
+            className="h-10 rounded-[8px] border border-[var(--bo-border)] bg-[var(--bo-surface-2)] text-[var(--bo-text)] px-3 outline-none transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ejemplo: Fuera de carta"
@@ -43,20 +45,20 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
           />
         </div>
 
-        <div className="bo-foodModal-actions">
-          <button type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={busy}>
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--bo-border)]">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={busy}>
             Cancelar
-          </button>
-          <button type="submit" className="bo-btn bo-btn--primary" disabled={busy || !name.trim()}>
+          </Button>
+          <Button type="submit" variant="primary" disabled={busy || !name.trim()}>
             {busy ? (
               <>
-                <div className="bo-spinner bo-spinner--sm" />
+                <LoadingSpinner size="sm" />
                 Guardando...
               </>
             ) : (
               "Guardar"
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

@@ -29,7 +29,9 @@ export const StatCard = memo(function StatCard({
   const displayLabel = label ?? title ?? "";
   return (
     <div
-      className={`bo-card bo-card--glass ${onClick ? "bo-card--clickable" : ""}`}
+      className={`rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-card shadow-soft p-[14px] min-h-[88px] ${
+        onClick ? "cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] hover:border-white/[0.12]" : ""
+      }`}
       aria-label={displayLabel}
       onClick={onClick}
       role={onClick ? "button" : undefined}
@@ -41,13 +43,13 @@ export const StatCard = memo(function StatCard({
         }
       } : undefined}
     >
-      <div className="bo-statTop">
-        <div className="bo-statIcon" aria-hidden="true">
+      <div className="flex items-center gap-[10px]">
+        <div className="w-7 h-7 rounded-md border border-white/[0.07] bg-white/[0.02] flex items-center justify-center text-white/80" aria-hidden="true">
           <Icon k={icon} />
         </div>
-        <div className="bo-statLabel">{displayLabel}</div>
+        <div className="text-sm text-muted-foreground">{displayLabel}</div>
       </div>
-      <div className="bo-statValue">{value}</div>
+      <div className="mt-[10px] text-[22px] font-bold tracking-tight">{value}</div>
     </div>
   );
 });

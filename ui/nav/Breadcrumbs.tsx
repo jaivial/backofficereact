@@ -163,23 +163,23 @@ export const Breadcrumbs = memo(function Breadcrumbs({
   if (!items.length) return null;
 
   return (
-    <nav className={cn("bo-breadcrumb", className)} aria-label="Breadcrumb">
-      <ol className="bo-breadcrumbList">
+    <nav className={cn("min-w-0", className)} aria-label="Breadcrumb">
+      <ol className="flex flex-wrap items-center gap-1 list-none m-0 p-0">
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1;
           return (
-            <li key={`${item.href ?? "current"}-${item.label}-${index}`} className="bo-breadcrumbItem">
+            <li key={`${item.href ?? "current"}-${item.label}-${index}`} className="inline-flex items-center gap-1 min-w-0">
               {item.href && !isCurrent ? (
-                <a className="bo-breadcrumbLink" href={item.href}>
+                <a className="inline-flex items-center h-6 px-2 rounded-md text-sm text-muted bg-transparent transition-colors duration-150 hover:bg-white/[0.04] hover:text-foreground" href={item.href}>
                   {item.label}
                 </a>
               ) : (
-                <span className="bo-breadcrumbCurrent" aria-current={isCurrent ? "page" : undefined}>
+                <span className="inline-flex items-center h-6 px-2 rounded-md text-sm text-foreground font-medium" aria-current={isCurrent ? "page" : undefined}>
                   {item.label}
                 </span>
               )}
               {isCurrent ? null : (
-                <span className="bo-breadcrumbSeparator" aria-hidden="true">
+                <span className="text-muted-foreground/60 text-sm" aria-hidden="true">
                   /
                 </span>
               )}

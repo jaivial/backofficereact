@@ -33,11 +33,11 @@ export function PlusMinusCounter({
   const valueText = String(value);
 
   return (
-    <div className={cn("bo-timeAdjustCounter bo-timeAdjustCounter--glass", className)} aria-label={label}>
-      <div className="bo-timeAdjustCounterLabel">{label}</div>
-      <div className="bo-timeAdjustCounterCtrls">
+    <div className={cn("flex flex-col gap-2 p-4 rounded-lg border border-white/[0.06] bg-white/[0.02]", className)} aria-label={label}>
+      <div className="text-xs text-muted font-medium">{label}</div>
+      <div className="flex items-center gap-2">
         <button
-          className="bo-counterBtn bo-counterBtn--glass"
+          className="h-8 w-8 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] hover:border-white/[0.12] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
           onClick={onDecrease}
           disabled={disabled || !canDecrease}
@@ -46,10 +46,10 @@ export function PlusMinusCounter({
           <Minus size={14} strokeWidth={2.2} />
         </button>
 
-        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass">{valueText}</div>
+        <div className="flex-1 text-center text-sm font-semibold text-foreground">{valueText}</div>
 
         <button
-          className="bo-counterBtn bo-counterBtn--glass"
+          className="h-8 w-8 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] hover:border-white/[0.12] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
           onClick={onIncrease}
           disabled={disabled || !canIncrease}
@@ -60,7 +60,7 @@ export function PlusMinusCounter({
       </div>
 
       {helperText ? (
-        <div className="bo-mutedText" style={{ marginTop: 8, fontSize: 12 }}>
+        <div className="text-xs text-muted" style={{ marginTop: 8 }}>
           {helperText}
         </div>
       ) : null}

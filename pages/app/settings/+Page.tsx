@@ -525,19 +525,19 @@ export default function Page() {
               </label>
 
               <div className="bo-row">
-                <label className="bo-field" style={{ flex: 1, minWidth: 240 }}>
+                <label className="bo-field bo-flex-1">
                   <div className="bo-label">Color primario</div>
                   <div className="bo-row">
                     <input className="bo-input bo-input--sm" value={branding.primaryColor} onChange={(e) => setBranding((p) => ({ ...p, primaryColor: e.target.value }))} />
-                    <div className="bo-pill" style={{ width: 14, height: 14, background: primary, borderColor: "var(--bo-border)" }} aria-label="Preview color primario" />
+                    <div className="bo-colorDot" style={{ background: primary }} aria-label="Preview color primario" />
                   </div>
                 </label>
 
-                <label className="bo-field" style={{ flex: 1, minWidth: 240 }}>
+                <label className="bo-field bo-flex-1">
                   <div className="bo-label">Color acento</div>
                   <div className="bo-row">
                     <input className="bo-input bo-input--sm" value={branding.accentColor} onChange={(e) => setBranding((p) => ({ ...p, accentColor: e.target.value }))} />
-                    <div className="bo-pill" style={{ width: 14, height: 14, background: accent, borderColor: "var(--bo-border)" }} aria-label="Preview color acento" />
+                    <div className="bo-colorDot" style={{ background: accent }} aria-label="Preview color acento" />
                   </div>
                 </label>
               </div>
@@ -640,7 +640,7 @@ export default function Page() {
           </div>
           <div className="bo-panelBody">
             <div className="bo-stack">
-              <div className="bo-mutedText" style={{ marginBottom: 16 }}>
+              <div className="bo-mutedText bo-mb-4">
                 Usa los siguientes tokens en el formato: {"{YYYY}"} (año), {"{YY}"} (año corto), {"{0001}"} (numero con ceros), {"{N}"} (numero sin padding), {"{prefix}"} (prefijo), {"{suffix}"} (sufijo)
               </div>
 
@@ -655,7 +655,7 @@ export default function Page() {
               </label>
 
               <div className="bo-row">
-                <label className="bo-field" style={{ flex: 1 }}>
+                <label className="bo-field bo-flex-1">
                   <div className="bo-label">Prefijo</div>
                   <input
                     className="bo-input"
@@ -665,7 +665,7 @@ export default function Page() {
                   />
                 </label>
 
-                <label className="bo-field" style={{ flex: 1 }}>
+                <label className="bo-field bo-flex-1">
                   <div className="bo-label">Sufijo</div>
                   <input
                     className="bo-input"
@@ -677,7 +677,7 @@ export default function Page() {
               </div>
 
               <div className="bo-row">
-                <label className="bo-field" style={{ flex: 1 }}>
+                <label className="bo-field bo-flex-1">
                   <div className="bo-label">Numero inicial</div>
                   <input
                     className="bo-input"
@@ -688,7 +688,7 @@ export default function Page() {
                   />
                 </label>
 
-                <label className="bo-field" style={{ flex: 1 }}>
+                <label className="bo-field bo-flex-1">
                   <div className="bo-label">Digitos de relleno (0001)</div>
                   <input
                     className="bo-input"
@@ -713,9 +713,9 @@ export default function Page() {
                 <div className="bo-mutedText">El numero que se usara para la siguiente factura</div>
               </label>
 
-              <div className="bo-field" style={{ padding: 16, backgroundColor: "var(--bo-bg-elevated)", borderRadius: 8, marginTop: 8 }}>
+              <div className="bo-field bo-panelPreview">
                 <div className="bo-label">Vista previa del siguiente numero de factura</div>
-                <div style={{ fontSize: 24, fontWeight: 600, marginTop: 8, fontFamily: "monospace" }}>{previewInvoiceNumber}</div>
+                <div className="bo-text-2xl bo-weight-semibold bo-mt-2 bo-font-mono">{previewInvoiceNumber}</div>
               </div>
 
               <div className="bo-row">
@@ -734,12 +734,12 @@ export default function Page() {
           </div>
           <div className="bo-panelBody">
             <div className="bo-stack">
-              <div className="bo-mutedText" style={{ marginBottom: 16 }}>
+              <div className="bo-mutedText bo-mb-4">
                 Esta herramienta permite renumerar todas las facturas existentes. Se mantendra un registro de auditoria con los cambios realizados. Es recomendable previsualizar antes de aplicar.
               </div>
 
               <div className="bo-row">
-                <label className="bo-field" style={{ flex: 1 }}>
+                <label className="bo-field bo-flex-1">
                   <div className="bo-label">Numero inicial</div>
                   <input
                     className="bo-input"
@@ -766,7 +766,7 @@ export default function Page() {
 
               {renumberGenerateByDate && (
                 <div className="bo-row">
-                  <label className="bo-field" style={{ flex: 1 }}>
+                  <label className="bo-field bo-flex-1">
                     <div className="bo-label">Formato de fecha</div>
                     <Select
                       value={renumberDateFormat}
@@ -782,7 +782,7 @@ export default function Page() {
                 </div>
               )}
 
-              <div className="bo-row" style={{ marginTop: 8 }}>
+              <div className="bo-row bo-mt-2">
                 <button
                   className="bo-btn bo-btn--secondary"
                   type="button"
@@ -794,10 +794,10 @@ export default function Page() {
               </div>
 
               {renumberPreview && renumberPreview.length > 0 && (
-                <div className="bo-field" style={{ marginTop: 16 }}>
+                <div className="bo-field bo-mt-4">
                   <div className="bo-label">Previsualizacion ({renumberPreview.length} facturas)</div>
-                  <div style={{ maxHeight: 300, overflowY: "auto", border: "1px solid var(--bo-border)", borderRadius: 8, marginTop: 8 }}>
-                    <table className="bo-table" style={{ fontSize: 13 }}>
+                  <div className="bo-tableWrapper bo-mt-2">
+                    <table className="bo-table">
                       <thead>
                         <tr>
                           <th>Factura Actual</th>
@@ -811,7 +811,7 @@ export default function Page() {
                         {renumberPreview.slice(0, 50).map((item, idx) => (
                           <tr key={item.invoice_id}>
                             <td>{item.current_number || "-"}</td>
-                            <td style={{ fontWeight: 600 }}>{item.new_number}</td>
+                            <td className="bo-weight-semibold">{item.new_number}</td>
                             <td>{item.customer_name}</td>
                             <td>{item.invoice_date}</td>
                             <td>{item.amount.toFixed(2)} EUR</td>
@@ -820,7 +820,7 @@ export default function Page() {
                       </tbody>
                     </table>
                     {renumberPreview.length > 50 && (
-                      <div className="bo-mutedText" style={{ padding: 8, textAlign: "center" }}>
+                      <div className="bo-mutedText bo-text-center bo-p-2">
                         ... y {renumberPreview.length - 50} facturas mas
                       </div>
                     )}
@@ -829,7 +829,7 @@ export default function Page() {
               )}
 
               {renumberPreview && renumberPreview.length > 0 && (
-                <div className="bo-row" style={{ marginTop: 16 }}>
+                <div className="bo-row bo-mt-4">
                   <button
                     className="bo-btn bo-btn--primary"
                     type="button"
@@ -841,15 +841,15 @@ export default function Page() {
                 </div>
               )}
 
-              <div className="bo-field" style={{ marginTop: 24 }}>
+              <div className="bo-field bo-mt-6">
                 <div className="bo-label">Historial de renumeraciones</div>
                 {renumberHistory.length === 0 ? (
-                  <div className="bo-mutedText" style={{ marginTop: 8 }}>No hay historial de renumeraciones</div>
+                  <div className="bo-mutedText bo-mt-2">No hay historial de renumeraciones</div>
                 ) : (
-                  <div style={{ maxHeight: 200, overflowY: "auto", marginTop: 8 }}>
+                  <div className="bo-auditHistory bo-mt-2">
                     {renumberHistory.map((audit) => (
-                      <div key={audit.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--bo-border)" }}>
-                        <div style={{ fontWeight: 600 }}>
+                      <div key={audit.id} className="bo-auditItem">
+                        <div className="bo-weight-semibold">
                           {audit.affected_invoices} facturas renumeradas
                         </div>
                         <div className="bo-mutedText">
@@ -874,7 +874,7 @@ export default function Page() {
           </div>
           <div className="bo-panelBody">
             <div className="bo-stack">
-              <div className="bo-mutedText" style={{ marginBottom: 16 }}>
+              <div className="bo-mutedText bo-mb-4">
                 Elige el diseño que se utilizará por defecto al generar los PDFs de las facturas. Los usuarios podrán elegir una plantilla diferente al crear cada factura.
               </div>
 

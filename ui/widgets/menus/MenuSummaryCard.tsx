@@ -79,7 +79,11 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
 
   return (
     <article
-      className={cn("bo-menuV2Card", "bo-menuGlassPanel", menu.active ? "is-active" : "is-inactive", menu.is_draft && "is-draft")}
+      className={cn(
+        "rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] p-4 flex items-center justify-between gap-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/[0.12] cursor-pointer",
+        menu.active ? "opacity-100" : "opacity-60",
+        menu.is_draft && "border-yellow-500/30 bg-yellow-500/5"
+      )}
       role="listitem"
       tabIndex={0}
       onClick={openMenuEditor}
@@ -88,23 +92,23 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
       data-draft={menu.is_draft ? "true" : "false"}
       aria-label={`Abrir menu ${title}`}
     >
-      <div className="bo-menuV2Main">
-        <div className="bo-menuV2TitleRow">
-          <h3 className="bo-menuV2Title">{title}</h3>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-sm font-semibold truncate">{title}</h3>
         </div>
 
-        <div className="bo-menuV2Row bo-menuV2Row--meta">
-          <div className="bo-menuV2Meta">
-            <span className="bo-menuTag">{typeLabel}</span>
-            {menu.is_draft ? <span className="bo-menuTag bo-menuTag--warn">Borrador</span> : null}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/10 text-white/80 border border-white/[0.06]">{typeLabel}</span>
+            {menu.is_draft ? <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Borrador</span> : null}
           </div>
-          <div className="bo-menuV2Price">{priceLabel}</div>
+          <div className="text-sm font-semibold text-primary">{priceLabel}</div>
         </div>
       </div>
 
-      <div className="bo-menuV2Aside">
-        <div className="bo-menuV2StatusCtrl">
-          <span className={cn("bo-menuTag", "bo-menuTag--state", menu.active && "is-on")}>{statusLabel}</span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded border", menu.active ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-white/10 text-white/60 border-white/[0.06]")}>{statusLabel}</span>
           <div onClick={stopPropagation} onPointerDown={stopPropagation} onKeyDown={stopPropagation}>
             <Switch
               checked={!!menu.active}
@@ -115,9 +119,9 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
           </div>
         </div>
 
-        <div className="bo-menuV2Actions">
+        <div className="flex items-center gap-1">
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
+            className="w-8 h-8 rounded-lg border border-white/[0.06] bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:text-foreground"
             type="button"
             disabled={actionsDisabled}
             onClick={handleChangeType}
@@ -128,7 +132,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             <Repeat2 size={14} aria-hidden="true" focusable={false} />
           </button>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
+            className="w-8 h-8 rounded-lg border border-white/[0.06] bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:text-foreground"
             type="button"
             disabled={actionsDisabled}
             onClick={handleEdit}
@@ -139,7 +143,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             <PencilLine size={14} aria-hidden="true" focusable={false} />
           </button>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
+            className="w-8 h-8 rounded-lg border border-white/[0.06] bg-white/[0.02] text-red-400 grid place-items-center cursor-pointer transition-all hover:bg-red-500/20 hover:text-red-300"
             type="button"
             disabled={actionsDisabled}
             onClick={handleDelete}

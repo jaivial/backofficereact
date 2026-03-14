@@ -42,7 +42,7 @@ export function SimpleTabs({
   if (!items || !activeId || !onChange) {
     return (
       <legacyTabsContext.Provider value={{ activeId: legacyActiveId, setActiveId: setLegacyActiveId }}>
-        <div className={["bo-tabsWrap", className].filter(Boolean).join(" ")}>{children}</div>
+        <div className={className}>{children}</div>
       </legacyTabsContext.Provider>
     );
   }
@@ -50,13 +50,13 @@ export function SimpleTabs({
   const activeIndex = items.findIndex((t) => t.id === activeId);
 
   return (
-    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label={ariaLabel || "Tabs"}>
+    <div className={["flex gap-1 p-1 rounded-lg bg-white/[0.02] border border-white/[0.06]", className].filter(Boolean).join(" ")} role="tablist" aria-label={ariaLabel || "Tabs"}>
       {items.map((item) => {
         const active = item.id === activeId;
         return (
           <button
             key={item.id}
-            className={`bo-tab${active ? " is-active" : ""}`}
+            className={`relative h-9 px-4 rounded-md text-sm font-medium text-muted transition-colors duration-150 hover:text-foreground ${active ? "text-foreground" : ""}`}
             role="tab"
             aria-selected={active}
             aria-controls={`panel-${item.id}`}
@@ -68,16 +68,16 @@ export function SimpleTabs({
             {active ? (
               mounted ? (
                 <motion.span
-                  className="bo-tabIndicator"
+                  className="absolute inset-0 bg-white/[0.04] rounded-md border border-white/[0.08]"
                   layoutId="boTabIndicator"
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
-                <span className="bo-tabIndicator" />
+                <span className="absolute inset-0 bg-white/[0.04] rounded-md border border-white/[0.08]" />
               )
             ) : null}
-            <span className="bo-tabInner">
-              <span className="bo-tabLabel">{item.label}</span>
+            <span className="relative flex items-center">
+              <span className="relative">{item.label}</span>
             </span>
           </button>
         );
@@ -111,13 +111,13 @@ export function SimpleTabsList({
   });
 
   return (
-    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label="Tabs">
+    <div className={["flex gap-1 p-1 rounded-lg bg-white/[0.02] border border-white/[0.06]", className].filter(Boolean).join(" ")} role="tablist" aria-label="Tabs">
       {tabs.map((item) => {
         const active = item.id === ctx.activeId;
         return (
           <button
             key={item.id}
-            className={`bo-tab${active ? " is-active" : ""}`}
+            className={`relative h-9 px-4 rounded-md text-sm font-medium text-muted transition-colors duration-150 hover:text-foreground ${active ? "text-foreground" : ""}`}
             role="tab"
             aria-selected={active}
             aria-controls={`panel-${item.id}`}
@@ -128,16 +128,16 @@ export function SimpleTabsList({
             {active ? (
               mounted ? (
                 <motion.span
-                  className="bo-tabIndicator"
+                  className="absolute inset-0 bg-white/[0.04] rounded-md border border-white/[0.08]"
                   layoutId="boTabIndicator"
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
-                <span className="bo-tabIndicator" />
+                <span className="absolute inset-0 bg-white/[0.04] rounded-md border border-white/[0.08]" />
               )
             ) : null}
-            <span className="bo-tabInner">
-              <span className="bo-tabLabel">{item.label}</span>
+            <span className="relative flex items-center">
+              <span className="relative">{item.label}</span>
             </span>
           </button>
         );

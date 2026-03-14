@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { atom, useAtom } from 'jotai';
 import { DndProvider, useDrag, useDrop, type DragSourceMonitor, type DropTargetMonitor } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+
+import "../../../components/bo.css";
 import { websiteBuilderApi } from '../../../api/website-builder';
 import type { Website, WebsitePage, WebsitePageSection, WebsiteComponent, WebsiteSectionComponent } from '../../../api/website-builder-types';
 
@@ -22,7 +24,7 @@ const selectedComponentAtom = atom<string | null>(null);
 const previewModeAtom = atom<boolean>(false);
 const loadingAtom = atom<boolean>(true);
 
-export default function WebsiteBuilder() {
+export default function Page() {
   const [website, setWebsite] = useAtom(websiteAtom);
   const [pages, setPages] = useAtom(pagesAtom);
   const [currentPage, setCurrentPage] = useAtom(currentPageAtom);
@@ -83,18 +85,18 @@ export default function WebsiteBuilder() {
 
   if (loading && !website) {
     return (
-      <div className="flex items-center justify-center h-64" data-ui="loading-state">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
-        <span className="ml-2 text-slate-400">Loading...</span>
+      <div className="bo-flex bo-items-center bo-justify-center bo-wbLoading" data-ui="loading-state">
+        <div className="bo-wbLoadingSpinner" />
+        <span className="bo-ml-2 bo-muted">Loading...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 m-6" data-ui="error-state">
-        <p className="text-red-400">{error}</p>
-        <button onClick={loadWebsite} className="mt-2 text-red-300 underline hover:text-red-200">
+      <div className="bo-wbError" data-ui="error-state">
+        <p className="bo-wbErrorText">{error}</p>
+        <button onClick={loadWebsite} className="bo-wbErrorRetry">
           Retry
         </button>
       </div>
@@ -103,41 +105,40 @@ export default function WebsiteBuilder() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-slate-900" data-ui="website-builder">
-        {/* Header */}
-        <header className="bg-slate-800 border-b border-slate-700" data-ui="header">
-          <div className="max-w-full px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold text-slate-100">
+      <div className="bo-wbContainer" data-ui="website-builder">
+        <header className="bo-wbHeader bo-border-b" data-ui="header">
+          <div className="bo-max-w-full bo-px-4 bo-py-3 bo-flex bo-items-center bo-justify-between">
+            <div className="bo-flex bo-items-center bo-gap-4">
+              <h1 className="bo-text-xl bo-weight-semibold bo-wbTitle">
                 Website Builder
               </h1>
               {website && (
-                <span className={`px-2 py-1 text-xs rounded-full ${
+                <span className={`bo-px-2 bo-py-1 bo-text-xs bo-radius-full ${
                   website.status === 'published' 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-yellow-500/20 text-yellow-400'
+                    ? 'bo-bg-success bo-text-success' 
+                    : 'bo-bg-warning bo-text-warning'
                 }`}>
                   {website.status}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="bo-flex bo-items-center bo-gap-2">
               <button
                 onClick={() => setPreviewMode(!previewMode)}
-                className="px-3 py-1.5 text-sm border border-slate-600 rounded hover:bg-slate-700 text-slate-300"
+                className="bo-wbBtn"
               >
                 {previewMode ? 'Edit' : 'Preview'}
               </button>
               <button
                 onClick={handlePreview}
-                className="px-3 py-1.5 text-sm border border-slate-600 rounded hover:bg-slate-700 text-slate-300"
+                className="bo-wbBtn"
               >
                 Open Preview
               </button>
               <button
                 onClick={handlePublish}
                 disabled={loading}
-                className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+                className="bo-wbBtn bo-wbBtnPrimary"
               >
                 Publish
               </button>
@@ -145,12 +146,11 @@ export default function WebsiteBuilder() {
           </div>
         </header>
 
-        <div className="flex h-[calc(100vh-60px)]">
-          {/* Sidebar - Component Library */}
+        <div className="bo-flex bo-h-screen-nav">
           {!previewMode && (
-            <aside className="w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto" data-ui="sidebar">
-              <div className="p-4">
-                <h2 className="text-sm font-semibold text-slate-300 mb-3">
+            <aside className="bo-wbSidebar bo-border-r" data-ui="sidebar">
+              <div className="bo-p-4">
+                <h2 className="bo-text-sm bo-weight-semibold bo-mb-3 bo-wbTitle">
                   Components
                 </h2>
                 <ComponentLibrary />
@@ -158,8 +158,7 @@ export default function WebsiteBuilder() {
             </aside>
           )}
 
-          {/* Main Canvas */}
-          <main className="flex-1 overflow-y-auto bg-slate-900" data-ui="canvas">
+          <main className="bo-wbCanvas" data-ui="canvas">
             {previewMode ? (
               <WebsitePreview website={website} currentPage={currentPage} />
             ) : (
@@ -175,11 +174,10 @@ export default function WebsiteBuilder() {
             )}
           </main>
 
-          {/* Right Sidebar - Properties Panel */}
           {!previewMode && selectedComponent && (
-            <aside className="w-80 bg-slate-800 border-l border-slate-700 overflow-y-auto" data-ui="properties-panel">
+            <aside className="w-80 border-l overflow-y-auto" data-ui="properties-panel" style={{ backgroundColor: 'var(--bo-surface)', borderColor: 'var(--bo-border)' }}>
               <div className="p-4">
-                <h2 className="text-sm font-semibold text-slate-300 mb-3">
+                <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--bo-text)' }}>
                   Properties
                 </h2>
                 <PropertiesPanel componentId={selectedComponent} onUpdate={loadWebsite} />
@@ -213,7 +211,7 @@ const COMPONENT_CATALOG: UIComponent[] = [
 
 function ComponentLibrary() {
   return (
-    <div className="space-y-2" data-ui="component-list">
+    <div className="bo-flex bo-flex-col bo-gap-2" data-ui="component-list">
       {COMPONENT_CATALOG.map(comp => (
         <DraggableComponent key={comp.id} component={comp} />
       ))}
@@ -235,15 +233,18 @@ function DraggableComponent({ component }: { component: UIComponent }) {
       ref={(node) => {
         drag(node);
       }}
-      className={`p-2 bg-slate-700/50 border border-slate-600 rounded cursor-move hover:border-indigo-400 hover:bg-slate-700 transition-colors ${
-        isDragging ? 'opacity-50' : ''
-      }`}
+      className={`bo-p-2 bo-radius bo-cursor-move ${isDragging ? 'bo-opacity-50' : ''}`}
+      style={{ 
+        backgroundColor: 'var(--bo-surface-2)', 
+        border: '1px solid var(--bo-border)',
+        color: 'var(--bo-text)'
+      }}
       data-ui="draggable-component"
       data-component-type={component.type}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-lg">{component.icon}</span>
-        <span className="text-sm text-slate-200">{component.name}</span>
+      <div className="bo-flex bo-items-center bo-gap-2">
+        <span style={{ fontSize: '1.125rem' }}>{component.icon}</span>
+        <span className="bo-text-sm" style={{ color: 'var(--bo-text)' }}>{component.name}</span>
       </div>
     </div>
   );
@@ -315,9 +316,9 @@ function WebsiteCanvas({
 
   if (!website) {
     return (
-      <div className="flex items-center justify-center h-full" data-ui="no-website">
-        <div className="text-center">
-          <p className="text-slate-400 mb-4">No website created yet</p>
+      <div className="bo-flex bo-items-center bo-justify-center bo-h-full" data-ui="no-website">
+        <div className="bo-text-center">
+          <p className="bo-mb-4" style={{ color: 'var(--bo-muted)' }}>No website created yet</p>
           <button 
             onClick={async () => {
               try {
@@ -327,7 +328,8 @@ function WebsiteCanvas({
                 console.error('Failed to create website:', err);
               }
             }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            className="bo-px-4 bo-py-2 bo-radius"
+            style={{ backgroundColor: 'var(--bo-accent)', color: 'var(--bo-fg-inverted)' }}
           >
             Create Website
           </button>
@@ -337,18 +339,17 @@ function WebsiteCanvas({
   }
 
   return (
-    <div className="p-6" data-ui="canvas-content">
-      {/* Page Tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2" data-ui="page-tabs">
+    <div className="bo-p-6" data-ui="canvas-content">
+      <div className="bo-flex bo-gap-2 bo-mb-4 bo-overflow-x-auto bo-pb-2" data-ui="page-tabs">
         {pages.map(page => (
           <button
             key={page.id}
             onClick={() => onSelectPage(String(page.id))}
-            className={`px-4 py-2 rounded text-sm whitespace-nowrap transition-colors ${
-              String(page.id) === currentPage
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
+            className="bo-px-4 bo-py-2 bo-radius bo-text-sm bo-whitespace-nowrap"
+            style={String(page.id) === currentPage 
+              ? { backgroundColor: 'var(--bo-accent)', color: '#fff' }
+              : { backgroundColor: 'var(--bo-surface-2)', color: 'var(--bo-muted)', border: '1px solid var(--bo-border)' }
+            }
             data-ui="page-tab"
             data-page-id={page.id}
             data-active={String(page.id) === currentPage}
@@ -372,23 +373,23 @@ function WebsiteCanvas({
               }
             }
           }}
-          className="px-4 py-2 rounded text-sm bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-slate-200 border border-dashed border-slate-600"
+          className="bo-px-4 bo-py-2 bo-radius bo-text-sm bo-border bo-border-dashed"
+          style={{ backgroundColor: 'var(--bo-surface-2)', color: 'var(--bo-muted)', borderColor: 'var(--bo-border-2)' }}
           data-ui="add-page-btn"
         >
           + Add Page
         </button>
       </div>
 
-      {/* Canvas Area */}
-      <div className="bg-slate-800 rounded-lg border border-slate-700 p-6 min-h-[500px]" data-ui="canvas-area">
+      <div className="bo-radius-lg bo-border bo-p-6" style={{ minHeight: '500px', backgroundColor: 'var(--bo-surface)', borderColor: 'var(--bo-border)' }} data-ui="canvas-area">
         {loadingSections ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" />
+          <div className="bo-flex bo-items-center bo-justify-center" style={{ height: '8rem' }}>
+            <div className="animate-spin rounded-full" style={{ width: '1.5rem', height: '1.5rem', borderBottomColor: 'var(--bo-accent)' }} />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="bo-flex bo-flex-col bo-gap-4">
             {sections.length === 0 ? (
-              <div className="text-center py-12 text-slate-400" data-ui="empty-canvas">
+              <div className="bo-text-center bo-py-12" style={{ color: 'var(--bo-muted)' }} data-ui="empty-canvas">
                 <p>No sections yet. Add a section to start building.</p>
               </div>
             ) : (
@@ -403,7 +404,6 @@ function WebsiteCanvas({
               ))
             )}
             
-            {/* Add Section Button */}
             <AddSectionButton onAdd={handleAddSection} />
           </div>
         )}
@@ -478,23 +478,28 @@ function SectionDropZone({
         drop(node);
       }}
       className={`border-2 border-dashed rounded-lg p-4 min-h-[100px] transition-colors ${
-        isOver ? 'border-indigo-400 bg-indigo-500/10' : 'border-slate-600'
+        isOver ? '' : ''
       }`}
+      style={isOver 
+        ? { borderColor: 'var(--bo-accent)', backgroundColor: 'color-mix(in srgb, var(--bo-accent) 8%, transparent)' }
+        : { borderColor: 'var(--bo-border-2)' }
+      }
       data-ui="section-drop-zone"
       data-section-id={section.id}
       data-section-type={section.section_type}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-slate-300 capitalize">
+      <div className="bo-flex bo-items-center bo-justify-between bo-mb-3">
+        <h3 className="bo-text-sm bo-weight-medium capitalize" style={{ color: 'var(--bo-text)' }}>
           {section.section_type}
         </h3>
-        <div className="flex gap-2">
-          <span className="text-xs text-slate-500">
+        <div className="bo-flex bo-gap-2">
+          <span className="bo-text-xs" style={{ color: 'var(--bo-faint)' }}>
             {section.is_visible ? 'Visible' : 'Hidden'}
           </span>
           <button 
             onClick={onDelete}
-            className="text-xs text-red-400 hover:text-red-300"
+            className="bo-text-xs"
+            style={{ color: 'var(--bo-text-danger)' }}
             aria-label="Delete section"
           >
             🗑️
@@ -502,9 +507,9 @@ function SectionDropZone({
         </div>
       </div>
       
-      <div className="space-y-2">
+      <div className="bo-flex bo-flex-col bo-gap-2">
         {components.length === 0 ? (
-          <p className="text-sm text-slate-500 text-center py-4">
+          <p className="bo-text-sm bo-text-center bo-py-4" style={{ color: 'var(--bo-faint)' }}>
             Drag components here
           </p>
         ) : (
@@ -512,20 +517,25 @@ function SectionDropZone({
             <div
               key={comp.id}
               onClick={() => onSelectComponent(String(comp.id))}
-              className="p-2 bg-slate-700/50 border border-slate-600 rounded cursor-pointer hover:border-indigo-400 transition-colors"
+              className="bo-p-2 bo-radius bo-cursor-pointer"
+              style={{ 
+                backgroundColor: 'var(--bo-surface-2)', 
+                border: '1px solid var(--bo-border)',
+                color: 'var(--bo-text)'
+              }}
               data-ui="section-component"
               data-component-id={comp.id}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400">
+              <div className="bo-flex bo-items-center bo-justify-between">
+                <div className="bo-flex bo-items-center bo-gap-2">
+                  <span style={{ color: 'var(--bo-muted)' }}>
                     {comp.dynamic_source ? '🔗' : '📦'}
                   </span>
-                  <span className="text-sm text-slate-200">
+                  <span className="bo-text-sm">
                     {comp.component?.name || `Component ${comp.id}`}
                   </span>
                   {comp.dynamic_source && (
-                    <span className="text-xs text-indigo-400">
+                    <span className="bo-text-xs" style={{ color: 'var(--bo-accent)' }}>
                       ({comp.dynamic_source})
                     </span>
                   )}
@@ -535,7 +545,8 @@ function SectionDropZone({
                     e.stopPropagation();
                     handleDeleteComponent(comp.id);
                   }}
-                  className="text-xs text-red-400 hover:text-red-300"
+                  className="bo-text-xs"
+                  style={{ color: 'var(--bo-text-danger)' }}
                   aria-label="Delete component"
                 >
                   ✕
@@ -558,17 +569,18 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="relative" data-ui="add-section-wrapper">
+    <div className="bo-relative" data-ui="add-section-wrapper">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-3 border-2 border-dashed border-slate-600 rounded-lg text-slate-400 hover:border-indigo-400 hover:text-indigo-400 transition-colors"
+        className="bo-w-full bo-py-3 bo-border-2 bo-border-dashed bo-radius-lg"
+        style={{ borderColor: 'var(--bo-border-2)', color: 'var(--bo-muted)' }}
         data-ui="add-section-btn"
       >
         + Add Section
       </button>
       
       {isOpen && (
-        <div className="absolute z-10 mt-2 w-full bg-slate-800 border border-slate-600 rounded-lg shadow-xl p-2" data-ui="section-type-menu">
+        <div className="bo-absolute bo-z-10 bo-mt-2 bo-w-full bo-radius-lg bo-shadow-xl bo-p-2" data-ui="section-type-menu" style={{ backgroundColor: 'var(--bo-surface)', border: '1px solid var(--bo-border)' }}>
           {SECTION_TYPES.map(type => (
             <button
               key={type}
@@ -576,7 +588,8 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
                 onAdd(type);
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-slate-700 rounded capitalize text-slate-200"
+              className="bo-w-full bo-text-left bo-px-3 bo-py-2 bo-text-sm bo-radius capitalize"
+              style={{ color: 'var(--bo-text)' }}
               data-ui="section-type-option"
               data-type={type}
             >
@@ -628,63 +641,68 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
   }, [componentId, settings, onUpdate]);
 
   if (loading) {
-    return <div className="text-sm text-slate-400">Loading...</div>;
+    return <div className="bo-text-sm" style={{ color: 'var(--bo-muted)' }}>Loading...</div>;
   }
 
   return (
-    <div className="space-y-4" data-ui="properties-form">
+    <div className="bo-flex bo-flex-col bo-gap-4" data-ui="properties-form">
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label className="bo-block bo-text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
           Component ID
         </label>
         <input
           type="text"
           value={componentId}
           disabled
-          className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-sm text-slate-400"
+          className="bo-w-full bo-px-3 bo-py-2 bo-radius bo-text-sm"
+          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--bo-border)', color: 'var(--bo-muted)' }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label className="bo-block bo-text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
           Title
         </label>
         <input
           type="text"
           value={settings.title || ''}
           onChange={(e) => setSettings({ ...settings, title: e.target.value })}
-          className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200"
+          className="bo-w-full bo-px-3 bo-py-2 bo-radius bo-text-sm"
+          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--bo-border)', color: 'var(--bo-text)' }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label className="bo-block bo-text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
           Background Color
         </label>
         <input
           type="color"
           value={settings.bgColor || '#1e293b'}
           onChange={(e) => setSettings({ ...settings, bgColor: e.target.value })}
-          className="w-full h-10 bg-slate-700 border border-slate-600 rounded cursor-pointer"
+          className="bo-w-full bo-h-10 bo-radius bo-cursor-pointer"
+          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--bo-border)' }}
         />
       </div>
 
       <div>
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className="bo-flex bo-items-center bo-gap-2 bo-cursor-pointer">
           <input
             type="checkbox"
             checked={settings.visible !== false}
             onChange={(e) => setSettings({ ...settings, visible: e.target.checked })}
-            className="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500"
+            className="bo-radius"
+            style={{ borderColor: 'var(--bo-border)', backgroundColor: 'var(--bo-surface-2)', accentColor: 'var(--bo-accent)' }}
           />
-          <span className="text-sm text-slate-300">Visible</span>
+          <span className="bo-text-sm" style={{ color: 'var(--bo-text)' }}>Visible</span>
         </label>
       </div>
 
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+        className="bo-w-full bo-py-2 bo-radius bo-text-sm bo-transition-colors bo-disabled-opacity-50"
+        style={{ backgroundColor: 'var(--bo-accent)', color: 'var(--bo-fg-inverted)' }}
       >
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
@@ -717,25 +735,26 @@ function WebsitePreview({ website, currentPage }: { website: Website | null; cur
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full" data-ui="preview-loading">
-        <p className="text-slate-400">Loading preview...</p>
+      <div className="bo-flex bo-items-center bo-justify-center bo-h-full" data-ui="preview-loading">
+        <p style={{ color: 'var(--bo-muted)' }}>Loading preview...</p>
       </div>
     );
   }
 
   if (!previewUrl) {
     return (
-      <div className="flex items-center justify-center h-full" data-ui="preview-error">
-        <p className="text-slate-400">Failed to load preview</p>
+      <div className="bo-flex bo-items-center bo-justify-center bo-h-full" data-ui="preview-error">
+        <p style={{ color: 'var(--bo-muted)' }}>Failed to load preview</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full" data-ui="preview-iframe-container">
+    <div className="bo-h-full" data-ui="preview-iframe-container">
       <iframe 
         src={previewUrl}
-        className="w-full h-full border-0 bg-white"
+        className="bo-w-full bo-h-full bo-border-0"
+        style={{ backgroundColor: 'var(--bo-shell)' }}
         title="Website Preview"
       />
     </div>

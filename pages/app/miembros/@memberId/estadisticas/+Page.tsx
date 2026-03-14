@@ -346,16 +346,16 @@ function MemberLinearChart({
             />
             <Tooltip
               contentStyle={{
-                background: "rgba(34, 35, 43, 0.95)",
-                border: "1px solid rgba(255, 255, 255, 0.06)",
+                background: "var(--bo-surface)",
+                border: "1px solid var(--bo-border)",
                 borderRadius: "12px",
                 padding: "8px 12px",
                 fontSize: "12px",
               }}
-              labelStyle={{ color: "rgba(238, 240, 246, 0.86)", fontWeight: 720 }}
-              itemStyle={{ color: "rgba(185, 168, 255, 0.96)" }}
-              formatter={(value: unknown) => [`${Number(value).toFixed(2)} h`, "Horas"]}
-              cursor={{ stroke: "rgba(185, 168, 255, 0.3)", strokeWidth: 1 }}
+              labelStyle={{ color: "var(--bo-text)", fontWeight: 720 }}
+              itemStyle={{ color: "var(--bo-accent)" }}
+              formatter={(value: unknown) => [`${Number(value).toFixed(2)} h`, "Horas"] }
+              cursor={{ stroke: "var(--bo-accent)", strokeWidth: 1 }}
             />
             <Area
               type="monotone"

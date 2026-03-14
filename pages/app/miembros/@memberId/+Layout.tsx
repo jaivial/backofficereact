@@ -34,9 +34,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const tabs = useMemo<TabItem[]>(
     () => [
-      { id: "informacion", label: "Informacion", href: `${basePath}`, icon: <UserRound className="bo-ico" /> },
-      { id: "contrato", label: "Contrato", href: `${basePath}/contrato`, icon: <FileSpreadsheet className="bo-ico" /> },
-      { id: "estadisticas", label: "Estadisticas", href: `${basePath}/estadisticas`, icon: <BarChart3 className="bo-ico" /> },
+      { id: "informacion", label: "Informacion", href: `${basePath}`, icon: <UserRound className="w-[18px] h-[18px] block" /> },
+      { id: "contrato", label: "Contrato", href: `${basePath}/contrato`, icon: <FileSpreadsheet className="w-[18px] h-[18px] block" /> },
+      { id: "estadisticas", label: "Estadisticas", href: `${basePath}/estadisticas`, icon: <BarChart3 className="w-[18px] h-[18px] block" /> },
     ],
     [basePath],
   );
@@ -68,8 +68,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [isNavigatingOut, pendingHref, reduceMotion]);
 
   return (
-    <div className="bo-memberDetailRoute">
-      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembro" className="bo-tabs--memberDetail" onNavigate={onNavigateTab} />
+    <div className="flex flex-col gap-4">
+      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembro" className="w-fit max-w-full" onNavigate={onNavigateTab} />
       <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
         {!isNavigatingOut ? (
           <motion.div

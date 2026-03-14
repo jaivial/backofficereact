@@ -10,6 +10,7 @@ import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { Select } from "../../../../ui/inputs/Select";
+import { Button } from "../../../../ui/actions/Button";
 import { FoodCategoryModal } from "../_components/FoodCategoryModal";
 import { FoodFilters } from "../_components/FoodFilters";
 import { FoodItemCard } from "../_components/FoodItemCard";
@@ -337,16 +338,16 @@ export default function Page() {
   const singularLabel = FOOD_TYPE_SINGULAR[foodType];
 
   return (
-    <section aria-label={`Carta ${listLabel}`} className="bo-foodPage">
-      <div className="bo-container">
-        <button className="bo-menuBackBtn" type="button" onClick={() => window.location.assign("/app/comida")}>
+    <section aria-label={`Carta ${listLabel}`} className="relative pb-[98px]">
+      <div className="max-w-[1200px] mx-auto px-4">
+        <button className="inline-flex items-center gap-1.5 w-fit p-0 border-0 bg-transparent text-[var(--bo-muted)] text-sm font-semibold leading-tight cursor-pointer hover:text-[var(--bo-text)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--bo-accent)] focus-visible:outline-offset-2 rounded-[var(--bo-radius-sm)]" type="button" onClick={() => window.location.assign("/app/comida")}>
           <ChevronLeft size={16} />
           Volver a tipos de carta
         </button>
 
-        <div className="bo-foodPage-hero">
-          <h1 className="bo-pageTitle">{listLabel}</h1>
-          <p className="bo-pageSubtitle">Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.</p>
+        <div className="py-6 pb-5 border-b border-[var(--bo-border)] mb-5">
+          <h1 className="text-2xl font-bold text-[var(--bo-text)] mb-1">{listLabel}</h1>
+          <p className="text-base text-[var(--bo-muted)]">Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.</p>
         </div>
 
         <FoodFilters
@@ -389,16 +390,16 @@ export default function Page() {
         />
 
         {loading ? (
-          <div className="bo-foodLoading">
+          <div className="bo-emptyState">
             <LoadingSpinner centered size="sm" label="Cargando..." />
           </div>
         ) : items.length === 0 ? (
-          <div className="bo-foodEmpty">
+          <div className="bo-emptyState">
             <p>No hay {listLabel.toLowerCase()} con estos filtros.</p>
             <p>Usa el boton + para anadir el primer {singularLabel}.</p>
           </div>
         ) : (
-          <div className="bo-foodGrid" role="list">
+          <div className="bo-grid bo-grid-auto-fill bo-grid-gap-4" role="list">
             {items.map((item) => (
               <FoodItemCard
                 key={item.num}
@@ -416,11 +417,11 @@ export default function Page() {
           </div>
         )}
 
-        <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginacion">
-          <div className="bo-pagerText">
+        <div className={`bo-pager${showPagerBtns ? "" : " bo-pager--centered"}`} aria-label="Paginacion">
+          <div className="bo-pagerInfo">
             Pagina {page} de {totalPages} · {total} resultados
           </div>
-          <div className="bo-foodPagerExtras">
+          <div className="bo-pagerControls">
             <Select
               value={String(pageSize)}
               onChange={(value) => {
@@ -433,20 +434,20 @@ export default function Page() {
               size="sm"
             />
             {showPagerBtns ? (
-              <div className="bo-pagerBtns">
-                <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || loading}>
+              <div className="bo-pagerButtons">
+                <Button variant="ghost" type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || loading}>
                   Anterior
-                </button>
-                <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || loading}>
+                </Button>
+                <Button variant="ghost" type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || loading}>
                   Siguiente
-                </button>
+                </Button>
               </div>
             ) : null}
           </div>
         </div>
       </div>
 
-      <button className="bo-menuFab" type="button" aria-label={`Anadir ${singularLabel}`} onClick={onOpenCreate}>
+      <button className="bo-fab" type="button" aria-label={`Anadir ${singularLabel}`} onClick={onOpenCreate}>
         <Plus size={24} />
       </button>
 

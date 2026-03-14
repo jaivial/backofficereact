@@ -75,27 +75,27 @@ export default function ErrorPage() {
   };
 
   return (
-    <div className="bo-errorPage">
-      <div className="bo-errorPage__content">
-        <div className="bo-errorPage__icon">
+    <div className="flex flex-col items-center text-center max-w-[400px] p-6">
+      <div className="flex flex-col items-center">
+        <div className="text-bo-accent mb-4">
           <AlertTriangle size={48} strokeWidth={1.5} />
         </div>
-        <div className="bo-errorPage__status">{statusCode}</div>
-        <h1 className="bo-errorPage__title">{content.title}</h1>
-        <p className="bo-errorPage__message">{content.message}</p>
-        <div className="bo-errorPage__actions">
+        <div className="text-7xl font-bold leading-none text-bo-text opacity-15 mb-[-8px]">{statusCode}</div>
+        <h1 className="text-xl font-bold text-bo-text mb-2">{content.title}</h1>
+        <p className="text-sm text-bo-muted mb-4">{content.message}</p>
+        <div className="flex flex-wrap gap-2 justify-center">
           {content.primaryAction === "reload" ? (
-            <button type="button" className="bo-btn bo-btn--primary" onClick={handleRetry}>
+            <button type="button" className="h-10 rounded-xl border border-primary/30 bg-primary/16 font-semibold inline-flex items-center justify-center gap-2 px-4 transition-all hover:-translate-y-0.5" onClick={handleRetry}>
               <RefreshCw size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </button>
           ) : (
-            <a href={content.primaryHref ?? "/app/backoffice"} className="bo-btn bo-btn--primary">
+            <a href={content.primaryHref ?? "/app/backoffice"} className="h-10 rounded-xl border border-primary/30 bg-primary/16 font-semibold inline-flex items-center justify-center gap-2 px-4 transition-all hover:-translate-y-0.5">
               <LogIn size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </a>
           )}
-          <a href={content.secondaryHref} className="bo-btn bo-btn--ghost">
+          <a href={content.secondaryHref} className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] font-semibold inline-flex items-center justify-center gap-2 px-4 transition-all hover:-translate-y-0.5">
             <Home size={14} strokeWidth={1.8} />
             {content.secondaryLabel}
           </a>
