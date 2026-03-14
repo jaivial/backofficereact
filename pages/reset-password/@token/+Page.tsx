@@ -80,14 +80,14 @@ export default function Page() {
   }, [api.passwordResets, confirmPassword, password, token]);
 
   return (
-    <div className="bo-flex bo-flex-col bo-items-center text-center bo-authContainer">
+    <div className="flex flex-col items-center text-center bo-authContainer">
       <div 
         className="bo-authCard rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] border border-white/[0.06] shadow-soft p-[18px]"
         role="main" 
         aria-label="Restablecer password"
       >
         {loading ? (
-          <div className="bo-flex bo-flex-col bo-items-center bo-gap-2 bo-authActions">
+          <div className="flex flex-col items-center gap-2 bo-authActions">
             <Loader2 size={20} className="animate-spin" />
             Validando enlace...
           </div>

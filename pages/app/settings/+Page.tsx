@@ -415,7 +415,7 @@ export default function Page() {
           </button>
         </div>
         <div className="bo-toolbarRight">
-          <div className="bo-mutedText">{busy ? "Guardando..." : ""}</div>
+          <div className="text-mutedText">{busy ? "Guardando..." : ""}</div>
         </div>
       </div>
 
@@ -441,7 +441,7 @@ export default function Page() {
                 <div className="bo-label">Eventos</div>
                 <div className="bo-row">
                   <Select value={eventsMode} onChange={onEventsModeChange} options={eventsModeOptions} size="sm" ariaLabel="Modo eventos" />
-                  <div className="bo-mutedText">{eventsMode === "all" ? "Se envían todos los eventos" : "Selecciona eventos a enviar"}</div>
+                  <div className="text-mutedText">{eventsMode === "all" ? "Se envían todos los eventos" : "Selecciona eventos a enviar"}</div>
                 </div>
                 {eventsMode === "custom" ? (
                   <div className="bo-chips" aria-label="Eventos habilitados">
@@ -460,7 +460,7 @@ export default function Page() {
                     })}
                   </div>
                 ) : null}
-                {eventsMode === "custom" ? <div className="bo-mutedText">En modo personalizado debes dejar al menos 1 evento.</div> : null}
+                {eventsMode === "custom" ? <div className="text-mutedText">En modo personalizado debes dejar al menos 1 evento.</div> : null}
               </div>
 
               <label className="bo-field">
@@ -491,7 +491,7 @@ export default function Page() {
                   placeholder={"Uno por línea. Ej:\n34692747052\n34638857294"}
                   onChange={(e) => setRecipientsText(e.target.value)}
                 />
-                <div className="bo-mutedText">Se usan para notificar al restaurante (confirmaciones, cancelaciones, modificaciones).</div>
+                <div className="text-mutedText">Se usan para notificar al restaurante (confirmaciones, cancelaciones, modificaciones).</div>
               </label>
 
               <div className="bo-row">
@@ -525,7 +525,7 @@ export default function Page() {
               </label>
 
               <div className="bo-row">
-                <label className="bo-field bo-flex-1">
+                <label className="bo-field flex-1">
                   <div className="bo-label">Color primario</div>
                   <div className="bo-row">
                     <input className="bo-input bo-input--sm" value={branding.primaryColor} onChange={(e) => setBranding((p) => ({ ...p, primaryColor: e.target.value }))} />
@@ -533,7 +533,7 @@ export default function Page() {
                   </div>
                 </label>
 
-                <label className="bo-field bo-flex-1">
+                <label className="bo-field flex-1">
                   <div className="bo-label">Color acento</div>
                   <div className="bo-row">
                     <input className="bo-input bo-input--sm" value={branding.accentColor} onChange={(e) => setBranding((p) => ({ ...p, accentColor: e.target.value }))} />
@@ -585,7 +585,7 @@ export default function Page() {
                   size="sm"
                   ariaLabel="Plantilla por defecto"
                 />
-                <div className="bo-mutedText">Se aplica a toda la web premium y sirve como fallback para tipos sin override.</div>
+                <div className="text-mutedText">Se aplica a toda la web premium y sirve como fallback para tipos sin override.</div>
               </label>
 
               <div className="bo-field">
@@ -640,7 +640,7 @@ export default function Page() {
           </div>
           <div className="bo-panelBody">
             <div className="bo-stack">
-              <div className="bo-mutedText bo-mb-4">
+              <div className="text-mutedText bo-mb-4">
                 Usa los siguientes tokens en el formato: {"{YYYY}"} (año), {"{YY}"} (año corto), {"{0001}"} (numero con ceros), {"{N}"} (numero sin padding), {"{prefix}"} (prefijo), {"{suffix}"} (sufijo)
               </div>
 
@@ -655,7 +655,7 @@ export default function Page() {
               </label>
 
               <div className="bo-row">
-                <label className="bo-field bo-flex-1">
+                <label className="bo-field flex-1">
                   <div className="bo-label">Prefijo</div>
                   <input
                     className="bo-input"
@@ -665,7 +665,7 @@ export default function Page() {
                   />
                 </label>
 
-                <label className="bo-field bo-flex-1">
+                <label className="bo-field flex-1">
                   <div className="bo-label">Sufijo</div>
                   <input
                     className="bo-input"
@@ -677,7 +677,7 @@ export default function Page() {
               </div>
 
               <div className="bo-row">
-                <label className="bo-field bo-flex-1">
+                <label className="bo-field flex-1">
                   <div className="bo-label">Numero inicial</div>
                   <input
                     className="bo-input"
@@ -688,7 +688,7 @@ export default function Page() {
                   />
                 </label>
 
-                <label className="bo-field bo-flex-1">
+                <label className="bo-field flex-1">
                   <div className="bo-label">Digitos de relleno (0001)</div>
                   <input
                     className="bo-input"
@@ -710,12 +710,12 @@ export default function Page() {
                   value={invoiceSettings.nextNumber}
                   onChange={(e) => setInvoiceSettings((p) => ({ ...p, nextNumber: parseInt(e.target.value) || 1 }))}
                 />
-                <div className="bo-mutedText">El numero que se usara para la siguiente factura</div>
+                <div className="text-mutedText">El numero que se usara para la siguiente factura</div>
               </label>
 
               <div className="bo-field bo-panelPreview">
                 <div className="bo-label">Vista previa del siguiente numero de factura</div>
-                <div className="bo-text-2xl bo-weight-semibold bo-mt-2 bo-font-mono">{previewInvoiceNumber}</div>
+                <div className="text-2xl bo-weight-semibold bo-mt-2 bo-font-mono">{previewInvoiceNumber}</div>
               </div>
 
               <div className="bo-row">
@@ -734,12 +734,12 @@ export default function Page() {
           </div>
           <div className="bo-panelBody">
             <div className="bo-stack">
-              <div className="bo-mutedText bo-mb-4">
+              <div className="text-mutedText bo-mb-4">
                 Esta herramienta permite renumerar todas las facturas existentes. Se mantendra un registro de auditoria con los cambios realizados. Es recomendable previsualizar antes de aplicar.
               </div>
 
               <div className="bo-row">
-                <label className="bo-field bo-flex-1">
+                <label className="bo-field flex-1">
                   <div className="bo-label">Numero inicial</div>
                   <input
                     className="bo-input"
@@ -748,7 +748,7 @@ export default function Page() {
                     value={renumberStartingNumber}
                     onChange={(e) => setRenumberStartingNumber(parseInt(e.target.value) || 1)}
                   />
-                  <div className="bo-mutedText">El numero desde el cual comenzar la renumeracion</div>
+                  <div className="text-mutedText">El numero desde el cual comenzar la renumeracion</div>
                 </label>
               </div>
 
@@ -761,12 +761,12 @@ export default function Page() {
                   />
                   <span>Generar secuencia basada en fecha</span>
                 </label>
-                <div className="bo-mutedText">Si esta marcado, las facturas se numeraran por ao/mes en lugar de una secuencia continua</div>
+                <div className="text-mutedText">Si esta marcado, las facturas se numeraran por ao/mes en lugar de una secuencia continua</div>
               </div>
 
               {renumberGenerateByDate && (
                 <div className="bo-row">
-                  <label className="bo-field bo-flex-1">
+                  <label className="bo-field flex-1">
                     <div className="bo-label">Formato de fecha</div>
                     <Select
                       value={renumberDateFormat}
@@ -820,7 +820,7 @@ export default function Page() {
                       </tbody>
                     </table>
                     {renumberPreview.length > 50 && (
-                      <div className="bo-mutedText bo-text-center bo-p-2">
+                      <div className="text-mutedText text-center p-2">
                         ... y {renumberPreview.length - 50} facturas mas
                       </div>
                     )}
@@ -844,7 +844,7 @@ export default function Page() {
               <div className="bo-field bo-mt-6">
                 <div className="bo-label">Historial de renumeraciones</div>
                 {renumberHistory.length === 0 ? (
-                  <div className="bo-mutedText bo-mt-2">No hay historial de renumeraciones</div>
+                  <div className="text-mutedText bo-mt-2">No hay historial de renumeraciones</div>
                 ) : (
                   <div className="bo-auditHistory bo-mt-2">
                     {renumberHistory.map((audit) => (
@@ -852,10 +852,10 @@ export default function Page() {
                         <div className="bo-weight-semibold">
                           {audit.affected_invoices} facturas renumeradas
                         </div>
-                        <div className="bo-mutedText">
+                        <div className="text-mutedText">
                           Formato: {audit.previous_format} -&gt; {audit.new_format} | Inicio: {audit.starting_number}
                         </div>
-                        <div className="bo-mutedText">
+                        <div className="text-mutedText">
                           Por: {audit.performed_by_name} | Fecha: {new Date(audit.performed_at).toLocaleString()}
                         </div>
                       </div>
@@ -874,7 +874,7 @@ export default function Page() {
           </div>
           <div className="bo-panelBody">
             <div className="bo-stack">
-              <div className="bo-mutedText bo-mb-4">
+              <div className="text-mutedText bo-mb-4">
                 Elige el diseño que se utilizará por defecto al generar los PDFs de las facturas. Los usuarios podrán elegir una plantilla diferente al crear cada factura.
               </div>
 

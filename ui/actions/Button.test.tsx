@@ -12,13 +12,13 @@ describe('Button', () => {
   it('renders with custom variant', () => {
     render(<Button variant="primary">Primary</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('bo-btn--primary');
+    expect(button).toHaveClass('bg-primary/16');
   });
 
   it('renders with custom size', () => {
     render(<Button size="sm">Small</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('bo-btn--sm');
+    expect(button).toHaveClass('h-8');
   });
 
   it('handles disabled state', () => {

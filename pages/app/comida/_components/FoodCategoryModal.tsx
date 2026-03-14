@@ -34,10 +34,10 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
     <Modal open={open} onClose={onClose} title="Anadir categoria custom" size="sm">
       <form onSubmit={onSubmit}>
         <div className="grid gap-1.5">
-          <label className="text-xs text-[var(--bo-muted)] font-semibold" htmlFor="food-category-name">Nombre categoria *</label>
+          <label className="text-xs text-[var(--text-muted)] font-semibold" htmlFor="food-category-name">Nombre categoria *</label>
           <input
             id="food-category-name"
-            className="h-10 rounded-[8px] border border-[var(--bo-border)] bg-[var(--bo-surface-2)] text-[var(--bo-text)] px-3 outline-none transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
+            className="h-10 rounded-[8px] border border-[var(--border)] bg-[var(--bo-surface-2)] text-[var(--bo-text)] px-3 outline-none transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ejemplo: Fuera de carta"
@@ -45,7 +45,7 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
           />
         </div>
 
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--bo-border)]">
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--border)]">
           <Button type="button" variant="ghost" onClick={onClose} disabled={busy}>
             Cancelar
           </Button>

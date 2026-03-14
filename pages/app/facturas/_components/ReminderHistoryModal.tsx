@@ -128,7 +128,7 @@ export function ReminderHistoryModal({
             <span>
               <strong>{customerName}</strong>
             </span>
-            <span className="bo-mutedText">
+            <span className="text-mutedText">
               Factura {invoiceNumber || `#${invoiceId}`}
             </span>
           </div>
@@ -154,7 +154,7 @@ export function ReminderHistoryModal({
             <div className="bo-emptyState">
               <Clock size={32} />
               <p>No hay recordatorios enviados</p>
-              <span className="bo-mutedText">
+              <span className="text-mutedText">
                 Los recordatorios de pago apareceran aqui
               </span>
             </div>
@@ -174,7 +174,7 @@ export function ReminderHistoryModal({
                       {reminder.sent_at ? (
                         formatDate(reminder.sent_at)
                       ) : (
-                        <span className="bo-mutedText">Pendiente</span>
+                        <span className="text-mutedText">Pendiente</span>
                       )}
                     </div>
                   </div>

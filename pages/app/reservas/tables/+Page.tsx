@@ -212,7 +212,7 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
   const shape = data.shape === "square" ? "is-square" : "is-round";
   const style: React.CSSProperties = {
     ["--bo-table-fill" as any]: data.fillColor || "var(--bo-surface-2)",
-    ["--bo-table-outline" as any]: data.outlineColor || "var(--bo-border-2)",
+    ["--bo-table-outline" as any]: data.outlineColor || "var(--border-2)",
     ["--bo-table-texture" as any]: data.textureImageUrl ? `url(${data.textureImageUrl})` : "none",
     transform: `rotate(${Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0}deg)`,
     width: `${geom.width}px`,

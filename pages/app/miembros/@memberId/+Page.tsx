@@ -198,9 +198,9 @@ export default function Page() {
         <>
           <div className="bo-panel">
             <div className="bo-panelHead">
-              <div className="bo-flex bo-items-start bo-gap-4">
+              <div className="flex items-start gap-4">
                 <ImageDropInput
-                  className={`bo-avatarUpload ${avatarBusy ? "bo-opacity-50" : ""}`}
+                  className={`bo-avatarUpload ${avatarBusy ? "opacity-50" : ""}`}
                   disabled={avatarBusy}
                   ariaLabel="Subir avatar"
                   onSelectFile={onAvatarSelect}
@@ -214,14 +214,14 @@ export default function Page() {
                   </span>
                 </ImageDropInput>
                 <div>
-                  <div className="bo-flex bo-items-center bo-gap-2">
+                  <div className="flex items-center gap-2">
                     <div className="bo-memberName">{memberName || `Miembro #${member.id}`}</div>
                     {isSelfMember ? <span className="bo-memberBadge">Tu</span> : null}
                   </div>
                   <div className="bo-memberHint">Haz clic o arrastra una imagen sobre el avatar para actualizar la foto de perfil.</div>
                 </div>
               </div>
-              <div className="bo-flex bo-items-center bo-gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   className="bo-btn"
                   type="button"
@@ -281,7 +281,7 @@ export default function Page() {
               <div className="bo-panelTitle">Informacion de usuario</div>
             </div>
             <div className="bo-panelBody">
-              <div className="bo-grid bo-grid-cols-auto-fit bo-gap-4">
+              <div className="grid grid-cols-auto-fit gap-4">
                 <label className="bo-field">
                   <span className="bo-label">Nombre</span>
                   <input id="firstName" className="bo-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />

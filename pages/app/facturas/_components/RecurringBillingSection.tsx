@@ -256,7 +256,7 @@ export function RecurringBillingSection({
                 Auto-enviar facturas
               </span>
             </div>
-            <div className="bo-mutedText bo-recurringBillingHelp">
+            <div className="text-mutedText bo-recurringBillingHelp">
               Si está activado, las facturas se enviarán automáticamente al cliente en cada período de facturación
             </div>
           </div>

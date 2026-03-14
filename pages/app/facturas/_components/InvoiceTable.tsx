@@ -79,7 +79,7 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 };
 
 const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; style: React.CSSProperties }> = {
-  borrador: { label: "Borrador", style: { backgroundColor: "color-mix(in srgb, var(--bo-faint) 20%, transparent)", color: "var(--bo-muted)" } },
+  borrador: { label: "Borrador", style: { backgroundColor: "color-mix(in srgb, var(--text-faint) 20%, transparent)", color: "var(--text-muted)" } },
   solicitada: { label: "Solicitada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
   pendiente: { label: "Pendiente", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
   enviada: { label: "Enviada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
@@ -112,7 +112,7 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
   }));
 
   return (
-    <div className="bo-flex bo-items-center">
+    <div className="flex items-center">
       <DropdownMenu
         label={`Cambiar estado de ${invoice.customer_name}`}
         items={statusOptions}
@@ -129,7 +129,7 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
 
 function ReservationBadge({ isReservation }: { isReservation: boolean }) {
   return (
-    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={isReservation ? { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } : { backgroundColor: "color-mix(in srgb, var(--bo-faint) 20%, transparent)", color: "var(--bo-muted)" }}>
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={isReservation ? { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } : { backgroundColor: "color-mix(in srgb, var(--text-faint) 20%, transparent)", color: "var(--text-muted)" }}>
       {isReservation ? "Reserva" : "Sin reserva"}
     </span>
   );
@@ -157,7 +157,7 @@ const CATEGORY_CONFIG: Record<InvoiceCategory, { label: string; style: React.CSS
   reserva: { label: "Reserva", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
   productos: { label: "Productos", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
   servicios: { label: "Servicios", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
-  otros: { label: "Otros", style: { backgroundColor: "color-mix(in srgb, var(--bo-faint) 20%, transparent)", color: "var(--bo-muted)" } },
+  otros: { label: "Otros", style: { backgroundColor: "color-mix(in srgb, var(--text-faint) 20%, transparent)", color: "var(--text-muted)" } },
   nota_credito: { label: "Nota de credito", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
 };
 
@@ -170,7 +170,7 @@ function CategoryBadge({ category }: { category?: InvoiceCategory }) {
 function CreditNoteBadge({ invoice }: { invoice: Invoice }) {
   if (!invoice.is_credit_note) return null;
   return (
-    <div className="bo-flex bo-flex-col bo-gap-1">
+    <div className="flex flex-col gap-1">
       <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" }} title="Nota de credito">
         Nota de credito
       </span>
@@ -195,7 +195,7 @@ function DepositBadge({ invoice }: { invoice: Invoice }) {
   const isPaidOff = remainingBalance <= 0;
 
   return (
-    <div className="bo-flex bo-flex-col bo-gap-1">
+    <div className="flex flex-col gap-1">
       <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={config.style} title={invoice.deposit_type === "advance" ? "Anticipo" : "Seña"}>
         {config.label}
       </span>
@@ -216,7 +216,7 @@ function DepositBadge({ invoice }: { invoice: Invoice }) {
 function TagsList({ tags }: { tags?: string[] }) {
   if (!tags || tags.length === 0) return null;
   return (
-    <div className="bo-flex bo-flex-wrap bo-gap-1">
+    <div className="flex flex-wrap gap-1">
       {tags.slice(0, 3).map((tag, index) => (
         <span key={index} className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
           <Tag size={10} />
@@ -238,7 +238,7 @@ function PaymentProgressCell({ invoice }: { invoice: Invoice }) {
   const isFullyPaid = remaining <= 0;
 
   return (
-    <div className="bo-flex bo-flex-col bo-gap-1">
+    <div className="flex flex-col gap-1">
       <span className={`text-xs ${isFullyPaid ? "" : ""}`} style={isFullyPaid ? { color: "var(--bo-color-success)" } : {}}>
         {formatPrice(paidAmount, invoice.currency)} / {formatPrice(totalAmount, invoice.currency)}
       </span>
@@ -288,7 +288,7 @@ function TableSkeletonRow() {
         <div className="h-4 w-[60px] animate-pulse rounded bg-muted" />
       </td>
       <td data-label="Cliente">
-        <div className="bo-flex bo-flex-col bo-gap-1">
+        <div className="flex flex-col gap-1">
           <div className="h-4 w-[120px] animate-pulse rounded bg-muted" />
           <div className="h-3 w-[80px] animate-pulse rounded bg-muted" />
         </div>
@@ -313,7 +313,7 @@ function TableSkeletonRow() {
       </td>
       <td data-label=""></td>
       <td data-label="">
-        <div className="bo-flex bo-gap-1">
+        <div className="flex gap-1">
           <div className="h-7 w-7 animate-pulse rounded bg-muted" />
           <div className="h-7 w-7 animate-pulse rounded bg-muted" />
           <div className="h-7 w-7 animate-pulse rounded bg-muted" />
@@ -350,7 +350,7 @@ function TableSkeleton() {
           </tbody>
         </table>
       </div>
-      <div className="bo-flex bo-justify-center" style={{ padding: "var(--bo-space-4) 0" }}>
+      <div className="flex justify-center" style={{ padding: "var(--bo-space-4) 0" }}>
         <div className="text-sm text-muted-foreground" aria-live="polite">
           <span className="inline-block w-[100px] animate-pulse rounded bg-muted h-4" />
           <span className="sr-only">Cargando...</span>
@@ -594,7 +594,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
           <p className="mb-6 max-w-md text-sm text-muted-foreground">
             Crea tu primera factura para comenzar a gestionar tus ingresos.
           </p>
-          <div className="bo-flex bo-gap-2">
+          <div className="flex gap-2">
             <button
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               type="button"
@@ -629,7 +629,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{selectedIds.size} elemento{selectedIds.size !== 1 ? "s" : ""} seleccionado{selectedIds.size !== 1 ? "s" : ""}</span>
           </div>
-          <div className="bo-flex bo-gap-2">
+          <div className="flex gap-2">
             <button
               className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               type="button"
@@ -698,7 +698,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{invoices.length} facturas en esta pagina</span>
           </div>
-          <div className="bo-flex bo-gap-2">
+          <div className="flex gap-2">
             <button
               className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               type="button"
@@ -797,7 +797,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       {formatDate(invoice.due_date)}
                     </span>
                   ) : (
-                    <span className="bo-mutedText">-</span>
+                    <span className="text-mutedText">-</span>
                   )}
                 </td>
                 <td className={`col-payment_date`} data-label="F. Pago">
@@ -812,7 +812,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       {daysOverdue} dias
                     </span>
                   ) : (
-                    <span className="bo-mutedText">-</span>
+                    <span className="text-mutedText">-</span>
                   )}
                 </td>
                 <td className={`col-payment_method`} data-label="Metodo">
@@ -822,7 +822,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       {PAYMENT_METHOD_LABELS[invoice.payment_method]}
                     </span>
                   ) : (
-                    <span className="bo-mutedText">-</span>
+                    <span className="text-mutedText">-</span>
                   )}
                 </td>
                 <td className={`col-status`} data-label="Estado">

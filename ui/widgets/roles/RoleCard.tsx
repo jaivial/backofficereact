@@ -14,7 +14,7 @@ export function RoleCard({
   onOpen: () => void;
 }) {
   return (
-    <button type="button" className="w-full p-4 rounded-lg border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/[0.12]" onClick={onOpen} aria-label={`Abrir rol ${role.label}`}>
+    <button type="button" className="w-full p-4 rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-bo-surface-2 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/[0.12]" onClick={onOpen} aria-label={`Abrir rol ${role.label}`}>
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-lg border border-white/[0.07] bg-white/[0.02] flex items-center justify-center text-foreground/80 flex-shrink-0" aria-hidden="true">
           <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={20} strokeWidth={1.8} />

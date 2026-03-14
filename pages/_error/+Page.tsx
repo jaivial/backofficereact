@@ -82,7 +82,7 @@ export default function ErrorPage() {
         </div>
         <div className="text-7xl font-bold leading-none text-bo-text opacity-15 mb-[-8px]">{statusCode}</div>
         <h1 className="text-xl font-bold text-bo-text mb-2">{content.title}</h1>
-        <p className="text-sm text-bo-muted mb-4">{content.message}</p>
+        <p className="text-sm text-text-muted mb-4">{content.message}</p>
         <div className="flex flex-wrap gap-2 justify-center">
           {content.primaryAction === "reload" ? (
             <button type="button" className="h-10 rounded-xl border border-primary/30 bg-primary/16 font-semibold inline-flex items-center justify-center gap-2 px-4 transition-all hover:-translate-y-0.5" onClick={handleRetry}>

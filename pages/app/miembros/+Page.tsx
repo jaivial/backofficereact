@@ -153,14 +153,14 @@ export default function Page() {
             <div className="bo-panelTitle">Equipo y permisos</div>
             <div className="bo-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
-          <div className="bo-statLabel bo-inline-flex bo-items-center bo-gap-1">
+          <div className="bo-statLabel inline-flex items-center gap-1">
             <ShieldUser size={16} strokeWidth={1.8} />
             {members.length} miembros
           </div>
         </div>
       </div>
 
-      <div className="bo-grid bo-grid-auto-fill bo-grid-gap-3">
+      <div className="grid grid-auto-fill grid-gap-3">
         {members.map((member) => {
           const roleMeta = memberRoleMeta(member);
           return (
@@ -170,13 +170,13 @@ export default function Page() {
               className="bo-card bo-card--clickable bo-card--p-3"
               onClick={() => window.location.assign(`/app/miembros/${member.id}`)}
             >
-              <div className="bo-flex bo-items-start bo-gap-3">
+              <div className="flex items-start gap-3">
                 <Avatar className="bo-avatar bo-avatar--sm">
                   {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
                   <AvatarFallback className="rounded-xl text-xs font-semibold">{initials(member.firstName, member.lastName)}</AvatarFallback>
                 </Avatar>
                 <div className="bo-memberInfo">
-                  <div className="bo-flex bo-items-center bo-gap-2">
+                  <div className="flex items-center gap-2">
                     <div className="bo-memberName">{fullName(member)}</div>
                     {isSelfMember(member) ? <span className="bo-badgeSelf">Tu</span> : null}
                   </div>
@@ -195,7 +195,7 @@ export default function Page() {
               </div>
 
               <div className="bo-memberRow">
-                <div className="bo-flex bo-items-center bo-gap-2">
+                <div className="flex items-center gap-2">
                   <span className="bo-statLabel">Contrato semanal</span>
                   <span className="bo-hoursBadge">{member.weeklyContractHours.toFixed(2)} h</span>
                 </div>
@@ -246,7 +246,7 @@ export default function Page() {
               </button>
             </div>
           ) : (
-            <div className="bo-flex bo-flex-col bo-gap-4">
+            <div className="flex flex-col gap-4">
               <h2 className="bo-whatsappModalTitleSm">Mensaje para {selectedMember?.firstName}</h2>
               {!selectedMember?.whatsappNumber ? (
                 <div className="bo-alertWarning">
@@ -262,7 +262,7 @@ export default function Page() {
                       onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
-                  <div className="bo-flex bo-justify-end bo-gap-3 bo-pt-2">
+                  <div className="flex justify-end gap-3 pt-2">
                     <button type="button" className="bo-btn" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
                     <button type="button" className="bo-btn bo-btn--primary" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
                       {sending ? "Enviando..." : "Enviar por WhatsApp"}
