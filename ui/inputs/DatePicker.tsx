@@ -17,7 +17,7 @@ type DatePickerProps = {
 };
 
 function portalEl(): HTMLElement | null {
-  return document.getElementById("bo-portal") || document.body;
+  return document.getElementById("portal") || document.body;
 }
 
 function clamp(n: number, min: number, max: number): number {
@@ -125,35 +125,35 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
       <AnimatePresence>
         <motion.div
           ref={popRef}
-          className="bo-datePop bo-datePop--glass"
-          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+          className="fixed z-[9999] w-[280px] rounded-xl border border-border bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-card shadow-soft p-3 border-primary/30 bg-primary/[0.12] bg-secondary/80 backdrop-blur-md"
+          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 1.5 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+          exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 1.5 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
           style={{ top: pos.top, left: pos.left }}
           role="dialog"
           aria-label="Calendar"
         >
-          <div className="bo-dateHead">
+          <div className="flex items-center justify-between gap-2 mb-2.5">
             <button
               type="button"
-              className="bo-actionBtn bo-actionBtn--glass"
+              className="w-9 h-9 rounded-xl border border-border bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground border-primary/30 bg-primary/20"
               onClick={prevMonth}
               aria-label="Prev month"
             >
               <ChevronLeft size={18} strokeWidth={1.8} />
             </button>
-            <div className="bo-dateTitle">{monthLabel(viewYear, viewMonth0)}</div>
+            <div className="text-xs font-bold text-foreground capitalize">{monthLabel(viewYear, viewMonth0)}</div>
             <button
               type="button"
-              className="bo-actionBtn bo-actionBtn--glass"
+              className="w-9 h-9 rounded-xl border border-border bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-0.5 hover:text-foreground border-primary/30 bg-primary/20"
               onClick={nextMonth}
               aria-label="Next month"
             >
               <ChevronRight size={18} strokeWidth={1.8} />
             </button>
           </div>
-          <div className="bo-calDows" aria-hidden="true">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground mb-1" aria-hidden="true">
             <div>L</div>
             <div>M</div>
             <div>M</div>
@@ -162,12 +162,12 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
             <div>S</div>
             <div>D</div>
           </div>
-          <div className="bo-calGrid" aria-label="Calendar grid">
+          <div className="grid grid-cols-7 gap-1" aria-label="Calendar grid">
             {grid.map((c, idx) => {
-              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" />;
+              if (!c.day || !c.iso) return <div key={idx} className="w-[30px] h-[30px] cursor-default hover:bg-transparent" aria-hidden="true" />;
               const iso = c.iso;
               const isSelected = iso === selectedISO;
-              const cls = isSelected ? "bo-calDay is-selected" : "bo-calDay";
+              const cls = isSelected ? "bg-primary/40 border border-primary/50 shadow-[0_10px_24px_rgba(185,168,255,0.18)] text-foreground" : "";
               const isBeforeMin = Boolean(minDate && iso < minDate);
               const isAfterMax = Boolean(maxDate && iso > maxDate);
               const isDisabled = isBeforeMin || isAfterMax;
@@ -175,7 +175,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
                 <button
                   key={iso}
                   type="button"
-                  className={`${cls}${isDisabled ? " is-disabled" : ""}`}
+                  className={`w-[30px] h-[30px] rounded-full grid place-items-center transition-colors border-0 bg-transparent cursor-pointer text-sm hover:bg-white/[0.03] ${cls} ${isDisabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
                   disabled={isDisabled}
                   onClick={() => {
                     if (isDisabled) return;
@@ -199,7 +199,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
       <button
         id={id}
         ref={btnRef}
-        className="bo-dateBtn bo-dateBtn--glass"
+        className="h-9 rounded-xl border border-border bg-white/[0.02] text-foreground px-3 cursor-pointer inline-flex items-center gap-2.5 border-primary/30 bg-primary/20"
         type="button"
         onClick={toggle}
         aria-expanded={open}
@@ -209,7 +209,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
         disabled={disabled}
       >
         <CalendarDays size={18} strokeWidth={1.8} />
-        <span className="bo-dateBtnLabel">{value}</span>
+        <span className="text-xs font-bold">{value}</span>
       </button>
       {pop}
     </>

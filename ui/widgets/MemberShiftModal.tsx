@@ -283,25 +283,25 @@ export function MemberShiftModal({
   const isActive = !!activeEntry;
 
   return (
-    <Modal open={open} onClose={onClose} title={fullName} widthPx={760} className="bo-modal--memberShift">
-      <div className="bo-shiftModal">
-        <div className="bo-shiftModalDate">
+    <Modal open={open} onClose={onClose} title={fullName} widthPx={760}>
+      <div className="p-4 space-y-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Clock size={14} strokeWidth={1.8} />
           {selectedDate}
         </div>
 
         {loading && (
-          <div className="bo-shiftModalLoading">
-            <div className="bo-spinner" />
+          <div className="flex justify-center py-8">
+            <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
         )}
 
         {!loading && (
           <>
             {hasSchedule && !isActive && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
-                <div className="bo-shiftModalLabel">Turno actual</div>
-                <div className="bo-shiftModalTimes">
+              <div className="rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] p-4">
+                <div className="text-sm font-semibold text-foreground mb-3">Turno actual</div>
+                <div className="flex gap-4 flex-wrap">
                   <TimeAdjustCounter
                     label="Entrada"
                     value={schedule.startTime}
@@ -317,12 +317,12 @@ export function MemberShiftModal({
                     disabled={loading}
                   />
                 </div>
-                <div className="bo-shiftModalActions">
-                  <button className="bo-btn bo-btn--primary bo-btn--glass" type="button" onClick={startFichaje} disabled={loading}>
+                <div className="flex gap-2 mt-4">
+                  <button className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border border-white/[0.06] backdrop-blur-sm" type="button" onClick={startFichaje} disabled={loading}>
                     <Play size={14} strokeWidth={1.8} />
                     Iniciar fichaje
                   </button>
-                  <button className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--glass" type="button" onClick={removeShift} disabled={loading}>
+                  <button className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-transparent hover:bg-white/[0.06] text-destructive hover:bg-destructive/90 border border-white/[0.06] backdrop-blur-sm" type="button" onClick={removeShift} disabled={loading}>
                     <Trash2 size={14} strokeWidth={1.8} />
                     Quitar turno
                   </button>
@@ -331,16 +331,16 @@ export function MemberShiftModal({
             )}
 
             {hasSchedule && isActive && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
-                <div className="bo-shiftModalLabel">Trabajando</div>
-                <div className="bo-shiftModalActive bo-shiftModalActive--glass">
-                  <div className="bo-shiftModalActiveInfo">
-                    <span className="bo-shiftModalActiveTime">Entrada: {activeEntry.startTime}</span>
-                    <span className="bo-badge bo-badge--success">En curso</span>
+              <div className="rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] p-4">
+                <div className="text-sm font-semibold text-foreground mb-3">Trabajando</div>
+                <div className="flex items-center justify-center py-4 bg-gradient-to-b from-white/[0.06] to-black/[0.15] rounded-lg">
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Entrada: {activeEntry.startTime}</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">En curso</span>
                   </div>
                 </div>
-                <div className="bo-shiftModalActions">
-                  <button className="bo-btn bo-btn--danger bo-btn--glass" type="button" onClick={stopFichaje} disabled={loading}>
+                <div className="flex gap-2 mt-4">
+                  <button className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 border border-white/[0.06] backdrop-blur-sm" type="button" onClick={stopFichaje} disabled={loading}>
                     <Square size={14} strokeWidth={1.8} />
                     Fichar salida
                   </button>
@@ -349,10 +349,10 @@ export function MemberShiftModal({
             )}
 
             {!hasSchedule && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
-                <div className="bo-shiftModalLabel">Sin turno asignado</div>
+              <div className="rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] p-4">
+                <div className="text-sm font-semibold text-foreground mb-3">Sin turno asignado</div>
                 <button
-                  className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
+                  className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90 border border-white/[0.06] backdrop-blur-sm"
                   type="button"
                   onClick={() => setShowAssignForm(true)}
                   disabled={loading}
@@ -366,55 +366,55 @@ export function MemberShiftModal({
             <AnimatePresence>
               {((!hasSchedule && showAssignForm) || (hasSchedule && !isActive)) && (
                 <motion.div
-                  className="bo-shiftModalAssign bo-shiftModalAssign--glass"
+                  className="rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] p-4"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
-                  <div className="bo-shiftModalLabel">Nuevo turno</div>
-                  <div className="bo-shiftModalWheels">
-                    <div className="bo-shiftModalWheelGroup">
-                      <div className="bo-shiftModalWheelLabel">Hora de entrada</div>
-                      <div className="bo-shiftModalWheelRow">
+                  <div className="text-sm font-semibold text-foreground mb-3">Nuevo turno</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <div className="text-xs text-muted-foreground">Hora de entrada</div>
+                      <div className="flex gap-2">
                         <SpinWheel
                           values={HOUR_OPTIONS}
                           value={assignEntryHour}
                           onChange={(v) => setAssignEntryTime(v, assignEntryMinute)}
                           ariaLabel="Hora de entrada"
-                          className="bo-shiftModalWheelSpin"
+                          className="w-full"
                         />
                         <SpinWheel
                           values={MINUTE_OPTIONS}
                           value={assignEntryMinute}
                           onChange={(v) => setAssignEntryTime(assignEntryHour, v)}
                           ariaLabel="Minutos de entrada"
-                          className="bo-shiftModalWheelSpin"
+                          className="w-full"
                         />
                       </div>
                     </div>
-                    <div className="bo-shiftModalWheelGroup">
-                      <div className="bo-shiftModalWheelLabel">Hora de salida</div>
-                      <div className="bo-shiftModalWheelRow">
+                    <div className="flex flex-col gap-2">
+                      <div className="text-xs text-muted-foreground">Hora de salida</div>
+                      <div className="flex gap-2">
                         <SpinWheel
                           values={exitHourOptions}
                           value={assignExitHour}
                           onChange={setAssignExitHour}
                           ariaLabel="Hora de salida"
-                          className="bo-shiftModalWheelSpin"
+                          className="w-full"
                         />
                         <SpinWheel
                           values={exitMinuteOptions}
                           value={assignExitMinute}
                           onChange={setAssignExitMinute}
                           ariaLabel="Minutos de salida"
-                          className="bo-shiftModalWheelSpin"
+                          className="w-full"
                         />
                       </div>
                     </div>
                   </div>
                   <button
-                    className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
+                    className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90 border border-white/[0.06] backdrop-blur-sm mt-4"
                     type="button"
                     onClick={assignShift}
                     disabled={loading}
@@ -433,7 +433,7 @@ export function MemberShiftModal({
                 transition={{ duration: 0.2, ease: "easeInOut" }}
               >
                 <button
-                  className="bo-btn bo-btn--ghost bo-btn--full bo-shiftModalAddBtn bo-btn--glass"
+                  className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg w-full bg-transparent hover:bg-white/[0.06] border border-white/[0.06] backdrop-blur-sm mt-4"
                   type="button"
                   onClick={() => setShowAssignForm(!showAssignForm)}
                   disabled={loading}
@@ -451,7 +451,7 @@ export function MemberShiftModal({
                 transition={{ duration: 0.2, ease: "easeInOut" }}
               >
                 <button
-                  className="bo-btn bo-btn--ghost bo-btn--full bo-btn--glass"
+                  className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg w-full bg-transparent hover:bg-white/[0.06] border border-white/[0.06] backdrop-blur-sm"
                   type="button"
                   onClick={() => setShowAssignForm(!showAssignForm)}
                   disabled={loading}
@@ -462,54 +462,54 @@ export function MemberShiftModal({
 
                 {showAssignForm && (
                   <motion.div
-                    className="bo-shiftModalAssign bo-shiftModalAssign--glass"
+                    className="rounded-lg border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-black/[0.10] p-4 mt-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="bo-shiftModalLabel">Nuevo turno</div>
-                    <div className="bo-shiftModalWheels">
-                      <div className="bo-shiftModalWheelGroup">
-                        <div className="bo-shiftModalWheelLabel">Hora de entrada</div>
-                        <div className="bo-shiftModalWheelRow">
+                    <div className="text-sm font-semibold text-foreground mb-3">Nuevo turno</div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2">
+                        <div className="text-xs text-muted-foreground">Hora de entrada</div>
+                        <div className="flex gap-2">
                           <SpinWheel
                             values={HOUR_OPTIONS}
                             value={assignEntryHour}
                             onChange={(v) => setAssignEntryTime(v, assignEntryMinute)}
                             ariaLabel="Hora de entrada"
-                            className="bo-shiftModalWheelSpin"
+                            className="w-full"
                           />
                           <SpinWheel
                             values={MINUTE_OPTIONS}
                             value={assignEntryMinute}
                             onChange={(v) => setAssignEntryTime(assignEntryHour, v)}
                             ariaLabel="Minutos de entrada"
-                            className="bo-shiftModalWheelSpin"
+                            className="w-full"
                           />
                         </div>
                       </div>
-                      <div className="bo-shiftModalWheelGroup">
-                        <div className="bo-shiftModalWheelLabel">Hora de salida</div>
-                        <div className="bo-shiftModalWheelRow">
+                      <div className="flex flex-col gap-2">
+                        <div className="text-xs text-muted-foreground">Hora de salida</div>
+                        <div className="flex gap-2">
                           <SpinWheel
                             values={exitHourOptions}
                             value={assignExitHour}
                             onChange={setAssignExitHour}
                             ariaLabel="Hora de salida"
-                            className="bo-shiftModalWheelSpin"
+                            className="w-full"
                           />
                           <SpinWheel
                             values={exitMinuteOptions}
                             value={assignExitMinute}
                             onChange={setAssignExitMinute}
                             ariaLabel="Minutos de salida"
-                            className="bo-shiftModalWheelSpin"
+                            className="w-full"
                           />
                         </div>
                       </div>
                     </div>
                     <button
-                      className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
+                      className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg w-full bg-primary text-primary-foreground hover:bg-primary/90 border border-white/[0.06] backdrop-blur-sm mt-4"
                       type="button"
                       onClick={assignShift}
                       disabled={loading}

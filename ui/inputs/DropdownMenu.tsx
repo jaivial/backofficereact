@@ -27,7 +27,7 @@ const VIEWPORT_MARGIN = 8;
 const MENU_GAP = 8;
 
 function portalEl(): HTMLElement | null {
-  return document.getElementById("bo-portal") || document.body;
+  return document.getElementById("portal") || document.body;
 }
 
 function clamp(n: number, min: number, max: number): number {
@@ -196,7 +196,7 @@ export function DropdownMenu({
     <button
       ref={triggerRef}
       type="button"
-      className={triggerClassName || "bo-actionBtn"}
+      className={triggerClassName || "w-9 h-9 rounded-xl border border-white/[0.06] bg-white/[0.02] text-muted flex items-center justify-center cursor-pointer transition-all duration-150 hover:bg-white/[0.04] hover:border-white/[0.12] hover:-translate-y-0.5"}
       aria-haspopup="menu"
       aria-expanded={open}
       aria-label={label}
@@ -211,7 +211,7 @@ export function DropdownMenu({
       <AnimatePresence>
         <motion.div
           ref={menuRef}
-          className="bo-menu"
+          className="absolute z-50 mt-1 p-1 rounded-lg border border-white/[0.06] bg-card shadow-lg min-w-[180px]"
           role="menu"
           initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: pos.direction === "up" ? -6 : 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -234,15 +234,15 @@ export function DropdownMenu({
               key={it.id}
               data-menuitem
               type="button"
-              className={`bo-menuItem${it.tone === "danger" ? " is-danger" : ""}`}
+              className={`w-full px-3 py-2 rounded-md text-sm text-left flex items-center gap-2 transition-colors duration-150 hover:bg-white/[0.06] cursor-pointer ${it.tone === "danger" ? "text-danger hover:bg-danger/10" : "text-foreground"}`}
               role="menuitem"
               onClick={() => {
                 close();
                 it.onSelect();
               }}
             >
-              {it.icon ? <span className="bo-menuIcon" aria-hidden="true">{it.icon}</span> : null}
-              <span className="bo-menuLabel">{it.label}</span>
+              {it.icon ? <span className="text-muted w-4 h-4 flex-shrink-0" aria-hidden="true">{it.icon}</span> : null}
+              <span>{it.label}</span>
             </button>
           ))}
         </motion.div>,

@@ -80,74 +80,104 @@ export default function Page() {
   }, [api.passwordResets, confirmPassword, password, token]);
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window bo-window--auth bo-onboardingWindow">
-        <div className="bo-authCard" role="main" aria-label="Reset password">
-          {loading ? (
-            <div className="bo-onboardingLoading">
-              <Loader2 size={20} className="is-spinning" />
-              Validando enlace...
+    <div className="bo-flex bo-flex-col bo-items-center text-center bo-authContainer">
+      <div 
+        className="bo-authCard rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] border border-white/[0.06] shadow-soft p-[18px]"
+        role="main" 
+        aria-label="Restablecer password"
+      >
+        {loading ? (
+          <div className="bo-flex bo-flex-col bo-items-center bo-gap-2 bo-authActions">
+            <Loader2 size={20} className="animate-spin" />
+            Validando enlace...
+          </div>
+        ) : error && !preview ? (
+          <>
+            <div className="bo-authIconCircle bo-authIconCircle--error">
+              <CircleAlert size={30} />
             </div>
-          ) : error && !preview ? (
-            <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--error">
-                <CircleAlert size={30} />
-              </div>
-              <div className="bo-title">Enlace no válido</div>
-              <div className="bo-authSub">{error}</div>
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/login")}>
-                Ir a login
-              </button>
-            </>
-          ) : done ? (
-            <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--ok">
-                <CheckCircle2 size={30} />
-              </div>
-              <div className="bo-title">Password actualizada</div>
-              <div className="bo-authSub">Ya puedes iniciar sesión con tu nueva password.</div>
-              <button className="bo-btn bo-btn--primary" type="button" onClick={() => (window.location.href = "/login")}>
-                Ir a login
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="bo-title">Restablecer password</div>
-              <div className="bo-authSub">
-                {preview?.firstName ? `${preview.firstName}, ` : ""}introduce tu nueva password dos veces para confirmar.
-              </div>
+            <div className="text-xl font-semibold leading-tight tracking-tight">Enlace no válido</div>
+            <div className="mt-1.5 text-xs text-muted-foreground">{error}</div>
+            <button
+              type="button"
+              onClick={() => (window.location.href = "/login")}
+              className="mt-4 h-10 rounded-xl border border-white/[0.06] bg-transparent font-semibold inline-flex items-center justify-center gap-2 transition-all hover:bg-white/[0.06]"
+            >
+              Ir a login
+            </button>
+          </>
+        ) : done ? (
+          <>
+            <div className="bo-authIconCircle bo-authIconCircle--success">
+              <CheckCircle2 size={30} />
+            </div>
+            <div className="text-xl font-semibold leading-tight tracking-tight">Password actualizada</div>
+            <div className="mt-1.5 text-xs text-muted-foreground">
+              Ya puedes iniciar sesión con tu nueva password.
+            </div>
+            <button
+              type="button"
+              onClick={() => (window.location.href = "/login")}
+              className="mx-auto mt-4 h-10 rounded-xl border border-primary/30 bg-primary/16 font-semibold inline-flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-55 disabled:cursor-not-allowed"
+            >
+              Ir a login
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="text-xl font-semibold leading-tight tracking-tight">Restablecer password</div>
+            <div className="mt-1.5 text-xs text-muted-foreground">
+              {preview?.firstName ? `${preview.firstName}, ` : ""}
+              introduce tu nueva password dos veces para confirmar.
+            </div>
 
-              <label className="bo-field bo-field--wide">
-                <span className="bo-label">Nueva password</span>
+            <div className="mt-3.5 grid gap-3">
+              <div className="grid gap-1">
+                <label htmlFor="password" className="text-xs text-muted-foreground block mb-1">
+                  Nueva password
+                </label>
                 <input
-                  className="bo-input"
+                  id="password"
                   type="password"
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={busy}
+                  className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                  placeholder="Nueva password"
                 />
-              </label>
-              <label className="bo-field bo-field--wide">
-                <span className="bo-label">Repetir password</span>
+              </div>
+              <div className="grid gap-1">
+                <label htmlFor="confirmPassword" className="text-xs text-muted-foreground block mb-1">
+                  Repetir password
+                </label>
                 <input
-                  className="bo-input"
+                  id="confirmPassword"
                   type="password"
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={busy}
+                  className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                  placeholder="Repetir password"
                 />
-              </label>
+              </div>
+            </div>
 
-              {error ? <div className="bo-inlineError">{error}</div> : null}
+            {error ? (
+              <div className="mt-2 text-xs text-red-400">{error}</div>
+            ) : null}
 
-              <button className="bo-btn bo-btn--primary" type="button" onClick={onSubmit} disabled={busy}>
-                {busy ? "Guardando..." : "Confirmar"}
-              </button>
-            </>
-          )}
-        </div>
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={busy}
+              className="mt-4 h-10 rounded-xl border border-primary/30 bg-primary/16 font-semibold inline-flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-55 disabled:cursor-not-allowed"
+            >
+              {busy ? "Guardando..." : "Confirmar"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

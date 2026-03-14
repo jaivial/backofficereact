@@ -87,36 +87,36 @@ export function RoleCreateModal({
 
   return (
     <Modal open={open} title="Crear rol" onClose={onClose} widthPx={680}>
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">Crear rol</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close">
+      <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
+        <div className="text-lg font-semibold text-foreground">Crear rol</div>
+        <button className="w-8 h-8 flex items-center justify-center text-2xl text-muted-foreground hover:text-foreground" type="button" onClick={onClose} aria-label="Close">
           ×
         </button>
       </div>
 
-      <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-        <div className="bo-panel bo-roleCreatePanel">
-          <div className="bo-panelHead">
+      <div className="mt-[10px]">
+        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02]">
+          <div className="p-4 border-b border-white/[0.06]">
             <div>
-              <div className="bo-panelTitle">Datos del rol</div>
-              <div className="bo-panelMeta">Importancia máxima permitida para tu sesión: {maxAllowed}</div>
+              <div className="text-sm font-semibold text-foreground mb-1">Datos del rol</div>
+              <div className="text-xs text-muted-foreground">Importancia máxima permitida para tu sesión: {maxAllowed}</div>
             </div>
           </div>
-          <div className="bo-panelBody bo-roleCreateBody">
-            <label className="bo-field bo-field--wide">
-              <div className="bo-label">Nombre</div>
-              <input className="bo-input" value={label} onChange={(ev) => setLabel(ev.target.value)} placeholder="Ej. Encargado de eventos" />
+          <div className="p-4 space-y-4">
+            <label className="block">
+              <div className="text-xs text-muted-foreground font-medium mb-2">Nombre</div>
+              <input className="w-full h-10 px-3 rounded-lg border border-white/[0.06] bg-white/[0.03] text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" value={label} onChange={(ev) => setLabel(ev.target.value)} placeholder="Ej. Encargado de eventos" />
             </label>
 
-            <label className="bo-field bo-field--wide">
-              <div className="bo-label">Importancia (0-100)</div>
+            <label className="block">
+              <div className="text-xs text-muted-foreground font-medium mb-2">Importancia (0-100)</div>
               <Slider value={importance} min={0} max={maxAllowed} onChange={setImportance} ariaLabel="Importancia del rol" />
             </label>
 
-            <label className="bo-field bo-field--wide">
-              <div className="bo-label">Icono</div>
-              <div className="bo-roleCreateIconRow">
-                <span className="bo-roleCreateIconPreview" aria-hidden="true">
+            <label className="block">
+              <div className="text-xs text-muted-foreground font-medium mb-2">Icono</div>
+              <div className="flex items-center gap-3">
+                <span className="w-10 h-10 flex items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03]" aria-hidden="true">
                   <RoleIcon roleSlug="custom" iconKey={iconKey} size={20} strokeWidth={1.8} />
                 </span>
                 <Select
@@ -124,22 +124,22 @@ export function RoleCreateModal({
                   onChange={setIconKey}
                   options={iconOptions}
                   ariaLabel="Seleccionar icono"
-                  className="bo-roleCreateIconSelect"
+                  className="flex-1"
                   listMaxHeightPx={200}
                 />
               </div>
             </label>
 
-            <div className="bo-field bo-field--wide">
-              <div className="bo-label">Permisos</div>
-              <div className="bo-chips">
+            <div className="block">
+              <div className="text-xs text-muted-foreground font-medium mb-2">Permisos</div>
+              <div className="flex flex-wrap gap-2">
                 {ALL_SECTIONS.map((section) => {
                   const on = permissions.includes(section.key);
                   return (
                     <button
                       key={section.key}
                       type="button"
-                      className={`bo-chip${on ? " is-on" : ""}`}
+                      className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${on ? "bg-primary text-primary-foreground" : "bg-white/[0.04] text-foreground hover:bg-white/[0.06] border border-white/[0.06]"}`}
                       onClick={() =>
                         setPermissions((prev) =>
                           prev.includes(section.key) ? prev.filter((x) => x !== section.key) : [...prev, section.key],
@@ -156,12 +156,12 @@ export function RoleCreateModal({
         </div>
       </div>
 
-      <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose}>
+      <div className="flex justify-end gap-2 mt-4">
+        <button className="inline-flex items-center justify-center h-9 px-4 rounded-lg text-sm font-medium bg-transparent text-foreground hover:bg-white/[0.06]" type="button" onClick={onClose}>
           Cancelar
         </button>
         <button
-          className="bo-btn bo-btn--primary"
+          className="inline-flex items-center justify-center h-9 px-4 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90"
           type="button"
           disabled={busy || !canSubmit}
           onClick={() =>

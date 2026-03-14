@@ -6,7 +6,7 @@ type AvatarProps = {
 };
 
 export function Avatar({ className, children }: AvatarProps) {
-  return <div className={`bo-avatar ${className || ""}`}>{children}</div>;
+  return <div className={`w-9 h-9 rounded-xl border border-white/[0.06] bg-gradient-to-br from-primary/28 to-accent/18 flex items-center justify-center text-[13px] font-bold text-foreground/90 overflow-hidden ${className || ""}`}>{children}</div>;
 }
 
 type AvatarImageProps = {
@@ -17,7 +17,7 @@ type AvatarImageProps = {
 
 export function AvatarImage({ src, alt, className }: AvatarImageProps) {
   if (!src) return null;
-  return <img src={src} alt={alt} className={`bo-avatarImg ${className || ""}`} />;
+  return <img src={src} alt={alt} className={`w-full h-full object-cover ${className || ""}`} />;
 }
 
 type AvatarFallbackProps = {
@@ -26,5 +26,5 @@ type AvatarFallbackProps = {
 };
 
 export function AvatarFallback({ className, children }: AvatarFallbackProps) {
-  return <span className={`bo-avatarFallback ${className || ""}`}>{children}</span>;
+  return <span className={`w-full h-full flex items-center justify-center rounded-inherit ${className || ""}`}>{children}</span>;
 }

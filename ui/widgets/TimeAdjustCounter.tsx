@@ -15,11 +15,11 @@ export function TimeAdjustCounter({
   disabled?: boolean;
 }) {
   return (
-    <div className="bo-timeAdjustCounter bo-timeAdjustCounter--glass" aria-label={label}>
-      <div className="bo-timeAdjustCounterLabel">{label}</div>
-      <div className="bo-timeAdjustCounterCtrls">
+    <div className="flex flex-col gap-2 p-4 rounded-lg border border-white/[0.06] bg-white/[0.02]" aria-label={label}>
+      <div className="text-xs text-muted font-medium">{label}</div>
+      <div className="flex items-center gap-2">
         <button
-          className="bo-counterBtn bo-counterBtn--glass"
+          className="h-8 w-8 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] hover:border-white/[0.12] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
           onClick={onMinus}
           disabled={disabled}
@@ -27,9 +27,9 @@ export function TimeAdjustCounter({
         >
           <Minus size={14} strokeWidth={2.2} />
         </button>
-        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass">{value}</div>
+        <div className="flex-1 text-center text-sm font-semibold text-foreground">{value}</div>
         <button
-          className="bo-counterBtn bo-counterBtn--glass"
+          className="h-8 w-8 rounded-lg border border-white/[0.06] bg-white/[0.03] flex items-center justify-center text-foreground/80 hover:bg-white/[0.06] hover:border-white/[0.12] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
           onClick={onPlus}
           disabled={disabled}

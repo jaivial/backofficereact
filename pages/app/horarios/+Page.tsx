@@ -387,62 +387,67 @@ export default function Page() {
   );
 
   return (
-    <section aria-label="Horarios" className="bo-content-grid bo-horariosPage">
-      <div className="bo-horariosTopGrid">
-        <div className="bo-panel bo-horariosCalendarPanel">
-          <div className="bo-panelHead">
+    <section aria-label="Horarios" className="bo-grid bo-grid-gap-4 w-full max-w-full min-w-0">
+      <div className="bo-grid bo-grid-gap-4 bo-grid-cols-1 w-full min-w-0">
+        <div className="bo-card">
+          <div className="bo-flex bo-items-center bo-justify-between bo-p-4 bo-pb-0">
             <div>
-              <div className="bo-panelTitle bo-horariosTitle">
+              <div className="bo-inline-flex bo-items-center bo-gap-2 bo-text-sm bo-weight-semibold bo-text">
                 <CalendarClock size={16} strokeWidth={1.8} />
                 Horarios
                 {realtime.pendingScheduleUpdates && (
-                  <span className="bo-pendingDot" title="Hay cambios sin ver" />
+                  <span className="bo-pendingIndicator">
+                    <span className="bo-pingDot"></span>
+                    <span className="bo-dotActive"></span>
+                  </span>
                 )}
               </div>
-              <div className="bo-panelMeta">Selecciona una fecha y asigna turnos al equipo.</div>
+              <div className="bo-text-xs bo-faint bo-mt-1">Selecciona una fecha y asigna turnos al equipo.</div>
             </div>
-            <div className="bo-horariosDateBadge">{selectedDate}</div>
+            <div className="bo-dateChip">
+              {selectedDate}
+            </div>
           </div>
-          <div className="bo-panelBody bo-horariosCalendarBody">
-            <div className="bo-tabs bo-horariosCalendarTabs" role="tablist" aria-label="Calendario de miembros y reservas">
+          <div className="bo-p-4 bo-grid bo-grid-gap-3">
+            <div className="bo-grid bo-grid-cols-2 w-full max-w-full" role="tablist" aria-label="Calendario de miembros y reservas">
               <button
                 type="button"
-                className={`bo-tab bo-horariosCalendarTab${calendarTab === "miembros" ? " is-active" : ""}`}
+                className={`bo-tabBtn ${calendarTab === "miembros" ? "bo-tabBtn--active" : ""}`}
                 role="tab"
                 aria-selected={calendarTab === "miembros"}
                 onClick={() => setCalendarTab("miembros")}
               >
                 {calendarTab === "miembros" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner">
-                  <span className="bo-tabIcon" aria-hidden="true">
+                <span className="bo-flex bo-items-center bo-gap-2 bo-justify-center">
+                  <span aria-hidden="true">
                     <Users size={16} strokeWidth={1.8} />
                   </span>
-                  <span className="bo-tabLabel">Miembros</span>
+                  <span className="bo-text-xs">Miembros</span>
                 </span>
               </button>
               <button
                 type="button"
-                className={`bo-tab bo-horariosCalendarTab${calendarTab === "reservas" ? " is-active" : ""}`}
+                className={`bo-tabBtn ${calendarTab === "reservas" ? "bo-tabBtn--active" : ""}`}
                 role="tab"
                 aria-selected={calendarTab === "reservas"}
                 onClick={() => setCalendarTab("reservas")}
               >
                 {calendarTab === "reservas" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner">
-                  <span className="bo-tabIcon" aria-hidden="true">
+                <span className="bo-flex bo-items-center bo-gap-2 bo-justify-center">
+                  <span aria-hidden="true">
                     <CalendarDays size={16} strokeWidth={1.8} />
                   </span>
-                  <span className="bo-tabLabel">Reservas</span>
+                  <span className="bo-text-xs">Reservas</span>
                 </span>
               </button>
             </div>
 
-            <div className="bo-horariosCalendarRow" style={calendarRowStyle}>
-              <div className="bo-horariosCalendarViewport" ref={calendarViewportRef}>
+            <div className="bo-grid bo-grid-gap-3 bo-grid-cols-1 md:grid-cols-[minmax(0,450px)_280px] items-start w-full min-w-0" style={calendarRowStyle}>
+              <div className="max-w-[450px]" ref={calendarViewportRef}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={calendarTab}
-                    className="bo-horariosCalendarViewItem"
+                    className="min-w-0"
                     initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -462,35 +467,40 @@ export default function Page() {
                 </AnimatePresence>
               </div>
 
-              <div className="bo-horariosMembersPanel">
-                <div className="bo-horariosMembersPanelHead">
-                  <div className="bo-panelTitle">Miembros</div>
-                  <div className="bo-horariosMemberCount">{filteredMembers.length}</div>
+              <div className="w-[280px] flex-shrink-0 flex flex-col max-h-[480px] bg-bo-surface-2 border border-bo-border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-sm font-semibold text-bo-text">Miembros</span>
+                  <span className="text-xs text-bo-muted">{filteredMembers.length}</span>
                 </div>
-                <div className="bo-horariosMemberSearch">
+                <div className="mb-2">
                   <input
                     type="text"
-                    className="bo-input bo-horariosMemberSearchInput"
+                    className="w-full h-9 px-3 rounded-md border border-bo-border bg-bo-surface text-bo-text text-xs placeholder:text-bo-muted focus:outline-none focus:ring-2 focus:ring-bo-accent/50"
                     placeholder="Buscar..."
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}
                     aria-label="Buscar miembro"
                   />
                 </div>
-                <div className="bo-horariosMemberList">
+                <div className="flex-1 overflow-y-auto">
                   {filteredMembers.map((member) => (
-                    <button key={member.id} type="button" className="bo-horariosMemberBtn" onClick={() => openMemberModal(member)}>
-                      <span className="bo-horariosMemberName">
+                    <button key={member.id} type="button" className="w-full flex items-center justify-between p-2 rounded-md hover:bg-bo-surface-2 transition-colors duration-150" onClick={() => openMemberModal(member)}>
+                      <span className="flex items-center gap-2 text-sm text-bo-text">
                         {fullName(member)}
-                        {activeEntriesForDate.has(member.id) ? <span className="bo-horariosLiveDot" aria-hidden="true" /> : null}
+                        {activeEntriesForDate.has(member.id) ? (
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: "var(--bo-color-success)" }}></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: "var(--bo-color-success)" }}></span>
+                          </span>
+                        ) : null}
                       </span>
-                      <span className="bo-horariosMemberAction">
+                      <span className="text-bo-muted">
                         <UserRoundPlus size={14} strokeWidth={1.8} />
                       </span>
                     </button>
                   ))}
                   {filteredMembers.length === 0 ? (
-                    <div className="bo-mutedText" style={{ textAlign: "center", padding: 14 }}>
+                    <div className="text-bo-muted text-center p-3.5 text-xs">
                       {memberSearch.trim() ? "Sin resultados." : "Todos los miembros ya tienen horario para este día."}
                     </div>
                   ) : null}
@@ -501,48 +511,48 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="bo-panel bo-horariosTablePanel">
-        <div className="bo-panelHead">
+      <div className="rounded-xl border border-bo-border bg-bo-surface-2">
+        <div className="flex items-center justify-between p-4 pb-0">
           <div>
-            <div className="bo-panelTitle">Horarios establecidos</div>
-            <div className="bo-panelMeta">{selectedDate}</div>
+            <div className="text-sm font-semibold text-bo-text">Horarios establecidos</div>
+            <div className="text-xs text-bo-muted mt-0.5">{selectedDate}</div>
           </div>
         </div>
-        <div className="bo-panelBody">
-          <div className="bo-tableWrap">
-            <div className="bo-tableScroll">
-              <table className="bo-table bo-table--horarios" aria-label="Tabla de horarios del día">
+        <div className="p-4">
+          <div className="overflow-x-auto">
+            <div className="min-w-full">
+              <table className="w-full text-sm text-bo-text" aria-label="Tabla de horarios del día">
                 <thead>
-                  <tr>
-                    <th>Miembro</th>
-                    <th>Entrada</th>
-                    <th>Salida</th>
-                    <th>Duración</th>
-                    <th>Fichaje en vivo</th>
-                    <th>Acción</th>
+                  <tr className="border-b border-bo-border">
+                    <th className="text-left py-2 px-2 font-medium">Miembro</th>
+                    <th className="text-left py-2 px-2 font-medium">Entrada</th>
+                    <th className="text-left py-2 px-2 font-medium">Salida</th>
+                    <th className="text-left py-2 px-2 font-medium">Duración</th>
+                    <th className="text-left py-2 px-2 font-medium">Fichaje en vivo</th>
+                    <th className="text-left py-2 px-2 font-medium">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {schedules.map((schedule) => {
                     const live = activeEntriesForDate.get(schedule.memberId) || null;
                     return (
-                    <tr key={schedule.id}>
-                      <td>{schedule.memberName}</td>
-                      <td>{schedule.startTime}</td>
-                      <td>{schedule.endTime}</td>
-                      <td>{diffLabel(schedule.startTime, schedule.endTime)}</td>
-                      <td>
+                    <tr key={schedule.id} className="border-b border-bo-border/50 hover:bg-bo-surface-3/50">
+                      <td className="py-2 px-2">{schedule.memberName}</td>
+                      <td className="py-2 px-2">{schedule.startTime}</td>
+                      <td className="py-2 px-2">{schedule.endTime}</td>
+                      <td className="py-2 px-2">{diffLabel(schedule.startTime, schedule.endTime)}</td>
+                      <td className="py-2 px-2">
                         {live ? (
-                          <span className="bo-horariosLivePill">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-success) 10%, transparent)", color: "var(--bo-color-success)" }}>
                             {elapsedForEntry(live, tick)}
                           </span>
                         ) : (
-                          <span className="bo-mutedText">—</span>
+                          <span className="text-bo-muted">—</span>
                         )}
                       </td>
-                      <td>
+                      <td className="py-2 px-2">
                         <button
-                          className="bo-btn bo-btn--ghost bo-btn--sm"
+                          className="h-8 px-3 rounded-md text-xs font-medium text-bo-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
                           type="button"
                           onClick={() => {
                             const member = membersSorted.find((m) => m.id === schedule.memberId);
@@ -559,17 +569,17 @@ export default function Page() {
                   {extraActiveEntries.map((entry) => {
                     const member = membersSorted.find((m) => m.id === entry.memberId);
                     return (
-                      <tr key={`live-${entry.id}`}>
-                        <td>{entry.memberName}</td>
-                        <td>{entry.startTime}</td>
-                        <td>--:--</td>
-                        <td>--</td>
-                        <td>
-                          <span className="bo-horariosLivePill">{elapsedForEntry(entry, tick)}</span>
+                      <tr key={`live-${entry.id}`} className="border-b border-bo-border/50 hover:bg-bo-surface-3/50">
+                        <td className="py-2 px-2">{entry.memberName}</td>
+                        <td className="py-2 px-2">{entry.startTime}</td>
+                        <td className="py-2 px-2">--:--</td>
+                        <td className="py-2 px-2">--</td>
+                        <td className="py-2 px-2">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-success) 10%, transparent)", color: "var(--bo-color-success)" }}>{elapsedForEntry(entry, tick)}</span>
                         </td>
-                        <td>
+                        <td className="py-2 px-2">
                           <button
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
+                            className="h-8 px-3 rounded-md text-xs font-medium text-bo-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
                             type="button"
                             onClick={() => {
                               if (member) openMemberModal(member);
@@ -585,7 +595,7 @@ export default function Page() {
 
                   {schedules.length === 0 && extraActiveEntries.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="bo-mutedText" style={{ textAlign: "center", padding: 14 }}>
+                      <td colSpan={6} className="text-bo-muted text-center py-3.5 text-xs">
                         Sin horarios para esta fecha.
                       </td>
                     </tr>
@@ -598,31 +608,31 @@ export default function Page() {
       </div>
 
       <Modal open={modalOpen} title="Asignar horario" onClose={() => setModalOpen(false)} widthPx={760}>
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Asignar horario</div>
-          <button className="bo-modalX" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
+        <div className="flex items-center justify-between pb-4 border-b border-bo-border">
+          <div className="text-base font-semibold text-bo-text">Asignar horario</div>
+          <button className="text-xl text-bo-muted hover:text-bo-text leading-none w-8 h-8 flex items-center justify-center rounded-md hover:bg-bo-surface-2 transition-colors" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
             ×
           </button>
         </div>
 
-        <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-          <div className="bo-panel bo-horariosModalPanel">
-            <div className="bo-panelHead">
+        <div className="mt-2.5 p-4 rounded-lg border border-bo-border bg-bo-surface-2">
+          <div className="rounded-xl border border-bo-border bg-bo-surface-2">
+            <div className="flex items-center justify-between p-4 pb-0">
               <div>
-                <div className="bo-panelTitle">{selectedMember ? fullName(selectedMember) : "Miembro"}</div>
-                <div className="bo-panelMeta">Fecha {selectedDate}</div>
+                <div className="text-sm font-semibold text-bo-text">{selectedMember ? fullName(selectedMember) : "Miembro"}</div>
+                <div className="text-xs text-bo-muted mt-0.5">Fecha {selectedDate}</div>
               </div>
             </div>
 
-            <div className="bo-panelBody bo-horariosModalBody">
-              <div className="bo-horariosWheels">
-                <div className="bo-horariosWheelGroup">
-                  <div className="bo-label">Hora de entrada</div>
-                  <div className="bo-horariosWheelRow">
+            <div className="p-4">
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <div className="text-xs font-medium text-bo-text mb-2">Hora de entrada</div>
+                  <div className="flex gap-2">
                     <div>
-                      <div className="bo-horariosWheelLabel">Hora</div>
+                      <div className="text-xs text-bo-muted mb-1">Hora</div>
                       <SpinWheel
-                        className="bo-horariosWheelSpin"
+                        className="w-16"
                         values={hourOptions}
                         value={entryHour}
                         onChange={(nextHour) => setEntryTime(nextHour, entryMinute)}
@@ -630,9 +640,9 @@ export default function Page() {
                       />
                     </div>
                     <div>
-                      <div className="bo-horariosWheelLabel">Minutos</div>
+                      <div className="text-xs text-bo-muted mb-1">Minutos</div>
                       <SpinWheel
-                        className="bo-horariosWheelSpin"
+                        className="w-16"
                         values={minuteOptions}
                         value={entryMinute}
                         onChange={(nextMinute) => setEntryTime(entryHour, nextMinute)}
@@ -642,17 +652,17 @@ export default function Page() {
                   </div>
                 </div>
 
-                <div className="bo-horariosWheelGroup">
-                  <div className="bo-label">Hora de salida</div>
-                  <div className="bo-horariosWheelRow">
+                <div className="flex-1">
+                  <div className="text-xs font-medium text-bo-text mb-2">Hora de salida</div>
+                  <div className="flex gap-2">
                     <div>
-                      <div className="bo-horariosWheelLabel">Hora</div>
-                      <SpinWheel className="bo-horariosWheelSpin" values={exitHourOptions} value={exitHour} onChange={setExitHour} ariaLabel="Hora de salida" />
+                      <div className="text-xs text-bo-muted mb-1">Hora</div>
+                      <SpinWheel className="w-16" values={exitHourOptions} value={exitHour} onChange={setExitHour} ariaLabel="Hora de salida" />
                     </div>
                     <div>
-                      <div className="bo-horariosWheelLabel">Minutos</div>
+                      <div className="text-xs text-bo-muted mb-1">Minutos</div>
                       <SpinWheel
-                        className="bo-horariosWheelSpin"
+                        className="w-16"
                         values={exitMinuteOptions}
                         value={exitMinute}
                         onChange={setExitMinute}
@@ -663,7 +673,7 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="bo-horariosPreview">
+              <div className="mt-4 inline-flex items-center gap-2 text-sm text-bo-text">
                 <Clock3 size={14} strokeWidth={1.8} />
                 {`${entryHour}:${entryMinute}`} - {`${exitHour}:${exitMinute}`}
               </div>
@@ -671,11 +681,11 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-modalActions">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setModalOpen(false)}>
+        <div className="flex justify-end gap-2 pt-4">
+          <button className="h-9 px-4 rounded-md text-sm font-medium text-bo-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors duration-150" type="button" onClick={() => setModalOpen(false)}>
             Cancelar
           </button>
-          <button className="bo-btn bo-btn--primary" type="button" disabled={busy || !selectedMember} onClick={() => void saveSchedule()}>
+          <button className="h-9 px-4 rounded-md text-sm font-medium bg-bo-accent text-bo-bg hover:opacity-90 transition-opacity duration-150" type="button" disabled={busy || !selectedMember} onClick={() => void saveSchedule()}>
             Guardar horario
           </button>
         </div>

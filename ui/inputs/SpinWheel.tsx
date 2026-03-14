@@ -142,9 +142,9 @@ export function SpinWheel({
   const activeValue = safeValues[activeIndex] ?? "";
 
   return (
-    <div className={`bo-spinWheel${className ? ` ${className}` : ""}`}>
+    <div className={`w-full${className ? ` ${className}` : ""}`}>
       <div
-        className="bo-spinWheelViewport"
+        className="relative h-[190px] rounded-xl border border-border bg-gradient-to-b from-white/[0.05] to-black/[0.32] bg-white/[0.02] overflow-hidden touch-none outline-none select-none focus-visible:border-primary/60 focus-visible:shadow-[0_0_0_2px_rgba(185,168,255,0.18)]"
         role="spinbutton"
         aria-label={ariaLabel}
         aria-valuemin={1}
@@ -156,7 +156,7 @@ export function SpinWheel({
         onKeyDown={onKeyDown}
       >
         <motion.div
-          className="bo-spinWheelTrack"
+          className="px-2 will-change-transform cursor-grab active:cursor-grabbing"
           style={{ y, paddingTop: PADDING_Y, paddingBottom: PADDING_Y }}
           drag="y"
           dragElastic={reduceMotion ? 0 : 0.12}
@@ -186,7 +186,7 @@ export function SpinWheel({
               <button
                 key={option}
                 type="button"
-                className={`bo-spinWheelItem${idx === activeIndex ? " is-active" : ""}`}
+                className={`w-full h-[38px] rounded-lg border-0 bg-transparent grid place-items-center text-lg font-bold tracking-widest tabular-nums origin-center transition-all cursor-pointer ${idx === activeIndex ? "text-foreground shadow-[0_7px_20px_rgba(185,168,255,0.22)]" : "text-muted-foreground"}`}
                 style={style}
                 onClick={() => selectIndex(idx)}
               >
@@ -196,9 +196,9 @@ export function SpinWheel({
           })}
         </motion.div>
 
-        <div className="bo-spinWheelCenter" aria-hidden="true" />
-        <div className="bo-spinWheelFade bo-spinWheelFade--top" aria-hidden="true" />
-        <div className="bo-spinWheelFade bo-spinWheelFade--bottom" aria-hidden="true" />
+        <div className="absolute left-2 right-2 top-1/2 -translate-y-1/2 h-[38px] rounded-lg border border-primary/50 bg-primary/10 pointer-events-none" aria-hidden="true" />
+        <div className="absolute left-0 right-0 h-[34%] pointer-events-none bg-gradient-to-b from-card to-transparent top-0" aria-hidden="true" />
+        <div className="absolute left-0 right-0 h-[34%] pointer-events-none bg-gradient-to-t from-card to-transparent bottom-0" aria-hidden="true" />
       </div>
     </div>
   );

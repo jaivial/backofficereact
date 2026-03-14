@@ -35,7 +35,12 @@ export function ImageDropInput({
 
   return (
     <div
-      className={["bo-imageDropInput", dragging ? "is-dragging" : "", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}
+      className={[
+        "rounded-lg border-2 border-dashed border-white/[0.06] bg-white/[0.02] p-8 text-center cursor-pointer transition-all duration-150 hover:border-white/[0.12] hover:bg-white/[0.04]",
+        dragging ? "border-primary/50 bg-primary/8" : "",
+        disabled ? "opacity-50 cursor-not-allowed" : "",
+        className
+      ].filter(Boolean).join(" ")}
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-label={ariaLabel}

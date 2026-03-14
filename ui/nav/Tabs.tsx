@@ -37,7 +37,7 @@ export function Tabs({
       const sp = new URLSearchParams(window.location.search || "");
       if (sp.get("debugTabs") === "1") return true;
       try {
-        return window.localStorage.getItem("bo_debug_tabs") === "1";
+        return window.localStorage.getItem("debug_tabs") === "1";
       } catch {
         return false;
       }
@@ -46,7 +46,7 @@ export function Tabs({
 
     if (!mountLoggedRef.current) {
       mountLoggedRef.current = true;
-      console.log("[bo-tabs] mounted", {
+      console.log("[tabs] mounted", {
         url: window.location.href,
         activeId,
         reduceMotion,
@@ -68,7 +68,7 @@ export function Tabs({
     const explicitDebug = (() => {
       if (sp.get("debugTabs") === "1") return true;
       try {
-        return window.localStorage.getItem("bo_debug_tabs") === "1";
+        return window.localStorage.getItem("debug_tabs") === "1";
       } catch {
         return false;
       }
@@ -83,7 +83,7 @@ export function Tabs({
       if (cs.padding === "0px" || cs.gap === "0px") return true;
       if (nav.getBoundingClientRect().height < 44) return true;
 
-      const activeEl = nav.querySelector<HTMLElement>("a.bo-tab.is-active");
+      const activeEl = nav.querySelector<HTMLElement>("a.rounded-xl.is-active");
       if (activeEl) {
         const r = activeEl.getBoundingClientRect();
         if (r.height < 40) return true;
@@ -93,7 +93,7 @@ export function Tabs({
         if (parseFloat(acs.paddingTop || "0") < 6) return true;
       }
 
-      const indicatorEl = nav.querySelector<HTMLElement>("a.bo-tab.is-active .bo-tabIndicator");
+      const indicatorEl = nav.querySelector<HTMLElement>("a.rounded-xl.is-active .absolute");
       if (!indicatorEl) return true;
       const ics = window.getComputedStyle(indicatorEl);
       if (ics.position !== "absolute") return true;
@@ -102,7 +102,7 @@ export function Tabs({
 
     if (!explicitDebug && !missingDate && !looksBroken) return;
 
-    console.log("[bo-tabs] render", {
+    console.log("[tabs] render", {
       initialUrl: initialUrlRef.current,
       url: window.location.href,
       date,
@@ -114,7 +114,7 @@ export function Tabs({
 
     if (nav) {
       const cs = window.getComputedStyle(nav);
-      console.log("[bo-tabs] nav css", {
+      console.log("[tabs] nav css", {
         display: cs.display,
         gap: cs.gap,
         padding: cs.padding,
@@ -127,10 +127,10 @@ export function Tabs({
       });
     }
 
-    const activeEl = nav?.querySelector<HTMLElement>("a.bo-tab.is-active");
+    const activeEl = nav?.querySelector<HTMLElement>("a.rounded-xl.is-active");
     if (activeEl) {
       const cs = window.getComputedStyle(activeEl);
-      console.log("[bo-tabs] active css", {
+      console.log("[tabs] active css", {
         display: cs.display,
         minHeight: cs.minHeight,
         padding: cs.padding,
@@ -141,10 +141,10 @@ export function Tabs({
       });
     }
 
-    const indicatorEl = nav?.querySelector<HTMLElement>("a.bo-tab.is-active .bo-tabIndicator");
+    const indicatorEl = nav?.querySelector<HTMLElement>("a.rounded-xl.is-active .absolute");
     if (indicatorEl) {
       const cs = window.getComputedStyle(indicatorEl);
-      console.log("[bo-tabs] indicator css", {
+      console.log("[tabs] indicator css", {
         display: cs.display,
         background: cs.backgroundImage !== "none" ? cs.backgroundImage : cs.backgroundColor,
         border: cs.border,
@@ -154,15 +154,15 @@ export function Tabs({
         opacity: cs.opacity,
       });
     } else {
-      console.log("[bo-tabs] indicator missing");
+      console.log("[tabs] indicator missing");
     }
 
     const links = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map((l) => l.href);
-    console.log("[bo-tabs] stylesheets", { count: document.styleSheets.length, links });
+    console.log("[tabs] stylesheets", { count: document.styleSheets.length, links });
   }, [activeId, mounted, reduceMotion, tabs]);
 
   return (
-    <nav ref={navRef} className={["bo-tabs", "bo-tabs--glass", className].filter(Boolean).join(" ")} aria-label={ariaLabel}>
+    <nav ref={navRef} className={["flex items-center gap-2.5 p-2 rounded-2xl border border-border bg-white/[0.02] w-fit max-w-full overflow-x-auto overflow-y-hidden scrollbar-hide", "border-primary/30 bg-gradient-to-b from-white/[0.10] to-black/[0.18] backdrop-blur-xl", className].filter(Boolean).join(" ")} aria-label={ariaLabel}>
       {tabs.map((t) => {
         const active = t.id === activeId;
         const href = (() => {
@@ -177,7 +177,7 @@ export function Tabs({
         return (
           <a
             key={t.id}
-            className={`bo-tab${active ? " is-active" : ""}`}
+            className={`relative flex items-center gap-2.5 px-3.5 py-3 min-h-11 rounded-xl border border-transparent whitespace-nowrap transition-colors hover:text-foreground ${active ? "text-foreground" : "text-muted-foreground"}`}
             href={href}
             aria-current={active ? "page" : undefined}
             onClick={(ev) => {
@@ -191,19 +191,19 @@ export function Tabs({
             {active ? (
               mounted ? (
                 <motion.span
-                  className="bo-tabIndicator"
+                  className="absolute inset-0 rounded-xl bg-primary/20 border border-primary/40 shadow-[0_18px_44px_rgba(185,168,255,0.10)]"
                   layoutId="boTabIndicator"
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
-                <span className="bo-tabIndicator" />
+                <span className="absolute inset-0 rounded-xl bg-primary/20 border border-primary/40 shadow-[0_18px_44px_rgba(185,168,255,0.10)]" />
               )
             ) : null}
-            <span className="bo-tabInner">
-              <span className="bo-tabIcon" aria-hidden="true">
+            <span className="relative inline-flex items-center gap-2.5">
+              <span className="w-[18px] h-[18px] grid place-items-center" aria-hidden="true">
                 {t.icon}
               </span>
-              <span className="bo-tabLabel">{t.label}</span>
+              <span className="text-sm font-semibold tracking-wide">{t.label}</span>
             </span>
           </a>
         );

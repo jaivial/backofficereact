@@ -83,10 +83,10 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bo-chartTooltip">
-        <p className="bo-chartTooltipLabel">{label}</p>
+      <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-[var(--bo-surface)] shadow-lg pointer-events-none">
+        <p className="text-xs font-semibold text-foreground">{label}</p>
         {payload.map((entry, index) => (
-          <p key={index} style={{ color: entry.color }}>
+          <p key={index} style={{ color: entry.color }} className="text-xs">
             {entry.name}: {formatter ? formatter(entry.value) : entry.value.toLocaleString()}
           </p>
         ))}
@@ -140,8 +140,8 @@ export function InvoiceAnalyticsWidget({
 
   if (loading) {
     return (
-      <div className="bo-analyticsLoading">
-        <div className="bo-skeleton" style={{ height: "300px", width: "100%" }} />
+      <div className="flex items-center justify-center p-8">
+        <div className="w-full h-[300px] rounded-lg bg-white/[0.02] animate-pulse" />
       </div>
     );
   }
@@ -149,58 +149,58 @@ export function InvoiceAnalyticsWidget({
   const formatCurrency = (value: number) => `${value.toLocaleString()} €`;
 
   return (
-    <div className="bo-invoiceAnalytics">
+    <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="bo-analyticsSummary">
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Ingresos Totales</div>
-          <div className="bo-analyticsSummaryValue">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="text-xs text-muted-foreground mb-1">Ingresos Totales</div>
+          <div className="text-xl font-bold text-foreground">
             {formatCurrency(analytics.summary.totalRevenue)}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Total Facturas</div>
-          <div className="bo-analyticsSummaryValue">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="text-xs text-muted-foreground mb-1">Total Facturas</div>
+          <div className="text-xl font-bold text-foreground">
             {analytics.summary.totalInvoices.toLocaleString()}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Valor Medio</div>
-          <div className="bo-analyticsSummaryValue">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="text-xs text-muted-foreground mb-1">Valor Medio</div>
+          <div className="text-xl font-bold text-foreground">
             {formatCurrency(analytics.summary.averageInvoiceValue)}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Pagadas</div>
-          <div className="bo-analyticsSummaryValue bo-analyticsSummaryValue--success">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="text-xs text-muted-foreground mb-1">Pagadas</div>
+          <div className="text-xl font-bold text-green-400">
             {analytics.summary.paidInvoices}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Pendientes</div>
-          <div className="bo-analyticsSummaryValue bo-analyticsSummaryValue--warning">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="text-xs text-muted-foreground mb-1">Pendientes</div>
+          <div className="text-xl font-bold text-yellow-400">
             {analytics.summary.pendingInvoices}
           </div>
         </div>
       </div>
 
       {/* Charts Grid */}
-      <div className="bo-analyticsCharts">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue by Month Chart */}
-        <div className="bo-analyticsChart bo-analyticsChart--wide">
-          <h3 className="bo-analyticsChartTitle">Ingresos por Mes</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="lg:col-span-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <h3 className="text-sm font-semibold mb-4">Ingresos por Mes</h3>
+          <div className="h-[280px]">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--bo-border)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: "var(--bo-muted)", fontSize: 12 }}
-                  axisLine={{ stroke: "var(--bo-border)" }}
+                  tick={{ fill: "rgba(238, 240, 246, 0.64)", fontSize: 12 }}
+                  axisLine={{ stroke: "rgba(255, 255, 255, 0.06)" }}
                 />
                 <YAxis
-                  tick={{ fill: "var(--bo-muted)", fontSize: 12 }}
-                  axisLine={{ stroke: "var(--bo-border)" }}
+                  tick={{ fill: "rgba(238, 240, 246, 0.64)", fontSize: 12 }}
+                  axisLine={{ stroke: "rgba(255, 255, 255, 0.06)" }}
                   tickFormatter={(value) => `${(value / 1000).toFixed(0)}k €`}
                 />
                 <Tooltip
@@ -214,9 +214,9 @@ export function InvoiceAnalyticsWidget({
         </div>
 
         {/* Invoice Count by Status Pie Chart */}
-        <div className="bo-analyticsChart">
-          <h3 className="bo-analyticsChartTitle">Facturas por Estado</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <h3 className="text-sm font-semibold mb-4">Facturas por Estado</h3>
+          <div className="h-[280px]">
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
@@ -229,19 +229,19 @@ export function InvoiceAnalyticsWidget({
                   dataKey="value"
                   nameKey="name"
                   label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
-                  labelLine={{ stroke: "var(--bo-muted)" }}
+                  labelLine={{ stroke: "rgba(238, 240, 246, 0.64)" }}
                 >
                   {statusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip
+                      <Tooltip
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bo-chartTooltip">
-                          <p className="bo-chartTooltipLabel">{data.name}</p>
+                        <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-[var(--bo-surface)] shadow-lg">
+                          <p className="text-xs font-semibold text-foreground">{data.name}</p>
                           <p>Cantidad: {data.value}</p>
                           <p>Importe: {formatCurrency(data.amount)}</p>
                         </div>
@@ -256,11 +256,11 @@ export function InvoiceAnalyticsWidget({
         </div>
 
         {/* Top Customers by Revenue */}
-        <div className="bo-analyticsChart">
-          <h3 className="bo-analyticsChartTitle">Top Clientes por Ingresos</h3>
-          <div className="bo-analyticsChartContainer bo-analyticsTableContainer">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <h3 className="text-sm font-semibold mb-4">Top Clientes por Ingresos</h3>
+          <div className="overflow-auto h-[280px]">
             {analytics.topCustomers.length > 0 ? (
-              <table className="bo-analyticsTable">
+              <table className="w-full text-sm">
                 <thead>
                   <tr>
                     <th>Cliente</th>
@@ -272,36 +272,36 @@ export function InvoiceAnalyticsWidget({
                   {analytics.topCustomers.slice(0, 10).map((customer, index) => (
                     <tr key={index}>
                       <td>
-                        <div className="bo-analyticsCustomerName">{customer.customerName}</div>
-                        <div className="bo-analyticsCustomerEmail">{customer.customerEmail}</div>
+                        <div className="font-medium">{customer.customerName}</div>
+                        <div className="text-xs text-muted-foreground">{customer.customerEmail}</div>
                       </td>
                       <td>{customer.invoiceCount}</td>
-                      <td className="bo-analyticsRevenue">{formatCurrency(customer.totalRevenue)}</td>
+                      <td className="font-semibold text-green-400">{formatCurrency(customer.totalRevenue)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <div className="bo-analyticsEmpty">No hay datos de clientes</div>
+              <div className="text-sm text-muted-foreground py-8 text-center">No hay datos de clientes</div>
             )}
           </div>
         </div>
 
         {/* Average Invoice Value Trend */}
-        <div className="bo-analyticsChart bo-analyticsChart--wide">
-          <h3 className="bo-analyticsChartTitle">Tendencia Valor Medio</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="lg:col-span-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <h3 className="text-sm font-semibold mb-4">Tendencia Valor Medio</h3>
+          <div className="h-[280px]">
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={averageValueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--bo-border)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: "var(--bo-muted)", fontSize: 12 }}
-                  axisLine={{ stroke: "var(--bo-border)" }}
+                  tick={{ fill: "rgba(238, 240, 246, 0.64)", fontSize: 12 }}
+                  axisLine={{ stroke: "rgba(255, 255, 255, 0.06)" }}
                 />
                 <YAxis
-                  tick={{ fill: "var(--bo-muted)", fontSize: 12 }}
-                  axisLine={{ stroke: "var(--bo-border)" }}
+                  tick={{ fill: "rgba(238, 240, 246, 0.64)", fontSize: 12 }}
+                  axisLine={{ stroke: "rgba(255, 255, 255, 0.06)" }}
                   tickFormatter={(value) => `${value} €`}
                 />
                 <Tooltip content={<CustomTooltip formatter={formatCurrency} />} />
@@ -321,9 +321,9 @@ export function InvoiceAnalyticsWidget({
         </div>
 
         {/* Payment Method Distribution */}
-        <div className="bo-analyticsChart">
-          <h3 className="bo-analyticsChartTitle">Metodos de Pago</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <h3 className="text-sm font-semibold mb-4">Metodos de Pago</h3>
+          <div className="h-[280px]">
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
@@ -336,7 +336,7 @@ export function InvoiceAnalyticsWidget({
                   dataKey="value"
                   nameKey="name"
                   label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
-                  labelLine={{ stroke: "var(--bo-muted)" }}
+                  labelLine={{ stroke: "rgba(238, 240, 246, 0.64)" }}
                 >
                   {paymentData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -347,8 +347,8 @@ export function InvoiceAnalyticsWidget({
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bo-chartTooltip">
-                          <p className="bo-chartTooltipLabel">{data.name}</p>
+                        <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-[var(--bo-surface)] shadow-lg">
+                          <p className="text-xs font-semibold text-foreground">{data.name}</p>
                           <p>Cantidad: {data.value}</p>
                           <p>Importe: {formatCurrency(data.amount)}</p>
                         </div>

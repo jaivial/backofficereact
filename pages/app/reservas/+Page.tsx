@@ -492,7 +492,7 @@ export default function Page() {
 
   return (
     <section aria-label="Reservas">
-      <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`}>
+      <div className={`bo-grid bo-grid-gap-5${isDayOpen ? "" : " bo-grid-cols-[320px]"}`} style={{ gridTemplateColumns: isDayOpen ? "320px 1fr" : "320px" }}>
         <MonthCalendar
           year={view.year}
           month={view.month}
@@ -508,7 +508,7 @@ export default function Page() {
           {isDayOpen ? (
             <motion.div
               key="reservas-side"
-              className="bo-reservasSide"
+              className="bo-stack"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -522,42 +522,42 @@ export default function Page() {
                 confirmed={metrics?.confirmed}
               />
 
-              <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas">
-                <div className="bo-filtersTop">
+              <div className={`bo-card${filtersOpen ? "" : " collapsed"}`} aria-label="Filtros reservas">
+                <div className="bo-filtersHeaderRow">
                   <button
-                    className="bo-btn bo-btn--ghost bo-filtersToggle"
+                    className="bo-btnSecondary"
                     type="button"
                     onClick={() => setFiltersOpen((v) => !v)}
                     aria-expanded={filtersOpen}
                     aria-controls="bo-reservas-filters-body"
                   >
-                    <Filter className="bo-ico" />
+                    <Filter className="bo-iconSm" />
                     Filtros
                   </button>
                   <button
-                    className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadTop"
+                    className="bo-btnPrimary"
                     type="button"
                     onClick={onDownloadPDF}
                     disabled={pdfBusy || busy}
                   >
-                    <Download className="bo-ico" /> Descargar
+                    <Download className="bo-iconSm" /> Descargar
                   </button>
                 </div>
                 <div id="bo-reservas-filters-body" className="bo-filtersBody">
-                  <div className="bo-filterRow bo-filterRow--selects">
+                  <div className="bo-filtersRow">
                     <Select value={status} onChange={onStatusChange} options={statusOptions} size="sm" ariaLabel="Estado" />
                     <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" />
-                    <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Dirección" />
+                    <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Direccion" />
                     <Select
                       value={String(count)}
                       onChange={onCountChange}
                       options={pageSizeOptions}
                       size="sm"
-                      ariaLabel="Tamaño página"
+                      ariaLabel="Tamano pagina"
                     />
                   </div>
-                  <div className="bo-filterRow bo-filterRow--actions">
-                    <div className="bo-search">
+                  <div className="bo-filtersRow bo-filtersRow--between">
+                    <div className="bo-inputWithIcon">
                       <input
                         className="bo-input bo-input--sm"
                         value={q}
@@ -567,17 +567,17 @@ export default function Page() {
                           if (e.key === "Enter") applyFilters();
                         }}
                       />
-                      <button className="bo-btn bo-btn--ghost" type="button" onClick={applyFilters} disabled={busy}>
+                      <button className="bo-btnSecondary" type="button" onClick={applyFilters} disabled={busy}>
                         Buscar
                       </button>
                     </div>
                     <button
-                      className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadInline"
+                    className="bo-btnPrimary"
                       type="button"
                       onClick={onDownloadPDF}
                       disabled={pdfBusy || busy}
                     >
-                      <Download className="bo-ico" /> Descargar
+                      <Download className="bo-iconSm" /> Descargar
                     </button>
                   </div>
                 </div>
@@ -596,22 +596,22 @@ export default function Page() {
             exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             transition={dayVisibilityTransition}
           >
-            <div className="bo-tableWrap" style={{ marginTop: 14 }}>
-              <div className="bo-tableScroll">
-                <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas">
+            <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,2%,transparent),color-mix(in srgb,black,12%,transparent))] border border-[var(--bo-border)] overflow-hidden bo-mt-3\.5">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-xs" aria-label="Tabla de reservas">
                   <thead>
                     <tr>
-                      <th className="col-added">Añadida</th>
-                      <th className="col-mesa">Mesa</th>
-                      <th className="col-time">Hora</th>
-                      <th className="col-client">Cliente</th>
-                      <th className="col-status">Estado</th>
-                      <th className="num">Pax</th>
-                      <th className="col-children num">Niños</th>
-                      <th className="col-phone">Teléfono</th>
-                      <th className="col-rice">Arroz</th>
-                      <th className="col-comment">Comentario</th>
-                      <th className="end" />
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-24">Añadida</th>
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-16 pl-2 pr-2">Mesa</th>
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-16">Hora</th>
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 min-w-[180px]">Cliente</th>
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-28">Estado</th>
+                      <th className="text-right font-semibold text-[var(--bo-faint)] p-3 w-16">Pax</th>
+                      <th className="text-right font-semibold text-[var(--bo-faint)] p-3 w-16">Niños</th>
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-32">Teléfono</th>
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 min-w-[210px]">Arroz</th>
+                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 min-w-[320px]">Comentario</th>
+                      <th className="w-10" />
                     </tr>
                   </thead>
                   <tbody>
@@ -628,7 +628,7 @@ export default function Page() {
                     ))}
                     {!rows.length ? (
                       <tr>
-                        <td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>
+                        <td colSpan={11} className="bo-tableCellMuted">
                           {busy ? "Cargando..." : "No hay reservas para este filtro."}
                         </td>
                       </tr>
@@ -637,16 +637,16 @@ export default function Page() {
                 </table>
               </div>
 
-              <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación">
-                <div className="bo-pagerText">
+              <div className={`flex items-center justify-between p-3${showPagerBtns ? "" : " justify-end"}`} aria-label="Paginación">
+                <div className="text-xs text-[var(--bo-muted)]">
                   Página {page} de {totalPages} · {totalCount} resultados
                 </div>
                 {showPagerBtns ? (
-                  <div className="bo-pagerBtns">
-                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
+                  <div className="flex gap-2">
+                    <button className="bo-btnSecondary" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
                       Anterior
                     </button>
-                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
+                    <button className="bo-btnSecondary" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
                       Siguiente
                     </button>
                   </div>
@@ -657,7 +657,7 @@ export default function Page() {
         ) : (
           <motion.div
             key="reservas-closed-content"
-            style={{ marginTop: 14 }}
+            className="bo-mt-3\.5"
             initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -670,7 +670,7 @@ export default function Page() {
               busy={busy}
               onToggleDay={openDay}
               actionMode="openOnly"
-              bodyClassName="bo-configDayLimitRow--single"
+              bodyClassName="p-3"
             />
           </motion.div>
         )}
@@ -686,23 +686,23 @@ export default function Page() {
         onConfirm={doCancel}
       />
 
-      <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details">
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Reserva completa</div>
-          <button className="bo-modalX" type="button" onClick={closeDetails} aria-label="Close">
+      <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820}>
+        <div className="flex items-center justify-between border-b border-[var(--bo-border)] pb-3">
+          <div className="font-semibold text-sm">Reserva completa</div>
+          <button className="w-8 h-8 rounded-lg border border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails} aria-label="Close">
             ×
           </button>
         </div>
-        <div className="bo-modalOutline" style={{ marginTop: 10 }}>
+        <div className="mt-2 bo-mt-2\.5">
           {details.booking ? <BookingDetails booking={details.booking} floors={floors} /> : null}
         </div>
-        <div className="bo-modalActions bo-modalActions--reservas">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={closeDetails}>
+        <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--bo-border)] mt-4">
+          <button className="h-9 px-3 rounded-[12px] border border-[var(--bo-border)] bg-transparent text-[var(--bo-text)] cursor-pointer font-semibold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails}>
             Cerrar
           </button>
           {details.booking ? (
             <button
-              className="bo-btn bo-btn--primary"
+              className="h-9 px-3 rounded-[12px] border border-[color-mix(in srgb,var(--bo-accent)30%,transparent)] bg-[color-mix(in srgb,var(--bo-accent)16%,transparent)] text-[var(--bo-text)] cursor-pointer font-semibold inline-flex items-center justify-center gap-2 mx-auto transition-all duration-150 hover:bg-[color-mix(in srgb,var(--bo-accent)24%,transparent)]"
               type="button"
               onClick={() => {
                 closeDetails();
@@ -715,14 +715,14 @@ export default function Page() {
         </div>
       </Modal>
 
-      <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit">
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Editar reserva</div>
-          <button className="bo-modalX" type="button" onClick={closeEdit} aria-label="Close">
+      <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040}>
+        <div className="flex items-center justify-between border-b border-[var(--bo-border)] pb-3">
+          <div className="font-semibold text-sm">Editar reserva</div>
+          <button className="w-8 h-8 rounded-lg border border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeEdit} aria-label="Close">
             ×
           </button>
         </div>
-        <div className="bo-modalOutline" style={{ marginTop: 10 }}>
+        <div className="mt-2 bo-mt-2\.5">
           {edit.booking && editInitial ? (
             <BookingEditor
               api={api}
@@ -793,15 +793,15 @@ const BookingRow = React.memo(function BookingRow({
         onOpenDetails(booking);
       }}
     >
-      <td className="col-added">{added}</td>
+      <td className="text-left p-3 text-[var(--bo-text)] w-24">{added}</td>
       <td
-        className="col-mesa"
+        className="p-3 w-16 pl-2 pr-2"
         onClick={(e) => {
           e.stopPropagation();
         }}
       >
         <input
-          className="bo-input bo-input--xs bo-input--mesa"
+          className="h-[28px] min-w-[60px] rounded-[12px] border border-[var(--bo-border)] bg-[var(--bo-surface-2)] text-[var(--bo-text)] px-2 outline-none text-xs w-16 text-center transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
           value={draftMesa}
           onChange={(e) => setDraftMesa(e.target.value)}
           onBlur={() => void save()}
@@ -815,16 +815,16 @@ const BookingRow = React.memo(function BookingRow({
           aria-label={`Mesa reserva #${booking.id}`}
         />
       </td>
-      <td className="col-time">{formatHHMM(booking.reservation_time)}</td>
-      <td className="col-client">{booking.customer_name}</td>
-      <td className="col-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
-      <td className="num">{booking.party_size}</td>
-      <td className="col-children num">{booking.children ?? 0}</td>
-      <td className="col-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
-      <td className="col-rice">{arroz}</td>
-      <td className="col-comment">{booking.commentary || ""}</td>
+      <td className="text-left p-3 text-[var(--bo-text)] w-16">{formatHHMM(booking.reservation_time)}</td>
+      <td className="text-left p-3 text-[var(--bo-text)] min-w-[180px]">{booking.customer_name}</td>
+      <td className="text-left p-3 text-[var(--bo-text)] w-28">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td className="text-right p-3 text-[var(--bo-text)] w-16">{booking.party_size}</td>
+      <td className="text-right p-3 text-[var(--bo-text)] w-16">{booking.children ?? 0}</td>
+      <td className="text-left p-3 text-[var(--bo-text)] w-32">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
+      <td className="text-left p-3 text-[var(--bo-text)] min-w-[210px]">{arroz}</td>
+      <td className="text-left p-3 text-[var(--bo-text)] min-w-[320px] max-w-[360px] whitespace-pre-line">{booking.commentary || ""}</td>
       <td
-        className="end"
+        className="w-10 text-right"
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -861,95 +861,95 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
   }, [booking.preferred_floor_number, floors]);
   const badgeCls =
     booking.status === "confirmed"
-      ? "bo-badge bo-badge--ok"
+      ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-success)]/20 text-[var(--bo-text-success)]"
       : booking.status === "pending"
-        ? "bo-badge bo-badge--warn"
-        : "bo-badge";
+        ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-warning)]/20 text-[var(--bo-text-warning)]"
+        : "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-surface-2)] text-[var(--bo-muted)]";
 
   return (
-    <div className="bo-stack" style={{ gap: 12, marginBottom: "2rem" }}>
-      <div className="bo-panel">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">{booking.customer_name || "Reserva"}</div>
-          <div className="bo-panelMeta">{booking.reservation_date}</div>
+    <div className="flex flex-col gap-3 bo-bookingDetails">
+      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+        <div className="flex items-end justify-between p-4 pb-2">
+          <div className="font-semibold text-sm">{booking.customer_name || "Reserva"}</div>
+          <div className="text-xs text-[var(--bo-faint)]">{booking.reservation_date}</div>
         </div>
-        <div className="bo-panelBody" style={{ display: "grid", gap: 12 }}>
-          <div className="bo-bookingKey" aria-label="Hora y personas">
+        <div className="p-4 pt-0 bo-bookingDetailsGrid">
+          <div className="flex gap-4" aria-label="Hora y personas">
             <div>
-              <div className="bo-bookingKeyLabel">Hora</div>
-              <div className="bo-bookingKeyValue">{time || "—"}</div>
+              <div className="text-xs text-[var(--bo-muted)]">Hora</div>
+              <div className="text-sm">{time || "—"}</div>
             </div>
             <div>
-              <div className="bo-bookingKeyLabel">Personas</div>
-              <div className="bo-bookingKeyValue">{booking.party_size} pax</div>
+              <div className="text-xs text-[var(--bo-muted)]">Personas</div>
+              <div className="text-sm">{booking.party_size} pax</div>
             </div>
           </div>
 
-          <div className="bo-kvGrid" aria-label="Datos principales">
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Estado</div>
-              <div className="bo-kvValue">
+          <div className="bo-grid bo-grid-cols-2 bo-grid-gap-3" aria-label="Datos principales">
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Estado</div>
+              <div>
                 <span className={badgeCls}>{status}</span>
               </div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Mesa</div>
-              <div className="bo-kvValue">{normalizeTableNumber(booking.table_number || "") || "—"}</div>
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Mesa</div>
+              <div className="text-sm">{normalizeTableNumber(booking.table_number || "") || "—"}</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Añadida</div>
-              <div className="bo-kvValue">{added || "—"}</div>
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Añadida</div>
+              <div className="text-sm">{added || "—"}</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Teléfono</div>
-              <div className="bo-kvValue">{phone || "—"}</div>
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Teléfono</div>
+              <div className="text-sm">{phone || "—"}</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Salón</div>
-              <div className="bo-kvValue">{preferredFloorLabel}</div>
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Salón</div>
+              <div className="text-sm">{preferredFloorLabel}</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Niños</div>
-              <div className="bo-kvValue">{String(booking.children ?? 0)}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bo-panel">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">Detalles</div>
-          <div className="bo-panelMeta">{booking.special_menu ? "Menú de grupo" : "Reserva"}</div>
-        </div>
-        <div className="bo-panelBody">
-          <div className="bo-kvGrid">
-            <div className="bo-kv bo-kv--wide">
-              <div className="bo-kvLabel">Email</div>
-              <div className="bo-kvValue bo-kvValue--wrap">{booking.contact_email || "—"}</div>
-            </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Carros</div>
-              <div className="bo-kvValue">{typeof booking.babyStrollers === "number" ? String(booking.babyStrollers) : "—"}</div>
-            </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Tronas</div>
-              <div className="bo-kvValue">{typeof booking.highChairs === "number" ? String(booking.highChairs) : "—"}</div>
-            </div>
-            <div className="bo-kv bo-kv--wide">
-              <div className="bo-kvLabel">Arroz</div>
-              <div className="bo-kvValue">{arroz || "—"}</div>
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Niños</div>
+              <div className="text-sm">{String(booking.children ?? 0)}</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bo-panel">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">Comentario</div>
-          <div className="bo-panelMeta">Opcional</div>
+      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+        <div className="flex items-end justify-between p-4 pb-2">
+          <div className="font-semibold text-sm">Detalles</div>
+          <div className="text-xs text-[var(--bo-faint)]">{booking.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
-        <div className="bo-panelBody" style={{ whiteSpace: "pre-line" }}>
-          {booking.commentary ? booking.commentary : <span className="bo-mutedText">—</span>}
+        <div className="p-4 pt-0">
+          <div className="bo-grid bo-grid-cols-2 bo-grid-gap-3">
+            <div className="col-span-2">
+              <div className="text-xs text-[var(--bo-muted)]">Email</div>
+              <div className="text-sm break-words">{booking.contact_email || "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Carros</div>
+              <div className="text-sm">{typeof booking.babyStrollers === "number" ? String(booking.babyStrollers) : "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs text-[var(--bo-muted)]">Tronas</div>
+              <div className="text-sm">{typeof booking.highChairs === "number" ? String(booking.highChairs) : "—"}</div>
+            </div>
+            <div className="col-span-2">
+              <div className="text-xs text-[var(--bo-muted)]">Arroz</div>
+              <div className="text-sm">{arroz || "—"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+        <div className="flex items-end justify-between p-4 pb-2">
+          <div className="font-semibold text-sm">Comentario</div>
+          <div className="text-xs text-[var(--bo-faint)]">Opcional</div>
+        </div>
+        <div className="p-4 pt-0 bo-whiteSpacePre">
+          {booking.commentary ? booking.commentary : <span className="text-xs text-[var(--bo-muted)]">—</span>}
         </div>
       </div>
     </div>

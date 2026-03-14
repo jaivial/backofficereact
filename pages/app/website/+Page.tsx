@@ -1,19 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { Check, Globe, Loader2, Palette, Search, Sparkles, ExternalLink } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
+import { Button } from "../../../ui/actions/Button";
+import type { Data } from "./+data";
 
-interface WebsiteConfig {
-  id: number;
-  restaurant_id: number;
-  template_id: string | null;
-  custom_html: string | null;
-  domain: string | null;
-  is_published: boolean;
-}
+type WebsiteConfig = NonNullable<Data["config"]>;
 
 type TabKey = "templates" | "ai" | "domain";
 
@@ -31,8 +26,10 @@ export default function WebsiteBuilderPage() {
   const { handleError } = useErrorToast();
   const client = useMemo(() => createClient(), []);
 
-  const [config, setConfig] = useState<WebsiteConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const data = (pageContext.data ?? { config: null, error: null }) as { config: WebsiteConfig | null; error: string | null };
+  useErrorToast(data.error ?? null);
+
+  const [config, setConfig] = useState<WebsiteConfig | null>(data.config);
   const [activeTab, setActiveTab] = useState<TabKey>("templates");
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
@@ -42,25 +39,7 @@ export default function WebsiteBuilderPage() {
   const [searchingDomain, setSearchingDomain] = useState(false);
   const [registeringDomain, setRegisteringDomain] = useState(false);
 
-  useEffect(() => {
-    loadConfig();
-  }, [client]);
-
-  const loadConfig = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await client.request<{ success: boolean; data: WebsiteConfig | null }>("/admin/website", {
-        method: "GET",
-      });
-      if (res.success && res.data) {
-        setConfig(res.data);
-      }
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [client, handleError]);
+  const loading = !data.config && !data.error;
 
   const handleSave = useCallback(
     async (updates: Partial<WebsiteConfig>) => {
@@ -200,9 +179,9 @@ export default function WebsiteBuilderPage() {
           <p className="bo-websiteSubtitle">Crea y publica la web de tu restaurante</p>
         </div>
         <div className="bo-websiteHeaderActions">
-          <button className={`bo-btn bo-btn--${config?.is_published ? "success" : "secondary"}`} type="button" onClick={handleTogglePublished} disabled={saving}>
+          <Button variant={config?.is_published ? "success" : "secondary"} type="button" onClick={handleTogglePublished} disabled={saving}>
             {config?.is_published ? "Publicado" : "Borrador"}
-          </button>
+          </Button>
           {previewUrl && (
             <a className="bo-btn bo-btn--secondary" href={previewUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink size={16} />
@@ -281,7 +260,7 @@ export default function WebsiteBuilderPage() {
                     />
                   </label>
                   <div className="bo-row bo-row--right">
-                    <button className="bo-btn bo-btn--primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating}>
+                    <Button variant="primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating}>
                       {generating ? (
                         <>
                           <Loader2 size={16} className="bo-spinnerIcon" />
@@ -293,7 +272,7 @@ export default function WebsiteBuilderPage() {
                           <span>Generar Web</span>
                         </>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -347,7 +326,7 @@ export default function WebsiteBuilderPage() {
                     onChange={(e) => setDomainQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearchDomain()}
                   />
-                  <button className="bo-btn bo-btn--primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()}>
+                  <Button variant="primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()}>
                     {searchingDomain ? (
                       <>
                         <Loader2 size={16} className="bo-spinnerIcon" />
@@ -359,7 +338,7 @@ export default function WebsiteBuilderPage() {
                         <span>Buscar</span>
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
 
                 {domainResult && (
@@ -378,7 +357,7 @@ export default function WebsiteBuilderPage() {
                           {domainResult.marked_price.toFixed(2)} {domainResult.currency}
                           <span className="bo-mutedText"> / ano</span>
                         </div>
-                        <button className="bo-btn bo-btn--primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
+                        <Button variant="primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
                           {registeringDomain ? (
                             <>
                               <Loader2 size={16} className="bo-spinnerIcon" />
@@ -387,7 +366,7 @@ export default function WebsiteBuilderPage() {
                           ) : (
                             <span>Registrar ahora</span>
                           )}
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>

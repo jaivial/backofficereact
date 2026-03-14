@@ -11,10 +11,20 @@ type LoadingSpinnerProps = {
   className?: string;
 };
 
-function toneClass(tone: SpinnerTone): string {
-  if (tone === "default") return "";
-  return ` bo-spinner--${tone}`;
-}
+const sizeClass: Record<SpinnerSize, string> = {
+  sm: "w-4 h-4",
+  md: "w-5 h-5",
+  lg: "w-6 h-6",
+  xl: "w-8 h-8",
+};
+
+const toneClass: Record<SpinnerTone, string> = {
+  default: "border-primary",
+  lila: "border-primary",
+  cyan: "border-accent-2",
+  white: "border-white",
+  dark: "border-foreground",
+};
 
 export function LoadingSpinner({
   size = "md",
@@ -23,14 +33,14 @@ export function LoadingSpinner({
   centered = false,
   className,
 }: LoadingSpinnerProps) {
-  const wrapperClass = centered ? "bo-spinnerCentered" : "bo-spinnerWithText";
+  const wrapperClass = centered ? "flex items-center justify-center" : "flex items-center gap-3";
   const rootClass = `${wrapperClass}${className ? ` ${className}` : ""}`;
-  const spinnerClass = `bo-spinner bo-spinner--${size}${toneClass(tone)}`;
+  const spinnerClass = `animate-spin rounded-full border-2 ${sizeClass[size]} ${toneClass[tone]}`;
 
   return (
     <div className={rootClass} role="status" aria-live="polite">
       <span className={spinnerClass} aria-hidden="true" />
-      {label ? <span className="bo-spinnerLabel">{label}</span> : null}
+      {label ? <span className="text-sm text-muted">{label}</span> : null}
     </div>
   );
 }

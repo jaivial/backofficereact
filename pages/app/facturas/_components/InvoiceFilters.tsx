@@ -359,14 +359,14 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
   );
 
   return (
-    <div className="bo-invoiceFilters" aria-label="Filtros de facturas">
-      <div className="bo-invoiceFiltersHead">
-        <div className="bo-invoiceFiltersTitle">
+    <div className="rounded-lg border border-border bg-card p-4" aria-label="Filtros de facturas">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-medium">
           <Filter size={15} />
           <span>Filtros</span>
         </div>
         <button
-          className="bo-btn bo-btn--ghost bo-btn--sm bo-invoiceFiltersToggle"
+          className="inline-flex items-center rounded-md px-2 py-1 hover:bg-muted"
           type="button"
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
@@ -386,12 +386,11 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="bo-invoiceFiltersGrid">
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--search">
-                <span className="bo-label">Buscar</span>
-                <div className="bo-searchWithDropdown">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Buscar</span>
+                <div className="flex gap-2">
                   <input
-                    ref={searchInputRef}
                     className="bo-input"
                     type="search"
                     value={searchText}
@@ -412,13 +411,13 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                       { value: "invoice_number", label: "N. Factura" },
                     ]}
                     ariaLabel="Buscar por"
-                    className="bo-searchBySelect"
+                    className="w-24"
                   />
                 </div>
               </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--status">
-                <span className="bo-label">Estado</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Estado</span>
                 <Select
                   value={statusFilter}
                   onChange={(value) => onStatusFilterChange(value as InvoiceStatus | "")}
@@ -427,8 +426,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--category">
-                <span className="bo-label">Categoria</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Categoria</span>
                 <Select
                   value={categoryFilter}
                   onChange={(value) => onCategoryFilterChange(value as InvoiceCategory | "")}
@@ -437,8 +436,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--tag">
-                <span className="bo-label">Etiqueta</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Etiqueta</span>
                 <input
                   className="bo-input"
                   type="text"
@@ -448,8 +447,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--sort">
-                <span className="bo-label">Ordenar</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Ordenar</span>
                 <Select
                   value={sortBy}
                   onChange={onSortByChange}
@@ -458,8 +457,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </label>
 
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--dateType">
-                <span className="bo-label">Tipo de fecha</span>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Tipo de fecha</span>
                 <Select
                   value={dateType}
                   onChange={(value) => onDateTypeChange(value as "invoice_date" | "reservation_date")}
@@ -472,9 +471,9 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </div>
 
               {/* Date Range Presets */}
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--datePresets">
-                <span className="bo-label">Periodo</span>
-                <div className="bo-datePresetButtons">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Periodo</span>
+                <div className="flex flex-wrap gap-1">
                   <button
                     type="button"
                     className={`bo-datePresetBtn ${datePreset === "today" ? "is-active" : ""}`}
@@ -523,20 +522,20 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               {/* Custom Date Range Pickers - shown when "Personalizado" is selected */}
               {(showCustomDatePicker || datePreset === "custom") && (
                 <>
-                  <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateFrom">
-                    <span className="bo-label">Desde</span>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium">Desde</span>
                     <DatePicker value={dateFrom || ""} onChange={handleDateFromChangeInternal} />
                   </label>
 
-                  <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateTo">
-                    <span className="bo-label">Hasta</span>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium">Hasta</span>
                     <DatePicker value={dateTo || ""} onChange={handleDateToChangeInternal} />
                   </label>
                 </>
               )}
 
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isReservation">
-                <span className="bo-label">Reserva</span>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Reserva</span>
                 <Select
                   value={isReservation === null ? "" : isReservation ? "true" : "false"}
                   onChange={(value) => {
@@ -552,8 +551,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </div>
 
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isCreditNote">
-                <span className="bo-label">Nota de credito</span>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Nota de credito</span>
                 <Select
                   value={isCreditNote === null ? "" : isCreditNote ? "true" : "false"}
                   onChange={(value) => {
@@ -570,8 +569,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </div>
 
               {/* Due Date Filters */}
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--dueDate">
-                <span className="bo-label">Vencimiento</span>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Vencimiento</span>
                 <Select
                   value={isOverdue === null ? "" : isOverdue ? "overdue" : "not_overdue"}
                   onChange={(value) => {
@@ -587,13 +586,13 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </div>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateFrom">
-                <span className="bo-label">Desde vencimiento</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Desde vencimiento</span>
                 <DatePicker value={dueDateFrom || ""} onChange={onDueDateFromChange} />
               </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateTo">
-                <span className="bo-label">Hasta vencimiento</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Hasta vencimiento</span>
                 <DatePicker value={dueDateTo || ""} onChange={onDueDateToChange} />
               </label>
             </div>
@@ -674,7 +673,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 >
                   <div className="bo-filterSaveDialogContent">
                     <label className="bo-field">
-                      <span className="bo-label">Nombre del filtro</span>
+                      <span className="text-sm font-medium">Nombre del filtro</span>
                       <input
                         className="bo-input"
                         type="text"

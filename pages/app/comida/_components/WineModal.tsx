@@ -178,16 +178,16 @@ export const WineModal = React.memo(function WineModal({
   return (
     <Modal open={open} onClose={onClose} title={title} size="lg">
       <form onSubmit={handleSubmit}>
-        <div className="bo-foodModal-grid">
+        <div className="bo-grid bo-grid-gap-6" style={{ gridTemplateColumns: "200px 1fr" }}>
           {/* Image upload */}
-          <div className="bo-foodModal-imageSection">
-            <div className="bo-foodModal-imagePreview bo-foodModal-imagePreview--wine">
+          <div className="flex flex-col gap-3">
+            <div className="w-[200px] h-[280px] rounded-[var(--bo-radius-md)] overflow-hidden bg-[var(--bo-surface-2)] relative">
               {imagePreview ? (
                 <>
-                  <img src={imagePreview} alt="Preview" />
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                   <button
                     type="button"
-                    className="bo-foodModal-imageRemove"
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-[var(--bo-color-danger)] text-white border-0 cursor-pointer flex items-center justify-center hover:scale-110 transition-transform duration-150"
                     onClick={handleRemoveImage}
                     aria-label="Eliminar imagen"
                   >
@@ -195,7 +195,7 @@ export const WineModal = React.memo(function WineModal({
                   </button>
                 </>
               ) : (
-                <div className="bo-foodModal-imagePlaceholder">
+                <div className="w-full h-full flex flex-col items-center justify-center text-[var(--bo-faint)] gap-2">
                   <ImagePlus size={32} />
                   <span>Sin imagen</span>
                 </div>
@@ -206,7 +206,7 @@ export const WineModal = React.memo(function WineModal({
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleImageSelect}
-              className="bo-foodModal-fileInput"
+              className="hidden"
             />
             <button
               type="button"
@@ -226,11 +226,11 @@ export const WineModal = React.memo(function WineModal({
                 </>
               )}
             </button>
-            <p className="bo-foodModal-imageHint">Se comprimira a WebP (max 100KB)</p>
+            <p className="text-[11px] text-[var(--bo-faint)] text-center m-0">Se comprimira a WebP (max 100KB)</p>
           </div>
 
           {/* Form fields */}
-          <div className="bo-foodModal-fields">
+          <div className="flex flex-col gap-3.5">
             <div className="bo-field">
               <label className="bo-label" htmlFor="nombre">
                 Nombre *
@@ -246,7 +246,7 @@ export const WineModal = React.memo(function WineModal({
               />
             </div>
 
-            <div className="bo-fieldRow">
+            <div className="bo-grid bo-grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
               <div className="bo-field">
                 <label className="bo-label" htmlFor="tipo">
                   Tipo
@@ -298,7 +298,7 @@ export const WineModal = React.memo(function WineModal({
               />
             </div>
 
-            <div className="bo-fieldRow">
+            <div className="bo-grid bo-grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
               <div className="bo-field">
                 <label className="bo-label" htmlFor="denominacion">
                   Denominacion de Origen
@@ -374,7 +374,7 @@ export const WineModal = React.memo(function WineModal({
         </div>
 
         {/* Actions */}
-        <div className="bo-foodModal-actions">
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--bo-border)]">
           <button type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={saving}>
             Cancelar
           </button>

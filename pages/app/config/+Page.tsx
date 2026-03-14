@@ -473,14 +473,14 @@ export default function Page() {
 
   return (
     <section aria-label="Configuración por defecto">
-      <div className="bo-toolbar">
-        <div className="bo-toolbarLeft">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy}>
+      <div className="bo-flex bo-items-center bo-justify-between bo-gap-3 bo-mb-3">
+        <div className="bo-flex bo-items-center bo-gap-2 bo-flex-wrap">
+          <button className="bo-btn" type="button" onClick={() => void reload()} disabled={busy}>
             Recargar
           </button>
         </div>
-        <div className="bo-toolbarRight">
-          <div className="bo-mutedText">{busy ? "Actualizando..." : "Valores por defecto"}</div>
+        <div className="bo-flex bo-items-center bo-gap-2">
+          <div className="bo-statLabel">{busy ? "Actualizando..." : "Valores por defecto"}</div>
         </div>
       </div>
 
@@ -490,7 +490,7 @@ export default function Page() {
             <div className="bo-panelTitle">Modo de apertura</div>
             <div className="bo-panelMeta">{openingModeLabel}</div>
           </div>
-          <div className="bo-panelBody bo-row">
+          <div className="bo-panelBody bo-flex bo-items-center bo-gap-2 bo-flex-wrap">
             <Select
               value={defaults.openingMode}
               onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
@@ -506,10 +506,10 @@ export default function Page() {
             <div className="bo-panelTitle">Horarios por defecto</div>
             <div className="bo-panelMeta">Slots de media hora con guardado inmediato</div>
           </div>
-          <div className="bo-panelBody bo-hourCardsContainer">
-            <div className="bo-field">
-              <div className="bo-label">Mañana (08:00 - 17:00)</div>
-              <div className="bo-hourCards bo-hourCards--slots">
+          <div className="bo-panelBody">
+            <div className="bo-flex bo-flex-col bo-gap-2">
+              <div className="bo-statLabel bo-weight-semibold">Mañana (08:00 - 17:00)</div>
+              <div className="bo-flex bo-flex-wrap bo-gap-2">
                 {morningHourCards.map((slot) => {
                   const on = slot.active;
                   return (
@@ -527,9 +527,9 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="bo-field">
-              <div className="bo-label">Noche (17:30 - 01:00)</div>
-              <div className="bo-hourCards bo-hourCards--slots">
+            <div className="bo-flex bo-flex-col bo-gap-2">
+              <div className="bo-statLabel bo-weight-semibold">Noche (17:30 - 01:00)</div>
+              <div className="bo-flex bo-flex-wrap bo-gap-2">
                 {nightHourCards.map((slot) => {
                   const on = slot.active;
                   return (
@@ -554,7 +554,7 @@ export default function Page() {
             <div className="bo-panelTitle">Calendario semanal</div>
             <div className="bo-panelMeta">Semana genérica (lunes a domingo)</div>
           </div>
-          <div className="bo-panelBody bo-configWeekdayGrid">
+          <div className="bo-panelBody bo-grid bo-grid-cols-7 bo-grid-gap-2">
             {weekdayCardsWithState.map((weekday) => {
               const isOpen = weekday.isOpen;
               return (
@@ -574,9 +574,9 @@ export default function Page() {
                     </span>
                   </div>
                   </button>
-                );
-              })}
-            </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="bo-panel">
@@ -584,7 +584,7 @@ export default function Page() {
             <div className="bo-panelTitle">Límites por defecto</div>
             <div className="bo-panelMeta">Autosave inmediato</div>
           </div>
-          <div className="bo-panelBody bo-configLimitGrid">
+          <div className="bo-panelBody bo-grid bo-grid-cols-3 bo-grid-gap-4">
             <PlusMinusCounter
               label="Límite diario"
               value={dailyLimitLabel}
@@ -634,7 +634,7 @@ export default function Page() {
             <div className="bo-panelTitle">Plantas del restaurante</div>
             <div className="bo-panelMeta">{floorCount} plantas</div>
           </div>
-          <div className="bo-panelBody bo-configFloorsPanel">
+          <div className="bo-panelBody">
             <Tabs tabs={floorTabs} activeId={floorTab} ariaLabel="Secciones de plantas" className="bo-tabs--reservas bo-configFloorTabs" onNavigate={onNavigateFloorTab} />
 
             {floorTab === "plantas" ? (

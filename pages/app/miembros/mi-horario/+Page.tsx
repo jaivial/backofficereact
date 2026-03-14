@@ -89,68 +89,68 @@ export default function Page() {
   ];
 
   return (
-    <section aria-label="Mi Horario" className="bo-content-grid bo-miHorarioPage">
-      <div className="bo-panel bo-miHorarioPanel">
-        <div className="bo-panelHead">
-          <div>
-            <div className="bo-panelTitle">
-              <Clock3 size={16} strokeWidth={1.8} />
-              Mi Horario
-            </div>
-            <div className="bo-panelMeta">Consulta tus horarios asignados.</div>
+    <div className="rounded-[var(--bo-radius-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--bo-surface)] border-none shadow-[var(--bo-shadow-soft)]" aria-label="Mi Horario">
+      <div className="flex items-end justify-between p-[16px_18px_10px]">
+        <div>
+          <div className="text-sm font-bold bo-flex bo-items-center bo-gap-2">
+            <Clock3 size={16} strokeWidth={1.8} />
+            Mi Horario
           </div>
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
-            onClick={() => void loadSchedules()}
-            disabled={loading}
-          >
-            {loading ? "Cargando..." : "Actualizar"}
-          </button>
+          <div className="text-xs text-[var(--bo-faint)]">Consulta tus horarios asignados.</div>
         </div>
-
-        <div className="bo-panelBody">
-          {error ? (
-            <div className="bo-alert bo-alert--error">{error}</div>
-          ) : sortedSchedules.length === 0 ? (
-            <div className="bo-emptyState">
-              <User size={48} strokeWidth={1} />
-              <p>No tienes horarios asignados.</p>
-              <p className="bo-mutedText">Contacta con tu responsable para que asigne tus turnos.</p>
-            </div>
-          ) : (
-            <div className="bo-miHorarioList">
-              {Object.entries(groupedByMonth).map(([monthKey, monthSchedules]) => {
-                const [year, month] = monthKey.split("-").map(Number);
-                const monthName = monthNames[month - 1];
-                return (
-                  <div key={monthKey} className="bo-miHorarioMonth">
-                    <div className="bo-miHorarioMonthHeader">
-                      {monthName} {year}
-                    </div>
-                    <div className="bo-miHorarioMonthGrid">
-                      {monthSchedules.map((schedule) => (
-                        <div key={schedule.id} className="bo-miHorarioCard">
-                          <div className="bo-miHorarioCardDate">
-                            <CalendarDays size={14} strokeWidth={1.8} />
-                            {formatDate(schedule.date)}
-                          </div>
-                          <div className="bo-miHorarioCardTime">
-                            <Clock3 size={14} strokeWidth={1.8} />
-                            {schedule.startTime} - {schedule.endTime}
-                            <span className="bo-miHorarioCardDuration">
-                              ({diffHours(schedule.startTime, schedule.endTime)})
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <button
+          className="h-8 px-[10px] rounded-[10px] text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--bo-border)] bg-transparent text-[var(--bo-text)] cursor-pointer leading-none whitespace-nowrap"
+          onClick={() => void loadSchedules()}
+          disabled={loading}
+        >
+          {loading ? "Cargando..." : "Actualizar"}
+        </button>
       </div>
-    </section>
+
+      <div className="p-0 [18px_16px]">
+        {error ? (
+          <div className="mt-3 rounded-[var(--bo-radius-md)] border border-[rgba(220,53,69,0.32)] bg-[rgba(220,53,69,0.10)] p-3" role="alert">{error}</div>
+        ) : sortedSchedules.length === 0 ? (
+          <div className="grid justify-items-center text-center gap-3 p-6 rounded-[var(--bo-radius-md)] border border-dashed border-[var(--bo-border-2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.12)),var(--bo-surface-2)] text-[var(--bo-muted)]">
+            <div className="text-[var(--bo-faint)]">
+              <User size={48} strokeWidth={1} />
+            </div>
+            <div className="text-base font-semibold leading-tight m-0">No tienes horarios asignados.</div>
+            <div className="text-sm text-[var(--bo-muted)]">Contacta con tu responsable para que asigne tus turnos.</div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-[18px]">
+            {Object.entries(groupedByMonth).map(([monthKey, monthSchedules]) => {
+              const [year, month] = monthKey.split("-").map(Number);
+              const monthName = monthNames[month - 1];
+              return (
+                <div key={monthKey}>
+                  <div className="bo-scheduleMonthHeader">
+                    {monthName} {year}
+                  </div>
+                  <div className="bo-scheduleGrid">
+                    {monthSchedules.map((schedule) => (
+                      <div key={schedule.id} className="bo-scheduleItem">
+                        <div className="bo-flex bo-items-center bo-gap-2 bo-scheduleItemText">
+                          <CalendarDays size={14} strokeWidth={1.8} />
+                          {formatDate(schedule.date)}
+                        </div>
+                        <div className="bo-flex bo-items-center bo-gap-2 bo-scheduleItemText">
+                          <Clock3 size={14} strokeWidth={1.8} />
+                          {schedule.startTime} - {schedule.endTime}
+                          <span className="bo-scheduleHours">
+                            ({diffHours(schedule.startTime, schedule.endTime)})
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

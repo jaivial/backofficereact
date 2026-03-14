@@ -65,25 +65,25 @@ export default function Page() {
 
   return (
     <>
-      <section className="bo-cardsRow" aria-label="KPIs de reservas">
+      <section className="bo-grid bo-grid-cols-2 md:bo-grid-cols-3 lg:bo-grid-cols-5 bo-grid-gap-4" aria-label="KPIs de reservas">
         <StatCard label="Reservas" value={String(m.total)} icon="calendar" />
         <StatCard label="Confirmadas" value={String(m.confirmed)} icon="check" />
         <StatCard label="Pendientes" value={String(m.pending)} icon="clock" />
         <StatCard label="Comensales" value={String(m.totalPeople)} icon="users" />
-        <div className="bo-card bo-cardOb" aria-label="Resumen">
-          <div className="bo-cardObHead">
-            <div className="bo-statLabel">Dia seleccionado</div>
-            <div className="bo-cardObIcon" aria-hidden="true">
-              <div className="bo-pill" />
+        <div className="bo-card" aria-label="Resumen">
+          <div className="bo-statTop">
+            <div className="bo-statLabel">Día seleccionado</div>
+            <div aria-hidden="true">
+              <div className="bo-statIcon" style={{ background: "var(--bo-surface-3)", width: 8, height: 8, borderRadius: "50%" }} />
             </div>
           </div>
-          <div className="bo-cardObTitle">{data.date}</div>
-          <div className="bo-cardObBody">Panel inicial del backoffice. Mas modulos se agregan aqui.</div>
+          <div className="bo-statValue" style={{ fontSize: "var(--bo-text-lg)", fontWeight: "var(--bo-weight-semibold)" }}>{data.date}</div>
+          <div className="bo-statLabel" style={{ marginTop: "var(--bo-space-1)" }}>Panel inicial del backoffice. Más módulos se agregan aquí.</div>
         </div>
       </section>
 
       {im && (
-        <section className="bo-cardsRow" aria-label="KPIs de facturas" style={{ marginTop: "14px" }}>
+        <section className="bo-grid bo-grid-cols-2 md:bo-grid-cols-3 bo-grid-gap-4 bo-mt-3" aria-label="KPIs de facturas">
           <StatCard
             label="Facturas pendientes de pago"
             value={String(im.pendingCount)}
