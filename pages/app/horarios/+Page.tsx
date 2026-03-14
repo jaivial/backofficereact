@@ -387,12 +387,12 @@ export default function Page() {
   );
 
   return (
-    <section aria-label="Horarios" className="bo-grid bo-grid-gap-4 w-full max-w-full min-w-0">
-      <div className="bo-grid bo-grid-gap-4 bo-grid-cols-1 w-full min-w-0">
+    <section aria-label="Horarios" className="grid grid-gap-4 w-full max-w-full min-w-0">
+      <div className="grid grid-gap-4 grid-cols-1 w-full min-w-0">
         <div className="bo-card">
-          <div className="bo-flex bo-items-center bo-justify-between bo-p-4 bo-pb-0">
+          <div className="flex items-center justify-between p-4 pb-0">
             <div>
-              <div className="bo-inline-flex bo-items-center bo-gap-2 bo-text-sm bo-weight-semibold bo-text">
+              <div className="inline-flex items-center gap-2 text-sm bo-weight-semibold bo-text">
                 <CalendarClock size={16} strokeWidth={1.8} />
                 Horarios
                 {realtime.pendingScheduleUpdates && (
@@ -402,14 +402,14 @@ export default function Page() {
                   </span>
                 )}
               </div>
-              <div className="bo-text-xs bo-faint bo-mt-1">Selecciona una fecha y asigna turnos al equipo.</div>
+              <div className="text-xs text-faint bo-mt-1">Selecciona una fecha y asigna turnos al equipo.</div>
             </div>
             <div className="bo-dateChip">
               {selectedDate}
             </div>
           </div>
-          <div className="bo-p-4 bo-grid bo-grid-gap-3">
-            <div className="bo-grid bo-grid-cols-2 w-full max-w-full" role="tablist" aria-label="Calendario de miembros y reservas">
+          <div className="p-4 grid grid-gap-3">
+            <div className="grid grid-cols-2 w-full max-w-full" role="tablist" aria-label="Calendario de miembros y reservas">
               <button
                 type="button"
                 className={`bo-tabBtn ${calendarTab === "miembros" ? "bo-tabBtn--active" : ""}`}
@@ -418,11 +418,11 @@ export default function Page() {
                 onClick={() => setCalendarTab("miembros")}
               >
                 {calendarTab === "miembros" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-flex bo-items-center bo-gap-2 bo-justify-center">
+                <span className="flex items-center gap-2 justify-center">
                   <span aria-hidden="true">
                     <Users size={16} strokeWidth={1.8} />
                   </span>
-                  <span className="bo-text-xs">Miembros</span>
+                  <span className="text-xs">Miembros</span>
                 </span>
               </button>
               <button
@@ -433,16 +433,16 @@ export default function Page() {
                 onClick={() => setCalendarTab("reservas")}
               >
                 {calendarTab === "reservas" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-flex bo-items-center bo-gap-2 bo-justify-center">
+                <span className="flex items-center gap-2 justify-center">
                   <span aria-hidden="true">
                     <CalendarDays size={16} strokeWidth={1.8} />
                   </span>
-                  <span className="bo-text-xs">Reservas</span>
+                  <span className="text-xs">Reservas</span>
                 </span>
               </button>
             </div>
 
-            <div className="bo-grid bo-grid-gap-3 bo-grid-cols-1 md:grid-cols-[minmax(0,450px)_280px] items-start w-full min-w-0" style={calendarRowStyle}>
+            <div className="grid grid-gap-3 grid-cols-1 md:grid-cols-[minmax(0,450px)_280px] items-start w-full min-w-0" style={calendarRowStyle}>
               <div className="max-w-[450px]" ref={calendarViewportRef}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
@@ -467,15 +467,15 @@ export default function Page() {
                 </AnimatePresence>
               </div>
 
-              <div className="w-[280px] flex-shrink-0 flex flex-col max-h-[480px] bg-bo-surface-2 border border-bo-border rounded-lg p-3">
+              <div className="w-[280px] flex-shrink-0 flex flex-col max-h-[480px] bg-bo-surface-2 border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2.5">
                   <span className="text-sm font-semibold text-bo-text">Miembros</span>
-                  <span className="text-xs text-bo-muted">{filteredMembers.length}</span>
+                  <span className="text-xs text-text-muted">{filteredMembers.length}</span>
                 </div>
                 <div className="mb-2">
                   <input
                     type="text"
-                    className="w-full h-9 px-3 rounded-md border border-bo-border bg-bo-surface text-bo-text text-xs placeholder:text-bo-muted focus:outline-none focus:ring-2 focus:ring-bo-accent/50"
+                    className="w-full h-9 px-3 rounded-md border border-border bg-bo-surface text-bo-text text-xs placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-bo-accent/50"
                     placeholder="Buscar..."
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}
@@ -494,13 +494,13 @@ export default function Page() {
                           </span>
                         ) : null}
                       </span>
-                      <span className="text-bo-muted">
+                      <span className="text-text-muted">
                         <UserRoundPlus size={14} strokeWidth={1.8} />
                       </span>
                     </button>
                   ))}
                   {filteredMembers.length === 0 ? (
-                    <div className="text-bo-muted text-center p-3.5 text-xs">
+                    <div className="text-text-muted text-center p-3.5 text-xs">
                       {memberSearch.trim() ? "Sin resultados." : "Todos los miembros ya tienen horario para este día."}
                     </div>
                   ) : null}
@@ -511,11 +511,11 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-bo-border bg-bo-surface-2">
+      <div className="rounded-xl border border-border bg-bo-surface-2">
         <div className="flex items-center justify-between p-4 pb-0">
           <div>
             <div className="text-sm font-semibold text-bo-text">Horarios establecidos</div>
-            <div className="text-xs text-bo-muted mt-0.5">{selectedDate}</div>
+            <div className="text-xs text-text-muted mt-0.5">{selectedDate}</div>
           </div>
         </div>
         <div className="p-4">
@@ -523,7 +523,7 @@ export default function Page() {
             <div className="min-w-full">
               <table className="w-full text-sm text-bo-text" aria-label="Tabla de horarios del día">
                 <thead>
-                  <tr className="border-b border-bo-border">
+                  <tr className="border-b border-border">
                     <th className="text-left py-2 px-2 font-medium">Miembro</th>
                     <th className="text-left py-2 px-2 font-medium">Entrada</th>
                     <th className="text-left py-2 px-2 font-medium">Salida</th>
@@ -536,7 +536,7 @@ export default function Page() {
                   {schedules.map((schedule) => {
                     const live = activeEntriesForDate.get(schedule.memberId) || null;
                     return (
-                    <tr key={schedule.id} className="border-b border-bo-border/50 hover:bg-bo-surface-3/50">
+                    <tr key={schedule.id} className="border-b border-border/50 hover:bg-bo-surface-3/50">
                       <td className="py-2 px-2">{schedule.memberName}</td>
                       <td className="py-2 px-2">{schedule.startTime}</td>
                       <td className="py-2 px-2">{schedule.endTime}</td>
@@ -547,12 +547,12 @@ export default function Page() {
                             {elapsedForEntry(live, tick)}
                           </span>
                         ) : (
-                          <span className="text-bo-muted">—</span>
+                          <span className="text-text-muted">—</span>
                         )}
                       </td>
                       <td className="py-2 px-2">
                         <button
-                          className="h-8 px-3 rounded-md text-xs font-medium text-bo-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
+                          className="h-8 px-3 rounded-md text-xs font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
                           type="button"
                           onClick={() => {
                             const member = membersSorted.find((m) => m.id === schedule.memberId);
@@ -569,7 +569,7 @@ export default function Page() {
                   {extraActiveEntries.map((entry) => {
                     const member = membersSorted.find((m) => m.id === entry.memberId);
                     return (
-                      <tr key={`live-${entry.id}`} className="border-b border-bo-border/50 hover:bg-bo-surface-3/50">
+                      <tr key={`live-${entry.id}`} className="border-b border-border/50 hover:bg-bo-surface-3/50">
                         <td className="py-2 px-2">{entry.memberName}</td>
                         <td className="py-2 px-2">{entry.startTime}</td>
                         <td className="py-2 px-2">--:--</td>
@@ -579,7 +579,7 @@ export default function Page() {
                         </td>
                         <td className="py-2 px-2">
                           <button
-                            className="h-8 px-3 rounded-md text-xs font-medium text-bo-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
+                            className="h-8 px-3 rounded-md text-xs font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
                             type="button"
                             onClick={() => {
                               if (member) openMemberModal(member);
@@ -595,7 +595,7 @@ export default function Page() {
 
                   {schedules.length === 0 && extraActiveEntries.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-bo-muted text-center py-3.5 text-xs">
+                      <td colSpan={6} className="text-text-muted text-center py-3.5 text-xs">
                         Sin horarios para esta fecha.
                       </td>
                     </tr>
@@ -608,19 +608,19 @@ export default function Page() {
       </div>
 
       <Modal open={modalOpen} title="Asignar horario" onClose={() => setModalOpen(false)} widthPx={760}>
-        <div className="flex items-center justify-between pb-4 border-b border-bo-border">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
           <div className="text-base font-semibold text-bo-text">Asignar horario</div>
-          <button className="text-xl text-bo-muted hover:text-bo-text leading-none w-8 h-8 flex items-center justify-center rounded-md hover:bg-bo-surface-2 transition-colors" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
+          <button className="text-xl text-text-muted hover:text-bo-text leading-none w-8 h-8 flex items-center justify-center rounded-md hover:bg-bo-surface-2 transition-colors" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
             ×
           </button>
         </div>
 
-        <div className="mt-2.5 p-4 rounded-lg border border-bo-border bg-bo-surface-2">
-          <div className="rounded-xl border border-bo-border bg-bo-surface-2">
+        <div className="mt-2.5 p-4 rounded-lg border border-border bg-bo-surface-2">
+          <div className="rounded-xl border border-border bg-bo-surface-2">
             <div className="flex items-center justify-between p-4 pb-0">
               <div>
                 <div className="text-sm font-semibold text-bo-text">{selectedMember ? fullName(selectedMember) : "Miembro"}</div>
-                <div className="text-xs text-bo-muted mt-0.5">Fecha {selectedDate}</div>
+                <div className="text-xs text-text-muted mt-0.5">Fecha {selectedDate}</div>
               </div>
             </div>
 
@@ -630,7 +630,7 @@ export default function Page() {
                   <div className="text-xs font-medium text-bo-text mb-2">Hora de entrada</div>
                   <div className="flex gap-2">
                     <div>
-                      <div className="text-xs text-bo-muted mb-1">Hora</div>
+                      <div className="text-xs text-text-muted mb-1">Hora</div>
                       <SpinWheel
                         className="w-16"
                         values={hourOptions}
@@ -640,7 +640,7 @@ export default function Page() {
                       />
                     </div>
                     <div>
-                      <div className="text-xs text-bo-muted mb-1">Minutos</div>
+                      <div className="text-xs text-text-muted mb-1">Minutos</div>
                       <SpinWheel
                         className="w-16"
                         values={minuteOptions}
@@ -656,11 +656,11 @@ export default function Page() {
                   <div className="text-xs font-medium text-bo-text mb-2">Hora de salida</div>
                   <div className="flex gap-2">
                     <div>
-                      <div className="text-xs text-bo-muted mb-1">Hora</div>
+                      <div className="text-xs text-text-muted mb-1">Hora</div>
                       <SpinWheel className="w-16" values={exitHourOptions} value={exitHour} onChange={setExitHour} ariaLabel="Hora de salida" />
                     </div>
                     <div>
-                      <div className="text-xs text-bo-muted mb-1">Minutos</div>
+                      <div className="text-xs text-text-muted mb-1">Minutos</div>
                       <SpinWheel
                         className="w-16"
                         values={exitMinuteOptions}
@@ -682,7 +682,7 @@ export default function Page() {
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <button className="h-9 px-4 rounded-md text-sm font-medium text-bo-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors duration-150" type="button" onClick={() => setModalOpen(false)}>
+          <button className="h-9 px-4 rounded-md text-sm font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors duration-150" type="button" onClick={() => setModalOpen(false)}>
             Cancelar
           </button>
           <button className="h-9 px-4 rounded-md text-sm font-medium bg-bo-accent text-bo-bg hover:opacity-90 transition-opacity duration-150" type="button" disabled={busy || !selectedMember} onClick={() => void saveSchedule()}>

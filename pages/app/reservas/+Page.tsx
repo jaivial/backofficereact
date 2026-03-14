@@ -492,7 +492,7 @@ export default function Page() {
 
   return (
     <section aria-label="Reservas">
-      <div className={`bo-grid bo-grid-gap-5${isDayOpen ? "" : " bo-grid-cols-[320px]"}`} style={{ gridTemplateColumns: isDayOpen ? "320px 1fr" : "320px" }}>
+      <div className={`grid grid-gap-5${isDayOpen ? "" : " grid-cols-[320px]"}`} style={{ gridTemplateColumns: isDayOpen ? "320px 1fr" : "320px" }}>
         <MonthCalendar
           year={view.year}
           month={view.month}
@@ -596,21 +596,21 @@ export default function Page() {
             exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             transition={dayVisibilityTransition}
           >
-            <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,2%,transparent),color-mix(in srgb,black,12%,transparent))] border border-[var(--bo-border)] overflow-hidden bo-mt-3\.5">
+            <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,2%,transparent),color-mix(in srgb,black,12%,transparent))] border border-[var(--border)] overflow-hidden bo-mt-3\.5">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-xs" aria-label="Tabla de reservas">
                   <thead>
                     <tr>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-24">Añadida</th>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-16 pl-2 pr-2">Mesa</th>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-16">Hora</th>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 min-w-[180px]">Cliente</th>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-28">Estado</th>
-                      <th className="text-right font-semibold text-[var(--bo-faint)] p-3 w-16">Pax</th>
-                      <th className="text-right font-semibold text-[var(--bo-faint)] p-3 w-16">Niños</th>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 w-32">Teléfono</th>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 min-w-[210px]">Arroz</th>
-                      <th className="text-left font-semibold text-[var(--bo-faint)] p-3 min-w-[320px]">Comentario</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 w-24">Añadida</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 w-16 pl-2 pr-2">Mesa</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 w-16">Hora</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 min-w-[180px]">Cliente</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 w-28">Estado</th>
+                      <th className="text-right font-semibold text-[var(--text-faint)] p-3 w-16">Pax</th>
+                      <th className="text-right font-semibold text-[var(--text-faint)] p-3 w-16">Niños</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 w-32">Teléfono</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 min-w-[210px]">Arroz</th>
+                      <th className="text-left font-semibold text-[var(--text-faint)] p-3 min-w-[320px]">Comentario</th>
                       <th className="w-10" />
                     </tr>
                   </thead>
@@ -638,7 +638,7 @@ export default function Page() {
               </div>
 
               <div className={`flex items-center justify-between p-3${showPagerBtns ? "" : " justify-end"}`} aria-label="Paginación">
-                <div className="text-xs text-[var(--bo-muted)]">
+                <div className="text-xs text-[var(--text-muted)]">
                   Página {page} de {totalPages} · {totalCount} resultados
                 </div>
                 {showPagerBtns ? (
@@ -687,17 +687,17 @@ export default function Page() {
       />
 
       <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820}>
-        <div className="flex items-center justify-between border-b border-[var(--bo-border)] pb-3">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="font-semibold text-sm">Reserva completa</div>
-          <button className="w-8 h-8 rounded-lg border border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails} aria-label="Close">
+          <button className="w-8 h-8 rounded-lg border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails} aria-label="Close">
             ×
           </button>
         </div>
         <div className="mt-2 bo-mt-2\.5">
           {details.booking ? <BookingDetails booking={details.booking} floors={floors} /> : null}
         </div>
-        <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--bo-border)] mt-4">
-          <button className="h-9 px-3 rounded-[12px] border border-[var(--bo-border)] bg-transparent text-[var(--bo-text)] cursor-pointer font-semibold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails}>
+        <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--border)] mt-4">
+          <button className="h-9 px-3 rounded-[12px] border border-[var(--border)] bg-transparent text-[var(--bo-text)] cursor-pointer font-semibold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails}>
             Cerrar
           </button>
           {details.booking ? (
@@ -716,9 +716,9 @@ export default function Page() {
       </Modal>
 
       <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040}>
-        <div className="flex items-center justify-between border-b border-[var(--bo-border)] pb-3">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="font-semibold text-sm">Editar reserva</div>
-          <button className="w-8 h-8 rounded-lg border border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeEdit} aria-label="Close">
+          <button className="w-8 h-8 rounded-lg border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeEdit} aria-label="Close">
             ×
           </button>
         </div>
@@ -801,7 +801,7 @@ const BookingRow = React.memo(function BookingRow({
         }}
       >
         <input
-          className="h-[28px] min-w-[60px] rounded-[12px] border border-[var(--bo-border)] bg-[var(--bo-surface-2)] text-[var(--bo-text)] px-2 outline-none text-xs w-16 text-center transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
+          className="h-[28px] min-w-[60px] rounded-[12px] border border-[var(--border)] bg-[var(--bo-surface-2)] text-[var(--bo-text)] px-2 outline-none text-xs w-16 text-center transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
           value={draftMesa}
           onChange={(e) => setDraftMesa(e.target.value)}
           onBlur={() => void save()}
@@ -861,55 +861,55 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
   }, [booking.preferred_floor_number, floors]);
   const badgeCls =
     booking.status === "confirmed"
-      ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-success)]/20 text-[var(--bo-text-success)]"
+      ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-success)]/20 text-[var(--text-success)]"
       : booking.status === "pending"
-        ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-warning)]/20 text-[var(--bo-text-warning)]"
-        : "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-surface-2)] text-[var(--bo-muted)]";
+        ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-warning)]/20 text-[var(--text-warning)]"
+        : "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-surface-2)] text-[var(--text-muted)]";
 
   return (
     <div className="flex flex-col gap-3 bo-bookingDetails">
       <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
         <div className="flex items-end justify-between p-4 pb-2">
           <div className="font-semibold text-sm">{booking.customer_name || "Reserva"}</div>
-          <div className="text-xs text-[var(--bo-faint)]">{booking.reservation_date}</div>
+          <div className="text-xs text-[var(--text-faint)]">{booking.reservation_date}</div>
         </div>
         <div className="p-4 pt-0 bo-bookingDetailsGrid">
           <div className="flex gap-4" aria-label="Hora y personas">
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Hora</div>
+              <div className="text-xs text-[var(--text-muted)]">Hora</div>
               <div className="text-sm">{time || "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Personas</div>
+              <div className="text-xs text-[var(--text-muted)]">Personas</div>
               <div className="text-sm">{booking.party_size} pax</div>
             </div>
           </div>
 
-          <div className="bo-grid bo-grid-cols-2 bo-grid-gap-3" aria-label="Datos principales">
+          <div className="grid grid-cols-2 grid-gap-3" aria-label="Datos principales">
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Estado</div>
+              <div className="text-xs text-[var(--text-muted)]">Estado</div>
               <div>
                 <span className={badgeCls}>{status}</span>
               </div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Mesa</div>
+              <div className="text-xs text-[var(--text-muted)]">Mesa</div>
               <div className="text-sm">{normalizeTableNumber(booking.table_number || "") || "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Añadida</div>
+              <div className="text-xs text-[var(--text-muted)]">Añadida</div>
               <div className="text-sm">{added || "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Teléfono</div>
+              <div className="text-xs text-[var(--text-muted)]">Teléfono</div>
               <div className="text-sm">{phone || "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Salón</div>
+              <div className="text-xs text-[var(--text-muted)]">Salón</div>
               <div className="text-sm">{preferredFloorLabel}</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Niños</div>
+              <div className="text-xs text-[var(--text-muted)]">Niños</div>
               <div className="text-sm">{String(booking.children ?? 0)}</div>
             </div>
           </div>
@@ -919,24 +919,24 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
       <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
         <div className="flex items-end justify-between p-4 pb-2">
           <div className="font-semibold text-sm">Detalles</div>
-          <div className="text-xs text-[var(--bo-faint)]">{booking.special_menu ? "Menú de grupo" : "Reserva"}</div>
+          <div className="text-xs text-[var(--text-faint)]">{booking.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
         <div className="p-4 pt-0">
-          <div className="bo-grid bo-grid-cols-2 bo-grid-gap-3">
+          <div className="grid grid-cols-2 grid-gap-3">
             <div className="col-span-2">
-              <div className="text-xs text-[var(--bo-muted)]">Email</div>
+              <div className="text-xs text-[var(--text-muted)]">Email</div>
               <div className="text-sm break-words">{booking.contact_email || "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Carros</div>
+              <div className="text-xs text-[var(--text-muted)]">Carros</div>
               <div className="text-sm">{typeof booking.babyStrollers === "number" ? String(booking.babyStrollers) : "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-[var(--bo-muted)]">Tronas</div>
+              <div className="text-xs text-[var(--text-muted)]">Tronas</div>
               <div className="text-sm">{typeof booking.highChairs === "number" ? String(booking.highChairs) : "—"}</div>
             </div>
             <div className="col-span-2">
-              <div className="text-xs text-[var(--bo-muted)]">Arroz</div>
+              <div className="text-xs text-[var(--text-muted)]">Arroz</div>
               <div className="text-sm">{arroz || "—"}</div>
             </div>
           </div>
@@ -946,10 +946,10 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
       <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
         <div className="flex items-end justify-between p-4 pb-2">
           <div className="font-semibold text-sm">Comentario</div>
-          <div className="text-xs text-[var(--bo-faint)]">Opcional</div>
+          <div className="text-xs text-[var(--text-faint)]">Opcional</div>
         </div>
         <div className="p-4 pt-0 bo-whiteSpacePre">
-          {booking.commentary ? booking.commentary : <span className="text-xs text-[var(--bo-muted)]">—</span>}
+          {booking.commentary ? booking.commentary : <span className="text-xs text-[var(--text-muted)]">—</span>}
         </div>
       </div>
     </div>

@@ -198,7 +198,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
                 </tr>
               ) : displayRows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="bo-mutedText bo-statsTableEmpty">
+                  <td colSpan={4} className="text-mutedText bo-statsTableEmpty">
                     No hay datos para el período seleccionado.
                   </td>
                 </tr>

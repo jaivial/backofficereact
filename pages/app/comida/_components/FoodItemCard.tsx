@@ -78,7 +78,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
             onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
           />
           <button
-            className="h-8 px-2.5 rounded-[8px] border border-[var(--bo-border)] bg-transparent text-[var(--bo-text)] inline-flex items-center justify-center gap-2 text-xs transition-colors duration-150 hover:bg-[var(--bo-surface-hover)] disabled:opacity-55 disabled:cursor-not-allowed p-1.5"
+            className="h-8 px-2.5 rounded-[8px] border border-[var(--border)] bg-transparent text-[var(--bo-text)] inline-flex items-center justify-center gap-2 text-xs transition-colors duration-150 hover:bg-[var(--bo-surface-hover)] disabled:opacity-55 disabled:cursor-not-allowed p-1.5"
             type="button"
             onClick={(e) => {
               e.stopPropagation();

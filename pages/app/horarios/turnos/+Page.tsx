@@ -378,24 +378,24 @@ export default function Page() {
 
   return (
     <section aria-label="Edicion de turnos" className="grid gap-3.5 w-full">
-      <div className="rounded-xl border border-bo-border bg-bo-surface-2">
+      <div className="rounded-xl border border-border bg-bo-surface-2">
         <div className="flex items-center justify-between p-4 pb-0">
           <div>
             <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
               <CalendarClock size={16} strokeWidth={1.8} />
               Turnos
             </div>
-            <div className="text-xs text-bo-muted mt-0.5">Editar tiempo registrado por miembro y fecha.</div>
+            <div className="text-xs text-text-muted mt-0.5">Editar tiempo registrado por miembro y fecha.</div>
           </div>
           <div className="flex items-center gap-3">
             <DatePicker value={date} onChange={(nextDate) => void selectDate(nextDate)} />
-            <div className="h-[30px] rounded-full border border-bo-border px-3 inline-flex items-center text-xs font-medium text-bo-muted">
+            <div className="h-[30px] rounded-full border border-border px-3 inline-flex items-center text-xs font-medium text-text-muted">
               {loading ? "Cargando..." : date}
             </div>
-            <div className="bo-grid bo-grid-cols-2 bo-p-1" style={{ background: "var(--bo-surface-3)", borderRadius: "var(--bo-radius-sm)" }} role="tablist" aria-label="Cambiar vista">
+            <div className="grid grid-cols-2 p-1" style={{ background: "var(--bo-surface-3)", borderRadius: "var(--rounded-sm)" }} role="tablist" aria-label="Cambiar vista">
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "grid" ? "bg-bo-surface text-bo-text" : "text-bo-muted hover:text-bo-text"}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "grid" ? "bg-bo-surface text-bo-text" : "text-text-muted hover:text-bo-text"}`}
                 role="tab"
                 aria-selected={view === "grid"}
                 onClick={() => setView("grid")}
@@ -405,7 +405,7 @@ export default function Page() {
               </button>
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-bo-surface text-bo-text" : "text-bo-muted hover:text-bo-text"}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-bo-surface text-bo-text" : "text-text-muted hover:text-bo-text"}`}
                 role="tab"
                 aria-selected={view === "table"}
                 onClick={() => setView("table")}
@@ -417,7 +417,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className={`bo-p-4 ${view === "table" ? "bo-grid bo-grid-gap-4" : "bo-grid bo-grid-gap-4"}`} style={view === "table" ? { gridTemplateColumns: "280px 1fr" } : {}}>
+        <div className={`p-4 ${view === "table" ? "grid grid-gap-4" : "grid grid-gap-4"}`} style={view === "table" ? { gridTemplateColumns: "280px 1fr" } : {}}>
           {view === "grid" ? (
             <MemberPicker
               title="Miembros"
@@ -429,16 +429,16 @@ export default function Page() {
               emptyLabel="Sin miembros para mostrar."
             />
           ) : (
-            <section className="rounded-lg border border-bo-border bg-bo-surface-3/30 p-3" aria-label="Tabla de miembros">
+            <section className="rounded-lg border border-border bg-bo-surface-3/30 p-3" aria-label="Tabla de miembros">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-bo-text">Miembros</span>
-                <span className="text-xs text-bo-muted">{tableMembers.length}</span>
+                <span className="text-xs text-text-muted">{tableMembers.length}</span>
               </div>
-              <label className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-md bg-bo-surface border border-bo-border" aria-label="Buscar miembro">
-                <Search size={14} strokeWidth={1.8} className="text-bo-muted" />
+              <label className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-md bg-bo-surface border border-border" aria-label="Buscar miembro">
+                <Search size={14} strokeWidth={1.8} className="text-text-muted" />
                 <input
                   type="text"
-                  className="flex-1 bg-transparent text-sm text-bo-text placeholder:text-bo-muted focus:outline-none"
+                  className="flex-1 bg-transparent text-sm text-bo-text placeholder:text-text-muted focus:outline-none"
                   value={memberSearch}
                   onChange={(ev) => setMemberSearch(ev.target.value)}
                   placeholder="Buscar..."
@@ -454,10 +454,10 @@ export default function Page() {
             </section>
           )}
 
-          <section className="rounded-lg border border-bo-border bg-bo-surface-3/30 p-4" aria-label="Editor de turnos">
+          <section className="rounded-lg border border-border bg-bo-surface-3/30 p-4" aria-label="Editor de turnos">
             <div className="mb-4">
               <div className="text-sm font-semibold text-bo-text">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
-              <div className="text-xs text-bo-muted mt-0.5">
+              <div className="text-xs text-text-muted mt-0.5">
                 {selectedSchedule ? `Horario asignado: ${selectedSchedule.startTime} - ${selectedSchedule.endTime}` : "Sin horario asignado para este dia"}
               </div>
             </div>
@@ -501,7 +501,7 @@ export default function Page() {
               onShiftEnd={onShiftEnd}
               onCloseLive={onCloseLive}
             />
-            <div className="mt-4 text-xs text-bo-muted">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
+            <div className="mt-4 text-xs text-text-muted">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
           </section>
         </div>
       </div>

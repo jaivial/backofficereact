@@ -116,11 +116,11 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
             </div>
             <div className="bo-paymentSummaryRow">
               <span>Pagado:</span>
-              <strong className={isFullyPaid ? "bo-text--success" : ""}>{formatPrice(paidAmount)}</strong>
+              <strong className={isFullyPaid ? "text--success" : ""}>{formatPrice(paidAmount)}</strong>
             </div>
             <div className="bo-paymentSummaryRow bo-paymentSummaryRow--remaining">
               <span>Pendiente:</span>
-              <strong className={isFullyPaid ? "bo-text--success" : "bo-text--warning"}>
+              <strong className={isFullyPaid ? "text--success" : "text--warning"}>
                 {isFullyPaid ? "0.00 €" : formatPrice(remainingBalance)}
               </strong>
             </div>

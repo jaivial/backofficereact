@@ -178,10 +178,10 @@ export const WineModal = React.memo(function WineModal({
   return (
     <Modal open={open} onClose={onClose} title={title} size="lg">
       <form onSubmit={handleSubmit}>
-        <div className="bo-grid bo-grid-gap-6" style={{ gridTemplateColumns: "200px 1fr" }}>
+        <div className="grid grid-gap-6" style={{ gridTemplateColumns: "200px 1fr" }}>
           {/* Image upload */}
           <div className="flex flex-col gap-3">
-            <div className="w-[200px] h-[280px] rounded-[var(--bo-radius-md)] overflow-hidden bg-[var(--bo-surface-2)] relative">
+            <div className="w-[200px] h-[280px] rounded-[var(--rounded-md)] overflow-hidden bg-[var(--bo-surface-2)] relative">
               {imagePreview ? (
                 <>
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
@@ -195,7 +195,7 @@ export const WineModal = React.memo(function WineModal({
                   </button>
                 </>
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-[var(--bo-faint)] gap-2">
+                <div className="w-full h-full flex flex-col items-center justify-center text-[var(--text-faint)] gap-2">
                   <ImagePlus size={32} />
                   <span>Sin imagen</span>
                 </div>
@@ -226,7 +226,7 @@ export const WineModal = React.memo(function WineModal({
                 </>
               )}
             </button>
-            <p className="text-[11px] text-[var(--bo-faint)] text-center m-0">Se comprimira a WebP (max 100KB)</p>
+            <p className="text-[11px] text-[var(--text-faint)] text-center m-0">Se comprimira a WebP (max 100KB)</p>
           </div>
 
           {/* Form fields */}
@@ -246,7 +246,7 @@ export const WineModal = React.memo(function WineModal({
               />
             </div>
 
-            <div className="bo-grid bo-grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
+            <div className="grid grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
               <div className="bo-field">
                 <label className="bo-label" htmlFor="tipo">
                   Tipo
@@ -298,7 +298,7 @@ export const WineModal = React.memo(function WineModal({
               />
             </div>
 
-            <div className="bo-grid bo-grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
+            <div className="grid grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
               <div className="bo-field">
                 <label className="bo-label" htmlFor="denominacion">
                   Denominacion de Origen
@@ -374,7 +374,7 @@ export const WineModal = React.memo(function WineModal({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--bo-border)]">
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--border)]">
           <button type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={saving}>
             Cancelar
           </button>

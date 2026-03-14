@@ -99,8 +99,8 @@ const MenuFilters = React.memo(function MenuFilters({
 
   return (
     <div className="bo-panel bo-menuFilters" aria-label="Filtros de menus">
-      <div className="bo-flex bo-items-center bo-justify-between bo-mb-3">
-        <div className="bo-flex bo-items-center bo-gap-2 bo-text-sm bo-weight-medium">
+      <div className="flex items-center justify-between bo-mb-3">
+        <div className="flex items-center gap-2 text-sm bo-weight-medium">
           <Filter size={15} />
           <span>Filtros</span>
         </div>
@@ -125,9 +125,9 @@ const MenuFilters = React.memo(function MenuFilters({
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="bo-grid bo-grid-cols-1 sm:bo-grid-cols-2 lg:bo-grid-cols-4 bo-grid-gap-3">
-              <label className="bo-flex bo-flex-col bo-gap-2">
-                <span className="bo-text-xs bo-faint bo-weight-medium">Buscar por titulo</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 grid-gap-3">
+              <label className="flex flex-col gap-2">
+                <span className="text-xs text-faint bo-weight-medium">Buscar por titulo</span>
                 <input
                   className="bo-input bo-input--menuSearch"
                   type="search"
@@ -137,8 +137,8 @@ const MenuFilters = React.memo(function MenuFilters({
                 />
               </label>
 
-              <label className="bo-flex bo-flex-col bo-gap-2">
-                <span className="bo-text-xs bo-faint bo-weight-medium">Estado</span>
+              <label className="flex flex-col gap-2">
+                <span className="text-xs text-faint bo-weight-medium">Estado</span>
                 <Select
                   value={statusFilter}
                   onChange={(value) => onStatusFilterChange(value as MenuStatusFilter)}
@@ -147,20 +147,20 @@ const MenuFilters = React.memo(function MenuFilters({
                 />
               </label>
 
-              <label className="bo-flex bo-flex-col bo-gap-2">
-                <span className="bo-text-xs bo-faint bo-weight-medium">Tipo de menu</span>
+              <label className="flex flex-col gap-2">
+                <span className="text-xs text-faint bo-weight-medium">Tipo de menu</span>
                 <Select value={menuTypeFilter} onChange={onMenuTypeFilterChange} options={menuTypeFilterOptions} ariaLabel="Tipo de menu" />
               </label>
 
-              <label className="bo-flex bo-flex-col bo-gap-2">
-                <span className="bo-text-xs bo-faint bo-weight-medium">Ordenar</span>
+              <label className="flex flex-col gap-2">
+                <span className="text-xs text-faint bo-weight-medium">Ordenar</span>
                 <Select value={sortBy} onChange={(value) => onSortByChange(value as MenuSortOption)} options={MENU_SORT_OPTIONS} ariaLabel="Ordenar" />
               </label>
             </div>
 
-            <div className="bo-flex bo-items-center bo-justify-between bo-mt-3 bo-pt-3 bo-border-t">
-              <div className="bo-text-xs bo-faint">{summaryText}</div>
-              <div className="bo-flex bo-items-center bo-gap-2">
+            <div className="flex items-center justify-between bo-mt-3 pt-3 border-t">
+              <div className="text-xs text-faint">{summaryText}</div>
+              <div className="flex items-center gap-2">
                 <button
                   className={cn("bo-btn bo-btn--ghost bo-btn--sm", !hasFilters && "invisible")}
                   type="button"
@@ -403,7 +403,7 @@ export default function Page() {
       aria-label="Menus"
       className={cn(
         "bo-stack",
-        showTypeSelector ? "" : "bo-p-4"
+        showTypeSelector ? "" : "p-4"
       )}
     >
       {showTypeSelector ? (
@@ -434,7 +434,7 @@ export default function Page() {
             onResetFilters={resetFilters}
           />
 
-          <div className="bo-grid bo-grid-cols-1 md:bo-grid-cols-2 xl:bo-grid-cols-3 bo-grid-gap-4" role="list" aria-label="Lista de menus">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 grid-gap-4" role="list" aria-label="Lista de menus">
             {filteredMenus.map((menu) => (
               <MenuSummaryCard
                 key={menu.id}

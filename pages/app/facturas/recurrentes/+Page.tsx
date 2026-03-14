@@ -136,11 +136,11 @@ export default function RecurringInvoicesPage() {
   };
 
   return (
-    <div className="bo-stack bo-p-4">
+    <div className="bo-stack p-4">
       <div className="bo-toolbar">
         <div className="bo-toolbarLeft">
-          <RefreshCw size={24} className="bo-mutedText" />
-          <h1 className="bo-h3 bo-m-0">Facturación Recurrente</h1>
+          <RefreshCw size={24} className="text-mutedText" />
+          <h1 className="bo-h3 m-0">Facturación Recurrente</h1>
         </div>
         <div className="bo-toolbarRight">
           <button
@@ -154,17 +154,17 @@ export default function RecurringInvoicesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="bo-grid bo-grid-cols-3 bo-grid-gap-4">
+      <div className="grid grid-cols-3 grid-gap-4">
         <div className="bo-card">
-          <div className="bo-statValue bo-text-2xl bo-font-bold">{data.total}</div>
+          <div className="bo-statValue text-2xl bo-font-bold">{data.total}</div>
           <div className="bo-statLabel">Total</div>
         </div>
         <div className="bo-card">
-          <div className="bo-statValue bo-text-2xl bo-font-bold bo-text-success">{data.activeCount}</div>
+          <div className="bo-statValue text-2xl bo-font-bold text-success">{data.activeCount}</div>
           <div className="bo-statLabel">Activas</div>
         </div>
         <div className="bo-card">
-          <div className="bo-statValue bo-text-2xl bo-font-bold bo-text-warning">{data.pausedCount}</div>
+          <div className="bo-statValue text-2xl bo-font-bold text-warning">{data.pausedCount}</div>
           <div className="bo-statLabel">Pausadas</div>
         </div>
       </div>
@@ -180,9 +180,9 @@ export default function RecurringInvoicesPage() {
       <div className="bo-stack">
         {data.recurringInvoices.length === 0 ? (
           <div className="bo-emptyState">
-            <RefreshCw size={48} className="bo-mutedText bo-mb-4" />
+            <RefreshCw size={48} className="text-mutedText bo-mb-4" />
             <h3 className="bo-h4 bo-mb-2">No hay facturación recurrente</h3>
-            <p className="bo-mutedText bo-mb-4 bo-max-w-sm">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
+            <p className="text-mutedText bo-mb-4 bo-max-w-sm">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
             <button
               className="bo-btn bo-btn--primary"
               onClick={() => window.location.href = "/app/facturas/crear?recurring=true"}
@@ -209,9 +209,9 @@ export default function RecurringInvoicesPage() {
                 {data.recurringInvoices.map((item) => (
                   <tr key={item.id} className="bo-tableRow">
                     <td className="bo-tableCell">
-                      <div className="bo-stack bo-gap-1">
+                      <div className="bo-stack gap-1">
                         <span className="bo-weight-medium">{item.customer_name}</span>
-                        <span className="bo-text-xs bo-mutedText">{item.customer_email}</span>
+                        <span className="text-xs text-mutedText">{item.customer_email}</span>
                       </div>
                     </td>
                     <td className="bo-tableCell">
@@ -223,15 +223,15 @@ export default function RecurringInvoicesPage() {
                       <span>{getFrequencyLabel(item.frequency)}</span>
                     </td>
                     <td className="bo-tableCell">
-                      <div className="bo-row bo-gap-1">
-                        <Calendar size={14} className="bo-mutedText" />
+                      <div className="bo-row gap-1">
+                        <Calendar size={14} className="text-mutedText" />
                         {item.next_billing_date}
                       </div>
                     </td>
                     <td className="bo-tableCell">
-                      <div className="bo-row bo-gap-1">
+                      <div className="bo-row gap-1">
                         <span className="bo-weight-semibold">{item.invoice_count}</span>
-                        <span className="bo-mutedText">facturas</span>
+                        <span className="text-mutedText">facturas</span>
                       </div>
                     </td>
                     <td className="bo-tableCell">
@@ -263,7 +263,7 @@ export default function RecurringInvoicesPage() {
                           <Eye size={14} />
                         </button>
                         <button
-                          className="bo-btnIcon bo-text-danger"
+                          className="bo-btnIcon text-danger"
                           onClick={() => handleDelete(item.id)}
                           disabled={isLoading}
                           title="Eliminar"

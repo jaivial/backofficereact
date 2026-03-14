@@ -336,11 +336,11 @@ export default function Page() {
   
 
   return (
-    <div className="bo-stack-large">
-      <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabsWrapper" onNavigate={onNavigateTab} />
+    <div className="flex flex-col gap-4">
+      <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="min-w-max flex-1 flex-shrink-0 overflow-x-visible" onNavigate={onNavigateTab} />
       {activeTab === "resumen" ? (
         <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen">
-        <div className="bo-stack-large">
+        <div className="flex flex-col gap-4">
           <InvoiceFilters
             searchText={searchText}
             statusFilter={statusFilter}
@@ -405,21 +405,21 @@ export default function Page() {
 
       {activeTab === "añadir" ? (
         <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir">
-        <div className="bo-panelFill">
-          <div className="bo-formContainer">
-            <div className="bo-formCard">
-              <div className="bo-panel">
-                <InvoiceForm
-                  invoice={editingInvoice}
-                  onSave={handleSaveInvoice}
-                  onCancel={handleCancelEdit}
-                  searchReservations={searchReservations}
-                  currentUserId={currentUserId}
-                />
+          <div className="flex flex-1 flex-col">
+            <div className="mx-auto w-full">
+              <div className="rounded-[var(--bo-radius-lg)] border border-bo-border bg-bo-surface p-4">
+                <div className="rounded-[var(--bo-radius-lg)] bg-gradient-to-b from-white/[0.03] to-black/[0.10] shadow-soft border-none">
+                  <InvoiceForm
+                    invoice={editingInvoice}
+                    onSave={handleSaveInvoice}
+                    onCancel={handleCancelEdit}
+                    searchReservations={searchReservations}
+                    currentUserId={currentUserId}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
       ) : null}
 

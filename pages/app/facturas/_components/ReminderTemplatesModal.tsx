@@ -357,7 +357,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                 <div className="bo-emptyState">
                   <AlertCircle size={32} />
                   <p>No hay plantillas de recordatorios</p>
-                  <span className="bo-mutedText">
+                  <span className="text-mutedText">
                     Crea tu primera plantilla para enviar recordatorios de pago
                   </span>
                 </div>

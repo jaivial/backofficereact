@@ -162,27 +162,27 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
             <div className="bo-lineItemsTableHeader">
               <div className="bo-lineItemCell bo-lineItemCell--description">
                 <List size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly">Descripcion</span>
+                <span className="sr-only">Descripcion</span>
               </div>
               <div className="bo-lineItemCell bo-lineItemCell--quantity">
                 <Hash size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly">Cantidad</span>
+                <span className="sr-only">Cantidad</span>
               </div>
               <div className="bo-lineItemCell bo-lineItemCell--price">
                 <CircleDollarSign size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly">Precio unit.</span>
+                <span className="sr-only">Precio unit.</span>
               </div>
               <div className="bo-lineItemCell bo-lineItemCell--iva">
                 <Percent size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly">IVA</span>
+                <span className="sr-only">IVA</span>
               </div>
               <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
                 <Receipt size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly">Importe IVA</span>
+                <span className="sr-only">Importe IVA</span>
               </div>
               <div className="bo-lineItemCell bo-lineItemCell--total">
                 <Calculator size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly">Total</span>
+                <span className="sr-only">Total</span>
               </div>
               <div className="bo-lineItemCell bo-lineItemCell--actions"></div>
             </div>

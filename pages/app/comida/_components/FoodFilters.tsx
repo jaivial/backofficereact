@@ -117,7 +117,7 @@ export const FoodFilters = React.memo(function FoodFilters({
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="bo-grid bo-grid-gap-3 bo-mt-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+            <div className="grid grid-gap-3 bo-mt-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
               <div className="bo-field">
                 <span className="bo-fieldLabel">
                   <Search size={14} />

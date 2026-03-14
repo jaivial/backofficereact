@@ -340,14 +340,14 @@ export default function Page() {
   return (
     <section aria-label={`Carta ${listLabel}`} className="relative pb-[98px]">
       <div className="max-w-[1200px] mx-auto px-4">
-        <button className="inline-flex items-center gap-1.5 w-fit p-0 border-0 bg-transparent text-[var(--bo-muted)] text-sm font-semibold leading-tight cursor-pointer hover:text-[var(--bo-text)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--bo-accent)] focus-visible:outline-offset-2 rounded-[var(--bo-radius-sm)]" type="button" onClick={() => window.location.assign("/app/comida")}>
+        <button className="inline-flex items-center gap-1.5 w-fit p-0 border-0 bg-transparent text-[var(--text-muted)] text-sm font-semibold leading-tight cursor-pointer hover:text-[var(--bo-text)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--bo-accent)] focus-visible:outline-offset-2 rounded-[var(--rounded-sm)]" type="button" onClick={() => window.location.assign("/app/comida")}>
           <ChevronLeft size={16} />
           Volver a tipos de carta
         </button>
 
-        <div className="py-6 pb-5 border-b border-[var(--bo-border)] mb-5">
+        <div className="py-6 pb-5 border-b border-[var(--border)] mb-5">
           <h1 className="text-2xl font-bold text-[var(--bo-text)] mb-1">{listLabel}</h1>
-          <p className="text-base text-[var(--bo-muted)]">Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.</p>
+          <p className="text-base text-[var(--text-muted)]">Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.</p>
         </div>
 
         <FoodFilters
@@ -399,7 +399,7 @@ export default function Page() {
             <p>Usa el boton + para anadir el primer {singularLabel}.</p>
           </div>
         ) : (
-          <div className="bo-grid bo-grid-auto-fill bo-grid-gap-4" role="list">
+          <div className="grid grid-auto-fill grid-gap-4" role="list">
             {items.map((item) => (
               <FoodItemCard
                 key={item.num}

@@ -455,7 +455,7 @@ export function BookingEditor({
                 />
               </div>
 
-              <div className="bo-mutedText">Principales (restantes: {remainingPrincipales})</div>
+              <div className="text-mutedText">Principales (restantes: {remainingPrincipales})</div>
               <div style={{ display: "grid", gap: 8 }}>
                 {draft.principales.map((row, idx) => (
                   <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }}>
@@ -487,7 +487,7 @@ export function BookingEditor({
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addPrincipalRow} disabled={busy || !principalesItems.length}>
                   <Plus size={18} strokeWidth={1.8} /> Añadir principal
                 </button>
-                {!principalesItems.length ? <div className="bo-mutedText">Este menú no tiene lista de principales.</div> : null}
+                {!principalesItems.length ? <div className="text-mutedText">Este menú no tiene lista de principales.</div> : null}
               </div>
             </div>
           ) : null}
@@ -509,7 +509,7 @@ export function BookingEditor({
                 Sí
               </button>
             </div>
-            {draft.arroz_enabled ? <div className="bo-mutedText" style={{ marginTop: 10 }}>Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div> : null}
+            {draft.arroz_enabled ? <div className="text-mutedText" style={{ marginTop: 10 }}>Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div> : null}
 
             {draft.arroz_enabled ? (
               <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
@@ -543,7 +543,7 @@ export function BookingEditor({
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addRiceRow} disabled={busy || !riceTypes.length}>
                   <Plus size={18} strokeWidth={1.8} /> Añadir arroz
                 </button>
-                {!riceTypes.length ? <div className="bo-mutedText">Cargando tipos de arroz…</div> : null}
+                {!riceTypes.length ? <div className="text-mutedText">Cargando tipos de arroz…</div> : null}
               </div>
             ) : null}
           </div>

@@ -42,17 +42,17 @@ export default function Page() {
   );
 
   return (
-    <div className="bo-flex bo-flex-col bo-items-center text-center" style={{ maxWidth: 400, padding: "var(--bo-space-6)" }}>
+    <div className="flex flex-col items-center text-center" style={{ maxWidth: 400, padding: "var(--bo-space-6)" }}>
       <div 
         className="rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] border border-white/[0.06] shadow-soft p-[18px] w-[380px] max-w-[calc(100%-32px)]"
         style={{ width: 380, maxWidth: "calc(100% - 32px)" }}
       >
         <div className="text-xl font-semibold leading-tight tracking-tight">Backoffice</div>
-        <div className="mt-1.5 text-xs text-bo-muted">Accede con tu cuenta</div>
+        <div className="mt-1.5 text-xs text-text-muted">Accede con tu cuenta</div>
 
         <form onSubmit={onSubmit} className="mt-3.5 grid gap-3">
           <div className="grid gap-1">
-            <label htmlFor="identifier" className="text-xs text-bo-muted block mb-1">
+            <label htmlFor="identifier" className="text-xs text-text-muted block mb-1">
               Email o usuario
             </label>
             <input
@@ -68,7 +68,7 @@ export default function Page() {
           </div>
 
           <div className="grid gap-1">
-            <label htmlFor="password" className="text-xs text-bo-muted block mb-1">
+            <label htmlFor="password" className="text-xs text-text-muted block mb-1">
               Password
             </label>
             <input

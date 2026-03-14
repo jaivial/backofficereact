@@ -160,7 +160,7 @@ export default function Page() {
         <div className="bo-panelBody bo-memberStatsBody">
           <div className="bo-memberProgress">
             <div className="bo-memberProgressTop">
-              <span className="bo-mutedText">Cumplimiento semanal</span>
+              <span className="text-mutedText">Cumplimiento semanal</span>
               <strong>{weeklyPercent.toFixed(2)}%</strong>
             </div>
             <div className="bo-memberProgressTrack">
@@ -169,7 +169,7 @@ export default function Page() {
           </div>
 
           <div className="bo-memberBarsSection">
-            <div className="bo-mutedText">
+            <div className="text-mutedText">
               Periodo {statsLive?.startDate ?? "-"} {"->"} {statsLive?.endDate ?? "-"}
             </div>
             {chartType === "bar" ? (
@@ -198,7 +198,7 @@ export default function Page() {
             ) : (
               <MemberLinearChart points={points} chartMax={chartMax} />
             )}
-            {points.length ? null : <div className="bo-mutedText">Sin datos de horas para el periodo seleccionado.</div>}
+            {points.length ? null : <div className="text-mutedText">Sin datos de horas para el periodo seleccionado.</div>}
           </div>
 
           <div className="bo-memberSummaryGrid">
@@ -240,7 +240,7 @@ export default function Page() {
           {data.memberId > 0 ? (
             <StatsTable memberId={data.memberId} />
           ) : (
-            <div className="bo-mutedText">Selecciona un miembro para ver las estadísticas.</div>
+            <div className="text-mutedText">Selecciona un miembro para ver las estadísticas.</div>
           )}
         </div>
       </div>
@@ -347,7 +347,7 @@ function MemberLinearChart({
             <Tooltip
               contentStyle={{
                 background: "var(--bo-surface)",
-                border: "1px solid var(--bo-border)",
+                border: "1px solid var(--border)",
                 borderRadius: "12px",
                 padding: "8px 12px",
                 fontSize: "12px",

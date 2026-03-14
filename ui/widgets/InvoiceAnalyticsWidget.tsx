@@ -83,7 +83,7 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-[var(--bo-surface)] shadow-lg pointer-events-none">
+      <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-bo-surface shadow-lg pointer-events-none">
         <p className="text-xs font-semibold text-foreground">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} style={{ color: entry.color }} className="text-xs">
@@ -240,7 +240,7 @@ export function InvoiceAnalyticsWidget({
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-[var(--bo-surface)] shadow-lg">
+                        <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-bo-surface shadow-lg">
                           <p className="text-xs font-semibold text-foreground">{data.name}</p>
                           <p>Cantidad: {data.value}</p>
                           <p>Importe: {formatCurrency(data.amount)}</p>
@@ -347,7 +347,7 @@ export function InvoiceAnalyticsWidget({
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-[var(--bo-surface)] shadow-lg">
+                        <div className="absolute z-10 px-3 py-2 rounded-lg border border-white/[0.06] bg-bo-surface shadow-lg">
                           <p className="text-xs font-semibold text-foreground">{data.name}</p>
                           <p>Cantidad: {data.value}</p>
                           <p>Importe: {formatCurrency(data.amount)}</p>

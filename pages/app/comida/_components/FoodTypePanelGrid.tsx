@@ -35,7 +35,7 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
 
   return (
     <div className="py-1">
-      <div className="bo-grid bo-grid-cols-2 bo-grid-gap-3 sm:bo-grid-cols-3 lg:bo-grid-cols-5" role="group" aria-label="Tipos de carta">
+      <div className="grid grid-cols-2 grid-gap-3 sm:grid-cols-3 lg:grid-cols-5" role="group" aria-label="Tipos de carta">
         {orderedPanels.map((panel) => {
           const Icon = panel.icon;
           const count = countsByType[panel.value] || 0;
@@ -48,7 +48,7 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
             <button
               key={panel.value}
               className={cn(
-                "flex flex-col items-center justify-center gap-2 p-6 rounded-[12px] border border-bo-border bg-linear-to-b from-white/[0.04] to-black/[0.08] cursor-pointer transition-all duration-150",
+                "flex flex-col items-center justify-center gap-2 p-6 rounded-[12px] border border-border bg-linear-to-b from-white/[0.04] to-black/[0.08] cursor-pointer transition-all duration-150",
                 "hover:border-[rgba(185,168,255,0.42)] hover:bg-linear-to-b hover:from-[rgba(185,168,255,0.08)] hover:to-[rgba(185,168,255,0.04)] hover:-translate-y-0.5",
                 "active:translate-y-0",
                 "focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2"
@@ -66,7 +66,7 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
               <div className="text-[13px] font-semibold text-bo-text text-center" id={labelId}>
                 {panel.label}
               </div>
-              <div className="text-[11px] text-bo-muted text-center" id={descId}>
+              <div className="text-[11px] text-text-muted text-center" id={descId}>
                 {panel.description}
               </div>
               <div className="mt-1 text-[11px] font-medium text-[rgba(185,168,255,0.8)] bg-[rgba(185,168,255,0.10)] px-2 py-0.5 rounded-full" id={countId}>
