@@ -508,7 +508,7 @@ export default function Page() {
           {isDayOpen ? (
             <motion.div
               key="reservas-side"
-              className="flex flex-col gap-bo-4 p-4"
+              className="flex flex-col gap-4 p-4"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}

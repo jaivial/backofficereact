@@ -484,7 +484,7 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-bo-4 p-4">
+      <div className="flex flex-col gap-4 p-4">
         <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
             <div className="text-bo-sm font-bold text-bo-text">Modo de apertura</div>
@@ -554,7 +554,7 @@ export default function Page() {
             <div className="text-bo-sm font-bold text-bo-text">Calendario semanal</div>
             <div className="text-bo-xs text-bo-faint">Semana genérica (lunes a domingo)</div>
           </div>
-          <div className="p-4 bo-grid bo-grid-cols-7 bo-grid-gap-2">
+          <div className="p-4 grid grid-cols-7 gap-2">
             {weekdayCardsWithState.map((weekday) => {
               const isOpen = weekday.isOpen;
               return (
@@ -584,7 +584,7 @@ export default function Page() {
             <div className="text-bo-sm font-bold text-bo-text">Límites por defecto</div>
             <div className="text-bo-xs text-bo-faint">Autosave inmediato</div>
           </div>
-          <div className="p-4 bo-grid bo-grid-cols-3 bo-grid-gap-4">
+          <div className="p-4 grid grid-cols-3 gap-4">
             <PlusMinusCounter
               label="Límite diario"
               value={dailyLimitLabel}

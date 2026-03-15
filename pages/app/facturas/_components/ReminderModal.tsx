@@ -169,22 +169,22 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
         <div className="p-4">
           {/* Invoice Info */}
           <div className="bo-reminderInvoiceInfo">
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <div className="text-bo-sm font-semibold text-bo-muted">Cliente</div>
               <div className="bo-value">{invoice.customer_name}</div>
             </div>
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <div className="text-bo-sm font-semibold text-bo-muted">Factura</div>
               <div className="bo-value">{invoice.invoice_number || `#${invoice.id}`}</div>
             </div>
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <div className="text-bo-sm font-semibold text-bo-muted">Importe</div>
               <div className="bo-value">{invoice.total?.toFixed(2) || invoice.amount.toFixed(2)} EUR</div>
             </div>
           </div>
 
           {/* Template Selection */}
-          <div className="grid gap-bo-2">
+          <div className="grid gap-2">
             <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-select">
               Plantilla
             </label>
@@ -198,7 +198,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </div>
 
           {/* Send Via */}
-          <div className="grid gap-bo-2">
+          <div className="grid gap-2">
             <label className="text-bo-sm font-semibold text-bo-muted">Enviar via</label>
             <div className="flex flex-col gap-2">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -227,7 +227,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </div>
 
           {/* Custom Message */}
-          <div className="grid gap-bo-2">
+          <div className="grid gap-2">
             <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="custom-message">
               Mensaje personalizado (opcional)
             </label>

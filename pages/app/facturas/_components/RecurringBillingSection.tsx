@@ -172,7 +172,7 @@ export function RecurringBillingSection({
 
       {/* Enable/Disable Toggle */}
       <div className="bo-recurringBillingToggle">
-        <div className="grid gap-bo-2 bo-field--switch">
+        <div className="grid gap-2 bo-field--switch">
           <Switch
             checked={data.is_recurring ?? false}
             onCheckedChange={handleToggle}
@@ -187,7 +187,7 @@ export function RecurringBillingSection({
         <div className="bo-recurringBillingConfig">
           {/* Frequency Selection */}
           <div className="bo-recurringBillingRow">
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <span className="text-bo-sm font-semibold text-bo-muted">
                 <Clock size={14} />
                 Frecuencia
@@ -204,7 +204,7 @@ export function RecurringBillingSection({
 
           {/* Date Range */}
           <div className="bo-recurringBillingRow">
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <span className="text-bo-sm font-semibold text-bo-muted">
                 <Calendar size={14} />
                 Fecha de inicio
@@ -216,7 +216,7 @@ export function RecurringBillingSection({
               />
             </div>
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <span className="text-bo-sm font-semibold text-bo-muted">
                 <Calendar size={14} />
                 Fecha de fin (opcional)
@@ -245,7 +245,7 @@ export function RecurringBillingSection({
 
           {/* Auto-send Toggle */}
           <div className="bo-recurringBillingRow bo-recurringBillingRow--autoSend">
-            <div className="grid gap-bo-2 bo-field--switch">
+            <div className="grid gap-2 bo-field--switch">
               <Switch
                 checked={data.auto_send ?? false}
                 onCheckedChange={(checked) => onChange({ ...data, auto_send: checked })}
