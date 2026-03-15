@@ -283,7 +283,7 @@ export default function Page() {
       </div>
 
       {/* Filters */}
-      <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3 bo-card--p-4 mb-6">
+      <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
           {/* Customer Select */}
           <div>
@@ -380,7 +380,7 @@ export default function Page() {
       {customerStatement ? (
         <>
           {/* Customer Info */}
-          <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3 bo-card--p-4 mb-6">
+          <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4 mb-6">
             <h3 className="text-lg font-semibold text-bo-text mb-4">Informacion del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 grid-gap-4">
               <div>
@@ -408,35 +408,35 @@ export default function Page() {
 
           {/* Balance Summary */}
           <div className="grid grid-cols-1 md:grid-cols-5 grid-gap-4 mb-6">
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3 bo-card--p-4">
+            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-5 h-5 text-faint" />
                 <span className="text-sm text-faint">Saldo Inicial</span>
               </div>
               <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.opening_balance, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3 bo-card--p-4">
+            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Receipt className="w-5 h-5" style={{ color: "var(--bo-color-info)" }} />
                 <span className="text-sm text-faint">Total Facturado</span>
               </div>
               <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.summary.total_invoiced, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3 bo-card--p-4">
+            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
               <div className="flex items-center gap-2 mb-2">
                 <CreditCard className="w-5 h-5" style={{ color: "var(--bo-color-success)" }} />
                 <span className="text-sm text-faint">Total Pagado</span>
               </div>
               <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.summary.total_paid, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3 bo-card--p-4">
+            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5" style={{ color: "var(--bo-color-warning)" }} />
                 <span className="text-sm text-faint">Pendiente</span>
               </div>
               <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.summary.total_pending, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3 bo-card--p-4">
+            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-5 h-5" style={{ color: "var(--bo-color-danger)" }} />
                 <span className="text-sm text-faint">Saldo Final</span>

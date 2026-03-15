@@ -381,7 +381,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
               <span className="text-bo-sm font-semibold text-bo-muted">Calle</span>
               <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} />
             </label>
-            <label className="grid gap-2 bo-field--number">
+            <label className="grid gap-2 max-w-[100px]">
               <span className="text-bo-sm font-semibold text-bo-muted">Numero</span>
               <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} />
             </label>
@@ -449,7 +449,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
         </div>
 
         {/* Active toggle */}
-        <div className="grid gap-2 bo-field--switch">
+        <div className="flex flex-row items-center gap-3">
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="isActive" />
           <label htmlFor="isActive">Plantilla activa</label>
         </div>

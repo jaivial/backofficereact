@@ -378,7 +378,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             )}
                           </span>
                           {template.is_default && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--success bo-badge--sm">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[var(--bo-color-success)]/[0.14] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]">
                               <Star size={10} />
                               Predeterminada
                             </span>

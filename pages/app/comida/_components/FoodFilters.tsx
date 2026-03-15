@@ -123,9 +123,9 @@ export const FoodFilters = React.memo(function FoodFilters({
                   <Search size={14} />
                   Buscar
                 </span>
-                <div className="bo-inputWrapper">
+                <div className="relative">
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-input--withIcon"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text pl-8 px-3 outline-none min-w-0 transition-colors"
                     type="search"
                     value={search}
                     placeholder="Buscar por nombre..."

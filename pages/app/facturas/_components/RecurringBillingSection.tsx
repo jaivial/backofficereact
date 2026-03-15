@@ -171,8 +171,8 @@ export function RecurringBillingSection({
       </div>
 
       {/* Enable/Disable Toggle */}
-      <div className="bo-recurringBillingToggle">
-        <div className="grid gap-2 bo-field--switch">
+      <div className="mb-4">
+        <div className="flex flex-row items-center gap-3">
           <Switch
             checked={data.is_recurring ?? false}
             onCheckedChange={handleToggle}
@@ -244,8 +244,8 @@ export function RecurringBillingSection({
           )}
 
           {/* Auto-send Toggle */}
-          <div className="bo-recurringBillingRow bo-recurringBillingRow--autoSend">
-            <div className="grid gap-2 bo-field--switch">
+          <div className="grid gap-4 mb-4">
+            <div className="flex flex-row items-center gap-3">
               <Switch
                 checked={data.auto_send ?? false}
                 onCheckedChange={(checked) => onChange({ ...data, auto_send: checked })}

@@ -392,19 +392,19 @@ export default function Page() {
         <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
           <div className="flex items-center justify-between p-4 pb-0">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm font-semibold bo-text">
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
                 <CalendarClock size={16} strokeWidth={1.8} />
                 Horarios
                 {realtime.pendingScheduleUpdates && (
-                  <span className="bo-pendingIndicator">
-                    <span className="bo-pingDot"></span>
-                    <span className="bo-dotActive"></span>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-bo-accent opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-bo-accent"></span>
                   </span>
                 )}
               </div>
               <div className="text-xs text-faint mt-1">Selecciona una fecha y asigna turnos al equipo.</div>
             </div>
-            <div className="bo-dateChip">
+            <div className="h-[30px] rounded-full border border-bo-border px-3 inline-flex items-center text-xs font-medium text-bo-muted">
               {selectedDate}
             </div>
           </div>
@@ -412,12 +412,12 @@ export default function Page() {
             <div className="grid grid-cols-2 w-full max-w-full" role="tablist" aria-label="Calendario de miembros y reservas">
               <button
                 type="button"
-                className={`bo-tabBtn ${calendarTab === "miembros" ? "bo-tabBtn--active" : ""}`}
+                className={`appearance-none cursor-pointer bg-transparent text-bo-muted text-sm ${calendarTab === "miembros" ? "text-bo-accent" : ""}`}
                 role="tab"
                 aria-selected={calendarTab === "miembros"}
                 onClick={() => setCalendarTab("miembros")}
               >
-                {calendarTab === "miembros" ? <span className="bo-tabIndicator" /> : null}
+                {calendarTab === "miembros" ? <span className="absolute inset-0 rounded-[14px] bg-[rgba(185,168,255,0.14)] border border-[rgba(185,168,255,0.26)] shadow-[0_18px_44px_rgba(185,168,255,0.10)]" /> : null}
                 <span className="flex items-center gap-2 justify-center">
                   <span aria-hidden="true">
                     <Users size={16} strokeWidth={1.8} />
@@ -427,12 +427,12 @@ export default function Page() {
               </button>
               <button
                 type="button"
-                className={`bo-tabBtn ${calendarTab === "reservas" ? "bo-tabBtn--active" : ""}`}
+                className={`appearance-none cursor-pointer bg-transparent text-bo-muted text-sm ${calendarTab === "reservas" ? "text-bo-accent" : ""}`}
                 role="tab"
                 aria-selected={calendarTab === "reservas"}
                 onClick={() => setCalendarTab("reservas")}
               >
-                {calendarTab === "reservas" ? <span className="bo-tabIndicator" /> : null}
+                {calendarTab === "reservas" ? <span className="absolute inset-0 rounded-[14px] bg-[rgba(185,168,255,0.14)] border border-[rgba(185,168,255,0.26)] shadow-[0_18px_44px_rgba(185,168,255,0.10)]" /> : null}
                 <span className="flex items-center gap-2 justify-center">
                   <span aria-hidden="true">
                     <CalendarDays size={16} strokeWidth={1.8} />

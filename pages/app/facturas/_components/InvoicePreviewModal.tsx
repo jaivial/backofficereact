@@ -12,11 +12,11 @@ type InvoicePreviewModalProps = {
 };
 
 const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; className: string }> = {
-  borrador: { label: "Borrador", className: "bo-badge--muted" },
-  solicitada: { label: "Solicitada", className: "bo-badge--warning" },
-  pendiente: { label: "Pendiente", className: "bo-badge--info" },
-  enviada: { label: "Enviada", className: "bo-badge--success" },
-  pagada: { label: "Pagada", className: "bo-badge--success" },
+  borrador: { label: "Borrador", className: "bg-white/[0.06] text-bo-muted border-bo-border" },
+  solicitada: { label: "Solicitada", className: "bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border-[var(--bo-color-warning)]/[0.30]" },
+  pendiente: { label: "Pendiente", className: "bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]" },
+  enviada: { label: "Enviada", className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]" },
+  pagada: { label: "Pagada", className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]" },
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -99,9 +99,9 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             <span className="bo-invoiceNumber">{invoice.invoice_number || `N. ${invoice.id}`}</span>
           </div>
           <div className="bo-invoicePreviewStatus">
-            <span className={`bo-badge ${statusConfig.className}`}>{statusConfig.label}</span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${statusConfig.className}`}>{statusConfig.label}</span>
             {invoice.is_reservation && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">Reserva</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]">Reserva</span>
             )}
           </div>
         </div>

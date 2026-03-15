@@ -216,7 +216,7 @@ export const WineModal = React.memo(function WineModal({
             >
               {uploading ? (
                 <>
-                  <div className="bo-spinner bo-spinner--sm" />
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                   Procesando...
                 </>
               ) : (
@@ -381,7 +381,7 @@ export const WineModal = React.memo(function WineModal({
           <button type="submit" className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--primary" disabled={saving}>
             {saving ? (
               <>
-                <div className="bo-spinner bo-spinner--sm" />
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                 Guardando...
               </>
             ) : (
