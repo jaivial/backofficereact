@@ -208,6 +208,43 @@ export default {
       backgroundImage: {
         "bo-body": "var(--bo-body-bg)",
       },
+      padding: {
+        "bo-1": "var(--bo-space-1)",
+        "bo-2": "var(--bo-space-2)",
+        "bo-3": "var(--bo-space-3)",
+        "bo-4": "var(--bo-space-4)",
+        "bo-5": "var(--bo-space-5)",
+        "bo-6": "var(--bo-space-6)",
+      },
+      margin: {
+        "bo-1": "var(--bo-space-1)",
+        "bo-2": "var(--bo-space-2)",
+        "bo-3": "var(--bo-space-3)",
+        "bo-4": "var(--bo-space-4)",
+        "bo-5": "var(--bo-space-5)",
+        "bo-6": "var(--bo-space-6)",
+      },
+      fontFamily: {
+        "bo": "var(--bo-font)",
+        "bo-serif": "var(--bo-font-serif)",
+        "bo-mono": "var(--bo-font-mono)",
+      },
+      borderColor: {
+        "bo-border": "var(--bo-border)",
+        "bo-border-2": "var(--bo-border-2)",
+      },
+      backgroundColor: {
+        "bo-bg": "var(--bo-bg)",
+        "bo-surface": "var(--bo-surface)",
+        "bo-surface-2": "var(--bo-surface-2)",
+        "bo-surface-3": "var(--bo-surface-3)",
+      },
+      textColor: {
+        "bo-text": "var(--bo-text)",
+        "bo-muted": "var(--bo-muted)",
+        "bo-faint": "var(--bo-faint)",
+        "bo-accent": "var(--bo-accent)",
+      },
     },
   },
   corePlugins: {
