@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [session.activeRestaurantId]);
 
   return (
-    <div className="flex min-h-screen" style={{ background: "var(--bo-body-bg)" }}>
+    <div className="flex min-h-screen bg-bo-body">
       <Sidebar
         pathname={pathname}
         role={session.user.role}

@@ -109,16 +109,16 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
       <div className="bo-reservationModalContent">
         <div className="bo-reservationFilters">
             <div className="bo-reservationFiltersRow">
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">
                   <Calendar size={14} />
                   Desde
                 </span>
                 <DatePicker value={dateFrom} onChange={setDateFrom} />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">
                   <Calendar size={14} />
                   Hasta
                 </span>
@@ -127,13 +127,13 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
 
             <div className="bo-reservationFiltersRow">
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">
                   <Search size={14} />
                   Nombre
                 </span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -141,13 +141,13 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">
                   <Search size={14} />
                   Teléfono
                 </span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -157,8 +157,8 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
 
             <div className="bo-reservationFiltersRow">
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">
                   <Users size={14} />
                   Personas
                 </span>
@@ -170,8 +170,8 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">
                   <Clock size={14} />
                   Hora
                 </span>
@@ -188,7 +188,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
           <div className="bo-reservationResults">
             {loading ? (
               <div className="bo-reservationLoading">
-                <div className="bo-spinner" />
+                <div className="animate-spin h-5 w-5" />
                 <span>Buscando reservas...</span>
               </div>
             ) : searched && results.length === 0 ? (

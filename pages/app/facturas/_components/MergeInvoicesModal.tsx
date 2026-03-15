@@ -69,15 +69,15 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bo-modal-content bo-mergeModal" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modal-header">
-          <div className="bo-modal-title">
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <div className="text-lg font-semibold text-bo-text">
             <AlertTriangle size={20} />
             <span>Fusionar facturas</span>
           </div>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             aria-label="Cerrar"
             disabled={isSubmitting}
@@ -86,7 +86,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           </button>
         </div>
 
-        <div className="bo-modal-body">
+        <div className="p-4">
           {/* Warning */}
           <div className="bo-mergeWarning">
             <AlertTriangle size={16} />
@@ -146,15 +146,15 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
 
           {/* Delete originals option */}
           <div className="bo-mergeOptions">
-            <label className="bo-checkboxContainer">
+            <label className="inline-flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={deleteOriginals}
                 onChange={(e) => setDeleteOriginals(e.target.checked)}
                 disabled={isSubmitting}
               />
-              <span className="bo-checkboxMark"></span>
-              <span className="bo-checkboxLabel">
+              <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all"></span>
+              <span className="text-bo-sm text-bo-text">
                 Eliminar facturas originales despues de fusionar
               </span>
             </label>
@@ -168,20 +168,20 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
 
         <div className="bo-modal-footer">
           <button
-            className="bo-btn bo-btn--ghost"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             disabled={isSubmitting}
           >
             Cancelar
           </button>
           <button
-            className="bo-btn bo-btn--primary"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
             onClick={handleMerge}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
-                <Loader2 size={16} className="bo-spin" />
+                <Loader2 size={16} className="animate-spin" />
                 Fusionando...
               </>
             ) : (

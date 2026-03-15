@@ -34,7 +34,7 @@ function StatusBadge({ status }: { status: InvoiceStatus }) {
 }
 
 function PaymentMethodBadge({ method }: { method?: string }) {
-  if (!method) return <span className="bo-badge bo-badge--muted">Sin especificar</span>;
+  if (!method) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--muted">Sin especificar</span>;
 
   const methodLabels: Record<string, string> = {
     efectivo: "Efectivo",
@@ -44,7 +44,7 @@ function PaymentMethodBadge({ method }: { method?: string }) {
     cheque: "Cheque",
   };
 
-  return <span className="bo-badge bo-badge--info">{methodLabels[method] || method}</span>;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">{methodLabels[method] || method}</span>;
 }
 
 export function CustomerHistoryModal({
@@ -196,7 +196,7 @@ export function CustomerHistoryModal({
         {/* Loading State */}
         {loading && (
           <div className="bo-customerHistoryLoading">
-            <Loader2 size={24} className="bo-spinner" />
+            <Loader2 size={24} className="animate-spin h-5 w-5" />
             <span>Cargando historial...</span>
           </div>
         )}
@@ -252,13 +252,13 @@ export function CustomerHistoryModal({
         )}
 
         {/* Actions */}
-        <div className="bo-modalActions">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose}>
+        <div className="flex justify-end gap-2 p-4 border-t border-bo-border">
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={onClose}>
             Cerrar
           </button>
           <a
             href={`/app/facturas?search=${encodeURIComponent(customerEmail)}`}
-            className="bo-btn bo-btn--primary"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
           >
             Ver todas las facturas
           </a>

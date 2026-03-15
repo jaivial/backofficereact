@@ -112,15 +112,15 @@ export function InvoiceHistoryModal({
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bo-modal-content bo-historyModal" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modal-header">
-          <div className="bo-modal-title">
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <div className="text-lg font-semibold text-bo-text">
             <History size={20} />
             <span>Historial de cambios</span>
           </div>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             aria-label="Cerrar"
           >
@@ -128,7 +128,7 @@ export function InvoiceHistoryModal({
           </button>
         </div>
 
-        <div className="bo-modal-body">
+        <div className="p-4">
           {invoiceNumber && (
             <div className="bo-historyInvoiceInfo">
               <strong>Factura:</strong> {invoiceNumber}
@@ -138,7 +138,7 @@ export function InvoiceHistoryModal({
 
           {loading && (
             <div className="bo-historyLoading">
-              <div className="bo-spinner" />
+              <div className="animate-spin h-5 w-5" />
               <span>Cargando historial...</span>
             </div>
           )}

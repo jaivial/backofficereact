@@ -146,14 +146,14 @@ export default function Page() {
   };
 
   return (
-    <section aria-label="Miembros y roles" className="bo-stack">
-      <div className="bo-panel">
-        <div className="bo-panelHead">
+    <section aria-label="Miembros y roles" className="grid gap-4">
+      <div className="rounded-[var(--bo-radius-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-[var(--bo-border)] p-4">
+        <div className="flex items-start justify-between">
           <div>
-            <div className="bo-panelTitle">Equipo y permisos</div>
-            <div className="bo-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
+            <div className="text-base font-semibold text-[var(--bo-text)] leading-tight">Equipo y permisos</div>
+            <div className="text-xs text-[var(--bo-muted)] mt-0.5">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
-          <div className="bo-statLabel inline-flex items-center gap-1">
+          <div className="text-xs text-[var(--bo-muted)] inline-flex items-center gap-1">
             <ShieldUser size={16} strokeWidth={1.8} />
             {members.length} miembros
           </div>
@@ -167,25 +167,25 @@ export default function Page() {
             <button
               key={member.id}
               type="button"
-              className="bo-card bo-card--clickable bo-card--p-3"
+              className="rounded-[var(--bo-radius-md)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-[var(--bo-border)] shadow-[var(--bo-shadow-soft)] p-3 text-left cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-lg"
               onClick={() => window.location.assign(`/app/miembros/${member.id}`)}
             >
               <div className="flex items-start gap-3">
-                <Avatar className="bo-avatar bo-avatar--sm">
+                <Avatar className="w-7 h-7 rounded-xl border border-[var(--bo-border)] bg-gradient-to-br from-[rgba(185,168,255,0.28)] to-[rgba(147,239,231,0.18)]">
                   {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
                   <AvatarFallback className="rounded-xl text-xs font-semibold">{initials(member.firstName, member.lastName)}</AvatarFallback>
                 </Avatar>
-                <div className="bo-memberInfo">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <div className="bo-memberName">{fullName(member)}</div>
-                    {isSelfMember(member) ? <span className="bo-badgeSelf">Tu</span> : null}
+                    <div className="text-sm font-semibold text-[var(--bo-text)] truncate">{fullName(member)}</div>
+                    {isSelfMember(member) ? <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bo-accent)] text-[var(--bo-bg)] font-semibold">Tu</span> : null}
                   </div>
-                  <div className="bo-memberEmail">{member.email ?? "Sin email"}</div>
+                  <div className="text-xs text-[var(--bo-muted)] truncate">{member.email ?? "Sin email"}</div>
                 </div>
               </div>
 
-              <div className="bo-memberRow">
-                <span className="bo-statLabel">Rol</span>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--bo-border)]">
+                <span className="text-xs text-[var(--bo-muted)]">Rol</span>
                 <RoleBadge
                   roleSlug={roleMeta.slug}
                   roleName={roleMeta.label}
@@ -194,14 +194,14 @@ export default function Page() {
                 />
               </div>
 
-              <div className="bo-memberRow">
+              <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-2">
-                  <span className="bo-statLabel">Contrato semanal</span>
-                  <span className="bo-hoursBadge">{member.weeklyContractHours.toFixed(2)} h</span>
+                  <span className="text-xs text-[var(--bo-muted)]">Contrato semanal</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--bo-surface-3)] text-[var(--bo-text)] font-medium">{member.weeklyContractHours.toFixed(2)} h</span>
                 </div>
                 <button
                   onClick={(e) => handleOpenWhatsApp(e, member)}
-                  className="bo-actionBtn"
+                  className="w-9 h-9 rounded-xl border border-[var(--bo-border)] bg-white/[0.02] text-[var(--bo-muted)] grid place-items-center cursor-pointer transition-colors hover:bg-white/[0.04] hover:text-[var(--bo-text)]"
                   aria-label="Enviar WhatsApp"
                 >
                   <MessageCircle size={18} />
@@ -212,59 +212,61 @@ export default function Page() {
         })}
 
         {members.length === 0 ? (
-          <div className="bo-panel">
-            <div className="bo-panelHead">
-              <div className="bo-panelTitle">Sin miembros</div>
-              <div className="bo-panelMeta">No hay miembros cargados todavía para este restaurante.</div>
+          <div className="rounded-[var(--bo-radius-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-[var(--bo-border)] p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-base font-semibold text-[var(--bo-text)] leading-tight">Sin miembros</div>
+                <div className="text-xs text-[var(--bo-muted)] mt-0.5">No hay miembros cargados todavía para este restaurante.</div>
+              </div>
             </div>
           </div>
         ) : null}
       </div>
 
       <Modal open={whatsappModalOpen} onClose={() => setWhatsappModalOpen(false)} title={`WhatsApp a ${selectedMember?.firstName || ""}`}>
-        <div className="bo-whatsappModal">
+        <div className="flex flex-col gap-4">
           {needsSubscription ? (
-            <div className="bo-whatsappModalCentered">
-              <div className="bo-avatar bo-avatar--xl bo-whatsappAvatar">
+            <div className="flex flex-col items-center text-center gap-4 py-4">
+              <div className="w-16 h-16 rounded-xl border border-[var(--bo-border)] bg-gradient-to-br from-[rgba(185,168,255,0.28)] to-[rgba(147,239,231,0.18)] grid place-items-center text-[var(--bo-accent)]">
                 <MessageCircle size={32} />
               </div>
-              <h2 className="bo-whatsappModalTitle">WhatsApp Premium Pack</h2>
-              <p className="bo-whatsappModalDesc">
+              <h2 className="text-lg font-semibold text-[var(--bo-text)]">WhatsApp Premium Pack</h2>
+              <p className="text-sm text-[var(--bo-muted)] max-w-xs">
                 Desbloquea la capacidad de enviar mensajes de WhatsApp directamente a tu personal.
                 Ideal para avisos de turnos y comunicaciones importantes.
               </p>
-              <div className="bo-whatsappPricingBox">
-                <div className="bo-whatsappPrice">29.99 € <span className="bo-whatsappPricePeriod">/ mes</span></div>
-                <ul className="bo-whatsappFeatures">
+              <div className="rounded-lg border border-[var(--bo-border)] bg-[var(--bo-surface-2)] p-4 w-full max-w-xs">
+                <div className="text-2xl font-bold text-[var(--bo-text)]">29.99 € <span className="text-sm font-normal text-[var(--bo-muted)]">/ mes</span></div>
+                <ul className="mt-3 text-sm text-[var(--bo-muted)] space-y-1.5">
                   <li>✓ Mensajes ilimitados al staff</li>
                   <li>✓ Integración con cuenta de empresa central</li>
                   <li>✓ Sin necesidad de escanear QR</li>
                 </ul>
               </div>
-              <button type="button" className="bo-btn bo-btn--primary" onClick={handleSubscribe} disabled={subscribing}>
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSubscribe} disabled={subscribing}>
                 {subscribing ? "Activando..." : "Suscribirse y Continuar"}
               </button>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <h2 className="bo-whatsappModalTitleSm">Mensaje para {selectedMember?.firstName}</h2>
+              <h2 className="text-base font-semibold text-[var(--bo-text)]">Mensaje para {selectedMember?.firstName}</h2>
               {!selectedMember?.whatsappNumber ? (
-                <div className="bo-alertWarning">
+                <div className="rounded-lg border border-[var(--bo-color-warning)] bg-[var(--bo-warning-bg)] p-3 text-sm text-[var(--bo-color-warning)]">
                   Este miembro no tiene un número de WhatsApp configurado en su perfil.
                 </div>
               ) : (
                 <>
                   <div>
-                    <label className="bo-fieldLabel">Mensaje</label>
+                    <label className="block text-sm font-medium text-[var(--bo-text)] mb-1.5">Mensaje</label>
                     <textarea
-                      className="bo-textarea"
+                      className="w-full min-h-[100px] rounded-lg border border-[var(--bo-border)] bg-[var(--bo-surface-2)] p-3 text-sm text-[var(--bo-text)] placeholder:text-[var(--bo-muted)] focus:outline-none focus:border-[var(--bo-accent)] focus:ring-1 focus:ring-[var(--bo-accent)]"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
                   <div className="flex justify-end gap-3 pt-2">
-                    <button type="button" className="bo-btn" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
-                    <button type="button" className="bo-btn bo-btn--primary" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
+                    <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
+                    <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
                       {sending ? "Enviando..." : "Enviar por WhatsApp"}
                     </button>
                   </div>

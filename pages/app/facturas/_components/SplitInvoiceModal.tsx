@@ -209,17 +209,17 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
   if (!isOpen) return null;
 
   return (
-    <div className="bo-modalOverlay" onClick={onClose}>
-      <div className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="split-modal-title">
-        <div className="bo-modalHeader">
-          <h2 id="split-modal-title" className="bo-modalTitle">Dividir factura</h2>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft max-w-lg w-full bo-modal--lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="split-modal-title">
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <h2 id="split-modal-title" className="text-lg font-semibold text-bo-text">Dividir factura</h2>
+          <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} aria-label="Cerrar">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="bo-modalBody">
+          <div className="p-4">
             {/* Original Invoice Info */}
             <div className="bo-formSection">
               <h3 className="bo-formSectionTitle">Factura original</h3>
@@ -238,8 +238,8 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             {/* Split Method Selection */}
             <div className="bo-formSection">
               <h3 className="bo-formSectionTitle">Metodo de division</h3>
-              <div className="bo-formGroup">
-                <label className="bo-radioGroup">
+              <div className="flex flex-col gap-2">
+                <label className="flex flex-col gap-2">
                   <input
                     type="radio"
                     name="method"
@@ -253,7 +253,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     <span className="bo-radioDescription">Definir el porcentaje para cada cliente</span>
                   </span>
                 </label>
-                <label className="bo-radioGroup">
+                <label className="flex flex-col gap-2">
                   <input
                     type="radio"
                     name="method"
@@ -273,8 +273,8 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             {/* Split Configuration */}
             <div className="bo-formSection">
               {method === "equal" ? (
-                <div className="bo-formGroup">
-                  <label htmlFor="splitCount" className="bo-label">Numero de partes</label>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="splitCount" className="text-bo-sm font-semibold text-bo-muted">Numero de partes</label>
                   <input
                     id="splitCount"
                     type="number"
@@ -282,7 +282,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     max="10"
                     value={splitCount}
                     onChange={(e) => setSplitCount(parseInt(e.target.value) || 2)}
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   />
                   <p className="bo-formHelp">
                     Cada parte sera de: <strong>{formatPrice(originalAmount / splitCount, currency)}</strong>
@@ -294,7 +294,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     <h3 className="bo-formSectionTitle">Facturas resultantes</h3>
                     <button
                       type="button"
-                      className="bo-btn bo-btn--secondary bo-btn--sm"
+                      className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-bo-surface-2 text-bo-text text-xs font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                       onClick={handleAddItem}
                     >
                       <Plus size={14} />
@@ -328,7 +328,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                           {splitItems.length > 2 && (
                             <button
                               type="button"
-                              className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
+                              className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
                               onClick={() => handleRemoveItem(index)}
                               aria-label={`Eliminar factura ${index + 1}`}
                             >
@@ -339,66 +339,66 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
 
                         <div className="bo-splitItemFields">
                           <div className="bo-formRow">
-                            <div className="bo-formGroup">
-                              <label className="bo-label">Nombre del cliente *</label>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-bo-sm font-semibold text-bo-muted">Nombre del cliente *</label>
                               <input
                                 type="text"
                                 value={item.customer_name}
                                 onChange={(e) => handleUpdateItem(index, "customer_name", e.target.value)}
-                                className="bo-input"
+                                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                                 placeholder="Nombre"
                                 required
                               />
                             </div>
-                            <div className="bo-formGroup">
-                              <label className="bo-label">Apellidos</label>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-bo-sm font-semibold text-bo-muted">Apellidos</label>
                               <input
                                 type="text"
                                 value={item.customer_surname || ""}
                                 onChange={(e) => handleUpdateItem(index, "customer_surname", e.target.value)}
-                                className="bo-input"
+                                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                                 placeholder="Apellidos"
                               />
                             </div>
                           </div>
 
                           <div className="bo-formRow">
-                            <div className="bo-formGroup">
-                              <label className="bo-label">Email *</label>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-bo-sm font-semibold text-bo-muted">Email *</label>
                               <input
                                 type="email"
                                 value={item.customer_email}
                                 onChange={(e) => handleUpdateItem(index, "customer_email", e.target.value)}
-                                className="bo-input"
+                                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                                 placeholder="email@ejemplo.com"
                                 required
                               />
                             </div>
-                            <div className="bo-formGroup">
-                              <label className="bo-label">DNI/CIF</label>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-bo-sm font-semibold text-bo-muted">DNI/CIF</label>
                               <input
                                 type="text"
                                 value={item.customer_dni_cif || ""}
                                 onChange={(e) => handleUpdateItem(index, "customer_dni_cif", e.target.value)}
-                                className="bo-input"
+                                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                                 placeholder="12345678A"
                               />
                             </div>
                           </div>
 
                           <div className="bo-formRow">
-                            <div className="bo-formGroup">
-                              <label className="bo-label">Telefono</label>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-bo-sm font-semibold text-bo-muted">Telefono</label>
                               <input
                                 type="tel"
                                 value={item.customer_phone || ""}
                                 onChange={(e) => handleUpdateItem(index, "customer_phone", e.target.value)}
-                                className="bo-input"
+                                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                                 placeholder="600 000 000"
                               />
                             </div>
-                            <div className="bo-formGroup">
-                              <label className="bo-label">Porcentaje (%)</label>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-bo-sm font-semibold text-bo-muted">Porcentaje (%)</label>
                               <div className="bo-inputGroup">
                                 <input
                                   type="number"
@@ -407,7 +407,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                   step="0.01"
                                   value={item.percentage || 0}
                                   onChange={(e) => handleUpdateItem(index, "percentage", parseFloat(e.target.value) || 0)}
-                                  className="bo-input"
+                                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                                   required
                                 />
                                 <span className="bo-inputGroupAddon">%</span>
@@ -466,7 +466,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             {validationErrors.length > 0 && (
               <div className="bo-alert bo-alert--error">
                 <AlertCircle size={16} />
-                <ul className="bo-alertList">
+                <ul className="flex flex-col gap-2">
                   {validationErrors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
@@ -478,7 +478,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
           <div className="bo-modalFooter">
             <button
               type="button"
-              className="bo-btn bo-btn--secondary"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={onClose}
               disabled={isSubmitting}
             >
@@ -486,12 +486,12 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             </button>
             <button
               type="submit"
-              className="bo-btn bo-btn--primary"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
               disabled={isSubmitting || validationErrors.length > 0}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 size={16} className="bo-spinner" />
+                  <Loader2 size={16} className="animate-spin h-5 w-5" />
                   Dividiendo...
                 </>
               ) : (

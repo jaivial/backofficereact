@@ -209,8 +209,8 @@ export default function Page() {
   const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery);
   const floorTabs = useMemo<TabItem[]>(
     () => [
-      { id: "plantas", label: "Plantas", href: "/app/config?tab=plantas", icon: <Building2 className="bo-ico" /> },
-      { id: "salones", label: "Salones", href: "/app/config?tab=salones", icon: <LayoutGrid className="bo-ico" /> },
+      { id: "plantas", label: "Plantas", href: "/app/config?tab=plantas", icon: <Building2 className="w-[18px] h-[18px]" /> },
+      { id: "salones", label: "Salones", href: "/app/config?tab=salones", icon: <LayoutGrid className="w-[18px] h-[18px]" /> },
     ],
     [],
   );
@@ -473,24 +473,24 @@ export default function Page() {
 
   return (
     <section aria-label="Configuración por defecto">
-      <div className="bo-flex bo-items-center bo-justify-between bo-gap-3 bo-mb-3">
-        <div className="bo-flex bo-items-center bo-gap-2 bo-flex-wrap">
-          <button className="bo-btn" type="button" onClick={() => void reload()} disabled={busy}>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => void reload()} disabled={busy}>
             Recargar
           </button>
         </div>
-        <div className="bo-flex bo-items-center bo-gap-2">
-          <div className="bo-statLabel">{busy ? "Actualizando..." : "Valores por defecto"}</div>
+        <div className="flex items-center gap-2">
+          <div className="text-bo-xs text-bo-muted">{busy ? "Actualizando..." : "Valores por defecto"}</div>
         </div>
       </div>
 
-      <div className="bo-stack">
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Modo de apertura</div>
-            <div className="bo-panelMeta">{openingModeLabel}</div>
+      <div className="flex flex-col gap-bo-4 p-4">
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Modo de apertura</div>
+            <div className="text-bo-xs text-bo-faint">{openingModeLabel}</div>
           </div>
-          <div className="bo-panelBody bo-flex bo-items-center bo-gap-2 bo-flex-wrap">
+          <div className="p-4 flex items-center gap-2 flex-wrap">
             <Select
               value={defaults.openingMode}
               onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
@@ -501,15 +501,15 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Horarios por defecto</div>
-            <div className="bo-panelMeta">Slots de media hora con guardado inmediato</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Horarios por defecto</div>
+            <div className="text-bo-xs text-bo-faint">Slots de media hora con guardado inmediato</div>
           </div>
-          <div className="bo-panelBody">
-            <div className="bo-flex bo-flex-col bo-gap-2">
-              <div className="bo-statLabel bo-weight-semibold">Mañana (08:00 - 17:00)</div>
-              <div className="bo-flex bo-flex-wrap bo-gap-2">
+          <div className="p-4">
+            <div className="flex flex-col gap-2">
+              <div className="bo-statLabel font-semibold">Mañana (08:00 - 17:00)</div>
+              <div className="flex flex-wrap gap-2">
                 {morningHourCards.map((slot) => {
                   const on = slot.active;
                   return (
@@ -527,9 +527,9 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="bo-flex bo-flex-col bo-gap-2">
-              <div className="bo-statLabel bo-weight-semibold">Noche (17:30 - 01:00)</div>
-              <div className="bo-flex bo-flex-wrap bo-gap-2">
+            <div className="flex flex-col gap-2">
+              <div className="bo-statLabel font-semibold">Noche (17:30 - 01:00)</div>
+              <div className="flex flex-wrap gap-2">
                 {nightHourCards.map((slot) => {
                   const on = slot.active;
                   return (
@@ -549,12 +549,12 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Calendario semanal</div>
-            <div className="bo-panelMeta">Semana genérica (lunes a domingo)</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Calendario semanal</div>
+            <div className="text-bo-xs text-bo-faint">Semana genérica (lunes a domingo)</div>
           </div>
-          <div className="bo-panelBody bo-grid bo-grid-cols-7 bo-grid-gap-2">
+          <div className="p-4 bo-grid bo-grid-cols-7 bo-grid-gap-2">
             {weekdayCardsWithState.map((weekday) => {
               const isOpen = weekday.isOpen;
               return (
@@ -579,12 +579,12 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Límites por defecto</div>
-            <div className="bo-panelMeta">Autosave inmediato</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Límites por defecto</div>
+            <div className="text-bo-xs text-bo-faint">Autosave inmediato</div>
           </div>
-          <div className="bo-panelBody bo-grid bo-grid-cols-3 bo-grid-gap-4">
+          <div className="p-4 bo-grid bo-grid-cols-3 bo-grid-gap-4">
             <PlusMinusCounter
               label="Límite diario"
               value={dailyLimitLabel}
@@ -629,12 +629,12 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Plantas del restaurante</div>
-            <div className="bo-panelMeta">{floorCount} plantas</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Plantas del restaurante</div>
+            <div className="text-bo-xs text-bo-faint">{floorCount} plantas</div>
           </div>
-          <div className="bo-panelBody">
+          <div className="p-4">
             <Tabs tabs={floorTabs} activeId={floorTab} ariaLabel="Secciones de plantas" className="bo-tabs--reservas bo-configFloorTabs" onNavigate={onNavigateFloorTab} />
 
             {floorTab === "plantas" ? (

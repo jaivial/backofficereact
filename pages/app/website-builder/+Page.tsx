@@ -87,7 +87,7 @@ export default function Page() {
     return (
       <div className="flex items-center justify-center bo-wbLoading" data-ui="loading-state">
         <div className="bo-wbLoadingSpinner" />
-        <span className="bo-ml-2 text-muted">Loading...</span>
+        <span className="ml-2 text-muted">Loading...</span>
       </div>
     );
   }
@@ -109,7 +109,7 @@ export default function Page() {
         <header className="bo-wbHeader border-b" data-ui="header">
           <div className="bo-max-w-full px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl bo-weight-semibold bo-wbTitle">
+              <h1 className="text-xl font-semibold bo-wbTitle">
                 Website Builder
               </h1>
               {website && (
@@ -150,7 +150,7 @@ export default function Page() {
           {!previewMode && (
             <aside className="bo-wbSidebar border-r" data-ui="sidebar">
               <div className="p-4">
-                <h2 className="text-sm bo-weight-semibold bo-mb-3 bo-wbTitle">
+                <h2 className="text-sm font-semibold mb-3 bo-wbTitle">
                   Components
                 </h2>
                 <ComponentLibrary />
@@ -318,7 +318,7 @@ function WebsiteCanvas({
     return (
       <div className="flex items-center justify-center h-full" data-ui="no-website">
         <div className="text-center">
-          <p className="bo-mb-4" style={{ color: 'var(--text-muted)' }}>No website created yet</p>
+          <p className="mb-4" style={{ color: 'var(--text-muted)' }}>No website created yet</p>
           <button 
             onClick={async () => {
               try {
@@ -340,7 +340,7 @@ function WebsiteCanvas({
 
   return (
     <div className="p-6" data-ui="canvas-content">
-      <div className="flex gap-2 bo-mb-4 overflow-x-auto pb-2" data-ui="page-tabs">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2" data-ui="page-tabs">
         {pages.map(page => (
           <button
             key={page.id}
@@ -488,8 +488,8 @@ function SectionDropZone({
       data-section-id={section.id}
       data-section-type={section.section_type}
     >
-      <div className="flex items-center justify-between bo-mb-3">
-        <h3 className="text-sm bo-weight-medium capitalize" style={{ color: 'var(--bo-text)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium capitalize" style={{ color: 'var(--bo-text)' }}>
           {section.section_type}
         </h3>
         <div className="flex gap-2">
@@ -580,7 +580,7 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
       </button>
       
       {isOpen && (
-        <div className="absolute z-10 bo-mt-2 w-full rounded-lg shadow-xl p-2" data-ui="section-type-menu" style={{ backgroundColor: 'var(--bo-surface)', border: '1px solid var(--border)' }}>
+        <div className="absolute z-10 mt-2 w-full rounded-lg shadow-xl p-2" data-ui="section-type-menu" style={{ backgroundColor: 'var(--bo-surface)', border: '1px solid var(--border)' }}>
           {SECTION_TYPES.map(type => (
             <button
               key={type}
@@ -647,7 +647,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
   return (
     <div className="flex flex-col gap-4" data-ui="properties-form">
       <div>
-        <label className="block text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--bo-text)' }}>
           Component ID
         </label>
         <input
@@ -660,7 +660,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
       </div>
 
       <div>
-        <label className="block text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--bo-text)' }}>
           Title
         </label>
         <input
@@ -673,7 +673,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
       </div>
 
       <div>
-        <label className="block text-sm bo-weight-medium bo-mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--bo-text)' }}>
           Background Color
         </label>
         <input

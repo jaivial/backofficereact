@@ -949,7 +949,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         <div className="bo-invoiceFormHeaderActions">
           <button
             type="button"
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={handleOpenReservationFromTemplate}
           >
             <Search size={16} />
@@ -957,7 +957,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </button>
           <button
             type="button"
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={() => setShowTemplateModal(true)}
           >
             <FileText size={16} />
@@ -969,12 +969,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       <div className="bo-invoiceFormGrid">
         <div className="bo-invoiceFormTopGrid">
           {/* Customer info section */}
-          <div className="bo-invoiceFormSection">
-            <h3 className="bo-invoiceFormSectionTitle">Datos del cliente</h3>
+          <div className="mb-4">
+            <h3 className="text-bo-base font-semibold text-bo-text mb-3">Datos del cliente</h3>
 
-            <div className="bo-invoiceFormRow">
+            <div className="grid gap-bo-4">
               <label className={`bo-field ${hasError("customerName") ? "bo-field--error" : ""}`}>
-                <span className="bo-label">Nombre *</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Nombre *</span>
                 <input
                   className={`bo-input ${hasError("customerName") ? "bo-input--error" : ""}`}
                   type="text"
@@ -986,16 +986,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerName")}
                 />
                 {hasError("customerName") && (
-                  <span className="bo-fieldError" id="customerName-error" role="alert">
+                  <span className="text-bo-xs text-bo-danger mt-2" id="customerName-error" role="alert">
                     {getError("customerName")}
                   </span>
                 )}
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">Apellidos</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Apellidos</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerSurname}
                   onChange={(e) => setCustomerSurname(e.target.value)}
@@ -1003,9 +1003,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </label>
             </div>
 
-            <div className="bo-invoiceFormRow">
+            <div className="grid gap-bo-4">
               <label className={`bo-field ${hasError("customerEmail") ? "bo-field--error" : ""}`}>
-                <span className="bo-label">Email *</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Email *</span>
                 <input
                   className={`bo-input ${hasError("customerEmail") ? "bo-input--error" : ""}`}
                   type="email"
@@ -1017,14 +1017,14 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerEmail")}
                 />
                 {hasError("customerEmail") && (
-                  <span className="bo-fieldError" id="customerEmail-error" role="alert">
+                  <span className="text-bo-xs text-bo-danger mt-2" id="customerEmail-error" role="alert">
                     {getError("customerEmail")}
                   </span>
                 )}
               </label>
 
               <label className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`}>
-                <span className="bo-label">Teléfono</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Teléfono</span>
                 <input
                   className={`bo-input ${hasError("customerPhone") ? "bo-input--error" : ""}`}
                   type="tel"
@@ -1035,22 +1035,22 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerPhone")}
                 />
                 {hasError("customerPhone") && (
-                  <span className="bo-fieldError" id="customerPhone-error" role="alert">
+                  <span className="text-bo-xs text-bo-danger mt-2" id="customerPhone-error" role="alert">
                     {getError("customerPhone")}
                   </span>
                 )}
               </label>
             </div>
 
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--dni">
-              <div className="bo-field bo-field--switch">
-                <span className="bo-label">CIF</span>
+            <div className="grid gap-bo-4 bo-invoiceFormRow--dni">
+              <div className="grid gap-bo-2 bo-field--switch">
+                <span className="text-bo-sm font-semibold text-bo-muted">CIF</span>
                 <Switch checked={useDni} onCheckedChange={setUseDni} />
-                <span className="bo-label">DNI</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">DNI</span>
               </div>
 
               <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`}>
-                <span className="bo-label">{useDni ? "DNI" : "CIF"}</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">{useDni ? "DNI" : "CIF"}</span>
                 <input
                   className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
                   type="text"
@@ -1061,28 +1061,28 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerDniCif")}
                 />
                 {hasError("customerDniCif") && (
-                  <span className="bo-fieldError" id="customerDniCif-error" role="alert">
+                  <span className="text-bo-xs text-bo-danger mt-2" id="customerDniCif-error" role="alert">
                     {getError("customerDniCif")}
                   </span>
                 )}
               </label>
             </div>
 
-            <div className="bo-invoiceFormRow">
-              <label className="bo-field">
-                <span className="bo-label">Calle</span>
+            <div className="grid gap-bo-4">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Calle</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressStreet}
                   onChange={(e) => setCustomerAddressStreet(e.target.value)}
                 />
               </label>
 
-              <label className="bo-field bo-field--number">
-                <span className="bo-label">Número</span>
+              <label className="grid gap-bo-2 bo-field--number">
+                <span className="text-bo-sm font-semibold text-bo-muted">Número</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressNumber}
                   onChange={(e) => setCustomerAddressNumber(e.target.value)}
@@ -1090,9 +1090,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </label>
             </div>
 
-            <div className="bo-invoiceFormRow">
+            <div className="grid gap-bo-4">
               <label className={`bo-field ${hasError("customerAddressPostalCode") ? "bo-field--error" : ""}`}>
-                <span className="bo-label">Código Postal</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Código Postal</span>
                 <input
                   className={`bo-input ${hasError("customerAddressPostalCode") ? "bo-input--error" : ""}`}
                   type="text"
@@ -1103,16 +1103,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerAddressPostalCode")}
                 />
                 {hasError("customerAddressPostalCode") && (
-                  <span className="bo-fieldError" id="customerAddressPostalCode-error" role="alert">
+                  <span className="text-bo-xs text-bo-danger mt-2" id="customerAddressPostalCode-error" role="alert">
                     {getError("customerAddressPostalCode")}
                   </span>
                 )}
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">Localidad</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Localidad</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressCity}
                   onChange={(e) => setCustomerAddressCity(e.target.value)}
@@ -1120,21 +1120,21 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </label>
             </div>
 
-            <div className="bo-invoiceFormRow">
-              <label className="bo-field">
-                <span className="bo-label">Provincia</span>
+            <div className="grid gap-bo-4">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Provincia</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressProvince}
                   onChange={(e) => setCustomerAddressProvince(e.target.value)}
                 />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">País</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">País</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressCountry}
                   onChange={(e) => setCustomerAddressCountry(e.target.value)}
@@ -1144,21 +1144,21 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </div>
 
           {/* Invoice info section */}
-          <div className="bo-invoiceFormSection">
-            <h3 className="bo-invoiceFormSectionTitle">Datos de la factura</h3>
+          <div className="mb-4">
+            <h3 className="text-bo-base font-semibold text-bo-text mb-3">Datos de la factura</h3>
 
             {/* Invoice Number Override */}
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceNumber">
-              <div className="bo-field bo-field--switch">
+            <div className="grid gap-bo-4 bo-invoiceFormRow--invoiceNumber">
+              <div className="grid gap-bo-2 bo-field--switch">
                 <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} />
-                <span className="bo-label">Personalizar numero de factura</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Personalizar numero de factura</span>
               </div>
 
               {overrideInvoiceNumber && (
-                <label className="bo-field">
-                  <span className="bo-label">Numero de factura</span>
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Numero de factura</span>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="text"
                     value={invoiceNumber}
                     onChange={(e) => setInvoiceNumber(e.target.value)}
@@ -1169,24 +1169,24 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               )}
 
               {!overrideInvoiceNumber && invoice && invoice.invoice_number && (
-                <div className="bo-field">
-                  <span className="bo-label">Numero de factura (automatico)</span>
-                  <div className="bo-input" style={{ backgroundColor: "var(--bo-bg-muted)", fontFamily: "monospace", fontWeight: 600 }}>
+                <div className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Numero de factura (automatico)</span>
+                  <div className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" style={{ backgroundColor: "var(--bo-bg-muted)", fontFamily: "monospace", fontWeight: 600 }}>
                     {invoice.invoice_number}
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="bo-invoiceFormRow">
-              <div className="bo-field bo-field--switch">
+            <div className="grid gap-bo-4">
+              <div className="grid gap-bo-2 bo-field--switch">
                 <Switch checked={useLineItems} onCheckedChange={setUseLineItems} />
-                <span className="bo-label"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
+                <span className="text-bo-sm font-semibold text-bo-muted"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
               </div>
             </div>
 
             {useLineItems ? (
-              <div className="bo-invoiceFormRow bo-invoiceFormRow--lineItems">
+              <div className="grid gap-bo-4 bo-invoiceFormRow--lineItems">
                 <LineItems
                   ref={lineItemsRef}
                   items={lineItems}
@@ -1196,15 +1196,15 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   disabled={isSubmitting}
                 />
                 {errors.lineItems && (
-                  <span className="bo-fieldError" role="alert">
+                  <span className="text-bo-xs text-bo-danger mt-2" role="alert">
                     {errors.lineItems}
                   </span>
                 )}
               </div>
             ) : (
-              <div className="bo-invoiceFormRow">
+              <div className="grid gap-bo-4">
                 <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`}>
-                  <span className="bo-label">Importe *</span>
+                  <span className="text-bo-sm font-semibold text-bo-muted">Importe *</span>
                   <input
                     className={`bo-input ${hasError("amount") ? "bo-input--error" : ""}`}
                     type="number"
@@ -1218,14 +1218,14 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     aria-invalid={hasError("amount")}
                   />
                   {hasError("amount") && (
-                    <span className="bo-fieldError" id="amount-error" role="alert">
+                    <span className="text-bo-xs text-bo-danger mt-2" id="amount-error" role="alert">
                       {getError("amount")}
                     </span>
                   )}
                 </label>
 
-                <label className="bo-field">
-                  <span className="bo-label">Moneda</span>
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Moneda</span>
                   <Select
                     value={currency}
                     onChange={(value) => setCurrency(value as CurrencyCode)}
@@ -1234,10 +1234,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   />
                 </label>
 
-                <label className="bo-field">
-                  <span className="bo-label">IVA (%)</span>
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">IVA (%)</span>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     step="0.1"
                     min="0"
@@ -1248,8 +1248,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   />
                 </label>
 
-                <label className="bo-field">
-                  <span className="bo-label">Método de pago</span>
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Método de pago</span>
                   <Select
                     value={paymentMethod}
                     onChange={(value) => setPaymentMethod(value as PaymentMethod | "")}
@@ -1261,9 +1261,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             )}
 
             {/* Discount Section */}
-            <div className="bo-invoiceFormRow">
-              <label className="bo-field">
-                <span className="bo-label">Tipo de descuento</span>
+            <div className="grid gap-bo-4">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Tipo de descuento</span>
                 <Select
                   value={discountType}
                   onChange={(value) => setDiscountType(value as "percentage" | "fixed" | "")}
@@ -1278,10 +1278,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
               {discountType && (
                 <>
-                  <label className="bo-field">
-                    <span className="bo-label">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
+                  <label className="grid gap-bo-2">
+                    <span className="text-bo-sm font-semibold text-bo-muted">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
                     <input
-                      className="bo-input"
+                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                       type="number"
                       step="0.01"
                       min="0"
@@ -1291,10 +1291,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     />
                   </label>
 
-                  <label className="bo-field">
-                    <span className="bo-label">Razon del descuento</span>
+                  <label className="grid gap-bo-2">
+                    <span className="text-bo-sm font-semibold text-bo-muted">Razon del descuento</span>
                     <input
-                      className="bo-input"
+                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                       type="text"
                       value={discountReason}
                       onChange={(e) => setDiscountReason(e.target.value)}
@@ -1306,44 +1306,44 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             {/* IVA Summary */}
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="iva-help">
+            <div className="grid gap-bo-4 bo-invoiceFormRow--iva" id="iva-help">
               <div className="bo-ivaSummary">
                 {discountAmount > 0 && (
-                  <div className="bo-ivaSummaryItem">
-                    <span className="bo-ivaSummaryLabel">Descuento</span>
-                    <span className="bo-ivaSummaryValue" style={{ color: "var(--bo-color-success)" }}>-{discountAmount.toFixed(2)} {currencySymbol}</span>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-bo-xs text-bo-muted">Descuento</span>
+                    <span className="text-bo-base font-semibold text-bo-text" style={{ color: "var(--bo-color-success)" }}>-{discountAmount.toFixed(2)} {currencySymbol}</span>
                   </div>
                 )}
-                <div className="bo-ivaSummaryItem">
-                  <span className="bo-ivaSummaryLabel">Base imponible</span>
-                  <span className="bo-ivaSummaryValue">{baseAmount.toFixed(2)} {currencySymbol}</span>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-bo-xs text-bo-muted">Base imponible</span>
+                  <span className="text-bo-base font-semibold text-bo-text">{baseAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
-                <div className="bo-ivaSummaryItem">
-                  <span className="bo-ivaSummaryLabel">IVA ({ivaRateValue}%)</span>
-                  <span className="bo-ivaSummaryValue">{ivaAmount.toFixed(2)} {currencySymbol}</span>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-bo-xs text-bo-muted">IVA ({ivaRateValue}%)</span>
+                  <span className="text-bo-base font-semibold text-bo-text">{ivaAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
                 <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                  <span className="bo-ivaSummaryLabel">Total</span>
-                  <span className="bo-ivaSummaryValue">{totalAmount.toFixed(2)} {currencySymbol}</span>
+                  <span className="text-bo-xs text-bo-muted">Total</span>
+                  <span className="text-bo-base font-semibold text-bo-text">{totalAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
               </div>
             </div>
 
             {/* Payment Summary - Show only for existing invoices with payments */}
             {invoice && invoice.id && (invoice.paid_amount !== undefined || invoice.payments) && (
-              <div className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="payment-help">
+              <div className="grid gap-bo-4 bo-invoiceFormRow--iva" id="payment-help">
                 <div className="bo-ivaSummary">
-                  <div className="bo-ivaSummaryItem">
-                    <span className="bo-ivaSummaryLabel">Importe total</span>
-                    <span className="bo-ivaSummaryValue">{(invoice.total || invoice.amount).toFixed(2)} {currencySymbol}</span>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-bo-xs text-bo-muted">Importe total</span>
+                    <span className="text-bo-base font-semibold text-bo-text">{(invoice.total || invoice.amount).toFixed(2)} {currencySymbol}</span>
                   </div>
-                  <div className="bo-ivaSummaryItem">
-                    <span className="bo-ivaSummaryLabel">Pagado</span>
-                    <span className="bo-ivaSummaryValue" style={{ color: 'var(--bo-color-success)' }}>{(invoice.paid_amount || 0).toFixed(2)} {currencySymbol}</span>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-bo-xs text-bo-muted">Pagado</span>
+                    <span className="text-bo-base font-semibold text-bo-text" style={{ color: 'var(--bo-color-success)' }}>{(invoice.paid_amount || 0).toFixed(2)} {currencySymbol}</span>
                   </div>
                   <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                    <span className="bo-ivaSummaryLabel">Pendiente</span>
-                    <span className="bo-ivaSummaryValue" style={{ color: ((invoice.total || invoice.amount) - (invoice.paid_amount || 0) <= 0) ? 'var(--bo-color-success)' : 'var(--bo-color-warning)' }}>
+                    <span className="text-bo-xs text-bo-muted">Pendiente</span>
+                    <span className="text-bo-base font-semibold text-bo-text" style={{ color: ((invoice.total || invoice.amount) - (invoice.paid_amount || 0) <= 0) ? 'var(--bo-color-success)' : 'var(--bo-color-warning)' }}>
                       {Math.max(0, ((invoice.total || invoice.amount) - (invoice.paid_amount || 0))).toFixed(2)} {currencySymbol}
                     </span>
                   </div>
@@ -1351,14 +1351,14 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </div>
             )}
 
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceDates">
-              <label className="bo-field">
-                <span className="bo-label">Fecha de factura *</span>
+            <div className="grid gap-bo-4 bo-invoiceFormRow--invoiceDates">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Fecha de factura *</span>
                 <DatePicker value={invoiceDate} onChange={setInvoiceDate} />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">Plazo de pago</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Plazo de pago</span>
                 <Select
                   value={paymentTerms}
                   onChange={(value) => setPaymentTerms(value)}
@@ -1367,13 +1367,13 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">Fecha de vencimiento</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Fecha de vencimiento</span>
                 <DatePicker value={dueDate} onChange={setDueDate} />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">Fecha de pago</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Fecha de pago</span>
                 <DatePicker value={paymentDate} onChange={setPaymentDate} />
               </label>
             </div>
@@ -1383,12 +1383,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         </div>
 
         {/* Invoice state and settings */}
-        <div className="bo-invoiceFormSection">
-          <h3 className="bo-invoiceFormSectionTitle">Estado y configuración</h3>
+        <div className="mb-4">
+          <h3 className="text-bo-base font-semibold text-bo-text mb-3">Estado y configuración</h3>
 
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Estado</span>
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Estado</span>
               <Select
                 value={status}
                 onChange={(value) => setStatus(value as InvoiceStatus)}
@@ -1398,29 +1398,29 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </label>
           </div>
 
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field bo-field--switch">
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2 bo-field--switch">
               <Switch checked={isReservation} onCheckedChange={handleReservationToggle} />
-              <span className="bo-label">Es reserva</span>
+              <span className="text-bo-sm font-semibold text-bo-muted">Es reserva</span>
             </label>
           </div>
 
           {isReservation && (
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--reservation">
-              <label className="bo-field">
-                <span className="bo-label">Nombre reserva</span>
-                <input className="bo-input" type="text" value={reservationCustomerName || ""} readOnly />
+            <div className="grid gap-bo-4 bo-invoiceFormRow--reservation">
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Nombre reserva</span>
+                <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={reservationCustomerName || ""} readOnly />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">Fecha reserva</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Fecha reserva</span>
                 <DatePicker value={reservationDate} onChange={setReservationDate} />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">Personas</span>
+              <label className="grid gap-bo-2">
+                <span className="text-bo-sm font-semibold text-bo-muted">Personas</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="number"
                   min="1"
                   value={reservationPartySize || ""}
@@ -1431,9 +1431,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           )}
 
           {/* Image upload */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--image">
-            <label className="bo-field">
-              <span className="bo-label">Imagen de la cuenta</span>
+          <div className="grid gap-bo-4 bo-invoiceFormRow--image">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Imagen de la cuenta</span>
               <div className="bo-invoiceImageUpload">
                 {accountImageUrl ? (
                   <div className="bo-invoiceImagePreview">
@@ -1459,14 +1459,14 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </div>
 
           {/* Internal notes */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--notes">
-            <label className="bo-field">
-              <span className="bo-label">Notas internas</span>
+          <div className="grid gap-bo-4 bo-invoiceFormRow--notes">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Notas internas</span>
               <span className="text-mutedText" style={{ marginBottom: "4px", display: "block" }}>
                 Estas notas solo son visibles en el backoffice y no se incluyen en el PDF
               </span>
               <textarea
-                className="bo-textarea"
+                className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
                 value={internalNotes}
                 onChange={(e) => setInternalNotes(e.target.value)}
                 placeholder="Añade notas internas sobre esta factura..."
@@ -1476,9 +1476,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </div>
 
           {/* PDF Template Selector */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--pdfTemplate">
-            <label className="bo-field">
-              <span className="bo-label">Plantilla PDF</span>
+          <div className="grid gap-bo-4 bo-invoiceFormRow--pdfTemplate">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Plantilla PDF</span>
               <div className="bo-pdfTemplateOptions bo-pdfTemplateOptions--inline">
                 {PDF_TEMPLATE_OPTIONS.map((template) => (
                   <label
@@ -1506,9 +1506,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </div>
 
           {/* Category and Tags */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--category">
-            <label className="bo-field">
-              <span className="bo-label">Categoría</span>
+          <div className="grid gap-bo-4 bo-invoiceFormRow--category">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Categoría</span>
               <Select
                 value={category}
                 onChange={(value) => setCategory(value as InvoiceCategory | "")}
@@ -1522,9 +1522,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </div>
 
           {/* Tags */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--tags">
-            <label className="bo-field">
-              <span className="bo-label">Etiquetas</span>
+          <div className="grid gap-bo-4 bo-invoiceFormRow--tags">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Etiquetas</span>
               <div className="bo-tagsInput">
                 <div className="bo-tagsList">
                   {tags.map((tag, index) => (
@@ -1543,7 +1543,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 </div>
                 <div className="bo-tagInputWrapper">
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="text"
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
@@ -1562,7 +1562,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   />
                   <button
                     type="button"
-                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                     onClick={() => {
                       if (newTag.trim() && !tags.includes(newTag.trim())) {
                         setTags([...tags, newTag.trim()]);
@@ -1580,9 +1580,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </div>
 
           {/* Deposit Tracking Section */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--deposit">
-            <label className="bo-field">
-              <span className="bo-label">Tipo de anticipo/seña</span>
+          <div className="grid gap-bo-4 bo-invoiceFormRow--deposit">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Tipo de anticipo/seña</span>
               <Select
                 value={depositType}
                 onChange={(value) => setDepositType(value as InvoiceDepositType | "")}
@@ -1597,11 +1597,11 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {depositType && (
             <>
-              <div className="bo-invoiceFormRow bo-invoiceFormRow--deposit">
-                <label className="bo-field">
-                  <span className="bo-label">Importe del anticipo/seña</span>
+              <div className="grid gap-bo-4 bo-invoiceFormRow--deposit">
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Importe del anticipo/seña</span>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     step="0.01"
                     min="0"
@@ -1612,35 +1612,35 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 </label>
 
                 {depositAmount && totalAmount > 0 && (
-                  <label className="bo-field">
-                    <span className="bo-label">Pendiente</span>
-                    <div className="bo-input" style={{ backgroundColor: "var(--bo-bg-muted)", fontWeight: 600 }}>
+                  <label className="grid gap-bo-2">
+                    <span className="text-bo-sm font-semibold text-bo-muted">Pendiente</span>
+                    <div className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" style={{ backgroundColor: "var(--bo-bg-muted)", fontWeight: 600 }}>
                       {formatPrice(Math.max(0, totalAmount - parseFloat(depositAmount || "0")), currency)}
                     </div>
                   </label>
                 )}
               </div>
 
-              <div className="bo-invoiceFormRow bo-invoiceFormRow--deposit">
+              <div className="grid gap-bo-4 bo-invoiceFormRow--deposit">
                 <div className="bo-ivaSummary">
-                  <div className="bo-ivaSummaryItem">
-                    <span className="bo-ivaSummaryLabel">Importe total</span>
-                    <span className="bo-ivaSummaryValue">{formatPrice(totalAmount, currency)}</span>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-bo-xs text-bo-muted">Importe total</span>
+                    <span className="text-bo-base font-semibold text-bo-text">{formatPrice(totalAmount, currency)}</span>
                   </div>
                   {depositAmount && parseFloat(depositAmount) > 0 && (
-                    <div className="bo-ivaSummaryItem">
-                      <span className="bo-ivaSummaryLabel">
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-bo-xs text-bo-muted">
                         {depositType === "advance" ? "Anticipo" : "Seña"}
                       </span>
-                      <span className="bo-ivaSummaryValue" style={{ color: "var(--bo-color-success)" }}>
+                      <span className="text-bo-base font-semibold text-bo-text" style={{ color: "var(--bo-color-success)" }}>
                         -{formatPrice(parseFloat(depositAmount), currency)}
                       </span>
                     </div>
                   )}
                   {depositAmount && parseFloat(depositAmount) > 0 && (
                     <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                      <span className="bo-ivaSummaryLabel">Pendiente</span>
-                      <span className="bo-ivaSummaryValue">
+                      <span className="text-bo-xs text-bo-muted">Pendiente</span>
+                      <span className="text-bo-base font-semibold text-bo-text">
                         {formatPrice(Math.max(0, totalAmount - parseFloat(depositAmount)), currency)}
                       </span>
                     </div>
@@ -1654,7 +1654,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         {/* Comments section - only show for existing invoices */}
         {invoice && invoice.id && (
           <div className="bo-invoiceFormSection bo-invoiceFormSection--comments">
-            <h3 className="bo-invoiceFormSectionTitle">
+            <h3 className="text-bo-base font-semibold text-bo-text mb-3">
               <MessageSquare size={18} />
               Comentarios
             </h3>
@@ -1669,22 +1669,22 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
       {/* Form actions */}
       <div className="bo-invoiceFormActions">
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)">
           Cancelar
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)">
           <Save size={16} />
           Guardar borrador
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)">
           <Save size={16} />
           Guardar como pendiente
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF">
           <Eye size={16} />
           Vista previa
         </button>
-        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!isValid || isSubmitting} title="Enviar factura (Ctrl+S)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSend} disabled={!isValid || isSubmitting} title="Enviar factura (Ctrl+S)">
           <Send size={16} />
           Enviar
         </button>
