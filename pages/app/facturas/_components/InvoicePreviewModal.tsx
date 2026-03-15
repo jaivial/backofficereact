@@ -64,7 +64,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
         {/* Header Actions */}
         <div className="bo-invoicePreviewActions">
           <button
-            className="bo-btn bo-btn--primary"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
             type="button"
             onClick={handleDownloadPdf}
             disabled={!invoice.pdf_url}
@@ -74,7 +74,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
           </button>
           {invoice.customer_email && (
             <button
-              className="bo-btn bo-btn--secondary"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               type="button"
               onClick={() => onSendEmail(invoice)}
             >
@@ -83,7 +83,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             </button>
           )}
           <button
-            className="bo-btn bo-btn--secondary"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
             type="button"
             onClick={handleEdit}
           >
@@ -101,7 +101,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
           <div className="bo-invoicePreviewStatus">
             <span className={`bo-badge ${statusConfig.className}`}>{statusConfig.label}</span>
             {invoice.is_reservation && (
-              <span className="bo-badge bo-badge--info">Reserva</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">Reserva</span>
             )}
           </div>
         </div>
@@ -114,20 +114,20 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
               <Calendar size={14} />
               Fechas
             </h3>
-            <div className="bo-invoicePreviewField">
-              <span className="bo-invoicePreviewLabel">Fecha de factura</span>
-              <span className="bo-invoicePreviewValue">{formatDate(invoice.invoice_date)}</span>
+            <div className="flex justify-between py-1">
+              <span className="text-bo-xs text-bo-muted">Fecha de factura</span>
+              <span className="text-bo-sm font-medium text-bo-text">{formatDate(invoice.invoice_date)}</span>
             </div>
             {invoice.payment_date && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Fecha de pago</span>
-                <span className="bo-invoicePreviewValue">{formatDate(invoice.payment_date)}</span>
+              <div className="flex justify-between py-1">
+                <span className="text-bo-xs text-bo-muted">Fecha de pago</span>
+                <span className="text-bo-sm font-medium text-bo-text">{formatDate(invoice.payment_date)}</span>
               </div>
             )}
             {invoice.is_reservation && invoice.reservation_date && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Fecha de reserva</span>
-                <span className="bo-invoicePreviewValue">{formatDate(invoice.reservation_date)}</span>
+              <div className="flex justify-between py-1">
+                <span className="text-bo-xs text-bo-muted">Fecha de reserva</span>
+                <span className="text-bo-sm font-medium text-bo-text">{formatDate(invoice.reservation_date)}</span>
               </div>
             )}
           </div>
@@ -138,41 +138,41 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
               <User size={14} />
               Cliente
             </h3>
-            <div className="bo-invoicePreviewField">
-              <span className="bo-invoicePreviewLabel">Nombre</span>
-              <span className="bo-invoicePreviewValue">
+            <div className="flex justify-between py-1">
+              <span className="text-bo-xs text-bo-muted">Nombre</span>
+              <span className="text-bo-sm font-medium text-bo-text">
                 {invoice.customer_name} {invoice.customer_surname}
               </span>
             </div>
             {invoice.customer_dni_cif && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">DNI/CIF</span>
-                <span className="bo-invoicePreviewValue">{invoice.customer_dni_cif}</span>
+              <div className="flex justify-between py-1">
+                <span className="text-bo-xs text-bo-muted">DNI/CIF</span>
+                <span className="text-bo-sm font-medium text-bo-text">{invoice.customer_dni_cif}</span>
               </div>
             )}
-            <div className="bo-invoicePreviewField">
-              <span className="bo-invoicePreviewLabel">
+            <div className="flex justify-between py-1">
+              <span className="text-bo-xs text-bo-muted">
                 <Mail size={12} />
                 Email
               </span>
-              <span className="bo-invoicePreviewValue">{invoice.customer_email}</span>
+              <span className="text-bo-sm font-medium text-bo-text">{invoice.customer_email}</span>
             </div>
             {invoice.customer_phone && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">
+              <div className="flex justify-between py-1">
+                <span className="text-bo-xs text-bo-muted">
                   <Phone size={12} />
                   Teléfono
                 </span>
-                <span className="bo-invoicePreviewValue">{invoice.customer_phone}</span>
+                <span className="text-bo-sm font-medium text-bo-text">{invoice.customer_phone}</span>
               </div>
             )}
             {fullAddress && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">
+              <div className="flex justify-between py-1">
+                <span className="text-bo-xs text-bo-muted">
                   <MapPin size={12} />
                   Dirección
                 </span>
-                <span className="bo-invoicePreviewValue">{fullAddress}</span>
+                <span className="text-bo-sm font-medium text-bo-text">{fullAddress}</span>
               </div>
             )}
           </div>
@@ -184,17 +184,17 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
               Pago
             </h3>
             {invoice.payment_method && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Método de pago</span>
-                <span className="bo-invoicePreviewValue">
+              <div className="flex justify-between py-1">
+                <span className="text-bo-xs text-bo-muted">Método de pago</span>
+                <span className="text-bo-sm font-medium text-bo-text">
                   {PAYMENT_METHOD_LABELS[invoice.payment_method] || invoice.payment_method}
                 </span>
               </div>
             )}
             {invoice.is_reservation && invoice.reservation_party_size && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Comensales</span>
-                <span className="bo-invoicePreviewValue">{invoice.reservation_party_size}</span>
+              <div className="flex justify-between py-1">
+                <span className="text-bo-xs text-bo-muted">Comensales</span>
+                <span className="text-bo-sm font-medium text-bo-text">{invoice.reservation_party_size}</span>
               </div>
             )}
           </div>

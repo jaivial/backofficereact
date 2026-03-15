@@ -105,21 +105,21 @@ export function MemberCreateModal({
 
   return (
     <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate">
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">Añadir miembro</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close">
+      <div className="flex items-center justify-between p-4 border-b border-bo-border">
+        <div className="text-lg font-semibold text-bo-text">Añadir miembro</div>
+        <button className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 cursor-pointer" type="button" onClick={onClose} aria-label="Close">
           ×
         </button>
       </div>
 
       <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-        <div className="bo-panel bo-memberCreatePanel">
-          <div className="bo-panelHead">
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-memberCreatePanel">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
             <div>
-              <div className="bo-panelTitle">Datos de acceso y perfil</div>
+              <div className="text-bo-sm font-bold text-bo-text">Datos de acceso y perfil</div>
             </div>
           </div>
-          <div className="bo-panelBody bo-memberCreateBody">
+          <div className="p-4 bo-memberCreateBody">
             <div className="bo-memberCreateAvatarBlock">
               <ImageDropInput
                 className="bo-memberCreateAvatarDrop"

@@ -4446,7 +4446,7 @@ export default function Page() {
           <img src={specialMenuImage} alt="Menu especial" />
           <div className="bo-menuPreviewActions">
             <button
-              className="bo-btn bo-btn--ghost bo-btn--sm"
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
               type="button"
               disabled={specialMenuUploadDisabled}
               onClick={openSpecialMenuImagePicker}
@@ -4454,7 +4454,7 @@ export default function Page() {
               <Upload size={14} /> {specialMenuImageBusy ? "Procesando..." : "Cambiar imagen"}
             </button>
             <button
-              className="bo-btn bo-btn--ghost bo-btn--danger"
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-red-500/35 bg-transparent text-red-400 text-xs font-bold transition-all hover:bg-red-500/10"
               type="button"
               disabled={specialMenuUploadDisabled}
               onClick={() => setSpecialMenuImage(null)}
@@ -4469,7 +4469,7 @@ export default function Page() {
           <p>Sube la imagen del menu especial</p>
           <p className="text-mutedText">PDF, Word, TXT, PNG, JPG, WEBP o GIF hasta 10MB</p>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             type="button"
             disabled={specialMenuUploadDisabled}
             onClick={openSpecialMenuImagePicker}
@@ -4496,8 +4496,8 @@ export default function Page() {
       : "Subir imagen";
 
     return (
-      <div className="bo-field bo-field--full">
-        <div className="bo-label">Foto preview del menu</div>
+      <div className="grid gap-bo-2 bo-field--full">
+        <div className="text-bo-sm font-semibold text-bo-muted">Foto preview del menu</div>
         <div className="bo-menuPreviewUploadBlock">
           {menuPreviewAIGenerating ? (
             <div className="bo-menuPreviewSkeletonCard" role="status" aria-live="polite">
@@ -4508,7 +4508,7 @@ export default function Page() {
               <img className="bo-menuPreviewImage" src={menuPreviewImageUrl} alt="Preview image" />
               <div className="bo-menuPreviewActions">
                 <button
-                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                   type="button"
                   disabled={menuPreviewUploadDisabled}
                   onClick={openMenuPreviewImagePicker}
@@ -4522,7 +4522,7 @@ export default function Page() {
               <Upload size={18} aria-hidden="true" />
               <div className="text-mutedText">Sube una imagen para mostrarla en la cabecera del menu.</div>
               <button
-                className="bo-btn bo-btn--ghost bo-btn--sm"
+                className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                 type="button"
                 disabled={menuPreviewUploadDisabled}
                 onClick={openMenuPreviewImagePicker}
@@ -4540,7 +4540,7 @@ export default function Page() {
   return (
     <section className="bo-menuWizardPage" aria-label="Editor de menu">
       <div className="bo-menuWizardTop">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/app/menus")}>
+        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => (window.location.href = "/app/menus")}>
           <ArrowLeft size={16} /> Volver a menus
         </button>
         <div className={`bo-saveTag is-${saveState}`}>{saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}</div>
@@ -4554,7 +4554,7 @@ export default function Page() {
 
       {step === 0 ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Tipo de menu</h2>
+          <h2 className="text-bo-sm font-bold text-bo-text mb-2">Tipo de menu</h2>
           <p className="bo-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
           <div className="bo-typeGrid">
             {MENU_TYPES.map((opt) => {
@@ -4588,7 +4588,7 @@ export default function Page() {
             })}
           </div>
           <div className="bo-menuWizardActions bo-menuWizardActions--right">
-            <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void createDraftAndContinue()}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" disabled={busy} onClick={() => void createDraftAndContinue()}>
               Continuar
             </button>
           </div>
@@ -4597,30 +4597,30 @@ export default function Page() {
 
       {step === 1 ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Datos basicos</h2>
+          <h2 className="text-bo-sm font-bold text-bo-text mb-2">Datos basicos</h2>
           <div className="bo-form bo-form--menuWizard bo-form--menuWizardBasics">
             <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
-              <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
-                <div className="bo-label">Titulo</div>
-                <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--title">
+                <div className="text-bo-sm font-semibold text-bo-muted">Titulo</div>
+                <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={title} onChange={(e) => setTitle(e.target.value)} />
               </div>
 
               {!isALaCarte && !isSpecial ? (
-                <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
-                  <div className="bo-label">Precio</div>
-                  <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+                <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--price">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Precio</div>
+                  <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
                 </div>
               ) : null}
             </div>
 
             {!isSpecial ? (
-              <div className="bo-field bo-field--full">
-                <div className="bo-label">Subtitulos</div>
+              <div className="grid gap-bo-2 bo-field--full">
+                <div className="text-bo-sm font-semibold text-bo-muted">Subtitulos</div>
                 <div className="bo-stackFields">
                   {subtitles.map((line, idx) => (
                     <div key={`subtitle-${idx}`} className="bo-inlineField">
                       <input
-                        className="bo-input"
+                        className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                         value={line}
                         onChange={(e) => {
                           const next = [...subtitles];
@@ -4629,7 +4629,7 @@ export default function Page() {
                         }}
                       />
                       <button
-                        className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn"
+                        className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-inlineFieldIconBtn"
                         type="button"
                         aria-label={`Eliminar subtitulo ${idx + 1}`}
                         disabled={subtitles.length <= 1}
@@ -4639,7 +4639,7 @@ export default function Page() {
                       </button>
                     </div>
                   ))}
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
+                  <button className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
                     <Plus size={14} /> Añadir subtitulo
                   </button>
                 </div>
@@ -4647,10 +4647,10 @@ export default function Page() {
             ) : null}
 
             {!isSpecial ? (
-              <div className="bo-field">
-                <div className="bo-label">Cambiar tipo de menu</div>
+              <div className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Cambiar tipo de menu</div>
                 <Select
-                  className="bo-menuSettingSelect"
+                  className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
                   value={menuType}
                   onChange={setMenuType}
                   options={menuTypeOptions}
@@ -4661,10 +4661,10 @@ export default function Page() {
             ) : null}
 
             <div className="bo-menuBasicsSwitchRow">
-              <div className="bo-field">
-                <div className="bo-label">Añadir foto preview</div>
+              <div className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Añadir foto preview</div>
                 <Select
-                  className="bo-menuSettingSelect"
+                  className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
                   value={showMenuPreviewImage ? "with_preview" : "without_preview"}
                   onChange={(value) => setShowMenuPreviewImage(value === "with_preview")}
                   options={menuPreviewVisibilityOptions}
@@ -4676,7 +4676,7 @@ export default function Page() {
 
             <div className="bo-menuBasicsSwitchRow">
               <label className="bo-menuBasicsActiveToggle">
-                <span className="bo-label">Activo</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Activo</span>
                 <Switch checked={active} onCheckedChange={setActive} />
                 <span className="text-mutedText">{active ? "Activo" : "No activo"}</span>
               </label>
@@ -4685,12 +4685,12 @@ export default function Page() {
             {renderMenuPreviewUploadArea()}
           </div>
 
-          <div className="bo-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(0)}>
+          <div className="flex justify-end gap-2 mt-4">
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setStep(0)}>
               Volver
             </button>
             <button
-              className="bo-btn bo-btn--primary"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
               type="button"
               onClick={() => {
                 if (!title.trim()) {
@@ -4712,7 +4712,7 @@ export default function Page() {
 
       {step === 2 ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Secciones del menu</h2>
+          <h2 className="text-bo-sm font-bold text-bo-text mb-2">Secciones del menu</h2>
 
           <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsBoard bo-reorderGroup">
             {sections.map((sec, idx) => (
@@ -4765,9 +4765,9 @@ export default function Page() {
                         <GripVertical size={18} />
                       </button>
                     </div>
-                    <input className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} />
+                    <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} />
                     <button
-                      className="bo-btn bo-btn--ghost"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
                       type="button"
                       aria-label={`Eliminar seccion ${sec.title || idx + 1}`}
                       disabled={sections.length <= 1}
@@ -4781,15 +4781,15 @@ export default function Page() {
             ))}
           </Reorder.Group>
 
-          <div className="bo-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={addSection}>
+          <div className="flex justify-end gap-2 mt-4">
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={addSection}>
               <Plus size={14} /> Añadir seccion
             </button>
             <div className="bo-menuWizardActionsRight">
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setStep(1)}>
                 Volver
               </button>
-              <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={() => setStep(3)}>
                 Continuar
               </button>
             </div>
@@ -4845,34 +4845,34 @@ export default function Page() {
           </div>
 
           <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane ${mobileTab === "editor" ? "is-mobileActive" : ""}`}>
-            <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead">
-              <div className="bo-panelHead">
+            <motion.div layout transition={paneLayoutTransition} className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-menuEditorHead">
+              <div className="flex items-end justify-between pb-2 px-4 pt-4">
                 <div>
-                  <div className="bo-panelTitle">Editor de menu</div>
-                  <div className="bo-panelMeta">Titulo, subtitulos, precio y estado siguen editables</div>
+                  <div className="text-bo-sm font-bold text-bo-text">Editor de menu</div>
+                  <div className="text-bo-xs text-bo-faint">Titulo, subtitulos, precio y estado siguen editables</div>
                 </div>
               </div>
-              <div className="bo-panelBody bo-form bo-form--menuWizard bo-form--menuWizardBasics">
+              <div className="p-4 bo-form bo-form--menuWizard bo-form--menuWizardBasics">
                 <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
-                  <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
-                    <div className="bo-label">Titulo</div>
-                    <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+                  <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--title">
+                    <div className="text-bo-sm font-semibold text-bo-muted">Titulo</div>
+                    <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={title} onChange={(e) => setTitle(e.target.value)} />
                   </div>
                   {!isALaCarte && !isSpecial ? (
-                    <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
-                      <div className="bo-label">Precio</div>
-                      <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+                    <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--price">
+                      <div className="text-bo-sm font-semibold text-bo-muted">Precio</div>
+                      <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
                     </div>
                   ) : null}
                 </div>
                 {!isSpecial ? (
-                  <div className="bo-field bo-field--full">
-                    <div className="bo-label">Subtitulos</div>
+                  <div className="grid gap-bo-2 bo-field--full">
+                    <div className="text-bo-sm font-semibold text-bo-muted">Subtitulos</div>
                     <div className="bo-stackFields">
                       {subtitles.map((line, idx) => (
                         <div key={`subtitle-final-${idx}`} className="bo-inlineField">
                           <input
-                            className="bo-input"
+                            className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                             value={line}
                             onChange={(e) => {
                               const next = [...subtitles];
@@ -4881,7 +4881,7 @@ export default function Page() {
                             }}
                           />
                           <button
-                            className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn"
+                            className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-inlineFieldIconBtn"
                             type="button"
                             aria-label={`Eliminar subtitulo ${idx + 1}`}
                             disabled={subtitles.length <= 1}
@@ -4891,17 +4891,17 @@ export default function Page() {
                           </button>
                         </div>
                       ))}
-                      <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
+                      <button className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
                         <Plus size={14} /> Añadir subtitulo
                       </button>
                     </div>
                   </div>
                 ) : null}
                 {!isSpecial ? (
-                  <div className="bo-field">
-                    <div className="bo-label">Visibilidad de platos</div>
+                  <div className="grid gap-bo-2">
+                    <div className="text-bo-sm font-semibold text-bo-muted">Visibilidad de platos</div>
                     <Select
-                      className="bo-menuSettingSelect"
+                      className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
                       value={showDishImages ? "with_image" : "without_image"}
                       onChange={(value) => setShowDishImages(value === "with_image")}
                       options={dishVisibilityOptions}
@@ -4910,10 +4910,10 @@ export default function Page() {
                     />
                   </div>
                 ) : null}
-                <div className="bo-field">
-                  <div className="bo-label">Añadir foto preview</div>
+                <div className="grid gap-bo-2">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Añadir foto preview</div>
                   <Select
-                    className="bo-menuSettingSelect"
+                    className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
                     value={showMenuPreviewImage ? "with_preview" : "without_preview"}
                     onChange={(value) => setShowMenuPreviewImage(value === "with_preview")}
                     options={menuPreviewVisibilityOptions}
@@ -4922,10 +4922,10 @@ export default function Page() {
                   />
                 </div>
                 {!isSpecial ? (
-                  <div className="bo-field">
-                    <div className="bo-label">Cambiar tipo de menu</div>
+                  <div className="grid gap-bo-2">
+                    <div className="text-bo-sm font-semibold text-bo-muted">Cambiar tipo de menu</div>
                     <Select
-                      className="bo-menuSettingSelect"
+                      className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
                       value={menuType}
                       onChange={setMenuType}
                       options={menuTypeOptions}
@@ -4937,7 +4937,7 @@ export default function Page() {
 
                 <div className="bo-menuBasicsSwitchRow">
                   <label className="bo-menuBasicsActiveToggle">
-                    <span className="bo-label">Activo</span>
+                    <span className="text-bo-sm font-semibold text-bo-muted">Activo</span>
                     <Switch checked={active} onCheckedChange={setActive} />
                     <span className="text-mutedText">{active ? "Activo" : "No activo"}</span>
                   </label>
@@ -4948,22 +4948,22 @@ export default function Page() {
             </motion.div>
 
             {isSpecial ? (
-              <div className="bo-panel bo-accordionSection bo-sectionsEditor">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Contenido del menu especial</div>
+              <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-accordionSection bo-sectionsEditor">
+                <div className="flex items-end justify-between pb-2 px-4 pt-4">
+                  <div className="text-bo-sm font-bold text-bo-text">Contenido del menu especial</div>
                 </div>
-                <div className="bo-panelBody">
+                <div className="p-4">
                   {renderSpecialMenuImageUploadArea()}
                 </div>
               </div>
             ) : !hydrated ? (
               <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true">
                 {loadingSectionTitles.map((sectionTitle, idx) => (
-                  <div key={`section-loading-${idx}`} className="bo-panel bo-accordionSection">
-                    <div className="bo-panelHead">
-                      <div className="bo-panelTitle">{sectionTitle}</div>
+                  <div key={`section-loading-${idx}`} className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-accordionSection">
+                    <div className="flex items-end justify-between pb-2 px-4 pt-4">
+                      <div className="text-bo-sm font-bold text-bo-text">{sectionTitle}</div>
                     </div>
-                    <div className="bo-panelBody">
+                    <div className="p-4">
                       <LoadingSpinner centered size="sm" label="Cargando platos..." />
                     </div>
                   </div>
@@ -5006,17 +5006,17 @@ export default function Page() {
             )}
 
             {!isSpecial ? (
-              <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">
+              <motion.div layout transition={paneLayoutTransition} className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-settingsPanel">
+                <div className="flex items-end justify-between pb-2 px-4 pt-4">
+                  <div className="text-bo-sm font-bold text-bo-text">
                     <Settings2 size={15} /> Configuracion
                   </div>
                 </div>
-                <div className="bo-panelBody bo-form bo-form--menuWizard">
-                  <div className="bo-field">
-                    <div className="bo-label">Bebida</div>
+                <div className="p-4 bo-form bo-form--menuWizard">
+                  <div className="grid gap-bo-2">
+                    <div className="text-bo-sm font-semibold text-bo-muted">Bebida</div>
                     <Select
-                      className="bo-menuSettingSelect"
+                      className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
                       value={beverageType}
                       onChange={setBeverageType}
                       options={beverageTypeOptions}
@@ -5026,23 +5026,23 @@ export default function Page() {
                   </div>
 
                   {beverageType !== "no_incluida" ? (
-                    <div className="bo-field">
-                      <div className="bo-label">Precio por persona</div>
-                      <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" />
+                    <div className="grid gap-bo-2">
+                      <div className="text-bo-sm font-semibold text-bo-muted">Precio por persona</div>
+                      <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" />
                     </div>
                   ) : null}
 
                   {beverageType === "ilimitada" ? (
                     <>
-                      <div className="bo-field">
-                        <div className="bo-label">Tiene suplemento</div>
+                      <div className="grid gap-bo-2">
+                        <div className="text-bo-sm font-semibold text-bo-muted">Tiene suplemento</div>
                         <Switch checked={beverageHasSupplement} onCheckedChange={setBeverageHasSupplement} />
                       </div>
                       {beverageHasSupplement ? (
-                        <div className="bo-field">
-                          <div className="bo-label">Valor suplemento</div>
+                        <div className="grid gap-bo-2">
+                          <div className="text-bo-sm font-semibold text-bo-muted">Valor suplemento</div>
                           <input
-                            className="bo-input"
+                            className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                             value={beverageSupplementPrice}
                             onChange={(e) => setBeverageSupplementPrice(e.target.value)}
                             inputMode="decimal"
@@ -5052,13 +5052,13 @@ export default function Page() {
                     </>
                   ) : null}
 
-                <div className="bo-field">
-                  <div className="bo-label">Minimo personas para reservar</div>
-                  <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
+                <div className="grid gap-bo-2">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Minimo personas para reservar</div>
+                  <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
                 </div>
 
-                <div className="bo-field bo-field--inline">
-                  <div className="bo-label" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
+                <div className="grid gap-bo-2 bo-field--inline">
+                  <div className="text-bo-sm font-semibold text-bo-muted" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
                   <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
                   {mainLimit ? (
                     <PlusMinusCounter
@@ -5072,15 +5072,15 @@ export default function Page() {
                   ) : null}
                 </div>
 
-                <div className="bo-field">
-                  <div className="bo-label">Cafe incluido</div>
+                <div className="grid gap-bo-2">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Cafe incluido</div>
                   <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
                 </div>
 
-                <div className="bo-field bo-field--full">
-                  <div className="bo-label">Comentarios</div>
+                <div className="grid gap-bo-2 bo-field--full">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Comentarios</div>
                   <textarea
-                    className="bo-input bo-textarea"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea"
                     value={comments.join("\n")}
                     onChange={(e) => setComments(e.target.value.split("\n").filter((line) => line.trim() !== ""))}
                     placeholder="Añade comentarios..."
@@ -5100,7 +5100,7 @@ export default function Page() {
             {isDraft ? (
               <div className="bo-menuWizardActions bo-menuWizardActions--publishDraft">
                 <button
-                  className="bo-btn bo-btn--primary"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                   type="button"
                   disabled={busy}
                   onClick={() => void onPublish()}
@@ -5115,8 +5115,8 @@ export default function Page() {
           <aside className={`bo-previewPane ${mobileTab === "preview" ? "is-mobileActive" : ""}`}>
             <div className="bo-previewHead">
               <div>
-                <div className="bo-panelTitle">Preview web</div>
-                <div className="bo-panelMeta">
+                <div className="text-bo-sm font-bold text-bo-text">Preview web</div>
+                <div className="text-bo-xs text-bo-faint">
                   {previewNeedsUpgrade
                     ? "Activa premium para desbloquear plantillas"
                     : "Plantilla web asignada en configuracion"}
@@ -5178,21 +5178,21 @@ export default function Page() {
         ref={dishImageInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
-        className="bo-hiddenFileInput"
+        className="absolute w-px h-px opacity-0 pointer-events-none"
         onChange={onDishImageFileSelected}
       />
       <input
         ref={menuPreviewImageInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
-        className="bo-hiddenFileInput"
+        className="absolute w-px h-px opacity-0 pointer-events-none"
         onChange={onMenuPreviewImageFileSelected}
       />
       <input
         ref={specialMenuImageInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-        className="bo-hiddenFileInput"
+        className="absolute w-px h-px opacity-0 pointer-events-none"
         onChange={onSpecialMenuImageFileSelected}
       />
 
@@ -5235,13 +5235,13 @@ export default function Page() {
       />
 
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620}>
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Selecciona alergenos</div>
-          <button className="bo-modalX" type="button" onClick={() => setAllergenModal(null)} aria-label="Cerrar">
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <div className="text-lg font-semibold text-bo-text">Selecciona alergenos</div>
+          <button className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 cursor-pointer" type="button" onClick={() => setAllergenModal(null)} aria-label="Cerrar">
             ×
           </button>
         </div>
-        <div className="bo-modalBody">
+        <div className="p-4">
           <div className="bo-allergenGrid">
             {ALLERGENS.map((item) => {
               const open = allergenModal;
@@ -5274,18 +5274,18 @@ export default function Page() {
 
       {step === 4 && isSpecial ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Imagen del menu</h2>
+          <h2 className="text-bo-sm font-bold text-bo-text mb-2">Imagen del menu</h2>
           <p className="text-mutedText" style={{ marginBottom: 16 }}>
             Sube una imagen del menu especial para mostrarla en la plantilla web.
           </p>
 
           {renderSpecialMenuImageUploadArea()}
 
-          <div className="bo-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)}>
+          <div className="flex justify-end gap-2 mt-4">
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setStep(1)}>
               Volver
             </button>
-            <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={() => setStep(3)}>
               Continuar al editor
             </button>
           </div>

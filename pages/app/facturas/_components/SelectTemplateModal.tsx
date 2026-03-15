@@ -109,13 +109,13 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 <Search size={16} className="bo-templateSearchIcon" />
                 <input
                   type="text"
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   placeholder="Buscar plantillas..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
-              <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew}>
+              <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
                 <Plus size={16} />
                 Nueva plantilla
               </button>
@@ -132,7 +132,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 <div className="bo-templateEmpty">
                   <FileText size={48} strokeWidth={1} />
                   <p>{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
-                  <button className="bo-btn bo-btn--secondary" onClick={handleCreateNew}>
+                  <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
                     <Plus size={16} />
                     Crear primera plantilla
                   </button>
@@ -167,14 +167,14 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                     </div>
                     <div className="bo-templateItemActions">
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                         onClick={(e) => handleEdit(template, e)}
                         title="Editar"
                       >
                         <Edit size={16} />
                       </button>
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
+                        className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
                         onClick={(e) => handleDelete(template, e)}
                         title="Eliminar"
                       >
@@ -322,17 +322,17 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
     <form className="bo-templateForm" onSubmit={handleSubmit}>
       <div className="bo-templateFormHeader">
         <h3>{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
-        <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onCancel}>
+        <button type="button" className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onCancel}>
           <X size={18} />
         </button>
       </div>
 
       <div className="bo-templateFormBody">
         {/* Template name */}
-        <div className="bo-field">
-          <label className="bo-label">Nombre de la plantilla *</label>
+        <div className="grid gap-bo-2">
+          <label className="text-bo-sm font-semibold text-bo-muted">Nombre de la plantilla *</label>
           <input
-            className="bo-input"
+            className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -344,66 +344,66 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
         {/* Customer info */}
         <div className="bo-templateFormSection">
           <h4>Datos del cliente</h4>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Nombre *</span>
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Nombre *</span>
               <input
-                className="bo-input"
+                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 required
               />
             </label>
-            <label className="bo-field">
-              <span className="bo-label">Apellidos</span>
-              <input className="bo-input" type="text" value={customerSurname} onChange={(e) => setCustomerSurname(e.target.value)} />
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Apellidos</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerSurname} onChange={(e) => setCustomerSurname(e.target.value)} />
             </label>
           </div>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Email *</span>
-              <input className="bo-input" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required />
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Email *</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required />
             </label>
-            <label className="bo-field">
-              <span className="bo-label">Telefono</span>
-              <input className="bo-input" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
-            </label>
-          </div>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">DNI/CIF</span>
-              <input className="bo-input" type="text" value={customerDniCif} onChange={(e) => setCustomerDniCif(e.target.value)} />
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Telefono</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
             </label>
           </div>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Calle</span>
-              <input className="bo-input" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} />
-            </label>
-            <label className="bo-field bo-field--number">
-              <span className="bo-label">Numero</span>
-              <input className="bo-input" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} />
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">DNI/CIF</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerDniCif} onChange={(e) => setCustomerDniCif(e.target.value)} />
             </label>
           </div>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Codigo Postal</span>
-              <input className="bo-input" type="text" value={customerAddressPostalCode} onChange={(e) => setCustomerAddressPostalCode(e.target.value)} />
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Calle</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} />
             </label>
-            <label className="bo-field">
-              <span className="bo-label">Localidad</span>
-              <input className="bo-input" type="text" value={customerAddressCity} onChange={(e) => setCustomerAddressCity(e.target.value)} />
+            <label className="grid gap-bo-2 bo-field--number">
+              <span className="text-bo-sm font-semibold text-bo-muted">Numero</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} />
             </label>
           </div>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Provincia</span>
-              <input className="bo-input" type="text" value={customerAddressProvince} onChange={(e) => setCustomerAddressProvince(e.target.value)} />
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Codigo Postal</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressPostalCode} onChange={(e) => setCustomerAddressPostalCode(e.target.value)} />
             </label>
-            <label className="bo-field">
-              <span className="bo-label">Pais</span>
-              <input className="bo-input" type="text" value={customerAddressCountry} onChange={(e) => setCustomerAddressCountry(e.target.value)} />
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Localidad</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressCity} onChange={(e) => setCustomerAddressCity(e.target.value)} />
+            </label>
+          </div>
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Provincia</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressProvince} onChange={(e) => setCustomerAddressProvince(e.target.value)} />
+            </label>
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Pais</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressCountry} onChange={(e) => setCustomerAddressCountry(e.target.value)} />
             </label>
           </div>
         </div>
@@ -411,11 +411,11 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
         {/* Default values */}
         <div className="bo-templateFormSection">
           <h4>Valores por defecto</h4>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Importe</span>
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Importe</span>
               <input
-                className="bo-input"
+                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                 type="number"
                 step="0.01"
                 min="0"
@@ -424,15 +424,15 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
                 placeholder="0.00"
               />
             </label>
-            <label className="bo-field">
-              <span className="bo-label">IVA (%)</span>
-              <input className="bo-input" type="number" step="0.1" min="0" max="100" value={defaultIvaRate} onChange={(e) => setDefaultIvaRate(e.target.value)} />
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">IVA (%)</span>
+              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="number" step="0.1" min="0" max="100" value={defaultIvaRate} onChange={(e) => setDefaultIvaRate(e.target.value)} />
             </label>
           </div>
-          <div className="bo-invoiceFormRow">
-            <label className="bo-field">
-              <span className="bo-label">Metodo de pago</span>
-              <select className="bo-select" value={defaultPaymentMethod} onChange={(e) => setDefaultPaymentMethod(e.target.value as PaymentMethod | "")}>
+          <div className="grid gap-bo-4">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Metodo de pago</span>
+              <select className="h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer" value={defaultPaymentMethod} onChange={(e) => setDefaultPaymentMethod(e.target.value as PaymentMethod | "")}>
                 <option value="">Seleccionar...</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
@@ -442,24 +442,24 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
               </select>
             </label>
           </div>
-          <div className="bo-field">
-            <label className="bo-label">Notas</label>
-            <textarea className="bo-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." />
+          <div className="grid gap-bo-2">
+            <label className="text-bo-sm font-semibold text-bo-muted">Notas</label>
+            <textarea className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." />
           </div>
         </div>
 
         {/* Active toggle */}
-        <div className="bo-field bo-field--switch">
+        <div className="grid gap-bo-2 bo-field--switch">
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="isActive" />
           <label htmlFor="isActive">Plantilla activa</label>
         </div>
       </div>
 
       <div className="bo-templateFormActions">
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={saving}>
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={onCancel} disabled={saving}>
           Cancelar
         </button>
-        <button type="submit" className="bo-btn bo-btn--primary" disabled={saving}>
+        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" disabled={saving}>
           {saving ? (
             <>
               <Loader2 size={16} className="bo-spin bo-spin--sm" />

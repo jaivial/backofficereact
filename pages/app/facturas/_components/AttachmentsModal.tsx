@@ -71,14 +71,14 @@ export function AttachmentsModal({
 
   return (
     <>
-      <div className="bo-modalOverlay" onClick={onClose}>
-        <div className="bo-modal bo-attachmentsModal" role="dialog" aria-label="Adjuntos de factura" onClick={(e) => e.stopPropagation()}>
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft max-w-lg w-full bo-attachmentsModal" role="dialog" aria-label="Adjuntos de factura" onClick={(e) => e.stopPropagation()}>
           <div className="bo-attachmentsModalHeader">
             <h2 className="bo-attachmentsModalTitle">
               Adjuntos
               {invoiceNumber && <span className="bo-attachmentsModalSubtitle">Factura {invoiceNumber}</span>}
             </h2>
-            <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+            <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} aria-label="Cerrar">
               <X size={18} />
             </button>
           </div>
@@ -111,7 +111,7 @@ export function AttachmentsModal({
                       <div className="bo-attachmentActions">
                         {isPreviewable(attachment.mime_type) && (
                           <button
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
+                            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                             onClick={() => setPreviewingAttachment(attachment)}
                             title="Vista previa"
                             aria-label={`Vista previa de ${attachment.original_name}`}
@@ -120,7 +120,7 @@ export function AttachmentsModal({
                           </button>
                         )}
                         <button
-                          className="bo-btn bo-btn--ghost bo-btn--sm"
+                          className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                           onClick={() => handleDownloadSingle(attachment)}
                           title="Descargar"
                           aria-label={`Descargar ${attachment.original_name}`}
@@ -129,13 +129,13 @@ export function AttachmentsModal({
                         </button>
                         {onRemoveAttachment && (
                           <button
-                            className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
+                            className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
                             onClick={() => onRemoveAttachment(attachment.id)}
                             disabled={isRemoving}
                             title="Eliminar"
                             aria-label={`Eliminar ${attachment.original_name}`}
                           >
-                            {isRemoving ? <Loader2 size={16} className="bo-spin" /> : <Trash2 size={16} />}
+                            {isRemoving ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                           </button>
                         )}
                       </div>
@@ -152,13 +152,13 @@ export function AttachmentsModal({
                 {attachments.length} archivo{attachments.length !== 1 ? "s" : ""} adjunto{attachments.length !== 1 ? "s" : ""}
               </span>
               <button
-                className="bo-btn bo-btn--primary bo-btn--sm"
+                className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
               >
                 {downloadingAll ? (
                   <>
-                    <Loader2 size={16} className="bo-spin" />
+                    <Loader2 size={16} className="animate-spin" />
                     Descargando...
                   </>
                 ) : (
@@ -175,11 +175,11 @@ export function AttachmentsModal({
 
       {/* Preview Modal */}
       {previewingAttachment && (
-        <div className="bo-modalOverlay" onClick={() => setPreviewingAttachment(null)}>
-          <div className="bo-modal bo-previewModal" role="dialog" aria-label="Vista previa" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPreviewingAttachment(null)}>
+          <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft max-w-lg w-full bo-previewModal" role="dialog" aria-label="Vista previa" onClick={(e) => e.stopPropagation()}>
             <div className="bo-previewModalHeader">
               <h3>{previewingAttachment.original_name}</h3>
-              <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => setPreviewingAttachment(null)} aria-label="Cerrar">
+              <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={() => setPreviewingAttachment(null)} aria-label="Cerrar">
                 <X size={18} />
               </button>
             </div>
@@ -191,7 +191,7 @@ export function AttachmentsModal({
               ) : null}
             </div>
             <div className="bo-previewModalFooter">
-              <button className="bo-btn bo-btn--primary" onClick={() => handleDownloadSingle(previewingAttachment)}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={() => handleDownloadSingle(previewingAttachment)}>
                 <Download size={16} />
                 Descargar
               </button>

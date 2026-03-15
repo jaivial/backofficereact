@@ -97,7 +97,7 @@ export const FoodFilters = React.memo(function FoodFilters({
           <span className="bo-filtersCount">({count})</span>
         </div>
         <button
-          className="bo-btnToggle"
+          className="h-8 rounded-lg border border-white/[0.06] bg-transparent text-bo-text inline-flex items-center justify-center gap-2 text-xs transition-colors hover:bg-white/[0.04]"
           type="button"
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
@@ -117,15 +117,15 @@ export const FoodFilters = React.memo(function FoodFilters({
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="grid grid-gap-3 bo-mt-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
-              <div className="bo-field">
-                <span className="bo-fieldLabel">
+            <div className="grid grid-gap-3 mt-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+              <div className="grid gap-bo-2">
+                <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">
                   <Search size={14} />
                   Buscar
                 </span>
                 <div className="bo-inputWrapper">
                   <input
-                    className="bo-input bo-input--withIcon"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-input--withIcon"
                     type="search"
                     value={search}
                     placeholder="Buscar por nombre..."
@@ -134,13 +134,13 @@ export const FoodFilters = React.memo(function FoodFilters({
                 </div>
               </div>
 
-              <div className="bo-field">
-                <span className="bo-fieldLabel">Tipo</span>
+              <div className="grid gap-bo-2">
+                <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Tipo</span>
                 <Select value={tipoFilter} onChange={onTipoChange} options={tipoOptions} ariaLabel="Tipo" />
               </div>
 
-              <div className="bo-field">
-                <span className="bo-fieldLabel">Estado</span>
+              <div className="grid gap-bo-2">
+                <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Estado</span>
                 <Select
                   value={activeFilter}
                   onChange={(v) => onActiveChange(v as ActiveFilter)}
@@ -150,8 +150,8 @@ export const FoodFilters = React.memo(function FoodFilters({
               </div>
 
               {supportsCategories ? (
-                <div className="bo-field">
-                  <span className="bo-fieldLabel">Categoria</span>
+                <div className="grid gap-bo-2">
+                  <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Categoria</span>
                   <Select
                     value={categoryFilter}
                     onChange={onCategoryChange}
@@ -162,8 +162,8 @@ export const FoodFilters = React.memo(function FoodFilters({
               ) : null}
 
               {supportsAlergenos ? (
-                <div className="bo-field">
-                  <span className="bo-fieldLabel">Alergeno</span>
+                <div className="grid gap-bo-2">
+                  <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Alergeno</span>
                   <Select
                     value={alergenoFilter}
                     onChange={onAlergenoChange}
@@ -174,8 +174,8 @@ export const FoodFilters = React.memo(function FoodFilters({
               ) : null}
 
               {supportsSuplemento ? (
-                <div className="bo-field">
-                  <span className="bo-fieldLabel">Suplemento</span>
+                <div className="grid gap-bo-2">
+                  <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Suplemento</span>
                   <Select
                     value={suplementoFilter}
                     onChange={(v) => onSuplementoChange(v as SuplementoFilter)}
@@ -185,9 +185,9 @@ export const FoodFilters = React.memo(function FoodFilters({
                 </div>
               ) : null}
 
-              <div className="bo-actionsRow">
+              <div className="flex items-center">
                 <button
-                  className={`bo-btnClear ${hasFilters ? "" : "bo-hidden"}`}
+                  className={`h-8 px-[10px] rounded-bo-sm border border-bo-border bg-transparent text-bo-text inline-flex items-center justify-center gap-1.5 text-xs transition-colors hover:bg-bo-surface-hover disabled:opacity-55 disabled:cursor-not-allowed ${hasFilters ? "" : "hidden"}`}
                   type="button"
                   disabled={!hasFilters}
                   onClick={onReset}

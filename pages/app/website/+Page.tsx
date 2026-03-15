@@ -156,10 +156,10 @@ export default function WebsiteBuilderPage() {
   if (loading) {
     return (
       <div className="bo-websitePage" data-ui="website-loading">
-        <div className="bo-panel">
-          <div className="bo-panelBody">
-            <div className="bo-loadingState">
-              <Loader2 className="bo-spinnerIcon" size={24} />
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="p-4">
+            <div className="flex items-center justify-center py-8 text-bo-muted">
+              <Loader2 className="animate-spin h-4 w-4" size={24} />
               <span className="text-mutedText">Cargando configuracion...</span>
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function WebsiteBuilderPage() {
             {config?.is_published ? "Publicado" : "Borrador"}
           </Button>
           {previewUrl && (
-            <a className="bo-btn bo-btn--secondary" href={previewUrl} target="_blank" rel="noopener noreferrer">
+            <a className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" href={previewUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink size={16} />
               <span>Vista previa</span>
             </a>
@@ -242,15 +242,15 @@ export default function WebsiteBuilderPage() {
       {activeTab === "ai" && (
         <section className="bo-websiteSection" aria-label="Constructor con IA">
           <div className="bo-websiteAIGrid">
-            <div className="bo-panel">
-              <div className="bo-panelHead">
-                <div className="bo-panelTitle">Generar con IA</div>
-                <div className="bo-panelMeta">Describe tu sitio ideal</div>
+            <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+              <div className="flex items-end justify-between pb-2 px-4 pt-4">
+                <div className="text-bo-sm font-bold text-bo-text">Generar con IA</div>
+                <div className="text-bo-xs text-bo-faint">Describe tu sitio ideal</div>
               </div>
-              <div className="bo-panelBody">
-                <div className="bo-stack">
+              <div className="p-4">
+                <div className="flex flex-col gap-bo-4 p-4">
                   <p className="text-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
-                  <label className="bo-field">
+                  <label className="grid gap-bo-2">
                     <textarea
                       className="bo-textarea bo-textarea--lg"
                       placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
@@ -259,11 +259,11 @@ export default function WebsiteBuilderPage() {
                       rows={6}
                     />
                   </label>
-                  <div className="bo-row bo-row--right">
+                  <div className="flex gap-bo-4 bo-row--right">
                     <Button variant="primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating}>
                       {generating ? (
                         <>
-                          <Loader2 size={16} className="bo-spinnerIcon" />
+                          <Loader2 size={16} className="animate-spin h-4 w-4" />
                           <span>Generando...</span>
                         </>
                       ) : (
@@ -278,17 +278,17 @@ export default function WebsiteBuilderPage() {
               </div>
             </div>
 
-            <div className="bo-panel">
-              <div className="bo-panelHead">
-                <div className="bo-panelTitle">Vista previa</div>
-                <div className="bo-panelMeta">HTML personalizado</div>
+            <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+              <div className="flex items-end justify-between pb-2 px-4 pt-4">
+                <div className="text-bo-sm font-bold text-bo-text">Vista previa</div>
+                <div className="text-bo-xs text-bo-faint">HTML personalizado</div>
               </div>
-              <div className="bo-panelBody">
+              <div className="p-4">
                 <div className="bo-websitePreviewFrame">
                   {config?.custom_html ? (
                     <div dangerouslySetInnerHTML={{ __html: config.custom_html }} />
                   ) : (
-                    <div className="bo-emptyState">
+                    <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
                       <p className="text-mutedText">No hay HTML generado aun</p>
                     </div>
                   )}
@@ -301,13 +301,13 @@ export default function WebsiteBuilderPage() {
 
       {activeTab === "domain" && (
         <section className="bo-websiteSection" aria-label="Dominio personalizado">
-          <div className="bo-panel bo-panel--lg">
-            <div className="bo-panelHead">
-              <div className="bo-panelTitle">Dominio personalizado</div>
-              <div className="bo-panelMeta">Registra un dominio para tu sitio</div>
+          <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-panel--lg">
+            <div className="flex items-end justify-between pb-2 px-4 pt-4">
+              <div className="text-bo-sm font-bold text-bo-text">Dominio personalizado</div>
+              <div className="text-bo-xs text-bo-faint">Registra un dominio para tu sitio</div>
             </div>
-            <div className="bo-panelBody">
-              <div className="bo-stack">
+            <div className="p-4">
+              <div className="flex flex-col gap-bo-4 p-4">
                 {config?.domain ? (
                   <div className="bo-websiteDomainActive">
                     <p className="bo-websiteDomainLabel">Dominio activo</p>
@@ -320,7 +320,7 @@ export default function WebsiteBuilderPage() {
                 <div className="bo-websiteDomainSearch">
                   <input
                     type="text"
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     placeholder="Ej: mirestaurante.com"
                     value={domainQuery}
                     onChange={(e) => setDomainQuery(e.target.value)}
@@ -329,7 +329,7 @@ export default function WebsiteBuilderPage() {
                   <Button variant="primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()}>
                     {searchingDomain ? (
                       <>
-                        <Loader2 size={16} className="bo-spinnerIcon" />
+                        <Loader2 size={16} className="animate-spin h-4 w-4" />
                         <span>Buscando...</span>
                       </>
                     ) : (
@@ -346,9 +346,9 @@ export default function WebsiteBuilderPage() {
                     <div className="bo-websiteDomainResultMain">
                       <div className="bo-websiteDomainResultName">{domainResult.domain}</div>
                       {domainResult.available ? (
-                        <span className="bo-badge bo-badge--success">Disponible</span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--success">Disponible</span>
                       ) : (
-                        <span className="bo-badge bo-badge--danger">No disponible</span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--danger">No disponible</span>
                       )}
                     </div>
                     {domainResult.available && (
@@ -360,7 +360,7 @@ export default function WebsiteBuilderPage() {
                         <Button variant="primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
                           {registeringDomain ? (
                             <>
-                              <Loader2 size={16} className="bo-spinnerIcon" />
+                              <Loader2 size={16} className="animate-spin h-4 w-4" />
                               <span>Registrando...</span>
                             </>
                           ) : (

@@ -508,7 +508,7 @@ export default function Page() {
           {isDayOpen ? (
             <motion.div
               key="reservas-side"
-              className="bo-stack"
+              className="flex flex-col gap-bo-4 p-4"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -525,22 +525,22 @@ export default function Page() {
               <div className={`bo-card${filtersOpen ? "" : " collapsed"}`} aria-label="Filtros reservas">
                 <div className="bo-filtersHeaderRow">
                   <button
-                    className="bo-btnSecondary"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                     type="button"
                     onClick={() => setFiltersOpen((v) => !v)}
                     aria-expanded={filtersOpen}
                     aria-controls="bo-reservas-filters-body"
                   >
-                    <Filter className="bo-iconSm" />
+                    <Filter className="w-[18px] h-[18px]" />
                     Filtros
                   </button>
                   <button
-                    className="bo-btnPrimary"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                     type="button"
                     onClick={onDownloadPDF}
                     disabled={pdfBusy || busy}
                   >
-                    <Download className="bo-iconSm" /> Descargar
+                    <Download className="w-[18px] h-[18px]" /> Descargar
                   </button>
                 </div>
                 <div id="bo-reservas-filters-body" className="bo-filtersBody">
@@ -557,9 +557,9 @@ export default function Page() {
                     />
                   </div>
                   <div className="bo-filtersRow bo-filtersRow--between">
-                    <div className="bo-inputWithIcon">
+                    <div className="flex items-center gap-2">
                       <input
-                        className="bo-input bo-input--sm"
+                        className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                         placeholder="Buscar por nombre"
@@ -567,17 +567,17 @@ export default function Page() {
                           if (e.key === "Enter") applyFilters();
                         }}
                       />
-                      <button className="bo-btnSecondary" type="button" onClick={applyFilters} disabled={busy}>
+                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={applyFilters} disabled={busy}>
                         Buscar
                       </button>
                     </div>
                     <button
-                    className="bo-btnPrimary"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                       type="button"
                       onClick={onDownloadPDF}
                       disabled={pdfBusy || busy}
                     >
-                      <Download className="bo-iconSm" /> Descargar
+                      <Download className="w-[18px] h-[18px]" /> Descargar
                     </button>
                   </div>
                 </div>
@@ -596,7 +596,7 @@ export default function Page() {
             exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             transition={dayVisibilityTransition}
           >
-            <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,2%,transparent),color-mix(in srgb,black,12%,transparent))] border border-[var(--border)] overflow-hidden bo-mt-3\.5">
+            <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,2%,transparent),color-mix(in srgb,black,12%,transparent))] border border-[var(--border)] overflow-hidden mt-[14px]">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-xs" aria-label="Tabla de reservas">
                   <thead>
@@ -628,7 +628,7 @@ export default function Page() {
                     ))}
                     {!rows.length ? (
                       <tr>
-                        <td colSpan={11} className="bo-tableCellMuted">
+                        <td colSpan={11} className="p-4 text-bo-muted">
                           {busy ? "Cargando..." : "No hay reservas para este filtro."}
                         </td>
                       </tr>
@@ -643,10 +643,10 @@ export default function Page() {
                 </div>
                 {showPagerBtns ? (
                   <div className="flex gap-2">
-                    <button className="bo-btnSecondary" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
                       Anterior
                     </button>
-                    <button className="bo-btnSecondary" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
                       Siguiente
                     </button>
                   </div>
@@ -657,7 +657,7 @@ export default function Page() {
         ) : (
           <motion.div
             key="reservas-closed-content"
-            className="bo-mt-3\.5"
+            className="mt-[14px]"
             initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -693,7 +693,7 @@ export default function Page() {
             ×
           </button>
         </div>
-        <div className="mt-2 bo-mt-2\.5">
+        <div className="mt-2 mt-[10px]">
           {details.booking ? <BookingDetails booking={details.booking} floors={floors} /> : null}
         </div>
         <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--border)] mt-4">
@@ -722,7 +722,7 @@ export default function Page() {
             ×
           </button>
         </div>
-        <div className="mt-2 bo-mt-2\.5">
+        <div className="mt-2 mt-[10px]">
           {edit.booking && editInitial ? (
             <BookingEditor
               api={api}

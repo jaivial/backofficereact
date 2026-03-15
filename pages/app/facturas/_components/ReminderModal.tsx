@@ -153,12 +153,12 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
   ];
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
-      <div className="bo-modal bo-modal--sm" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modalHeader">
-          <h2 className="bo-modalTitle">Enviar recordatorio de pago</h2>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft max-w-lg w-full bo-modal--sm" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <h2 className="text-lg font-semibold text-bo-text">Enviar recordatorio de pago</h2>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             aria-label="Cerrar"
           >
@@ -166,26 +166,26 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </button>
         </div>
 
-        <div className="bo-modalBody">
+        <div className="p-4">
           {/* Invoice Info */}
           <div className="bo-reminderInvoiceInfo">
-            <div className="bo-field">
-              <div className="bo-label">Cliente</div>
+            <div className="grid gap-bo-2">
+              <div className="text-bo-sm font-semibold text-bo-muted">Cliente</div>
               <div className="bo-value">{invoice.customer_name}</div>
             </div>
-            <div className="bo-field">
-              <div className="bo-label">Factura</div>
+            <div className="grid gap-bo-2">
+              <div className="text-bo-sm font-semibold text-bo-muted">Factura</div>
               <div className="bo-value">{invoice.invoice_number || `#${invoice.id}`}</div>
             </div>
-            <div className="bo-field">
-              <div className="bo-label">Importe</div>
+            <div className="grid gap-bo-2">
+              <div className="text-bo-sm font-semibold text-bo-muted">Importe</div>
               <div className="bo-value">{invoice.total?.toFixed(2) || invoice.amount.toFixed(2)} EUR</div>
             </div>
           </div>
 
           {/* Template Selection */}
-          <div className="bo-field">
-            <label className="bo-label" htmlFor="template-select">
+          <div className="grid gap-bo-2">
+            <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-select">
               Plantilla
             </label>
             <Select
@@ -198,10 +198,10 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </div>
 
           {/* Send Via */}
-          <div className="bo-field">
-            <label className="bo-label">Enviar via</label>
-            <div className="bo-radioGroup">
-              <label className="bo-radio">
+          <div className="grid gap-bo-2">
+            <label className="text-bo-sm font-semibold text-bo-muted">Enviar via</label>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="send_via"
@@ -212,7 +212,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
                 <Mail size={14} />
                 <span>Email</span>
               </label>
-              <label className="bo-radio">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="send_via"
@@ -227,13 +227,13 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </div>
 
           {/* Custom Message */}
-          <div className="bo-field">
-            <label className="bo-label" htmlFor="custom-message">
+          <div className="grid gap-bo-2">
+            <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="custom-message">
               Mensaje personalizado (opcional)
             </label>
             <textarea
               id="custom-message"
-              className="bo-textarea"
+              className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
               placeholder="Deja en blanco para usar la plantilla"
@@ -262,11 +262,11 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
         </div>
 
         <div className="bo-modalFooter">
-          <button className="bo-btn bo-btn--ghost" onClick={onClose}>
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={onClose}>
             Cancelar
           </button>
           <button
-            className="bo-btn bo-btn--primary"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
             onClick={handleSend}
             disabled={sending || loadingTemplates}
           >

@@ -116,8 +116,8 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
     <div className="bo-statsTable">
       <div className="bo-statsTableControls">
         <div className="bo-statsTableFilters">
-          <div className="bo-field">
-            <label className="bo-label">Vista</label>
+          <div className="grid gap-bo-2">
+            <label className="text-bo-sm font-semibold text-bo-muted">Vista</label>
             <Select
               className="bo-statsTableSelect"
               value={view}
@@ -129,8 +129,8 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             />
           </div>
 
-          <div className="bo-field">
-            <label className="bo-label">Año</label>
+          <div className="grid gap-bo-2">
+            <label className="text-bo-sm font-semibold text-bo-muted">Año</label>
             <Select
               className="bo-statsTableSelect"
               value={String(year)}
@@ -142,8 +142,8 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             />
           </div>
 
-          <div className="bo-field bo-statsTableRangeField">
-            <label className="bo-label">Rango personalizado</label>
+          <div className="grid gap-bo-2 bo-statsTableRangeField">
+            <label className="text-bo-sm font-semibold text-bo-muted">Rango personalizado</label>
             <DateRangePicker
               from={customFrom}
               to={customTo}
@@ -161,7 +161,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
           {showCustomRange ? (
             <button
               type="button"
-              className="bo-btn bo-btn--sm bo-btn--ghost"
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
               onClick={() => {
                 setCustomFrom("");
                 setCustomTo("");

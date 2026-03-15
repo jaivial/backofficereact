@@ -231,12 +231,12 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
-      <div className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modalHeader">
-          <h2 className="bo-modalTitle">Plantillas de recordatorios</h2>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft max-w-lg w-full bo-modal--lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <h2 className="text-lg font-semibold text-bo-text">Plantillas de recordatorios</h2>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             aria-label="Cerrar"
           >
@@ -244,27 +244,27 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
           </button>
         </div>
 
-        <div className="bo-modalBody">
+        <div className="p-4">
           {isEditing ? (
             // Edit/Create Form
             <div className="bo-templateForm">
-              <div className="bo-field">
-                <label className="bo-label" htmlFor="template-name">
+              <div className="grid gap-bo-2">
+                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-name">
                   Nombre de la plantilla
                 </label>
                 <input
                   id="template-name"
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="ej: Recordatorio primera semana"
                 />
               </div>
 
-              <div className="bo-field">
-                <label className="bo-label">Tipo de envio</label>
-                <div className="bo-radioGroup">
-                  <label className="bo-radio">
+              <div className="grid gap-bo-2">
+                <label className="text-bo-sm font-semibold text-bo-muted">Tipo de envio</label>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="template_type"
@@ -275,7 +275,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                     <Mail size={14} />
                     <span>Email</span>
                   </label>
-                  <label className="bo-radio">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="template_type"
@@ -290,13 +290,13 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               </div>
 
               {formData.send_via === "email" && (
-                <div className="bo-field">
-                  <label className="bo-label" htmlFor="template-subject">
+                <div className="grid gap-bo-2">
+                  <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-subject">
                     Asunto
                   </label>
                   <input
                     id="template-subject"
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     value={formData.subject || ""}
                     onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
                     placeholder="Recordatorio de pago - Factura {invoice_number}"
@@ -307,13 +307,13 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                 </div>
               )}
 
-              <div className="bo-field">
-                <label className="bo-label" htmlFor="template-body">
+              <div className="grid gap-bo-2">
+                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-body">
                   Cuerpo del mensaje
                 </label>
                 <textarea
                   id="template-body"
-                  className="bo-textarea"
+                  className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
                   value={formData.body}
                   onChange={(e) => setFormData((prev) => ({ ...prev, body: e.target.value }))}
                   rows={8}
@@ -324,11 +324,11 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               </div>
 
               <div className="bo-formActions">
-                <button className="bo-btn bo-btn--ghost" onClick={handleCancelEdit}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={handleCancelEdit}>
                   Cancelar
                 </button>
                 <button
-                  className="bo-btn bo-btn--primary"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                   onClick={handleSave}
                   disabled={saving || !formData.name.trim()}
                 >
@@ -340,21 +340,21 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
             // Templates List
             <>
               <div className="bo-templatesHeader">
-                <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew}>
+                <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
                   <Plus size={16} />
                   Nueva plantilla
                 </button>
               </div>
 
               {loading && (
-                <div className="bo-loadingState">
-                  <div className="bo-spinner" />
+                <div className="flex items-center justify-center py-8 text-bo-muted">
+                  <div className="animate-spin h-5 w-5" />
                   <span>Cargando plantillas...</span>
                 </div>
               )}
 
               {!loading && templates.length === 0 && (
-                <div className="bo-emptyState">
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
                   <AlertCircle size={32} />
                   <p>No hay plantillas de recordatorios</p>
                   <span className="text-mutedText">
@@ -378,7 +378,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             )}
                           </span>
                           {template.is_default && (
-                            <span className="bo-badge bo-badge--success bo-badge--sm">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--success bo-badge--sm">
                               <Star size={10} />
                               Predeterminada
                             </span>
@@ -387,7 +387,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                         <div className="bo-templateItemActions">
                           {!template.is_default && (
                             <button
-                              className="bo-btn bo-btn--ghost bo-btn--sm"
+                              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                               onClick={() => handleSetDefault(template)}
                               title="Establecer como predeterminada"
                             >
@@ -395,14 +395,14 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             </button>
                           )}
                           <button
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
+                            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                             onClick={() => handleEdit(template)}
                             title="Editar"
                           >
                             <Pencil size={14} />
                           </button>
                           <button
-                            className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
+                            className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
                             onClick={() => handleDelete(template)}
                             title="Eliminar"
                           >

@@ -98,9 +98,9 @@ const MenuFilters = React.memo(function MenuFilters({
   }, []);
 
   return (
-    <div className="bo-panel bo-menuFilters" aria-label="Filtros de menus">
-      <div className="flex items-center justify-between bo-mb-3">
-        <div className="flex items-center gap-2 text-sm bo-weight-medium">
+    <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-menuFilters" aria-label="Filtros de menus">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2 text-sm font-medium">
           <Filter size={15} />
           <span>Filtros</span>
         </div>
@@ -127,9 +127,9 @@ const MenuFilters = React.memo(function MenuFilters({
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 grid-gap-3">
               <label className="flex flex-col gap-2">
-                <span className="text-xs text-faint bo-weight-medium">Buscar por titulo</span>
+                <span className="text-xs text-faint font-medium">Buscar por titulo</span>
                 <input
-                  className="bo-input bo-input--menuSearch"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-input--menuSearch"
                   type="search"
                   value={searchText}
                   placeholder="Ejemplo: San Valentin"
@@ -138,7 +138,7 @@ const MenuFilters = React.memo(function MenuFilters({
               </label>
 
               <label className="flex flex-col gap-2">
-                <span className="text-xs text-faint bo-weight-medium">Estado</span>
+                <span className="text-xs text-faint font-medium">Estado</span>
                 <Select
                   value={statusFilter}
                   onChange={(value) => onStatusFilterChange(value as MenuStatusFilter)}
@@ -148,17 +148,17 @@ const MenuFilters = React.memo(function MenuFilters({
               </label>
 
               <label className="flex flex-col gap-2">
-                <span className="text-xs text-faint bo-weight-medium">Tipo de menu</span>
+                <span className="text-xs text-faint font-medium">Tipo de menu</span>
                 <Select value={menuTypeFilter} onChange={onMenuTypeFilterChange} options={menuTypeFilterOptions} ariaLabel="Tipo de menu" />
               </label>
 
               <label className="flex flex-col gap-2">
-                <span className="text-xs text-faint bo-weight-medium">Ordenar</span>
+                <span className="text-xs text-faint font-medium">Ordenar</span>
                 <Select value={sortBy} onChange={(value) => onSortByChange(value as MenuSortOption)} options={MENU_SORT_OPTIONS} ariaLabel="Ordenar" />
               </label>
             </div>
 
-            <div className="flex items-center justify-between bo-mt-3 pt-3 border-t">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t">
               <div className="text-xs text-faint">{summaryText}</div>
               <div className="flex items-center gap-2">
                 <button
@@ -411,7 +411,7 @@ export default function Page() {
       ) : (
         <>
           <button
-            className="bo-btnLink"
+            className="text-bo-accent hover:underline cursor-pointer"
             type="button"
             onClick={handleBackToPanels}
           >
@@ -449,7 +449,7 @@ export default function Page() {
             ))}
 
             {!filteredMenus.length ? (
-              <div className="bo-emptyState">
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
                 {menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}
               </div>
             ) : null}
