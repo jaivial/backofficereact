@@ -263,7 +263,7 @@ export default function RecurringInvoicesPage() {
                           <Eye size={14} />
                         </button>
                         <button
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-[var(--bo-color-danger)] transition-all hover:bg-white/[0.06]"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-red-500 transition-all hover:bg-white/[0.06]"
                           onClick={() => handleDelete(item.id)}
                           disabled={isLoading}
                           title="Eliminar"

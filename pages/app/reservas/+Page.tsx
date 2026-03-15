@@ -697,12 +697,12 @@ export default function Page() {
           {details.booking ? <BookingDetails booking={details.booking} floors={floors} /> : null}
         </div>
         <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--border)] mt-4">
-          <button className="h-9 px-3 rounded-[12px] border border-[var(--border)] bg-transparent text-[var(--bo-text)] cursor-pointer font-semibold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails}>
+          <button className="h-9 px-3 rounded-xl border border-[var(--border)] bg-transparent text-bo-text cursor-pointer font-semibold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails}>
             Cerrar
           </button>
           {details.booking ? (
             <button
-              className="h-9 px-3 rounded-[12px] border border-[color-mix(in srgb,var(--bo-accent)30%,transparent)] bg-[color-mix(in srgb,var(--bo-accent)16%,transparent)] text-[var(--bo-text)] cursor-pointer font-semibold inline-flex items-center justify-center gap-2 mx-auto transition-all duration-150 hover:bg-[color-mix(in srgb,var(--bo-accent)24%,transparent)]"
+              className="h-9 px-3 rounded-xl border border-[color-mix(in srgb,var(--bo-accent)30%,transparent)] bg-[color-mix(in srgb,var(--bo-accent)16%,transparent)] text-bo-text cursor-pointer font-semibold inline-flex items-center justify-center gap-2 mx-auto transition-all duration-150 hover:bg-[color-mix(in srgb,var(--bo-accent)24%,transparent)]"
               type="button"
               onClick={() => {
                 closeDetails();
@@ -793,7 +793,7 @@ const BookingRow = React.memo(function BookingRow({
         onOpenDetails(booking);
       }}
     >
-      <td className="text-left p-3 text-[var(--bo-text)] w-24">{added}</td>
+      <td className="text-left p-3 text-bo-text w-24">{added}</td>
       <td
         className="p-3 w-16 pl-2 pr-2"
         onClick={(e) => {
@@ -801,7 +801,7 @@ const BookingRow = React.memo(function BookingRow({
         }}
       >
         <input
-          className="h-[28px] min-w-[60px] rounded-[12px] border border-[var(--border)] bg-[var(--bo-surface-2)] text-[var(--bo-text)] px-2 outline-none text-xs w-16 text-center transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
+          className="h-[28px] min-w-[60px] rounded-xl border border-[var(--border)] bg-bo-surface-2 text-bo-text px-2 outline-none text-xs w-16 text-center transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
           value={draftMesa}
           onChange={(e) => setDraftMesa(e.target.value)}
           onBlur={() => void save()}
@@ -815,14 +815,14 @@ const BookingRow = React.memo(function BookingRow({
           aria-label={`Mesa reserva #${booking.id}`}
         />
       </td>
-      <td className="text-left p-3 text-[var(--bo-text)] w-16">{formatHHMM(booking.reservation_time)}</td>
-      <td className="text-left p-3 text-[var(--bo-text)] min-w-[180px]">{booking.customer_name}</td>
-      <td className="text-left p-3 text-[var(--bo-text)] w-28">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
-      <td className="text-right p-3 text-[var(--bo-text)] w-16">{booking.party_size}</td>
-      <td className="text-right p-3 text-[var(--bo-text)] w-16">{booking.children ?? 0}</td>
-      <td className="text-left p-3 text-[var(--bo-text)] w-32">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
-      <td className="text-left p-3 text-[var(--bo-text)] min-w-[210px]">{arroz}</td>
-      <td className="text-left p-3 text-[var(--bo-text)] min-w-[320px] max-w-[360px] whitespace-pre-line">{booking.commentary || ""}</td>
+      <td className="text-left p-3 text-bo-text w-16">{formatHHMM(booking.reservation_time)}</td>
+      <td className="text-left p-3 text-bo-text min-w-[180px]">{booking.customer_name}</td>
+      <td className="text-left p-3 text-bo-text w-28">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td className="text-right p-3 text-bo-text w-16">{booking.party_size}</td>
+      <td className="text-right p-3 text-bo-text w-16">{booking.children ?? 0}</td>
+      <td className="text-left p-3 text-bo-text w-32">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
+      <td className="text-left p-3 text-bo-text min-w-[210px]">{arroz}</td>
+      <td className="text-left p-3 text-bo-text min-w-[320px] max-w-[360px] whitespace-pre-line">{booking.commentary || ""}</td>
       <td
         className="w-10 text-right"
         onClick={(e) => {
@@ -864,7 +864,7 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
       ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-success)]/20 text-[var(--text-success)]"
       : booking.status === "pending"
         ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-warning)]/20 text-[var(--text-warning)]"
-        : "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-surface-2)] text-[var(--text-muted)]";
+        : "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-bo-surface-2 text-[var(--text-muted)]";
 
   return (
     <div className="flex flex-col gap-3 bo-bookingDetails">

@@ -29,14 +29,14 @@ export default function Page() {
 
   return (
     <section className="p-6" aria-label="Categorias de comida">
-      <div className="rounded-[var(--bo-radius-md)] bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-bo-surface-2 border border-white/[0.06] shadow-soft p-[14px_14px_12px] min-h-[88px]">
+      <div className="rounded-bo-md bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-bo-surface-2 border border-white/[0.06] shadow-soft p-[14px_14px_12px] min-h-[88px]">
         <div className="grid grid-cols-4 grid-gap-3" role="list">
           {FOOD_ENTRIES.map((entry) => {
             const EntryIcon = entry.icon;
             return (
               <button
                 key={entry.type}
-                className="flex flex-col items-center justify-center gap-2 p-4 rounded-[var(--bo-radius-md)] border border-bo-border bg-gradient-to-b from-white/[0.02] to-black/[0.04] cursor-pointer transition-colors duration-150 transition-border-color duration-150 transition-transform duration-150 hover:bg-gradient-to-b hover:from-white/[0.06] hover:to-black/[0.08] hover:border-bo-border-2"
+                className="flex flex-col items-center justify-center gap-2 p-4 rounded-bo-md border border-bo-border bg-gradient-to-b from-white/[0.02] to-black/[0.04] cursor-pointer transition-colors duration-150 transition-border-color duration-150 transition-transform duration-150 hover:bg-gradient-to-b hover:from-white/[0.06] hover:to-black/[0.08] hover:border-bo-border-2"
                 type="button"
                 role="listitem"
                 onClick={() => openCategory(entry.type)}

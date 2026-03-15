@@ -569,7 +569,7 @@ export default function Page() {
       </div>
 
       {/* Main Tabs */}
-      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border mb-6">
+      <div className="bg-bo-surface rounded-md shadow-soft border border mb-6">
         <SimpleTabs defaultValue="iva">
           <SimpleTabsList className="border-b">
             <SimpleTabsContent value="iva" trigger="Reportes de IVA" />
@@ -580,7 +580,7 @@ export default function Page() {
           <SimpleTabsContent value="customer">
             <div className="p-6">
               {/* Customer Statement Filters */}
-              <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+              <div className="bg-bo-surface rounded-md shadow-soft border border p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Customer Select */}
                   <div>
@@ -593,7 +593,7 @@ export default function Page() {
                           loadCustomers();
                         }
                       }}
-                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     >
                       <option value="">Seleccionar cliente...</option>
                       {customers.map((c) => (
@@ -611,7 +611,7 @@ export default function Page() {
                       type="date"
                       value={statementDateFrom}
                       onChange={(e) => setStatementDateFrom(e.target.value)}
-                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
@@ -622,7 +622,7 @@ export default function Page() {
                       type="date"
                       value={statementDateTo}
                       onChange={(e) => setStatementDateTo(e.target.value)}
-                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
@@ -631,7 +631,7 @@ export default function Page() {
                     <button
                       onClick={loadCustomers}
                       disabled={customersLoading}
-                      className="flex items-center gap-2 px-4 py-2 bg-bo-surface-2 bo-bg rounded-[var(--rounded-sm)] hover:bg-bo-surface disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-bo-surface-2 bo-bg rounded-sm hover:bg-bo-surface disabled:opacity-50"
                     >
                       {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
                       Cargar Clientes
@@ -644,7 +644,7 @@ export default function Page() {
                   <button
                     onClick={handleGenerateCustomerStatement}
                     disabled={customerLoading || !selectedCustomer}
-                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
                   >
                     {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
                     Generar Estado de Cuenta
@@ -655,7 +655,7 @@ export default function Page() {
                       <button
                         onClick={handleExportCustomerStatementPDF}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileText className="w-4 h-4" />
                         Exportar PDF
@@ -663,7 +663,7 @@ export default function Page() {
                       <button
                         onClick={handleExportCustomerStatementCSV}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileSpreadsheet className="w-4 h-4" />
                         Exportar Excel
@@ -677,7 +677,7 @@ export default function Page() {
               {customerStatement ? (
                 <>
                   {/* Customer Info */}
-                  <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+                  <div className="bg-bo-surface rounded-md shadow-soft border border p-4 mb-6">
                     <h3 className="text-lg font-semibold bo-text mb-4">Informacion del Cliente</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 grid-gap-4">
                       <div>
@@ -735,7 +735,7 @@ export default function Page() {
                   {/* Invoices and Payments Tables */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 grid-gap-6">
                     {/* Invoices */}
-                    <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                    <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
                       <div className="px-6 py-4 border-b border bo-surface-2">
                         <h3 className="text-lg font-semibold bo-text">Facturas ({customerStatement.invoices.length})</h3>
                       </div>
@@ -781,7 +781,7 @@ export default function Page() {
                     </div>
 
                     {/* Payments */}
-                    <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                    <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
                       <div className="px-6 py-4 border-b border bo-surface-2">
                         <h3 className="text-lg font-semibold bo-text">Pagos ({customerStatement.payments.length})</h3>
                       </div>
@@ -817,7 +817,7 @@ export default function Page() {
                   </div>
                 </>
               ) : (
-                <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
+                <div className="bg-bo-surface rounded-md shadow-soft border border p-12 text-center">
                   <Receipt className="w-12 h-12 text-faint mx-auto mb-4" />
                   <h3 className="text-lg font-medium bo-text mb-2">Sin estado de cuenta</h3>
                   <p className="text-muted mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
@@ -829,7 +829,7 @@ export default function Page() {
           {/* IVA Report Tab */}
           <SimpleTabsContent value="iva">
             <div>
-              <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+              <div className="bg-bo-surface rounded-md shadow-soft border border p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Date preset */}
                   <div>
@@ -837,7 +837,7 @@ export default function Page() {
                     <select
                       value={datePreset}
                       onChange={(e) => handleDatePresetChange(e.target.value as DatePreset)}
-                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     >
                       {DATE_PRESETS.map(preset => (
                         <option key={preset.value} value={preset.value}>{preset.label}</option>
@@ -855,7 +855,7 @@ export default function Page() {
                         setDateFrom(e.target.value);
                         setDatePreset("custom");
                       }}
-                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
@@ -869,7 +869,7 @@ export default function Page() {
                         setDateTo(e.target.value);
                         setDatePreset("custom");
                       }}
-                      className="w-full px-3 py-2 border border rounded-[var(--rounded-sm)] focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
                     />
                   </div>
 
@@ -892,7 +892,7 @@ export default function Page() {
                   <button
                     onClick={handleGenerateReport}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
                     Generar Reporte
@@ -903,7 +903,7 @@ export default function Page() {
                       <button
                         onClick={handleExportPDF}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileText className="w-4 h-4" />
                         Exportar PDF
@@ -911,7 +911,7 @@ export default function Page() {
                       <button
                         onClick={handleExportExcel}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileSpreadsheet className="w-4 h-4" />
                         Exportar Excel
@@ -950,24 +950,24 @@ export default function Page() {
 
                   {/* Credit Notes Summary (if included) */}
                   {includeCreditNotes && report.summary.credit_note_count > 0 && (
-                    <div className="bo-reportCard bo-reportCard--warning">
-                      <h3 className="bo-reportCardTitle bo-reportCardTitle--warning">Notas de Credito</h3>
+                    <div className="rounded-bo-md p-4 mb-6 bg-bo-warning-bg border border-[var(--bo-color-warning)]/[0.38]">
+                      <h3 className="text-bo-lg font-semibold mb-3 text-bo-color-warning">Notas de Credito</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 grid-gap-4">
                         <div>
-                          <span className="bo-reportStatLabel bo-reportStatLabel--warning">Cantidad</span>
-                          <p className="bo-reportStatValue bo-reportStatValue--warning">{report.summary.credit_note_count}</p>
+                          <span className="text-bo-sm text-bo-color-warning">Cantidad</span>
+                          <p className="text-bo-xl font-bold text-bo-color-warning">{report.summary.credit_note_count}</p>
                         </div>
                         <div>
-                          <span className="bo-reportStatLabel bo-reportStatLabel--warning">Base</span>
-                          <p className="bo-reportStatValue bo-reportStatValue--warning">{formatCurrency(report.summary.credit_note_base, "EUR")}</p>
+                          <span className="text-bo-sm text-bo-color-warning">Base</span>
+                          <p className="text-bo-xl font-bold text-bo-color-warning">{formatCurrency(report.summary.credit_note_base, "EUR")}</p>
                         </div>
                         <div>
-                          <span className="bo-reportStatLabel bo-reportStatLabel--warning">IVA</span>
-                          <p className="bo-reportStatValue bo-reportStatValue--warning">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p>
+                          <span className="text-bo-sm text-bo-color-warning">IVA</span>
+                          <p className="text-bo-xl font-bold text-bo-color-warning">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p>
                         </div>
                         <div>
-                          <span className="bo-reportStatLabel bo-reportStatLabel--warning">Total</span>
-                          <p className="bo-reportStatValue bo-reportStatValue--warning">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p>
+                          <span className="text-bo-sm text-bo-color-warning">Total</span>
+                          <p className="text-bo-xl font-bold text-bo-color-warning">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p>
                         </div>
                       </div>
                     </div>
@@ -975,16 +975,16 @@ export default function Page() {
 
                   {/* Net Total (after credit notes) */}
                   {includeCreditNotes && report.summary.credit_note_count > 0 && (
-                    <div className="bo-reportCard bo-reportCard--success">
-                      <h3 className="bo-reportCardTitle bo-reportCardTitle--success">Total Neto (despues de notas de credito)</h3>
+                    <div className="rounded-bo-md p-4 mb-6 bg-bo-success-bg border border-[var(--bo-color-success)]/[0.38]">
+                      <h3 className="text-bo-lg font-semibold mb-3 text-bo-color-success">Total Neto (despues de notas de credito)</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 grid-gap-4">
                         <div>
-                          <span className="bo-reportStatLabel bo-reportStatLabel--success">Base neta</span>
-                          <p className="bo-reportStatValue bo-reportStatValue--success bo-reportStatValue--xl">{formatCurrency(report.summary.net_base, "EUR")}</p>
+                          <span className="text-bo-sm text-bo-color-success">Base neta</span>
+                          <p className="text-bo-2xl font-bold text-bo-color-success">{formatCurrency(report.summary.net_base, "EUR")}</p>
                         </div>
                         <div>
-                          <span className="bo-reportStatLabel bo-reportStatLabel--success">IVA neto</span>
-                          <p className="bo-reportStatValue bo-reportStatValue--success bo-reportStatValue--xl">{formatCurrency(report.summary.net_iva, "EUR")}</p>
+                          <span className="text-bo-sm text-bo-color-success">IVA neto</span>
+                          <p className="text-bo-2xl font-bold text-bo-color-success">{formatCurrency(report.summary.net_iva, "EUR")}</p>
                         </div>
                         <div>
                           <span className="bo-reportStatLabel bo-reportStatLabel--success">Total neto</span>
@@ -1004,7 +1004,7 @@ export default function Page() {
 
                     {/* Breakdown by IVA Rate */}
                     <SimpleTabsContent value="breakdown">
-                      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-bo-surface-2">
                             <tr>
@@ -1062,7 +1062,7 @@ export default function Page() {
 
                     {/* Quarterly Breakdown */}
                     <SimpleTabsContent value="quarterly">
-                      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-bo-surface-2">
                             <tr>
@@ -1102,7 +1102,7 @@ export default function Page() {
 
                     {/* Invoice List */}
                     <SimpleTabsContent value="invoices">
-                      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
                         <button
                           onClick={toggleInvoices}
                           className="w-full px-6 py-4 flex items-center justify-between bo-surface-2 hover:bo-surface-3"
@@ -1152,14 +1152,14 @@ export default function Page() {
                 </>
 
               ) : (
-                <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
+                <div className="bg-bo-surface rounded-md shadow-soft border border p-12 text-center">
                   <FileText className="w-12 h-12 text-faint mx-auto mb-4" />
                   <h3 className="text-lg font-medium bo-text mb-2">No hay reporte generado</h3>
                   <p className="text-muted mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
                   <button
                     onClick={handleGenerateReport}
                     disabled={loading}
-                    className="inline-flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-[var(--rounded-sm)] hover:opacity-90 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
                     Generar Reporte

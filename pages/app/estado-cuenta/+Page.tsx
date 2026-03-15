@@ -490,7 +490,7 @@ export default function Page() {
             </div>
 
             {/* Payments */}
-            <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+            <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
               <div className="px-6 py-4 border-b border bo-surface-2">
                 <h3 className="text-lg font-semibold text-bo-text">Pagos ({customerStatement.payments.length})</h3>
               </div>
@@ -526,7 +526,7 @@ export default function Page() {
           </div>
         </>
       ) : (
-        <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
+        <div className="bg-bo-surface rounded-md shadow-soft border border p-12 text-center">
           <Receipt className="w-12 h-12 text-faint mx-auto mb-4" />
           <h3 className="text-lg font-medium text-bo-text mb-2">Sin estado de cuenta</h3>
           <p className="text-muted mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
