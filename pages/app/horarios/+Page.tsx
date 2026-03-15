@@ -389,10 +389,10 @@ export default function Page() {
   return (
     <section aria-label="Horarios" className="grid grid-gap-4 w-full max-w-full min-w-0">
       <div className="grid grid-gap-4 grid-cols-1 w-full min-w-0">
-        <div className="bo-card">
+        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
           <div className="flex items-center justify-between p-4 pb-0">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm bo-weight-semibold bo-text">
+              <div className="inline-flex items-center gap-2 text-sm font-semibold bo-text">
                 <CalendarClock size={16} strokeWidth={1.8} />
                 Horarios
                 {realtime.pendingScheduleUpdates && (
@@ -402,7 +402,7 @@ export default function Page() {
                   </span>
                 )}
               </div>
-              <div className="text-xs text-faint bo-mt-1">Selecciona una fecha y asigna turnos al equipo.</div>
+              <div className="text-xs text-faint mt-1">Selecciona una fecha y asigna turnos al equipo.</div>
             </div>
             <div className="bo-dateChip">
               {selectedDate}

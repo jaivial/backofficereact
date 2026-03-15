@@ -391,7 +391,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 <span className="text-sm font-medium">Buscar</span>
                 <div className="flex gap-2">
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="search"
                     value={searchText}
                     placeholder={
@@ -439,7 +439,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               <label className="flex flex-col gap-1.5">
                 <span className="text-sm font-medium">Etiqueta</span>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={tagFilter}
                   onChange={(e) => onTagFilterChange(e.target.value)}
@@ -610,7 +610,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               <div className="bo-invoiceFiltersActions">
                 {onImport && (
                   <button
-                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                     type="button"
                     onClick={onImport}
                   >
@@ -620,7 +620,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 )}
                 {onImportHistory && (
                   <button
-                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                     type="button"
                     onClick={onImportHistory}
                   >
@@ -629,7 +629,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   </button>
                 )}
                 <button
-                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                   type="button"
                   onClick={onExportCSV}
                 >
@@ -672,10 +672,10 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   transition={{ duration: 0.2 }}
                 >
                   <div className="bo-filterSaveDialogContent">
-                    <label className="bo-field">
+                    <label className="grid gap-bo-2">
                       <span className="text-sm font-medium">Nombre del filtro</span>
                       <input
-                        className="bo-input"
+                        className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                         type="text"
                         value={filterName}
                         onChange={(e) => setFilterName(e.target.value)}
@@ -686,7 +686,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     </label>
                     <div className="bo-filterSaveDialogActions">
                       <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                         type="button"
                         onClick={() => {
                           setShowSaveDialog(false);
@@ -696,7 +696,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         Cancelar
                       </button>
                       <button
-                        className="bo-btn bo-btn--primary bo-btn--sm"
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
                         type="button"
                         onClick={handleSaveFilter}
                         disabled={!filterName.trim()}

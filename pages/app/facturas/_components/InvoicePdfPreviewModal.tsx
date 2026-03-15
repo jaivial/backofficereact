@@ -108,7 +108,7 @@ export function InvoicePdfPreviewModal({
                 href={pdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bo-btn bo-btn--secondary bo-btn--sm"
+                className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-bo-surface-2 text-bo-text text-xs font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                 download
               >
                 <Download size={14} />
@@ -117,7 +117,7 @@ export function InvoicePdfPreviewModal({
             )}
             <button
               type="button"
-              className="bo-btn bo-btn--secondary bo-btn--sm"
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-bo-surface-2 text-bo-text text-xs font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={onEdit}
               disabled={isSending}
             >
@@ -131,7 +131,7 @@ export function InvoicePdfPreviewModal({
         <div className="bo-pdf-preview-viewer">
           {loading && (
             <div className="bo-pdf-preview-loading">
-              <Loader2 size={32} className="bo-spinner" />
+              <Loader2 size={32} className="animate-spin h-5 w-5" />
               <p>Cargando vista previa...</p>
               {!hasInvoiceId && (
                 <p className="bo-pdf-preview-hint">
@@ -148,7 +148,7 @@ export function InvoicePdfPreviewModal({
               {hasInvoiceId && (
                 <button
                   type="button"
-                  className="bo-btn bo-btn--primary"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                   onClick={retryLoadPdf}
                 >
                   Reintentar
@@ -156,7 +156,7 @@ export function InvoicePdfPreviewModal({
               )}
               <button
                 type="button"
-                className="bo-btn bo-btn--secondary"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={onEdit}
               >
                 Volver a editar
@@ -190,7 +190,7 @@ export function InvoicePdfPreviewModal({
           <div className="bo-pdf-preview-footer-actions">
             <button
               type="button"
-              className="bo-btn bo-btn--secondary"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={onEdit}
               disabled={isSending}
             >
@@ -199,14 +199,14 @@ export function InvoicePdfPreviewModal({
             </button>
             <button
               type="button"
-              className="bo-btn bo-btn--primary"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
               onClick={onConfirmSend}
               disabled={isSending || !hasInvoiceId}
               title={!hasInvoiceId ? "Guarde la factura primero" : "Enviar factura"}
             >
               {isSending ? (
                 <>
-                  <Loader2 size={16} className="bo-spinner" />
+                  <Loader2 size={16} className="animate-spin h-5 w-5" />
                   Enviando...
                 </>
               ) : (

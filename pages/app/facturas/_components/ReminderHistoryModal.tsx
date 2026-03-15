@@ -54,7 +54,7 @@ function ReminderStatusBadge({ status }: { status: InvoiceReminder["status"] }) 
 function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   if (via === "email") {
     return (
-      <span className="bo-badge bo-badge--info">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">
         <Mail size={12} />
         Email
       </span>
@@ -62,7 +62,7 @@ function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   }
   if (via === "whatsapp") {
     return (
-      <span className="bo-badge bo-badge--info">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">
         <MessageSquare size={12} />
         WhatsApp
       </span>
@@ -109,12 +109,12 @@ export function ReminderHistoryModal({
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
-      <div className="bo-modal bo-modal--md" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modalHeader">
-          <h2 className="bo-modalTitle">Historial de recordatorios</h2>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft max-w-lg w-full bo-modal--md" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <h2 className="text-lg font-semibold text-bo-text">Historial de recordatorios</h2>
           <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             aria-label="Cerrar"
           >
@@ -122,7 +122,7 @@ export function ReminderHistoryModal({
           </button>
         </div>
 
-        <div className="bo-modalBody">
+        <div className="p-4">
           {/* Invoice Info */}
           <div className="bo-reminderHistoryInfo">
             <span>
@@ -135,8 +135,8 @@ export function ReminderHistoryModal({
 
           {/* Loading State */}
           {loading && (
-            <div className="bo-loadingState">
-              <div className="bo-spinner" />
+            <div className="flex items-center justify-center py-8 text-bo-muted">
+              <div className="animate-spin h-5 w-5" />
               <span>Cargando historial...</span>
             </div>
           )}
@@ -151,7 +151,7 @@ export function ReminderHistoryModal({
 
           {/* Empty State */}
           {!loading && !error && reminders.length === 0 && (
-            <div className="bo-emptyState">
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
               <Clock size={32} />
               <p>No hay recordatorios enviados</p>
               <span className="text-mutedText">
@@ -198,7 +198,7 @@ export function ReminderHistoryModal({
         </div>
 
         <div className="bo-modalFooter">
-          <button className="bo-btn bo-btn--ghost" onClick={onClose}>
+          <button className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost" onClick={onClose}>
             Cerrar
           </button>
         </div>

@@ -121,14 +121,14 @@ export default function RecurringInvoicesPage() {
   const getStatusBadge = (isActive: boolean) => {
     if (isActive) {
       return (
-        <span className="bo-badge bo-badge--success">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--success">
           <CheckCircle size={12} />
           Activa
         </span>
       );
     }
     return (
-      <span className="bo-badge bo-badge--warning">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--warning">
         <Pause size={12} />
         Pausada
       </span>
@@ -136,15 +136,15 @@ export default function RecurringInvoicesPage() {
   };
 
   return (
-    <div className="bo-stack p-4">
-      <div className="bo-toolbar">
-        <div className="bo-toolbarLeft">
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2.5">
           <RefreshCw size={24} className="text-mutedText" />
-          <h1 className="bo-h3 m-0">Facturación Recurrente</h1>
+          <h1 className="text-2xl font-bold m-0">Facturación Recurrente</h1>
         </div>
-        <div className="bo-toolbarRight">
+        <div className="flex items-center gap-2.5">
           <button
-            className="bo-btn bo-btn--primary"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
             onClick={() => navigate("/app/facturas/crear?recurring=true")}
           >
             <Plus size={16} />
@@ -155,17 +155,17 @@ export default function RecurringInvoicesPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 grid-gap-4">
-        <div className="bo-card">
-          <div className="bo-statValue text-2xl bo-font-bold">{data.total}</div>
-          <div className="bo-statLabel">Total</div>
+        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
+          <div className="font-bold text-2xl">{data.total}</div>
+          <div className="text-bo-xs text-bo-muted">Total</div>
         </div>
-        <div className="bo-card">
-          <div className="bo-statValue text-2xl bo-font-bold text-success">{data.activeCount}</div>
-          <div className="bo-statLabel">Activas</div>
+        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
+          <div className="font-bold text-2xl text-success">{data.activeCount}</div>
+          <div className="text-bo-xs text-bo-muted">Activas</div>
         </div>
-        <div className="bo-card">
-          <div className="bo-statValue text-2xl bo-font-bold text-warning">{data.pausedCount}</div>
-          <div className="bo-statLabel">Pausadas</div>
+        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
+          <div className="font-bold text-2xl text-warning">{data.pausedCount}</div>
+          <div className="text-bo-xs text-bo-muted">Pausadas</div>
         </div>
       </div>
 
@@ -177,14 +177,14 @@ export default function RecurringInvoicesPage() {
       )}
 
       {/* Recurring Invoices List */}
-      <div className="bo-stack">
+      <div className="flex flex-col gap-bo-4 p-4">
         {data.recurringInvoices.length === 0 ? (
-          <div className="bo-emptyState">
-            <RefreshCw size={48} className="text-mutedText bo-mb-4" />
-            <h3 className="bo-h4 bo-mb-2">No hay facturación recurrente</h3>
-            <p className="text-mutedText bo-mb-4 bo-max-w-sm">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
+            <RefreshCw size={48} className="text-mutedText mb-4" />
+            <h3 className="bo-h4 mb-2">No hay facturación recurrente</h3>
+            <p className="text-mutedText mb-4 max-w-sm">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
             <button
-              className="bo-btn bo-btn--primary"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
               onClick={() => window.location.href = "/app/facturas/crear?recurring=true"}
             >
               <Plus size={16} />
@@ -192,55 +192,55 @@ export default function RecurringInvoicesPage() {
             </button>
           </div>
         ) : (
-          <div className="bo-tableWrapper">
-            <table className="bo-table">
+          <div className="max-h-[300px] overflow-y-auto border border-bo-border rounded-bo-sm">
+            <table className="w-full border-collapse text-bo-sm">
               <thead>
                 <tr className="bo-tableHeader">
-                  <th className="bo-tableHeaderCell">Cliente</th>
-                  <th className="bo-tableHeaderCell">Importe</th>
-                  <th className="bo-tableHeaderCell">Frecuencia</th>
-                  <th className="bo-tableHeaderCell">Próxima facturación</th>
-                  <th className="bo-tableHeaderCell">Facturas</th>
-                  <th className="bo-tableHeaderCell">Estado</th>
-                  <th className="bo-tableHeaderCell">Acciones</th>
+                  <th className="p-3 text-left font-semibold text-bo-faint">Cliente</th>
+                  <th className="p-3 text-left font-semibold text-bo-faint">Importe</th>
+                  <th className="p-3 text-left font-semibold text-bo-faint">Frecuencia</th>
+                  <th className="p-3 text-left font-semibold text-bo-faint">Próxima facturación</th>
+                  <th className="p-3 text-left font-semibold text-bo-faint">Facturas</th>
+                  <th className="p-3 text-left font-semibold text-bo-faint">Estado</th>
+                  <th className="p-3 text-left font-semibold text-bo-faint">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recurringInvoices.map((item) => (
                   <tr key={item.id} className="bo-tableRow">
-                    <td className="bo-tableCell">
+                    <td className="p-3 text-bo-text">
                       <div className="bo-stack gap-1">
-                        <span className="bo-weight-medium">{item.customer_name}</span>
+                        <span className="font-medium">{item.customer_name}</span>
                         <span className="text-xs text-mutedText">{item.customer_email}</span>
                       </div>
                     </td>
-                    <td className="bo-tableCell">
-                      <span className="bo-weight-medium">
+                    <td className="p-3 text-bo-text">
+                      <span className="font-medium">
                         {CURRENCY_SYMBOLS[item.currency] || "€"}{item.amount.toFixed(2)}
                       </span>
                     </td>
-                    <td className="bo-tableCell">
+                    <td className="p-3 text-bo-text">
                       <span>{getFrequencyLabel(item.frequency)}</span>
                     </td>
-                    <td className="bo-tableCell">
-                      <div className="bo-row gap-1">
+                    <td className="p-3 text-bo-text">
+                      <div className="flex gap-bo-4 gap-1">
                         <Calendar size={14} className="text-mutedText" />
                         {item.next_billing_date}
                       </div>
                     </td>
-                    <td className="bo-tableCell">
-                      <div className="bo-row gap-1">
-                        <span className="bo-weight-semibold">{item.invoice_count}</span>
+                    <td className="p-3 text-bo-text">
+                      <div className="flex gap-bo-4 gap-1">
+                        <span className="font-semibold">{item.invoice_count}</span>
                         <span className="text-mutedText">facturas</span>
                       </div>
                     </td>
-                    <td className="bo-tableCell">
+                    <td className="p-3 text-bo-text">
                       {getStatusBadge(item.is_active)}
                     </td>
-                    <td className="bo-tableCell">
-                      <div className="bo-row" style={{ gap: "var(--bo-space-1)" }}>
+                    <td className="p-3 text-bo-text">
+                      <div className="flex gap-bo-4" style={{ gap: "var(--bo-space-1)" }}>
                         <button
-                          className="bo-btnIcon"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-bo-text transition-all hover:bg-white/[0.06]"
                           onClick={() => handleGenerateNow(item.id)}
                           disabled={isLoading || !item.is_active}
                           title="Generar factura ahora"
@@ -248,7 +248,7 @@ export default function RecurringInvoicesPage() {
                           <RefreshCw size={14} />
                         </button>
                         <button
-                          className="bo-btnIcon"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-bo-text transition-all hover:bg-white/[0.06]"
                           onClick={() => handleToggleActive(item.id, item.is_active)}
                           disabled={isLoading}
                           title={item.is_active ? "Pausar" : "Reanudar"}
@@ -256,7 +256,7 @@ export default function RecurringInvoicesPage() {
                           {item.is_active ? <Pause size={14} /> : <Play size={14} />}
                         </button>
                         <button
-                          className="bo-btnIcon"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-bo-text transition-all hover:bg-white/[0.06]"
                           onClick={() => window.location.href = `/app/facturas/${item.id}`}
                           title="Ver detalles"
                         >
@@ -282,20 +282,20 @@ export default function RecurringInvoicesPage() {
 
       {/* Pagination */}
       {data.total > data.limit && (
-        <div className="bo-pagination">
-          <div className="bo-paginationInfo">
+        <div className="flex items-center justify-between gap-3 border-t border-bo-border mt-4 pt-4">
+          <div className="text-bo-sm text-bo-muted">
             Mostrando {((data.page - 1) * data.limit) + 1} - {Math.min(data.page * data.limit, data.total)} de {data.total}
           </div>
-          <div className="bo-paginationButtons">
+          <div className="flex items-center gap-2">
             <button
-              className="bo-btn bo-btn--ghost"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
               disabled={data.page <= 1}
               onClick={() => window.location.href = `/app/facturas/recurrentes?page=${data.page - 1}`}
             >
               Anterior
             </button>
             <button
-              className="bo-btn bo-btn--ghost"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
               disabled={data.page * data.limit >= data.total}
               onClick={() => window.location.href = `/app/facturas/recurrentes?page=${data.page + 1}`}
             >

@@ -104,19 +104,19 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bo-modal-content bo-importHistory" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modal-header">
-          <div className="bo-modal-title">
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <div className="text-lg font-semibold text-bo-text">
             <History size={20} />
             <span>Historial de importaciones</span>
           </div>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+          <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} aria-label="Cerrar">
             <X size={18} />
           </button>
         </div>
 
-        <div className="bo-modal-body">
+        <div className="p-4">
           {history.length === 0 ? (
             <div className="bo-importHistoryEmpty">
               <FileText size={48} />
@@ -183,7 +183,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
 
         {history.length > 0 && (
           <div className="bo-modal-footer">
-            <button className="bo-btn bo-btn--ghost" onClick={clearHistory}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={clearHistory}>
               <Trash2 size={16} />
               Limpiar historial
             </button>

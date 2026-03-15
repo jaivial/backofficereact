@@ -90,31 +90,31 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
   }, [onDeletePayment, pushToast]);
 
   return (
-    <div className="bo-modalOverlay" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bo-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="payment-modal-title">
-        <div className="bo-modalHeader">
-          <h2 id="payment-modal-title" className="bo-modalTitle">Registrar pago</h2>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+        <div className="flex items-center justify-between p-4 border-b border-bo-border">
+          <h2 id="payment-modal-title" className="text-lg font-semibold text-bo-text">Registrar pago</h2>
+          <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} aria-label="Cerrar">
             <X size={18} />
           </button>
         </div>
 
-        <div className="bo-modalBody">
+        <div className="p-4">
           {/* Invoice Summary */}
           <div className="bo-paymentSummary">
-            <div className="bo-paymentSummaryRow">
+            <div className="flex justify-between py-1 text-bo-sm">
               <span>Factura:</span>
               <strong>{invoice.invoice_number || `#${invoice.id}`}</strong>
             </div>
-            <div className="bo-paymentSummaryRow">
+            <div className="flex justify-between py-1 text-bo-sm">
               <span>Cliente:</span>
               <strong>{invoice.customer_name} {invoice.customer_surname || ""}</strong>
             </div>
-            <div className="bo-paymentSummaryRow">
+            <div className="flex justify-between py-1 text-bo-sm">
               <span>Importe total:</span>
               <strong>{formatPrice(totalAmount)}</strong>
             </div>
-            <div className="bo-paymentSummaryRow">
+            <div className="flex justify-between py-1 text-bo-sm">
               <span>Pagado:</span>
               <strong className={isFullyPaid ? "text--success" : ""}>{formatPrice(paidAmount)}</strong>
             </div>
@@ -154,13 +154,13 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                       <span className="bo-paymentHistoryItemDate">{formatDate(payment.payment_date)}</span>
                     </div>
                     <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
+                      className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
                       onClick={() => handleDeletePayment(payment.id)}
                       disabled={deletingPaymentId === payment.id}
                       title="Eliminar pago"
                       aria-label="Eliminar pago"
                     >
-                      {deletingPaymentId === payment.id ? <Loader2 size={14} className="bo-spin" /> : <Trash2 size={14} />}
+                      {deletingPaymentId === payment.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                     </button>
                   </div>
                 ))}
@@ -173,11 +173,11 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
             <form onSubmit={handleSubmit} className="bo-paymentForm">
               <h3 className="bo-paymentFormTitle">Nuevo pago</h3>
 
-              <div className="bo-paymentFormRow">
-                <label className="bo-field">
-                  <span className="bo-label">Importe *</span>
+              <div className="mb-3">
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Importe *</span>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     step="0.01"
                     min="0.01"
@@ -190,9 +190,9 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                 </label>
               </div>
 
-              <div className="bo-paymentFormRow">
-                <label className="bo-field">
-                  <span className="bo-label">Método de pago</span>
+              <div className="mb-3">
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Método de pago</span>
                   <Select
                     value={paymentMethod}
                     onChange={(value) => setPaymentMethod(value as PaymentMethod)}
@@ -202,18 +202,18 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                 </label>
               </div>
 
-              <div className="bo-paymentFormRow">
-                <label className="bo-field">
-                  <span className="bo-label">Fecha de pago</span>
+              <div className="mb-3">
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Fecha de pago</span>
                   <DatePicker value={paymentDate} onChange={setPaymentDate} />
                 </label>
               </div>
 
-              <div className="bo-paymentFormRow">
-                <label className="bo-field">
-                  <span className="bo-label">Notas</span>
+              <div className="mb-3">
+                <label className="grid gap-bo-2">
+                  <span className="text-bo-sm font-semibold text-bo-muted">Notas</span>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="text"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
@@ -224,12 +224,12 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
 
               <button
                 type="submit"
-                className="bo-btn bo-btn--primary"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                 disabled={isSubmitting || !amount || parseFloat(amount) <= 0}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 size={16} className="bo-spin" />
+                    <Loader2 size={16} className="animate-spin" />
                     Registrando...
                   </>
                 ) : (

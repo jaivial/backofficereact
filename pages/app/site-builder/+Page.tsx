@@ -2146,7 +2146,7 @@ export default function SiteBuilderEditorPage() {
     if (node.type === "button") {
       return (
         <div className="bo-nodePreviewButton" data-ui="node-preview-button">
-          <button className="bo-btn" data-ui="node-preview-button-tag" type="button">
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" data-ui="node-preview-button-tag" type="button">
             {toInputValue(props.text) || "Button"}
           </button>
         </div>
@@ -2234,14 +2234,14 @@ export default function SiteBuilderEditorPage() {
         {/* 8-point resize handles */}
         {isSelected && (
           <div className="bo-siteBuilderResizeHandles" data-ui="resize-handles">
-            <div className="bo-siteBuilderResizeHandle" data-handle="nw" title="Resize" />
-            <div className="bo-siteBuilderResizeHandle" data-handle="n" title="Resize" />
-            <div className="bo-siteBuilderResizeHandle" data-handle="ne" title="Resize" />
-            <div className="bo-siteBuilderResizeHandle" data-handle="e" title="Resize" />
-            <div className="bo-siteBuilderResizeHandle" data-handle="se" title="Resize" />
-            <div className="bo-siteBuilderResizeHandle" data-handle="s" title="Resize" />
-            <div className="bo-siteBuilderResizeHandle" data-handle="sw" title="Resize" />
-            <div className="bo-siteBuilderResizeHandle" data-handle="w" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="nw" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="n" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="ne" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="e" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="se" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="s" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="sw" title="Resize" />
+            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="w" title="Resize" />
           </div>
         )}
         
@@ -2351,8 +2351,8 @@ export default function SiteBuilderEditorPage() {
 
   if (loading) {
     return (
-      <div className="bo-loadingState" data-ui="site-builder-loading">
-        <Loader2 className="bo-spinnerIcon" size={32} />
+      <div className="flex items-center justify-center py-8 text-bo-muted" data-ui="site-builder-loading">
+        <Loader2 className="animate-spin h-4 w-4" size={32} />
         <span data-ui="site-builder-loading-text">Cargando editor...</span>
       </div>
     );
@@ -2410,7 +2410,7 @@ export default function SiteBuilderEditorPage() {
 
           <div className="bo-siteBuilderToolbarRight" data-ui="toolbar-right">
             <button
-              className="bo-btn bo-btn--ghost"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
               type="button"
               onClick={() => setLeftPanelOpen((prev) => !prev)}
               title={leftPanelOpen ? "Ocultar panel izquierdo" : "Mostrar panel izquierdo"}
@@ -2419,17 +2419,16 @@ export default function SiteBuilderEditorPage() {
             >
               {leftPanelOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
             </button>
-            <button className="bo-btn bo-btn--ghost" type="button" title="Deshacer" aria-label="Deshacer" data-ui="toolbar-undo">
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" title="Deshacer" aria-label="Deshacer" data-ui="toolbar-undo">
               <Undo size={18} />
             </button>
-            <button
-              className="bo-btn bo-btn--primary"
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
               type="button"
               onClick={handleSavePage}
               disabled={saving}
               data-ui="toolbar-save"
             >
-              {saving ? <Loader2 className="bo-spinnerIcon" size={16} /> : <Save size={16} />}
+              {saving ? <Loader2 className="animate-spin h-4 w-4" size={16} /> : <Save size={16} />}
               <span data-ui="toolbar-save-label">Guardar</span>
             </button>
           </div>
@@ -2493,7 +2492,7 @@ export default function SiteBuilderEditorPage() {
                       </button>
                     ))}
                     {components.length === 0 ? (
-                      <div className="bo-emptyState" data-ui="components-empty-state">
+                      <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3" data-ui="components-empty-state">
                         <Blocks size={32} />
                         <p data-ui="components-empty-text">No hay componentes disponibles</p>
                       </div>
@@ -2580,7 +2579,7 @@ export default function SiteBuilderEditorPage() {
                       </div>
                     ))}
                     {layerItems.length === 0 ? (
-                      <div className="bo-emptyState" data-ui="layers-empty-state">
+                      <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3" data-ui="layers-empty-state">
                         <Layers size={32} />
                         <p data-ui="layers-empty-text">Arrastra componentes al canvas para empezar</p>
                       </div>
@@ -2656,7 +2655,7 @@ export default function SiteBuilderEditorPage() {
               <div className="bo-siteBuilderPanelHeader" data-ui="right-panel-header">
                 <h3 data-ui="right-panel-title">Propiedades</h3>
                 <button
-                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                   type="button"
                   onClick={() => setRightPanelOpen(false)}
                   aria-label="Ocultar propiedades"
@@ -2667,8 +2666,8 @@ export default function SiteBuilderEditorPage() {
               </div>
 
               <div className="bo-siteBuilderProperties" data-ui="properties">
-                <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-type">
-                  <span className="bo-siteBuilderPropertyLabel" data-ui="property-label-type">
+                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-type">
+                  <span className="text-bo-sm text-bo-muted" data-ui="property-label-type">
                     Tipo
                   </span>
                   <span className="bo-siteBuilderPropertyType" data-ui="property-value-type">
@@ -2678,52 +2677,52 @@ export default function SiteBuilderEditorPage() {
 
                 {selectedNode.type === "hero" ? (
                   <>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-hero-title">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="hero-title" data-ui="property-label-hero-title">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-title">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-title" data-ui="property-label-hero-title">
                         Título
                       </label>
                       <input
                         id="hero-title"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).title)}
                         onChange={(event) => updateSelectedNodeProps({ title: event.target.value })}
                         data-ui="property-input-hero-title"
                       />
                     </div>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-hero-subtitle">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="hero-subtitle" data-ui="property-label-hero-subtitle">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-subtitle">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-subtitle" data-ui="property-label-hero-subtitle">
                         Subtítulo
                       </label>
                       <textarea
                         id="hero-subtitle"
-                        className="bo-input bo-textarea"
+                        className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea"
                         value={toInputValue(parseNodeProps(selectedNode).subtitle)}
                         onChange={(event) => updateSelectedNodeProps({ subtitle: event.target.value })}
                         data-ui="property-input-hero-subtitle"
                       />
                     </div>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-hero-button-text">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="hero-button-text" data-ui="property-label-hero-button-text">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-button-text">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-button-text" data-ui="property-label-hero-button-text">
                         Texto del botón
                       </label>
                       <input
                         id="hero-button-text"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).buttonText)}
                         onChange={(event) => updateSelectedNodeProps({ buttonText: event.target.value })}
                         data-ui="property-input-hero-button-text"
                       />
                     </div>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-hero-button-href">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="hero-button-href" data-ui="property-label-hero-button-href">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-button-href">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-button-href" data-ui="property-label-hero-button-href">
                         URL del botón
                       </label>
                       <input
                         id="hero-button-href"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).buttonHref)}
                         onChange={(event) => updateSelectedNodeProps({ buttonHref: event.target.value })}
                         data-ui="property-input-hero-button-href"
@@ -2733,13 +2732,13 @@ export default function SiteBuilderEditorPage() {
                 ) : null}
 
                 {selectedNode.type === "text" ? (
-                  <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-text-content">
-                    <label className="bo-siteBuilderPropertyLabel" htmlFor="text-content" data-ui="property-label-text-content">
+                  <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-text-content">
+                    <label className="text-bo-sm text-bo-muted" htmlFor="text-content" data-ui="property-label-text-content">
                       Contenido
                     </label>
                     <textarea
                       id="text-content"
-                      className="bo-input bo-textarea bo-textarea--lg"
+                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea bo-textarea--lg"
                       value={toInputValue(parseNodeProps(selectedNode).content)}
                       onChange={(event) => updateSelectedNodeProps({ content: event.target.value })}
                       data-ui="property-input-text-content"
@@ -2749,26 +2748,26 @@ export default function SiteBuilderEditorPage() {
 
                 {selectedNode.type === "heading" ? (
                   <>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-heading-text">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="heading-text" data-ui="property-label-heading-text">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-heading-text">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="heading-text" data-ui="property-label-heading-text">
                         Texto
                       </label>
                       <input
                         id="heading-text"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).text)}
                         onChange={(event) => updateSelectedNodeProps({ text: event.target.value })}
                         data-ui="property-input-heading-text"
                       />
                     </div>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-heading-level">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="heading-level" data-ui="property-label-heading-level">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-heading-level">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="heading-level" data-ui="property-label-heading-level">
                         Nivel
                       </label>
                       <select
                         id="heading-level"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={Number(parseNodeProps(selectedNode).level) || 2}
                         onChange={(event) => updateSelectedNodeProps({ level: Number(event.target.value) })}
                         data-ui="property-input-heading-level"
@@ -2786,27 +2785,27 @@ export default function SiteBuilderEditorPage() {
 
                 {selectedNode.type === "image" ? (
                   <>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-image-src">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="image-src" data-ui="property-label-image-src">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-image-src">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="image-src" data-ui="property-label-image-src">
                         URL de imagen
                       </label>
                       <input
                         id="image-src"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).src)}
                         onChange={(event) => updateSelectedNodeProps({ src: event.target.value })}
                         data-ui="property-input-image-src"
                       />
                     </div>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-image-alt">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="image-alt" data-ui="property-label-image-alt">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-image-alt">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="image-alt" data-ui="property-label-image-alt">
                         Texto alternativo
                       </label>
                       <input
                         id="image-alt"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).alt)}
                         onChange={(event) => updateSelectedNodeProps({ alt: event.target.value })}
                         data-ui="property-input-image-alt"
@@ -2817,39 +2816,39 @@ export default function SiteBuilderEditorPage() {
 
                 {selectedNode.type === "button" ? (
                   <>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-button-text">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="button-text" data-ui="property-label-button-text">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-button-text">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="button-text" data-ui="property-label-button-text">
                         Texto
                       </label>
                       <input
                         id="button-text"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).text)}
                         onChange={(event) => updateSelectedNodeProps({ text: event.target.value })}
                         data-ui="property-input-button-text"
                       />
                     </div>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-button-href">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="button-href" data-ui="property-label-button-href">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-button-href">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="button-href" data-ui="property-label-button-href">
                         URL
                       </label>
                       <input
                         id="button-href"
                         type="text"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).href)}
                         onChange={(event) => updateSelectedNodeProps({ href: event.target.value })}
                         data-ui="property-input-button-href"
                       />
                     </div>
-                    <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-button-variant">
-                      <label className="bo-siteBuilderPropertyLabel" htmlFor="button-variant" data-ui="property-label-button-variant">
+                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-button-variant">
+                      <label className="text-bo-sm text-bo-muted" htmlFor="button-variant" data-ui="property-label-button-variant">
                         Variante
                       </label>
                       <select
                         id="button-variant"
-                        className="bo-input"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).variant) || "primary"}
                         onChange={(event) => updateSelectedNodeProps({ variant: event.target.value })}
                         data-ui="property-input-button-variant"
@@ -2864,14 +2863,14 @@ export default function SiteBuilderEditorPage() {
                 ) : null}
 
                 {selectedNode.type === "spacer" ? (
-                  <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-spacer-height">
-                    <label className="bo-siteBuilderPropertyLabel" htmlFor="spacer-height" data-ui="property-label-spacer-height">
+                  <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-spacer-height">
+                    <label className="text-bo-sm text-bo-muted" htmlFor="spacer-height" data-ui="property-label-spacer-height">
                       Altura (px)
                     </label>
                     <input
                       id="spacer-height"
                       type="number"
-                      className="bo-input"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                       value={Number(parseNodeProps(selectedNode).height) || 40}
                       onChange={(event) => updateSelectedNodeProps({ height: Number(event.target.value) || 0 })}
                       data-ui="property-input-spacer-height"
@@ -2879,42 +2878,42 @@ export default function SiteBuilderEditorPage() {
                   </div>
                 ) : null}
 
-                <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-style-padding-top">
-                  <label className="bo-siteBuilderPropertyLabel" htmlFor="style-padding-top" data-ui="property-label-style-padding-top">
+                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-padding-top">
+                  <label className="text-bo-sm text-bo-muted" htmlFor="style-padding-top" data-ui="property-label-style-padding-top">
                     Padding superior (px)
                   </label>
                   <input
                     id="style-padding-top"
                     type="number"
-                    className="bo-input"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     value={Number(selectedNodeStyle.paddingTop ?? 0)}
                     onChange={(event) => updateSelectedNodeStyle({ paddingTop: Number(event.target.value) || 0 })}
                     data-ui="property-input-style-padding-top"
                   />
                 </div>
 
-                <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-style-padding-bottom">
-                  <label className="bo-siteBuilderPropertyLabel" htmlFor="style-padding-bottom" data-ui="property-label-style-padding-bottom">
+                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-padding-bottom">
+                  <label className="text-bo-sm text-bo-muted" htmlFor="style-padding-bottom" data-ui="property-label-style-padding-bottom">
                     Padding inferior (px)
                   </label>
                   <input
                     id="style-padding-bottom"
                     type="number"
-                    className="bo-input"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     value={Number(selectedNodeStyle.paddingBottom ?? 0)}
                     onChange={(event) => updateSelectedNodeStyle({ paddingBottom: Number(event.target.value) || 0 })}
                     data-ui="property-input-style-padding-bottom"
                   />
                 </div>
 
-                <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-style-background-color">
-                  <label className="bo-siteBuilderPropertyLabel" htmlFor="style-background-color" data-ui="property-label-style-background-color">
+                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-background-color">
+                  <label className="text-bo-sm text-bo-muted" htmlFor="style-background-color" data-ui="property-label-style-background-color">
                     Fondo
                   </label>
                   <input
                     id="style-background-color"
                     type="text"
-                    className="bo-input"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     placeholder="#ffffff o var(--token)"
                     value={toInputValue(selectedNodeStyle.backgroundColor)}
                     onChange={(event) => updateSelectedNodeStyle({ backgroundColor: event.target.value })}
@@ -2922,14 +2921,14 @@ export default function SiteBuilderEditorPage() {
                   />
                 </div>
 
-                <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-style-text-color">
-                  <label className="bo-siteBuilderPropertyLabel" htmlFor="style-text-color" data-ui="property-label-style-text-color">
+                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-text-color">
+                  <label className="text-bo-sm text-bo-muted" htmlFor="style-text-color" data-ui="property-label-style-text-color">
                     Color de texto
                   </label>
                   <input
                     id="style-text-color"
                     type="text"
-                    className="bo-input"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     placeholder="#111111 o var(--token)"
                     value={toInputValue(selectedNodeStyle.textColor)}
                     onChange={(event) => updateSelectedNodeStyle({ textColor: event.target.value })}
@@ -2937,14 +2936,14 @@ export default function SiteBuilderEditorPage() {
                   />
                 </div>
 
-                <div className="bo-siteBuilderPropertyGroup" data-ui="property-group-style-max-width">
-                  <label className="bo-siteBuilderPropertyLabel" htmlFor="style-max-width" data-ui="property-label-style-max-width">
+                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-max-width">
+                  <label className="text-bo-sm text-bo-muted" htmlFor="style-max-width" data-ui="property-label-style-max-width">
                     Ancho máximo
                   </label>
                   <input
                     id="style-max-width"
                     type="text"
-                    className="bo-input"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     placeholder="1200px, 80ch, min(100%, 960px)"
                     value={toInputValue(selectedNodeStyle.maxWidth)}
                     onChange={(event) => updateSelectedNodeStyle({ maxWidth: event.target.value })}
@@ -2954,7 +2953,7 @@ export default function SiteBuilderEditorPage() {
 
                 <div className="bo-siteBuilderPropertyActions" data-ui="property-actions">
                   <button
-                    className="bo-btn bo-btn--danger"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-500/35 bg-red-500/14 text-red-400 text-sm font-bold transition-all hover:border-red-500/50 hover:bg-red-500/20 disabled:opacity-55 disabled:cursor-not-allowed"
                     type="button"
                     onClick={() => handleDeleteNode(selectedNode.id)}
                     data-ui="property-delete-node"

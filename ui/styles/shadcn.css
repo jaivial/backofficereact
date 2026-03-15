@@ -53,4 +53,573 @@
   .bo-content-grid {
     @apply grid gap-4 md:gap-5;
   }
+
+  .bo-field {
+    @apply flex flex-col gap-1;
+  }
+
+  .bo-field--switch {
+    @apply flex flex-row items-center gap-3;
+  }
+
+  .bo-field--error {
+    @apply border-red-400;
+  }
+
+  .bo-label {
+    @apply text-xs text-bo-muted font-semibold flex items-center gap-1;
+  }
+
+  .bo-fieldError {
+    @apply text-xs text-red-400;
+  }
+
+  .bo-input {
+    @apply h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors;
+  }
+
+  .bo-input:hover {
+    @apply border-white/[0.09] bg-white/[0.05];
+  }
+
+  .bo-input:focus {
+    @apply border-bo-accent bg-white/[0.05];
+  }
+
+  .bo-input--error {
+    @apply border-red-400;
+  }
+
+  .bo-textarea {
+    @apply min-h-[80px] px-3 py-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors resize-none;
+  }
+
+  .bo-recurringBilling {
+    @apply mt-4 p-4 rounded-lg border border-white/[0.06] bg-bo-surface;
+  }
+
+  .bo-recurringBillingHeader {
+    @apply flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06];
+  }
+
+  .bo-recurringBillingTitle {
+    @apply flex items-center gap-2 text-bo-accent;
+  }
+
+  .bo-recurringBillingTitle h3 {
+    @apply m-0 text-base font-semibold;
+  }
+
+  .bo-recurringBillingToggle {
+    @apply mb-4;
+  }
+
+  .bo-recurringBillingConfig {
+    @apply pl-2;
+  }
+
+  .bo-recurringBillingRow {
+    @apply grid gap-4 mb-4;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .bo-recurringBillingHelp {
+    @apply text-xs mt-1 text-bo-muted;
+  }
+
+  .bo-recurringBillingNextPreview {
+    @apply flex items-center gap-2 p-3 rounded-md bg-bo-surface-3 mb-4;
+  }
+
+  .bo-recurringBillingNextPreviewLabel {
+    @apply font-medium;
+  }
+
+  .bo-recurringBillingNextPreviewDate {
+    @apply font-semibold text-bo-accent;
+  }
+
+  .bo-recurringBillingNextPreviewFreq {
+    @apply text-xs text-bo-muted;
+  }
+
+  .bo-recurringBillingStats {
+    @apply grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/[0.06];
+  }
+
+  .bo-recurringBillingStat {
+    @apply flex flex-col items-center p-3 rounded-md bg-bo-surface-3;
+  }
+
+  .bo-recurringBillingStatLabel {
+    @apply text-xs text-bo-muted mb-1;
+  }
+
+  .bo-recurringBillingStatValue {
+    @apply text-lg font-semibold;
+  }
+
+  .bo-recurringStatus {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium;
+  }
+
+  .bo-recurringStatus--pending {
+    @apply bg-amber-500 text-black;
+  }
+
+  .bo-recurringStatus--sending {
+    @apply bg-sky-500 text-white;
+  }
+
+  .bo-recurringStatus--sent,
+  .bo-recurringStatus--active {
+    @apply bg-emerald-500 text-white;
+  }
+
+  .bo-recurringStatus--failed,
+  .bo-recurringStatus--paused {
+    @apply bg-red-500 text-white;
+  }
+
+  .bo-recurringBadge {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase bg-bo-accent text-white;
+  }
+
+  .bo-invoiceFormSection {
+    @apply mb-6;
+  }
+
+  .bo-invoiceForm {
+    @apply relative;
+  }
+
+  .bo-spinner {
+    @apply w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin;
+  }
+
+  .bo-spinner--glow {
+    border-color: rgba(185, 168, 255, 0.3);
+    border-top-color: var(--bo-accent);
+  }
+
+  .bo-invoiceForm {
+    @apply grid gap-4 w-full min-w-0;
+    gap: clamp(12px, 1.8vw, 16px);
+  }
+
+  .bo-invoiceFormHeader {
+    @apply flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-white/[0.06];
+  }
+
+  .bo-invoiceFormHeaderMain {
+    @apply flex items-center gap-3 flex-wrap min-w-0;
+  }
+
+  .bo-invoiceFormHeaderActions {
+    @apply flex items-center justify-end gap-2 flex-wrap;
+  }
+
+  .bo-invoiceFormTitle {
+    @apply text-xl font-bold;
+  }
+
+  .bo-invoiceFormGrid {
+    @apply grid gap-4;
+  }
+
+  .bo-invoiceFormTopGrid {
+    @apply grid gap-4;
+  }
+
+  .bo-invoiceFormRow {
+    @apply grid gap-4;
+  }
+
+  .bo-invoiceFormSectionTitle {
+    @apply text-base font-semibold mb-3;
+  }
+
+  .bo-invoiceFormAutoSave {
+    @apply flex items-center gap-1.5 text-sm px-2.5 py-1 rounded transition-colors;
+  }
+
+  .bo-invoiceFormAutoSaveIcon {
+    @apply flex-shrink-0;
+  }
+
+  .bo-invoiceFormAutoSaveIcon--spinning {
+    animation: bo-invoiceFormAutoSave-spin 1s linear infinite;
+  }
+
+  .bo-invoiceFormAutoSave--saving {
+    background-color: var(--bo-bg-secondary);
+    color: var(--bo-text-secondary);
+  }
+
+  .bo-invoiceFormAutoSave--saved {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: var(--bo-color-success);
+  }
+
+  .bo-invoiceFormAutoSave--error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--bo-color-danger);
+  }
+
+  .bo-invoiceFormAutoSave--pending {
+    background-color: rgba(251, 191, 36, 0.1);
+    color: var(--bo-color-warning);
+  }
+
+  .bo-invoiceFormActions {
+    @apply flex items-center justify-end gap-2 flex-wrap;
+  }
+
+  .bo-formLoadingOverlay {
+    @apply absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl z-50;
+  }
+
+  .bo-formLoadingOverlayText {
+    @apply ml-2 text-sm text-bo-text;
+  }
+
+  @keyframes bo-invoiceFormAutoSave-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .bo-actionsRow {
+    @apply flex items-center gap-2;
+  }
+
+  .bo-btnClear {
+    @apply h-8 px-2.5 rounded-lg border border-white/[0.06] bg-transparent text-bo-text inline-flex items-center justify-center gap-1.5 text-xs transition-colors;
+  }
+
+  .bo-btnClear:hover {
+    @apply bg-white/[0.04];
+  }
+
+  .bo-btnClear:disabled {
+    @apply opacity-55 cursor-not-allowed;
+  }
+
+  .bo-hidden {
+    @apply hidden;
+  }
+
+  .bo-btnSecondary {
+    @apply h-9 px-3 rounded-lg border border-white/[0.06] bg-transparent text-bo-text font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer;
+  }
+
+  .bo-btnSecondary:hover {
+    @apply bg-white/[0.06];
+  }
+
+  .bo-btnPrimary {
+    @apply h-9 px-3 rounded-lg border border-bo-accent bg-bo-accent text-bo-bg font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer;
+  }
+
+  .bo-btnPrimary:hover {
+    @apply brightness-110;
+  }
+
+  .bo-ivaSummary {
+    @apply flex flex-col gap-2;
+  }
+
+  .bo-ivaSummaryItem {
+    @apply flex justify-between items-center;
+  }
+
+  .bo-ivaSummaryLabel {
+    @apply text-sm text-bo-muted;
+  }
+
+  .bo-ivaSummaryValue {
+    @apply text-sm font-semibold text-bo-text;
+  }
+
+  .bo-ivaSummaryItem--total {
+    @apply pt-2 mt-2 border-t border-white/[0.06];
+  }
+
+  .bo-ivaSummaryItem--total .bo-ivaSummaryLabel,
+  .bo-ivaSummaryItem--total .bo-ivaSummaryValue {
+    @apply text-base;
+  }
+
+  .bo-tagsList {
+    @apply flex flex-wrap gap-1;
+  }
+
+  .bo-tagItem {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-bo-surface-2 border border-white/[0.06];
+  }
+
+  .bo-tagRemove {
+    @apply cursor-pointer opacity-60 hover:opacity-100;
+  }
+
+  .bo-tagsInput {
+    @apply flex flex-wrap gap-1 p-2 rounded-lg border border-white/[0.06] bg-bo-surface;
+  }
+
+  .bo-tagInputWrapper {
+    @apply flex-1 min-w-[120px];
+  }
+
+  .bo-pdfTemplateOptions {
+    @apply grid gap-3;
+  }
+
+  .bo-pdfTemplateOptions--inline {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .bo-pdfTemplateCard {
+    @apply p-3 rounded-lg border border-white/[0.06] bg-bo-surface cursor-pointer transition-colors;
+  }
+
+  .bo-pdfTemplateCard--inline {
+    @apply flex items-center gap-3;
+  }
+
+  .bo-pdfTemplateCard--selected {
+    @apply border-bo-accent;
+    background-color: rgba(185, 168, 255, 0.1);
+  }
+
+  .bo-pdfTemplateCardContent {
+    @apply flex flex-col gap-1;
+  }
+
+  .bo-pdfTemplateCardTitle {
+    @apply font-medium text-sm;
+  }
+
+  .bo-pdfTemplateRadio {
+    @apply w-4 h-4 rounded-full border border-white/40;
+  }
+
+  .bo-invoiceImageUpload {
+    @apply flex flex-col gap-2;
+  }
+
+  .bo-invoiceImagePreview {
+    @apply relative w-24 h-24 rounded-lg overflow-hidden border border-white/[0.06];
+  }
+
+  .bo-invoiceImageRemove {
+    @apply absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center cursor-pointer;
+  }
+
+  .bo-invoiceImageDrop {
+    @apply w-24 h-24 rounded-lg border-2 border-dashed border-white/[0.12] flex items-center justify-center cursor-pointer transition-colors;
+  }
+
+  .bo-invoiceImageDrop:hover {
+    border-color: rgba(185, 168, 255, 0.5);
+  }
+
+  .bo-field--inline {
+    @apply flex flex-row items-center gap-2;
+  }
+
+  .bo-field--counter {
+    @apply flex flex-row items-center gap-2;
+  }
+
+  .bo-field--full {
+    @apply w-full;
+  }
+
+  .bo-field--wide {
+    @apply col-span-2;
+  }
+
+  .bo-field--number {
+    @apply max-w-[100px];
+  }
+
+  .bo-fieldRow {
+    @apply grid gap-4;
+  }
+
+  .bo-fieldHeader {
+    @apply flex items-center justify-between mb-1;
+  }
+
+  .bo-fieldHelp {
+    @apply text-xs text-bo-muted mt-1;
+  }
+
+  .bo-field--switch {
+    @apply flex flex-row items-center gap-3;
+  }
+
+  .bo-inputWrapper {
+    @apply relative;
+  }
+
+  .bo-input--withIcon {
+    @apply pl-8;
+  }
+
+  .bo-input--sm {
+    @apply h-8;
+  }
+
+  /* bo- utility aliases for migration - these map to standard Tailwind */
+  .bo-flex { @apply flex; }
+  .bo-flex-col { @apply flex-col; }
+  .bo-flex-wrap { @apply flex-wrap; }
+  .bo-inline-flex { @apply inline-flex; }
+  .bo-items-center { @apply items-center; }
+  .bo-items-start { @apply items-start; }
+  .bo-justify-between { @apply justify-between; }
+  .bo-justify-center { @apply justify-center; }
+  .bo-justify-end { @apply justify-end; }
+  .bo-gap-1 { @apply gap-1; }
+  .bo-gap-2 { @apply gap-2; }
+  .bo-gap-3 { @apply gap-3; }
+  .bo-gap-4 { @apply gap-4; }
+  .bo-gap-5 { @apply gap-5; }
+  .bo-gap-6 { @apply gap-6; }
+
+  .bo-h-full { @apply h-full; }
+  .bo-h-screen { @apply h-screen; }
+  .bo-min-h-screen { @apply min-h-screen; }
+  .bo-min-h-0 { @apply min-h-0; }
+
+  .bo-w-full { @apply w-full; }
+  .bo-w-64 { @apply w-64; }
+  .bo-w-80 { @apply w-80; }
+
+  .bo-overflow-auto { @apply overflow-auto; }
+  .bo-overflow-hidden { @apply overflow-hidden; }
+  .bo-overflow-y-auto { @apply overflow-y-auto; }
+  .bo-overflow-x-hidden { @apply overflow-x-hidden; }
+
+  .bo-radius { @apply rounded; }
+  .bo-radius-sm { @apply rounded-sm; }
+  .bo-radius-md { @apply rounded-md; }
+  .bo-radius-lg { @apply rounded-lg; }
+  .bo-radius-full { @apply rounded-full; }
+
+  .bo-opacity-50 { @apply opacity-50; }
+  .bo-opacity-60 { @apply opacity-60; }
+  .bo-opacity-80 { @apply opacity-80; }
+
+  .bo-cursor-move { @apply cursor-move; }
+  .bo-cursor-pointer { @apply cursor-pointer; }
+  .bo-cursor-not-allowed { @apply cursor-not-allowed; }
+
+  .bo-text-center { @apply text-center; }
+
+  .bo-max-w-full { @apply max-w-full; }
+
+  .bo-relative { @apply relative; }
+  .bo-absolute { @apply absolute; }
+  .bo-fixed { @apply fixed; }
+  .bo-sticky { @apply sticky; }
+
+  .bo-top-0 { @apply top-0; }
+  .bo-right-0 { @apply right-0; }
+  .bo-bottom-0 { @apply bottom-0; }
+  .bo-left-0 { @apply left-0; }
+
+  .bo-z-10 { @apply z-10; }
+  .bo-z-20 { @apply z-20; }
+  .bo-z-50 { @apply z-50; }
+
+  /* Padding utilities */
+  .bo-p-1 { @apply p-1; }
+  .bo-p-2 { @apply p-2; }
+  .bo-p-3 { @apply p-3; }
+  .bo-p-4 { @apply p-4; }
+
+  /* Margin utilities */
+  .bo-mt-1 { @apply mt-1; }
+  .bo-mt-2 { @apply mt-2; }
+  .bo-mt-3 { @apply mt-3; }
+  .bo-mt-4 { @apply mt-4; }
+  .bo-mt-5 { @apply mt-5; }
+  .bo-mt-6 { @apply mt-6; }
+  .bo-mt-8 { @apply mt-8; }
+
+  .bo-mb-1 { @apply mb-1; }
+  .bo-mb-2 { @apply mb-2; }
+  .bo-mb-3 { @apply mb-3; }
+  .bo-mb-4 { @apply mb-4; }
+  .bo-mb-5 { @apply mb-5; }
+  .bo-mb-6 { @apply mb-6; }
+  .bo-mb-8 { @apply mb-8; }
+
+  .bo-ml-1 { @apply ml-1; }
+  .bo-ml-2 { @apply ml-2; }
+  .bo-ml-3 { @apply ml-3; }
+  .bo-ml-4 { @apply ml-4; }
+
+  .bo-mr-1 { @apply mr-1; }
+  .bo-mr-2 { @apply mr-2; }
+  .bo-mr-3 { @apply mr-3; }
+  .bo-mr-4 { @apply mr-4; }
+
+  .bo-pl-1 { @apply pl-1; }
+  .bo-pl-2 { @apply pl-2; }
+  .bo-pl-3 { @apply pl-3; }
+  .bo-pl-4 { @apply pl-4; }
+
+  .bo-pr-1 { @apply pr-1; }
+  .bo-pr-2 { @apply pr-2; }
+  .bo-pr-3 { @apply pr-3; }
+  .bo-pr-4 { @apply pr-4; }
+
+  .bo-px-1 { @apply px-1; }
+  .bo-px-2 { @apply px-2; }
+  .bo-px-3 { @apply px-3; }
+  .bo-px-4 { @apply px-4; }
+
+  .bo-py-1 { @apply py-1; }
+  .bo-py-2 { @apply py-2; }
+  .bo-py-3 { @apply py-3; }
+  .bo-py-4 { @apply py-4; }
+
+  /* Border utilities */
+  .bo-border { @apply border; }
+  .bo-border-b { @apply border-b; }
+  .bo-border-t { @apply border-t; }
+  .bo-border-l { @apply border-l; }
+  .bo-border-r { @apply border-r; }
+
+  /* Background color utilities */
+  .bo-bg-success { @apply bg-green-600; }
+  .bo-bg-warning { @apply bg-amber-600; }
+  .bo-bg-danger { @apply bg-red-600; }
+  .bo-bg-info { @apply bg-sky-600; }
+
+  /* Text color utilities */
+  .bo-text-success { @apply text-green-600; }
+  .bo-text-warning { @apply text-amber-600; }
+  .bo-text-danger { @apply text-red-600; }
+  .bo-text-info { @apply text-sky-600; }
+
+  /* Typography utilities - bo- prefix variants */
+  .bo-text-xs { @apply text-xs; }
+  .bo-text-sm { @apply text-sm; }
+  .bo-text-base { @apply text-base; }
+  .bo-text-lg { @apply text-lg; }
+  .bo-text-xl { @apply text-xl; }
+  .bo-text-2xl { @apply text-2xl; }
+  .bo-text-3xl { @apply text-3xl; }
+
+  .bo-weight-normal { @apply font-normal; }
+  .bo-weight-medium { @apply font-medium; }
+  .bo-weight-semibold { @apply font-semibold; }
+  .bo-weight-bold { @apply font-bold; }
+
+  .bo-leading-tight { @apply leading-tight; }
+  .bo-leading-normal { @apply leading-normal; }
+  .bo-leading-relaxed { @apply leading-relaxed; }
 }

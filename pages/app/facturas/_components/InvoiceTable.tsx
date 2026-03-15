@@ -724,7 +724,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onChange={handleSelectAll}
                         aria-label={allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
                       />
-                      <span className="bo-checkboxMark"></span>
+                      <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all"></span>
                     </label>
                   ) : "sortField" in col && col.sortable ? (
                     <SortableHeader
@@ -751,14 +751,14 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               return (
               <tr key={invoice.id} className={`bo-tableRow${selectedIds.has(invoice.id) ? " is-selected" : ""}${isOverdue ? " bo-tableRow--overdue" : ""}`}>
                 <td className={`col-selection`} data-label="">
-                  <label className="bo-checkboxContainer">
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(invoice.id)}
                       onChange={() => handleToggleSelect(invoice.id)}
                       aria-label={`Seleccionar factura ${invoice.invoice_number || invoice.id}`}
                     />
-                    <span className="bo-checkboxMark"></span>
+                    <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all"></span>
                   </label>
                 </td>
                 <td className={`col-invoice_number`} data-label="N. Factura">
@@ -782,7 +782,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 <td className={`col-customer_email`} data-label="Email">{invoice.customer_email}</td>
                 <td className={`col-amount`} data-label="Importe">{formatPrice(invoice.amount, invoice.currency)}</td>
                 <td className={`col-currency`} data-label="Moneda">
-                  <span className="bo-badge bo-badge--muted">{invoice.currency || "EUR"}</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--muted">{invoice.currency || "EUR"}</span>
                 </td>
                 <td className={`col-payment_progress`} data-label="Pagado">
                   <PaymentProgressCell invoice={invoice} />
@@ -1073,10 +1073,10 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
         </div>
         {showPagerBtns ? (
           <div className="bo-pagerBtns">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={loading || page <= 1}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => onPageChange(page - 1)} disabled={loading || page <= 1}>
               Anterior
             </button>
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={loading || page >= totalPages}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => onPageChange(page + 1)} disabled={loading || page >= totalPages}>
               Siguiente
             </button>
           </div>

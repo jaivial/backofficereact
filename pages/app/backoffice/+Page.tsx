@@ -35,11 +35,11 @@ export default function Page() {
   }, [name]);
 
   return (
-    <div className="bo-backoffice">
-      <header className="bo-backofficeHeader">
+    <div className="flex flex-col min-h-screen bg-bo-bg">
+      <header className="flex items-center justify-between p-4 border-b border-bo-border">
         <div className="text-xs text-muted">Panel de administración</div>
-        <h1 className="bo-backofficeTitle">
-          Bienvenido, <span className="bo-accentText">{firstName}</span>
+        <h1 className="text-xl font-semibold text-bo-text">
+          Bienvenido, <span className="text-bo-accent font-semibold">{firstName}</span>
         </h1>
         <p className="text-muted">Selecciona una sección para empezar.</p>
       </header>

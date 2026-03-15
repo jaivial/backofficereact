@@ -95,7 +95,7 @@ export default function Page() {
     return (
       <div className="bo-publicInvoice">
         <div className="bo-publicInvoiceLoading">
-          <div className="bo-spinner" />
+          <div className="animate-spin h-5 w-5" />
           <p>Cargando factura...</p>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function Page() {
             {getStatusBadge(invoice.status)}
           </div>
           {pdfUrl && (
-            <a href={pdfUrl} className="bo-btn bo-btn--primary" target="_blank" rel="noopener noreferrer">
+            <a href={pdfUrl} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" target="_blank" rel="noopener noreferrer">
               <Download size={16} />
               Descargar PDF
             </a>
@@ -146,7 +146,7 @@ export default function Page() {
         <div className="bo-publicInvoiceSection">
           <h3>Cliente</h3>
           <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2">
-            <div className="bo-publicInvoiceField">
+            <div className="flex flex-col gap-1">
               <User size={16} />
               <div>
                 <label>Nombre</label>
@@ -157,7 +157,7 @@ export default function Page() {
               </div>
             </div>
             {invoice.customer_dni_cif && (
-              <div className="bo-publicInvoiceField">
+              <div className="flex flex-col gap-1">
                 <FileText size={16} />
                 <div>
                   <label>DNI/CIF</label>
@@ -166,7 +166,7 @@ export default function Page() {
               </div>
             )}
             {invoice.customer_email && (
-              <div className="bo-publicInvoiceField">
+              <div className="flex flex-col gap-1">
                 <Mail size={16} />
                 <div>
                   <label>Email</label>
@@ -175,7 +175,7 @@ export default function Page() {
               </div>
             )}
             {invoice.customer_phone && (
-              <div className="bo-publicInvoiceField">
+              <div className="flex flex-col gap-1">
                 <Phone size={16} />
                 <div>
                   <label>Teléfono</label>
@@ -206,7 +206,7 @@ export default function Page() {
         <div className="bo-publicInvoiceSection">
           <h3>Detalles de la Factura</h3>
           <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2">
-            <div className="bo-publicInvoiceField">
+            <div className="flex flex-col gap-1">
               <Calendar size={16} />
               <div>
                 <label>Fecha de Factura</label>
@@ -214,7 +214,7 @@ export default function Page() {
               </div>
             </div>
             {invoice.payment_date && (
-              <div className="bo-publicInvoiceField">
+              <div className="flex flex-col gap-1">
                 <Calendar size={16} />
                 <div>
                   <label>Fecha de Pago</label>
@@ -223,7 +223,7 @@ export default function Page() {
               </div>
             )}
             {invoice.payment_method && (
-              <div className="bo-publicInvoiceField">
+              <div className="flex flex-col gap-1">
                 <CreditCard size={16} />
                 <div>
                   <label>Método de Pago</label>
@@ -232,7 +232,7 @@ export default function Page() {
               </div>
             )}
             {invoice.reservation_date && (
-              <div className="bo-publicInvoiceField">
+              <div className="flex flex-col gap-1">
                 <Calendar size={16} />
                 <div>
                   <label>Fecha de Reserva</label>

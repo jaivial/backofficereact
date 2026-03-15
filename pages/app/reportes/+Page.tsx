@@ -563,13 +563,13 @@ export default function Page() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between" style={{ marginBottom: "var(--bo-space-6)" }}>
         <div>
-          <h1 className="text-2xl font-bold bo-text">Reportes</h1>
+          <h1 className="text-2xl font-bold text-bo-text">Reportes</h1>
           <p className="text-muted">Reportes de IVA y estados de cuenta de clientes</p>
         </div>
       </div>
 
       {/* Main Tabs */}
-      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border mb-6">
+      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border mb-6">
         <SimpleTabs defaultValue="iva">
           <SimpleTabsList className="border-b">
             <SimpleTabsContent value="iva" trigger="Reportes de IVA" />
@@ -580,11 +580,11 @@ export default function Page() {
           <SimpleTabsContent value="customer">
             <div className="p-6">
               {/* Customer Statement Filters */}
-              <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+              <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Customer Select */}
                   <div>
-                    <label className="block text-sm font-medium bo-text mb-1">Cliente</label>
+                    <label className="block text-sm font-medium text-bo-text mb-1">Cliente</label>
                     <select
                       value={selectedCustomer}
                       onChange={(e) => {
@@ -606,7 +606,7 @@ export default function Page() {
 
                   {/* Statement Date from */}
                   <div>
-                    <label className="block text-sm font-medium bo-text mb-1">Desde</label>
+                    <label className="block text-sm font-medium text-bo-text mb-1">Desde</label>
                     <input
                       type="date"
                       value={statementDateFrom}
@@ -617,7 +617,7 @@ export default function Page() {
 
                   {/* Statement Date to */}
                   <div>
-                    <label className="block text-sm font-medium bo-text mb-1">Hasta</label>
+                    <label className="block text-sm font-medium text-bo-text mb-1">Hasta</label>
                     <input
                       type="date"
                       value={statementDateTo}
@@ -677,7 +677,7 @@ export default function Page() {
               {customerStatement ? (
                 <>
                   {/* Customer Info */}
-                  <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+                  <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
                     <h3 className="text-lg font-semibold bo-text mb-4">Informacion del Cliente</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 grid-gap-4">
                       <div>
@@ -735,14 +735,14 @@ export default function Page() {
                   {/* Invoices and Payments Tables */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 grid-gap-6">
                     {/* Invoices */}
-                    <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                    <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                       <div className="px-6 py-4 border-b border bo-surface-2">
                         <h3 className="text-lg font-semibold bo-text">Facturas ({customerStatement.invoices.length})</h3>
                       </div>
                       {customerStatement.invoices.length > 0 ? (
                         <div className="overflow-x-auto">
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bo-surface-2">
+                            <thead className="bg-bo-surface-2">
                               <tr>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
@@ -750,7 +750,7 @@ export default function Page() {
                                 <th className="px-4 py-3 text-center text-xs font-medium text-muted uppercase">Estado</th>
                               </tr>
                             </thead>
-                            <tbody className="bo-surface divide-y divide-gray-200">
+                            <tbody className="bg-bo-surface divide-y divide-gray-200">
                               {customerStatement.invoices.map((inv, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm bo-text">
@@ -781,14 +781,14 @@ export default function Page() {
                     </div>
 
                     {/* Payments */}
-                    <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                    <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                       <div className="px-6 py-4 border-b border bo-surface-2">
                         <h3 className="text-lg font-semibold bo-text">Pagos ({customerStatement.payments.length})</h3>
                       </div>
                       {customerStatement.payments.length > 0 ? (
                         <div className="overflow-x-auto">
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bo-surface-2">
+                            <thead className="bg-bo-surface-2">
                               <tr>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
@@ -796,7 +796,7 @@ export default function Page() {
                                 <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">Importe</th>
                               </tr>
                             </thead>
-                            <tbody className="bo-surface divide-y divide-gray-200">
+                            <tbody className="bg-bo-surface divide-y divide-gray-200">
                               {customerStatement.payments.map((pay, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm bo-text">{pay.invoice_number || `#${pay.invoice_id}`}</td>
@@ -817,7 +817,7 @@ export default function Page() {
                   </div>
                 </>
               ) : (
-                <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
+                <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
                   <Receipt className="w-12 h-12 text-faint mx-auto mb-4" />
                   <h3 className="text-lg font-medium bo-text mb-2">Sin estado de cuenta</h3>
                   <p className="text-muted mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
@@ -829,7 +829,7 @@ export default function Page() {
           {/* IVA Report Tab */}
           <SimpleTabsContent value="iva">
             <div>
-              <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
+              <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Date preset */}
                   <div>
@@ -925,7 +925,7 @@ export default function Page() {
               {report ? (
                 <>
                   {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4 bo-mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4 mb-6">
                     <StatCard
                       title="Base Imponible"
                       value={formatCurrency(report.summary.total_base, "EUR")}
@@ -1004,9 +1004,9 @@ export default function Page() {
 
                     {/* Breakdown by IVA Rate */}
                     <SimpleTabsContent value="breakdown">
-                      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bo-surface-2">
+                          <thead className="bg-bo-surface-2">
                             <tr>
                               <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Tipo IVA</th>
                               <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Base</th>
@@ -1022,7 +1022,7 @@ export default function Page() {
                               )}
                             </tr>
                           </thead>
-                          <tbody className="bo-surface divide-y divide-gray-200">
+                          <tbody className="bg-bo-surface divide-y divide-gray-200">
                             {report.breakdown_by_rate.map((item, idx) => (
                               <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium bo-text">{item.iva_rate}%</td>
@@ -1062,9 +1062,9 @@ export default function Page() {
 
                     {/* Quarterly Breakdown */}
                     <SimpleTabsContent value="quarterly">
-                      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bo-surface-2">
+                          <thead className="bg-bo-surface-2">
                             <tr>
                               <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Trimestre</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Periodo</th>
@@ -1075,7 +1075,7 @@ export default function Page() {
                               <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Notas Cred.</th>
                             </tr>
                           </thead>
-                          <tbody className="bo-surface divide-y divide-gray-200">
+                          <tbody className="bg-bo-surface divide-y divide-gray-200">
                             {data.quarterlyBreakdown.length > 0 ? (
                               data.quarterlyBreakdown.map((item, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
@@ -1102,7 +1102,7 @@ export default function Page() {
 
                     {/* Invoice List */}
                     <SimpleTabsContent value="invoices">
-                      <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
+                      <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border overflow-hidden">
                         <button
                           onClick={toggleInvoices}
                           className="w-full px-6 py-4 flex items-center justify-between bo-surface-2 hover:bo-surface-3"
@@ -1112,7 +1112,7 @@ export default function Page() {
                         </button>
                         {expandedInvoices && (
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bo-surface-2">
+                            <thead className="bg-bo-surface-2">
                               <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Factura</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Cliente</th>
@@ -1124,7 +1124,7 @@ export default function Page() {
                                 <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Tipo</th>
                               </tr>
                             </thead>
-                            <tbody className="bo-surface divide-y divide-gray-200">
+                            <tbody className="bg-bo-surface divide-y divide-gray-200">
                               {report.invoices.map((inv, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm bo-text">{inv.invoice_number || ` #${inv.id}`}</td>
@@ -1152,7 +1152,7 @@ export default function Page() {
                 </>
 
               ) : (
-                <div className="bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
+                <div className="bg-bo-surface rounded-[var(--rounded-md)] shadow-soft border border p-12 text-center">
                   <FileText className="w-12 h-12 text-faint mx-auto mb-4" />
                   <h3 className="text-lg font-medium bo-text mb-2">No hay reporte generado</h3>
                   <p className="text-muted mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>

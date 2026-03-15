@@ -107,15 +107,15 @@ export default function Page() {
 
   return (
     <section aria-label="Estadisticas del miembro" className="bo-content-grid bo-memberDetailPage">
-      <div className="bo-panel bo-memberStatsPanel">
+      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-memberStatsPanel">
         <div className="bo-panelHead bo-memberStatsHead">
           <div>
-            <div className="bo-panelTitle">Estadisticas</div>
-            <div className="bo-panelMeta">Horas trabajadas y progreso respecto al contrato semanal.</div>
+            <div className="text-bo-sm font-bold text-bo-text">Estadisticas</div>
+            <div className="text-bo-xs text-bo-faint">Horas trabajadas y progreso respecto al contrato semanal.</div>
           </div>
           <div className="bo-memberStatsControls">
-            <label className="bo-field bo-memberControl">
-              <span className="bo-label">Vista</span>
+            <label className="grid gap-bo-2 bo-memberControl">
+              <span className="text-bo-sm font-semibold text-bo-muted">Vista</span>
               <Select
                 className="bo-memberControlSelect"
                 value={view}
@@ -129,8 +129,8 @@ export default function Page() {
                 ariaLabel="Vista"
               />
             </label>
-            <label className="bo-field bo-memberControl">
-              <span className="bo-label">Grafico</span>
+            <label className="grid gap-bo-2 bo-memberControl">
+              <span className="text-bo-sm font-semibold text-bo-muted">Grafico</span>
               <Select
                 className="bo-memberControlSelect"
                 value={chartType}
@@ -140,8 +140,8 @@ export default function Page() {
                 ariaLabel="Tipo de grafico"
               />
             </label>
-            <label className="bo-field bo-memberControl">
-              <span className="bo-label">Fecha</span>
+            <label className="grid gap-bo-2 bo-memberControl">
+              <span className="text-bo-sm font-semibold text-bo-muted">Fecha</span>
               <DatePicker
                 value={date}
                 popoverOffsetX={-40}
@@ -151,13 +151,13 @@ export default function Page() {
                 }}
               />
             </label>
-            <button className="bo-actionBtn bo-memberRefreshBtn" type="button" onClick={onRefreshStats} disabled={loadingStats} aria-label="Recargar estadisticas">
+            <button className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-memberRefreshBtn" type="button" onClick={onRefreshStats} disabled={loadingStats} aria-label="Recargar estadisticas">
               <RefreshCcw size={14} className={`bo-memberRefreshIcon${loadingStats ? " is-spinning" : ""}`} />
             </button>
           </div>
         </div>
 
-        <div className="bo-panelBody bo-memberStatsBody">
+        <div className="p-4 bo-memberStatsBody">
           <div className="bo-memberProgress">
             <div className="bo-memberProgressTop">
               <span className="text-mutedText">Cumplimiento semanal</span>
@@ -202,20 +202,20 @@ export default function Page() {
           </div>
 
           <div className="bo-memberSummaryGrid">
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Horas trabajadas</div>
-              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
+            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="text-bo-sm text-bo-muted">Horas trabajadas</div>
+              <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Horas esperadas</div>
-              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
+            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="text-bo-sm text-bo-muted">Horas esperadas</div>
+              <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Progreso periodo</div>
-              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
+            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="text-bo-sm text-bo-muted">Progreso periodo</div>
+              <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Bolsa trimestral</div>
+            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="text-bo-sm text-bo-muted">Bolsa trimestral</div>
               <div className={`bo-kvValue bo-memberBalance${balanceHours >= 0 ? " is-positive" : " is-negative"}`}>
                 {balanceHours >= 0 ? "+" : ""}
                 {balanceHours.toFixed(2)} h
@@ -229,14 +229,14 @@ export default function Page() {
       </div>
 
       {/* Stats Table Section */}
-      <div className="bo-panel bo-statsTablePanel">
-        <div className="bo-panelHead">
+      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-statsTablePanel">
+        <div className="flex items-end justify-between pb-2 px-4 pt-4">
           <div>
-            <div className="bo-panelTitle">Tabla de Estadisticas</div>
-            <div className="bo-panelMeta">Datos detallados por período completo del año.</div>
+            <div className="text-bo-sm font-bold text-bo-text">Tabla de Estadisticas</div>
+            <div className="text-bo-xs text-bo-faint">Datos detallados por período completo del año.</div>
           </div>
         </div>
-        <div className="bo-panelBody">
+        <div className="p-4">
           {data.memberId > 0 ? (
             <StatsTable memberId={data.memberId} />
           ) : (

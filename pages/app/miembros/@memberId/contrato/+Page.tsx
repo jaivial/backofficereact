@@ -97,22 +97,22 @@ export default function Page() {
   return (
     <section aria-label="Contrato del miembro" className="bo-content-grid bo-memberDetailPage">
       {!member ? (
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Miembro no disponible</div>
-            <div className="bo-panelMeta">No se pudo cargar el contrato del miembro solicitado.</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Miembro no disponible</div>
+            <div className="text-bo-xs text-bo-faint">No se pudo cargar el contrato del miembro solicitado.</div>
           </div>
         </div>
       ) : (
-        <div className="bo-panel">
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
           <div className="bo-panelHead bo-memberStatsHead">
             <div>
-              <div className="bo-panelTitle">Configuracion de contrato</div>
-              <div className="bo-panelMeta">Ajusta horas semanales y seguimiento del periodo.</div>
+              <div className="text-bo-sm font-bold text-bo-text">Configuracion de contrato</div>
+              <div className="text-bo-xs text-bo-faint">Ajusta horas semanales y seguimiento del periodo.</div>
             </div>
             <div className="bo-memberStatsControls">
-              <label className="bo-field bo-memberControl">
-                <span className="bo-label">Fecha</span>
+              <label className="grid gap-bo-2 bo-memberControl">
+                <span className="text-bo-sm font-semibold text-bo-muted">Fecha</span>
                 <DatePicker
                   value={date}
                   onChange={(nextDate) => {
@@ -121,18 +121,18 @@ export default function Page() {
                   }}
                 />
               </label>
-              <button className="bo-actionBtn bo-memberRefreshBtn" type="button" onClick={() => void reloadStats(date)} disabled={loading} aria-label="Recargar contrato">
+              <button className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-memberRefreshBtn" type="button" onClick={() => void reloadStats(date)} disabled={loading} aria-label="Recargar contrato">
                 <RefreshCcw size={14} className={`bo-memberRefreshIcon${loading ? " is-spinning" : ""}`} />
               </button>
             </div>
           </div>
 
-          <div className="bo-panelBody bo-memberContractBody">
-            <label className="bo-field">
-              <span className="bo-label">Horas de contrato semanales</span>
+          <div className="p-4 bo-memberContractBody">
+            <label className="grid gap-bo-2">
+              <span className="text-bo-sm font-semibold text-bo-muted">Horas de contrato semanales</span>
               <input
                 id="weeklyContractHours"
-                className="bo-input"
+                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                 type="number"
                 min={0}
                 step={0.25}
@@ -144,22 +144,22 @@ export default function Page() {
             <div className="bo-memberContractNote">Este valor se usa para calcular cumplimiento semanal y progreso del periodo.</div>
 
             <div className="bo-kvGrid">
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Esperadas en periodo</div>
-                <div className="bo-kvValue">{(statsLive?.summary.expectedHours ?? 0).toFixed(2)} h</div>
+              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+                <div className="text-bo-sm text-bo-muted">Esperadas en periodo</div>
+                <div className="text-bo-sm text-bo-text">{(statsLive?.summary.expectedHours ?? 0).toFixed(2)} h</div>
               </div>
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Trabajadas en periodo</div>
-                <div className="bo-kvValue">{(statsLive?.summary.workedHours ?? 0).toFixed(2)} h</div>
+              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+                <div className="text-bo-sm text-bo-muted">Trabajadas en periodo</div>
+                <div className="text-bo-sm text-bo-text">{(statsLive?.summary.workedHours ?? 0).toFixed(2)} h</div>
               </div>
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Cumplimiento semanal</div>
-                <div className="bo-kvValue">{(statsLive?.summary.weeklyProgressPercent ?? 0).toFixed(2)}%</div>
+              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+                <div className="text-bo-sm text-bo-muted">Cumplimiento semanal</div>
+                <div className="text-bo-sm text-bo-text">{(statsLive?.summary.weeklyProgressPercent ?? 0).toFixed(2)}%</div>
               </div>
               {liveEntry ? (
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">Fichando ahora</div>
-                  <div className="bo-kvValue">{formatElapsedHHMMSS(liveEntry, tick)}</div>
+                <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+                  <div className="text-bo-sm text-bo-muted">Fichando ahora</div>
+                  <div className="text-bo-sm text-bo-text">{formatElapsedHHMMSS(liveEntry, tick)}</div>
                 </div>
               ) : null}
             </div>

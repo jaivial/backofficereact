@@ -134,7 +134,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
         <h4 className="bo-lineItemsTitle">Lineas de factura</h4>
         <button
           type="button"
-          className="bo-btn bo-btn--ghost bo-btn--sm"
+          className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
           onClick={handleAddItem}
           disabled={disabled}
         >
@@ -148,7 +148,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           <p>No hay lineas de factura. Añade una linea para continuar.</p>
           <button
             type="button"
-            className="bo-btn bo-btn--secondary bo-btn--sm"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-bo-surface-2 text-bo-text text-xs font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
             onClick={handleAddItem}
             disabled={disabled}
           >
@@ -160,49 +160,49 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
         <>
           <div className="bo-lineItemsTable">
             <div className="bo-lineItemsTableHeader">
-              <div className="bo-lineItemCell bo-lineItemCell--description">
+              <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--description">
                 <List size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="sr-only">Descripcion</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--quantity">
+              <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--quantity">
                 <Hash size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="sr-only">Cantidad</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--price">
+              <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--price">
                 <CircleDollarSign size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="sr-only">Precio unit.</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--iva">
+              <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--iva">
                 <Percent size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="sr-only">IVA</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
+              <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--ivaAmount">
                 <Receipt size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="sr-only">Importe IVA</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--total">
+              <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--total">
                 <Calculator size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="sr-only">Total</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--actions"></div>
+              <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--actions"></div>
             </div>
 
             {items.map((item, index) => (
               <div key={index} className="bo-lineItemsTableRow">
-                <div className="bo-lineItemCell bo-lineItemCell--description">
+                <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--description">
                   <input
                     type="text"
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     value={item.description}
                     onChange={(e) => handleUpdateItem(index, "description", e.target.value)}
                     placeholder="Descripcion del producto/servicio"
                     disabled={disabled}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--quantity">
+                <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--quantity">
                   <input
                     type="number"
-                    className="bo-input bo-lineItemInputNumber"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-lineItemInputNumber"
                     inputMode="decimal"
                     value={item.quantity}
                     onChange={(e) => handleUpdateItem(index, "quantity", e.target.value)}
@@ -212,10 +212,10 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     aria-label="Cantidad"
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--price">
+                <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--price">
                   <input
                     type="number"
-                    className="bo-input bo-lineItemInputNumber"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-lineItemInputNumber"
                     inputMode="decimal"
                     value={item.unit_price}
                     onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
@@ -225,10 +225,10 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     aria-label="Precio unitario"
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--iva">
+                <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--iva">
                   <input
                     type="number"
-                    className="bo-input bo-lineItemInputNumber"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-lineItemInputNumber"
                     inputMode="decimal"
                     value={item.iva_rate}
                     onChange={(e) => handleUpdateItem(index, "iva_rate", e.target.value)}
@@ -239,17 +239,17 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     aria-label="IVA"
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
+                <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--ivaAmount">
                   <span className="bo-lineItemValue">
                     {item.iva_amount.toFixed(2)} {currencySymbol}
                   </span>
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--total">
+                <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--total">
                   <span className="bo-lineItemValue bo-lineItemValue--total">
                     {item.total.toFixed(2)} {currencySymbol}
                   </span>
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--actions">
+                <div className="p-3 text-bo-sm text-bo-text bo-lineItemCell--actions">
                   <DropdownMenu
                     label={`Acciones linea ${index + 1}`}
                     items={[
@@ -289,11 +289,11 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           onClose={closeLineItemDetails}
           size="sm"
         >
-          <div className="bo-modalHead">
-            <h3 className="bo-modalTitle">Detalle de línea {lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}</h3>
+          <div className="flex items-center justify-between p-4 border-b border-bo-border">
+            <h3 className="text-lg font-semibold text-bo-text">Detalle de línea {lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}</h3>
             <button
               type="button"
-              className="bo-btn bo-btn--ghost bo-btn--sm"
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
               onClick={closeLineItemDetails}
               aria-label="Cerrar detalle de línea"
             >
@@ -303,33 +303,33 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
 
           <div className="bo-lineItemsDetail">
             <div className="bo-lineItemsDetailField">
-              <span className="bo-label">Descripción</span>
+              <span className="text-bo-sm font-semibold text-bo-muted">Descripción</span>
               <div className="bo-lineItemsDetailValue">{selectedLineItem.description || "—"}</div>
             </div>
 
             <div className="bo-lineItemsDetailGrid">
               <div className="bo-lineItemsDetailField">
-                <span className="bo-label">Cantidad</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Cantidad</span>
                 <div className="bo-lineItemsDetailValue">{selectedLineItem.quantity}</div>
               </div>
               <div className="bo-lineItemsDetailField">
-                <span className="bo-label">Precio unitario</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Precio unitario</span>
                 <div className="bo-lineItemsDetailValue">
                   {selectedLineItem.unit_price.toFixed(2)} {currencySymbol}
                 </div>
               </div>
               <div className="bo-lineItemsDetailField">
-                <span className="bo-label">IVA</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">IVA</span>
                 <div className="bo-lineItemsDetailValue">{selectedLineItem.iva_rate}%</div>
               </div>
               <div className="bo-lineItemsDetailField">
-                <span className="bo-label">Importe IVA</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Importe IVA</span>
                 <div className="bo-lineItemsDetailValue">
                   {selectedLineItem.iva_amount.toFixed(2)} {currencySymbol}
                 </div>
               </div>
               <div className="bo-lineItemsDetailField">
-                <span className="bo-label">Total</span>
+                <span className="text-bo-sm font-semibold text-bo-muted">Total</span>
                 <div className="bo-lineItemsDetailValue bo-lineItemsDetailValue--strong">
                   {selectedLineItem.total.toFixed(2)} {currencySymbol}
                 </div>

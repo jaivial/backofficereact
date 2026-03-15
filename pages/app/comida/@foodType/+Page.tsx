@@ -390,11 +390,11 @@ export default function Page() {
         />
 
         {loading ? (
-          <div className="bo-emptyState">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
             <LoadingSpinner centered size="sm" label="Cargando..." />
           </div>
         ) : items.length === 0 ? (
-          <div className="bo-emptyState">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
             <p>No hay {listLabel.toLowerCase()} con estos filtros.</p>
             <p>Usa el boton + para anadir el primer {singularLabel}.</p>
           </div>

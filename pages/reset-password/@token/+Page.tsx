@@ -80,20 +80,20 @@ export default function Page() {
   }, [api.passwordResets, confirmPassword, password, token]);
 
   return (
-    <div className="flex flex-col items-center text-center bo-authContainer">
+    <div className="flex flex-col items-center text-center min-h-screen justify-center py-12 px-4">
       <div 
-        className="bo-authCard rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] border border-white/[0.06] shadow-soft p-[18px]"
+        className="w-full max-w-md rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] border border-white/[0.06] shadow-soft p-[18px]"
         role="main" 
         aria-label="Restablecer password"
       >
         {loading ? (
-          <div className="flex flex-col items-center gap-2 bo-authActions">
+          <div className="flex flex-col items-center gap-2">
             <Loader2 size={20} className="animate-spin" />
             Validando enlace...
           </div>
         ) : error && !preview ? (
           <>
-            <div className="bo-authIconCircle bo-authIconCircle--error">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-red-500/10 border border-red-500/20 text-red-400">
               <CircleAlert size={30} />
             </div>
             <div className="text-xl font-semibold leading-tight tracking-tight">Enlace no válido</div>
@@ -108,7 +108,7 @@ export default function Page() {
           </>
         ) : done ? (
           <>
-            <div className="bo-authIconCircle bo-authIconCircle--success">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-green-500/10 border border-green-500/20 text-green-400">
               <CheckCircle2 size={30} />
             </div>
             <div className="text-xl font-semibold leading-tight tracking-tight">Password actualizada</div>

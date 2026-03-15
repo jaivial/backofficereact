@@ -408,38 +408,38 @@ export default function Page() {
 
   return (
     <section aria-label="Ajustes">
-      <div className="bo-toolbar">
-        <div className="bo-toolbarLeft">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={reload} disabled={busy}>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={reload} disabled={busy}>
             Recargar
           </button>
         </div>
-        <div className="bo-toolbarRight">
+        <div className="flex items-center gap-2.5">
           <div className="text-mutedText">{busy ? "Guardando..." : ""}</div>
         </div>
       </div>
 
-      <div className="bo-stack">
-        <div className="bo-panel" aria-label="Integraciones">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Integraciones</div>
-            <div className="bo-panelMeta">n8n, eventos y WhatsApp</div>
+      <div className="flex flex-col gap-bo-4 p-4">
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Integraciones">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Integraciones</div>
+            <div className="text-bo-xs text-bo-faint">n8n, eventos y WhatsApp</div>
           </div>
-          <div className="bo-panelBody">
-            <div className="bo-stack">
-              <label className="bo-field">
-                <div className="bo-label">n8n Webhook URL</div>
+          <div className="p-4">
+            <div className="flex flex-col gap-bo-4 p-4">
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">n8n Webhook URL</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={integrations.n8nWebhookUrl}
                   placeholder="https://.../webhook/..."
                   onChange={(e) => setIntegrations((p) => ({ ...p, n8nWebhookUrl: e.target.value }))}
                 />
               </label>
 
-              <div className="bo-field">
-                <div className="bo-label">Eventos</div>
-                <div className="bo-row">
+              <div className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Eventos</div>
+                <div className="flex gap-bo-4">
                   <Select value={eventsMode} onChange={onEventsModeChange} options={eventsModeOptions} size="sm" ariaLabel="Modo eventos" />
                   <div className="text-mutedText">{eventsMode === "all" ? "Se envían todos los eventos" : "Selecciona eventos a enviar"}</div>
                 </div>
@@ -463,30 +463,30 @@ export default function Page() {
                 {eventsMode === "custom" ? <div className="text-mutedText">En modo personalizado debes dejar al menos 1 evento.</div> : null}
               </div>
 
-              <label className="bo-field">
-                <div className="bo-label">UAZAPI URL</div>
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">UAZAPI URL</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={integrations.uazapiUrl}
                   placeholder="https://...uazapi.com"
                   onChange={(e) => setIntegrations((p) => ({ ...p, uazapiUrl: e.target.value }))}
                 />
               </label>
 
-              <label className="bo-field">
-                <div className="bo-label">UAZAPI Token</div>
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">UAZAPI Token</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={integrations.uazapiToken}
                   placeholder="token"
                   onChange={(e) => setIntegrations((p) => ({ ...p, uazapiToken: e.target.value }))}
                 />
               </label>
 
-              <label className="bo-field">
-                <div className="bo-label">Números WhatsApp del restaurante</div>
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Números WhatsApp del restaurante</div>
                 <textarea
-                  className="bo-input bo-textarea"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea"
                   value={recipientsText}
                   placeholder={"Uno por línea. Ej:\n34692747052\n34638857294"}
                   onChange={(e) => setRecipientsText(e.target.value)}
@@ -494,8 +494,8 @@ export default function Page() {
                 <div className="text-mutedText">Se usan para notificar al restaurante (confirmaciones, cancelaciones, modificaciones).</div>
               </label>
 
-              <div className="bo-row">
-                <button className="bo-btn bo-btn--primary" type="button" onClick={saveIntegrations} disabled={busy}>
+              <div className="flex gap-bo-4">
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={saveIntegrations} disabled={busy}>
                   Guardar integraciones
                 </button>
               </div>
@@ -503,65 +503,65 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel" aria-label="Branding">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Branding</div>
-            <div className="bo-panelMeta">Nombre, logo y emails</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Branding">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Branding</div>
+            <div className="text-bo-xs text-bo-faint">Nombre, logo y emails</div>
           </div>
-          <div className="bo-panelBody">
-            <div className="bo-stack">
-              <label className="bo-field">
-                <div className="bo-label">Nombre de marca</div>
+          <div className="p-4">
+            <div className="flex flex-col gap-bo-4 p-4">
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Nombre de marca</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={branding.brandName}
                   onChange={(e) => setBranding((p) => ({ ...p, brandName: e.target.value }))}
                 />
               </label>
 
-              <label className="bo-field">
-                <div className="bo-label">Logo URL</div>
-                <input className="bo-input" value={branding.logoUrl} onChange={(e) => setBranding((p) => ({ ...p, logoUrl: e.target.value }))} />
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Logo URL</div>
+                <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={branding.logoUrl} onChange={(e) => setBranding((p) => ({ ...p, logoUrl: e.target.value }))} />
               </label>
 
-              <div className="bo-row">
-                <label className="bo-field flex-1">
-                  <div className="bo-label">Color primario</div>
-                  <div className="bo-row">
-                    <input className="bo-input bo-input--sm" value={branding.primaryColor} onChange={(e) => setBranding((p) => ({ ...p, primaryColor: e.target.value }))} />
-                    <div className="bo-colorDot" style={{ background: primary }} aria-label="Preview color primario" />
+              <div className="flex gap-bo-4">
+                <label className="grid gap-bo-2 flex-1">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Color primario</div>
+                  <div className="flex gap-bo-4">
+                    <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={branding.primaryColor} onChange={(e) => setBranding((p) => ({ ...p, primaryColor: e.target.value }))} />
+                    <div className="w-3.5 h-3.5 rounded-full border border-bo-border shrink-0" style={{ background: primary }} aria-label="Preview color primario" />
                   </div>
                 </label>
 
-                <label className="bo-field flex-1">
-                  <div className="bo-label">Color acento</div>
-                  <div className="bo-row">
-                    <input className="bo-input bo-input--sm" value={branding.accentColor} onChange={(e) => setBranding((p) => ({ ...p, accentColor: e.target.value }))} />
-                    <div className="bo-colorDot" style={{ background: accent }} aria-label="Preview color acento" />
+                <label className="grid gap-bo-2 flex-1">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Color acento</div>
+                  <div className="flex gap-bo-4">
+                    <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={branding.accentColor} onChange={(e) => setBranding((p) => ({ ...p, accentColor: e.target.value }))} />
+                    <div className="w-3.5 h-3.5 rounded-full border border-bo-border shrink-0" style={{ background: accent }} aria-label="Preview color acento" />
                   </div>
                 </label>
               </div>
 
-              <label className="bo-field">
-                <div className="bo-label">Email From Name</div>
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Email From Name</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={branding.emailFromName}
                   onChange={(e) => setBranding((p) => ({ ...p, emailFromName: e.target.value }))}
                 />
               </label>
 
-              <label className="bo-field">
-                <div className="bo-label">Email From Address</div>
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Email From Address</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={branding.emailFromAddress}
                   onChange={(e) => setBranding((p) => ({ ...p, emailFromAddress: e.target.value }))}
                 />
               </label>
 
-              <div className="bo-row">
-                <button className="bo-btn bo-btn--primary" type="button" onClick={saveBranding} disabled={busy}>
+              <div className="flex gap-bo-4">
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveBranding} disabled={busy}>
                   Guardar branding
                 </button>
               </div>
@@ -569,15 +569,15 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel" aria-label="Pagina web">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Pagina web</div>
-            <div className="bo-panelMeta">Plantillas premium para menus por tipo</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Pagina web">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Pagina web</div>
+            <div className="text-bo-xs text-bo-faint">Plantillas premium para menus por tipo</div>
           </div>
-          <div className="bo-panelBody">
-            <div className="bo-stack">
-              <label className="bo-field">
-                <div className="bo-label">Plantilla por defecto</div>
+          <div className="p-4">
+            <div className="flex flex-col gap-bo-4 p-4">
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Plantilla por defecto</div>
                 <Select
                   value={websiteMenuTemplates.default_theme_id}
                   onChange={(value) => setWebsiteMenuTemplates((prev) => ({ ...prev, default_theme_id: value }))}
@@ -588,8 +588,8 @@ export default function Page() {
                 <div className="text-mutedText">Se aplica a toda la web premium y sirve como fallback para tipos sin override.</div>
               </label>
 
-              <div className="bo-field">
-                <label className="bo-checkbox">
+              <div className="grid gap-bo-2">
+                <label className="w-4 h-4 rounded border border-bo-border bg-bo-bg-primary">
                   <input
                     type="checkbox"
                     checked={websiteTemplateUsePerType}
@@ -600,10 +600,10 @@ export default function Page() {
               </div>
 
               {websiteTemplateUsePerType ? (
-                <div className="bo-stack">
+                <div className="flex flex-col gap-bo-4 p-4">
                   {MENU_TYPE_OPTIONS.map((menuTypeOption) => (
-                    <label className="bo-field" key={menuTypeOption.value}>
-                      <div className="bo-label">{menuTypeOption.label}</div>
+                    <label className="grid gap-bo-2" key={menuTypeOption.value}>
+                      <div className="text-bo-sm font-semibold text-bo-muted">{menuTypeOption.label}</div>
                       <Select
                         value={websiteMenuTemplates.overrides[menuTypeOption.value] || websiteMenuTemplates.default_theme_id}
                         onChange={(value) =>
@@ -624,8 +624,8 @@ export default function Page() {
                 </div>
               ) : null}
 
-              <div className="bo-row">
-                <button className="bo-btn bo-btn--primary" type="button" onClick={saveWebsiteMenuTemplates} disabled={busy}>
+              <div className="flex gap-bo-4">
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveWebsiteMenuTemplates} disabled={busy}>
                   Guardar pagina web
                 </button>
               </div>
@@ -633,42 +633,42 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel" aria-label="Numeracion de facturas">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Numeracion de facturas</div>
-            <div className="bo-panelMeta">Configura el formato de los numeros de factura</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Numeracion de facturas">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Numeracion de facturas</div>
+            <div className="text-bo-xs text-bo-faint">Configura el formato de los numeros de factura</div>
           </div>
-          <div className="bo-panelBody">
-            <div className="bo-stack">
-              <div className="text-mutedText bo-mb-4">
+          <div className="p-4">
+            <div className="flex flex-col gap-bo-4 p-4">
+              <div className="text-mutedText mb-4">
                 Usa los siguientes tokens en el formato: {"{YYYY}"} (año), {"{YY}"} (año corto), {"{0001}"} (numero con ceros), {"{N}"} (numero sin padding), {"{prefix}"} (prefijo), {"{suffix}"} (sufijo)
               </div>
 
-              <label className="bo-field">
-                <div className="bo-label">Formato</div>
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Formato</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   value={invoiceSettings.format.format}
                   onChange={(e) => setInvoiceSettings((p) => ({ ...p, format: { ...p.format, format: e.target.value } }))}
                   placeholder="F-{YYYY}-{0001}"
                 />
               </label>
 
-              <div className="bo-row">
-                <label className="bo-field flex-1">
-                  <div className="bo-label">Prefijo</div>
+              <div className="flex gap-bo-4">
+                <label className="grid gap-bo-2 flex-1">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Prefijo</div>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     value={invoiceSettings.format.prefix}
                     onChange={(e) => setInvoiceSettings((p) => ({ ...p, format: { ...p.format, prefix: e.target.value } }))}
                     placeholder="F-"
                   />
                 </label>
 
-                <label className="bo-field flex-1">
-                  <div className="bo-label">Sufijo</div>
+                <label className="grid gap-bo-2 flex-1">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Sufijo</div>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     value={invoiceSettings.format.suffix}
                     onChange={(e) => setInvoiceSettings((p) => ({ ...p, format: { ...p.format, suffix: e.target.value } }))}
                     placeholder=""
@@ -676,11 +676,11 @@ export default function Page() {
                 </label>
               </div>
 
-              <div className="bo-row">
-                <label className="bo-field flex-1">
-                  <div className="bo-label">Numero inicial</div>
+              <div className="flex gap-bo-4">
+                <label className="grid gap-bo-2 flex-1">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Numero inicial</div>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     min="1"
                     value={invoiceSettings.format.startingNumber}
@@ -688,10 +688,10 @@ export default function Page() {
                   />
                 </label>
 
-                <label className="bo-field flex-1">
-                  <div className="bo-label">Digitos de relleno (0001)</div>
+                <label className="grid gap-bo-2 flex-1">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Digitos de relleno (0001)</div>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     min="1"
                     max="10"
@@ -701,10 +701,10 @@ export default function Page() {
                 </label>
               </div>
 
-              <label className="bo-field">
-                <div className="bo-label">Proximo numero</div>
+              <label className="grid gap-bo-2">
+                <div className="text-bo-sm font-semibold text-bo-muted">Proximo numero</div>
                 <input
-                  className="bo-input"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="number"
                   min="1"
                   value={invoiceSettings.nextNumber}
@@ -713,13 +713,13 @@ export default function Page() {
                 <div className="text-mutedText">El numero que se usara para la siguiente factura</div>
               </label>
 
-              <div className="bo-field bo-panelPreview">
-                <div className="bo-label">Vista previa del siguiente numero de factura</div>
-                <div className="text-2xl bo-weight-semibold bo-mt-2 bo-font-mono">{previewInvoiceNumber}</div>
+              <div className="grid gap-bo-2 bo-panelPreview">
+                <div className="text-bo-sm font-semibold text-bo-muted">Vista previa del siguiente numero de factura</div>
+                <div className="text-2xl font-semibold mt-2 font-mono">{previewInvoiceNumber}</div>
               </div>
 
-              <div className="bo-row">
-                <button className="bo-btn bo-btn--primary" type="button" onClick={saveInvoiceSettings} disabled={busy}>
+              <div className="flex gap-bo-4">
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveInvoiceSettings} disabled={busy}>
                   Guardar configuracion
                 </button>
               </div>
@@ -727,22 +727,22 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel" aria-label="Renumerar facturas">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Renumerar facturas</div>
-            <div className="bo-panelMeta">Reasigna numeros de factura de forma masiva</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Renumerar facturas">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Renumerar facturas</div>
+            <div className="text-bo-xs text-bo-faint">Reasigna numeros de factura de forma masiva</div>
           </div>
-          <div className="bo-panelBody">
-            <div className="bo-stack">
-              <div className="text-mutedText bo-mb-4">
+          <div className="p-4">
+            <div className="flex flex-col gap-bo-4 p-4">
+              <div className="text-mutedText mb-4">
                 Esta herramienta permite renumerar todas las facturas existentes. Se mantendra un registro de auditoria con los cambios realizados. Es recomendable previsualizar antes de aplicar.
               </div>
 
-              <div className="bo-row">
-                <label className="bo-field flex-1">
-                  <div className="bo-label">Numero inicial</div>
+              <div className="flex gap-bo-4">
+                <label className="grid gap-bo-2 flex-1">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Numero inicial</div>
                   <input
-                    className="bo-input"
+                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     min="1"
                     value={renumberStartingNumber}
@@ -752,8 +752,8 @@ export default function Page() {
                 </label>
               </div>
 
-              <div className="bo-field">
-                <label className="bo-checkbox">
+              <div className="grid gap-bo-2">
+                <label className="w-4 h-4 rounded border border-bo-border bg-bo-bg-primary">
                   <input
                     type="checkbox"
                     checked={renumberGenerateByDate}
@@ -765,9 +765,9 @@ export default function Page() {
               </div>
 
               {renumberGenerateByDate && (
-                <div className="bo-row">
-                  <label className="bo-field flex-1">
-                    <div className="bo-label">Formato de fecha</div>
+                <div className="flex gap-bo-4">
+                  <label className="grid gap-bo-2 flex-1">
+                    <div className="text-bo-sm font-semibold text-bo-muted">Formato de fecha</div>
                     <Select
                       value={renumberDateFormat}
                       onChange={(v) => setRenumberDateFormat(v)}
@@ -782,9 +782,9 @@ export default function Page() {
                 </div>
               )}
 
-              <div className="bo-row bo-mt-2">
+              <div className="flex gap-bo-4 mt-2">
                 <button
-                  className="bo-btn bo-btn--secondary"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                   type="button"
                   onClick={previewRenumber}
                   disabled={renumberLoading}
@@ -794,10 +794,10 @@ export default function Page() {
               </div>
 
               {renumberPreview && renumberPreview.length > 0 && (
-                <div className="bo-field bo-mt-4">
-                  <div className="bo-label">Previsualizacion ({renumberPreview.length} facturas)</div>
-                  <div className="bo-tableWrapper bo-mt-2">
-                    <table className="bo-table">
+                <div className="grid gap-bo-2 mt-4">
+                  <div className="text-bo-sm font-semibold text-bo-muted">Previsualizacion ({renumberPreview.length} facturas)</div>
+                  <div className="max-h-[300px] overflow-y-auto border border-bo-border rounded-bo-sm mt-2">
+                    <table className="w-full border-collapse text-bo-sm">
                       <thead>
                         <tr>
                           <th>Factura Actual</th>
@@ -811,7 +811,7 @@ export default function Page() {
                         {renumberPreview.slice(0, 50).map((item, idx) => (
                           <tr key={item.invoice_id}>
                             <td>{item.current_number || "-"}</td>
-                            <td className="bo-weight-semibold">{item.new_number}</td>
+                            <td className="font-semibold">{item.new_number}</td>
                             <td>{item.customer_name}</td>
                             <td>{item.invoice_date}</td>
                             <td>{item.amount.toFixed(2)} EUR</td>
@@ -829,9 +829,9 @@ export default function Page() {
               )}
 
               {renumberPreview && renumberPreview.length > 0 && (
-                <div className="bo-row bo-mt-4">
+                <div className="flex gap-bo-4 mt-4">
                   <button
-                    className="bo-btn bo-btn--primary"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
                     type="button"
                     onClick={() => setShowConfirmApply(true)}
                     disabled={renumberLoading}
@@ -841,15 +841,15 @@ export default function Page() {
                 </div>
               )}
 
-              <div className="bo-field bo-mt-6">
-                <div className="bo-label">Historial de renumeraciones</div>
+              <div className="grid gap-bo-2 mt-6">
+                <div className="text-bo-sm font-semibold text-bo-muted">Historial de renumeraciones</div>
                 {renumberHistory.length === 0 ? (
-                  <div className="text-mutedText bo-mt-2">No hay historial de renumeraciones</div>
+                  <div className="text-mutedText mt-2">No hay historial de renumeraciones</div>
                 ) : (
-                  <div className="bo-auditHistory bo-mt-2">
+                  <div className="bo-auditHistory mt-2">
                     {renumberHistory.map((audit) => (
                       <div key={audit.id} className="bo-auditItem">
-                        <div className="bo-weight-semibold">
+                        <div className="font-semibold">
                           {audit.affected_invoices} facturas renumeradas
                         </div>
                         <div className="text-mutedText">
@@ -867,14 +867,14 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panel" aria-label="Plantilla de PDF">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Plantilla de PDF</div>
-            <div className="bo-panelMeta">Selecciona el diseño predeterminado para las facturas</div>
+        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Plantilla de PDF">
+          <div className="flex items-end justify-between pb-2 px-4 pt-4">
+            <div className="text-bo-sm font-bold text-bo-text">Plantilla de PDF</div>
+            <div className="text-bo-xs text-bo-faint">Selecciona el diseño predeterminado para las facturas</div>
           </div>
-          <div className="bo-panelBody">
-            <div className="bo-stack">
-              <div className="text-mutedText bo-mb-4">
+          <div className="p-4">
+            <div className="flex flex-col gap-bo-4 p-4">
+              <div className="text-mutedText mb-4">
                 Elige el diseño que se utilizará por defecto al generar los PDFs de las facturas. Los usuarios podrán elegir una plantilla diferente al crear cada factura.
               </div>
 
@@ -903,8 +903,8 @@ export default function Page() {
                 ))}
               </div>
 
-              <div className="bo-row">
-                <button className="bo-btn bo-btn--primary" type="button" onClick={saveInvoiceSettings} disabled={busy}>
+              <div className="flex gap-bo-4">
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveInvoiceSettings} disabled={busy}>
                   Guardar configuracion
                 </button>
               </div>
