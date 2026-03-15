@@ -5057,7 +5057,7 @@ export default function Page() {
                   <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
                 </div>
 
-                <div className="grid gap-2 bo-field--inline">
+                <div className="flex flex-row items-center gap-2">
                   <div className="text-bo-sm font-semibold text-bo-muted" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
                   <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
                   {mainLimit ? (

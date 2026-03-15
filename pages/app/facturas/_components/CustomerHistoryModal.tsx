@@ -21,20 +21,20 @@ function formatDate(dateStr: string): string {
 }
 
 const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; className: string }> = {
-  borrador: { label: "Borrador", className: "bo-badge--muted" },
-  solicitada: { label: "Solicitada", className: "bo-badge--warning" },
-  pendiente: { label: "Pendiente", className: "bo-badge--info" },
-  enviada: { label: "Enviada", className: "bo-badge--success" },
-  pagada: { label: "Pagada", className: "bo-badge--success" },
+  borrador: { label: "Borrador", className: "bg-white/[0.06] text-bo-muted border-bo-border" },
+  solicitada: { label: "Solicitada", className: "bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border-[var(--bo-color-warning)]/[0.30]" },
+  pendiente: { label: "Pendiente", className: "bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]" },
+  enviada: { label: "Enviada", className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]" },
+  pagada: { label: "Pagada", className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]" },
 };
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
-  const config = INVOICE_STATUS_CONFIG[status] || { label: status, className: "" };
-  return <span className={`bo-badge ${config.className}`}>{config.label}</span>;
+  const config = INVOICE_STATUS_CONFIG[status] || { label: status, className: "bg-white/[0.06] text-bo-muted border-bo-border" };
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${config.className}`}>{config.label}</span>;
 }
 
 function PaymentMethodBadge({ method }: { method?: string }) {
-  if (!method) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--muted">Sin especificar</span>;
+  if (!method) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bg-white/[0.06] text-bo-muted border-bo-border">Sin especificar</span>;
 
   const methodLabels: Record<string, string> = {
     efectivo: "Efectivo",
@@ -44,7 +44,7 @@ function PaymentMethodBadge({ method }: { method?: string }) {
     cheque: "Cheque",
   };
 
-  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">{methodLabels[method] || method}</span>;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]">{methodLabels[method] || method}</span>;
 }
 
 export function CustomerHistoryModal({

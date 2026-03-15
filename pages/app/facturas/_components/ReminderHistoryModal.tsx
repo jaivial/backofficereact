@@ -27,24 +27,24 @@ function ReminderStatusBadge({ status }: { status: InvoiceReminder["status"] }) 
     pending: {
       label: "Pendiente",
       icon: <Clock size={12} />,
-      className: "bo-badge--warning",
+      className: "bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border-[var(--bo-color-warning)]/[0.30]",
     },
     sent: {
       label: "Enviado",
       icon: <CheckCircle size={12} />,
-      className: "bo-badge--success",
+      className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]",
     },
     failed: {
       label: "Fallido",
       icon: <XCircle size={12} />,
-      className: "bo-badge--danger",
+      className: "bg-[var(--bo-color-danger)]/[0.16] text-[var(--bo-color-danger)] border-[var(--bo-color-danger)]/[0.30]",
     },
   };
 
   const { label, icon, className } = config[status] || config.pending;
 
   return (
-    <span className={`bo-badge ${className}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${className}`}>
       {icon}
       {label}
     </span>
@@ -54,7 +54,7 @@ function ReminderStatusBadge({ status }: { status: InvoiceReminder["status"] }) 
 function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   if (via === "email") {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]">
         <Mail size={12} />
         Email
       </span>
@@ -62,7 +62,7 @@ function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   }
   if (via === "whatsapp") {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--info">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]">
         <MessageSquare size={12} />
         WhatsApp
       </span>

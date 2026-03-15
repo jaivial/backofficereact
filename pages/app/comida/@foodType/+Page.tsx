@@ -417,11 +417,11 @@ export default function Page() {
           </div>
         )}
 
-        <div className={`bo-pager${showPagerBtns ? "" : " bo-pager--centered"}`} aria-label="Paginacion">
-          <div className="bo-pagerInfo">
+        <div className={`flex items-center justify-between gap-[10px] p-4 border-t border-bo-border text-bo-muted text-xs${showPagerBtns ? "" : " justify-center text-center"}`} aria-label="Paginacion">
+          <div className="text-bo-muted text-sm">
             Pagina {page} de {totalPages} · {total} resultados
           </div>
-          <div className="bo-pagerControls">
+          <div className="flex items-center gap-3">
             <Select
               value={String(pageSize)}
               onChange={(value) => {
@@ -434,7 +434,7 @@ export default function Page() {
               size="sm"
             />
             {showPagerBtns ? (
-              <div className="bo-pagerButtons">
+              <div className="flex gap-2">
                 <Button variant="ghost" type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || loading}>
                   Anterior
                 </Button>
