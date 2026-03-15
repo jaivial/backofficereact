@@ -248,7 +248,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
           {isEditing ? (
             // Edit/Create Form
             <div className="bo-templateForm">
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-name">
                   Nombre de la plantilla
                 </label>
@@ -261,7 +261,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                 />
               </div>
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted">Tipo de envio</label>
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -290,7 +290,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               </div>
 
               {formData.send_via === "email" && (
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-subject">
                     Asunto
                   </label>
@@ -307,7 +307,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                 </div>
               )}
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-body">
                   Cuerpo del mensaje
                 </label>

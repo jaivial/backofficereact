@@ -118,7 +118,7 @@ export const FoodFilters = React.memo(function FoodFilters({
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
             <div className="grid grid-gap-3 mt-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">
                   <Search size={14} />
                   Buscar
@@ -134,12 +134,12 @@ export const FoodFilters = React.memo(function FoodFilters({
                 </div>
               </div>
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Tipo</span>
                 <Select value={tipoFilter} onChange={onTipoChange} options={tipoOptions} ariaLabel="Tipo" />
               </div>
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Estado</span>
                 <Select
                   value={activeFilter}
@@ -150,7 +150,7 @@ export const FoodFilters = React.memo(function FoodFilters({
               </div>
 
               {supportsCategories ? (
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Categoria</span>
                   <Select
                     value={categoryFilter}
@@ -162,7 +162,7 @@ export const FoodFilters = React.memo(function FoodFilters({
               ) : null}
 
               {supportsAlergenos ? (
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Alergeno</span>
                   <Select
                     value={alergenoFilter}
@@ -174,7 +174,7 @@ export const FoodFilters = React.memo(function FoodFilters({
               ) : null}
 
               {supportsSuplemento ? (
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <span className="text-bo-xs font-semibold text-bo-muted flex items-center gap-1">Suplemento</span>
                   <Select
                     value={suplementoFilter}

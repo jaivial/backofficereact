@@ -109,7 +109,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
       <div className="bo-reservationModalContent">
         <div className="bo-reservationFilters">
             <div className="bo-reservationFiltersRow">
-              <label className="grid gap-bo-2">
+              <label className="grid gap-2">
                 <span className="text-bo-sm font-semibold text-bo-muted">
                   <Calendar size={14} />
                   Desde
@@ -117,7 +117,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 <DatePicker value={dateFrom} onChange={setDateFrom} />
               </label>
 
-              <label className="grid gap-bo-2">
+              <label className="grid gap-2">
                 <span className="text-bo-sm font-semibold text-bo-muted">
                   <Calendar size={14} />
                   Hasta
@@ -127,7 +127,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
 
             <div className="bo-reservationFiltersRow">
-              <label className="grid gap-bo-2">
+              <label className="grid gap-2">
                 <span className="text-bo-sm font-semibold text-bo-muted">
                   <Search size={14} />
                   Nombre
@@ -141,7 +141,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 />
               </label>
 
-              <label className="grid gap-bo-2">
+              <label className="grid gap-2">
                 <span className="text-bo-sm font-semibold text-bo-muted">
                   <Search size={14} />
                   Teléfono
@@ -157,7 +157,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
 
             <div className="bo-reservationFiltersRow">
-              <label className="grid gap-bo-2">
+              <label className="grid gap-2">
                 <span className="text-bo-sm font-semibold text-bo-muted">
                   <Users size={14} />
                   Personas
@@ -170,7 +170,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 />
               </label>
 
-              <label className="grid gap-bo-2">
+              <label className="grid gap-2">
                 <span className="text-bo-sm font-semibold text-bo-muted">
                   <Clock size={14} />
                   Hora

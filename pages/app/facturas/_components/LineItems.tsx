@@ -257,7 +257,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                       { id: "delete", label: "Eliminar", icon: <Trash2 size={16} />, tone: "danger", onSelect: () => { if (!disabled) handleRemoveItem(index); } },
                     ]}
                     menuMinWidthPx={120}
-                    triggerClassName="bo-btn bo-btn--ghost bo-btn--sm bo-lineItemActionBtn"
+                    triggerClassName="h-8 rounded-lg border border-transparent bg-transparent text-bo-text cursor-pointer px-2 font-medium inline-flex items-center justify-center gap-1 bo-lineItemActionBtn"
                   />
                 </div>
               </div>

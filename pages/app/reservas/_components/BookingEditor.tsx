@@ -334,12 +334,12 @@ export function BookingEditor({
           <div className="text-bo-xs text-bo-faint">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
         <div className="p-4 bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }}>
-          <div className="flex gap-bo-4 bo-bookingRow bo-bookingRow--schedule">
-            <div className="grid gap-bo-2 bo-field--inline bo-bookingField bo-bookingField--date">
+          <div className="flex gap-4 bo-bookingRow bo-bookingRow--schedule">
+            <div className="grid gap-2 bo-field--inline bo-bookingField bo-bookingField--date">
               <div className="text-bo-sm font-semibold text-bo-muted">Fecha</div>
               <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
             </div>
-            <div className="grid gap-bo-2 bo-field--inline bo-bookingField bo-bookingField--time">
+            <div className="grid gap-2 bo-field--inline bo-bookingField bo-bookingField--time">
               <div className="text-bo-sm font-semibold text-bo-muted">Hora</div>
               <TimePicker value={draft.reservation_time} onChange={(v) => setField("reservation_time", v)} ariaLabel="Hora" />
             </div>
@@ -353,12 +353,12 @@ export function BookingEditor({
             />
           </div>
 
-          <div className="flex gap-bo-4 bo-bookingRow bo-bookingRow--contact">
-            <div className="grid gap-bo-2 bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }}>
+          <div className="flex gap-4 bo-bookingRow bo-bookingRow--contact">
+            <div className="grid gap-2 bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }}>
               <div className="text-bo-sm font-semibold text-bo-muted">Cliente</div>
               <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} />
             </div>
-            <div className="grid gap-bo-2 bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }}>
+            <div className="grid gap-2 bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }}>
               <div className="text-bo-sm font-semibold text-bo-muted">Teléfono</div>
               <div className="bo-phone">
                 <Select
@@ -378,14 +378,14 @@ export function BookingEditor({
                 />
               </div>
             </div>
-            <div className="grid gap-bo-2 bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }}>
+            <div className="grid gap-2 bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }}>
               <div className="text-bo-sm font-semibold text-bo-muted">Email (opcional)</div>
               <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} />
             </div>
           </div>
 
-          <div className="flex gap-bo-4 bo-bookingRow bo-bookingRow--extras">
-            <div className="grid gap-bo-2 bo-bookingField bo-bookingField--table">
+          <div className="flex gap-4 bo-bookingRow bo-bookingRow--extras">
+            <div className="grid gap-2 bo-bookingField bo-bookingField--table">
               <div className="text-bo-sm font-semibold text-bo-muted">Mesa</div>
               <input
                 className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors"
@@ -410,7 +410,7 @@ export function BookingEditor({
               max={100}
               onChange={(v) => setField("highChairs", v)}
             />
-            <div className="grid gap-bo-2 bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }}>
+            <div className="grid gap-2 bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }}>
               <div className="text-bo-sm font-semibold text-bo-muted">Salón</div>
               <Select
                 className="bo-selectBtn--sm"
@@ -442,7 +442,7 @@ export function BookingEditor({
 
           {draft.special_menu ? (
             <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <div className="text-bo-sm font-semibold text-bo-muted">Seleccionar menú</div>
                 <Select
                   className="bo-selectBtn--sm"
@@ -458,7 +458,7 @@ export function BookingEditor({
               <div className="text-mutedText">Principales (restantes: {remainingPrincipales})</div>
               <div style={{ display: "grid", gap: 8 }}>
                 {draft.principales.map((row, idx) => (
-                  <div key={idx} className="flex gap-bo-4 bo-bookingChoiceRow" style={{ gap: 8 }}>
+                  <div key={idx} className="flex gap-4 bo-bookingChoiceRow" style={{ gap: 8 }}>
                     <Select
                       className="bo-selectBtn--sm bo-bookingChoiceSelect"
                       size="sm"
@@ -514,7 +514,7 @@ export function BookingEditor({
             {draft.arroz_enabled ? (
               <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
                 {draft.arroz.map((row, idx) => (
-                  <div key={idx} className="flex gap-bo-4 bo-bookingChoiceRow" style={{ gap: 8 }}>
+                  <div key={idx} className="flex gap-4 bo-bookingChoiceRow" style={{ gap: 8 }}>
                     <Select
                       className="bo-selectBtn--sm bo-bookingChoiceSelect"
                       size="sm"

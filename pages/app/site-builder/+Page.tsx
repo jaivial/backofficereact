@@ -2098,17 +2098,17 @@ export default function SiteBuilderEditorPage() {
 
     if (node.type === "hero") {
       return (
-        <div className="bo-nodePreviewHero" data-ui="node-preview-hero">
-          <h3 data-ui="node-preview-hero-title">{toInputValue(props.title) || "Hero Title"}</h3>
-          {toInputValue(props.subtitle) ? <p data-ui="node-preview-hero-subtitle">{toInputValue(props.subtitle)}</p> : null}
+        <div className="flex flex-col gap-2" data-ui="node-preview-hero">
+          <h3 className="m-0 text-bo-text" data-ui="node-preview-hero-title">{toInputValue(props.title) || "Hero Title"}</h3>
+          {toInputValue(props.subtitle) ? <p className="m-0 text-muted" data-ui="node-preview-hero-subtitle">{toInputValue(props.subtitle)}</p> : null}
         </div>
       );
     }
 
     if (node.type === "text") {
       return (
-        <div className="bo-nodePreviewText" data-ui="node-preview-text">
-          <p data-ui="node-preview-text-content">{toInputValue(props.content) || "Texto..."}</p>
+        <div className="flex flex-col gap-2" data-ui="node-preview-text">
+          <p className="m-0 text-muted" data-ui="node-preview-text-content">{toInputValue(props.content) || "Texto..."}</p>
         </div>
       );
     }
@@ -2119,25 +2119,26 @@ export default function SiteBuilderEditorPage() {
       const clampedLevel = Math.min(6, Math.max(1, level));
 
       return (
-        <div className="bo-nodePreviewHeading" data-ui="node-preview-heading">
-          {clampedLevel === 1 && <h1 data-ui="node-preview-heading-h1">{headingText}</h1>}
-          {clampedLevel === 2 && <h2 data-ui="node-preview-heading-h2">{headingText}</h2>}
-          {clampedLevel === 3 && <h3 data-ui="node-preview-heading-h3">{headingText}</h3>}
-          {clampedLevel === 4 && <h4 data-ui="node-preview-heading-h4">{headingText}</h4>}
-          {clampedLevel === 5 && <h5 data-ui="node-preview-heading-h5">{headingText}</h5>}
-          {clampedLevel === 6 && <h6 data-ui="node-preview-heading-h6">{headingText}</h6>}
+        <div className="flex flex-col gap-2" data-ui="node-preview-heading">
+          {clampedLevel === 1 && <h1 className="m-0 text-bo-text" data-ui="node-preview-heading-h1">{headingText}</h1>}
+          {clampedLevel === 2 && <h2 className="m-0 text-bo-text" data-ui="node-preview-heading-h2">{headingText}</h2>}
+          {clampedLevel === 3 && <h3 className="m-0 text-bo-text" data-ui="node-preview-heading-h3">{headingText}</h3>}
+          {clampedLevel === 4 && <h4 className="m-0 text-bo-text" data-ui="node-preview-heading-h4">{headingText}</h4>}
+          {clampedLevel === 5 && <h5 className="m-0 text-bo-text" data-ui="node-preview-heading-h5">{headingText}</h5>}
+          {clampedLevel === 6 && <h6 className="m-0 text-bo-text" data-ui="node-preview-heading-h6">{headingText}</h6>}
         </div>
       );
     }
 
     if (node.type === "image") {
       return (
-        <div className="bo-nodePreviewImage" data-ui="node-preview-image">
+        <div className="flex flex-col gap-2" data-ui="node-preview-image">
           <img
             data-ui="node-preview-image-tag"
             src={toInputValue(props.src) || "/placeholder.jpg"}
             alt={toInputValue(props.alt)}
             loading="lazy"
+            className="w-full max-h-[280px] object-cover rounded-sm border border-border"
           />
         </div>
       );
@@ -2145,7 +2146,7 @@ export default function SiteBuilderEditorPage() {
 
     if (node.type === "button") {
       return (
-        <div className="bo-nodePreviewButton" data-ui="node-preview-button">
+        <div className="flex flex-col gap-2" data-ui="node-preview-button">
           <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" data-ui="node-preview-button-tag" type="button">
             {toInputValue(props.text) || "Button"}
           </button>
@@ -2156,7 +2157,7 @@ export default function SiteBuilderEditorPage() {
     if (node.type === "spacer") {
       return (
         <div
-          className="bo-nodePreviewSpacer"
+          className="rounded-sm border border-dashed border-border bg-bo-accent/10"
           data-ui="node-preview-spacer"
           style={{ height: Number(props.height) || 40 }}
         />
@@ -2164,11 +2165,11 @@ export default function SiteBuilderEditorPage() {
     }
 
     if (node.type === "divider") {
-      return <hr className="bo-nodePreviewDivider" data-ui="node-preview-divider" />;
+      return <hr className="m-0 border-0 border-t border-border" data-ui="node-preview-divider" />;
     }
 
     return (
-      <div className="bo-nodePreviewGeneric" data-ui="node-preview-generic">
+      <div className="flex flex-col gap-2 min-h-[86px] items-center justify-center text-muted" data-ui="node-preview-generic">
         <Square size={20} />
         <span data-ui="node-preview-generic-label">{node.type}</span>
       </div>
@@ -2186,9 +2187,9 @@ export default function SiteBuilderEditorPage() {
         <div
           key={key}
           className={cn(
-            "bo-siteBuilderDropZone",
-            shouldShow && "is-visible",
-            isActive && "is-active",
+            "min-h-[18px] border border-dashed rounded-sm flex items-center justify-center transition-colors duration-150",
+            shouldShow && "min-h-6",
+            isActive && "border-bo-accent/56 bg-bo-accent/14",
           )}
           data-ui="drop-zone"
           data-drop-target={placement.targetId ?? "root"}
@@ -2198,8 +2199,8 @@ export default function SiteBuilderEditorPage() {
           onDragOver={(event) => handleDropZoneDragOver(event, placement)}
           onDrop={(event) => handleDropOnPlacement(event, placement)}
         >
-          <span className="bo-siteBuilderDropZoneLabel" data-ui="drop-zone-label">
-            Soltar aquí
+          <span className="text-xs text-faint opacity-0 transition-opacity duration-100" data-ui="drop-zone-label">
+            {shouldShow || isActive ? "Soltar aquí" : ""}
           </span>
         </div>
       );
@@ -2214,7 +2215,7 @@ export default function SiteBuilderEditorPage() {
     return (
       <div
         key={`${pathKey}-${node.id}`}
-        className={cn("bo-siteBuilderNode", isSelected && "is-selected")}
+        className={cn("relative rounded-sm border border-transparent bg-transparent transition-all duration-100 hover:border-bo-accent/30", isSelected && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.28)] bg-bo-accent/8")}
         data-ui="canvas-node"
         data-node-id={node.id}
         data-node-type={node.type}
@@ -2229,27 +2230,27 @@ export default function SiteBuilderEditorPage() {
         onContextMenu={(event) => handleContextMenu(event, node.id)}
       >
         {/* Webflow-like selection outline */}
-        {isSelected && <div className="bo-siteBuilderSelectionOutline" data-ui="selection-outline" />}
+        {isSelected && <div className="absolute inset-[-2px] border-2 border-dashed bo-accent rounded-[calc(0.25rem+2px)] pointer-events-none opacity-0 animate-pulse" data-ui="selection-outline" />}
         
         {/* 8-point resize handles */}
         {isSelected && (
-          <div className="bo-siteBuilderResizeHandles" data-ui="resize-handles">
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="nw" title="Resize" />
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="n" title="Resize" />
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="ne" title="Resize" />
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="e" title="Resize" />
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="se" title="Resize" />
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="s" title="Resize" />
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="sw" title="Resize" />
-            <div className="absolute w-2 h-2 bg-bo-accent rounded-full cursor-se-resize" data-handle="w" title="Resize" />
+          <div className="absolute inset-[-6px] pointer-events-none z-[12] opacity-100" data-ui="resize-handles">
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nwse-resize" data-handle="nw" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ns-resize top-0 left-1/2 -translate-x-1/2" data-handle="n" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nesw-resize" data-handle="ne" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ew-resize top-1/2 right-0 -translate-y-1/2" data-handle="e" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nwse-resize right-0 bottom-0" data-handle="se" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ns-resize bottom-0 left-1/2 -translate-x-1/2" data-handle="s" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nesw-resize bottom-0 left-0" data-handle="sw" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ew-resize top-1/2 left-0 -translate-y-1/2" data-handle="w" title="Resize" />
           </div>
         )}
         
-        <div className="bo-siteBuilderNodeChrome" data-ui="canvas-node-chrome">
-          <div className="bo-siteBuilderNodeHeaderLeft" data-ui="canvas-node-header-left">
+        <div className="flex items-center justify-between p-1" data-ui="canvas-node-chrome">
+          <div className="flex items-center gap-1" data-ui="canvas-node-header-left">
             <button
               type="button"
-              className="bo-siteBuilderDragHandle"
+              className="p-1 rounded cursor-grab active:cursor-grabbing text-muted hover:text-bo-text"
               title="Arrastrar"
               aria-label={`Arrastrar ${node.type}`}
               data-ui="canvas-node-drag-handle"
@@ -2259,17 +2260,17 @@ export default function SiteBuilderEditorPage() {
             >
               <GripVertical size={14} />
             </button>
-            <span className="bo-siteBuilderNodeType" data-ui="canvas-node-type">
+            <span className="text-xs text-bo-text font-medium" data-ui="canvas-node-type">
               {node.type}
             </span>
-            <span className="bo-siteBuilderNodeId" data-ui="canvas-node-id">
+            <span className="text-xs text-faint" data-ui="canvas-node-id">
               #{node.id.slice(-5)}
             </span>
           </div>
-          <div className="bo-siteBuilderNodeHeaderRight" data-ui="canvas-node-header-right">
-            <div className="bo-siteBuilderNodeActions" data-ui="canvas-node-actions">
+          <div className="flex items-center gap-1" data-ui="canvas-node-header-right">
+            <div className="flex items-center gap-1" data-ui="canvas-node-actions">
               <button
-                className="bo-siteBuilderNodeDelete"
+                className="p-1.5 rounded text-muted hover:text-danger hover:bg-bo-color-danger/14"
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -2285,25 +2286,25 @@ export default function SiteBuilderEditorPage() {
           </div>
         </div>
 
-        <div className="bo-siteBuilderNodeBody" data-ui="canvas-node-body" style={inlineNodeStyle}>
+        <div className="p-2" data-ui="canvas-node-body" style={inlineNodeStyle}>
           {renderNodePreview(node)}
 
           {hasChildrenArray(node) ? (
-            <div className="bo-siteBuilderNodeChildren" data-ui="canvas-node-children">
+            <div className="flex flex-col gap-2" data-ui="canvas-node-children">
               {renderNodeCollection(node.children, { targetId: node.id, position: "inside" }, depth + 1, `${pathKey}-${node.id}-children`)}
             </div>
           ) : null}
 
           {hasColumnsArray(node) ? (
-            <div className="bo-siteBuilderColumns" data-ui="canvas-node-columns">
+            <div className="grid grid-cols-2 gap-2" data-ui="canvas-node-columns">
               {node.columns.map((column, columnIndex) => (
                 <div
                   key={`${node.id}-column-${columnIndex}`}
-                  className="bo-siteBuilderColumn"
+                  className="flex flex-col gap-2"
                   data-ui="canvas-node-column"
                   data-column-index={columnIndex}
                 >
-                  <div className="bo-siteBuilderColumnTitle" data-ui="canvas-node-column-title">
+                  <div className="text-xs text-bo-text font-medium" data-ui="canvas-node-column-title">
                     Columna {columnIndex + 1}
                   </div>
                   {renderNodeCollection(
@@ -2361,22 +2362,22 @@ export default function SiteBuilderEditorPage() {
   return (
     <>
       <style data-ui="site-builder-inline-styles" dangerouslySetInnerHTML={{ __html: SITE_BUILDER_PAGE_STYLES }} />
-      <div className="bo-siteBuilder" data-ui="site-builder">
-        <header className="bo-siteBuilderToolbar" data-ui="site-builder-toolbar">
-          <div className="bo-siteBuilderToolbarLeft" data-ui="toolbar-left">
-            <span className="bo-siteBuilderTitle" data-ui="toolbar-title">
+      <div className="flex flex-col gap-4 p-4 min-h-[calc(100dvh-140px)]" data-ui="site-builder">
+        <header className="flex items-center justify-between gap-3 p-3 bg-bo-surface border border-bo-border rounded-lg shadow-soft" data-ui="site-builder-toolbar">
+          <div className="flex items-center gap-3" data-ui="toolbar-left">
+            <span className="text-base font-semibold text-bo-text" data-ui="toolbar-title">
               {site?.name || "Site Builder"}
             </span>
-            <span className="bo-siteBuilderPageName" data-ui="toolbar-page-name">
+            <span className="inline-flex items-center gap-2 text-sm text-bo-muted" data-ui="toolbar-page-name">
               <FileText size={14} />
               {currentPage?.name || "Sin página"}
             </span>
           </div>
 
-          <div className="bo-siteBuilderToolbarCenter" data-ui="toolbar-center">
-            <div className="bo-siteBuilderViewportToggle" data-ui="viewport-toggle">
+          <div className="flex-1 flex justify-center" data-ui="toolbar-center">
+            <div className="inline-flex items-center gap-1 p-0.5 border border-bo-border rounded bg-bo-surface-3" data-ui="viewport-toggle">
               <button
-                className={cn("bo-siteBuilderViewportBtn", viewportSize === "desktop" && "is-active")}
+                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", viewportSize === "desktop" && "bg-bo-accent/24 text-bo-text")}
                 type="button"
                 onClick={() => setViewportSize("desktop")}
                 title="Desktop"
@@ -2386,7 +2387,7 @@ export default function SiteBuilderEditorPage() {
                 <Monitor size={18} />
               </button>
               <button
-                className={cn("bo-siteBuilderViewportBtn", viewportSize === "tablet" && "is-active")}
+                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", viewportSize === "tablet" && "bg-bo-accent/24 text-bo-text")}
                 type="button"
                 onClick={() => setViewportSize("tablet")}
                 title="Tablet"
@@ -2396,7 +2397,7 @@ export default function SiteBuilderEditorPage() {
                 <Tablet size={18} />
               </button>
               <button
-                className={cn("bo-siteBuilderViewportBtn", viewportSize === "mobile" && "is-active")}
+                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", viewportSize === "mobile" && "bg-bo-accent/24 text-bo-text")}
                 type="button"
                 onClick={() => setViewportSize("mobile")}
                 title="Mobile"
@@ -2408,7 +2409,7 @@ export default function SiteBuilderEditorPage() {
             </div>
           </div>
 
-          <div className="bo-siteBuilderToolbarRight" data-ui="toolbar-right">
+          <div className="flex items-center gap-3" data-ui="toolbar-right">
             <button
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
               type="button"
@@ -2434,12 +2435,12 @@ export default function SiteBuilderEditorPage() {
           </div>
         </header>
 
-        <div className="bo-siteBuilderMain" data-ui="site-builder-main">
+        <div className="grid grid-cols-[280px_minmax(0,1fr)_320px] gap-4 flex-1 min-h-0" data-ui="site-builder-main">
           {leftPanelOpen ? (
-            <aside className="bo-siteBuilderLeftPanel" data-ui="left-panel">
-              <div className="bo-siteBuilderPanelTabs" data-ui="left-panel-tabs">
+            <aside className="flex flex-col min-h-0 bg-bo-surface border border-bo-border rounded-lg shadow-soft" data-ui="left-panel">
+              <div className="grid grid-cols-3 gap-1 p-2 border-b border-bo-border" data-ui="left-panel-tabs">
                 <button
-                  className={cn("bo-siteBuilderPanelTab", activeLeftTab === "components" && "is-active")}
+                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", activeLeftTab === "components" && "bg-bo-accent/22 text-bo-text")}
                   type="button"
                   onClick={() => setActiveLeftTab("components")}
                   data-ui="left-tab-components"
@@ -2448,7 +2449,7 @@ export default function SiteBuilderEditorPage() {
                   <span data-ui="left-tab-components-label">Componentes</span>
                 </button>
                 <button
-                  className={cn("bo-siteBuilderPanelTab", activeLeftTab === "pages" && "is-active")}
+                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", activeLeftTab === "pages" && "bg-bo-accent/22 text-bo-text")}
                   type="button"
                   onClick={() => setActiveLeftTab("pages")}
                   data-ui="left-tab-pages"
@@ -2457,7 +2458,7 @@ export default function SiteBuilderEditorPage() {
                   <span data-ui="left-tab-pages-label">Páginas</span>
                 </button>
                 <button
-                  className={cn("bo-siteBuilderPanelTab", activeLeftTab === "layers" && "is-active")}
+                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", activeLeftTab === "layers" && "bg-bo-accent/22 text-bo-text")}
                   type="button"
                   onClick={() => setActiveLeftTab("layers")}
                   data-ui="left-tab-layers"
@@ -2467,13 +2468,13 @@ export default function SiteBuilderEditorPage() {
                 </button>
               </div>
 
-              <div className="bo-siteBuilderPanelContent" data-ui="left-panel-content">
+              <div className="flex-1 min-h-0 overflow-auto p-3" data-ui="left-panel-content">
                 {activeLeftTab === "components" ? (
-                  <div className="bo-siteBuilderComponents" data-ui="components-list">
+                  <div className="flex flex-col gap-2" data-ui="components-list">
                     {components.map((component) => (
                       <button
                         key={component.id}
-                        className="bo-siteBuilderComponentItem"
+                        className="w-full min-h-[40px] p-2 border border-bo-border rounded bg-bo-surface-2 text-bo-text flex items-center gap-2 text-left cursor-pointer hover:bg-bo-surface-3 transition-colors"
                         type="button"
                         draggable
                         onDragStart={(event) => handleDragStartComponent(event, component.type)}
@@ -2483,10 +2484,10 @@ export default function SiteBuilderEditorPage() {
                         data-ui="component-item"
                         data-component-type={component.type}
                       >
-                        <span className="bo-siteBuilderComponentIcon" data-ui="component-item-icon">
+                        <span className="text-bo-muted" data-ui="component-item-icon">
                           <Square size={16} />
                         </span>
-                        <span className="bo-siteBuilderComponentLabel" data-ui="component-item-label">
+                        <span className="text-bo-text" data-ui="component-item-label">
                           {component.label}
                         </span>
                       </button>
@@ -2501,11 +2502,11 @@ export default function SiteBuilderEditorPage() {
                 ) : null}
 
                 {activeLeftTab === "pages" ? (
-                  <div className="bo-siteBuilderPages" data-ui="pages-list">
+                  <div className="flex flex-col gap-2" data-ui="pages-list">
                     {pages.map((page) => (
                       <button
                         key={page.id}
-                        className={cn("bo-siteBuilderPageItem", currentPage?.id === page.id && "is-active")}
+                        className={cn("w-full min-h-[40px] p-2 border border-border rounded-sm bg-bo-surface-2 text-bo-text flex items-center gap-2 text-left cursor-pointer transition-colors duration-150 hover:border-border-2 hover:bg-bo-surface-3", currentPage?.id === page.id && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.30)]")}
                         type="button"
                         onClick={() => {
                           setCurrentPage({
@@ -2519,18 +2520,18 @@ export default function SiteBuilderEditorPage() {
                       >
                         <FileText size={16} />
                         <span data-ui="page-item-name">{page.name}</span>
-                        {page.is_home ? <span className="bo-siteBuilderPageBadge" data-ui="page-item-badge">Home</span> : null}
+                        {page.is_home ? <span className="ml-auto px-2 py-0.5 rounded-full text-xs font-semibold text-bo-accent bg-bo-accent/18" data-ui="page-item-badge">Home</span> : null}
                       </button>
                     ))}
                   </div>
                 ) : null}
 
                 {activeLeftTab === "layers" ? (
-                  <div className="bo-siteBuilderLayers" data-ui="layers-list">
+                  <div className="flex flex-col gap-2" data-ui="layers-list">
                     {layerItems.map((layer) => (
                       <div
                         key={layer.node.id}
-                        className={cn("bo-siteBuilderLayerItem", selectedNodeId === layer.node.id && "is-selected")}
+                        className={cn("w-full min-h-[40px] p-2 border border-border rounded-sm bg-bo-surface-2 text-bo-text flex items-center gap-2 text-left cursor-pointer transition-colors duration-150 hover:border-border-2 hover:bg-bo-surface-3", selectedNodeId === layer.node.id && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.30)]")}
                         onClick={() => {
                           setSelectedNodeId(layer.node.id);
                           setRightPanelOpen(true);
@@ -2552,19 +2553,19 @@ export default function SiteBuilderEditorPage() {
                         data-layer-id={layer.node.id}
                         data-layer-depth={layer.depth}
                       >
-                        <span className="bo-siteBuilderLayerIcon" data-ui="layer-item-icon">
+                        <span className="text-muted inline-flex items-center justify-center" data-ui="layer-item-icon">
                           <Square size={12} />
                         </span>
-                        <span className="bo-siteBuilderLayerItemContent" style={{ paddingLeft: `${layer.depth * 14}px` }} data-ui="layer-item-content">
-                          <span className="bo-siteBuilderLayerName" data-ui="layer-item-name">
+                        <span className="inline-flex items-center gap-2" style={{ paddingLeft: `${layer.depth * 14}px` }} data-ui="layer-item-content">
+                          <span className="text-sm text-bo-text" data-ui="layer-item-name">
                             {layer.node.type}
                           </span>
                         </span>
-                        <span className="bo-siteBuilderLayerBranch" data-ui="layer-item-branch">
+                        <span className="ml-auto text-xs text-faint" data-ui="layer-item-branch">
                           {layer.branch}
                         </span>
                         <button
-                          className="bo-siteBuilderLayerDelete"
+                          className="ml-auto w-[30px] h-[30px] rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer hover:text-danger hover:bg-bo-color-danger/16"
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
@@ -2591,7 +2592,7 @@ export default function SiteBuilderEditorPage() {
           ) : null}
 
           <main 
-            className="bo-siteBuilderCanvas" 
+            className="overflow-auto p-3" 
             data-ui="canvas"
             onClick={(event) => {
               // Deselect when clicking on canvas background (not on nodes)
@@ -2601,7 +2602,7 @@ export default function SiteBuilderEditorPage() {
             }}
           >
             <div 
-              className="bo-siteBuilderPreview" 
+              className="mx-auto min-h-full w-full py-3 px-4 bg-bo-surface/72 border border-border rounded-md flex flex-col gap-2" 
               style={{ maxWidth: viewportWidth }} 
               data-ui="canvas-preview"
               onClick={(event) => {
@@ -2612,7 +2613,7 @@ export default function SiteBuilderEditorPage() {
               }}
             >
               <div 
-                className={cn("bo-siteBuilderPageSurface", isDraggingCanvas && "is-active")} 
+                className={cn("w-full min-h-full p-[18px_2.8vw_34px] rounded-md border border-border/76 bg-gradient-to-b from-bo-surface/86 to-bo-surface shadow-[0_20px_55px_rgba(9,11,18,0.24)] flex flex-col gap-2", isDraggingCanvas && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.26),0_20px_55px_rgba(9,11,18,0.22)]")} 
                 data-ui="canvas-page-surface"
                 onClick={(event) => {
                   // Deselect when clicking on page surface background
@@ -2632,7 +2633,7 @@ export default function SiteBuilderEditorPage() {
                     "root",
                   )
                 ) : (
-                  <div className="bo-siteBuilderCanvasEmpty" data-ui="canvas-empty-no-page">
+                  <div className="flex flex-col items-center justify-center py-12 text-muted text-center gap-3" data-ui="canvas-empty-no-page">
                     <LayoutGrid size={48} />
                     <h3 data-ui="canvas-empty-no-page-title">Sin página activa</h3>
                     <p data-ui="canvas-empty-no-page-description">Selecciona una página para editar su estructura</p>
@@ -2640,7 +2641,7 @@ export default function SiteBuilderEditorPage() {
                 )}
 
                 {currentPage && currentPage.tree.children.length === 0 ? (
-                  <div className="bo-siteBuilderCanvasEmpty" data-ui="canvas-empty">
+                  <div className="flex flex-col items-center justify-center py-12 text-muted text-center gap-3" data-ui="canvas-empty">
                     <LayoutGrid size={48} />
                     <h3 data-ui="canvas-empty-title">Canvas vacío</h3>
                     <p data-ui="canvas-empty-description">Arrastra componentes desde la izquierda para construir la página</p>
@@ -2651,8 +2652,8 @@ export default function SiteBuilderEditorPage() {
           </main>
 
           {rightPanelOpen && selectedNode ? (
-            <aside className="bo-siteBuilderRightPanel" data-ui="right-panel">
-              <div className="bo-siteBuilderPanelHeader" data-ui="right-panel-header">
+            <aside className="flex flex-col min-h-0 bg-bo-surface border border-bo-border rounded-lg shadow-soft" data-ui="right-panel">
+              <div className="flex items-center justify-between gap-2 p-3 border-b border-bo-border" data-ui="right-panel-header">
                 <h3 data-ui="right-panel-title">Propiedades</h3>
                 <button
                   className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
@@ -2665,12 +2666,12 @@ export default function SiteBuilderEditorPage() {
                 </button>
               </div>
 
-              <div className="bo-siteBuilderProperties" data-ui="properties">
-                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-type">
-                  <span className="text-bo-sm text-bo-muted" data-ui="property-label-type">
+              <div className="p-3 min-h-0 overflow-auto" data-ui="properties">
+                <div className="flex flex-col gap-1 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-type">
+                  <span className="text-xs text-bo-muted font-semibold uppercase tracking-wide" data-ui="property-label-type">
                     Tipo
                   </span>
-                  <span className="bo-siteBuilderPropertyType" data-ui="property-value-type">
+                  <span className="inline-flex self-start px-2 py-0.5 rounded-full border border-border bg-bo-surface-3 text-bo-text text-xs" data-ui="property-value-type">
                     {selectedNode.type}
                   </span>
                 </div>
@@ -2951,7 +2952,7 @@ export default function SiteBuilderEditorPage() {
                   />
                 </div>
 
-                <div className="bo-siteBuilderPropertyActions" data-ui="property-actions">
+                <div className="flex items-center" data-ui="property-actions">
                   <button
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-500/35 bg-red-500/14 text-red-400 text-sm font-bold transition-all hover:border-red-500/50 hover:bg-red-500/20 disabled:opacity-55 disabled:cursor-not-allowed"
                     type="button"
@@ -2968,7 +2969,7 @@ export default function SiteBuilderEditorPage() {
 
           {!rightPanelOpen ? (
             <button
-              className="bo-siteBuilderToggleRight"
+              className="fixed right-4 bottom-4 w-10 h-10 rounded-full border border-border bg-bo-surface text-bo-text inline-flex items-center justify-center shadow-soft cursor-pointer"
               type="button"
               onClick={() => setRightPanelOpen(true)}
               title="Mostrar propiedades"
@@ -2984,57 +2985,56 @@ export default function SiteBuilderEditorPage() {
         {contextMenu ? (
           <div
             ref={contextMenuRef}
-            className="bo-siteBuilderContextMenu"
+            className="fixed min-w-[180px] p-1 bg-bo-surface border border-border rounded-md shadow-soft shadow-[0_8px_32px_rgba(0,0,0,0.24)] z-[1000] animate-in fade-in zoom-in-95 slide-in-from-location-[var(--x)_var(--y)] duration-100"
             data-ui="context-menu"
             role="menu"
             style={{
-              position: "fixed",
               top: contextMenu.y,
               left: contextMenu.x,
             }}
           >
             <button
-              className="bo-siteBuilderContextMenuItem"
+              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-bo-text text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-surface-2"
               type="button"
               role="menuitem"
               onClick={() => handleDuplicateNode(contextMenu.nodeId)}
             >
               <Copy size={14} />
               <span>Duplicar</span>
-              <span className="bo-siteBuilderContextMenuShortcut">⌘D</span>
+              <span className="ml-auto text-xs text-muted">⌘D</span>
             </button>
             <button
-              className="bo-siteBuilderContextMenuItem"
+              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-bo-text text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-surface-2"
               type="button"
               role="menuitem"
               onClick={() => handleCopyNode(contextMenu.nodeId)}
             >
               <Copy size={14} />
               <span>Copiar</span>
-              <span className="bo-siteBuilderContextMenuShortcut">⌘C</span>
+              <span className="ml-auto text-xs text-muted">⌘C</span>
             </button>
             {clipboardNode ? (
               <button
-                className="bo-siteBuilderContextMenuItem"
+                className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-bo-text text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-surface-2"
                 type="button"
                 role="menuitem"
                 onClick={() => handlePasteNode(contextMenu.nodeId)}
               >
                 <Copy size={14} />
                 <span>Pegar después</span>
-                <span className="bo-siteBuilderContextMenuShortcut">⌘V</span>
+                <span className="ml-auto text-xs text-muted">⌘V</span>
               </button>
             ) : null}
-            <div className="bo-siteBuilderContextMenuDivider" />
+            <div className="h-px bg-border my-1" />
             <button
-              className="bo-siteBuilderContextMenuItem is-danger"
+              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-red-400 text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-color-danger/14"
               type="button"
               role="menuitem"
               onClick={() => handleDeleteNode(contextMenu.nodeId)}
             >
               <Trash2 size={14} />
               <span>Eliminar</span>
-              <span className="bo-siteBuilderContextMenuShortcut">Del</span>
+              <span className="ml-auto text-xs text-muted">Del</span>
             </button>
           </div>
         ) : null}

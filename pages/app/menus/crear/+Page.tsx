@@ -4496,7 +4496,7 @@ export default function Page() {
       : "Subir imagen";
 
     return (
-      <div className="grid gap-bo-2 bo-field--full">
+      <div className="grid gap-2 bo-field--full">
         <div className="text-bo-sm font-semibold text-bo-muted">Foto preview del menu</div>
         <div className="bo-menuPreviewUploadBlock">
           {menuPreviewAIGenerating ? (
@@ -4600,13 +4600,13 @@ export default function Page() {
           <h2 className="text-bo-sm font-bold text-bo-text mb-2">Datos basicos</h2>
           <div className="bo-form bo-form--menuWizard bo-form--menuWizardBasics">
             <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
-              <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--title">
+              <div className="grid gap-2 bo-menuBasicsField bo-menuBasicsField--title">
                 <div className="text-bo-sm font-semibold text-bo-muted">Titulo</div>
                 <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={title} onChange={(e) => setTitle(e.target.value)} />
               </div>
 
               {!isALaCarte && !isSpecial ? (
-                <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--price">
+                <div className="grid gap-2 bo-menuBasicsField bo-menuBasicsField--price">
                   <div className="text-bo-sm font-semibold text-bo-muted">Precio</div>
                   <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
                 </div>
@@ -4614,7 +4614,7 @@ export default function Page() {
             </div>
 
             {!isSpecial ? (
-              <div className="grid gap-bo-2 bo-field--full">
+              <div className="grid gap-2 bo-field--full">
                 <div className="text-bo-sm font-semibold text-bo-muted">Subtitulos</div>
                 <div className="bo-stackFields">
                   {subtitles.map((line, idx) => (
@@ -4647,7 +4647,7 @@ export default function Page() {
             ) : null}
 
             {!isSpecial ? (
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <div className="text-bo-sm font-semibold text-bo-muted">Cambiar tipo de menu</div>
                 <Select
                   className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
@@ -4661,7 +4661,7 @@ export default function Page() {
             ) : null}
 
             <div className="bo-menuBasicsSwitchRow">
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <div className="text-bo-sm font-semibold text-bo-muted">Añadir foto preview</div>
                 <Select
                   className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
@@ -4854,19 +4854,19 @@ export default function Page() {
               </div>
               <div className="p-4 bo-form bo-form--menuWizard bo-form--menuWizardBasics">
                 <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
-                  <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--title">
+                  <div className="grid gap-2 bo-menuBasicsField bo-menuBasicsField--title">
                     <div className="text-bo-sm font-semibold text-bo-muted">Titulo</div>
                     <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={title} onChange={(e) => setTitle(e.target.value)} />
                   </div>
                   {!isALaCarte && !isSpecial ? (
-                    <div className="grid gap-bo-2 bo-menuBasicsField bo-menuBasicsField--price">
+                    <div className="grid gap-2 bo-menuBasicsField bo-menuBasicsField--price">
                       <div className="text-bo-sm font-semibold text-bo-muted">Precio</div>
                       <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
                     </div>
                   ) : null}
                 </div>
                 {!isSpecial ? (
-                  <div className="grid gap-bo-2 bo-field--full">
+                  <div className="grid gap-2 bo-field--full">
                     <div className="text-bo-sm font-semibold text-bo-muted">Subtitulos</div>
                     <div className="bo-stackFields">
                       {subtitles.map((line, idx) => (
@@ -4898,7 +4898,7 @@ export default function Page() {
                   </div>
                 ) : null}
                 {!isSpecial ? (
-                  <div className="grid gap-bo-2">
+                  <div className="grid gap-2">
                     <div className="text-bo-sm font-semibold text-bo-muted">Visibilidad de platos</div>
                     <Select
                       className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
@@ -4910,7 +4910,7 @@ export default function Page() {
                     />
                   </div>
                 ) : null}
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <div className="text-bo-sm font-semibold text-bo-muted">Añadir foto preview</div>
                   <Select
                     className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
@@ -4922,7 +4922,7 @@ export default function Page() {
                   />
                 </div>
                 {!isSpecial ? (
-                  <div className="grid gap-bo-2">
+                  <div className="grid gap-2">
                     <div className="text-bo-sm font-semibold text-bo-muted">Cambiar tipo de menu</div>
                     <Select
                       className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
@@ -5013,7 +5013,7 @@ export default function Page() {
                   </div>
                 </div>
                 <div className="p-4 bo-form bo-form--menuWizard">
-                  <div className="grid gap-bo-2">
+                  <div className="grid gap-2">
                     <div className="text-bo-sm font-semibold text-bo-muted">Bebida</div>
                     <Select
                       className="w-full h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
@@ -5026,7 +5026,7 @@ export default function Page() {
                   </div>
 
                   {beverageType !== "no_incluida" ? (
-                    <div className="grid gap-bo-2">
+                    <div className="grid gap-2">
                       <div className="text-bo-sm font-semibold text-bo-muted">Precio por persona</div>
                       <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" />
                     </div>
@@ -5034,12 +5034,12 @@ export default function Page() {
 
                   {beverageType === "ilimitada" ? (
                     <>
-                      <div className="grid gap-bo-2">
+                      <div className="grid gap-2">
                         <div className="text-bo-sm font-semibold text-bo-muted">Tiene suplemento</div>
                         <Switch checked={beverageHasSupplement} onCheckedChange={setBeverageHasSupplement} />
                       </div>
                       {beverageHasSupplement ? (
-                        <div className="grid gap-bo-2">
+                        <div className="grid gap-2">
                           <div className="text-bo-sm font-semibold text-bo-muted">Valor suplemento</div>
                           <input
                             className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
@@ -5052,12 +5052,12 @@ export default function Page() {
                     </>
                   ) : null}
 
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <div className="text-bo-sm font-semibold text-bo-muted">Minimo personas para reservar</div>
                   <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
                 </div>
 
-                <div className="grid gap-bo-2 bo-field--inline">
+                <div className="grid gap-2 bo-field--inline">
                   <div className="text-bo-sm font-semibold text-bo-muted" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
                   <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
                   {mainLimit ? (
@@ -5072,12 +5072,12 @@ export default function Page() {
                   ) : null}
                 </div>
 
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <div className="text-bo-sm font-semibold text-bo-muted">Cafe incluido</div>
                   <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
                 </div>
 
-                <div className="grid gap-bo-2 bo-field--full">
+                <div className="grid gap-2 bo-field--full">
                   <div className="text-bo-sm font-semibold text-bo-muted">Comentarios</div>
                   <textarea
                     className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea"

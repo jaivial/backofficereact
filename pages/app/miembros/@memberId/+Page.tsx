@@ -186,7 +186,7 @@ export default function Page() {
   const isSelfMember = !!member && (member.isCurrentUser || (currentEmail !== "" && normalizeEmail(member.email) === currentEmail));
 
   return (
-    <section aria-label="Informacion del miembro" className="flex flex-col gap-bo-4 p-4">
+    <section aria-label="Informacion del miembro" className="flex flex-col gap-4 p-4">
       {!member ? (
         <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
@@ -282,27 +282,27 @@ export default function Page() {
             </div>
             <div className="p-4">
               <div className="grid grid-cols-auto-fit gap-4">
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Nombre</span>
                   <input id="firstName" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
                 </label>
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Apellidos</span>
                   <input id="lastName" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)} />
                 </label>
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Email</span>
                   <input id="email" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)} />
                 </label>
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">DNI (opcional)</span>
                   <input id="dni" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
                 </label>
-                <label className="grid gap-bo-2 bo-col-span-2">
+                <label className="grid gap-2 bo-col-span-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Numero de cuenta (opcional)</span>
                   <input id="bankAccount" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
                 </label>
-                <label className="grid gap-bo-2 bo-col-span-2">
+                <label className="grid gap-2 bo-col-span-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Telefono (opcional)</span>
                   <PhoneInput
                     countryCode={phoneCountryCode}

@@ -155,12 +155,12 @@ export default function WebsiteBuilderPage() {
 
   if (loading) {
     return (
-      <div className="bo-websitePage" data-ui="website-loading">
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+      <div className="p-6" data-ui="website-loading">
+        <div className="rounded-lg bg-bo-surface shadow-soft">
           <div className="p-4">
             <div className="flex items-center justify-center py-8 text-bo-muted">
               <Loader2 className="animate-spin h-4 w-4" size={24} />
-              <span className="text-mutedText">Cargando configuracion...</span>
+              <span className="ml-2">Cargando configuracion...</span>
             </div>
           </div>
         </div>
@@ -169,16 +169,16 @@ export default function WebsiteBuilderPage() {
   }
 
   return (
-    <div className="bo-websitePage" data-ui="website-builder">
-      <div className="bo-websiteHeader">
-        <div className="bo-websiteHeaderMain">
-          <div className="bo-websiteTitle">
+    <div className="p-6" data-ui="website-builder">
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-3 text-bo-text">
             <Globe size={24} />
-            <h1>Website Builder</h1>
+            <h1 className="text-xl font-semibold">Website Builder</h1>
           </div>
-          <p className="bo-websiteSubtitle">Crea y publica la web de tu restaurante</p>
+          <p className="text-bo-muted mt-1">Crea y publica la web de tu restaurante</p>
         </div>
-        <div className="bo-websiteHeaderActions">
+        <div className="flex items-center gap-2">
           <Button variant={config?.is_published ? "success" : "secondary"} type="button" onClick={handleTogglePublished} disabled={saving}>
             {config?.is_published ? "Publicado" : "Borrador"}
           </Button>
@@ -191,14 +191,18 @@ export default function WebsiteBuilderPage() {
         </div>
       </div>
 
-      <div className="bo-websiteTabs" role="tablist">
+      <div className="flex gap-1 p-1 bg-bo-surface-3 rounded-lg mb-6" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             type="button"
             role="tab"
             aria-selected={activeTab === tab.key}
-            className={`bo-websiteTab${activeTab === tab.key ? " is-active" : ""}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === tab.key 
+                ? "bg-bo-surface text-bo-text shadow-sm" 
+                : "text-bo-muted hover:text-bo-text"
+            }`}
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.icon}
@@ -208,28 +212,32 @@ export default function WebsiteBuilderPage() {
       </div>
 
       {activeTab === "templates" && (
-        <section className="bo-websiteSection" aria-label="Plantillas premium">
-          <div className="bo-websiteTemplateGrid">
+        <section className="mb-6" aria-label="Plantillas premium">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {WEBSITE_THEMES.map((theme) => {
               const isSelected = config?.template_id === theme.id;
               return (
                 <button
                   key={theme.id}
                   type="button"
-                  className={`bo-websiteTemplateCard${isSelected ? " is-selected" : ""}`}
+                  className={`relative text-left p-3 rounded-lg border transition-all ${
+                    isSelected 
+                      ? "border-bo-accent bg-bo-accent/10" 
+                      : "border-bo-border hover:border-bo-border-2"
+                  }`}
                   onClick={() => handleSave({ template_id: theme.id, custom_html: null })}
                   disabled={saving}
                 >
-                  <div className="bo-websiteTemplatePreview">
-                    <div className="bo-websiteTemplatePreviewInner" data-theme-id={theme.id} />
+                  <div className="h-24 rounded bg-bo-surface-2 mb-3 overflow-hidden">
+                    <div className="w-full h-full" data-theme-id={theme.id} />
                   </div>
-                  <div className="bo-websiteTemplateInfo">
-                    <div className="bo-websiteTemplateName">{theme.name}</div>
-                    <div className="bo-websiteTemplateDesc">{theme.description}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-bo-text truncate">{theme.name}</div>
+                    <div className="text-sm text-bo-muted truncate">{theme.description}</div>
                   </div>
                   {isSelected && (
-                    <div className="bo-websiteTemplateBadge">
-                      <Check size={14} />
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-bo-accent flex items-center justify-center">
+                      <Check size={14} className="text-bo-bg" />
                     </div>
                   )}
                 </button>
@@ -240,138 +248,130 @@ export default function WebsiteBuilderPage() {
       )}
 
       {activeTab === "ai" && (
-        <section className="bo-websiteSection" aria-label="Constructor con IA">
-          <div className="bo-websiteAIGrid">
-            <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
-              <div className="flex items-end justify-between pb-2 px-4 pt-4">
-                <div className="text-bo-sm font-bold text-bo-text">Generar con IA</div>
-                <div className="text-bo-xs text-bo-faint">Describe tu sitio ideal</div>
-              </div>
-              <div className="p-4">
-                <div className="flex flex-col gap-bo-4 p-4">
-                  <p className="text-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
-                  <label className="grid gap-bo-2">
-                    <textarea
-                      className="bo-textarea bo-textarea--lg"
-                      placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      rows={6}
-                    />
-                  </label>
-                  <div className="flex gap-bo-4 bo-row--right">
-                    <Button variant="primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating}>
-                      {generating ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin h-4 w-4" />
-                          <span>Generando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={16} />
-                          <span>Generar Web</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
+        <section className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="rounded-lg bg-bo-surface shadow-soft p-4">
+            <div className="flex items-end justify-between pb-2">
+              <div className="text-bo-sm font-bold text-bo-text">Generar con IA</div>
+              <div className="text-bo-xs text-bo-faint">Describe tu sitio ideal</div>
+            </div>
+            <div className="flex flex-col gap-4">
+              <p className="text-bo-muted text-sm">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
+              <label className="grid gap-2">
+                <textarea
+                  className="w-full min-h-[120px] rounded-md border border-bo-border bg-bo-surface-2 text-bo-text p-3 outline-none focus:border-bo-accent resize-none"
+                  placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  rows={6}
+                />
+              </label>
+              <div className="flex justify-end">
+                <Button variant="primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating}>
+                  {generating ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin h-4 w-4" />
+                      <span>Generando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      <span>Generar Web</span>
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
+          </div>
 
-            <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
-              <div className="flex items-end justify-between pb-2 px-4 pt-4">
-                <div className="text-bo-sm font-bold text-bo-text">Vista previa</div>
-                <div className="text-bo-xs text-bo-faint">HTML personalizado</div>
-              </div>
-              <div className="p-4">
-                <div className="bo-websitePreviewFrame">
-                  {config?.custom_html ? (
-                    <div dangerouslySetInnerHTML={{ __html: config.custom_html }} />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
-                      <p className="text-mutedText">No hay HTML generado aun</p>
-                    </div>
-                  )}
+          <div className="rounded-lg bg-bo-surface shadow-soft p-4">
+            <div className="flex items-end justify-between pb-2">
+              <div className="text-bo-sm font-bold text-bo-text">Vista previa</div>
+              <div className="text-bo-xs text-bo-faint">HTML personalizado</div>
+            </div>
+            <div className="min-h-[200px] p-4 bg-bo-surface-2 rounded-md overflow-auto">
+              {config?.custom_html ? (
+                <div dangerouslySetInnerHTML={{ __html: config.custom_html }} />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-bo-muted text-center gap-3">
+                  <p className="text-bo-muted">No hay HTML generado aun</p>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </section>
       )}
 
       {activeTab === "domain" && (
-        <section className="bo-websiteSection" aria-label="Dominio personalizado">
-          <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-panel--lg">
-            <div className="flex items-end justify-between pb-2 px-4 pt-4">
+        <section className="mb-6" aria-label="Dominio personalizado">
+          <div className="rounded-lg bg-bo-surface shadow-soft p-4 max-w-2xl">
+            <div className="flex items-end justify-between pb-2">
               <div className="text-bo-sm font-bold text-bo-text">Dominio personalizado</div>
               <div className="text-bo-xs text-bo-faint">Registra un dominio para tu sitio</div>
             </div>
-            <div className="p-4">
-              <div className="flex flex-col gap-bo-4 p-4">
-                {config?.domain ? (
-                  <div className="bo-websiteDomainActive">
-                    <p className="bo-websiteDomainLabel">Dominio activo</p>
-                    <div className="bo-websiteDomainName">{config.domain}</div>
-                  </div>
-                ) : (
-                  <p className="text-mutedText">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
-                )}
-
-                <div className="bo-websiteDomainSearch">
-                  <input
-                    type="text"
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
-                    placeholder="Ej: mirestaurante.com"
-                    value={domainQuery}
-                    onChange={(e) => setDomainQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearchDomain()}
-                  />
-                  <Button variant="primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()}>
-                    {searchingDomain ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin h-4 w-4" />
-                        <span>Buscando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Search size={16} />
-                        <span>Buscar</span>
-                      </>
-                    )}
-                  </Button>
+            <div className="flex flex-col gap-4 p-4 pt-0">
+              {config?.domain ? (
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-bo-muted">Dominio activo</p>
+                  <div className="font-semibold text-bo-text text-lg">{config.domain}</div>
                 </div>
+              ) : (
+                <p className="text-bo-muted">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
+              )}
 
-                {domainResult && (
-                  <div className="bo-websiteDomainResult">
-                    <div className="bo-websiteDomainResultMain">
-                      <div className="bo-websiteDomainResultName">{domainResult.domain}</div>
-                      {domainResult.available ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--success">Disponible</span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--danger">No disponible</span>
-                      )}
-                    </div>
-                    {domainResult.available && (
-                      <div className="bo-websiteDomainResultActions">
-                        <div className="bo-websiteDomainPrice">
-                          {domainResult.marked_price.toFixed(2)} {domainResult.currency}
-                          <span className="text-mutedText"> / ano</span>
-                        </div>
-                        <Button variant="primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
-                          {registeringDomain ? (
-                            <>
-                              <Loader2 size={16} className="animate-spin h-4 w-4" />
-                              <span>Registrando...</span>
-                            </>
-                          ) : (
-                            <span>Registrar ahora</span>
-                          )}
-                        </Button>
-                      </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="h-10 rounded-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none flex-1 transition-colors focus:border-bo-accent"
+                  placeholder="Ej: mirestaurante.com"
+                  value={domainQuery}
+                  onChange={(e) => setDomainQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchDomain()}
+                />
+                <Button variant="primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()}>
+                  {searchingDomain ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin h-4 w-4" />
+                      <span>Buscando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Search size={16} />
+                      <span>Buscar</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {domainResult && (
+                <div className="flex flex-col gap-3 p-4 bg-bo-surface-2 rounded-md">
+                  <div className="flex items-center justify-between">
+                    <div className="font-semibold text-bo-text">{domainResult.domain}</div>
+                    {domainResult.available ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/16 text-green-500 border border-green-500/30">Disponible</span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/16 text-red-500 border border-red-500/30">No disponible</span>
                     )}
                   </div>
-                )}
-              </div>
+                  {domainResult.available && (
+                    <div className="flex items-center justify-between">
+                      <div className="text-bo-muted">
+                        {domainResult.marked_price.toFixed(2)} {domainResult.currency}
+                        <span className="text-bo-muted"> / ano</span>
+                      </div>
+                      <Button variant="primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
+                        {registeringDomain ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin h-4 w-4" />
+                            <span>Registrando...</span>
+                          </>
+                        ) : (
+                          <span>Registrar ahora</span>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </section>

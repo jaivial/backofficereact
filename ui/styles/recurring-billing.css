@@ -1,324 +1,223 @@
-/* Recurring Billing Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Recurring Billing Section in Invoice Form */
-.bo-recurringBilling {
-  background: var(--bo-bg-elevated);
-  border: 1px solid var(--bo-border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-top: 16px;
-}
+@layer components {
+  .bo-recurringBilling {
+    @apply mt-4 p-4 rounded-lg border border-white/[0.06] bg-bo-bg-elevated;
+  }
 
-.bo-recurringBillingHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--bo-border);
-}
+  .bo-recurringBillingHeader {
+    @apply flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06];
+  }
 
-.bo-recurringBillingTitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--bo-color-primary);
-}
+  .bo-recurringBillingTitle {
+    @apply flex items-center gap-2 text-bo-primary;
+  }
 
-.bo-recurringBillingTitle h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
+  .bo-recurringBillingTitle h3 {
+    @apply m-0 text-bo-lg font-semibold;
+  }
 
-.bo-recurringBillingToggle {
-  margin-bottom: 16px;
-}
+  .bo-recurringBillingToggle {
+    @apply mb-4;
+  }
 
-.bo-recurringBillingConfig {
-  padding-left: 8px;
-}
+  .bo-recurringBillingConfig {
+    @apply pl-2;
+  }
 
-.bo-recurringBillingRow {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
+  .bo-recurringBillingRow {
+    @apply grid gap-4 mb-4;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 
-.bo-recurringBillingRow--autoSend {
-  flex-direction: column;
-}
+  .bo-recurringBillingRow--autoSend {
+    @apply flex flex-col;
+  }
 
-.bo-recurringBillingHelp {
-  font-size: 12px;
-  margin-top: 4px;
-}
+  .bo-recurringBillingHelp {
+    @apply text-xs mt-1 text-bo-muted;
+  }
 
-.bo-recurringBillingNextPreview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: var(--bo-bg-muted);
-  border-radius: 6px;
-  margin-bottom: 16px;
-}
+  .bo-recurringBillingNextPreview {
+    @apply flex items-center gap-2 p-3 rounded-md bg-bo-bg-muted mb-4;
+  }
 
-.bo-recurringBillingNextPreviewLabel {
-  font-weight: 500;
-}
+  .bo-recurringBillingNextPreviewLabel {
+    @apply font-medium;
+  }
 
-.bo-recurringBillingNextPreviewDate {
-  font-weight: 600;
-  color: var(--bo-color-primary);
-}
+  .bo-recurringBillingNextPreviewDate {
+    @apply font-semibold text-bo-primary;
+  }
 
-.bo-recurringBillingNextPreviewFreq {
-  color: var(--bo-text-muted);
-  font-size: 12px;
-}
+  .bo-recurringBillingNextPreviewFreq {
+    @apply text-xs text-bo-text-muted;
+  }
 
-.bo-recurringBillingStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--bo-border);
-}
+  .bo-recurringBillingStats {
+    @apply grid gap-3 mt-4 pt-4 border-t border-white/[0.06];
+    grid-template-columns: repeat(3, 1fr);
+  }
 
-.bo-recurringBillingStat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px;
-  background: var(--bo-bg-muted);
-  border-radius: 6px;
-}
+  .bo-recurringBillingStat {
+    @apply flex flex-col items-center p-3 rounded-md bg-bo-bg-muted;
+  }
 
-.bo-recurringBillingStatLabel {
-  font-size: 12px;
-  color: var(--bo-text-muted);
-  margin-bottom: 4px;
-}
+  .bo-recurringBillingStatLabel {
+    @apply text-xs text-bo-text-muted mb-1;
+  }
 
-.bo-recurringBillingStatValue {
-  font-size: 18px;
-  font-weight: 600;
-}
+  .bo-recurringBillingStatValue {
+    @apply text-bo-xl font-semibold;
+  }
 
-/* Recurring Status Badges */
-.bo-recurringStatus {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
+  .bo-recurringStatus {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium;
+  }
 
-.bo-recurringStatus--pending {
-  background: var(--bo-color-warning);
-  color: #000;
-}
+  .bo-recurringStatus--pending {
+    @apply bg-amber-500 text-black;
+  }
 
-.bo-recurringStatus--sending {
-  background: var(--bo-color-info);
-  color: #fff;
-}
+  .bo-recurringStatus--sending {
+    @apply bg-sky-500 text-white;
+  }
 
-.bo-recurringStatus--sent,
-.bo-recurringStatus--active {
-  background: var(--bo-color-success);
-  color: #fff;
-}
+  .bo-recurringStatus--sent,
+  .bo-recurringStatus--active {
+    @apply bg-green-500 text-white;
+  }
 
-.bo-recurringStatus--failed,
-.bo-recurringStatus--paused {
-  background: var(--bo-color-error);
-  color: #fff;
-}
+  .bo-recurringStatus--failed,
+  .bo-recurringStatus--paused {
+    @apply bg-red-500 text-white;
+  }
 
-.bo-recurringStatus--spinning {
-  animation: bo-spin 1s linear infinite;
-}
+  .bo-recurringStatus--spinning {
+    animation: bo-spin 1s linear infinite;
+  }
 
-@keyframes bo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+  @keyframes bo-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 
-/* Recurring Badge (for invoice list) */
-.bo-recurringBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  background: var(--bo-color-primary);
-  color: #fff;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-}
+  .bo-recurringBadge {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase bg-bo-primary text-white;
+  }
 
-/* Recurring Invoices Page */
-.bo-recurringInvoicesPage {
-  padding: 24px;
-}
+  .bo-recurringInvoicesPage {
+    @apply p-6;
+  }
 
-.bo-recurringStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
+  .bo-recurringStats {
+    @apply grid gap-4 mb-6;
+    grid-template-columns: repeat(3, 1fr);
+  }
 
-.bo-recurringStatCard {
-  background: var(--bo-bg-elevated);
-  border: 1px solid var(--bo-border);
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-}
+  .bo-recurringStatCard {
+    @apply rounded-lg border border-white/[0.06] bg-bo-bg-elevated p-5 text-center;
+  }
 
-.bo-recurringStatCard--active {
-  border-color: var(--bo-color-success);
-}
+  .bo-recurringStatCard--active {
+    @apply border-green-500;
+  }
 
-.bo-recurringStatCard--paused {
-  border-color: var(--bo-color-warning);
-}
+  .bo-recurringStatCard--paused {
+    @apply border-amber-500;
+  }
 
-.bo-recurringStatCardValue {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--bo-color-primary);
-}
+  .bo-recurringStatCardValue {
+    @apply text-3xl font-bold text-bo-primary;
+  }
 
-.bo-recurringStatCardLabel {
-  font-size: 14px;
-  color: var(--bo-text-muted);
-  margin-top: 4px;
-}
+  .bo-recurringStatCardLabel {
+    @apply text-sm text-bo-text-muted mt-1;
+  }
 
-.bo-recurringList {
-  background: var(--bo-bg-elevated);
-  border: 1px solid var(--bo-border);
-  border-radius: 8px;
-  overflow: hidden;
-}
+  .bo-recurringList {
+    @apply rounded-lg border border-white/[0.06] bg-bo-bg-elevated overflow-hidden;
+  }
 
-.bo-recurringCustomer {
-  display: flex;
-  flex-direction: column;
-}
+  .bo-recurringCustomer {
+    @apply flex flex-col;
+  }
 
-.bo-recurringCustomerName {
-  font-weight: 500;
-}
+  .bo-recurringCustomerName {
+    @apply font-medium;
+  }
 
-.bo-recurringCustomerEmail {
-  font-size: 12px;
-  color: var(--bo-text-muted);
-}
+  .bo-recurringCustomerEmail {
+    @apply text-xs text-bo-text-muted;
+  }
 
-.bo-recurringAmount {
-  font-weight: 600;
-  font-size: 14px;
-}
+  .bo-recurringAmount {
+    @apply font-semibold text-sm;
+  }
 
-.bo-recurringFrequency {
-  padding: 4px 8px;
-  background: var(--bo-bg-muted);
-  border-radius: 4px;
-  font-size: 12px;
-}
+  .bo-recurringFrequency {
+    @apply px-2 py-1 rounded bg-bo-bg-muted text-xs;
+  }
 
-.bo-recurringNextDate {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-}
+  .bo-recurringNextDate {
+    @apply flex items-center gap-1.5 text-xs;
+  }
 
-.bo-recurringCount {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  .bo-recurringCount {
+    @apply flex flex-col items-center;
+  }
 
-.bo-recurringCountValue {
-  font-size: 18px;
-  font-weight: 600;
-}
+  .bo-recurringCountValue {
+    @apply text-bo-lg font-semibold;
+  }
 
-.bo-recurringCountLabel {
-  font-size: 11px;
-  color: var(--bo-text-muted);
-}
+  .bo-recurringCountLabel {
+    @apply text-[11px] text-bo-text-muted;
+  }
 
-.bo-recurringActions {
-  display: flex;
-  gap: 4px;
-}
+  .bo-recurringActions {
+    @apply flex gap-1;
+  }
 
-/* Empty State */
-.bo-emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--bo-text-muted);
-}
+  .bo-emptyState {
+    @apply flex flex-col items-center justify-center py-12 px-5 text-center text-bo-text-muted;
+  }
 
-.bo-emptyState svg {
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
+  .bo-emptyState svg {
+    @apply mb-4 opacity-50;
+  }
 
-.bo-emptyState h3 {
-  margin: 0 0 8px;
-  font-size: 18px;
-  color: var(--bo-text-primary);
-}
+  .bo-emptyState h3 {
+    @apply m-0 mb-2 text-bo-lg text-bo-text-primary;
+  }
 
-.bo-emptyState p {
-  margin: 0 0 24px;
-  max-width: 400px;
-}
+  .bo-emptyState p {
+    @apply m-0 mb-6 max-w-[400px];
+  }
 
-/* Background Job Styles */
-.bo-jobStatus {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--bo-bg-muted);
-  border-radius: 6px;
-  font-size: 13px;
-}
+  .bo-jobStatus {
+    @apply flex items-center gap-2 px-3 py-2 rounded-md bg-bo-bg-muted text-xs;
+  }
 
-.bo-jobStatus--idle {
-  color: var(--bo-text-muted);
-}
+  .bo-jobStatus--idle {
+    @apply text-bo-text-muted;
+  }
 
-.bo-jobStatus--running {
-  color: var(--bo-color-info);
-}
+  .bo-jobStatus--running {
+    @apply text-sky-500;
+  }
 
-.bo-jobStatus--completed {
-  color: var(--bo-color-success);
-}
+  .bo-jobStatus--completed {
+    @apply text-green-500;
+  }
 
-.bo-jobStatus--failed {
-  color: var(--bo-color-error);
-}
+  .bo-jobStatus--failed {
+    @apply text-red-500;
+  }
 
-.bo-jobStatus--spinning {
-  animation: bo-spin 1s linear infinite;
+  .bo-jobStatus--spinning {
+    animation: bo-spin 1s linear infinite;
+  }
 }

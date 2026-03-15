@@ -105,7 +105,7 @@ const MenuFilters = React.memo(function MenuFilters({
           <span>Filtros</span>
         </div>
         <button
-          className="bo-filterToggleBtn"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted cursor-pointer hover:bg-bo-surface hover:text-bo-text transition-colors focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2"
           type="button"
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
@@ -162,7 +162,7 @@ const MenuFilters = React.memo(function MenuFilters({
               <div className="text-xs text-faint">{summaryText}</div>
               <div className="flex items-center gap-2">
                 <button
-                  className={cn("bo-btn bo-btn--ghost bo-btn--sm", !hasFilters && "invisible")}
+                  className={cn("h-8 rounded-lg border border-transparent bg-transparent text-bo-text cursor-pointer px-2 font-medium inline-flex items-center justify-center gap-1", !hasFilters && "invisible")}
                   type="button"
                   disabled={disableActions || !hasFilters}
                   onClick={onResetFilters}
@@ -458,7 +458,7 @@ export default function Page() {
       )}
 
       <button
-        className="bo-fab bo-fab--menu"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-lg bg-gradient-to-br from-[var(--bo-accent)] to-[var(--bo-accent)]/80 text-bo-bg shadow-lg flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2 z-50 border border-[var(--bo-accent)]/40"
         type="button"
         aria-label="Crear menu"
         onClick={() => openEditor()}

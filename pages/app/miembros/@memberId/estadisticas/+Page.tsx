@@ -114,7 +114,7 @@ export default function Page() {
             <div className="text-bo-xs text-bo-faint">Horas trabajadas y progreso respecto al contrato semanal.</div>
           </div>
           <div className="bo-memberStatsControls">
-            <label className="grid gap-bo-2 bo-memberControl">
+            <label className="grid gap-2 bo-memberControl">
               <span className="text-bo-sm font-semibold text-bo-muted">Vista</span>
               <Select
                 className="bo-memberControlSelect"
@@ -129,7 +129,7 @@ export default function Page() {
                 ariaLabel="Vista"
               />
             </label>
-            <label className="grid gap-bo-2 bo-memberControl">
+            <label className="grid gap-2 bo-memberControl">
               <span className="text-bo-sm font-semibold text-bo-muted">Grafico</span>
               <Select
                 className="bo-memberControlSelect"
@@ -140,7 +140,7 @@ export default function Page() {
                 ariaLabel="Tipo de grafico"
               />
             </label>
-            <label className="grid gap-bo-2 bo-memberControl">
+            <label className="grid gap-2 bo-memberControl">
               <span className="text-bo-sm font-semibold text-bo-muted">Fecha</span>
               <DatePicker
                 value={date}
@@ -202,19 +202,19 @@ export default function Page() {
           </div>
 
           <div className="bo-memberSummaryGrid">
-            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+            <div className="grid grid-cols-[120px_1fr] gap-2">
               <div className="text-bo-sm text-bo-muted">Horas trabajadas</div>
               <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
             </div>
-            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+            <div className="grid grid-cols-[120px_1fr] gap-2">
               <div className="text-bo-sm text-bo-muted">Horas esperadas</div>
               <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
             </div>
-            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+            <div className="grid grid-cols-[120px_1fr] gap-2">
               <div className="text-bo-sm text-bo-muted">Progreso periodo</div>
               <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
             </div>
-            <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+            <div className="grid grid-cols-[120px_1fr] gap-2">
               <div className="text-bo-sm text-bo-muted">Bolsa trimestral</div>
               <div className={`bo-kvValue bo-memberBalance${balanceHours >= 0 ? " is-positive" : " is-negative"}`}>
                 {balanceHours >= 0 ? "+" : ""}
