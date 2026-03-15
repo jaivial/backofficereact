@@ -335,11 +335,11 @@ export function BookingEditor({
         </div>
         <div className="p-4 bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }}>
           <div className="flex gap-4 bo-bookingRow bo-bookingRow--schedule">
-            <div className="grid gap-2 bo-field--inline bo-bookingField bo-bookingField--date">
+            <div className="flex flex-row items-center gap-2 bo-bookingField bo-bookingField--date">
               <div className="text-bo-sm font-semibold text-bo-muted">Fecha</div>
               <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
             </div>
-            <div className="grid gap-2 bo-field--inline bo-bookingField bo-bookingField--time">
+            <div className="flex flex-row items-center gap-2 bo-bookingField bo-bookingField--time">
               <div className="text-bo-sm font-semibold text-bo-muted">Hora</div>
               <TimePicker value={draft.reservation_time} onChange={(v) => setField("reservation_time", v)} ariaLabel="Hora" />
             </div>
@@ -370,7 +370,7 @@ export function BookingEditor({
                   options={phoneCodeOptions}
                 />
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-input--sm bo-phoneNum"
+                  className="h-8 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-phoneNum"
                   inputMode="tel"
                   value={draft.contact_phone}
                   onChange={(e) => setField("contact_phone", e.target.value)}
@@ -597,7 +597,7 @@ function CounterField({
 }) {
   const safeValue = clampInt(Number(value || 0), min, max);
   return (
-    <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")}>
+    <div className={["flex flex-col gap-1 flex flex-row items-center gap-2", className].filter(Boolean).join(" ")}>
       <div className="text-bo-sm font-semibold text-bo-muted">{label}</div>
       <div className="bo-counter">
         <button
@@ -610,7 +610,7 @@ function CounterField({
           <Minus size={16} strokeWidth={2} />
         </button>
         <input
-          className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-input--sm bo-counterInput"
+          className="h-8 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-counterInput"
           value={String(safeValue)}
           inputMode="numeric"
           onChange={(e) => onChange(clampInt(Number(e.target.value), min, max))}

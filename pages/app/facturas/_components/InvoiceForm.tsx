@@ -973,10 +973,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <h3 className="text-bo-base font-semibold text-bo-text mb-3">Datos del cliente</h3>
 
             <div className="grid gap-4">
-              <label className={`bo-field ${hasError("customerName") ? "bo-field--error" : ""}`}>
+              <label className={`flex flex-col gap-1 ${hasError("customerName") ? "border-red-400 rounded-xl border p-1" : ""}`}>
                 <span className="text-bo-sm font-semibold text-bo-muted">Nombre *</span>
                 <input
-                  className={`bo-input ${hasError("customerName") ? "bo-input--error" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerName") ? "border-red-400" : ""}`}
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
@@ -1004,10 +1004,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="grid gap-4">
-              <label className={`bo-field ${hasError("customerEmail") ? "bo-field--error" : ""}`}>
+              <label className={`flex flex-col gap-1 ${hasError("customerEmail") ? "border-red-400 rounded-xl border p-1" : ""}`}>
                 <span className="text-bo-sm font-semibold text-bo-muted">Email *</span>
                 <input
-                  className={`bo-input ${hasError("customerEmail") ? "bo-input--error" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerEmail") ? "border-red-400" : ""}`}
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
@@ -1023,10 +1023,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 )}
               </label>
 
-              <label className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`}>
+              <label className={`flex flex-col gap-1 ${hasError("customerPhone") ? "border-red-400 rounded-xl border p-1" : ""}`}>
                 <span className="text-bo-sm font-semibold text-bo-muted">Teléfono</span>
                 <input
-                  className={`bo-input ${hasError("customerPhone") ? "bo-input--error" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerPhone") ? "border-red-400" : ""}`}
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
@@ -1043,16 +1043,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="grid gap-4 bo-invoiceFormRow--dni">
-              <div className="grid gap-2 bo-field--switch">
+              <div className="flex flex-row items-center gap-3">
                 <span className="text-bo-sm font-semibold text-bo-muted">CIF</span>
                 <Switch checked={useDni} onCheckedChange={setUseDni} />
                 <span className="text-bo-sm font-semibold text-bo-muted">DNI</span>
               </div>
 
-              <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`}>
+              <label className={`flex flex-col gap-1 ${hasError("customerDniCif") ? "border-red-400 rounded-xl border p-1" : ""}`}>
                 <span className="text-bo-sm font-semibold text-bo-muted">{useDni ? "DNI" : "CIF"}</span>
                 <input
-                  className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerDniCif") ? "border-red-400" : ""}`}
                   type="text"
                   value={customerDniCif}
                   onChange={(e) => setCustomerDniCif(e.target.value)}
@@ -1079,7 +1079,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 />
               </label>
 
-              <label className="grid gap-2 bo-field--number">
+              <label className="grid gap-2 max-w-[100px]">
                 <span className="text-bo-sm font-semibold text-bo-muted">Número</span>
                 <input
                   className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
@@ -1091,10 +1091,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="grid gap-4">
-              <label className={`bo-field ${hasError("customerAddressPostalCode") ? "bo-field--error" : ""}`}>
+              <label className={`flex flex-col gap-1 ${hasError("customerAddressPostalCode") ? "border-red-400 rounded-xl border p-1" : ""}`}>
                 <span className="text-bo-sm font-semibold text-bo-muted">Código Postal</span>
                 <input
-                  className={`bo-input ${hasError("customerAddressPostalCode") ? "bo-input--error" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerAddressPostalCode") ? "border-red-400" : ""}`}
                   type="text"
                   value={customerAddressPostalCode}
                   onChange={(e) => setCustomerAddressPostalCode(e.target.value)}
@@ -1149,7 +1149,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             {/* Invoice Number Override */}
             <div className="grid gap-4 bo-invoiceFormRow--invoiceNumber">
-              <div className="grid gap-2 bo-field--switch">
+              <div className="flex flex-row items-center gap-3">
                 <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} />
                 <span className="text-bo-sm font-semibold text-bo-muted">Personalizar numero de factura</span>
               </div>
@@ -1179,7 +1179,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="grid gap-4">
-              <div className="grid gap-2 bo-field--switch">
+              <div className="flex flex-row items-center gap-3">
                 <Switch checked={useLineItems} onCheckedChange={setUseLineItems} />
                 <span className="text-bo-sm font-semibold text-bo-muted"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
               </div>
@@ -1203,10 +1203,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </div>
             ) : (
               <div className="grid gap-4">
-                <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`}>
+                <label className={`flex flex-col gap-1 ${hasError("amount") ? "border-red-400 rounded-xl border p-1" : ""}`}>
                   <span className="text-bo-sm font-semibold text-bo-muted">Importe *</span>
                   <input
-                    className={`bo-input ${hasError("amount") ? "bo-input--error" : ""}`}
+                    className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("amount") ? "border-red-400" : ""}`}
                     type="number"
                     step="0.01"
                     min="0"
@@ -1399,7 +1399,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </div>
 
           <div className="grid gap-4">
-            <label className="grid gap-2 bo-field--switch">
+            <label className="flex flex-row items-center gap-3">
               <Switch checked={isReservation} onCheckedChange={handleReservationToggle} />
               <span className="text-bo-sm font-semibold text-bo-muted">Es reserva</span>
             </label>

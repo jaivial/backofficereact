@@ -2697,7 +2697,7 @@ export default function SiteBuilderEditorPage() {
                       </label>
                       <textarea
                         id="hero-subtitle"
-                        className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea"
+                        className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors w-full h-32 resize-y bg-bo-bg"
                         value={toInputValue(parseNodeProps(selectedNode).subtitle)}
                         onChange={(event) => updateSelectedNodeProps({ subtitle: event.target.value })}
                         data-ui="property-input-hero-subtitle"
@@ -2739,7 +2739,7 @@ export default function SiteBuilderEditorPage() {
                     </label>
                     <textarea
                       id="text-content"
-                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea bo-textarea--lg"
+                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors w-full h-40 resize-y bg-bo-bg"
                       value={toInputValue(parseNodeProps(selectedNode).content)}
                       onChange={(event) => updateSelectedNodeProps({ content: event.target.value })}
                       data-ui="property-input-text-content"

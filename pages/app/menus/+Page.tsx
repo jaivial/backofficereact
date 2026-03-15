@@ -129,7 +129,7 @@ const MenuFilters = React.memo(function MenuFilters({
               <label className="flex flex-col gap-2">
                 <span className="text-xs text-faint font-medium">Buscar por titulo</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-input--menuSearch"
+                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
                   type="search"
                   value={searchText}
                   placeholder="Ejemplo: San Valentin"
