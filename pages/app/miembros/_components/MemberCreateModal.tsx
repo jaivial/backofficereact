@@ -141,27 +141,27 @@ export function MemberCreateModal({
 
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-[var(--bo-text)]">Nombre</span>
-                <input className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-white/[0.03] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
+                <span className="text-sm font-medium text-bo-text">Nombre</span>
+                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-[var(--bo-text)]">Apellidos</span>
-                <input className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-white/[0.03] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
+                <span className="text-sm font-medium text-bo-text">Apellidos</span>
+                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-[var(--bo-text)]">Email</span>
-                <input className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-white/[0.03] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
+                <span className="text-sm font-medium text-bo-text">Email</span>
+                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-[var(--bo-text)]">DNI (opcional)</span>
-                <input className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-white/[0.03] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
+                <span className="text-sm font-medium text-bo-text">DNI (opcional)</span>
+                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
               </label>
 
               <label className="col-span-2 flex flex-col gap-1">
-                <span className="text-sm font-medium text-[var(--bo-text)]">Telefono (opcional)</span>
+                <span className="text-sm font-medium text-bo-text">Telefono (opcional)</span>
                 <PhoneInput
                   countryCode={phoneCountryCode}
                   number={phoneNumber}
@@ -172,7 +172,7 @@ export function MemberCreateModal({
               </label>
 
               <label className="col-span-2 flex flex-col gap-1">
-                <span className="text-sm font-medium text-[var(--bo-text)]">Rol</span>
+                <span className="text-sm font-medium text-bo-text">Rol</span>
                 <Select
                   value={roleSlug}
                   onChange={setRoleSlug}
@@ -186,9 +186,9 @@ export function MemberCreateModal({
               {!hasContact ? (
                 <>
                   <label className="col-span-2 flex flex-col gap-1">
-                    <span className="text-sm font-medium text-[var(--bo-text)]">Username</span>
+                    <span className="text-sm font-medium text-bo-text">Username</span>
                     <input
-                      className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-white/[0.03] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                      className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                       value={username}
                       disabled={busy}
                       onChange={(e) => setUsername(e.target.value)}
@@ -197,9 +197,9 @@ export function MemberCreateModal({
                   </label>
 
                   <label className="col-span-2 flex flex-col gap-1">
-                    <span className="text-sm font-medium text-[var(--bo-text)]">Password temporal</span>
+                    <span className="text-sm font-medium text-bo-text">Password temporal</span>
                     <input
-                      className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-white/[0.03] text-[var(--bo-text)] px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                      className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                       type="password"
                       value={temporaryPassword}
                       disabled={busy}
@@ -210,17 +210,17 @@ export function MemberCreateModal({
               ) : null}
             </div>
 
-            {error ? <div className="text-sm text-[var(--bo-color-danger)] mt-2">{error}</div> : null}
+            {error ? <div className="text-sm text-red-500 mt-2">{error}</div> : null}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 p-4 border-t border-[var(--bo-border)]">
-        <button className="h-10 rounded-[12px] border border-[var(--bo-border)] bg-transparent text-[var(--bo-text)] cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2" type="button" onClick={onClose} disabled={busy}>
+      <div className="flex justify-end gap-2 p-4 border-t border-bo-border">
+        <button className="h-10 rounded-xl border border-bo-border bg-transparent text-bo-text cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2" type="button" onClick={onClose} disabled={busy}>
           Cancelar
         </button>
         <button
-          className="h-10 rounded-[12px] border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-[var(--bo-text)] cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2"
+          className="h-10 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2"
           type="button"
           disabled={busy || !canSubmit}
           onClick={() => {

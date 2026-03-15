@@ -245,7 +245,7 @@ export default function Page() {
 
       <div className="flex items-center justify-between gap-3">
         <div className="text-xs text-[var(--text-muted)]">Tu importancia actual: {actorImportance}</div>
-        <button className="h-8 px-[10px] rounded-[10px] text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-[var(--bo-text)] cursor-pointer leading-none whitespace-nowrap" type="button" onClick={() => setCreateOpen(true)}>
+        <button className="h-8 px-[10px] rounded-lg text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-bo-text cursor-pointer leading-none whitespace-nowrap" type="button" onClick={() => setCreateOpen(true)}>
           <Plus size={14} strokeWidth={1.8} />
           Nuevo rol
         </button>

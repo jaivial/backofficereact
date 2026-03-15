@@ -48,7 +48,7 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
             <button
               key={panel.value}
               className={cn(
-                "flex flex-col items-center justify-center gap-2 p-6 rounded-[12px] border border-border bg-linear-to-b from-white/[0.04] to-black/[0.08] cursor-pointer transition-all duration-150",
+                "flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-border bg-linear-to-b from-white/[0.04] to-black/[0.08] cursor-pointer transition-all duration-150",
                 "hover:border-[rgba(185,168,255,0.42)] hover:bg-linear-to-b hover:from-[rgba(185,168,255,0.08)] hover:to-[rgba(185,168,255,0.04)] hover:-translate-y-0.5",
                 "active:translate-y-0",
                 "focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2"

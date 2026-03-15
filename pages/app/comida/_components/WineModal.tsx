@@ -181,7 +181,7 @@ export const WineModal = React.memo(function WineModal({
         <div className="grid grid-gap-6" style={{ gridTemplateColumns: "200px 1fr" }}>
           {/* Image upload */}
           <div className="flex flex-col gap-3">
-            <div className="w-[200px] h-[280px] rounded-[var(--rounded-md)] overflow-hidden bg-[var(--bo-surface-2)] relative">
+            <div className="w-[200px] h-[280px] rounded-md overflow-hidden bg-bo-surface-2 relative">
               {imagePreview ? (
                 <>
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />

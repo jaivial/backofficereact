@@ -78,7 +78,7 @@ export default function Page() {
     return (
       <div className="min-h-screen bg-bo-bg p-6">
         <div className="max-w-[400px] mx-auto mt-[100px] text-center p-8 bg-white dark:bg-[#1e1e2e] rounded-xl shadow-md">
-          <div className="text-[var(--bo-color-danger)] mb-4">
+          <div className="text-red-500 mb-4">
             <AlertCircle size={48} />
           </div>
           <h1 className="text-xl font-semibold text-bo-text mb-2">Error</h1>

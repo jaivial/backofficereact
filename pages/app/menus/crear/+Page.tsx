@@ -1359,7 +1359,7 @@ const MenuDishEditorCard = React.memo(
               {dish.allergens.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
                   {dish.allergens.map((name) => (
-                    <span key={`${dish.clientId}-${name}`} className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[var(--bo-surface-2)] text-[var(--text-muted)] border border-[var(--border)]">
+                    <span key={`${dish.clientId}-${name}`} className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-bo-surface-2 text-[var(--text-muted)] border border-[var(--border)]">
                       {name}
                     </span>
                   ))}
@@ -4440,11 +4440,11 @@ export default function Page() {
     || menuPreviewAIGenerating;
 
   const renderSpecialMenuImageUploadArea = () => (
-    <div className="bo-specialImageUpload">
+      <div className="border-2 border-dashed border-bo-border rounded-bo-md p-8 text-center bg-white/[0.02]">
       {specialMenuImage ? (
-        <div className="bo-specialImagePreview">
+        <div className="flex flex-col items-center gap-4">
           <img src={specialMenuImage} alt="Menu especial" />
-          <div className="bo-menuPreviewActions">
+          <div className="flex items-center gap-2">
             <button
               className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
               type="button"
@@ -4464,7 +4464,7 @@ export default function Page() {
           </div>
         </div>
       ) : (
-        <div className="bo-specialImageDropzone">
+        <div className="flex flex-col items-center gap-3 text-bo-muted cursor-pointer relative">
           <Upload size={48} />
           <p>Sube la imagen del menu especial</p>
           <p className="text-mutedText">PDF, Word, TXT, PNG, JPG, WEBP o GIF hasta 10MB</p>
@@ -4496,17 +4496,17 @@ export default function Page() {
       : "Subir imagen";
 
     return (
-      <div className="grid gap-2 bo-field--full">
+      <div className="grid gap-2 col-span-full">
         <div className="text-bo-sm font-semibold text-bo-muted">Foto preview del menu</div>
-        <div className="bo-menuPreviewUploadBlock">
+        <div className="p-4 border border-bo-border rounded-bo-md">
           {menuPreviewAIGenerating ? (
-            <div className="bo-menuPreviewSkeletonCard" role="status" aria-live="polite">
-              <div className="bo-menuPreviewSkeletonMedia bo-skeleton" />
+      <div className="rounded-bo-md border border-bo-border bg-bo-surface-2 p-4 flex flex-col items-center gap-4" role="status" aria-live="polite">
+        <div className="w-full h-40 rounded-bo-md bg-bo-surface animate-pulse" />
             </div>
           ) : menuPreviewImageUrl ? (
-            <div className="bo-menuPreviewImageCard">
-              <img className="bo-menuPreviewImage" src={menuPreviewImageUrl} alt="Preview image" />
-              <div className="bo-menuPreviewActions">
+            <div className="rounded-bo-md overflow-hidden border border-bo-border">
+              <img className="max-w-full max-h-[400px] rounded-bo-md object-contain" src={menuPreviewImageUrl} alt="Preview image" />
+              <div className="flex items-center gap-2">
                 <button
                   className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
                   type="button"
@@ -4518,7 +4518,7 @@ export default function Page() {
               </div>
             </div>
           ) : (
-            <div className="bo-menuPreviewDropzone">
+            <div className="border-2 border-dashed border-bo-border rounded-bo-md p-6 text-center">
               <Upload size={18} aria-hidden="true" />
               <div className="text-mutedText">Sube una imagen para mostrarla en la cabecera del menu.</div>
               <button
@@ -4531,32 +4531,32 @@ export default function Page() {
               </button>
             </div>
           )}
-          <div className="bo-menuPreviewStatus text-mutedText">{statusMessage}</div>
+          <div className="text-bo-mutedText">{statusMessage}</div>
         </div>
       </div>
     );
   };
 
   return (
-    <section className="bo-menuWizardPage" aria-label="Editor de menu">
-      <div className="bo-menuWizardTop">
+    <section className="grid gap-3" aria-label="Editor de menu">
+      <div className="flex items-center justify-between gap-2">
         <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => (window.location.href = "/app/menus")}>
           <ArrowLeft size={16} /> Volver a menus
         </button>
-        <div className={`bo-saveTag is-${saveState}`}>{saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}</div>
+        <div className={`min-h-6 px-2.5 py-0.5 rounded-full border text-xs font-bold inline-flex items-center ${saveState === 'saving' ? 'border-bo-border bg-white/[0.04] text-bo-muted' : saveState === 'saved' ? 'border-[rgba(140,244,185,0.32)] bg-[rgba(140,244,185,0.10)] text-[rgba(140,244,185,0.95)]' : saveState === 'error' ? 'border-[rgba(255,166,166,0.34)] bg-[rgba(255,166,166,0.12)] text-[rgba(255,166,166,0.95)]' : 'border-transparent text-bo-faint'}`}>{saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}</div>
       </div>
 
-      <div className="bo-stepBars" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1}>
+      <div className="grid grid-cols-4 gap-2 p-3 rounded-xl border border-bo-border bg-white/[0.02]" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1}>
         {steps.map((idx) => (
-          <div key={idx} className={`bo-stepBar ${idx === step ? "is-active" : ""} ${idx < step ? "is-done" : ""}`} />
+          <div key={idx} className={`h-1.5 rounded-full border transition-colors duration-150 ${idx === step ? 'border-[rgba(185,168,255,0.62)] bg-transparent' : idx < step ? 'border-[rgba(185,168,255,0.32)] bg-[rgba(185,168,255,0.2)]' : 'border-bo-border bg-transparent'}`} />
         ))}
       </div>
 
       {step === 0 ? (
-        <div className="bo-menuWizardPanel">
+        <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-4 grid gap-4 shadow-soft">
           <h2 className="text-bo-sm font-bold text-bo-text mb-2">Tipo de menu</h2>
-          <p className="bo-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
-          <div className="bo-typeGrid">
+          <p className="text-bo-sm text-bo-muted m-0 leading-normal">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
+          <div className="grid grid-cols-3 gap-3">
             {MENU_TYPES.map((opt) => {
               const Icon = opt.icon;
               const isSelected = menuType === opt.value;
@@ -4564,25 +4564,25 @@ export default function Page() {
               return (
                 <button
                   key={opt.value}
-                  className={`bo-typeCard bo-menuGlassPanel ${isSelected ? "is-selected" : ""}`}
+                  className={`rounded-bo-lg p-4 min-h-[176px] grid gap-2 align-content-start cursor-pointer transition-all duration-150 border ${isSelected ? 'border-[rgba(185,168,255,0.54)] shadow-[0_14px_26px_rgba(185,168,255,0.16)]' : 'border-bo-border hover:border-[rgba(185,168,255,0.36)] hover:-translate-y-0.5'}`}
                   type="button"
                   disabled={!opt.enabled || busy}
                   onClick={() => setMenuType(opt.value)}
                   aria-pressed={isSelected}
                 >
-                  <div className="bo-typeCardTop">
-                    <div className="bo-typeIconWrap" aria-hidden="true">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="w-9 h-9 rounded-bo-md inline-grid place-items-center text-[rgba(185,168,255,0.84)] bg-[rgba(185,168,255,0.18)]" aria-hidden="true">
                       <Icon size={18} />
                     </div>
-                    <div className={`bo-typeState ${isSelected ? "is-selected" : ""}`}>
+                    <div className={`min-h-6 px-2 rounded-full border text-xs font-semibold inline-flex items-center gap-1 ${isSelected ? 'border-[rgba(185,168,255,0.56)] bg-[rgba(185,168,255,0.16)] text-[rgba(185,168,255,0.82)]' : 'border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.04)] text-bo-muted'}`}>
                       {isSelected ? <Check size={13} /> : null}
                       {isSelected ? "Seleccionado" : "Plantilla"}
                     </div>
                   </div>
-                  <div className="bo-typeTitle">{opt.label}</div>
-                  <div className="bo-typeDesc">{opt.description}</div>
-                  <div className="bo-typeHint">{opt.hint}</div>
-                  {!opt.enabled ? <div className="bo-typeSoon">Proximamente</div> : null}
+                  <div className="text-bo-base font-bold leading-tight">{opt.label}</div>
+                  <div className="text-bo-sm text-bo-muted leading-normal">{opt.description}</div>
+                  <div className="text-bo-sm text-bo-faint leading-normal">{opt.hint}</div>
+                  {!opt.enabled ? <div className="text-xs text-bo-faint">Proximamente</div> : null}
                 </button>
               );
             })}
@@ -4596,7 +4596,7 @@ export default function Page() {
       ) : null}
 
       {step === 1 ? (
-        <div className="bo-menuWizardPanel">
+        <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-4 grid gap-4 shadow-soft">
           <h2 className="text-bo-sm font-bold text-bo-text mb-2">Datos basicos</h2>
           <div className="bo-form bo-form--menuWizard bo-form--menuWizardBasics">
             <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
@@ -4614,7 +4614,7 @@ export default function Page() {
             </div>
 
             {!isSpecial ? (
-              <div className="grid gap-2 bo-field--full">
+              <div className="grid gap-2 col-span-full">
                 <div className="text-bo-sm font-semibold text-bo-muted">Subtitulos</div>
                 <div className="bo-stackFields">
                   {subtitles.map((line, idx) => (
@@ -4711,7 +4711,7 @@ export default function Page() {
       ) : null}
 
       {step === 2 ? (
-        <div className="bo-menuWizardPanel">
+        <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-4 grid gap-4 shadow-soft">
           <h2 className="text-bo-sm font-bold text-bo-text mb-2">Secciones del menu</h2>
 
           <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsBoard bo-reorderGroup">
@@ -4866,7 +4866,7 @@ export default function Page() {
                   ) : null}
                 </div>
                 {!isSpecial ? (
-                  <div className="grid gap-2 bo-field--full">
+                  <div className="grid gap-2 col-span-full">
                     <div className="text-bo-sm font-semibold text-bo-muted">Subtitulos</div>
                     <div className="bo-stackFields">
                       {subtitles.map((line, idx) => (
@@ -5077,7 +5077,7 @@ export default function Page() {
                   <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
                 </div>
 
-                <div className="grid gap-2 bo-field--full">
+                <div className="grid gap-2 col-span-full">
                   <div className="text-bo-sm font-semibold text-bo-muted">Comentarios</div>
                   <textarea
                     className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea"
@@ -5273,7 +5273,7 @@ export default function Page() {
       </Modal>
 
       {step === 4 && isSpecial ? (
-        <div className="bo-menuWizardPanel">
+        <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-4 grid gap-4 shadow-soft">
           <h2 className="text-bo-sm font-bold text-bo-text mb-2">Imagen del menu</h2>
           <p className="text-mutedText" style={{ marginBottom: 16 }}>
             Sube una imagen del menu especial para mostrarla en la plantilla web.

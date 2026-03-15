@@ -467,7 +467,7 @@ export default function Page() {
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
           <DateDropdown value={date} onChange={onDateChange} />
-          <button className="h-10 rounded-[12px] border border-[var(--border)] bg-bo-surface text-[var(--bo-text)] cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={() => void loadAll(date)} disabled={busy}>
+          <button className="h-10 rounded-xl border border-[var(--border)] bg-bo-surface text-bo-text cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={() => void loadAll(date)} disabled={busy}>
             Recargar
           </button>
         </div>
@@ -495,7 +495,7 @@ export default function Page() {
                   <div className="text-xs text-[var(--text-muted)] font-semibold">Límite diario</div>
                   <div className="inline-flex items-center gap-2">
                     <button
-                      className="w-8 h-8 rounded-[12px] border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center transition-all duration-150 hover:bg-bo-surface-3"
+                      className="w-8 h-8 rounded-xl border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center transition-all duration-150 hover:bg-bo-surface-3"
                       type="button"
                       onClick={() => stepDailyLimit(-1)}
                       disabled={busy || Number(draftLimit || 0) <= 0}
@@ -504,7 +504,7 @@ export default function Page() {
                       <Minus size={14} strokeWidth={2.2} />
                     </button>
                     <input
-                      className="h-[34px] w-16 rounded-[12px] border border-[var(--border)] bg-bo-surface text-[var(--bo-text)] px-2 outline-none text-center text-sm transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
+                      className="h-[34px] w-16 rounded-xl border border-[var(--border)] bg-bo-surface text-bo-text px-2 outline-none text-center text-sm transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
                       value={draftLimit}
                       inputMode="numeric"
                       onChange={(e) => setDraftLimit(e.target.value.replace(/[^\d]/g, ""))}
@@ -516,7 +516,7 @@ export default function Page() {
                       }}
                     />
                     <button
-                      className="w-8 h-8 rounded-[12px] border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center transition-all duration-150 hover:bg-bo-surface-3"
+                      className="w-8 h-8 rounded-xl border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center transition-all duration-150 hover:bg-bo-surface-3"
                       type="button"
                       onClick={() => stepDailyLimit(1)}
                       disabled={busy || Number(draftLimit || 0) >= 500}
@@ -565,7 +565,7 @@ export default function Page() {
                           <button
                             key={slot.id}
                             type="button"
-                            className={`h-8 px-2.5 rounded-[10px] border text-xs font-medium transition-all duration-150${slot.active ? " border-[var(--bo-accent)] bg-[var(--bo-accent)]/20 text-[var(--bo-accent)]" : " border-[var(--border)] bg-transparent text-[var(--text-muted)] hover:bg-bo-surface-3"}`}
+                            className={`h-8 px-2.5 rounded-lg border text-xs font-medium transition-all duration-150${slot.active ? " border-[var(--bo-accent)] bg-[var(--bo-accent)]/20 text-[var(--bo-accent)]" : " border-[var(--border)] bg-transparent text-[var(--text-muted)] hover:bg-bo-surface-3"}`}
                             onClick={() => handleMorningHour(slot.value)}
                             disabled={busy}
                           >
@@ -584,7 +584,7 @@ export default function Page() {
                           <button
                             key={slot.id}
                             type="button"
-                            className={`h-8 px-2.5 rounded-[10px] border text-xs font-medium transition-all duration-150${slot.active ? " border-[var(--bo-accent)] bg-[var(--bo-accent)]/20 text-[var(--bo-accent)]" : " border-[var(--border)] bg-transparent text-[var(--text-muted)] hover:bg-bo-surface-3"}`}
+                            className={`h-8 px-2.5 rounded-lg border text-xs font-medium transition-all duration-150${slot.active ? " border-[var(--bo-accent)] bg-[var(--bo-accent)]/20 text-[var(--bo-accent)]" : " border-[var(--border)] bg-transparent text-[var(--text-muted)] hover:bg-bo-surface-3"}`}
                             onClick={() => handleNightHour(slot.value)}
                             disabled={busy}
                           >
@@ -633,7 +633,7 @@ export default function Page() {
                 <div className="p-4 pt-0">
                   <div className="flex flex-col gap-2">
                     {floors.map((floor) => (
-                      <div key={floor.id} className={`flex items-center justify-between p-2 rounded-lg${floor.isGround ? " bg-[var(--bo-surface-2)]" : ""}`}>
+                      <div key={floor.id} className={`flex items-center justify-between p-2 rounded-lg${floor.isGround ? " bg-bo-surface-2" : ""}`}>
                         <div className="text-sm">
                           {floor.name}
                         </div>
