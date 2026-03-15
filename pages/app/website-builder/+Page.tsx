@@ -95,8 +95,8 @@ export default function Page() {
   if (error) {
     return (
       <div className="m-6 p-4 rounded-lg bg-[var(--bo-color-danger)]/[0.12] border border-[var(--bo-color-danger)]/[0.30]" data-ui="error-state">
-        <p className="text-[var(--bo-color-danger)]">{error}</p>
-        <button onClick={loadWebsite} className="mt-2 text-[var(--bo-color-danger)] underline bg-transparent border-none cursor-pointer">
+        <p className="text-red-500">{error}</p>
+        <button onClick={loadWebsite} className="mt-2 text-red-500 underline bg-transparent border-none cursor-pointer">
           Retry
         </button>
       </div>

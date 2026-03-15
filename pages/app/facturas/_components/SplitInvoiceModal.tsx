@@ -221,8 +221,8 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
         <form onSubmit={handleSubmit}>
           <div className="p-4">
             {/* Original Invoice Info */}
-            <div className="bo-formSection">
-              <h3 className="bo-formSectionTitle">Factura original</h3>
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-bo-text mb-3">Factura original</h3>
               <div className="bo-invoiceSplitOriginal">
                 <div className="bo-invoiceSplitOriginalInfo">
                   <span className="bo-invoiceSplitOriginalNumber">{invoice.invoice_number || `#${invoice.id}`}</span>
@@ -236,8 +236,8 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             </div>
 
             {/* Split Method Selection */}
-            <div className="bo-formSection">
-              <h3 className="bo-formSectionTitle">Metodo de division</h3>
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-bo-text mb-3">Metodo de division</h3>
               <div className="flex flex-col gap-2">
                 <label className="flex flex-col gap-2">
                   <input
@@ -271,7 +271,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             </div>
 
             {/* Split Configuration */}
-            <div className="bo-formSection">
+            <div className="mb-6">
               {method === "equal" ? (
                 <div className="flex flex-col gap-2">
                   <label htmlFor="splitCount" className="text-bo-sm font-semibold text-bo-muted">Numero de partes</label>
@@ -291,7 +291,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
               ) : (
                 <>
                   <div className="bo-splitItemsHeader">
-                    <h3 className="bo-formSectionTitle">Facturas resultantes</h3>
+                    <h3 className="text-sm font-semibold text-bo-text mb-0">Facturas resultantes</h3>
                     <button
                       type="button"
                       className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-bo-surface-2 text-bo-text text-xs font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
@@ -428,8 +428,8 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             </div>
 
             {/* Preview */}
-            <div className="bo-formSection">
-              <h3 className="bo-formSectionTitle">Vista previa</h3>
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-bo-text mb-3">Vista previa</h3>
               <div className="bo-splitPreview">
                 {method === "equal" ? (
                   Array.from({ length: splitCount }).map((_, index) => (
