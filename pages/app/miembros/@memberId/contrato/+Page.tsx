@@ -111,7 +111,7 @@ export default function Page() {
               <div className="text-bo-xs text-bo-faint">Ajusta horas semanales y seguimiento del periodo.</div>
             </div>
             <div className="bo-memberStatsControls">
-              <label className="grid gap-bo-2 bo-memberControl">
+              <label className="grid gap-2 bo-memberControl">
                 <span className="text-bo-sm font-semibold text-bo-muted">Fecha</span>
                 <DatePicker
                   value={date}
@@ -128,7 +128,7 @@ export default function Page() {
           </div>
 
           <div className="p-4 bo-memberContractBody">
-            <label className="grid gap-bo-2">
+            <label className="grid gap-2">
               <span className="text-bo-sm font-semibold text-bo-muted">Horas de contrato semanales</span>
               <input
                 id="weeklyContractHours"
@@ -144,20 +144,20 @@ export default function Page() {
             <div className="bo-memberContractNote">Este valor se usa para calcular cumplimiento semanal y progreso del periodo.</div>
 
             <div className="bo-kvGrid">
-              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="grid grid-cols-[120px_1fr] gap-2">
                 <div className="text-bo-sm text-bo-muted">Esperadas en periodo</div>
                 <div className="text-bo-sm text-bo-text">{(statsLive?.summary.expectedHours ?? 0).toFixed(2)} h</div>
               </div>
-              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="grid grid-cols-[120px_1fr] gap-2">
                 <div className="text-bo-sm text-bo-muted">Trabajadas en periodo</div>
                 <div className="text-bo-sm text-bo-text">{(statsLive?.summary.workedHours ?? 0).toFixed(2)} h</div>
               </div>
-              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="grid grid-cols-[120px_1fr] gap-2">
                 <div className="text-bo-sm text-bo-muted">Cumplimiento semanal</div>
                 <div className="text-bo-sm text-bo-text">{(statsLive?.summary.weeklyProgressPercent ?? 0).toFixed(2)}%</div>
               </div>
               {liveEntry ? (
-                <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+                <div className="grid grid-cols-[120px_1fr] gap-2">
                   <div className="text-bo-sm text-bo-muted">Fichando ahora</div>
                   <div className="text-bo-sm text-bo-text">{formatElapsedHHMMSS(liveEntry, tick)}</div>
                 </div>

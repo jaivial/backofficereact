@@ -174,7 +174,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
               <h3 className="bo-paymentFormTitle">Nuevo pago</h3>
 
               <div className="mb-3">
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Importe *</span>
                   <input
                     className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
@@ -191,7 +191,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
               </div>
 
               <div className="mb-3">
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Método de pago</span>
                   <Select
                     value={paymentMethod}
@@ -203,14 +203,14 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
               </div>
 
               <div className="mb-3">
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Fecha de pago</span>
                   <DatePicker value={paymentDate} onChange={setPaymentDate} />
                 </label>
               </div>
 
               <div className="mb-3">
-                <label className="grid gap-bo-2">
+                <label className="grid gap-2">
                   <span className="text-bo-sm font-semibold text-bo-muted">Notas</span>
                   <input
                     className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"

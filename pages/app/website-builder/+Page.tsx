@@ -85,18 +85,18 @@ export default function Page() {
 
   if (loading && !website) {
     return (
-      <div className="flex items-center justify-center bo-wbLoading" data-ui="loading-state">
-        <div className="bo-wbLoadingSpinner" />
-        <span className="ml-2 text-muted">Loading...</span>
+      <div className="h-64 flex items-center justify-center" data-ui="loading-state">
+        <div className="w-8 h-8 rounded-full border-2 border-bo-muted border-t-bo-accent animate-spin" />
+        <span className="ml-2 text-bo-muted">Loading...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bo-wbError" data-ui="error-state">
-        <p className="bo-wbErrorText">{error}</p>
-        <button onClick={loadWebsite} className="bo-wbErrorRetry">
+      <div className="m-6 p-4 rounded-lg bg-[var(--bo-color-danger)]/[0.12] border border-[var(--bo-color-danger)]/[0.30]" data-ui="error-state">
+        <p className="text-[var(--bo-color-danger)]">{error}</p>
+        <button onClick={loadWebsite} className="mt-2 text-[var(--bo-color-danger)] underline bg-transparent border-none cursor-pointer">
           Retry
         </button>
       </div>
@@ -105,18 +105,18 @@ export default function Page() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="bo-wbContainer" data-ui="website-builder">
-        <header className="bo-wbHeader border-b" data-ui="header">
-          <div className="bo-max-w-full px-4 py-3 flex items-center justify-between">
+      <div className="min-h-screen bg-bo-bg" data-ui="website-builder">
+        <header className="bg-bo-surface border-b border-bo-border" data-ui="header">
+          <div className="max-w-full px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold bo-wbTitle">
+              <h1 className="text-xl font-semibold text-bo-text">
                 Website Builder
               </h1>
               {website && (
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   website.status === 'published' 
-                    ? 'bo-bg-success text-success' 
-                    : 'bo-bg-warning text-warning'
+                    ? 'bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)]' 
+                    : 'bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)]'
                 }`}>
                   {website.status}
                 </span>
@@ -125,20 +125,20 @@ export default function Page() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPreviewMode(!previewMode)}
-                className="bo-wbBtn"
+                className="px-3 py-1.5 rounded-md text-sm border border-bo-border text-bo-muted bg-transparent cursor-pointer hover:bg-bo-surface-2 transition-colors"
               >
                 {previewMode ? 'Edit' : 'Preview'}
               </button>
               <button
                 onClick={handlePreview}
-                className="bo-wbBtn"
+                className="px-3 py-1.5 rounded-md text-sm border border-bo-border text-bo-muted bg-transparent cursor-pointer hover:bg-bo-surface-2 transition-colors"
               >
                 Open Preview
               </button>
               <button
                 onClick={handlePublish}
                 disabled={loading}
-                className="bo-wbBtn bo-wbBtnPrimary"
+                className="px-3 py-1.5 rounded-md text-sm border border-bo-accent bg-bo-accent text-bo-bg cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Publish
               </button>
@@ -148,9 +148,9 @@ export default function Page() {
 
         <div className="flex h-screen-nav">
           {!previewMode && (
-            <aside className="bo-wbSidebar border-r" data-ui="sidebar">
+            <aside className="w-64 bg-bo-surface border-r border-bo-border overflow-y-auto" data-ui="sidebar">
               <div className="p-4">
-                <h2 className="text-sm font-semibold mb-3 bo-wbTitle">
+                <h2 className="text-sm font-semibold mb-3 text-bo-text">
                   Components
                 </h2>
                 <ComponentLibrary />
@@ -158,7 +158,7 @@ export default function Page() {
             </aside>
           )}
 
-          <main className="bo-wbCanvas" data-ui="canvas">
+          <main className="flex-1 overflow-y-auto bg-bo-bg" data-ui="canvas">
             {previewMode ? (
               <WebsitePreview website={website} currentPage={currentPage} />
             ) : (
@@ -701,7 +701,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full py-2 rounded text-sm transition-colors bo-disabled-opacity-50"
+        className="w-full py-2 rounded text-sm transition-colors disabled:opacity-50"
         style={{ backgroundColor: 'var(--bo-accent)', color: 'var(--bo-fg-inverted)' }}
       >
         {saving ? 'Saving...' : 'Save Changes'}

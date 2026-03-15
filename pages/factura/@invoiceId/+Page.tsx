@@ -20,17 +20,17 @@ function formatDateShort(dateStr: string): string {
 
 function getStatusBadge(status: string) {
   const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-    borrador: { label: "Borrador", className: "bo-badge--gray", icon: <FileText size={14} /> },
-    solicitada: { label: "Solicitada", className: "bo-badge--blue", icon: <Clock size={14} /> },
-    pendiente: { label: "Pendiente", className: "bo-badge--yellow", icon: <Clock size={14} /> },
-    enviada: { label: "Enviada", className: "bo-badge--orange", icon: <Mail size={14} /> },
-    pagada: { label: "Pagada", className: "bo-badge--green", icon: <CheckCircle size={14} /> },
+    borrador: { label: "Borrador", className: "bg-white/[0.06] text-bo-muted border-bo-border", icon: <FileText size={14} /> },
+    solicitada: { label: "Solicitada", className: "bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]", icon: <Clock size={14} /> },
+    pendiente: { label: "Pendiente", className: "bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border-[var(--bo-color-warning)]/[0.30]", icon: <Clock size={14} /> },
+    enviada: { label: "Enviada", className: "bg-[#f97316]/[0.16] text-[#f97316] border-[#f97316]/[0.30]", icon: <Mail size={14} /> },
+    pagada: { label: "Pagada", className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]", icon: <CheckCircle size={14} /> },
   };
 
-  const config = statusConfig[status] || { label: status, className: "bo-badge--gray", icon: <FileText size={14} /> };
+  const config = statusConfig[status] || { label: status, className: "bg-white/[0.06] text-bo-muted border-bo-border", icon: <FileText size={14} /> };
 
   return (
-    <span className={`bo-badge ${config.className}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold border ${config.className}`}>
       {config.icon}
       <span>{config.label}</span>
     </span>
@@ -46,7 +46,7 @@ function getPaymentStatusInfo(invoice: { status: string; paid_amount?: number; a
     return {
       label: "Pagada",
       description: "Esta factura ha sido pagada en su totalidad",
-      className: "bo-paymentStatus--paid",
+      className: "bg-[var(--bo-color-success)]/[0.1] border border-[var(--bo-color-success)]/[0.3]",
     };
   }
 
@@ -54,14 +54,14 @@ function getPaymentStatusInfo(invoice: { status: string; paid_amount?: number; a
     return {
       label: `Pendiente: ${formatPrice(pending)}`,
       description: `Pagado: ${formatPrice(paid)} de ${formatPrice(total)}`,
-      className: "bo-paymentStatus--partial",
+      className: "bg-blue-500/[0.1] border border-blue-500/[0.3]",
     };
   }
 
   return {
     label: `Pendiente: ${formatPrice(total)}`,
     description: "Esta factura awaiting payment",
-    className: "bo-paymentStatus--pending",
+    className: "bg-amber-500/[0.1] border border-amber-500/[0.3]",
   };
 }
 
@@ -76,14 +76,14 @@ export default function Page() {
 
   if (error) {
     return (
-      <div className="bo-publicInvoice">
-        <div className="bo-publicInvoiceError">
-          <div className="bo-publicInvoiceErrorIcon">
+      <div className="min-h-screen bg-bo-bg p-6">
+        <div className="max-w-[400px] mx-auto mt-[100px] text-center p-8 bg-white dark:bg-[#1e1e2e] rounded-xl shadow-md">
+          <div className="text-[var(--bo-color-danger)] mb-4">
             <AlertCircle size={48} />
           </div>
-          <h1>Error</h1>
-          <p>{error}</p>
-          <p className="bo-publicInvoiceErrorHint">
+          <h1 className="text-xl font-semibold text-bo-text mb-2">Error</h1>
+          <p className="text-bo-muted mb-4">{error}</p>
+          <p className="text-sm text-bo-muted">
             Por favor, contacte con nosotros si cree que esto es un error.
           </p>
         </div>
@@ -93,10 +93,10 @@ export default function Page() {
 
   if (!invoice) {
     return (
-      <div className="bo-publicInvoice">
-        <div className="bo-publicInvoiceLoading">
-          <div className="animate-spin h-5 w-5" />
-          <p>Cargando factura...</p>
+      <div className="min-h-screen bg-bo-bg p-6">
+        <div className="max-w-[200px] mx-auto mt-[100px] text-center">
+          <div className="animate-spin h-5 w-5 mx-auto mb-4 border-2 border-bo-muted border-t-bo-accent rounded-full" />
+          <p className="text-bo-muted">Cargando factura...</p>
         </div>
       </div>
     );
@@ -107,23 +107,23 @@ export default function Page() {
   const currency = invoice.currency || "EUR";
 
   return (
-    <div className="bo-publicInvoice">
-      <div className="bo-publicInvoiceContainer">
+    <div className="min-h-screen bg-bo-bg p-6">
+      <div className="max-w-[800px] mx-auto bg-white dark:bg-[#1e1e2e] rounded-xl shadow-md p-8">
         {/* Header */}
-        <div className="bo-publicInvoiceHeader">
-          <div className="bo-publicInvoiceBrand">
-            <h1>Villa Carmen</h1>
-            <p>Restaurante</p>
+        <div className="flex justify-between items-start mb-6 pb-6 border-b border-bo-border">
+          <div>
+            <h1 className="text-2xl font-bold text-bo-text">Villa Carmen</h1>
+            <p className="text-sm text-bo-muted mt-1">Restaurante</p>
           </div>
-          <div className="bo-publicInvoiceTitle">
-            <h2>Factura</h2>
-            <p className="bo-publicInvoiceNumber">{invoice.invoice_number || `#${invoice.id}`}</p>
+          <div className="text-right">
+            <h2 className="text-sm font-medium text-bo-muted uppercase tracking-wider">Factura</h2>
+            <p className="text-2xl font-bold text-bo-accent mt-1">{invoice.invoice_number || `#${invoice.id}`}</p>
           </div>
         </div>
 
         {/* Status and Actions */}
-        <div className="bo-publicInvoiceStatusBar">
-          <div className="bo-publicInvoiceStatus">
+        <div className="flex justify-between items-center mb-4">
+          <div>
             {getStatusBadge(invoice.status)}
           </div>
           {pdfUrl && (
@@ -135,22 +135,22 @@ export default function Page() {
         </div>
 
         {/* Payment Status */}
-        <div className={`bo-paymentStatus ${paymentInfo.className}`}>
-          <div className="bo-paymentStatusInfo">
-            <strong>{paymentInfo.label}</strong>
-            <span>{paymentInfo.description}</span>
+        <div className={`p-4 rounded-lg mb-6 flex items-center ${paymentInfo.className === 'bo-paymentStatus--paid' ? 'bg-[var(--bo-color-success)]/[0.1] border border-[var(--bo-color-success)]/[0.3]' : paymentInfo.className === 'bo-paymentStatus--partial' ? 'bg-blue-500/[0.1] border border-blue-500/[0.3]' : 'bg-amber-500/[0.1] border border-amber-500/[0.3]'}`}>
+          <div className="flex flex-col gap-1">
+            <strong className="text-base">{paymentInfo.label}</strong>
+            <span className="text-sm text-bo-muted">{paymentInfo.description}</span>
           </div>
         </div>
 
         {/* Customer Info */}
-        <div className="bo-publicInvoiceSection">
-          <h3>Cliente</h3>
-          <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2">
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-bo-muted uppercase tracking-wider mb-4 pb-2 border-b border-bo-border">Cliente</h3>
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <User size={16} />
               <div>
-                <label>Nombre</label>
-                <p>
+                <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Nombre</label>
+                <p className="text-bo-text">
                   {invoice.customer_name}
                   {invoice.customer_surname && ` ${invoice.customer_surname}`}
                 </p>
@@ -160,8 +160,8 @@ export default function Page() {
               <div className="flex flex-col gap-1">
                 <FileText size={16} />
                 <div>
-                  <label>DNI/CIF</label>
-                  <p>{invoice.customer_dni_cif}</p>
+                  <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">DNI/CIF</label>
+                  <p className="text-bo-text">{invoice.customer_dni_cif}</p>
                 </div>
               </div>
             )}
@@ -169,8 +169,8 @@ export default function Page() {
               <div className="flex flex-col gap-1">
                 <Mail size={16} />
                 <div>
-                  <label>Email</label>
-                  <p>{invoice.customer_email}</p>
+                  <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Email</label>
+                  <p className="text-bo-text">{invoice.customer_email}</p>
                 </div>
               </div>
             )}
@@ -178,18 +178,18 @@ export default function Page() {
               <div className="flex flex-col gap-1">
                 <Phone size={16} />
                 <div>
-                  <label>Teléfono</label>
-                  <p>{invoice.customer_phone}</p>
+                  <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Teléfono</label>
+                  <p className="text-bo-text">{invoice.customer_phone}</p>
                 </div>
               </div>
             )}
           </div>
           {(invoice.customer_address_street || invoice.customer_address_city) && (
-            <div className="bo-publicInvoiceField bo-publicInvoiceField--full">
-              <MapPin size={16} />
+            <div className="flex gap-3 mt-3">
+              <MapPin size={16} className="text-bo-muted flex-shrink-0 mt-1" />
               <div>
-                <label>Dirección</label>
-                <p>
+                <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Dirección</label>
+                <p className="text-bo-text">
                   {[invoice.customer_address_street, invoice.customer_address_number]
                     .filter(Boolean)
                     .join(", ")}
@@ -203,22 +203,22 @@ export default function Page() {
         </div>
 
         {/* Invoice Details */}
-        <div className="bo-publicInvoiceSection">
-          <h3>Detalles de la Factura</h3>
-          <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2">
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-bo-muted uppercase tracking-wider mb-4 pb-2 border-b border-bo-border">Detalles de la Factura</h3>
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <Calendar size={16} />
               <div>
-                <label>Fecha de Factura</label>
-                <p>{formatDate(invoice.invoice_date)}</p>
+                <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Fecha de Factura</label>
+                <p className="text-bo-text">{formatDate(invoice.invoice_date)}</p>
               </div>
             </div>
             {invoice.payment_date && (
               <div className="flex flex-col gap-1">
                 <Calendar size={16} />
                 <div>
-                  <label>Fecha de Pago</label>
-                  <p>{formatDate(invoice.payment_date)}</p>
+                  <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Fecha de Pago</label>
+                  <p className="text-bo-text">{formatDate(invoice.payment_date)}</p>
                 </div>
               </div>
             )}
@@ -226,8 +226,8 @@ export default function Page() {
               <div className="flex flex-col gap-1">
                 <CreditCard size={16} />
                 <div>
-                  <label>Método de Pago</label>
-                  <p style={{ textTransform: "capitalize" }}>{invoice.payment_method}</p>
+                  <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Método de Pago</label>
+                  <p className="text-bo-text capitalize">{invoice.payment_method}</p>
                 </div>
               </div>
             )}
@@ -235,8 +235,8 @@ export default function Page() {
               <div className="flex flex-col gap-1">
                 <Calendar size={16} />
                 <div>
-                  <label>Fecha de Reserva</label>
-                  <p>
+                  <label className="text-xs font-medium text-bo-muted uppercase tracking-wider block mb-1">Fecha de Reserva</label>
+                  <p className="text-bo-text">
                     {formatDate(invoice.reservation_date)}
                     {invoice.reservation_party_size && ` - ${invoice.reservation_party_size} personas`}
                   </p>
@@ -247,41 +247,41 @@ export default function Page() {
         </div>
 
         {/* Amount Summary */}
-        <div className="bo-publicInvoiceSummary">
-          <div className="bo-publicInvoiceSummaryRow">
-            <span>Base Imponible</span>
-            <span>{formatPrice(invoice.amount, currency)}</span>
+        <div className="bg-white dark:bg-white/[0.05] rounded-lg p-4 mb-6">
+          <div className="flex justify-between items-center py-2 border-b border-bo-border">
+            <span className="text-bo-muted text-sm">Base Imponible</span>
+            <span className="font-semibold text-bo-text">{formatPrice(invoice.amount, currency)}</span>
           </div>
           {invoice.iva_rate && invoice.iva_rate > 0 && (
-            <div className="bo-publicInvoiceSummaryRow">
-              <span>IVA ({invoice.iva_rate}%)</span>
-              <span>{formatPrice(invoice.iva_amount || 0, currency)}</span>
+            <div className="flex justify-between items-center py-2 border-b border-bo-border">
+              <span className="text-bo-muted text-sm">IVA ({invoice.iva_rate}%)</span>
+              <span className="font-semibold text-bo-text">{formatPrice(invoice.iva_amount || 0, currency)}</span>
             </div>
           )}
-          <div className="bo-publicInvoiceSummaryRow bo-publicInvoiceSummaryTotal">
-            <span>Total</span>
-            <span>{formatPrice(total, currency)}</span>
+          <div className="flex justify-between items-center pt-3">
+            <span className="text-base font-semibold text-bo-text">Total</span>
+            <span className="text-xl font-bold text-bo-accent">{formatPrice(total, currency)}</span>
           </div>
         </div>
 
         {/* Payment History */}
         {invoice.payments && invoice.payments.length > 0 && (
-          <div className="bo-publicInvoiceSection">
-            <h3>Historial de Pagos</h3>
-            <table className="bo-table bo-table--sm">
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-bo-muted uppercase tracking-wider mb-4 pb-2 border-b border-bo-border">Historial de Pagos</h3>
+            <table className="w-full border-collapse text-xs">
               <thead>
                 <tr>
-                  <th>Fecha</th>
-                  <th>Método</th>
-                  <th>Importe</th>
+                  <th className="text-left text-bo-muted font-medium py-2">Fecha</th>
+                  <th className="text-left text-bo-muted font-medium py-2">Método</th>
+                  <th className="text-right text-bo-muted font-medium py-2">Importe</th>
                 </tr>
               </thead>
               <tbody>
                 {invoice.payments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td>{formatDateShort(payment.payment_date)}</td>
-                    <td style={{ textTransform: "capitalize" }}>{payment.payment_method}</td>
-                    <td>{formatPrice(payment.amount, currency)}</td>
+                  <tr key={payment.id} className="border-t border-bo-border">
+                    <td className="py-2 text-bo-text">{formatDateShort(payment.payment_date)}</td>
+                    <td className="py-2 text-bo-text capitalize">{payment.payment_method}</td>
+                    <td className="py-2 text-right text-bo-text">{formatPrice(payment.amount, currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -290,12 +290,13 @@ export default function Page() {
         )}
 
         {/* Footer */}
-        <div className="bo-publicInvoiceFooter">
-          <p>
+        <div className="text-center pt-6 border-t border-bo-border mt-8">
+          <p className="text-bo-muted text-sm mb-2">
             Si tiene alguna pregunta sobre esta factura, por favor contacte con nosotros.
           </p>
-          <p className="bo-publicInvoiceFooterContact">
-            <Mail size={14} /> villacarmen@example.com | <Phone size={14} /> +34 900 000 000
+          <p className="flex justify-center gap-4 text-bo-muted text-sm">
+            <span><Mail size={14} className="inline mr-1" /> villacarmen@example.com</span>
+            <span><Phone size={14} className="inline mr-1" /> +34 900 000 000</span>
           </p>
         </div>
       </div>

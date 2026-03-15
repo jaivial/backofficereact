@@ -116,7 +116,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
     <div className="bo-statsTable">
       <div className="bo-statsTableControls">
         <div className="bo-statsTableFilters">
-          <div className="grid gap-bo-2">
+          <div className="grid gap-2">
             <label className="text-bo-sm font-semibold text-bo-muted">Vista</label>
             <Select
               className="bo-statsTableSelect"
@@ -129,7 +129,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             />
           </div>
 
-          <div className="grid gap-bo-2">
+          <div className="grid gap-2">
             <label className="text-bo-sm font-semibold text-bo-muted">Año</label>
             <Select
               className="bo-statsTableSelect"
@@ -142,7 +142,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             />
           </div>
 
-          <div className="grid gap-bo-2 bo-statsTableRangeField">
+          <div className="grid gap-2 bo-statsTableRangeField">
             <label className="text-bo-sm font-semibold text-bo-muted">Rango personalizado</label>
             <DateRangePicker
               from={customFrom}
@@ -179,7 +179,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
 
       <div className="bo-statsTableSurface">
         <div className="bo-tableWrap bo-statsTableWrap">
-          <table className="bo-table bo-table--stats" aria-label="Tabla de estadisticas">
+          <table className="w-full border-collapse text-sm" aria-label="Tabla de estadisticas">
             {renderColGroup()}
             <thead>
               <tr>
@@ -221,7 +221,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
 
         {!isBusy && displayRows.length > 0 ? (
           <div className="bo-statsTableFooter">
-            <table className="bo-table bo-table--stats bo-table--statsFooter" aria-hidden="true">
+            <table className="w-full border-collapse text-sm" aria-hidden="true">
               {renderColGroup()}
               <tfoot>
                 <tr>

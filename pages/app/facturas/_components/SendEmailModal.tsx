@@ -338,7 +338,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
             {/* Email form */}
             <div className="bo-sendEmailForm">
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted">Asunto</label>
                 <input
                   className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
@@ -353,7 +353,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 </span>
               </div>
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <div className="bo-fieldHeader">
                   <label className="text-bo-sm font-semibold text-bo-muted">Mensaje</label>
                   <button

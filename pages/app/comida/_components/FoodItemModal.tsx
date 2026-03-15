@@ -322,7 +322,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
           </div>
 
           <div className="bo-foodModal-fields">
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="nombre">
                 {isPostre ? "Descripcion *" : "Nombre *"}
               </label>
@@ -341,7 +341,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             </div>
 
             {!isPostre ? (
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="titulo">
                   Titulo (opcional)
                 </label>
@@ -357,7 +357,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             ) : null}
 
             <div className="bo-fieldRow">
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="tipo">
                   Tipo
                 </label>
@@ -371,7 +371,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               </div>
 
               {!isPostre ? (
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="precio">
                     Precio *
                   </label>
@@ -390,7 +390,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               ) : null}
 
               {supportsSuplemento ? (
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="suplemento">
                     Suplemento
                   </label>
@@ -409,7 +409,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             </div>
 
             {supportsCategoria ? (
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <div className="bo-foodModalCategoryHead">
                   <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="categoria">
                     Categoria
@@ -431,7 +431,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             ) : null}
 
             {!isPostre ? (
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="descripcion">
                   Detalle
                 </label>
@@ -447,7 +447,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             ) : null}
 
             {supportsAlergenos ? (
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted">Alergenos</label>
                 <div className="bo-foodModal-alergenos">
                   {ALERGEN_OPTIONS.map((opt) => (
@@ -464,7 +464,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               </div>
             ) : null}
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm text-bo-text">
                 <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
                 <span>Activo</span>

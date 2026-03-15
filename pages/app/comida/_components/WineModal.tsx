@@ -231,7 +231,7 @@ export const WineModal = React.memo(function WineModal({
 
           {/* Form fields */}
           <div className="flex flex-col gap-3.5">
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="nombre">
                 Nombre *
               </label>
@@ -247,7 +247,7 @@ export const WineModal = React.memo(function WineModal({
             </div>
 
             <div className="grid grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="tipo">
                   Tipo
                 </label>
@@ -265,7 +265,7 @@ export const WineModal = React.memo(function WineModal({
                 </select>
               </div>
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="precio">
                   Precio *
                 </label>
@@ -283,7 +283,7 @@ export const WineModal = React.memo(function WineModal({
               </div>
             </div>
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="bodega">
                 Bodega *
               </label>
@@ -299,7 +299,7 @@ export const WineModal = React.memo(function WineModal({
             </div>
 
             <div className="grid grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="denominacion">
                   Denominacion de Origen
                 </label>
@@ -313,7 +313,7 @@ export const WineModal = React.memo(function WineModal({
                 />
               </div>
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="anyo">
                   Ano
                 </label>
@@ -328,7 +328,7 @@ export const WineModal = React.memo(function WineModal({
                 />
               </div>
 
-              <div className="grid gap-bo-2">
+              <div className="grid gap-2">
                 <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="graduacion">
                   Graduacion (%)
                 </label>
@@ -346,7 +346,7 @@ export const WineModal = React.memo(function WineModal({
               </div>
             </div>
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="descripcion">
                 Descripcion
               </label>
@@ -360,7 +360,7 @@ export const WineModal = React.memo(function WineModal({
               />
             </div>
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm text-bo-text">
                 <input
                   type="checkbox"

@@ -454,6 +454,10 @@
     @apply text-xs text-bo-muted mt-1;
   }
 
+  .bo-fieldHint {
+    @apply text-xs text-bo-muted mt-1;
+  }
+
   .bo-field--switch {
     @apply flex flex-row items-center gap-3;
   }
@@ -468,6 +472,49 @@
 
   .bo-input--sm {
     @apply h-8;
+  }
+
+  /* Panel and layout components */
+  .bo-panelHead {
+    @apply flex items-center justify-between pb-3 border-b border-white/[0.06];
+  }
+
+  .bo-modal-content {
+    @apply p-4;
+  }
+
+  .bo-formSection {
+    @apply mb-4;
+  }
+
+  .bo-formSectionTitle {
+    @apply text-sm font-semibold mb-2 text-bo-text;
+  }
+
+  /* Alert styles */
+  .bo-alert {
+    @apply p-3 rounded-lg border border-white/[0.06];
+  }
+
+  /* Table styles */
+  .bo-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .bo-table thead th {
+    @apply text-left font-semibold text-bo-faint py-3 px-4;
+  }
+
+  .bo-table tbody td {
+    @apply py-3 px-4 text-bo-text;
+  }
+
+  .bo-table tbody tr {
+    @apply border-t border-white/[0.06];
+  }
+
+  .bo-table tbody tr:hover {
+    @apply bg-white/[0.02];
   }
 
   /* bo- utility aliases for migration - these map to standard Tailwind */
@@ -622,4 +669,51 @@
   .bo-leading-tight { @apply leading-tight; }
   .bo-leading-normal { @apply leading-normal; }
   .bo-leading-relaxed { @apply leading-relaxed; }
+
+  /* Additional spacing utilities */
+  .bo-space-y-1 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(4px * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(4px * var(--tw-space-y-reverse)); }
+  .bo-space-y-2 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(8px * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(8px * var(--tw-space-y-reverse)); }
+  .bo-space-y-3 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(12px * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(12px * var(--tw-space-y-reverse)); }
+  .bo-space-y-4 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(16px * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(16px * var(--tw-space-y-reverse)); }
+
+  .bo-space-x-1 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 0; margin-left: calc(4px * calc(1 - var(--tw-space-x-reverse))); margin-right: calc(4px * var(--tw-space-x-reverse)); }
+  .bo-space-x-2 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 0; margin-left: calc(8px * calc(1 - var(--tw-space-x-reverse))); margin-right: calc(8px * var(--tw-space-x-reverse)); }
+  .bo-space-x-3 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 0; margin-left: calc(12px * calc(1 - var(--tw-space-x-reverse))); margin-right: calc(12px * var(--tw-space-x-reverse)); }
+  .bo-space-x-4 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 0; margin-left: calc(16px * calc(1 - var(--tw-space-x-reverse))); margin-right: calc(16px * var(--tw-space-x-reverse)); }
+
+  /* Aspect ratio utilities */
+  .bo-aspect-video { aspect-ratio: 16 / 9; }
+  .bo-aspect-square { aspect-ratio: 1 / 1; }
+
+  /* Whitespace utilities */
+  .bo-whitespace-nowrap { white-space: nowrap; }
+  .bo-whitespace-pre { white-space: pre; }
+  .bo-whitespace-pre-line { white-space: pre-line; }
+
+  /* Text overflow utilities */
+  .bo-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bo-text-ellipsis { text-overflow: ellipsis; overflow: hidden; }
+
+  /* Flex utilities */
+  .bo-flex-1 { flex: 1 1 0%; }
+  .bo-flex-auto { flex: 1 1 auto; }
+  .bo-flex-initial { flex: 0 1 auto; }
+  .bo-flex-none { flex: none; }
+  .bo-flex-shrink-0 { flex-shrink: 0; }
+
+  /* Grid utilities */
+  .bo-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bo-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bo-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  /* Object fit utilities */
+  .bo-object-cover { object-fit: cover; }
+  .bo-object-contain { object-fit: contain; }
+  .bo-object-fill { object-fit: fill; }
+
+  /* Transition utilities */
+  .bo-transition-none { transition-property: none; }
+  .bo-transition-all { transition-property: all; }
+  .bo-transition-colors { transition-property: color, background-color, border-color; }
+  .bo-transition-transform { transition-property: transform; }
 }

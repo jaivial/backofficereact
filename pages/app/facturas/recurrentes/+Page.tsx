@@ -121,14 +121,14 @@ export default function RecurringInvoicesPage() {
   const getStatusBadge = (isActive: boolean) => {
     if (isActive) {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--success">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border border-[var(--bo-color-success)]/[0.30]">
           <CheckCircle size={12} />
           Activa
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--warning">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border border-[var(--bo-color-warning)]/[0.30]">
         <Pause size={12} />
         Pausada
       </span>
@@ -177,7 +177,7 @@ export default function RecurringInvoicesPage() {
       )}
 
       {/* Recurring Invoices List */}
-      <div className="flex flex-col gap-bo-4 p-4">
+      <div className="flex flex-col gap-4 p-4">
         {data.recurringInvoices.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
             <RefreshCw size={48} className="text-mutedText mb-4" />
@@ -207,9 +207,9 @@ export default function RecurringInvoicesPage() {
               </thead>
               <tbody>
                 {data.recurringInvoices.map((item) => (
-                  <tr key={item.id} className="bo-tableRow">
+                  <tr key={item.id} className="border-b border-bo-border">
                     <td className="p-3 text-bo-text">
-                      <div className="bo-stack gap-1">
+                      <div className="flex flex-col gap-1">
                         <span className="font-medium">{item.customer_name}</span>
                         <span className="text-xs text-mutedText">{item.customer_email}</span>
                       </div>
@@ -223,13 +223,13 @@ export default function RecurringInvoicesPage() {
                       <span>{getFrequencyLabel(item.frequency)}</span>
                     </td>
                     <td className="p-3 text-bo-text">
-                      <div className="flex gap-bo-4 gap-1">
+                      <div className="flex gap-4 gap-1">
                         <Calendar size={14} className="text-mutedText" />
                         {item.next_billing_date}
                       </div>
                     </td>
                     <td className="p-3 text-bo-text">
-                      <div className="flex gap-bo-4 gap-1">
+                      <div className="flex gap-4 gap-1">
                         <span className="font-semibold">{item.invoice_count}</span>
                         <span className="text-mutedText">facturas</span>
                       </div>
@@ -238,7 +238,7 @@ export default function RecurringInvoicesPage() {
                       {getStatusBadge(item.is_active)}
                     </td>
                     <td className="p-3 text-bo-text">
-                      <div className="flex gap-bo-4" style={{ gap: "var(--bo-space-1)" }}>
+                      <div className="flex gap-4" style={{ gap: "var(--bo-space-1)" }}>
                         <button
                           className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-bo-text transition-all hover:bg-white/[0.06]"
                           onClick={() => handleGenerateNow(item.id)}
@@ -263,7 +263,7 @@ export default function RecurringInvoicesPage() {
                           <Eye size={14} />
                         </button>
                         <button
-                          className="bo-btnIcon text-danger"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-[var(--bo-color-danger)] transition-all hover:bg-white/[0.06]"
                           onClick={() => handleDelete(item.id)}
                           disabled={isLoading}
                           title="Eliminar"

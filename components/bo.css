@@ -45,6 +45,7 @@
   --bo-bg-subtle: var(--bo-surface-3);
   --bo-bg-hover: color-mix(in srgb, var(--bo-surface) 86%, white 14%);
   --bo-bg-muted: var(--bo-surface-3);
+  --bo-bg-elevated: var(--bo-surface);
   --bo-bg-selected: rgba(185, 168, 255, 0.16);
   --bo-bg-selected-hover: rgba(185, 168, 255, 0.24);
   --bo-bg-primary: rgba(185, 168, 255, 0.16);
@@ -155,6 +156,7 @@
   --bo-success-bg: color-mix(in srgb, var(--bo-color-success) 14%, transparent);
   --bo-warning-bg: color-mix(in srgb, var(--bo-color-warning) 14%, transparent);
   --bo-muted-bg: color-mix(in srgb, var(--bo-muted) 14%, transparent);
+  --bo-bg-elevated: var(--bo-surface);
   --bo-accent-alpha: rgba(124, 92, 231, 0.16);
 
   --bo-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);

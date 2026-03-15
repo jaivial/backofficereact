@@ -3066,7 +3066,7 @@ export default function TableManagerPage() {
           </div>
 
           <div className="bo-tableEditorConfig">
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="table-name">Nombre/numero</label>
               <input
                 id="table-name"
@@ -3076,19 +3076,19 @@ export default function TableManagerPage() {
               />
             </div>
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted">Forma</label>
               <div className="bo-tableEditorShapeBtns">
-                <button type="button" className={`bo-btn bo-btn--ghost${draft.shape === "round" ? " is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "round" }))}>
+                <button type="button" className={`h-10 rounded-xl border border-bo-border bg-transparent text-bo-text cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 ${draft.shape === "round" ? "is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "round" }))}>
                   Redonda
                 </button>
-                <button type="button" className={`bo-btn bo-btn--ghost${draft.shape === "square" ? " is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "square" }))}>
+                <button type="button" className={`h-10 rounded-xl border border-bo-border bg-transparent text-bo-text cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 ${draft.shape === "square" ? "is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "square" }))}>
                   Cuadrada
                 </button>
               </div>
             </div>
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted">Colores</label>
               <div className="bo-tableEditorPresetGrid">
                 {COLOR_PRESETS.map((preset) => (
@@ -3104,7 +3104,7 @@ export default function TableManagerPage() {
               </div>
             </div>
 
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted">Subir textura</label>
               <label className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-tableUploadBtn">
                 <ImagePlus size={16} strokeWidth={1.8} />
@@ -3136,21 +3136,21 @@ export default function TableManagerPage() {
 
       <Modal open={Boolean(selectedBooking)} title="Reserva" onClose={() => setSelectedBooking(null)} widthPx={760} className="bo-tableBookingModal">
         {selectedBooking ? (
-          <div className="flex flex-col gap-bo-4 p-4" style={{ gap: 12 }}>
+          <div className="flex flex-col gap-4 p-4" style={{ gap: 12 }}>
             <div className="bo-tableMapBookingModalHero">
               <div className="bo-tableMapBookingTableNumber">Mesa {selectedBooking.table_number || "—"}</div>
               <div className="bo-tableMapBookingHeroMeta">{selectedBooking.customer_name} · {selectedBooking.party_size} pax · {formatHHMM(selectedBooking.reservation_time)}</div>
             </div>
             <div className="bo-kvGrid">
-              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="grid grid-cols-[120px_1fr] gap-2">
                 <div className="text-bo-sm text-bo-muted">Nombre</div>
                 <div className="text-bo-sm text-bo-text">{selectedBooking.customer_name}</div>
               </div>
-              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="grid grid-cols-[120px_1fr] gap-2">
                 <div className="text-bo-sm text-bo-muted">Hora</div>
                 <div className="text-bo-sm text-bo-text">{formatHHMM(selectedBooking.reservation_time)}</div>
               </div>
-              <div className="grid grid-cols-[120px_1fr] gap-bo-2">
+              <div className="grid grid-cols-[120px_1fr] gap-2">
                 <div className="text-bo-sm text-bo-muted">Comensales</div>
                 <div className="text-bo-sm text-bo-text">{selectedBooking.party_size}</div>
               </div>
@@ -3159,7 +3159,7 @@ export default function TableManagerPage() {
                 <div className="bo-kvValue bo-kvValue--wrap">{selectedBooking.commentary || "—"}</div>
               </div>
             </div>
-            <div className="grid gap-bo-2">
+            <div className="grid gap-2">
               <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="booking-table-edit">Mesa</label>
               <input id="booking-table-edit" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={bookingTableDraft} onChange={(e) => setBookingTableDraft(e.target.value)} />
             </div>

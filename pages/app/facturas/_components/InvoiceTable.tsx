@@ -749,7 +749,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               const daysOverdue = isOverdue ? getDaysOverdue(effectiveDueDate) : 0;
 
               return (
-              <tr key={invoice.id} className={`bo-tableRow${selectedIds.has(invoice.id) ? " is-selected" : ""}${isOverdue ? " bo-tableRow--overdue" : ""}`}>
+              <tr key={invoice.id} className={`border-b border-bo-border hover:bg-white/[0.02]${selectedIds.has(invoice.id) ? " bg-[var(--bo-bg-selected)]" : ""}${isOverdue ? " bg-[rgba(239,68,68,0.08)]" : ""}`}>
                 <td className={`col-selection`} data-label="">
                   <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
@@ -782,7 +782,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 <td className={`col-customer_email`} data-label="Email">{invoice.customer_email}</td>
                 <td className={`col-amount`} data-label="Importe">{formatPrice(invoice.amount, invoice.currency)}</td>
                 <td className={`col-currency`} data-label="Moneda">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bo-badge--muted">{invoice.currency || "EUR"}</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bg-white/[0.06] text-bo-muted border-bo-border">{invoice.currency || "EUR"}</span>
                 </td>
                 <td className={`col-payment_progress`} data-label="Pagado">
                   <PaymentProgressCell invoice={invoice} />

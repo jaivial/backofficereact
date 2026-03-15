@@ -279,7 +279,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
             {/* WhatsApp form */}
             {hasPhone && (
               <div className="bo-sendWhatsAppForm">
-                <div className="grid gap-bo-2">
+                <div className="grid gap-2">
                   <div className="bo-fieldHeader">
                     <label className="text-bo-sm font-semibold text-bo-muted">Mensaje</label>
                     <button

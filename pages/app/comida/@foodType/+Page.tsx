@@ -447,7 +447,7 @@ export default function Page() {
         </div>
       </div>
 
-      <button className="bo-fab" type="button" aria-label={`Anadir ${singularLabel}`} onClick={onOpenCreate}>
+      <button className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[var(--bo-primary-alpha)] border border-[var(--bo-primary-alpha)] text-bo-text shadow-[0_14px_24px_rgba(0,0,0,0.35)] flex items-center justify-center cursor-pointer hover:bg-[var(--bo-bg-selected-hover)] focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2 z-30" type="button" aria-label={`Anadir ${singularLabel}`} onClick={onOpenCreate}>
         <Plus size={24} />
       </button>
 
