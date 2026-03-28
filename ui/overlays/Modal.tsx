@@ -61,6 +61,7 @@ export function Modal({
     <AnimatePresence>
       {open ? (
         <motion.div
+          data-ui="modal-overlay"
           className="bo-modalOverlay"
           initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -72,6 +73,7 @@ export function Modal({
           }}
         >
           <motion.div
+            data-role="dialog"
             className={["bo-modal", "bo-modal--glass", className].filter(Boolean).join(" ")}
             role="dialog"
             aria-label={title}

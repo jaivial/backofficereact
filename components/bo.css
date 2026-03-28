@@ -4405,6 +4405,221 @@ body.is-dragging .bo-tableMapFlowWrap {
   background: var(--bo-color-info);
 }
 
+/* Table sheet detail view */
+.bo-tableSheetDetail {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableSheetDetailHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableSheetDetailTableInfo {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bo-space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.bo-tableSheetDetailTableName {
+  font-size: var(--bo-text-lg);
+  font-weight: var(--bo-weight-bold);
+  color: var(--bo-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailTableCap {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableSheetDetailStatusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--bo-radius-full);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailStatusPill.is-occupied {
+  background: color-mix(in srgb, var(--bo-color-info) 14%, var(--bo-surface));
+  color: var(--bo-color-info);
+}
+
+.bo-tableSheetDetailStatusPill.is-free {
+  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface));
+  color: var(--bo-color-success);
+}
+
+.bo-tableSheetDetailBookings {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableSheetDetailBookingCard {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  display: grid;
+  gap: var(--bo-space-2);
+  background: color-mix(in srgb, var(--bo-surface-2) 60%, var(--bo-surface));
+}
+
+.bo-tableSheetDetailBookingHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableSheetDetailBookingCustomer {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailBookingStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--bo-radius-full);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailBookingStatus::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.bo-tableSheetDetailBookingStatus.is-seated {
+  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface));
+  color: var(--bo-color-success);
+}
+
+.bo-tableSheetDetailBookingStatus.is-seated::before {
+  background: var(--bo-color-success);
+}
+
+.bo-tableSheetDetailBookingStatus.is-pending {
+  background: color-mix(in srgb, var(--bo-color-warning) 14%, var(--bo-surface));
+  color: var(--bo-color-warning);
+}
+
+.bo-tableSheetDetailBookingStatus.is-pending::before {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableSheetDetailBookingMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableSheetDetailBookingComment {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  padding: var(--bo-space-2);
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface-3) 50%, transparent);
+}
+
+.bo-tableSheetDetailBookingActions {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  padding-top: var(--bo-space-1);
+}
+
+/* Assign section below free tables */
+.bo-tableSheetAssignSection {
+  overflow: hidden;
+  margin-top: var(--bo-space-3);
+  border-top: 1px solid var(--bo-border);
+  padding-top: var(--bo-space-3);
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableSheetAssignTitle {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableSheetAssignTitle strong {
+  color: var(--bo-accent);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableSheetAssignList {
+  display: grid;
+  gap: var(--bo-space-1);
+}
+
+.bo-tableSheetAssignRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
+  cursor: pointer;
+  transition: background var(--bo-transition-base) var(--bo-ease),
+              border-color var(--bo-transition-base) var(--bo-ease);
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: inherit;
+}
+
+.bo-tableSheetAssignRow:hover {
+  background: color-mix(in srgb, var(--bo-accent) 10%, var(--bo-surface));
+  border-color: color-mix(in srgb, var(--bo-accent) 40%, var(--bo-border));
+}
+
+.bo-tableSheetAssignRow:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-tableSheetAssignRowName {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-tableSheetAssignRowMeta {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  white-space: nowrap;
+}
+
+.bo-tableSheetAssignEmpty {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-faint);
+  padding: var(--bo-space-3) var(--bo-space-2);
+  text-align: center;
+}
+
 .bo-tableMapTableStateRow {
   position: relative;
   border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
@@ -4837,12 +5052,10 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 .bo-tableMapTooltip {
-  position: fixed;
-  transform: translateX(-50%);
   z-index: 30;
   background: var(--bo-surface);
   border: 1px solid var(--bo-border);
-  border-radius: var(--bo-radius-xl);
+  border-radius: 0.5rem;
   padding: var(--bo-space-4);
   min-width: 240px;
   box-shadow: var(--bo-shadow-xl);
@@ -4921,11 +5134,24 @@ body.is-dragging .bo-tableMapFlowWrap {
   line-height: var(--bo-leading-relaxed);
 }
 
-.bo-tableEditorModal .bo-modal {
+.bo-modal.bo-tableEditorModal {
   max-height: 88vh;
+  height: min(88vh, 860px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bo-modal.bo-tableEditorModal .bo-modalHead {
+  flex-shrink: 0;
 }
 
 .bo-tableEditorGrid {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
   margin-top: var(--bo-space-3);
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -4936,6 +5162,7 @@ body.is-dragging .bo-tableMapFlowWrap {
   border: 0;
   background: transparent;
   min-height: 340px;
+  margin-top: 1rem;
   display: grid;
   place-items: center;
   align-content: center;
@@ -5115,17 +5342,103 @@ body.is-dragging .bo-tableMapFlowWrap {
   gap: var(--bo-space-2);
 }
 
-@media (max-width: 767px) {
+.bo-tableEditorActionsWrap {
+  flex-shrink: 0;
+  margin: 0 calc(var(--bo-space-4) * -1) calc(var(--bo-space-4) * -1);
+  padding: var(--bo-space-3) var(--bo-space-4) var(--bo-space-4);
+  border-top: none;
+  background: color-mix(in srgb, var(--bo-surface-2) 92%, transparent);
+  border-radius: 0 0 var(--bo-radius-lg) var(--bo-radius-lg);
+}
+
+.bo-tableEditorActionsWrap .bo-modalActions {
+  justify-content: flex-end;
+  margin-top: 0;
+  padding: 0;
+  border: none;
+}
+
+.bo-modal.bo-tableEditorModal .bo-timeAdjustCounter--glass {
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.bo-tableEditorActionsWrap .bo-modalActions .bo-btn--primary {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .bo-modal.bo-tableEditorModal {
+    max-height: 96vh;
+    height: 96vh;
+    min-height: 0;
+    padding: var(--bo-space-3);
+    overflow: hidden;
+  }
+
   .bo-tableEditorGrid {
     grid-template-columns: 1fr;
+    gap: var(--bo-space-3);
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
   }
 
   .bo-tableEditorPreviewWrap {
-    min-height: 260px;
+    min-height: 180px;
+    max-height: 220px;
   }
 
-  .bo-tableMapSheet {
-    width: min(320px, calc(100vw - 10px));
+  .bo-tableEditorPreviewTable {
+    width: 120px;
+    height: 120px;
+  }
+
+  .bo-tableEditorCapacity {
+    font-size: var(--bo-text-xl);
+  }
+
+  .bo-tableEditorChair {
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    margin-top: -5px;
+  }
+
+  .bo-tableEditorRotateBtn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .bo-tableEditorConfig {
+    margin: 0;
+    padding: var(--bo-space-3);
+    border-radius: var(--bo-radius-md);
+  }
+
+  .bo-tableEditorPresetGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .bo-tableColorPreset {
+    height: 28px;
+  }
+
+  .bo-tableEditorActionsWrap {
+    margin: var(--bo-space-2) calc(var(--bo-space-3) * -1) calc(var(--bo-space-3) * -1);
+    padding: var(--bo-space-3);
+    border-radius: 0 0 var(--bo-radius-lg) var(--bo-radius-lg);
+  }
+
+  .bo-tableEditorActionsWrap .bo-modalActions {
+    flex-direction: row;
+  }
+
+  .bo-tableEditorActionsWrap .bo-modalActions .bo-btn {
+    width: fit-content;
   }
 }
 
@@ -5312,21 +5625,220 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 }
 
-.bo-tableMapBookingModalHero {
+.bo-tableBookingModalContent {
+  display: grid;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.bo-tableBookingModalHead {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px -4px 0 0;
+}
+
+.bo-tableBookingHero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg);
+  padding: var(--bo-space-3) var(--bo-space-4);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--bo-accent) 8%, var(--bo-surface-2)),
+    color-mix(in srgb, var(--bo-accent-2) 5%, var(--bo-surface))
+  );
+}
+
+.bo-tableBookingHeroLeft {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bo-tableBookingTableBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 40%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface));
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-accent);
+  letter-spacing: 0.02em;
+}
+
+.bo-tableBookingTableBadge.is-unassigned {
+  border-color: color-mix(in srgb, var(--bo-color-warning) 40%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-warning) 10%, var(--bo-surface));
+  color: var(--bo-color-warning);
+}
+
+.bo-tableBookingHeroName {
+  font-size: var(--bo-text-xl);
+  font-weight: var(--bo-weight-bold);
+  color: var(--bo-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-tableBookingHeroRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.bo-tableBookingHeroStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableBookingHeroStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableBookingHeroStatus::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.bo-tableBookingHeroStatus.is-pending {
+  background: color-mix(in srgb, var(--bo-color-warning) 14%, var(--bo-surface));
+  color: var(--bo-color-warning);
+}
+
+.bo-tableBookingHeroStatus.is-pending::before {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableBookingHeroStatus.is-seated {
+  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface));
+  color: var(--bo-color-success);
+}
+
+.bo-tableBookingHeroStatus.is-seated::before {
+  background: var(--bo-color-success);
+}
+
+.bo-tableBookingDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-tableBookingDetailCard {
   border: 1px solid var(--bo-border);
   border-radius: var(--bo-radius-md);
-  padding: var(--bo-space-3);
-  background: color-mix(in srgb, var(--bo-surface-2) 74%, transparent);
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
 }
 
-.bo-tableMapBookingTableNumber {
-  font-size: var(--bo-text-2xl);
-  font-weight: var(--bo-weight-bold);
+.bo-tableBookingDetailCard--wide {
+  grid-column: 1 / -1;
 }
 
-.bo-tableMapBookingHeroMeta {
-  color: var(--bo-muted);
+.bo-tableBookingDetailLabel {
+  font-size: 11px;
+  color: var(--bo-faint);
+  font-weight: 720;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-tableBookingDetailValue {
+  font-size: 13px;
+  font-weight: 720;
+  color: var(--bo-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+
+.bo-tableBookingDetailValue--wrap {
+  overflow-wrap: anywhere;
+}
+
+.bo-tableBookingStatusIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bo-tableBookingStatusIndicator.is-pending {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableBookingStatusIndicator.is-seated {
+  background: var(--bo-color-success);
+}
+
+.bo-tableBookingTableField {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-tableBookingTableLabel {
   font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-tableBookingModalActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-tableBookingActionsRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 580px) {
+  .bo-tableBookingHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bo-tableBookingHeroRight {
+    flex-wrap: wrap;
+  }
+
+  .bo-tableBookingModalActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-tableBookingActionsRight {
+    justify-content: flex-end;
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 580px) {
@@ -22368,4 +22880,366 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 .bo-bookingChoiceServings.bo-field--counter .bo-counter {
   margin: 0;
+}
+
+/* ==========================================================================
+   Public Booking Pages (confirm, cancel, update-rice, booking-policies)
+   Standalone customer-facing pages that share backoffice tokens.
+   ========================================================================== */
+
+.bo-publicPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--bo-space-4);
+  background: var(--bo-bg);
+}
+
+.bo-publicPageCard {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg);
+  padding: var(--bo-space-6) var(--bo-space-5);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-publicPageCard--wide {
+  max-width: 680px;
+}
+
+@media (min-width: 520px) {
+  .bo-publicPageCard {
+    padding: calc(var(--bo-space-6) + var(--bo-space-1)) var(--bo-space-6);
+  }
+}
+
+.bo-publicPageTitle {
+  font-size: var(--bo-text-xl);
+  font-weight: var(--bo-weight-semibold);
+  text-align: center;
+  margin-bottom: var(--bo-space-1);
+}
+
+.bo-publicPageSub {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  text-align: center;
+  margin-bottom: var(--bo-space-5);
+}
+
+.bo-publicPageIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--bo-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--bo-space-4);
+}
+
+.bo-publicPageIcon--success {
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  color: var(--bo-color-success);
+}
+
+.bo-publicPageIcon--warning {
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  color: var(--bo-color-warning);
+}
+
+.bo-publicPageIcon--danger {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: var(--bo-color-danger);
+}
+
+.bo-publicPageIcon--accent {
+  background: rgba(185, 168, 255, 0.12);
+  border: 1px solid rgba(185, 168, 255, 0.3);
+  color: var(--bo-accent);
+}
+
+.bo-publicPageAlert {
+  padding: var(--bo-space-3) var(--bo-space-4);
+  border-radius: var(--bo-radius-md);
+  margin-bottom: var(--bo-space-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bo-space-3);
+  border: 1px solid transparent;
+  font-size: var(--bo-text-base);
+  line-height: var(--bo-leading-normal);
+}
+
+.bo-publicPageAlert--success {
+  background: rgba(22, 163, 74, 0.08);
+  border-color: rgba(22, 163, 74, 0.2);
+  color: var(--bo-color-success);
+}
+
+.bo-publicPageAlert--danger {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.2);
+  color: var(--bo-color-danger);
+}
+
+.bo-publicPageAlert--warning {
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.2);
+  color: var(--bo-color-warning);
+}
+
+.bo-publicPageBooking {
+  background: var(--bo-surface-2);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-4);
+  margin-bottom: var(--bo-space-4);
+}
+
+.bo-publicPageBookingHeader {
+  padding-bottom: var(--bo-space-3);
+  margin-bottom: var(--bo-space-3);
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-publicPageBookingName {
+  font-weight: var(--bo-weight-semibold);
+  font-size: var(--bo-text-lg);
+}
+
+.bo-publicPageBookingId {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  margin-top: 2px;
+}
+
+.bo-publicPageDetailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bo-space-3);
+}
+
+.bo-publicPageDetailItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bo-space-2);
+  color: var(--bo-muted);
+}
+
+.bo-publicPageDetailItem > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bo-publicPageDetailLabel {
+  display: block;
+  font-size: var(--bo-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bo-faint);
+}
+
+.bo-publicPageDetailValue {
+  display: block;
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-medium);
+  color: var(--bo-text);
+}
+
+.bo-publicPageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-2);
+  width: 100%;
+  padding: 14px 20px;
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-medium);
+  border-radius: var(--bo-radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  border: 2px solid transparent;
+  background: transparent;
+  color: var(--bo-text);
+  transition: background var(--bo-transition-fast) var(--bo-ease),
+              color var(--bo-transition-fast) var(--bo-ease),
+              border-color var(--bo-transition-fast) var(--bo-ease);
+  font-family: var(--bo-font);
+}
+
+.bo-publicPageBtn:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-publicPageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bo-publicPageBtn + .bo-publicPageBtn {
+  margin-top: var(--bo-space-3);
+}
+
+.bo-publicPageBtn--accent {
+  border-color: var(--bo-accent);
+  color: var(--bo-accent);
+}
+
+.bo-publicPageBtn--accent:hover {
+  background: var(--bo-accent);
+  color: #fff;
+}
+
+.bo-publicPageBtn--success {
+  border-color: var(--bo-color-success);
+  color: var(--bo-color-success);
+}
+
+.bo-publicPageBtn--success:hover {
+  background: var(--bo-color-success);
+  color: #fff;
+}
+
+.bo-publicPageBtn--danger {
+  border-color: var(--bo-color-danger);
+  color: var(--bo-color-danger);
+}
+
+.bo-publicPageBtn--danger:hover {
+  background: var(--bo-color-danger);
+  color: #fff;
+}
+
+.bo-publicPageBtn--primary {
+  background: var(--bo-accent);
+  color: #fff;
+  border-color: var(--bo-accent);
+}
+
+.bo-publicPageBtn--primary:hover {
+  opacity: 0.9;
+}
+
+.bo-publicPageNote {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-faint);
+  text-align: center;
+  margin-top: var(--bo-space-4);
+  padding-top: var(--bo-space-4);
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-publicPageForm {
+  margin-bottom: var(--bo-space-3);
+}
+
+.bo-publicPageFormGroup {
+  margin-bottom: var(--bo-space-4);
+  text-align: left;
+}
+
+.bo-publicPageFormLabel {
+  display: block;
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  margin-bottom: var(--bo-space-2);
+  color: var(--bo-muted);
+}
+
+.bo-publicPageFormControl {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--bo-space-3);
+  font-size: var(--bo-text-base);
+  font-family: var(--bo-font);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  border: 1px solid var(--bo-border-2);
+  border-radius: var(--bo-radius-sm);
+  appearance: none;
+  transition: border-color var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-publicPageFormControl:focus {
+  outline: none;
+  border-color: var(--bo-accent);
+}
+
+/* Policies page */
+.bo-publicPagePoliciesHeader {
+  text-align: center;
+  margin-bottom: var(--bo-space-5);
+}
+
+.bo-publicPagePoliciesContent {
+  font-size: var(--bo-text-base);
+  line-height: var(--bo-leading-relaxed);
+  color: var(--bo-text);
+}
+
+.bo-publicPagePoliciesContent h2 {
+  font-size: var(--bo-text-lg);
+  font-weight: var(--bo-weight-semibold);
+  margin-top: var(--bo-space-5);
+  margin-bottom: var(--bo-space-2);
+  text-decoration: underline;
+}
+
+.bo-publicPagePoliciesContent h3 {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+  margin-top: var(--bo-space-4);
+  margin-bottom: var(--bo-space-2);
+}
+
+.bo-publicPagePoliciesContent p {
+  margin-bottom: var(--bo-space-3);
+  color: var(--bo-muted);
+}
+
+.bo-publicPagePoliciesContent ul {
+  margin-bottom: var(--bo-space-3);
+  padding-left: var(--bo-space-5);
+  color: var(--bo-muted);
+}
+
+.bo-publicPagePoliciesContent li {
+  margin-bottom: var(--bo-space-1);
+}
+
+.bo-publicPagePoliciesContent strong {
+  color: var(--bo-text);
+}
+
+/* Spin animation for loading */
+.bo-spin {
+  animation: bo-spin-anim 1s linear infinite;
+}
+
+@keyframes bo-spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 400px) {
+  .bo-publicPageCard {
+    padding: var(--bo-space-4) var(--bo-space-3);
+    border-radius: var(--bo-radius-md);
+  }
+  .bo-publicPageDetailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-spin {
+    animation: none !important;
+  }
 }

@@ -1437,6 +1437,40 @@ export type PublicInvoicePDFResponse = {
   message?: string;
 };
 
+// Public Booking Types (for customer-facing booking pages)
+
+export type PublicBooking = {
+  id: number;
+  reservationDate: string;
+  reservationTime: string;
+  partySize: number;
+  customerName: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  arrozType?: string;
+  arrozServings?: string;
+  arrozDisplay?: string;
+  status?: string;
+  isSameDay: boolean;
+  isConfirmed: boolean;
+};
+
+export type PublicBookingResponse = {
+  success: boolean;
+  booking?: PublicBooking;
+  riceOptions?: string[];
+  message?: string;
+  isSameDay?: boolean;
+  alreadyConfirmed?: boolean;
+};
+
+export type PublicBookingPoliciesResponse = {
+  success: boolean;
+  brandName: string;
+  policies: string;
+  updatedDate: string;
+};
+
 // Tax Report Types (IVA Summary)
 
 export type TaxReportType = "iva" | "irpf" | "summary";

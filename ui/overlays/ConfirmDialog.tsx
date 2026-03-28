@@ -38,18 +38,19 @@ export function ConfirmDialog({
 
   return (
     <Modal open={effectiveOpen} title={title} onClose={handleClose} className="bo-modal--confirm">
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">{title}</div>
-        <button className="bo-modalX" type="button" onClick={handleClose} aria-label="Close">
+      <div data-slot="modal-head" className="bo-modalHead">
+        <div data-ui="modal-title" className="bo-modalTitle">{title}</div>
+        <button data-ui="close-modal-btn" className="bo-modalX" type="button" onClick={handleClose} aria-label="Close">
           ×
         </button>
       </div>
-      <div className="bo-modalBody">{message}</div>
-      <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={handleClose} disabled={busy}>
+      <div data-slot="modal-body" className="bo-modalBody">{message}</div>
+      <div data-slot="modal-actions" className="bo-modalActions">
+        <button data-ui="cancel-btn" className="bo-btn bo-btn--ghost" type="button" onClick={handleClose} disabled={busy}>
           {effectiveCancelText}
         </button>
         <button
+          data-ui="confirm-btn"
           className={`bo-btn bo-btn--primary${danger ? " bo-btn--danger" : ""}`}
           type="button"
           onClick={() => void onConfirm()}
