@@ -2305,5 +2305,36 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         return json(`/api/public/invoices/${id}?${q.toString()}`, { method: "GET" });
       },
     },
+
+    // Public Booking API (for customer-facing booking pages)
+    publicBookings: {
+      async get(id: number): Promise<import("./types").PublicBookingResponse | import("./types").APIError> {
+        return json(`/api/public/booking?id=${id}`, { method: "GET" });
+      },
+      async confirm(id: number): Promise<import("./types").PublicBookingResponse | import("./types").APIError> {
+        return json("/api/public/booking/confirm", {
+          method: "POST",
+          body: JSON.stringify({ id }),
+          headers: { "Content-Type": "application/json" },
+        });
+      },
+      async cancel(id: number, cancelledBy: string = "customer"): Promise<import("./types").PublicBookingResponse | import("./types").APIError> {
+        return json("/api/public/booking/cancel", {
+          method: "POST",
+          body: JSON.stringify({ id, cancelledBy }),
+          headers: { "Content-Type": "application/json" },
+        });
+      },
+      async rice(id: number, riceType: string, servings: number): Promise<import("./types").PublicBookingResponse | import("./types").APIError> {
+        return json("/api/public/booking/rice", {
+          method: "POST",
+          body: JSON.stringify({ id, riceType, servings }),
+          headers: { "Content-Type": "application/json" },
+        });
+      },
+      async policies(): Promise<import("./types").PublicBookingPoliciesResponse | import("./types").APIError> {
+        return json("/api/public/booking-policies", { method: "GET" });
+      },
+    },
   };
 }

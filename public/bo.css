@@ -4400,6 +4400,221 @@ body.is-dragging .bo-tableMapFlowWrap {
   background: var(--bo-color-info);
 }
 
+/* Table sheet detail view */
+.bo-tableSheetDetail {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableSheetDetailHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-3);
+}
+
+.bo-tableSheetDetailTableInfo {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bo-space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.bo-tableSheetDetailTableName {
+  font-size: var(--bo-text-lg);
+  font-weight: var(--bo-weight-bold);
+  color: var(--bo-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailTableCap {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableSheetDetailStatusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--bo-radius-full);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailStatusPill.is-occupied {
+  background: color-mix(in srgb, var(--bo-color-info) 14%, var(--bo-surface));
+  color: var(--bo-color-info);
+}
+
+.bo-tableSheetDetailStatusPill.is-free {
+  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface));
+  color: var(--bo-color-success);
+}
+
+.bo-tableSheetDetailBookings {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableSheetDetailBookingCard {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  display: grid;
+  gap: var(--bo-space-2);
+  background: color-mix(in srgb, var(--bo-surface-2) 60%, var(--bo-surface));
+}
+
+.bo-tableSheetDetailBookingHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableSheetDetailBookingCustomer {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailBookingStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--bo-radius-full);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  white-space: nowrap;
+}
+
+.bo-tableSheetDetailBookingStatus::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.bo-tableSheetDetailBookingStatus.is-seated {
+  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface));
+  color: var(--bo-color-success);
+}
+
+.bo-tableSheetDetailBookingStatus.is-seated::before {
+  background: var(--bo-color-success);
+}
+
+.bo-tableSheetDetailBookingStatus.is-pending {
+  background: color-mix(in srgb, var(--bo-color-warning) 14%, var(--bo-surface));
+  color: var(--bo-color-warning);
+}
+
+.bo-tableSheetDetailBookingStatus.is-pending::before {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableSheetDetailBookingMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableSheetDetailBookingComment {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  padding: var(--bo-space-2);
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface-3) 50%, transparent);
+}
+
+.bo-tableSheetDetailBookingActions {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  padding-top: var(--bo-space-1);
+}
+
+/* Assign section below free tables */
+.bo-tableSheetAssignSection {
+  overflow: hidden;
+  margin-top: var(--bo-space-3);
+  border-top: 1px solid var(--bo-border);
+  padding-top: var(--bo-space-3);
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableSheetAssignTitle {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableSheetAssignTitle strong {
+  color: var(--bo-accent);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableSheetAssignList {
+  display: grid;
+  gap: var(--bo-space-1);
+}
+
+.bo-tableSheetAssignRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
+  cursor: pointer;
+  transition: background var(--bo-transition-base) var(--bo-ease),
+              border-color var(--bo-transition-base) var(--bo-ease);
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: inherit;
+}
+
+.bo-tableSheetAssignRow:hover {
+  background: color-mix(in srgb, var(--bo-accent) 10%, var(--bo-surface));
+  border-color: color-mix(in srgb, var(--bo-accent) 40%, var(--bo-border));
+}
+
+.bo-tableSheetAssignRow:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-tableSheetAssignRowName {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-tableSheetAssignRowMeta {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  white-space: nowrap;
+}
+
+.bo-tableSheetAssignEmpty {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-faint);
+  padding: var(--bo-space-3) var(--bo-space-2);
+  text-align: center;
+}
+
 .bo-tableMapTableStateRow {
   position: relative;
   border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
@@ -5307,21 +5522,220 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 }
 
-.bo-tableMapBookingModalHero {
+.bo-tableBookingModalContent {
+  display: grid;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.bo-tableBookingModalHead {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px -4px 0 0;
+}
+
+.bo-tableBookingHero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg);
+  padding: var(--bo-space-3) var(--bo-space-4);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--bo-accent) 8%, var(--bo-surface-2)),
+    color-mix(in srgb, var(--bo-accent-2) 5%, var(--bo-surface))
+  );
+}
+
+.bo-tableBookingHeroLeft {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bo-tableBookingTableBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 40%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface));
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-accent);
+  letter-spacing: 0.02em;
+}
+
+.bo-tableBookingTableBadge.is-unassigned {
+  border-color: color-mix(in srgb, var(--bo-color-warning) 40%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-warning) 10%, var(--bo-surface));
+  color: var(--bo-color-warning);
+}
+
+.bo-tableBookingHeroName {
+  font-size: var(--bo-text-xl);
+  font-weight: var(--bo-weight-bold);
+  color: var(--bo-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-tableBookingHeroRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.bo-tableBookingHeroStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-tableBookingHeroStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableBookingHeroStatus::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.bo-tableBookingHeroStatus.is-pending {
+  background: color-mix(in srgb, var(--bo-color-warning) 14%, var(--bo-surface));
+  color: var(--bo-color-warning);
+}
+
+.bo-tableBookingHeroStatus.is-pending::before {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableBookingHeroStatus.is-seated {
+  background: color-mix(in srgb, var(--bo-color-success) 14%, var(--bo-surface));
+  color: var(--bo-color-success);
+}
+
+.bo-tableBookingHeroStatus.is-seated::before {
+  background: var(--bo-color-success);
+}
+
+.bo-tableBookingDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-tableBookingDetailCard {
   border: 1px solid var(--bo-border);
   border-radius: var(--bo-radius-md);
-  padding: var(--bo-space-3);
-  background: color-mix(in srgb, var(--bo-surface-2) 74%, transparent);
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
 }
 
-.bo-tableMapBookingTableNumber {
-  font-size: var(--bo-text-2xl);
-  font-weight: var(--bo-weight-bold);
+.bo-tableBookingDetailCard--wide {
+  grid-column: 1 / -1;
 }
 
-.bo-tableMapBookingHeroMeta {
-  color: var(--bo-muted);
+.bo-tableBookingDetailLabel {
+  font-size: 11px;
+  color: var(--bo-faint);
+  font-weight: 720;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-tableBookingDetailValue {
+  font-size: 13px;
+  font-weight: 720;
+  color: var(--bo-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+
+.bo-tableBookingDetailValue--wrap {
+  overflow-wrap: anywhere;
+}
+
+.bo-tableBookingStatusIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bo-tableBookingStatusIndicator.is-pending {
+  background: var(--bo-color-warning);
+}
+
+.bo-tableBookingStatusIndicator.is-seated {
+  background: var(--bo-color-success);
+}
+
+.bo-tableBookingTableField {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-tableBookingTableLabel {
   font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-tableBookingModalActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-tableBookingActionsRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 580px) {
+  .bo-tableBookingHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bo-tableBookingHeroRight {
+    flex-wrap: wrap;
+  }
+
+  .bo-tableBookingModalActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-tableBookingActionsRight {
+    justify-content: flex-end;
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 580px) {
