@@ -209,7 +209,7 @@ export default function Page() {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       disabled={busy || avatarBusy}
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                   <div className="grid gap-1">
@@ -221,7 +221,7 @@ export default function Page() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       disabled={busy || avatarBusy}
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                   <div className="grid gap-1">
@@ -232,7 +232,7 @@ export default function Page() {
                       id="email"
                       value={member?.email || ""}
                       disabled
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                   <div className="grid gap-1">
@@ -243,7 +243,7 @@ export default function Page() {
                       id="dni"
                       value={member?.dni || ""}
                       disabled
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                   <div className="col-span-2 grid gap-1">
@@ -254,7 +254,7 @@ export default function Page() {
                       id="phone"
                       value={member?.phone || ""}
                       disabled
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                   <div className="col-span-2 grid gap-1">
@@ -265,7 +265,7 @@ export default function Page() {
                       id="role"
                       value={member?.roleLabel || ""}
                       disabled
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                 </div>
@@ -313,7 +313,7 @@ export default function Page() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={busy}
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                   <div className="grid gap-1">
@@ -327,7 +327,7 @@ export default function Page() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       disabled={busy}
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3"
                     />
                   </div>
                 </div>

@@ -737,12 +737,12 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={handleClose}>
       <div className="bo-modal-content bo-importWizard" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-bo-border">
-          <div className="text-lg font-semibold text-bo-text">
+        <div className="flex items-center justify-between p-4 border-b border">
+          <div className="text-lg font-semibold text-foreground">
             <FileSpreadsheet size={20} />
             <span>Importar facturas desde CSV</span>
           </div>
-          <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={handleClose} aria-label="Cerrar">
+          <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={handleClose} aria-label="Cerrar">
             <X size={18} />
           </button>
         </div>
@@ -807,7 +807,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
               </div>
 
               <div className="bo-importWizardActions">
-                <button className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--outline" onClick={handleDownloadSample}>
+                <button className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--outline" onClick={handleDownloadSample}>
                   <Download size={16} />
                   Descargar ejemplo CSV
                 </button>
@@ -1062,18 +1062,18 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
         {/* Footer */}
         <div className="bo-modal-footer bo-importWizardFooter">
           {currentStep === "upload" && (
-            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={handleClose}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={handleClose}>
               Cancelar
             </button>
           )}
 
           {currentStep === "mapping" && (
             <>
-              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={() => setCurrentStep("upload")}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={() => setCurrentStep("upload")}>
                 <ArrowLeft size={16} />
                 Volver
               </button>
-              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleGoToPreview} disabled={isProcessing}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleGoToPreview} disabled={isProcessing}>
                 Validar y previsualizar
                 <ArrowRight size={16} />
               </button>
@@ -1082,11 +1082,11 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
 
           {currentStep === "preview" && (
             <>
-              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={handleBackToMapping}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={handleBackToMapping}>
                 <ArrowLeft size={16} />
                 Volver
               </button>
-              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleImport} disabled={stats.valid === 0 || isProcessing}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleImport} disabled={stats.valid === 0 || isProcessing}>
                 Importar {stats.valid} facturas
                 <Check size={16} />
               </button>
@@ -1094,7 +1094,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
           )}
 
           {currentStep === "complete" && (
-            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleClose}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleClose}>
               Cerrar
             </button>
           )}

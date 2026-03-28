@@ -147,13 +147,13 @@ export default function Page() {
 
   return (
     <section aria-label="Miembros y roles" className="grid gap-4">
-      <div className="rounded-bo-lg bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-bo-border p-4">
+      <div className="rounded-lg bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--secondary)] border border p-4">
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-base font-semibold text-bo-text leading-tight">Equipo y permisos</div>
-            <div className="text-xs text-bo-muted mt-0.5">Consulta miembros del restaurante y su rol operativo actual.</div>
+            <div className="text-base font-semibold text-foreground leading-tight">Equipo y permisos</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
-          <div className="text-xs text-bo-muted inline-flex items-center gap-1">
+          <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
             <ShieldUser size={16} strokeWidth={1.8} />
             {members.length} miembros
           </div>
@@ -167,25 +167,25 @@ export default function Page() {
             <button
               key={member.id}
               type="button"
-              className="rounded-bo-md bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-bo-border shadow-[var(--bo-shadow-soft)] p-3 text-left cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+              className="rounded-md bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--secondary)] border border shadow-[var(--bo-shadow-soft)] p-3 text-left cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-lg"
               onClick={() => window.location.assign(`/app/miembros/${member.id}`)}
             >
               <div className="flex items-start gap-3">
-                <Avatar className="w-7 h-7 rounded-xl border border-bo-border bg-gradient-to-br from-[rgba(185,168,255,0.28)] to-[rgba(147,239,231,0.18)]">
+                <Avatar className="w-7 h-7 rounded-xl border border bg-gradient-to-br from-[rgba(185,168,255,0.28)] to-[rgba(147,239,231,0.18)]">
                   {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
                   <AvatarFallback className="rounded-xl text-xs font-semibold">{initials(member.firstName, member.lastName)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <div className="text-sm font-semibold text-bo-text truncate">{fullName(member)}</div>
-                    {isSelfMember(member) ? <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bo-accent)] text-[var(--bo-bg)] font-semibold">Tu</span> : null}
+                    <div className="text-sm font-semibold text-foreground truncate">{fullName(member)}</div>
+                    {isSelfMember(member) ? <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent)] text-[var(--background)] font-semibold">Tu</span> : null}
                   </div>
-                  <div className="text-xs text-bo-muted truncate">{member.email ?? "Sin email"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{member.email ?? "Sin email"}</div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-bo-border">
-                <span className="text-xs text-bo-muted">Rol</span>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border">
+                <span className="text-xs text-muted-foreground">Rol</span>
                 <RoleBadge
                   roleSlug={roleMeta.slug}
                   roleName={roleMeta.label}
@@ -196,12 +196,12 @@ export default function Page() {
 
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-bo-muted">Contrato semanal</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--bo-surface-3)] text-bo-text font-medium">{member.weeklyContractHours.toFixed(2)} h</span>
+                  <span className="text-xs text-muted-foreground">Contrato semanal</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--muted)] text-foreground font-medium">{member.weeklyContractHours.toFixed(2)} h</span>
                 </div>
                 <button
                   onClick={(e) => handleOpenWhatsApp(e, member)}
-                  className="w-9 h-9 rounded-xl border border-bo-border bg-white/[0.02] text-bo-muted grid place-items-center cursor-pointer transition-colors hover:bg-white/[0.04] hover:text-bo-text"
+                  className="w-9 h-9 rounded-xl border border bg-white/[0.02] text-muted-foreground grid place-items-center cursor-pointer transition-colors hover:bg-white/[0.04] hover:text-foreground"
                   aria-label="Enviar WhatsApp"
                 >
                   <MessageCircle size={18} />
@@ -212,11 +212,11 @@ export default function Page() {
         })}
 
         {members.length === 0 ? (
-          <div className="rounded-bo-lg bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--bo-surface-2)] border border-bo-border p-4">
+          <div className="rounded-lg bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10)),var(--secondary)] border border p-4">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-base font-semibold text-bo-text leading-tight">Sin miembros</div>
-                <div className="text-xs text-bo-muted mt-0.5">No hay miembros cargados todavía para este restaurante.</div>
+                <div className="text-base font-semibold text-foreground leading-tight">Sin miembros</div>
+                <div className="text-xs text-muted-foreground mt-0.5">No hay miembros cargados todavía para este restaurante.</div>
               </div>
             </div>
           </div>
@@ -227,46 +227,46 @@ export default function Page() {
         <div className="flex flex-col gap-4">
           {needsSubscription ? (
             <div className="flex flex-col items-center text-center gap-4 py-4">
-              <div className="w-16 h-16 rounded-xl border border-bo-border bg-gradient-to-br from-[rgba(185,168,255,0.28)] to-[rgba(147,239,231,0.18)] grid place-items-center text-[var(--bo-accent)]">
+              <div className="w-16 h-16 rounded-xl border border bg-gradient-to-br from-[rgba(185,168,255,0.28)] to-[rgba(147,239,231,0.18)] grid place-items-center text-[var(--accent)]">
                 <MessageCircle size={32} />
               </div>
-              <h2 className="text-lg font-semibold text-bo-text">WhatsApp Premium Pack</h2>
-              <p className="text-sm text-bo-muted max-w-xs">
+              <h2 className="text-lg font-semibold text-foreground">WhatsApp Premium Pack</h2>
+              <p className="text-sm text-muted-foreground max-w-xs">
                 Desbloquea la capacidad de enviar mensajes de WhatsApp directamente a tu personal.
                 Ideal para avisos de turnos y comunicaciones importantes.
               </p>
-              <div className="rounded-lg border border-bo-border bg-bo-surface-2 p-4 w-full max-w-xs">
-                <div className="text-2xl font-bold text-bo-text">29.99 € <span className="text-sm font-normal text-bo-muted">/ mes</span></div>
-                <ul className="mt-3 text-sm text-bo-muted space-y-1.5">
+              <div className="rounded-lg border border bg-card-2 p-4 w-full max-w-xs">
+                <div className="text-2xl font-bold text-foreground">29.99 € <span className="text-sm font-normal text-muted-foreground">/ mes</span></div>
+                <ul className="mt-3 text-sm text-muted-foreground space-y-1.5">
                   <li>✓ Mensajes ilimitados al staff</li>
                   <li>✓ Integración con cuenta de empresa central</li>
                   <li>✓ Sin necesidad de escanear QR</li>
                 </ul>
               </div>
-              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSubscribe} disabled={subscribing}>
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSubscribe} disabled={subscribing}>
                 {subscribing ? "Activando..." : "Suscribirse y Continuar"}
               </button>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <h2 className="text-base font-semibold text-bo-text">Mensaje para {selectedMember?.firstName}</h2>
+              <h2 className="text-base font-semibold text-foreground">Mensaje para {selectedMember?.firstName}</h2>
               {!selectedMember?.whatsappNumber ? (
-                <div className="rounded-lg border border-[var(--bo-color-warning)] bg-[var(--bo-warning-bg)] p-3 text-sm text-[var(--bo-color-warning)]">
+                <div className="rounded-lg border border-[var(--text-warning)] bg-[var(--warning-bg)] p-3 text-sm text-[var(--text-warning)]">
                   Este miembro no tiene un número de WhatsApp configurado en su perfil.
                 </div>
               ) : (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-bo-text mb-1.5">Mensaje</label>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Mensaje</label>
                     <textarea
-                      className="w-full min-h-[100px] rounded-lg border border-bo-border bg-bo-surface-2 p-3 text-sm text-bo-text placeholder:text-bo-muted focus:outline-none focus:border-[var(--bo-accent)] focus:ring-1 focus:ring-[var(--bo-accent)]"
+                      className="w-full min-h-[100px] rounded-lg border border bg-card-2 p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
                   <div className="flex justify-end gap-3 pt-2">
-                    <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
-                    <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
+                    <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
+                    <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
                       {sending ? "Enviando..." : "Enviar por WhatsApp"}
                     </button>
                   </div>

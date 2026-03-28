@@ -156,9 +156,9 @@ export default function WebsiteBuilderPage() {
   if (loading) {
     return (
       <div className="p-6" data-ui="website-loading">
-        <div className="rounded-lg bg-bo-surface shadow-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="p-4">
-            <div className="flex items-center justify-center py-8 text-bo-muted">
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
               <Loader2 className="animate-spin h-4 w-4" size={24} />
               <span className="ml-2">Cargando configuracion...</span>
             </div>
@@ -172,18 +172,18 @@ export default function WebsiteBuilderPage() {
     <div className="p-6" data-ui="website-builder">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <div className="flex items-center gap-3 text-bo-text">
+          <div className="flex items-center gap-3 text-foreground">
             <Globe size={24} />
             <h1 className="text-xl font-semibold">Website Builder</h1>
           </div>
-          <p className="text-bo-muted mt-1">Crea y publica la web de tu restaurante</p>
+          <p className="text-muted-foreground mt-1">Crea y publica la web de tu restaurante</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant={config?.is_published ? "success" : "secondary"} type="button" onClick={handleTogglePublished} disabled={saving}>
             {config?.is_published ? "Publicado" : "Borrador"}
           </Button>
           {previewUrl && (
-            <a className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" href={previewUrl} target="_blank" rel="noopener noreferrer">
+            <a className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" href={previewUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink size={16} />
               <span>Vista previa</span>
             </a>
@@ -191,7 +191,7 @@ export default function WebsiteBuilderPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 p-1 bg-bo-surface-3 rounded-lg mb-6" role="tablist">
+      <div className="flex gap-1 p-1 bg-card-3 rounded-lg mb-6" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -200,8 +200,8 @@ export default function WebsiteBuilderPage() {
             aria-selected={activeTab === tab.key}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeTab === tab.key 
-                ? "bg-bo-surface text-bo-text shadow-sm" 
-                : "text-bo-muted hover:text-bo-text"
+                ? "bg-card text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
             }`}
             onClick={() => setActiveTab(tab.key)}
           >
@@ -222,22 +222,22 @@ export default function WebsiteBuilderPage() {
                   type="button"
                   className={`relative text-left p-3 rounded-lg border transition-all ${
                     isSelected 
-                      ? "border-bo-accent bg-bo-accent/10" 
-                      : "border-bo-border hover:border-bo-border-2"
+                      ? "border-accent bg-accent/10" 
+                      : "border hover:border-2"
                   }`}
                   onClick={() => handleSave({ template_id: theme.id, custom_html: null })}
                   disabled={saving}
                 >
-                  <div className="h-24 rounded bg-bo-surface-2 mb-3 overflow-hidden">
+                  <div className="h-24 rounded bg-card-2 mb-3 overflow-hidden">
                     <div className="w-full h-full" data-theme-id={theme.id} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-bo-text truncate">{theme.name}</div>
-                    <div className="text-sm text-bo-muted truncate">{theme.description}</div>
+                    <div className="font-semibold text-foreground truncate">{theme.name}</div>
+                    <div className="text-sm text-muted-foreground truncate">{theme.description}</div>
                   </div>
                   {isSelected && (
-                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-bo-accent flex items-center justify-center">
-                      <Check size={14} className="text-bo-bg" />
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                      <Check size={14} className="text-background" />
                     </div>
                   )}
                 </button>
@@ -249,16 +249,16 @@ export default function WebsiteBuilderPage() {
 
       {activeTab === "ai" && (
         <section className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="rounded-lg bg-bo-surface shadow-soft p-4">
+          <div className="rounded-lg bg-card shadow-soft p-4">
             <div className="flex items-end justify-between pb-2">
-              <div className="text-bo-sm font-bold text-bo-text">Generar con IA</div>
-              <div className="text-bo-xs text-bo-faint">Describe tu sitio ideal</div>
+              <div className="text-sm font-bold text-foreground">Generar con IA</div>
+              <div className="text-xs text-muted-foreground">Describe tu sitio ideal</div>
             </div>
             <div className="flex flex-col gap-4">
-              <p className="text-bo-muted text-sm">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
+              <p className="text-muted-foreground text-sm">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
               <label className="grid gap-2">
                 <textarea
-                  className="w-full min-h-[120px] rounded-md border border-bo-border bg-bo-surface-2 text-bo-text p-3 outline-none focus:border-bo-accent resize-none"
+                  className="w-full min-h-[120px] rounded-md border border bg-card-2 text-foreground p-3 outline-none focus:border-accent resize-none"
                   placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
@@ -283,17 +283,17 @@ export default function WebsiteBuilderPage() {
             </div>
           </div>
 
-          <div className="rounded-lg bg-bo-surface shadow-soft p-4">
+          <div className="rounded-lg bg-card shadow-soft p-4">
             <div className="flex items-end justify-between pb-2">
-              <div className="text-bo-sm font-bold text-bo-text">Vista previa</div>
-              <div className="text-bo-xs text-bo-faint">HTML personalizado</div>
+              <div className="text-sm font-bold text-foreground">Vista previa</div>
+              <div className="text-xs text-muted-foreground">HTML personalizado</div>
             </div>
-            <div className="min-h-[200px] p-4 bg-bo-surface-2 rounded-md overflow-auto">
+            <div className="min-h-[200px] p-4 bg-card-2 rounded-md overflow-auto">
               {config?.custom_html ? (
                 <div dangerouslySetInnerHTML={{ __html: config.custom_html }} />
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-bo-muted text-center gap-3">
-                  <p className="text-bo-muted">No hay HTML generado aun</p>
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center gap-3">
+                  <p className="text-muted-foreground">No hay HTML generado aun</p>
                 </div>
               )}
             </div>
@@ -303,25 +303,25 @@ export default function WebsiteBuilderPage() {
 
       {activeTab === "domain" && (
         <section className="mb-6" aria-label="Dominio personalizado">
-          <div className="rounded-lg bg-bo-surface shadow-soft p-4 max-w-2xl">
+          <div className="rounded-lg bg-card shadow-soft p-4 max-w-2xl">
             <div className="flex items-end justify-between pb-2">
-              <div className="text-bo-sm font-bold text-bo-text">Dominio personalizado</div>
-              <div className="text-bo-xs text-bo-faint">Registra un dominio para tu sitio</div>
+              <div className="text-sm font-bold text-foreground">Dominio personalizado</div>
+              <div className="text-xs text-muted-foreground">Registra un dominio para tu sitio</div>
             </div>
             <div className="flex flex-col gap-4 p-4 pt-0">
               {config?.domain ? (
                 <div className="flex flex-col gap-2">
-                  <p className="text-sm text-bo-muted">Dominio activo</p>
-                  <div className="font-semibold text-bo-text text-lg">{config.domain}</div>
+                  <p className="text-sm text-muted-foreground">Dominio activo</p>
+                  <div className="font-semibold text-foreground text-lg">{config.domain}</div>
                 </div>
               ) : (
-                <p className="text-bo-muted">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
+                <p className="text-muted-foreground">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
               )}
 
               <div className="flex gap-2">
                 <input
                   type="text"
-                  className="h-10 rounded-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none flex-1 transition-colors focus:border-bo-accent"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none flex-1 transition-colors focus:border-accent"
                   placeholder="Ej: mirestaurante.com"
                   value={domainQuery}
                   onChange={(e) => setDomainQuery(e.target.value)}
@@ -343,9 +343,9 @@ export default function WebsiteBuilderPage() {
               </div>
 
               {domainResult && (
-                <div className="flex flex-col gap-3 p-4 bg-bo-surface-2 rounded-md">
+                <div className="flex flex-col gap-3 p-4 bg-card-2 rounded-md">
                   <div className="flex items-center justify-between">
-                    <div className="font-semibold text-bo-text">{domainResult.domain}</div>
+                    <div className="font-semibold text-foreground">{domainResult.domain}</div>
                     {domainResult.available ? (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/16 text-green-500 border border-green-500/30">Disponible</span>
                     ) : (
@@ -354,9 +354,9 @@ export default function WebsiteBuilderPage() {
                   </div>
                   {domainResult.available && (
                     <div className="flex items-center justify-between">
-                      <div className="text-bo-muted">
+                      <div className="text-muted-foreground">
                         {domainResult.marked_price.toFixed(2)} {domainResult.currency}
-                        <span className="text-bo-muted"> / ano</span>
+                        <span className="text-muted-foreground"> / ano</span>
                       </div>
                       <Button variant="primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
                         {registeringDomain ? (

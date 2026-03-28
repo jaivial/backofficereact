@@ -70,15 +70,15 @@ export default function Page() {
         <StatCard label="Confirmadas" value={String(m.confirmed)} icon="check" />
         <StatCard label="Pendientes" value={String(m.pending)} icon="clock" />
         <StatCard label="Comensales" value={String(m.totalPeople)} icon="users" />
-        <div className="rounded-md bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-bo-surface-2 border border-white/[0.06] shadow-soft p-[14px_14px_12px] min-h-[88px]" aria-label="Resumen">
+        <div className="rounded-md bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-card-2 border border-white/[0.06] shadow-soft p-[14px_14px_12px] min-h-[88px]" aria-label="Resumen">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm text-bo-muted">Día seleccionado</div>
+            <div className="text-sm text-muted-foreground">Día seleccionado</div>
             <div aria-hidden="true">
-              <div className="rounded-full" style={{ background: "var(--bo-surface-3)", width: 8, height: 8 }} />
+              <div className="rounded-full" style={{ background: "var(--muted)", width: 8, height: 8 }} />
             </div>
           </div>
-          <div className="text-lg text-bo-text font-semibold">{data.date}</div>
-          <div className="text-sm text-bo-muted mt-1">Panel inicial del backoffice. Más módulos se agregan aquí.</div>
+          <div className="text-lg text-foreground font-semibold">{data.date}</div>
+          <div className="text-sm text-muted-foreground mt-1">Panel inicial del backoffice. Más módulos se agregan aquí.</div>
         </div>
       </section>
 

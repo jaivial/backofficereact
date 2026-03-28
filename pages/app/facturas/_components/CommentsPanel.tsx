@@ -226,7 +226,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
       <div className="bo-commentsPanelAdd">
         <div className="bo-commentsPanelAddForm">
           <textarea
-            className="bo-textarea bo-commentsPanelTextarea"
+            className="foregroundarea bo-commentsPanelTextarea"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Añadir un comentario..."
@@ -239,7 +239,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
           />
           <button
             type="button"
-            className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--primary bo-btn--sm bo-commentsPanelSubmit"
+            className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--primary text-sm bo-commentsPanelSubmit"
             onClick={handleAddComment}
             disabled={!newComment.trim() || submitting}
           >
@@ -269,7 +269,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                   // Editing mode
                   <div className="bo-commentEdit">
                     <textarea
-                      className="bo-textarea bo-commentEditTextarea"
+                      className="foregroundarea bo-commentEditTextarea"
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       rows={2}
@@ -277,7 +277,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                     <div className="bo-commentEditActions">
                       <button
                         type="button"
-                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                         onClick={handleCancelEdit}
                         disabled={submitting}
                       >
@@ -286,7 +286,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                       </button>
                       <button
                         type="button"
-                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
                         onClick={() => handleSaveEdit(comment.id)}
                         disabled={!editContent.trim() || submitting}
                       >
@@ -315,7 +315,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                       <div className="bo-commentActions">
                         <button
                           type="button"
-                          className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                          className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                           onClick={() => handleStartEdit(comment)}
                           title="Editar comentario"
                         >
@@ -324,7 +324,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                         </button>
                         <button
                           type="button"
-                          className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
+                          className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bg-transparent text-sm text-danger/80"
                           onClick={() => handleDeleteComment(comment.id)}
                           title="Eliminar comentario"
                         >
@@ -341,7 +341,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
             {hasMoreComments && !showAllComments && (
               <button
                 type="button"
-                className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-commentsPanelShowMore"
+                className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bg-transparent text-sm bo-commentsPanelShowMore"
                 onClick={() => setShowAllComments(true)}
               >
                 Ver {comments.length - 5} comentarios más

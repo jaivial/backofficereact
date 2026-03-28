@@ -109,13 +109,13 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 <Search size={16} className="bo-templateSearchIcon" />
                 <input
                   type="text"
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   placeholder="Buscar plantillas..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
-              <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
+              <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
                 <Plus size={16} />
                 Nueva plantilla
               </button>
@@ -132,7 +132,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 <div className="bo-templateEmpty">
                   <FileText size={48} strokeWidth={1} />
                   <p>{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
-                  <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
+                  <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
                     <Plus size={16} />
                     Crear primera plantilla
                   </button>
@@ -167,14 +167,14 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                     </div>
                     <div className="bo-templateItemActions">
                       <button
-                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                         onClick={(e) => handleEdit(template, e)}
                         title="Editar"
                       >
                         <Edit size={16} />
                       </button>
                       <button
-                        className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
+                        className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bg-transparent text-sm text-danger/80"
                         onClick={(e) => handleDelete(template, e)}
                         title="Eliminar"
                       >
@@ -322,7 +322,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
     <form className="bo-templateForm" onSubmit={handleSubmit}>
       <div className="bo-templateFormHeader">
         <h3>{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
-        <button type="button" className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onCancel}>
+        <button type="button" className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onCancel}>
           <X size={18} />
         </button>
       </div>
@@ -330,9 +330,9 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
       <div className="bo-templateFormBody">
         {/* Template name */}
         <div className="grid gap-2">
-          <label className="text-bo-sm font-semibold text-bo-muted">Nombre de la plantilla *</label>
+          <label className="text-sm font-semibold text-muted-foreground">Nombre de la plantilla *</label>
           <input
-            className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+            className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -346,9 +346,9 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
           <h4>Datos del cliente</h4>
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Nombre *</span>
+              <span className="text-sm font-semibold text-muted-foreground">Nombre *</span>
               <input
-                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -356,54 +356,54 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
               />
             </label>
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Apellidos</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerSurname} onChange={(e) => setCustomerSurname(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">Apellidos</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerSurname} onChange={(e) => setCustomerSurname(e.target.value)} />
             </label>
           </div>
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Email *</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required />
+              <span className="text-sm font-semibold text-muted-foreground">Email *</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required />
             </label>
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Telefono</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
-            </label>
-          </div>
-          <div className="grid gap-4">
-            <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">DNI/CIF</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerDniCif} onChange={(e) => setCustomerDniCif(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">Telefono</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
             </label>
           </div>
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Calle</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">DNI/CIF</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerDniCif} onChange={(e) => setCustomerDniCif(e.target.value)} />
+            </label>
+          </div>
+          <div className="grid gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-muted-foreground">Calle</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} />
             </label>
             <label className="grid gap-2 max-w-[100px]">
-              <span className="text-bo-sm font-semibold text-bo-muted">Numero</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">Numero</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} />
             </label>
           </div>
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Codigo Postal</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressPostalCode} onChange={(e) => setCustomerAddressPostalCode(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">Codigo Postal</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressPostalCode} onChange={(e) => setCustomerAddressPostalCode(e.target.value)} />
             </label>
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Localidad</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressCity} onChange={(e) => setCustomerAddressCity(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">Localidad</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressCity} onChange={(e) => setCustomerAddressCity(e.target.value)} />
             </label>
           </div>
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Provincia</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressProvince} onChange={(e) => setCustomerAddressProvince(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">Provincia</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressProvince} onChange={(e) => setCustomerAddressProvince(e.target.value)} />
             </label>
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Pais</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressCountry} onChange={(e) => setCustomerAddressCountry(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">Pais</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={customerAddressCountry} onChange={(e) => setCustomerAddressCountry(e.target.value)} />
             </label>
           </div>
         </div>
@@ -413,9 +413,9 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
           <h4>Valores por defecto</h4>
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Importe</span>
+              <span className="text-sm font-semibold text-muted-foreground">Importe</span>
               <input
-                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                 type="number"
                 step="0.01"
                 min="0"
@@ -425,14 +425,14 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
               />
             </label>
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">IVA (%)</span>
-              <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="number" step="0.1" min="0" max="100" value={defaultIvaRate} onChange={(e) => setDefaultIvaRate(e.target.value)} />
+              <span className="text-sm font-semibold text-muted-foreground">IVA (%)</span>
+              <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="number" step="0.1" min="0" max="100" value={defaultIvaRate} onChange={(e) => setDefaultIvaRate(e.target.value)} />
             </label>
           </div>
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Metodo de pago</span>
-              <select className="h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer" value={defaultPaymentMethod} onChange={(e) => setDefaultPaymentMethod(e.target.value as PaymentMethod | "")}>
+              <span className="text-sm font-semibold text-muted-foreground">Metodo de pago</span>
+              <select className="h-10 rounded-sm border border bg-card-2 text-foreground px-3 cursor-pointer" value={defaultPaymentMethod} onChange={(e) => setDefaultPaymentMethod(e.target.value as PaymentMethod | "")}>
                 <option value="">Seleccionar...</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
@@ -443,8 +443,8 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
             </label>
           </div>
           <div className="grid gap-2">
-            <label className="text-bo-sm font-semibold text-bo-muted">Notas</label>
-            <textarea className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." />
+            <label className="text-sm font-semibold text-muted-foreground">Notas</label>
+            <textarea className="min-h-[80px] rounded-md border border bg-white/5 text-foreground p-3 outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." />
           </div>
         </div>
 
@@ -456,10 +456,10 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
       </div>
 
       <div className="bo-templateFormActions">
-        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={onCancel} disabled={saving}>
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={onCancel} disabled={saving}>
           Cancelar
         </button>
-        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" disabled={saving}>
+        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" disabled={saving}>
           {saving ? (
             <>
               <Loader2 size={16} className="bo-spin bo-spin--sm" />

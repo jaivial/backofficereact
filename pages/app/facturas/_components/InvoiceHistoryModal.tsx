@@ -114,13 +114,13 @@ export function InvoiceHistoryModal({
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bo-modal-content bo-historyModal" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-4 border-b border-bo-border">
-          <div className="text-lg font-semibold text-bo-text">
+        <div className="flex items-center justify-between p-4 border-b border">
+          <div className="text-lg font-semibold text-foreground">
             <History size={20} />
             <span>Historial de cambios</span>
           </div>
           <button
-            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             aria-label="Cerrar"
           >

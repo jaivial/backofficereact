@@ -407,8 +407,8 @@ export default function Page() {
         <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir">
           <div className="flex flex-1 flex-col">
             <div className="mx-auto w-full">
-              <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-4">
-                <div className="rounded-bo-lg bg-gradient-to-b from-white/[0.03] to-black/[0.10] shadow-soft border-none">
+              <div className="rounded-lg border border bg-card p-4">
+                <div className="rounded-lg bg-gradient-to-b from-white/[0.03] to-black/[0.10] shadow-soft border-none">
                   <InvoiceForm
                     invoice={editingInvoice}
                     onSave={handleSaveInvoice}

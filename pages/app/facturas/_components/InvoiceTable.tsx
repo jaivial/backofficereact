@@ -80,10 +80,10 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 
 const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; style: React.CSSProperties }> = {
   borrador: { label: "Borrador", style: { backgroundColor: "color-mix(in srgb, var(--text-faint) 20%, transparent)", color: "var(--text-muted)" } },
-  solicitada: { label: "Solicitada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
-  pendiente: { label: "Pendiente", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
-  enviada: { label: "Enviada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
-  pagada: { label: "Pagada", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
+  solicitada: { label: "Solicitada", style: { backgroundColor: "color-mix(in srgb, var(--text-warning) 20%, transparent)", color: "var(--text-warning)" } },
+  pendiente: { label: "Pendiente", style: { backgroundColor: "color-mix(in srgb, var(--text-info) 20%, transparent)", color: "var(--text-info)" } },
+  enviada: { label: "Enviada", style: { backgroundColor: "color-mix(in srgb, var(--text-success) 20%, transparent)", color: "var(--text-success)" } },
+  pagada: { label: "Pagada", style: { backgroundColor: "color-mix(in srgb, var(--text-success) 20%, transparent)", color: "var(--text-success)" } },
 };
 
 const ALL_STATUSES: InvoiceStatus[] = ["borrador", "solicitada", "pendiente", "enviada", "pagada"];
@@ -129,7 +129,7 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
 
 function ReservationBadge({ isReservation }: { isReservation: boolean }) {
   return (
-    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={isReservation ? { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } : { backgroundColor: "color-mix(in srgb, var(--text-faint) 20%, transparent)", color: "var(--text-muted)" }}>
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={isReservation ? { backgroundColor: "color-mix(in srgb, var(--text-info) 20%, transparent)", color: "var(--text-info)" } : { backgroundColor: "color-mix(in srgb, var(--text-faint) 20%, transparent)", color: "var(--text-muted)" }}>
       {isReservation ? "Reserva" : "Sin reserva"}
     </span>
   );
@@ -140,25 +140,25 @@ function SplitBadge({ isSplitChild, isSplitParent, percentage }: { isSplitChild?
 
   if (isSplitChild) {
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" }} title={`Factura分裂 - Porcentaje: ${percentage || 0}%`}>
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--text-warning) 20%, transparent)", color: "var(--text-warning)" }} title={`Factura分裂 - Porcentaje: ${percentage || 0}%`}>
         Factura分裂
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" }} title="Factura dividida">
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--text-info) 20%, transparent)", color: "var(--text-info)" }} title="Factura dividida">
      分裂 padre
     </span>
   );
 }
 
 const CATEGORY_CONFIG: Record<InvoiceCategory, { label: string; style: React.CSSProperties }> = {
-  reserva: { label: "Reserva", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
-  productos: { label: "Productos", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 20%, transparent)", color: "var(--bo-color-success)" } },
-  servicios: { label: "Servicios", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
+  reserva: { label: "Reserva", style: { backgroundColor: "color-mix(in srgb, var(--text-info) 20%, transparent)", color: "var(--text-info)" } },
+  productos: { label: "Productos", style: { backgroundColor: "color-mix(in srgb, var(--text-success) 20%, transparent)", color: "var(--text-success)" } },
+  servicios: { label: "Servicios", style: { backgroundColor: "color-mix(in srgb, var(--text-warning) 20%, transparent)", color: "var(--text-warning)" } },
   otros: { label: "Otros", style: { backgroundColor: "color-mix(in srgb, var(--text-faint) 20%, transparent)", color: "var(--text-muted)" } },
-  nota_credito: { label: "Nota de credito", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
+  nota_credito: { label: "Nota de credito", style: { backgroundColor: "color-mix(in srgb, var(--text-warning) 20%, transparent)", color: "var(--text-warning)" } },
 };
 
 function CategoryBadge({ category }: { category?: InvoiceCategory }) {
@@ -171,7 +171,7 @@ function CreditNoteBadge({ invoice }: { invoice: Invoice }) {
   if (!invoice.is_credit_note) return null;
   return (
     <div className="flex flex-col gap-1">
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" }} title="Nota de credito">
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--text-warning) 20%, transparent)", color: "var(--text-warning)" }} title="Nota de credito">
         Nota de credito
       </span>
       {invoice.original_invoice_number && (
@@ -184,8 +184,8 @@ function CreditNoteBadge({ invoice }: { invoice: Invoice }) {
 }
 
 const DEPOSIT_CONFIG: Record<InvoiceDepositType, { label: string; style: React.CSSProperties }> = {
-  advance: { label: "Anticipo", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 20%, transparent)", color: "var(--bo-color-info)" } },
-  deposit: { label: "Seña", style: { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 20%, transparent)", color: "var(--bo-color-warning)" } },
+  advance: { label: "Anticipo", style: { backgroundColor: "color-mix(in srgb, var(--text-info) 20%, transparent)", color: "var(--text-info)" } },
+  deposit: { label: "Seña", style: { backgroundColor: "color-mix(in srgb, var(--text-warning) 20%, transparent)", color: "var(--text-warning)" } },
 };
 
 function DepositBadge({ invoice }: { invoice: Invoice }) {
@@ -239,13 +239,13 @@ function PaymentProgressCell({ invoice }: { invoice: Invoice }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <span className={`text-xs ${isFullyPaid ? "" : ""}`} style={isFullyPaid ? { color: "var(--bo-color-success)" } : {}}>
+      <span className={`text-xs ${isFullyPaid ? "" : ""}`} style={isFullyPaid ? { color: "var(--text-success)" } : {}}>
         {formatPrice(paidAmount, invoice.currency)} / {formatPrice(totalAmount, invoice.currency)}
       </span>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
         <div
           className="h-full transition-all duration-300"
-          style={{ width: `${Math.min(percentPaid, 100)}%`, backgroundColor: isFullyPaid ? "var(--bo-color-success)" : "var(--bo-accent)" }}
+          style={{ width: `${Math.min(percentPaid, 100)}%`, backgroundColor: isFullyPaid ? "var(--text-success)" : "var(--accent)" }}
         />
       </div>
     </div>
@@ -350,7 +350,7 @@ function TableSkeleton() {
           </tbody>
         </table>
       </div>
-      <div className="flex justify-center" style={{ padding: "var(--bo-space-4) 0" }}>
+      <div className="flex justify-center" style={{ padding: "var(--gap-4) 0" }}>
         <div className="text-sm text-muted-foreground" aria-live="polite">
           <span className="inline-block w-[100px] animate-pulse rounded bg-muted h-4" />
           <span className="sr-only">Cargando...</span>
@@ -724,7 +724,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onChange={handleSelectAll}
                         aria-label={allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
                       />
-                      <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all"></span>
+                      <span className="w-5 h-5 rounded border-2 border bg-background-primary flex items-center justify-center transition-all"></span>
                     </label>
                   ) : "sortField" in col && col.sortable ? (
                     <SortableHeader
@@ -749,7 +749,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               const daysOverdue = isOverdue ? getDaysOverdue(effectiveDueDate) : 0;
 
               return (
-              <tr key={invoice.id} className={`border-b border-bo-border hover:bg-white/[0.02]${selectedIds.has(invoice.id) ? " bg-[var(--bo-bg-selected)]" : ""}${isOverdue ? " bg-[rgba(239,68,68,0.08)]" : ""}`}>
+              <tr key={invoice.id} className={`border-b border hover:bg-white/[0.02]${selectedIds.has(invoice.id) ? " bg-[var(--background-selected)]" : ""}${isOverdue ? " bg-[rgba(239,68,68,0.08)]" : ""}`}>
                 <td className={`col-selection`} data-label="">
                   <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
@@ -758,7 +758,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onChange={() => handleToggleSelect(invoice.id)}
                       aria-label={`Seleccionar factura ${invoice.invoice_number || invoice.id}`}
                     />
-                    <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all"></span>
+                    <span className="w-5 h-5 rounded border-2 border bg-background-primary flex items-center justify-center transition-all"></span>
                   </label>
                 </td>
                 <td className={`col-invoice_number`} data-label="N. Factura">
@@ -782,7 +782,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 <td className={`col-customer_email`} data-label="Email">{invoice.customer_email}</td>
                 <td className={`col-amount`} data-label="Importe">{formatPrice(invoice.amount, invoice.currency)}</td>
                 <td className={`col-currency`} data-label="Moneda">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bg-white/[0.06] text-bo-muted border-bo-border">{invoice.currency || "EUR"}</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/[0.06] text-muted-foreground border">{invoice.currency || "EUR"}</span>
                 </td>
                 <td className={`col-payment_progress`} data-label="Pagado">
                   <PaymentProgressCell invoice={invoice} />
@@ -875,7 +875,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                   ) : null}
                 </td>
                 <td className={`col-actions`}>
-                  <div className="bo-tableActions">
+                  <div className="flex gap-1 items-center">
                     <button
                       className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted"
                       type="button"
@@ -1025,7 +1025,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       </button>
                     )}
                     <button
-                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted bo-btn--danger"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-muted text-danger/80"
                       type="button"
                       onClick={() => onDelete(invoice)}
                       aria-label={`Eliminar factura ${invoice.id}`}
@@ -1039,7 +1039,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               );
             })}
           </tbody>
-          <tfoot className="bo-tableFooter">
+          <tfoot className="border-t-2 border-border bg-gradient-to-b from-white/[0.08] to-black/[0.15]">
             <tr>
               <td className="col-selection" data-label=""></td>
               <td className="col-invoice_number" data-label="N. Factura">
@@ -1067,16 +1067,16 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
           </tfoot>
         </table>
       </div>
-      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación">
-        <div className="bo-pagerText">
+        <div className="flex items-center justify-between gap-2.5 p-4 border-t border-border text-xs text-muted-foreground" aria-label="Paginación">
+        <div className="text-muted-foreground">
           Página {page} de {totalPages} · {total} resultados
         </div>
         {showPagerBtns ? (
-          <div className="bo-pagerBtns">
-            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => onPageChange(page - 1)} disabled={loading || page <= 1}>
+          <div className="flex gap-2">
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => onPageChange(page - 1)} disabled={loading || page <= 1}>
               Anterior
             </button>
-            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => onPageChange(page + 1)} disabled={loading || page >= totalPages}>
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => onPageChange(page + 1)} disabled={loading || page >= totalPages}>
               Siguiente
             </button>
           </div>

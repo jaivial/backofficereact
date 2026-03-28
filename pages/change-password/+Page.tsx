@@ -59,9 +59,9 @@ export default function Page() {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bo-bg">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-[380px] max-w-[calc(100%-32px)]">
-        <div className="rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-bo-surface-2 border border-border shadow-soft p-[18px]">
+        <div className="rounded-lg bg-gradient-to-b from-white/[0.04] to-black/[0.10] bg-card-2 border border-border shadow-soft p-[18px]">
           <div className="text-xl font-semibold leading-tight tracking-tight">Actualizar password</div>
           <div className="text-xs text-muted-foreground mt-1.5">
             Debes establecer una nueva password para continuar.
@@ -79,7 +79,7 @@ export default function Page() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-10 rounded-xl border border-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors duration-150 focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                className="h-10 rounded-xl border border-border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors duration-150 focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                 placeholder="Nueva password"
               />
             </div>
@@ -95,7 +95,7 @@ export default function Page() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="h-10 rounded-xl border border-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors duration-150 focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                className="h-10 rounded-xl border border-border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors duration-150 focus:border-primary/40 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                 placeholder="Repetir password"
               />
             </div>
@@ -103,7 +103,7 @@ export default function Page() {
             <button
               type="submit"
               disabled={busy}
-              className="h-10 w-full rounded-xl border border-primary/30 bg-primary/20 text-bo-text font-bold inline-flex items-center justify-center cursor-pointer disabled:opacity-55 disabled:cursor-not-allowed"
+              className="h-10 w-full rounded-xl border border-primary/30 bg-primary/20 text-foreground font-bold inline-flex items-center justify-center cursor-pointer disabled:opacity-55 disabled:cursor-not-allowed"
             >
               {busy ? "Guardando..." : "Confirmar"}
             </button>

@@ -949,7 +949,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         <div className="bo-invoiceFormHeaderActions">
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={handleOpenReservationFromTemplate}
           >
             <Search size={16} />
@@ -957,7 +957,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           </button>
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={() => setShowTemplateModal(true)}
           >
             <FileText size={16} />
@@ -970,13 +970,13 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         <div className="bo-invoiceFormTopGrid">
           {/* Customer info section */}
           <div className="mb-4">
-            <h3 className="text-bo-base font-semibold text-bo-text mb-3">Datos del cliente</h3>
+            <h3 className="text-base font-semibold text-foreground mb-3">Datos del cliente</h3>
 
             <div className="grid gap-4">
               <label className={`flex flex-col gap-1 ${hasError("customerName") ? "border-red-400 rounded-xl border p-1" : ""}`}>
-                <span className="text-bo-sm font-semibold text-bo-muted">Nombre *</span>
+                <span className="text-sm font-semibold text-muted-foreground">Nombre *</span>
                 <input
-                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerName") ? "border-red-400" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-accent focus:bg-white/[0.05] ${hasError("customerName") ? "border-red-400" : ""}`}
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
@@ -986,16 +986,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerName")}
                 />
                 {hasError("customerName") && (
-                  <span className="text-bo-xs text-bo-danger mt-2" id="customerName-error" role="alert">
+                  <span className="text-xs text-destructive mt-2" id="customerName-error" role="alert">
                     {getError("customerName")}
                   </span>
                 )}
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Apellidos</span>
+                <span className="text-sm font-semibold text-muted-foreground">Apellidos</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerSurname}
                   onChange={(e) => setCustomerSurname(e.target.value)}
@@ -1005,9 +1005,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             <div className="grid gap-4">
               <label className={`flex flex-col gap-1 ${hasError("customerEmail") ? "border-red-400 rounded-xl border p-1" : ""}`}>
-                <span className="text-bo-sm font-semibold text-bo-muted">Email *</span>
+                <span className="text-sm font-semibold text-muted-foreground">Email *</span>
                 <input
-                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerEmail") ? "border-red-400" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-accent focus:bg-white/[0.05] ${hasError("customerEmail") ? "border-red-400" : ""}`}
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
@@ -1017,16 +1017,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerEmail")}
                 />
                 {hasError("customerEmail") && (
-                  <span className="text-bo-xs text-bo-danger mt-2" id="customerEmail-error" role="alert">
+                  <span className="text-xs text-destructive mt-2" id="customerEmail-error" role="alert">
                     {getError("customerEmail")}
                   </span>
                 )}
               </label>
 
               <label className={`flex flex-col gap-1 ${hasError("customerPhone") ? "border-red-400 rounded-xl border p-1" : ""}`}>
-                <span className="text-bo-sm font-semibold text-bo-muted">Teléfono</span>
+                <span className="text-sm font-semibold text-muted-foreground">Teléfono</span>
                 <input
-                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerPhone") ? "border-red-400" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-accent focus:bg-white/[0.05] ${hasError("customerPhone") ? "border-red-400" : ""}`}
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
@@ -1035,7 +1035,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerPhone")}
                 />
                 {hasError("customerPhone") && (
-                  <span className="text-bo-xs text-bo-danger mt-2" id="customerPhone-error" role="alert">
+                  <span className="text-xs text-destructive mt-2" id="customerPhone-error" role="alert">
                     {getError("customerPhone")}
                   </span>
                 )}
@@ -1044,15 +1044,15 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             <div className="grid gap-4 bo-invoiceFormRow--dni">
               <div className="flex flex-row items-center gap-3">
-                <span className="text-bo-sm font-semibold text-bo-muted">CIF</span>
+                <span className="text-sm font-semibold text-muted-foreground">CIF</span>
                 <Switch checked={useDni} onCheckedChange={setUseDni} />
-                <span className="text-bo-sm font-semibold text-bo-muted">DNI</span>
+                <span className="text-sm font-semibold text-muted-foreground">DNI</span>
               </div>
 
               <label className={`flex flex-col gap-1 ${hasError("customerDniCif") ? "border-red-400 rounded-xl border p-1" : ""}`}>
-                <span className="text-bo-sm font-semibold text-bo-muted">{useDni ? "DNI" : "CIF"}</span>
+                <span className="text-sm font-semibold text-muted-foreground">{useDni ? "DNI" : "CIF"}</span>
                 <input
-                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerDniCif") ? "border-red-400" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-accent focus:bg-white/[0.05] ${hasError("customerDniCif") ? "border-red-400" : ""}`}
                   type="text"
                   value={customerDniCif}
                   onChange={(e) => setCustomerDniCif(e.target.value)}
@@ -1061,7 +1061,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerDniCif")}
                 />
                 {hasError("customerDniCif") && (
-                  <span className="text-bo-xs text-bo-danger mt-2" id="customerDniCif-error" role="alert">
+                  <span className="text-xs text-destructive mt-2" id="customerDniCif-error" role="alert">
                     {getError("customerDniCif")}
                   </span>
                 )}
@@ -1070,9 +1070,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             <div className="grid gap-4">
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Calle</span>
+                <span className="text-sm font-semibold text-muted-foreground">Calle</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressStreet}
                   onChange={(e) => setCustomerAddressStreet(e.target.value)}
@@ -1080,9 +1080,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </label>
 
               <label className="grid gap-2 max-w-[100px]">
-                <span className="text-bo-sm font-semibold text-bo-muted">Número</span>
+                <span className="text-sm font-semibold text-muted-foreground">Número</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressNumber}
                   onChange={(e) => setCustomerAddressNumber(e.target.value)}
@@ -1092,9 +1092,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             <div className="grid gap-4">
               <label className={`flex flex-col gap-1 ${hasError("customerAddressPostalCode") ? "border-red-400 rounded-xl border p-1" : ""}`}>
-                <span className="text-bo-sm font-semibold text-bo-muted">Código Postal</span>
+                <span className="text-sm font-semibold text-muted-foreground">Código Postal</span>
                 <input
-                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("customerAddressPostalCode") ? "border-red-400" : ""}`}
+                  className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-accent focus:bg-white/[0.05] ${hasError("customerAddressPostalCode") ? "border-red-400" : ""}`}
                   type="text"
                   value={customerAddressPostalCode}
                   onChange={(e) => setCustomerAddressPostalCode(e.target.value)}
@@ -1103,16 +1103,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   aria-invalid={hasError("customerAddressPostalCode")}
                 />
                 {hasError("customerAddressPostalCode") && (
-                  <span className="text-bo-xs text-bo-danger mt-2" id="customerAddressPostalCode-error" role="alert">
+                  <span className="text-xs text-destructive mt-2" id="customerAddressPostalCode-error" role="alert">
                     {getError("customerAddressPostalCode")}
                   </span>
                 )}
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Localidad</span>
+                <span className="text-sm font-semibold text-muted-foreground">Localidad</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressCity}
                   onChange={(e) => setCustomerAddressCity(e.target.value)}
@@ -1122,9 +1122,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             <div className="grid gap-4">
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Provincia</span>
+                <span className="text-sm font-semibold text-muted-foreground">Provincia</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressProvince}
                   onChange={(e) => setCustomerAddressProvince(e.target.value)}
@@ -1132,9 +1132,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">País</span>
+                <span className="text-sm font-semibold text-muted-foreground">País</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="text"
                   value={customerAddressCountry}
                   onChange={(e) => setCustomerAddressCountry(e.target.value)}
@@ -1145,20 +1145,20 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* Invoice info section */}
           <div className="mb-4">
-            <h3 className="text-bo-base font-semibold text-bo-text mb-3">Datos de la factura</h3>
+            <h3 className="text-base font-semibold text-foreground mb-3">Datos de la factura</h3>
 
             {/* Invoice Number Override */}
             <div className="grid gap-4 bo-invoiceFormRow--invoiceNumber">
               <div className="flex flex-row items-center gap-3">
                 <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} />
-                <span className="text-bo-sm font-semibold text-bo-muted">Personalizar numero de factura</span>
+                <span className="text-sm font-semibold text-muted-foreground">Personalizar numero de factura</span>
               </div>
 
               {overrideInvoiceNumber && (
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Numero de factura</span>
+                  <span className="text-sm font-semibold text-muted-foreground">Numero de factura</span>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     type="text"
                     value={invoiceNumber}
                     onChange={(e) => setInvoiceNumber(e.target.value)}
@@ -1170,8 +1170,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
               {!overrideInvoiceNumber && invoice && invoice.invoice_number && (
                 <div className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Numero de factura (automatico)</span>
-                  <div className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" style={{ backgroundColor: "var(--bo-bg-muted)", fontFamily: "monospace", fontWeight: 600 }}>
+                  <span className="text-sm font-semibold text-muted-foreground">Numero de factura (automatico)</span>
+                  <div className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" style={{ backgroundColor: "var(--background-muted)", fontFamily: "monospace", fontWeight: 600 }}>
                     {invoice.invoice_number}
                   </div>
                 </div>
@@ -1181,7 +1181,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <div className="grid gap-4">
               <div className="flex flex-row items-center gap-3">
                 <Switch checked={useLineItems} onCheckedChange={setUseLineItems} />
-                <span className="text-bo-sm font-semibold text-bo-muted"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
+                <span className="text-sm font-semibold text-muted-foreground"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
               </div>
             </div>
 
@@ -1196,7 +1196,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   disabled={isSubmitting}
                 />
                 {errors.lineItems && (
-                  <span className="text-bo-xs text-bo-danger mt-2" role="alert">
+                  <span className="text-xs text-destructive mt-2" role="alert">
                     {errors.lineItems}
                   </span>
                 )}
@@ -1204,9 +1204,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             ) : (
               <div className="grid gap-4">
                 <label className={`flex flex-col gap-1 ${hasError("amount") ? "border-red-400 rounded-xl border p-1" : ""}`}>
-                  <span className="text-bo-sm font-semibold text-bo-muted">Importe *</span>
+                  <span className="text-sm font-semibold text-muted-foreground">Importe *</span>
                   <input
-                    className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-bo-accent focus:bg-white/[0.05] ${hasError("amount") ? "border-red-400" : ""}`}
+                    className={`h-10 px-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground outline-none transition-colors hover:border-white/[0.09] hover:bg-white/[0.05] focus:border-accent focus:bg-white/[0.05] ${hasError("amount") ? "border-red-400" : ""}`}
                     type="number"
                     step="0.01"
                     min="0"
@@ -1218,14 +1218,14 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     aria-invalid={hasError("amount")}
                   />
                   {hasError("amount") && (
-                    <span className="text-bo-xs text-bo-danger mt-2" id="amount-error" role="alert">
+                    <span className="text-xs text-destructive mt-2" id="amount-error" role="alert">
                       {getError("amount")}
                     </span>
                   )}
                 </label>
 
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Moneda</span>
+                  <span className="text-sm font-semibold text-muted-foreground">Moneda</span>
                   <Select
                     value={currency}
                     onChange={(value) => setCurrency(value as CurrencyCode)}
@@ -1235,9 +1235,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 </label>
 
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">IVA (%)</span>
+                  <span className="text-sm font-semibold text-muted-foreground">IVA (%)</span>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     step="0.1"
                     min="0"
@@ -1249,7 +1249,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 </label>
 
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Método de pago</span>
+                  <span className="text-sm font-semibold text-muted-foreground">Método de pago</span>
                   <Select
                     value={paymentMethod}
                     onChange={(value) => setPaymentMethod(value as PaymentMethod | "")}
@@ -1263,7 +1263,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             {/* Discount Section */}
             <div className="grid gap-4">
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Tipo de descuento</span>
+                <span className="text-sm font-semibold text-muted-foreground">Tipo de descuento</span>
                 <Select
                   value={discountType}
                   onChange={(value) => setDiscountType(value as "percentage" | "fixed" | "")}
@@ -1279,9 +1279,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               {discountType && (
                 <>
                   <label className="grid gap-2">
-                    <span className="text-bo-sm font-semibold text-bo-muted">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
+                    <span className="text-sm font-semibold text-muted-foreground">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
                     <input
-                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                      className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                       type="number"
                       step="0.01"
                       min="0"
@@ -1292,9 +1292,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   </label>
 
                   <label className="grid gap-2">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Razon del descuento</span>
+                    <span className="text-sm font-semibold text-muted-foreground">Razon del descuento</span>
                     <input
-                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                      className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                       type="text"
                       value={discountReason}
                       onChange={(e) => setDiscountReason(e.target.value)}
@@ -1310,21 +1310,21 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               <div className="bo-ivaSummary">
                 {discountAmount > 0 && (
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-bo-xs text-bo-muted">Descuento</span>
-                    <span className="text-bo-base font-semibold text-bo-text" style={{ color: "var(--bo-color-success)" }}>-{discountAmount.toFixed(2)} {currencySymbol}</span>
+                    <span className="text-xs text-muted-foreground">Descuento</span>
+                    <span className="text-base font-semibold text-foreground" style={{ color: "var(--text-success)" }}>-{discountAmount.toFixed(2)} {currencySymbol}</span>
                   </div>
                 )}
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-bo-xs text-bo-muted">Base imponible</span>
-                  <span className="text-bo-base font-semibold text-bo-text">{baseAmount.toFixed(2)} {currencySymbol}</span>
+                  <span className="text-xs text-muted-foreground">Base imponible</span>
+                  <span className="text-base font-semibold text-foreground">{baseAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-bo-xs text-bo-muted">IVA ({ivaRateValue}%)</span>
-                  <span className="text-bo-base font-semibold text-bo-text">{ivaAmount.toFixed(2)} {currencySymbol}</span>
+                  <span className="text-xs text-muted-foreground">IVA ({ivaRateValue}%)</span>
+                  <span className="text-base font-semibold text-foreground">{ivaAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
                 <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                  <span className="text-bo-xs text-bo-muted">Total</span>
-                  <span className="text-bo-base font-semibold text-bo-text">{totalAmount.toFixed(2)} {currencySymbol}</span>
+                  <span className="text-xs text-muted-foreground">Total</span>
+                  <span className="text-base font-semibold text-foreground">{totalAmount.toFixed(2)} {currencySymbol}</span>
                 </div>
               </div>
             </div>
@@ -1334,16 +1334,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               <div className="grid gap-4 bo-invoiceFormRow--iva" id="payment-help">
                 <div className="bo-ivaSummary">
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-bo-xs text-bo-muted">Importe total</span>
-                    <span className="text-bo-base font-semibold text-bo-text">{(invoice.total || invoice.amount).toFixed(2)} {currencySymbol}</span>
+                    <span className="text-xs text-muted-foreground">Importe total</span>
+                    <span className="text-base font-semibold text-foreground">{(invoice.total || invoice.amount).toFixed(2)} {currencySymbol}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-bo-xs text-bo-muted">Pagado</span>
-                    <span className="text-bo-base font-semibold text-bo-text" style={{ color: 'var(--bo-color-success)' }}>{(invoice.paid_amount || 0).toFixed(2)} {currencySymbol}</span>
+                    <span className="text-xs text-muted-foreground">Pagado</span>
+                    <span className="text-base font-semibold text-foreground" style={{ color: 'var(--text-success)' }}>{(invoice.paid_amount || 0).toFixed(2)} {currencySymbol}</span>
                   </div>
                   <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                    <span className="text-bo-xs text-bo-muted">Pendiente</span>
-                    <span className="text-bo-base font-semibold text-bo-text" style={{ color: ((invoice.total || invoice.amount) - (invoice.paid_amount || 0) <= 0) ? 'var(--bo-color-success)' : 'var(--bo-color-warning)' }}>
+                    <span className="text-xs text-muted-foreground">Pendiente</span>
+                    <span className="text-base font-semibold text-foreground" style={{ color: ((invoice.total || invoice.amount) - (invoice.paid_amount || 0) <= 0) ? 'var(--text-success)' : 'var(--text-warning)' }}>
                       {Math.max(0, ((invoice.total || invoice.amount) - (invoice.paid_amount || 0))).toFixed(2)} {currencySymbol}
                     </span>
                   </div>
@@ -1353,12 +1353,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             <div className="grid gap-4 bo-invoiceFormRow--invoiceDates">
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Fecha de factura *</span>
+                <span className="text-sm font-semibold text-muted-foreground">Fecha de factura *</span>
                 <DatePicker value={invoiceDate} onChange={setInvoiceDate} />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Plazo de pago</span>
+                <span className="text-sm font-semibold text-muted-foreground">Plazo de pago</span>
                 <Select
                   value={paymentTerms}
                   onChange={(value) => setPaymentTerms(value)}
@@ -1368,12 +1368,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Fecha de vencimiento</span>
+                <span className="text-sm font-semibold text-muted-foreground">Fecha de vencimiento</span>
                 <DatePicker value={dueDate} onChange={setDueDate} />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Fecha de pago</span>
+                <span className="text-sm font-semibold text-muted-foreground">Fecha de pago</span>
                 <DatePicker value={paymentDate} onChange={setPaymentDate} />
               </label>
             </div>
@@ -1384,11 +1384,11 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
         {/* Invoice state and settings */}
         <div className="mb-4">
-          <h3 className="text-bo-base font-semibold text-bo-text mb-3">Estado y configuración</h3>
+          <h3 className="text-base font-semibold text-foreground mb-3">Estado y configuración</h3>
 
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Estado</span>
+              <span className="text-sm font-semibold text-muted-foreground">Estado</span>
               <Select
                 value={status}
                 onChange={(value) => setStatus(value as InvoiceStatus)}
@@ -1401,26 +1401,26 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           <div className="grid gap-4">
             <label className="flex flex-row items-center gap-3">
               <Switch checked={isReservation} onCheckedChange={handleReservationToggle} />
-              <span className="text-bo-sm font-semibold text-bo-muted">Es reserva</span>
+              <span className="text-sm font-semibold text-muted-foreground">Es reserva</span>
             </label>
           </div>
 
           {isReservation && (
             <div className="grid gap-4 bo-invoiceFormRow--reservation">
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Nombre reserva</span>
-                <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" type="text" value={reservationCustomerName || ""} readOnly />
+                <span className="text-sm font-semibold text-muted-foreground">Nombre reserva</span>
+                <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" type="text" value={reservationCustomerName || ""} readOnly />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Fecha reserva</span>
+                <span className="text-sm font-semibold text-muted-foreground">Fecha reserva</span>
                 <DatePicker value={reservationDate} onChange={setReservationDate} />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-bo-sm font-semibold text-bo-muted">Personas</span>
+                <span className="text-sm font-semibold text-muted-foreground">Personas</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="number"
                   min="1"
                   value={reservationPartySize || ""}
@@ -1433,7 +1433,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {/* Image upload */}
           <div className="grid gap-4 bo-invoiceFormRow--image">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Imagen de la cuenta</span>
+              <span className="text-sm font-semibold text-muted-foreground">Imagen de la cuenta</span>
               <div className="bo-invoiceImageUpload">
                 {accountImageUrl ? (
                   <div className="bo-invoiceImagePreview">
@@ -1461,12 +1461,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {/* Internal notes */}
           <div className="grid gap-4 bo-invoiceFormRow--notes">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Notas internas</span>
+              <span className="text-sm font-semibold text-muted-foreground">Notas internas</span>
               <span className="text-mutedText" style={{ marginBottom: "4px", display: "block" }}>
                 Estas notas solo son visibles en el backoffice y no se incluyen en el PDF
               </span>
               <textarea
-                className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
+                className="min-h-[80px] rounded-md border border bg-white/5 text-foreground p-3 outline-none"
                 value={internalNotes}
                 onChange={(e) => setInternalNotes(e.target.value)}
                 placeholder="Añade notas internas sobre esta factura..."
@@ -1478,7 +1478,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {/* PDF Template Selector */}
           <div className="grid gap-4 bo-invoiceFormRow--pdfTemplate">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Plantilla PDF</span>
+              <span className="text-sm font-semibold text-muted-foreground">Plantilla PDF</span>
               <div className="bo-pdfTemplateOptions bo-pdfTemplateOptions--inline">
                 {PDF_TEMPLATE_OPTIONS.map((template) => (
                   <label
@@ -1508,7 +1508,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {/* Category and Tags */}
           <div className="grid gap-4 bo-invoiceFormRow--category">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Categoría</span>
+              <span className="text-sm font-semibold text-muted-foreground">Categoría</span>
               <Select
                 value={category}
                 onChange={(value) => setCategory(value as InvoiceCategory | "")}
@@ -1524,7 +1524,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {/* Tags */}
           <div className="grid gap-4 bo-invoiceFormRow--tags">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Etiquetas</span>
+              <span className="text-sm font-semibold text-muted-foreground">Etiquetas</span>
               <div className="bo-tagsInput">
                 <div className="bo-tagsList">
                   {tags.map((tag, index) => (
@@ -1543,7 +1543,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 </div>
                 <div className="bo-tagInputWrapper">
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     type="text"
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
@@ -1562,7 +1562,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   />
                   <button
                     type="button"
-                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                     onClick={() => {
                       if (newTag.trim() && !tags.includes(newTag.trim())) {
                         setTags([...tags, newTag.trim()]);
@@ -1582,7 +1582,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {/* Deposit Tracking Section */}
           <div className="grid gap-4 bo-invoiceFormRow--deposit">
             <label className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">Tipo de anticipo/seña</span>
+              <span className="text-sm font-semibold text-muted-foreground">Tipo de anticipo/seña</span>
               <Select
                 value={depositType}
                 onChange={(value) => setDepositType(value as InvoiceDepositType | "")}
@@ -1599,9 +1599,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <>
               <div className="grid gap-4 bo-invoiceFormRow--deposit">
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Importe del anticipo/seña</span>
+                  <span className="text-sm font-semibold text-muted-foreground">Importe del anticipo/seña</span>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     step="0.01"
                     min="0"
@@ -1613,8 +1613,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
                 {depositAmount && totalAmount > 0 && (
                   <label className="grid gap-2">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Pendiente</span>
-                    <div className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" style={{ backgroundColor: "var(--bo-bg-muted)", fontWeight: 600 }}>
+                    <span className="text-sm font-semibold text-muted-foreground">Pendiente</span>
+                    <div className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" style={{ backgroundColor: "var(--background-muted)", fontWeight: 600 }}>
                       {formatPrice(Math.max(0, totalAmount - parseFloat(depositAmount || "0")), currency)}
                     </div>
                   </label>
@@ -1624,23 +1624,23 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               <div className="grid gap-4 bo-invoiceFormRow--deposit">
                 <div className="bo-ivaSummary">
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-bo-xs text-bo-muted">Importe total</span>
-                    <span className="text-bo-base font-semibold text-bo-text">{formatPrice(totalAmount, currency)}</span>
+                    <span className="text-xs text-muted-foreground">Importe total</span>
+                    <span className="text-base font-semibold text-foreground">{formatPrice(totalAmount, currency)}</span>
                   </div>
                   {depositAmount && parseFloat(depositAmount) > 0 && (
                     <div className="flex justify-between items-center py-1">
-                      <span className="text-bo-xs text-bo-muted">
+                      <span className="text-xs text-muted-foreground">
                         {depositType === "advance" ? "Anticipo" : "Seña"}
                       </span>
-                      <span className="text-bo-base font-semibold text-bo-text" style={{ color: "var(--bo-color-success)" }}>
+                      <span className="text-base font-semibold text-foreground" style={{ color: "var(--text-success)" }}>
                         -{formatPrice(parseFloat(depositAmount), currency)}
                       </span>
                     </div>
                   )}
                   {depositAmount && parseFloat(depositAmount) > 0 && (
                     <div className="bo-ivaSummaryItem bo-ivaSummaryItem--total">
-                      <span className="text-bo-xs text-bo-muted">Pendiente</span>
-                      <span className="text-bo-base font-semibold text-bo-text">
+                      <span className="text-xs text-muted-foreground">Pendiente</span>
+                      <span className="text-base font-semibold text-foreground">
                         {formatPrice(Math.max(0, totalAmount - parseFloat(depositAmount)), currency)}
                       </span>
                     </div>
@@ -1654,7 +1654,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         {/* Comments section - only show for existing invoices */}
         {invoice && invoice.id && (
           <div className="bo-invoiceFormSection bo-invoiceFormSection--comments">
-            <h3 className="text-bo-base font-semibold text-bo-text mb-3">
+            <h3 className="text-base font-semibold text-foreground mb-3">
               <MessageSquare size={18} />
               Comentarios
             </h3>
@@ -1669,22 +1669,22 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
       {/* Form actions */}
       <div className="bo-invoiceFormActions">
-        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)">
           Cancelar
         </button>
-        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)">
           <Save size={16} />
           Guardar borrador
         </button>
-        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)">
           <Save size={16} />
           Guardar como pendiente
         </button>
-        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF">
           <Eye size={16} />
           Vista previa
         </button>
-        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSend} disabled={!isValid || isSubmitting} title="Enviar factura (Ctrl+S)">
+        <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" onClick={handleSend} disabled={!isValid || isSubmitting} title="Enviar factura (Ctrl+S)">
           <Send size={16} />
           Enviar
         </button>
