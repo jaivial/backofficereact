@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAtom } from "jotai";
 import ReactFlow, {
   Background,
   ControlButton,
@@ -16,12 +17,14 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CalendarDays, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical, Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil, Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle, CalendarRange, Users, LayoutGrid, MapPin } from "lucide-react";
 import "reactflow/dist/style.css";
 import { usePageContext } from "vike-react/usePageContext";
+import { tableSheetViewAtom, selectedTableCardIdAtom } from "../../../../state/tableManagerAtoms";
 
 import { createClient } from "../../../../api/client";
 import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics, TableMapArea, TableMapItem } from "../../../../api/types";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
+import { Select } from "../../../../ui/inputs/Select";
 import { formatHHMM } from "../../../../ui/lib/format";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { Modal } from "../../../../ui/overlays/Modal";
@@ -219,16 +222,17 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
     height: `${geom.height}px`,
   };
   return (
-    <div 
-      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}`} 
+    <div
+      data-ui="table-node"
+      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}`}
       style={style}
     >
       {geom.chairs.map((chair, idx) => (
-        <span key={`node-chair-${idx}`} className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }} />
+        <span key={`node-chair-${idx}`} data-ui="chair" className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }} />
       ))}
-      <div className="bo-tableMapNodeName">{data.name}</div>
-      <div className="bo-tableMapNodeCap">{data.capacity}</div>
-      <div className={`bo-tableMapNodeStatus is-${data.status}`}>{STATUS_LABEL[data.status]}</div>
+      <div data-ui="node-name" className="bo-tableMapNodeName">{data.name}</div>
+      <div data-ui="node-capacity" className="bo-tableMapNodeCap">{data.capacity}</div>
+      <div data-ui="node-status" className={`bo-tableMapNodeStatus is-${data.status}`}>{STATUS_LABEL[data.status]}</div>
     </div>
   );
 }
@@ -269,7 +273,7 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
   };
   const cls = data.kind === "wall" ? "is-wall" : data.kind === "image" ? "is-image" : "is-obstacle";
   return (
-    <div className={`bo-drawElementNode ${cls}${data.isSelected ? " is-selected" : ""}${assetImageUrl && showAsset ? " has-asset" : ""}${showText ? " has-text" : " no-text"}`} style={style}>
+    <div data-ui="draw-element" className={`bo-drawElementNode ${cls}${data.isSelected ? " is-selected" : ""}${assetImageUrl && showAsset ? " has-asset" : ""}${showText ? " has-text" : " no-text"}`} style={style}>
       <NodeResizer
         isVisible={data.editable}
         minWidth={24}
@@ -279,12 +283,12 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
       />
       {showAsset ? (
         assetImageUrl ? (
-          <img className="bo-drawElementNodeAsset" src={assetImageUrl} alt="" aria-hidden="true" />
+          <img data-ui="draw-asset" className="bo-drawElementNodeAsset" src={assetImageUrl} alt="" aria-hidden="true" />
         ) : (
-          <span className="bo-drawElementNodeIcon" aria-hidden="true">{DRAW_PRESET_ICON[data.preset]}</span>
+          <span data-ui="draw-icon" className="bo-drawElementNodeIcon" aria-hidden="true">{DRAW_PRESET_ICON[data.preset]}</span>
         )
       ) : null}
-      {showText ? <span className="bo-drawElementNodeLabel">{data.label}</span> : null}
+      {showText ? <span data-ui="draw-label" className="bo-drawElementNodeLabel">{data.label}</span> : null}
     </div>
   );
 };
@@ -643,6 +647,7 @@ export default function TableManagerPage() {
   const drawPanelHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flowWrapRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const rightSheetRef = useRef<HTMLElement | null>(null);
   const assignmentInProgress = useRef(false);
   const geom = useMemo(
     () => previewGeometry(draft.shape, draft.capacity, draft.rectShortSides),
@@ -1008,6 +1013,94 @@ export default function TableManagerPage() {
     booked: tablesByStatus.booked.length,
     seated: tablesByStatus.seated.length,
   }), [visibleTables.length, tablesByStatus]);
+
+  const freeTableOptions = useMemo(() => {
+    const currentTable = selectedBooking?.table_number?.trim();
+    const seen = new Set<string>();
+    const opts: Array<{ value: string; label: string }> = [];
+    for (const table of tablesByStatus.free) {
+      const name = table.name?.trim();
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      opts.push({ value: name, label: `${name}  (${table.capacity} pax)` });
+    }
+    if (currentTable && !seen.has(currentTable)) {
+      opts.unshift({ value: currentTable, label: `${currentTable}  (actual)` });
+    }
+    if (!currentTable) {
+      opts.unshift({ value: "", label: "Sin mesa asignada" });
+    }
+    return opts;
+  }, [tablesByStatus.free, selectedBooking?.table_number]);
+
+  const [tableSheetView, setTableSheetView] = useAtom(tableSheetViewAtom);
+  const [selectedTableCardId, setSelectedTableCardId] = useAtom(selectedTableCardIdAtom);
+
+  const selectedTableCard = useMemo(
+    () => visibleTables.find((t) => t.id === selectedTableCardId) || null,
+    [visibleTables, selectedTableCardId],
+  );
+
+  const selectedTableCardBookings = useMemo(
+    () => (selectedTableCard ? getTableBookings(selectedTableCard.name) : []),
+    [selectedTableCard, getTableBookings],
+  );
+
+  const selectedTableCardIsOccupied = useMemo(() => {
+    if (!selectedTableCard) return false;
+    const key = normalizeTableKey(selectedTableCard.name);
+    const occ = tableOccupancyMap.get(key);
+    return (occ?.booked ?? 0) > 0 || (occ?.seated ?? 0) > 0;
+  }, [selectedTableCard, tableOccupancyMap]);
+
+  const unassignedBookings = useMemo(
+    () => bookings.filter((b) => !b.table_number),
+    [bookings],
+  );
+
+  const assignBookingToFreeTable = useCallback(
+    async (booking: Booking, tableName: string) => {
+      setBookings((prev) =>
+        prev.map((b) => (b.id === booking.id ? { ...b, table_number: tableName } : b)),
+      );
+      const res = await api.reservas.patch(booking.id, { table_number: tableName });
+      if (!res.success) {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b)),
+        );
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo asignar" });
+      } else {
+        pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} → ${tableName}` });
+      }
+      setSelectedTableCardId(null);
+    },
+    [api.reservas, pushToast, setBookings, setSelectedTableCardId],
+  );
+
+  const unassignBookingFromTable = useCallback(
+    async (booking: Booking) => {
+      setBookings((prev) =>
+        prev.map((b) => (b.id === booking.id ? { ...b, table_number: "" } : b)),
+      );
+      const res = await api.reservas.patch(booking.id, { table_number: "" });
+      if (!res.success) {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b)),
+        );
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo desasignar" });
+      } else {
+        pushToast({ kind: "success", title: "Reserva desasignada" });
+      }
+      setTableSheetView("list");
+      setSelectedTableCardId(null);
+    },
+    [api.reservas, pushToast, setBookings, setTableSheetView, setSelectedTableCardId],
+  );
+
+  const closeTableDetail = useCallback(() => {
+    setTableSheetView("list");
+    setSelectedTableCardId(null);
+  }, [setTableSheetView, setSelectedTableCardId]);
 
   useEffect(() => {
     setNodes(
@@ -1951,20 +2044,21 @@ export default function TableManagerPage() {
 
   useEffect(() => {
     if (!menuVisible) return;
+    const tooltipEl = document.querySelector('[data-ui="map-menu-tooltip"]') as HTMLElement | null;
     const updateMenuPosition = () => {
-      const wrap = flowWrapRef.current;
       const btn = menuButtonRef.current;
-      if (!wrap || !btn) return;
-      const wrapRect = wrap.getBoundingClientRect();
+      if (!btn) return;
       const btnRect = btn.getBoundingClientRect();
-      const centerX = wrapRect.left + wrapRect.width / 2;
-      const top = btnRect.bottom + 10;
+      const centerX = btnRect.left + btnRect.width / 2;
+      const top = btnRect.bottom + 8;
+      const tooltipWidth = tooltipEl?.offsetWidth ?? 240;
       setMenuTooltipStyle({
-        left: `${centerX}px`,
+        position: "fixed" as const,
+        left: `${centerX - tooltipWidth / 2}px`,
         top: `${top}px`,
       });
     };
-    updateMenuPosition();
+    requestAnimationFrame(updateMenuPosition);
     window.addEventListener("resize", updateMenuPosition);
     return () => {
       window.removeEventListener("resize", updateMenuPosition);
@@ -1987,6 +2081,28 @@ export default function TableManagerPage() {
   const closeRightSheet = useCallback(() => {
     setRightSheetOpen(false);
   }, []);
+
+  useEffect(() => {
+    if (!menuVisible && !rightSheetOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (menuVisible) {
+        const tooltip = document.querySelector('[data-ui="map-menu-tooltip"]');
+        const trigger = menuButtonRef.current;
+        if (tooltip && !tooltip.contains(target) && trigger && !trigger.contains(target)) {
+          setMenuVisible(false);
+        }
+      }
+      if (rightSheetOpen) {
+        const sheet = rightSheetRef.current;
+        if (sheet && !sheet.contains(target)) {
+          setRightSheetOpen(false);
+        }
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [menuVisible, rightSheetOpen]);
 
   const openDrawPanelHover = useCallback(() => {
     if (drawPanelHoverTimerRef.current) {
@@ -2192,28 +2308,30 @@ export default function TableManagerPage() {
   );
 
   if (loading) {
-    return <div className="bo-tableMapLoading">Cargando mapa...</div>;
+    return <div data-ui="loading" className="bo-tableMapLoading">Cargando mapa...</div>;
   }
 
   return (
     <ReactFlowProvider>
-      <section className="bo-tableMapPage" aria-label="Mapa de mesas">
+      <section data-ui="table-map-page" className="bo-tableMapPage" aria-label="Mapa de mesas">
         <AnimatePresence mode="wait" initial={false}>
           {isDayOpen ? (
             <motion.div
+              data-ui="table-map-open"
               key="table-map-open"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               transition={dayVisibilityTransition}
             >
-      <div className="bo-tableMapTopControls">
-        <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
+      <div data-ui="top-controls" className="bo-tableMapTopControls">
+        <button data-ui="back-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
           <ChevronLeft size={18} strokeWidth={1.8} />
         </button>
 
-        <div className="bo-tableMapTopCenter">
+        <div data-ui="top-center" className="bo-tableMapTopCenter">
           <button
+            data-ui="menu-trigger"
             ref={menuButtonRef}
             className="bo-actionBtn bo-actionBtn--glass"
             type="button"
@@ -2227,6 +2345,7 @@ export default function TableManagerPage() {
           <AnimatePresence>
             {menuVisible ? (
               <motion.div
+                data-ui="map-menu-tooltip"
                 className="bo-tableMapTooltip"
                 role="menu"
                 aria-label="Opciones del mapa"
@@ -2236,43 +2355,44 @@ export default function TableManagerPage() {
                 exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.16, ease: "easeInOut" }}
               >
-              <div className="bo-tableMapTooltipHead">
-                <div className="bo-tableMapTooltipTitle">Mapa de mesas</div>
-                <div className="bo-tableMapTooltipSub">Acciones rapidas</div>
+              <div data-slot="tooltip-head" className="bo-tableMapTooltipHead">
+                <div data-ui="tooltip-title" className="bo-tableMapTooltipTitle">Mapa de mesas</div>
+                <div data-ui="tooltip-subtitle" className="bo-tableMapTooltipSub">Acciones rapidas</div>
               </div>
 
-              <div className="bo-tableMapTooltipActions" role="group" aria-label="Acciones de mapa">
-                <button className="bo-menuItem" type="button" onClick={openAddModal} role="menuitem">
-                <span className="bo-menuIcon" aria-hidden="true">
+              <div data-slot="tooltip-actions" className="bo-tableMapTooltipActions" role="group" aria-label="Acciones de mapa">
+                <button data-ui="add-table-btn" className="bo-menuItem" type="button" onClick={openAddModal} role="menuitem">
+                <span data-ui="menu-icon" className="bo-menuIcon" aria-hidden="true">
                   <Plus size={16} strokeWidth={1.8} />
                 </span>
-                <span className="bo-menuLabel">Añadir mesa</span>
+                <span data-ui="menu-label" className="bo-menuLabel">Añadir mesa</span>
               </button>
 
-              <button className="bo-menuItem" type="button" onClick={onToggleDrawMode} role="menuitem">
-                <span className="bo-menuIcon" aria-hidden="true">
-                  <Square size={16} strokeWidth={1.8} />
+              <button data-ui="toggle-draw-btn" className="bo-menuItem" type="button" onClick={onToggleDrawMode} role="menuitem">
+                <span data-ui="menu-icon" className="bo-menuIcon" aria-hidden="true">
+                  <Pencil size={16} strokeWidth={1.8} />
                 </span>
-                <span className="bo-menuLabel">{mapMode === "draw" ? "Salir de dibujo" : "Dibujar"}</span>
+                <span data-ui="menu-label" className="bo-menuLabel">{mapMode === "draw" ? "Salir de dibujo" : "Dibujar"}</span>
               </button>
               </div>
 
-              <div className="bo-tableMapTooltipStats" aria-label="Resumen del día">
-                <div>
-                  Personas / Límite: <strong>{occupancy.totalPeople} / {occupancy.limit || "-"}</strong>
+              <div data-slot="tooltip-stats" className="bo-tableMapTooltipStats" aria-label="Resumen del día">
+                <div data-ui="stat-people">
+                  Personas / Límite: <strong data-ui="people-value">{occupancy.totalPeople} / {occupancy.limit || "-"}</strong>
                 </div>
-                <div>
-                  Ocupación: <strong>{occupancy.percent}%</strong>
+                <div data-ui="stat-occupancy">
+                  Ocupación: <strong data-ui="occupancy-value">{occupancy.percent}%</strong>
                 </div>
               </div>
 
               {floorTabs.length > 1 ? (
-                <div className="bo-tableMapFloorTabs" role="tablist" aria-label="Seleccionar planta">
+                <div data-ui="floor-tabs" className="bo-tableMapFloorTabs" role="tablist" aria-label="Seleccionar planta">
                   {floorTabs.map((f) => {
                     const active = f.floorNumber === selectedFloor;
                     return (
                       <button
                         key={f.floorNumber}
+                        data-ui="floor-tab"
                         type="button"
                         className={`bo-tableMapFloorTab${active ? " is-active" : ""}`}
                         role="tab"
@@ -2289,13 +2409,24 @@ export default function TableManagerPage() {
             ) : null}
           </AnimatePresence>
         </div>
-        <div className="bo-tableMapTopRight">
+        <div data-ui="top-right" className="bo-tableMapTopRight">
+          <button
+            data-ui="add-table-top-btn"
+            className="bo-actionBtn bo-actionBtn--glass"
+            type="button"
+            aria-label="Añadir mesa"
+            onClick={openAddModal}
+          >
+            <Plus size={18} strokeWidth={1.8} />
+          </button>
           <div
+            data-ui="draw-trigger"
             className="bo-tableMapDrawTrigger"
             onMouseEnter={openDrawPanelHover}
             onMouseLeave={closeDrawPanelHoverSoon}
           >
             <button
+              data-ui="draw-mode-btn"
               className={`bo-actionBtn bo-actionBtn--glass${mapMode === "draw" ? " is-active" : ""}`}
               type="button"
               aria-label="Modo dibujo"
@@ -2306,6 +2437,7 @@ export default function TableManagerPage() {
           </div>
           {!rightSheetOpen ? (
             <button
+              data-ui="open-right-panel-btn"
               className="bo-actionBtn bo-actionBtn--glass"
               type="button"
               aria-label="Abrir panel derecho"
@@ -2318,7 +2450,7 @@ export default function TableManagerPage() {
         </div>
       </div>
 
-      <div ref={flowWrapRef} className="bo-tableMapFlowWrap">
+      <div ref={flowWrapRef} data-ui="flow-wrapper" className="bo-tableMapFlowWrap">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -2391,6 +2523,7 @@ export default function TableManagerPage() {
 
         {lineDrawing.points.length > 0 && (
           <svg
+            data-ui="line-draw-overlay"
             className="bo-tableMapLineDrawOverlay"
             style={{
               position: "absolute",
@@ -2403,8 +2536,9 @@ export default function TableManagerPage() {
             }}
           >
             {lineOverlayPoints.map((point, idx) => (
-              <g key={idx}>
+              <g key={idx} data-ui="line-vertex-group">
                 <circle
+                  data-ui="line-vertex"
                   cx={point.x}
                   cy={point.y}
                   r={isEditingLimitArea && mapMode === "draw" ? 9 : 6}
@@ -2419,6 +2553,7 @@ export default function TableManagerPage() {
                 />
                 {idx > 0 && (
                   <line
+                    data-ui="line-segment"
                     x1={lineOverlayPoints[idx - 1].x}
                     y1={lineOverlayPoints[idx - 1].y}
                     x2={point.x}
@@ -2432,6 +2567,7 @@ export default function TableManagerPage() {
             ))}
             {lineDrawing.points.length >= 2 && !lineDrawing.isDrawing && (
               <polygon
+                data-ui="limit-area-polygon"
                 points={lineOverlayPoints.map((p) => `${p.x},${p.y}`).join(" ")}
                 fill="none"
                 stroke="var(--bo-accent)"
@@ -2443,46 +2579,48 @@ export default function TableManagerPage() {
       </div>
 
       <aside
+        data-ui="draw-panel"
         className={`bo-tableMapDrawPanel${mapMode === "draw" || drawPanelHover ? " is-open" : ""}`}
         aria-label="Panel de dibujo"
         onMouseEnter={openDrawPanelHover}
         onMouseLeave={closeDrawPanelHoverSoon}
       >
-        <div className="bo-tableMapDrawPanelHead">
-          <div className="bo-panelTitle">Dibujo</div>
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={closeDrawPanel}>Cerrar</button>
+        <div data-slot="draw-panel-head" className="bo-tableMapDrawPanelHead">
+          <div data-ui="draw-panel-title" className="bo-panelTitle">Dibujo</div>
+          <button data-ui="close-draw-panel-btn" className="bo-btn bo-btn--ghost" type="button" onClick={closeDrawPanel}>Cerrar</button>
         </div>
-        <div className="bo-tableMapDrawPanelBody">
-          <div className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
+        <div data-slot="draw-panel-body" className="bo-tableMapDrawPanelBody">
+          <div data-ui="draw-hint" className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
 
-          <div className="bo-tableMapDrawSection">
-            <div className="bo-tableMapDrawSectionHead">
-              <div className="bo-tableMapDrawSectionTitle">Elementos</div>
-              <div className="bo-tableMapDrawHint">Añade objetos con un solo click. Los nuevos quedan seleccionados.</div>
+          <div data-ui="draw-elements-section" className="bo-tableMapDrawSection">
+            <div data-slot="draw-section-head" className="bo-tableMapDrawSectionHead">
+              <div data-ui="draw-section-title" className="bo-tableMapDrawSectionTitle">Elementos</div>
+              <div data-ui="draw-section-hint" className="bo-tableMapDrawHint">Añade objetos con un solo click. Los nuevos quedan seleccionados.</div>
             </div>
-            <div className="bo-drawPresetGroups" aria-label="Herramientas de dibujo">
+            <div data-ui="draw-preset-groups" className="bo-drawPresetGroups" aria-label="Herramientas de dibujo">
               {DRAW_PANEL_GROUPS.map((group) => (
-                <section key={group.id} className="bo-drawPresetGroup" aria-label={group.title}>
-                  <div className="bo-drawPresetGroupTitle">{group.title}</div>
-                  <div className="bo-drawPresetGrid">
+                <section key={group.id} data-ui="draw-preset-group" className="bo-drawPresetGroup" aria-label={group.title}>
+                  <div data-ui="draw-group-title" className="bo-drawPresetGroupTitle">{group.title}</div>
+                  <div data-ui="draw-preset-grid" className="bo-drawPresetGrid">
                     {group.presets.map((preset) => {
                       const previewUrl = drawPresetAssetImageUrl(preset);
                       const isActivePreset = selectedDrawElement?.preset === preset;
                       return (
                         <button
                           key={preset}
+                          data-ui="draw-preset-btn"
                           className={`bo-drawPresetBtn${isActivePreset ? " is-active" : ""}`}
                           type="button"
                           onClick={() => addDrawElement(preset)}
                         >
-                          <span className="bo-drawPresetBtnIcon" aria-hidden="true">
+                          <span data-ui="preset-icon" className="bo-drawPresetBtnIcon" aria-hidden="true">
                             {previewUrl ? (
-                              <img className="bo-drawPresetBtnAsset" src={previewUrl} alt="" />
+                              <img data-ui="preset-asset" className="bo-drawPresetBtnAsset" src={previewUrl} alt="" />
                             ) : (
                               DRAW_PRESET_ICON[preset]
                             )}
                           </span>
-                          <span className="bo-drawPresetBtnLabel">{drawPresetLabel(preset)}</span>
+                          <span data-ui="preset-label" className="bo-drawPresetBtnLabel">{drawPresetLabel(preset)}</span>
                         </button>
                       );
                     })}
@@ -2492,26 +2630,27 @@ export default function TableManagerPage() {
             </div>
           </div>
 
-          <div className="bo-tableMapDrawSection">
-            <div className="bo-tableMapDrawSectionTitle">Visual del elemento</div>
+          <div data-ui="draw-visual-section" className="bo-tableMapDrawSection">
+            <div data-ui="draw-visual-title" className="bo-tableMapDrawSectionTitle">Visual del elemento</div>
             {selectedDrawElement ? (
               <>
-                <div className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
-                  Seleccionado: <strong>{selectedDrawElement.label}</strong>
+                <div data-ui="selected-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                  Seleccionado: <strong data-ui="selected-element-name">{selectedDrawElement.label}</strong>
                 </div>
-                <div className="bo-drawRotationControls" role="group" aria-label="Rotación del elemento">
-                  <button className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(-1)}>
+                <div data-ui="rotation-controls" className="bo-drawRotationControls" role="group" aria-label="Rotación del elemento">
+                  <button data-ui="rotate-left-btn" className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(-1)}>
                     <RotateCcw size={14} />
                     -10°
                   </button>
-                  <div className="bo-drawRotationValue">{Math.round(selectedDrawElement.rotationDeg)}°</div>
-                  <button className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(1)}>
+                  <div data-ui="rotation-value" className="bo-drawRotationValue">{Math.round(selectedDrawElement.rotationDeg)}°</div>
+                  <button data-ui="rotate-right-btn" className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(1)}>
                     +10°
                     <RotateCw size={14} />
                   </button>
                 </div>
-                <div className="bo-drawDisplayModePicker" role="group" aria-label="Modo de visualización del elemento">
+                <div data-ui="display-mode-picker" className="bo-drawDisplayModePicker" role="group" aria-label="Modo de visualización del elemento">
                   <button
+                    data-ui="display-mode-both"
                     className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "both" ? " is-active" : ""}`}
                     type="button"
                     onClick={() => updateSelectedDrawElementDisplayMode("both")}
@@ -2519,6 +2658,7 @@ export default function TableManagerPage() {
                     Ambos
                   </button>
                   <button
+                    data-ui="display-mode-asset"
                     className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "asset" ? " is-active" : ""}`}
                     type="button"
                     onClick={() => updateSelectedDrawElementDisplayMode("asset")}
@@ -2526,6 +2666,7 @@ export default function TableManagerPage() {
                     Solo asset
                   </button>
                   <button
+                    data-ui="display-mode-text"
                     className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "text" ? " is-active" : ""}`}
                     type="button"
                     onClick={() => updateSelectedDrawElementDisplayMode("text")}
@@ -2535,59 +2676,60 @@ export default function TableManagerPage() {
                 </div>
               </>
             ) : (
-              <div className="bo-tableMapDrawHint">Selecciona un elemento del mapa para cambiar su visual.</div>
+              <div data-ui="no-element-hint" className="bo-tableMapDrawHint">Selecciona un elemento del mapa para cambiar su visual.</div>
             )}
           </div>
 
-          <div className="bo-tableMapDrawSection">
-            <div className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
-            <div className="bo-tableMapDrawHint">Dibuja el perimetro del area</div>
+          <div data-ui="limit-section" className="bo-tableMapDrawSection">
+            <div data-ui="limit-title" className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
+            <div data-ui="limit-hint" className="bo-tableMapDrawHint">Dibuja el perimetro del area</div>
             {hasClosedLimitArea(selectedFloorTemplatePoints) ? (
-              <div className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">Hay una plantilla guardada para este salón.</div>
+              <div data-ui="template-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">Hay una plantilla guardada para este salón.</div>
             ) : null}
             {!lineDrawing.isDrawing && lineDrawing.points.length === 0 ? (
-              <button className="bo-btn bo-btn--primary" type="button" onClick={startLineDrawing}>
+              <button data-ui="start-line-drawing-btn" className="bo-btn bo-btn--primary" type="button" onClick={startLineDrawing}>
                 <MapPin size={16} />
                 Dibujar limites
               </button>
             ) : (
-              <div className="bo-tableMapLineDrawControls">
+              <div data-ui="line-draw-controls" className="bo-tableMapLineDrawControls">
                 {lineDrawing.isDrawing && (
-                  <div className="bo-tableMapLineDrawStatus">
+                  <div data-ui="line-draw-status" className="bo-tableMapLineDrawStatus">
                     <Circle size={12} className="bo-tableMapLineDrawStatusDot" />
-                    <span>{lineDrawing.points.length} puntos</span>
+                    <span data-ui="point-count">{lineDrawing.points.length} puntos</span>
                   </div>
                 )}
                 {lineDrawing.isDrawing && lineDrawing.points.length > 0 && (
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoCreateAreaLastAction}>
+                  <button data-ui="undo-point-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoCreateAreaLastAction}>
                     <Undo size={14} />
                     Deshacer ultimo punto
                   </button>
                 )}
                 {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !isEditingLimitArea && (
-                  <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={startLimitAreaEditing}>
+                  <button data-ui="edit-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={startLimitAreaEditing}>
                     Editar area
                   </button>
                 )}
                 {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && isEditingLimitArea && (
-                  <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={stopLimitAreaEditing}>
+                  <button data-ui="save-edit-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={stopLimitAreaEditing}>
                     Guardar edición
                   </button>
                 )}
                 {isEditingLimitArea && (
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoEditAreaLastAction}>
+                  <button data-ui="undo-edit-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoEditAreaLastAction}>
                     <Undo size={14} />
                     Deshacer ultimo cambio
                   </button>
                 )}
                 {lineDrawing.points.length >= 3 && lineDrawing.isDrawing && (
-                  <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={closeLineDrawing}>
+                  <button data-ui="close-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={closeLineDrawing}>
                     <SquareMinus size={14} />
                     Cerrar area
                   </button>
                 )}
                 {lineDrawing.points.length > 0 && (
                   <button
+                    data-ui="cancel-line-btn"
                     className="bo-btn bo-btn--ghost bo-btn--sm"
                     type="button"
                     onClick={isEditingLimitArea ? stopLimitAreaEditing : cancelLineDrawing}
@@ -2598,6 +2740,7 @@ export default function TableManagerPage() {
                 )}
                 {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
                   <button
+                    data-ui="save-template-btn"
                     className="bo-btn bo-btn--ghost bo-btn--sm"
                     type="button"
                     onClick={() => void saveLimitAreaTemplate()}
@@ -2613,37 +2756,38 @@ export default function TableManagerPage() {
         </div>
       </aside>
 
-      <aside className={`bo-tableMapSheet${rightSheetOpen ? " is-open" : ""}${isDragging ? " drag-active" : ""}`} aria-label="Panel de reservas">
-        <div className="bo-tableMapSheetHead">
+      <aside ref={rightSheetRef as React.RefObject<HTMLElement>} data-ui="right-sheet" className={`bo-tableMapSheet${rightSheetOpen ? " is-open" : ""}${isDragging ? " drag-active" : ""}`} aria-label="Panel de reservas">
+        <div data-slot="sheet-head" className="bo-tableMapSheetHead">
           {bookingForAssignment ? (
-            <div className="bo-assigningBanner">
-              <span>Asignando: <strong>{bookingForAssignment.customer_name}</strong></span>
-              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={cancelAssignmentMode}>Cancelar</button>
+            <div data-ui="assigning-banner" className="bo-assigningBanner">
+              <span>Asignando: <strong data-ui="assigning-name">{bookingForAssignment.customer_name}</strong></span>
+              <button data-ui="cancel-assign-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={cancelAssignmentMode}>Cancelar</button>
             </div>
           ) : (
-            <div className="bo-tableMapSheetStats">
-              <span className="bo-tableMapSheetStat bo-tableMapSheetStat--total">
-                <span className="bo-tableMapSheetStatDot" />{bookingStats.total} reservas
+            <div data-ui="sheet-stats" className="bo-tableMapSheetStats">
+              <span data-ui="stat-total" className="bo-tableMapSheetStat bo-tableMapSheetStat--total">
+                <span data-ui="stat-dot" className="bo-tableMapSheetStatDot" />{bookingStats.total} reservas
               </span>
-              <span className="bo-tableMapSheetStat bo-tableMapSheetStat--seated">
-                <span className="bo-tableMapSheetStatDot" />{bookingStats.seated} sentadas
+              <span data-ui="stat-seated" className="bo-tableMapSheetStat bo-tableMapSheetStat--seated">
+                <span data-ui="stat-dot" className="bo-tableMapSheetStatDot" />{bookingStats.seated} sentadas
               </span>
-              <span className="bo-tableMapSheetStat bo-tableMapSheetStat--pending">
-                <span className="bo-tableMapSheetStatDot" />{bookingStats.pending} pendientes
+              <span data-ui="stat-pending" className="bo-tableMapSheetStat bo-tableMapSheetStat--pending">
+                <span data-ui="stat-dot" className="bo-tableMapSheetStatDot" />{bookingStats.pending} pendientes
               </span>
             </div>
           )}
-          <div className="bo-tableMapSheetHeader">
-            <div className="bo-tableMapSheetHeaderLeft">
-              <div className="bo-panelTitle">Booking manager</div>
-              <div className="bo-panelMeta">{visibleTables.length} mesas</div>
+          <div data-slot="sheet-header" className="bo-tableMapSheetHeader">
+            <div data-slot="sheet-header-left" className="bo-tableMapSheetHeaderLeft">
+              <div data-ui="sheet-title" className="bo-panelTitle">Booking manager</div>
+              <div data-ui="sheet-meta" className="bo-panelMeta">{visibleTables.length} mesas</div>
             </div>
-            <div className="bo-tableMapSheetHeaderActions">
-              <button className="bo-btn bo-btn--ghost bo-tableMapDateBtn" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
+            <div data-slot="sheet-header-actions" className="bo-tableMapSheetHeaderActions">
+              <button data-ui="date-toggle-btn" className="bo-btn bo-btn--ghost bo-tableMapDateBtn" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
                 <CalendarRange size={14} />
-                <span>{selectedDate}</span>
+                <span data-ui="date-label">{selectedDate}</span>
               </button>
               <button
+                data-ui="collapse-sheet-btn"
                 className="bo-actionBtn bo-actionBtn--glass bo-tableMapSheetToggleBtn"
                 type="button"
                 aria-label="Colapsar panel derecho"
@@ -2654,9 +2798,9 @@ export default function TableManagerPage() {
             </div>
           </div>
         </div>
-        <div className="bo-tableMapSheetBody">
+        <div data-slot="sheet-body" className="bo-tableMapSheetBody">
           {calendarExpanded ? (
-            <div className="bo-tableMapCalendarWrapper">
+            <div data-ui="calendar-wrapper" className="bo-tableMapCalendarWrapper">
               <MonthCalendar
                 year={calendarView.year}
                 month={calendarView.month}
@@ -2671,12 +2815,13 @@ export default function TableManagerPage() {
           ) : null}
 
           {floorTabs.length > 1 && (
-            <div className="bo-tableMapFloorTabs" role="tablist" aria-label="Seleccionar salon/planta">
+            <div data-ui="sheet-floor-tabs" className="bo-tableMapFloorTabs" role="tablist" aria-label="Seleccionar salon/planta">
               {floorTabs.map((floor) => {
                 const active = floor.floorNumber === selectedFloor;
                 return (
                   <button
                     key={`sheet-floor-${floor.floorNumber}`}
+                    data-ui="sheet-floor-tab"
                     type="button"
                     role="tab"
                     aria-selected={active}
@@ -2701,13 +2846,14 @@ export default function TableManagerPage() {
             }}
           />
 
-          <div className="bo-tableMapSheetContent">
+          <div data-ui="sheet-content" className="bo-tableMapSheetContent">
             {sheetTab === "reservas" ? (
-            <div className="bo-tableMapSection">
-              <div className="bo-tableMapSectionHeader">
-                <div className="bo-tableMapSectionTitle">Reservas del día</div>
+            <div data-ui="reservations-section" className="bo-tableMapSection">
+              <div data-slot="reservations-header" className="bo-tableMapSectionHeader">
+                <div data-ui="reservations-title" className="bo-tableMapSectionTitle">Reservas del día</div>
                 {bookings.length > 0 && hasUnassignedBookings && !assignMode && (
                   <button
+                    data-ui="assign-table-btn"
                     className="bo-btn bo-btn--primary bo-btn--sm"
                     type="button"
                     onClick={() => setAssignMode(true)}
@@ -2717,6 +2863,7 @@ export default function TableManagerPage() {
                 )}
                 {assignMode && (
                   <button
+                    data-ui="cancel-assign-mode-btn"
                     className="bo-btn bo-btn--ghost bo-btn--sm"
                     type="button"
                     onClick={cancelAssignmentMode}
@@ -2726,20 +2873,20 @@ export default function TableManagerPage() {
                 )}
               </div>
               {bookings.length === 0 ? (
-                <div className="bo-tableMapEmptyState">
-                  <div className="bo-tableMapEmptyStateIcon"><CalendarDays size={24} /></div>
-                  <div>No hay reservas para esta fecha</div>
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => setSelectedDate(todayISO())}>Ver hoy</button>
+                <div data-ui="empty-bookings" className="bo-tableMapEmptyState">
+                  <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><CalendarDays size={24} /></div>
+                  <div data-ui="empty-text">No hay reservas para esta fecha</div>
+                  <button data-ui="today-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => setSelectedDate(todayISO())}>Ver hoy</button>
                 </div>
               ) : (
-                <div className="bo-tableMapBookingsList">
+                <div data-ui="bookings-list" className="bo-tableMapBookingsList">
                   {assignMode && hasUnassignedBookings && (
-                    <div className="bo-tableMapAssignModeHint">Selecciona una reserva sin mesa asignada</div>
+                    <div data-ui="assign-hint" className="bo-tableMapAssignModeHint">Selecciona una reserva sin mesa asignada</div>
                   )}
                   {assignMode && !hasUnassignedBookings && (
-                    <div className="bo-tableMapEmptyState">
-                      <div className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
-                      <div>Todas las reservas tienen mesa asignada</div>
+                    <div data-ui="all-assigned" className="bo-tableMapEmptyState">
+                      <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
+                      <div data-ui="empty-text">Todas las reservas tienen mesa asignada</div>
                     </div>
                   )}
                   {(bookings.filter(b => !assignMode || !b.table_number) || []).map((booking) => {
@@ -2750,6 +2897,7 @@ export default function TableManagerPage() {
                     return (
                       <div
                         key={booking.id}
+                        data-ui="booking-row"
                         className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}${assignMode && !isUnassigned ? " is-disabled" : ""}`}
                         onClick={() => {
                           if (assignMode && !isUnassigned) return; // Can't select assigned bookings in assign mode
@@ -2763,8 +2911,9 @@ export default function TableManagerPage() {
                         }}
                       >
                         {assignMode ? (
-                          <label className="bo-checkboxContainer" onClick={(e) => e.stopPropagation()}>
+                          <label data-ui="booking-checkbox" className="bo-checkboxContainer" onClick={(e) => e.stopPropagation()}>
                             <input
+                              data-ui="booking-checkbox-input"
                               type="checkbox"
                               checked={isSelected}
                               onChange={(e) => {
@@ -2773,15 +2922,15 @@ export default function TableManagerPage() {
                               }}
                               onClick={(e) => e.stopPropagation()}
                             />
-                            <span className="bo-checkboxMark" />
+                            <span data-ui="checkbox-mark" className="bo-checkboxMark" />
                           </label>
                         ) : (
-                          <span className="bo-bookingDragIndicator"><GripVertical size={16} /></span>
+                          <span data-ui="drag-handle" className="bo-bookingDragIndicator"><GripVertical size={16} /></span>
                         )}
-                        <span className="bo-tableMapBookingStatusDot" />
-                        <div className="bo-tableMapBookingMain">
-                          <strong>{booking.table_number || "—"} · {booking.customer_name}</strong>
-                          <span>{booking.party_size} pax · {formatHHMM(booking.reservation_time)}</span>
+                        <span data-ui="booking-status-dot" className="bo-tableMapBookingStatusDot" />
+                        <div data-ui="booking-main" className="bo-tableMapBookingMain">
+                          <strong data-ui="booking-table-customer">{booking.table_number || "—"} · {booking.customer_name}</strong>
+                          <span data-ui="booking-pax-time">{booking.party_size} pax · {formatHHMM(booking.reservation_time)}</span>
                         </div>
                         <DropdownMenu
                           label="Acciones reserva"
@@ -2798,174 +2947,250 @@ export default function TableManagerPage() {
               )}
             </div>
           ) : (
-            <div className="bo-tableMapSection">
-              <div className="bo-tableMapSectionHeader">
-                <div className="bo-tableMapSectionTitle">Estado de mesas</div>
-                <div className="bo-tableMapSectionSummary">
-                  <span className="bo-tableMapSummaryItem bo-tableMapSummaryItem--free">{tableSummary.free} libres</span>
-                  <span className="bo-tableMapSummaryItem bo-tableMapSummaryItem--booked">{tableSummary.booked} reservadas</span>
-                  <span className="bo-tableMapSummaryItem bo-tableMapSummaryItem--seated">{tableSummary.seated} ocupadas</span>
-                </div>
-              </div>
-              {visibleTables.length === 0 ? (
-                <div className="bo-tableMapEmptyState">
-                  <div className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
-                  <div>No hay mesas en este salón</div>
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => setEditorOpen(true)}>Crear mesa</button>
-                </div>
+            <AnimatePresence mode="wait" initial={false}>
+              {tableSheetView === "table-detail" && selectedTableCard ? (
+                <motion.div
+                  key="table-detail"
+                  data-ui="table-detail-view"
+                  className="bo-tableSheetDetail"
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  transition={reduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeInOut" }}
+                >
+                  <div data-slot="detail-header" className="bo-tableSheetDetailHeader">
+                    <button data-ui="back-to-list-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={closeTableDetail} aria-label="Volver a mesas">
+                      <ChevronLeft size={18} strokeWidth={1.8} />
+                    </button>
+                    <div data-ui="detail-table-info" className="bo-tableSheetDetailTableInfo">
+                      <span data-ui="detail-table-name" className="bo-tableSheetDetailTableName">{selectedTableCard.name}</span>
+                      <span data-ui="detail-table-cap" className="bo-tableSheetDetailTableCap">{selectedTableCard.capacity} pax</span>
+                    </div>
+                    <span data-ui="detail-status-pill" className={`bo-tableSheetDetailStatusPill${selectedTableCardIsOccupied ? " is-occupied" : " is-free"}`}>
+                      {selectedTableCardIsOccupied ? "Ocupada" : "Libre"}
+                    </span>
+                  </div>
+
+                  {selectedTableCardBookings.length > 0 ? (
+                    <div data-slot="detail-bookings" className="bo-tableSheetDetailBookings">
+                      {selectedTableCardBookings.map((booking) => {
+                        const isSeated = bookingStates[String(booking.id)]?.seated;
+                        return (
+                          <div key={booking.id} data-ui="detail-booking-card" className="bo-tableSheetDetailBookingCard">
+                            <div data-slot="booking-card-head" className="bo-tableSheetDetailBookingHead">
+                              <div data-ui="booking-customer" className="bo-tableSheetDetailBookingCustomer">{booking.customer_name}</div>
+                              <span data-ui="booking-status-pill" className={`bo-tableSheetDetailBookingStatus${isSeated ? " is-seated" : " is-pending"}`}>
+                                {isSeated ? "Sentada" : "Pendiente"}
+                              </span>
+                            </div>
+                            <div data-slot="booking-card-meta" className="bo-tableSheetDetailBookingMeta">
+                              <span data-ui="booking-pax">{booking.party_size} pax</span>
+                              <span data-ui="booking-time">{formatHHMM(booking.reservation_time)}</span>
+                              {booking.contact_phone && <span data-ui="booking-phone">{booking.contact_phone}</span>}
+                            </div>
+                            {booking.commentary ? (
+                              <div data-ui="booking-comment" className="bo-tableSheetDetailBookingComment">{booking.commentary}</div>
+                            ) : null}
+                            <div data-slot="booking-card-actions" className="bo-tableSheetDetailBookingActions">
+                              <button
+                                data-ui="toggle-seated-detail-btn"
+                                className="bo-btn bo-btn--ghost bo-btn--sm"
+                                type="button"
+                                onClick={() => markBookingSeated(booking, !isSeated)}
+                              >
+                                {isSeated ? "Desmarcar sentada" : "Marcar sentada"}
+                              </button>
+                              <button
+                                data-ui="unassign-booking-btn"
+                                className="bo-btn bo-btn--ghost bo-btn--sm"
+                                type="button"
+                                onClick={() => void unassignBookingFromTable(booking)}
+                              >
+                                Desasignar mesa
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div data-ui="no-bookings-detail" className="bo-tableMapEmptyState">
+                      <div data-ui="empty-text">No hay reservas para esta mesa</div>
+                    </div>
+                  )}
+                </motion.div>
               ) : (
-                <div className="bo-tableMapTablesByStatus">
-                  {tablesByStatus.seated.length > 0 && (
-                    <div className="bo-tableMapTablesStatusGroup">
-                      <div className="bo-tableMapTablesStatusGroupTitle">Ocupadas</div>
-                      <div className="bo-tableMapTablesGrid">
-                        {tablesByStatus.seated.map((table) => {
-                          const tableBookings = getTableBookings(table.name);
-                          const currentBooking = tableBookings[0];
-                          const isSelected = selectedTableId === table.id;
-                          return (
-                            <div 
-                              key={`table-card-${table.id}`} 
-                              className={`bo-tableMapTableCard is-seated${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
-                              onClick={() => {
-                                if (assignMode) {
-                                  setSelectedTableId(isSelected ? null : table.id);
-                                }
-                              }}
-                            >
-                              {assignMode && (
-                                <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedTableId(isSelected ? null : table.id);
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                  <span className="bo-checkboxMark" />
-                                </label>
-                              )}
-                              <span className="bo-tableMapTableCardOcc" />
-                              <span className="bo-tableMapTableCardNum">{table.name}</span>
-                              <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
-                              {currentBooking && (
-                                <span className="bo-tableMapTableCardBooking">
-                                  {currentBooking.customer_name?.split(' ')[0]} · {formatHHMM(currentBooking.reservation_time)}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                <motion.div
+                  key="table-list"
+                  data-ui="tables-section"
+                  className="bo-tableMapSection"
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  transition={reduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeInOut" }}
+                >
+                  <div data-slot="tables-header" className="bo-tableMapSectionHeader">
+                    <div data-ui="tables-title" className="bo-tableMapSectionTitle">Estado de mesas</div>
+                    <div data-ui="tables-summary" className="bo-tableMapSectionSummary">
+                      <span data-ui="summary-free" className="bo-tableMapSummaryItem bo-tableMapSummaryItem--free">{tableSummary.free} libres</span>
+                      <span data-ui="summary-booked" className="bo-tableMapSummaryItem bo-tableMapSummaryItem--booked">{tableSummary.booked} reservadas</span>
+                      <span data-ui="summary-seated" className="bo-tableMapSummaryItem bo-tableMapSummaryItem--seated">{tableSummary.seated} ocupadas</span>
+                    </div>
+                  </div>
+                  {visibleTables.length === 0 ? (
+                    <div data-ui="empty-tables" className="bo-tableMapEmptyState">
+                      <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
+                      <div data-ui="empty-text">No hay mesas en este salón</div>
+                      <button data-ui="create-table-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => setEditorOpen(true)}>Crear mesa</button>
+                    </div>
+                  ) : (
+                    <div data-ui="tables-by-status" className="bo-tableMapTablesByStatus">
+                      {tablesByStatus.seated.length > 0 && (
+                        <div data-ui="status-group-seated" className="bo-tableMapTablesStatusGroup">
+                          <div data-ui="status-group-title" className="bo-tableMapTablesStatusGroupTitle">Ocupadas</div>
+                          <div data-ui="status-group-grid" className="bo-tableMapTablesGrid">
+                            {tablesByStatus.seated.map((table) => {
+                              const tableBookings = getTableBookings(table.name);
+                              const currentBooking = tableBookings[0];
+                              return (
+                                <div
+                                  key={`table-card-${table.id}`}
+                                  data-ui="table-card-seated"
+                                  className="bo-tableMapTableCard is-seated"
+                                  onClick={() => {
+                                    setSelectedTableCardId(table.id);
+                                    setTableSheetView("table-detail");
+                                  }}
+                                >
+                                  <span data-ui="table-card-occ" className="bo-tableMapTableCardOcc" />
+                                  <span data-ui="table-card-name" className="bo-tableMapTableCardNum">{table.name}</span>
+                                  <span data-ui="table-card-cap" className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                                  {currentBooking && (
+                                    <span data-ui="table-card-booking" className="bo-tableMapTableCardBooking">
+                                      {currentBooking.customer_name?.split(' ')[0]} · {formatHHMM(currentBooking.reservation_time)}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {tablesByStatus.booked.length > 0 && (
+                        <div data-ui="status-group-booked" className="bo-tableMapTablesStatusGroup">
+                          <div data-ui="status-group-title" className="bo-tableMapTablesStatusGroupTitle">Reservadas</div>
+                          <div data-ui="status-group-grid" className="bo-tableMapTablesGrid">
+                            {tablesByStatus.booked.map((table) => {
+                              const tableBookings = getTableBookings(table.name);
+                              const currentBooking = tableBookings[0];
+                              return (
+                                <div
+                                  key={`table-card-${table.id}`}
+                                  data-ui="table-card-booked"
+                                  className="bo-tableMapTableCard is-booked"
+                                  onClick={() => {
+                                    setSelectedTableCardId(table.id);
+                                    setTableSheetView("table-detail");
+                                  }}
+                                >
+                                  <span data-ui="table-card-occ" className="bo-tableMapTableCardOcc" />
+                                  <span data-ui="table-card-name" className="bo-tableMapTableCardNum">{table.name}</span>
+                                  <span data-ui="table-card-cap" className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                                  {currentBooking && (
+                                    <span data-ui="table-card-booking" className="bo-tableMapTableCardBooking">
+                                      {currentBooking.customer_name?.split(' ')[0]} · {formatHHMM(currentBooking.reservation_time)}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {tablesByStatus.free.length > 0 && (
+                        <div data-ui="status-group-free" className="bo-tableMapTablesStatusGroup">
+                          <div data-ui="status-group-title" className="bo-tableMapTablesStatusGroupTitle">Libres</div>
+                          <div data-ui="status-group-grid" className="bo-tableMapTablesGrid">
+                            {tablesByStatus.free.map((table) => {
+                              const isCardSelected = selectedTableCardId === table.id;
+                              return (
+                                <div
+                                  key={`table-card-${table.id}`}
+                                  data-ui="table-card-free"
+                                  className={`bo-tableMapTableCard is-free${isCardSelected ? " is-selected" : ""}`}
+                                  onClick={() => {
+                                    setSelectedTableCardId(isCardSelected ? null : table.id);
+                                  }}
+                                >
+                                  <span data-ui="table-card-occ" className="bo-tableMapTableCardOcc" />
+                                  <span data-ui="table-card-name" className="bo-tableMapTableCardNum">{table.name}</span>
+                                  <span data-ui="table-card-cap" className="bo-tableMapTableCardCap">{table.capacity} pax</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <AnimatePresence>
+                            {selectedTableCardId !== null && selectedTableCard && !selectedTableCardIsOccupied ? (
+                              <motion.div
+                                key="assign-section"
+                                data-ui="assign-section"
+                                className="bo-tableSheetAssignSection"
+                                initial={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0 }}
+                                transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: "easeInOut" }}
+                              >
+                                <div data-ui="assign-title" className="bo-tableSheetAssignTitle">
+                                  Asignar reserva a <strong>{selectedTableCard.name}</strong>
+                                </div>
+                                {unassignedBookings.length > 0 ? (
+                                  <div data-ui="assign-list" className="bo-tableSheetAssignList">
+                                    {unassignedBookings.map((booking) => (
+                                      <button
+                                        key={booking.id}
+                                        data-ui="assign-row"
+                                        className="bo-tableSheetAssignRow"
+                                        type="button"
+                                        onClick={() => void assignBookingToFreeTable(booking, selectedTableCard.name)}
+                                      >
+                                        <span data-ui="assign-row-name" className="bo-tableSheetAssignRowName">{booking.customer_name}</span>
+                                        <span data-ui="assign-row-meta" className="bo-tableSheetAssignRowMeta">
+                                          {booking.party_size} pax · {formatHHMM(booking.reservation_time)}
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div data-ui="no-unassigned-bookings" className="bo-tableSheetAssignEmpty">No hay mas reservas para el dia de hoy</div>
+                                )}
+                              </motion.div>
+                            ) : null}
+                          </AnimatePresence>
+                        </div>
+                      )}
                     </div>
                   )}
-                  {tablesByStatus.booked.length > 0 && (
-                    <div className="bo-tableMapTablesStatusGroup">
-                      <div className="bo-tableMapTablesStatusGroupTitle">Reservadas</div>
-                      <div className="bo-tableMapTablesGrid">
-                        {tablesByStatus.booked.map((table) => {
-                          const tableBookings = getTableBookings(table.name);
-                          const currentBooking = tableBookings[0];
-                          const isSelected = selectedTableId === table.id;
-                          return (
-                            <div 
-                              key={`table-card-${table.id}`} 
-                              className={`bo-tableMapTableCard is-booked${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
-                              onClick={() => {
-                                if (assignMode) {
-                                  setSelectedTableId(isSelected ? null : table.id);
-                                }
-                              }}
-                            >
-                              {assignMode && (
-                                <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedTableId(isSelected ? null : table.id);
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                  <span className="bo-checkboxMark" />
-                                </label>
-                              )}
-                              <span className="bo-tableMapTableCardOcc" />
-                              <span className="bo-tableMapTableCardNum">{table.name}</span>
-                              <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
-                              {currentBooking && (
-                                <span className="bo-tableMapTableCardBooking">
-                                  {currentBooking.customer_name?.split(' ')[0]} · {formatHHMM(currentBooking.reservation_time)}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {tablesByStatus.free.length > 0 && (
-                    <div className="bo-tableMapTablesStatusGroup">
-                      <div className="bo-tableMapTablesStatusGroupTitle">Libres</div>
-                      <div className="bo-tableMapTablesGrid">
-                        {tablesByStatus.free.map((table) => {
-                          const isSelected = selectedTableId === table.id;
-                          return (
-                            <div 
-                              key={`table-card-${table.id}`} 
-                              className={`bo-tableMapTableCard is-free${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}`}
-                              onClick={() => {
-                                if (assignMode) {
-                                  setSelectedTableId(isSelected ? null : table.id);
-                                }
-                              }}
-                            >
-                              {assignMode && (
-                                <label className="bo-tableMapTableCardCheckbox" onClick={(e) => e.stopPropagation()}>
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedTableId(isSelected ? null : table.id);
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                  <span className="bo-checkboxMark" />
-                                </label>
-                              )}
-                              <span className="bo-tableMapTableCardOcc" />
-                              <span className="bo-tableMapTableCardNum">{table.name}</span>
-                              <span className="bo-tableMapTableCardCap">{table.capacity} pax</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           )}
           </div>
         </div>
       </aside>
 
       <Modal open={editorOpen} title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} widthPx={980} className="bo-tableEditorModal">
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">{editingTableId ? "Editar mesa" : "Nueva mesa"}</div>
-          <button className="bo-modalX" type="button" onClick={() => setEditorOpen(false)} aria-label="Cerrar">
+        <div data-slot="modal-head" className="bo-modalHead">
+          <div data-ui="modal-title" className="bo-modalTitle">{editingTableId ? "Editar mesa" : "Nueva mesa"}</div>
+          <button data-ui="close-modal-btn" className="bo-modalX" type="button" onClick={() => setEditorOpen(false)} aria-label="Cerrar">
             <X size={16} />
           </button>
         </div>
 
-        <div className="bo-tableEditorGrid">
-          <div className="bo-tableEditorPreviewWrap">
-            <div className="bo-tableEditorRotate" role="group" aria-label="Giro de mesa">
+        <div data-ui="editor-grid" className="bo-tableEditorGrid">
+          <div data-slot="editor-preview" className="bo-tableEditorPreviewWrap">
+            <div data-ui="rotate-controls" className="bo-tableEditorRotate" role="group" aria-label="Giro de mesa">
               <button
+                data-ui="rotate-left-btn"
                 type="button"
                 className="bo-actionBtn bo-actionBtn--glass bo-tableEditorRotateBtn"
                 onClick={() =>
@@ -2979,6 +3204,7 @@ export default function TableManagerPage() {
                 <RotateCcw size={16} strokeWidth={1.9} />
               </button>
               <button
+                data-ui="rotate-right-btn"
                 type="button"
                 className="bo-actionBtn bo-actionBtn--glass bo-tableEditorRotateBtn"
                 onClick={() =>
@@ -2992,7 +3218,7 @@ export default function TableManagerPage() {
                 <RotateCw size={16} strokeWidth={1.9} />
               </button>
             </div>
-            <div className={`bo-tableEditorPreviewTable is-${draft.shape}`} style={{
+            <div data-ui="preview-table" className={`bo-tableEditorPreviewTable is-${draft.shape}`} style={{
               ["--bo-table-fill" as any]: draft.fillColor,
               ["--bo-table-outline" as any]: draft.outlineColor,
               ["--bo-table-texture" as any]: draft.texturePreview ? `url(${draft.texturePreview})` : "none",
@@ -3000,7 +3226,7 @@ export default function TableManagerPage() {
               height: `${geom.height}px`,
               transform: `rotate(${draft.rotationDeg}deg)`,
             }}>
-              <span className="bo-tableEditorCapacity">{clampCapacity(draft.capacity)}</span>
+              <span data-ui="preview-capacity" className="bo-tableEditorCapacity">{clampCapacity(draft.capacity)}</span>
               {isRectangularPreview
                 ? ([
                     { side: "left" as const, canAdd: canAddLeftShortSide, x: -(geom.width / 2 + RECT_SEAT_OFFSET) },
@@ -3012,6 +3238,7 @@ export default function TableManagerPage() {
                     return (
                       <button
                         key={`add-short-${slot.side}`}
+                        data-ui="add-short-side-btn"
                         type="button"
                         className={`bo-tableEditorSideAction bo-tableEditorSideAction--add${armed ? " is-armed" : ""}`}
                         style={{ transform: `translate(${slot.x}px, 0px)` }}
@@ -3034,6 +3261,7 @@ export default function TableManagerPage() {
                   return (
                     <button
                       key={`chair-${shortSide}-${idx}`}
+                      data-ui="remove-short-side-btn"
                       type="button"
                       className={`bo-tableEditorChair bo-tableEditorChair--short${shortSideHover === shortSide ? " is-armed" : ""}`}
                       style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }}
@@ -3048,7 +3276,7 @@ export default function TableManagerPage() {
                           : "Quitar silla del lado corto derecho"
                       }
                     >
-                      <span className="bo-tableEditorChairAction" aria-hidden="true">
+                      <span data-ui="chair-action-icon" className="bo-tableEditorChairAction" aria-hidden="true">
                         <X size={10} strokeWidth={2.3} />
                       </span>
                     </button>
@@ -3057,6 +3285,7 @@ export default function TableManagerPage() {
                 return (
                   <span
                     key={idx}
+                    data-ui="preview-chair"
                     className="bo-tableEditorChair"
                     style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }}
                   />
@@ -3065,10 +3294,11 @@ export default function TableManagerPage() {
             </div>
           </div>
 
-          <div className="bo-tableEditorConfig">
-            <div className="bo-field">
-              <label className="bo-label" htmlFor="table-name">Nombre/numero</label>
+          <div data-slot="editor-config" className="bo-tableEditorConfig">
+            <div data-ui="field-name" className="bo-field">
+              <label data-ui="name-label" className="bo-label" htmlFor="table-name">Nombre/numero</label>
               <input
+                data-ui="name-input"
                 id="table-name"
                 className="bo-input"
                 value={draft.name}
@@ -3076,24 +3306,25 @@ export default function TableManagerPage() {
               />
             </div>
 
-            <div className="bo-field">
-              <label className="bo-label">Forma</label>
-              <div className="bo-tableEditorShapeBtns">
-                <button type="button" className={`bo-btn bo-btn--ghost${draft.shape === "round" ? " is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "round" }))}>
+            <div data-ui="field-shape" className="bo-field">
+              <label data-ui="shape-label" className="bo-label">Forma</label>
+              <div data-ui="shape-buttons" className="bo-tableEditorShapeBtns">
+                <button data-ui="shape-round-btn" type="button" className={`bo-btn bo-btn--ghost${draft.shape === "round" ? " is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "round" }))}>
                   Redonda
                 </button>
-                <button type="button" className={`bo-btn bo-btn--ghost${draft.shape === "square" ? " is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "square" }))}>
+                <button data-ui="shape-square-btn" type="button" className={`bo-btn bo-btn--ghost${draft.shape === "square" ? " is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "square" }))}>
                   Cuadrada
                 </button>
               </div>
             </div>
 
-            <div className="bo-field">
-              <label className="bo-label">Colores</label>
-              <div className="bo-tableEditorPresetGrid">
+            <div data-ui="field-colors" className="bo-field">
+              <label data-ui="colors-label" className="bo-label">Colores</label>
+              <div data-ui="color-presets" className="bo-tableEditorPresetGrid">
                 {COLOR_PRESETS.map((preset) => (
                   <button
                     key={preset.id}
+                    data-ui="color-preset-btn"
                     type="button"
                     className={`bo-tableColorPreset${draft.stylePreset === preset.id ? " is-active" : ""}`}
                     onClick={() => onPickPreset(preset.id)}
@@ -3104,12 +3335,12 @@ export default function TableManagerPage() {
               </div>
             </div>
 
-            <div className="bo-field">
-              <label className="bo-label">Subir textura</label>
-              <label className="bo-btn bo-btn--ghost bo-tableUploadBtn">
+            <div data-ui="field-texture" className="bo-field">
+              <label data-ui="texture-label" className="bo-label">Subir textura</label>
+              <label data-ui="texture-upload-btn" className="bo-btn bo-btn--ghost bo-tableUploadBtn">
                 <ImagePlus size={16} strokeWidth={1.8} />
-                <span>Subir imagen</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={onTextureInput} hidden />
+                <span data-ui="upload-label">Subir imagen</span>
+                <input data-ui="texture-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={onTextureInput} hidden />
               </label>
             </div>
 
@@ -3124,61 +3355,110 @@ export default function TableManagerPage() {
           </div>
         </div>
 
-        <div className="bo-modalActions">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setEditorOpen(false)} disabled={saving}>
-            Cancelar
-          </button>
-          <button className="bo-btn bo-btn--primary" type="button" onClick={() => void saveDraft()} disabled={saving}>
-            {saving ? "Guardando..." : "Guardar"}
-          </button>
+        <div data-ui="editor-modal-actions-wrapper" className="bo-tableEditorActionsWrap">
+          <div data-ui="editor-modal-actions" className="bo-modalActions">
+            <button data-ui="cancel-editor-btn" className="bo-btn bo-btn--ghost" type="button" onClick={() => setEditorOpen(false)} disabled={saving}>
+              Cancelar
+            </button>
+            <button data-ui="save-editor-btn" className="bo-btn bo-btn--primary" type="button" onClick={() => void saveDraft()} disabled={saving}>
+              {saving ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
         </div>
       </Modal>
 
       <Modal open={Boolean(selectedBooking)} title="Reserva" onClose={() => setSelectedBooking(null)} widthPx={760} className="bo-tableBookingModal">
         {selectedBooking ? (
-          <div className="bo-stack" style={{ gap: 12 }}>
-            <div className="bo-tableMapBookingModalHero">
-              <div className="bo-tableMapBookingTableNumber">Mesa {selectedBooking.table_number || "—"}</div>
-              <div className="bo-tableMapBookingHeroMeta">{selectedBooking.customer_name} · {selectedBooking.party_size} pax · {formatHHMM(selectedBooking.reservation_time)}</div>
-            </div>
-            <div className="bo-kvGrid">
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Nombre</div>
-                <div className="bo-kvValue">{selectedBooking.customer_name}</div>
-              </div>
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Hora</div>
-                <div className="bo-kvValue">{formatHHMM(selectedBooking.reservation_time)}</div>
-              </div>
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Comensales</div>
-                <div className="bo-kvValue">{selectedBooking.party_size}</div>
-              </div>
-              <div className="bo-kv bo-kv--wide">
-                <div className="bo-kvLabel">Comentario</div>
-                <div className="bo-kvValue bo-kvValue--wrap">{selectedBooking.commentary || "—"}</div>
-              </div>
-            </div>
-            <div className="bo-field">
-              <label className="bo-label" htmlFor="booking-table-edit">Mesa</label>
-              <input id="booking-table-edit" className="bo-input" value={bookingTableDraft} onChange={(e) => setBookingTableDraft(e.target.value)} />
-            </div>
-            <div className="bo-modalActions">
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setSelectedBooking(null)}>Cerrar</button>
-              <button
-                className="bo-btn bo-btn--ghost"
-                type="button"
-                onClick={() => markBookingSeated(selectedBooking, !bookingStates[String(selectedBooking.id)]?.seated)}
-              >
-                {bookingStates[String(selectedBooking.id)]?.seated ? "Marcar no sentada" : "Marcar sentada"}
+          <div data-ui="booking-modal-content" className="bo-tableBookingModalContent">
+            <div data-slot="modal-head" className="bo-tableBookingModalHead">
+              <button data-ui="close-booking-x" className="bo-modalX" type="button" onClick={() => setSelectedBooking(null)} aria-label="Cerrar">
+                <X size={16} />
               </button>
-              <button
-                className="bo-btn bo-btn--primary"
-                type="button"
-                onClick={() => void setBookingTable(selectedBooking, bookingTableDraft.trim())}
-              >
-                Guardar reserva
+            </div>
+
+            <div data-ui="booking-hero" className="bo-tableBookingHero">
+              <div data-ui="booking-hero-left" className="bo-tableBookingHeroLeft">
+                <div data-ui="booking-table-badge" className={`bo-tableBookingTableBadge${selectedBooking.table_number ? "" : " is-unassigned"}`}>
+                  {selectedBooking.table_number ? `Mesa ${selectedBooking.table_number}` : "Sin mesa"}
+                </div>
+                <div data-ui="booking-hero-name" className="bo-tableBookingHeroName">{selectedBooking.customer_name}</div>
+              </div>
+              <div data-ui="booking-hero-right" className="bo-tableBookingHeroRight">
+                <span data-ui="hero-pax" className="bo-tableBookingHeroStat">
+                  <Users size={15} strokeWidth={1.8} />
+                  {selectedBooking.party_size} pax
+                </span>
+                <span data-ui="hero-time" className="bo-tableBookingHeroStat">
+                  <CalendarDays size={15} strokeWidth={1.8} />
+                  {formatHHMM(selectedBooking.reservation_time)}
+                </span>
+                <span data-ui="hero-status" className={`bo-tableBookingHeroStatus${bookingStates[String(selectedBooking.id)]?.seated ? " is-seated" : " is-pending"}`}>
+                  {bookingStates[String(selectedBooking.id)]?.seated ? "Sentada" : "Pendiente"}
+                </span>
+              </div>
+            </div>
+
+            <div data-ui="booking-details-grid" className="bo-tableBookingDetailsGrid">
+              <div data-ui="detail-name" className="bo-tableBookingDetailCard">
+                <div data-ui="detail-label" className="bo-tableBookingDetailLabel">Nombre</div>
+                <div data-ui="detail-value" className="bo-tableBookingDetailValue">{selectedBooking.customer_name}</div>
+              </div>
+              <div data-ui="detail-time" className="bo-tableBookingDetailCard">
+                <div data-ui="detail-label" className="bo-tableBookingDetailLabel">Hora</div>
+                <div data-ui="detail-value" className="bo-tableBookingDetailValue">{formatHHMM(selectedBooking.reservation_time)}</div>
+              </div>
+              <div data-ui="detail-guests" className="bo-tableBookingDetailCard">
+                <div data-ui="detail-label" className="bo-tableBookingDetailLabel">Comensales</div>
+                <div data-ui="detail-value" className="bo-tableBookingDetailValue">{selectedBooking.party_size}</div>
+              </div>
+              <div data-ui="detail-source" className="bo-tableBookingDetailCard">
+                <div data-ui="detail-label" className="bo-tableBookingDetailLabel">Estado</div>
+                <div data-ui="detail-value" className="bo-tableBookingDetailValue">
+                  <span data-ui="status-indicator" className={`bo-tableBookingStatusIndicator${bookingStates[String(selectedBooking.id)]?.seated ? " is-seated" : " is-pending"}`} />
+                  {bookingStates[String(selectedBooking.id)]?.seated ? "Sentada" : "Pendiente"}
+                </div>
+              </div>
+              {selectedBooking.commentary ? (
+                <div data-ui="detail-comment" className="bo-tableBookingDetailCard bo-tableBookingDetailCard--wide">
+                  <div data-ui="detail-label" className="bo-tableBookingDetailLabel">Comentario</div>
+                  <div data-ui="detail-value" className="bo-tableBookingDetailValue bo-tableBookingDetailValue--wrap">{selectedBooking.commentary}</div>
+                </div>
+              ) : null}
+            </div>
+
+            <div data-ui="field-booking-table" className="bo-tableBookingTableField">
+              <label data-ui="booking-table-label" className="bo-tableBookingTableLabel">Asignar mesa</label>
+              <Select
+                value={bookingTableDraft}
+                onChange={(val) => setBookingTableDraft(val)}
+                options={freeTableOptions}
+                ariaLabel="Seleccionar mesa"
+              />
+            </div>
+
+            <div data-ui="booking-modal-actions" className="bo-tableBookingModalActions">
+              <button data-ui="cancel-booking-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => void cancelBooking(selectedBooking)}>
+                <Trash2 size={14} strokeWidth={1.8} />
+                Cancelar reserva
               </button>
+              <div data-slot="actions-right" className="bo-tableBookingActionsRight">
+                <button
+                  data-ui="toggle-seated-btn"
+                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  type="button"
+                  onClick={() => markBookingSeated(selectedBooking, !bookingStates[String(selectedBooking.id)]?.seated)}
+                >
+                  {bookingStates[String(selectedBooking.id)]?.seated ? "Desmarcar sentada" : "Marcar sentada"}
+                </button>
+                <button
+                  data-ui="save-booking-btn"
+                  className="bo-btn bo-btn--primary bo-btn--sm"
+                  type="button"
+                  onClick={() => void setBookingTable(selectedBooking, bookingTableDraft.trim())}
+                >
+                  Guardar
+                </button>
+              </div>
             </div>
           </div>
         ) : null}
@@ -3186,6 +3466,7 @@ export default function TableManagerPage() {
             </motion.div>
           ) : (
             <motion.div
+              data-ui="table-map-closed"
               key="table-map-closed"
               className="bo-tableMapClosedShell"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -3193,12 +3474,12 @@ export default function TableManagerPage() {
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               transition={dayVisibilityTransition}
             >
-              <div className="bo-tableMapClosedTop">
-                <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
+              <div data-ui="closed-top" className="bo-tableMapClosedTop">
+                <button data-ui="closed-back-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
                   <ChevronLeft size={18} strokeWidth={1.8} />
                 </button>
               </div>
-              <div className="bo-tableMapClosedBody">
+              <div data-ui="closed-body" className="bo-tableMapClosedBody">
                 <ReservationDayPanel
                   title="Día cerrado"
                   meta={selectedDate}

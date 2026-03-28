@@ -759,7 +759,11 @@ async function start() {
         req.path.startsWith("/factura/") ||
         req.path.startsWith("/invitacion/") ||
         req.path.startsWith("/onboarding/") ||
-        req.path.startsWith("/reset-password/");
+        req.path.startsWith("/reset-password/") ||
+        req.path === "/confirm" ||
+        req.path === "/cancel" ||
+        req.path === "/update-rice" ||
+        req.path === "/booking-policies";
       const isAppLike = isPublicRoute || req.path.startsWith("/factura/");
       if (!isAppLike && !wantsHTML(req)) return next();
 
@@ -782,6 +786,32 @@ async function start() {
       // Allow public access to invoice viewing route without session
       if (req.path.startsWith("/factura/")) {
         // Public route - render the page without requiring session
+        const pageContextInit: any = {
+          urlOriginal: req.originalUrl,
+          headersOriginal: req.headers,
+          bo: { theme, session: null, movingExpirationDate: null } satisfies BOPageContext,
+          boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
+        };
+
+        const pageContext = await renderPage(pageContextInit);
+        const httpResponse = pageContext.httpResponse;
+        if (!httpResponse) return next();
+
+        if (isUnrenderableVikeError(httpResponse.statusCode, httpResponse.body) && !pageContextRequest) {
+          sendFallbackErrorPage(res, 500);
+          return;
+        }
+        sendHttpResponse(res, httpResponse, { pageContextRequest });
+        return;
+      }
+
+      // Public booking pages (confirm, cancel, update-rice, booking-policies) — no session required
+      const isPublicBookingPage =
+        req.path === "/confirm" ||
+        req.path === "/cancel" ||
+        req.path === "/update-rice" ||
+        req.path === "/booking-policies";
+      if (isPublicBookingPage) {
         const pageContextInit: any = {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
