@@ -230,7 +230,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-col gap-[18px]">
-      <div className="rounded-[var(--rounded-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--bo-surface)] border-none shadow-[var(--shadow-soft)]">
+      <div className="rounded-[var(--rounded-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--card)] border-none shadow-[var(--shadow-soft)]">
         <div className="flex items-end justify-between p-[16px_18px_10px]">
           <div>
             <div className="text-sm font-bold">Roles y jerarquía</div>
@@ -245,7 +245,7 @@ export default function Page() {
 
       <div className="flex items-center justify-between gap-3">
         <div className="text-xs text-[var(--text-muted)]">Tu importancia actual: {actorImportance}</div>
-        <button className="h-8 px-[10px] rounded-lg text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-bo-text cursor-pointer leading-none whitespace-nowrap" type="button" onClick={() => setCreateOpen(true)}>
+        <button className="h-8 px-[10px] rounded-lg text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-foreground cursor-pointer leading-none whitespace-nowrap" type="button" onClick={() => setCreateOpen(true)}>
           <Plus size={14} strokeWidth={1.8} />
           Nuevo rol
         </button>

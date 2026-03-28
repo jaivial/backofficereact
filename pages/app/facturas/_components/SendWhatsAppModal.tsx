@@ -281,10 +281,10 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
               <div className="bo-sendWhatsAppForm">
                 <div className="grid gap-2">
                   <div className="bo-fieldHeader">
-                    <label className="text-bo-sm font-semibold text-bo-muted">Mensaje</label>
+                    <label className="text-sm font-semibold text-muted-foreground">Mensaje</label>
                     <button
                       type="button"
-                      className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                      className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                       onClick={() => setShowPreview(!showPreview)}
                       disabled={sending}
                     >
@@ -295,7 +295,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                     <div className="bo-sendWhatsAppPreview">{previewContent.message}</div>
                   ) : (
                     <textarea
-                      className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
+                      className="min-h-[80px] rounded-md border border bg-white/5 text-foreground p-3 outline-none"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       rows={8}
@@ -312,14 +312,14 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
 
             {/* Actions */}
             <div className="bo-sendWhatsAppActions">
-              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleClose} disabled={sending}>
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleClose} disabled={sending}>
                 Cancelar
               </button>
               {hasPhone ? (
                 <>
                   <button
                     type="button"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                     onClick={handleOpenWhatsApp}
                     disabled={sending}
                   >
@@ -328,7 +328,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                   </button>
                   <button
                     type="button"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                     onClick={handleSend}
                     disabled={sending}
                   >
@@ -346,7 +346,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                   </button>
                 </>
               ) : (
-                <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" disabled>
+                <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" disabled>
                   Sin numero de telefono
                 </button>
               )}

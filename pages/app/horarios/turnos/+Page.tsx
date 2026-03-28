@@ -378,10 +378,10 @@ export default function Page() {
 
   return (
     <section aria-label="Edicion de turnos" className="grid gap-3.5 w-full">
-      <div className="rounded-xl border border-border bg-bo-surface-2">
+      <div className="rounded-xl border border-border bg-card-2">
         <div className="flex items-center justify-between p-4 pb-0">
           <div>
-            <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
               <CalendarClock size={16} strokeWidth={1.8} />
               Turnos
             </div>
@@ -392,25 +392,25 @@ export default function Page() {
             <div className="h-[30px] rounded-full border border-border px-3 inline-flex items-center text-xs font-medium text-text-muted">
               {loading ? "Cargando..." : date}
             </div>
-            <div className="grid grid-cols-2 p-1" style={{ background: "var(--bo-surface-3)", borderRadius: "var(--rounded-sm)" }} role="tablist" aria-label="Cambiar vista">
+            <div className="grid grid-cols-2 p-1" style={{ background: "var(--muted)", borderRadius: "var(--rounded-sm)" }} role="tablist" aria-label="Cambiar vista">
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "grid" ? "bg-bo-surface text-bo-text" : "text-text-muted hover:text-bo-text"}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "grid" ? "bg-card text-foreground" : "text-text-muted hover:text-foreground"}`}
                 role="tab"
                 aria-selected={view === "grid"}
                 onClick={() => setView("grid")}
               >
-                {view === "grid" ? <span className="block h-0.5 w-4 bg-bo-accent rounded-full mb-1" /> : null}
+                {view === "grid" ? <span className="block h-0.5 w-4 bg-accent rounded-full mb-1" /> : null}
                 <span>Grid</span>
               </button>
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-bo-surface text-bo-text" : "text-text-muted hover:text-bo-text"}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-card text-foreground" : "text-text-muted hover:text-foreground"}`}
                 role="tab"
                 aria-selected={view === "table"}
                 onClick={() => setView("table")}
               >
-                {view === "table" ? <span className="block h-0.5 w-4 bg-bo-accent rounded-full mb-1" /> : null}
+                {view === "table" ? <span className="block h-0.5 w-4 bg-accent rounded-full mb-1" /> : null}
                 <span>Tabla</span>
               </button>
             </div>
@@ -429,16 +429,16 @@ export default function Page() {
               emptyLabel="Sin miembros para mostrar."
             />
           ) : (
-            <section className="rounded-lg border border-border bg-bo-surface-3/30 p-3" aria-label="Tabla de miembros">
+            <section className="rounded-lg border border-border bg-card-3/30 p-3" aria-label="Tabla de miembros">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-bo-text">Miembros</span>
+                <span className="text-sm font-semibold text-foreground">Miembros</span>
                 <span className="text-xs text-text-muted">{tableMembers.length}</span>
               </div>
-              <label className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-md bg-bo-surface border border-border" aria-label="Buscar miembro">
+              <label className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-md bg-card border border-border" aria-label="Buscar miembro">
                 <Search size={14} strokeWidth={1.8} className="text-text-muted" />
                 <input
                   type="text"
-                  className="flex-1 bg-transparent text-sm text-bo-text placeholder:text-text-muted focus:outline-none"
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-text-muted focus:outline-none"
                   value={memberSearch}
                   onChange={(ev) => setMemberSearch(ev.target.value)}
                   placeholder="Buscar..."
@@ -454,9 +454,9 @@ export default function Page() {
             </section>
           )}
 
-          <section className="rounded-lg border border-border bg-bo-surface-3/30 p-4" aria-label="Editor de turnos">
+          <section className="rounded-lg border border-border bg-card-3/30 p-4" aria-label="Editor de turnos">
             <div className="mb-4">
-              <div className="text-sm font-semibold text-bo-text">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
+              <div className="text-sm font-semibold text-foreground">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
               <div className="text-xs text-text-muted mt-0.5">
                 {selectedSchedule ? `Horario asignado: ${selectedSchedule.startTime} - ${selectedSchedule.endTime}` : "Sin horario asignado para este dia"}
               </div>
@@ -465,7 +465,7 @@ export default function Page() {
             {selectedMember && selectedSchedule && !isMemberActive && (
               <div className="mb-4">
                 <button
-                  className="w-full h-10 rounded-md text-sm font-medium bg-bo-accent text-bo-bg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  className="w-full h-10 rounded-md text-sm font-medium bg-accent text-background hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                   type="button"
                   onClick={startFichaje}
                   disabled={busyFichaje || !selectedSchedule}
@@ -479,11 +479,11 @@ export default function Page() {
             {selectedMember && isMemberActive && (
               <div className="mb-4 flex flex-col gap-2">
                 <div className="flex items-center">
-                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-success) 10%, transparent)", color: "var(--bo-color-success)" }}>En curso</span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--text-success) 10%, transparent)", color: "var(--text-success)" }}>En curso</span>
                 </div>
                 <button
                   className="w-full h-10 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                  style={{ backgroundColor: "var(--bo-color-danger)", color: "white" }}
+                  style={{ backgroundColor: "var(--text-danger)", color: "white" }}
                   type="button"
                   onClick={stopFichaje}
                   disabled={busyFichaje}

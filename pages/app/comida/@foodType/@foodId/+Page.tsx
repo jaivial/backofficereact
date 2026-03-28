@@ -368,22 +368,22 @@ export default function Page() {
       {
         id: "state",
         label: item.active ? "Activo" : "Inactivo",
-        className: item.active ? "bg-[var(--bo-accent)]/[0.16] text-[var(--bo-accent)] border-[var(--bo-accent)]/[0.30]" : "bg-white/[0.06] text-bo-muted border-bo-border",
+        className: item.active ? "bg-[var(--accent)]/[0.16] text-[var(--accent)] border-[var(--accent)]/[0.30]" : "bg-white/[0.06] text-muted-foreground border",
       },
     ];
 
-    if (item.tipo) badges.push({ id: "tipo", label: item.tipo, className: "bg-[var(--bo-accent)]/[0.14] text-[var(--bo-accent)] border-[var(--bo-accent)]/[0.32]" });
+    if (item.tipo) badges.push({ id: "tipo", label: item.tipo, className: "bg-[var(--accent)]/[0.14] text-[var(--accent)] border-[var(--accent)]/[0.32]" });
 
     if (foodType === "vinos") {
       const wine = item as Vino;
-      if (wine.denominacion_origen) badges.push({ id: "do", label: wine.denominacion_origen, className: "bg-[var(--bo-accent-2)]/[0.12] text-[var(--bo-accent-2)] border-[var(--bo-accent-2)]/[0.32]" });
+      if (wine.denominacion_origen) badges.push({ id: "do", label: wine.denominacion_origen, className: "bg-[var(--accent-2)]/[0.12] text-[var(--accent-2)] border-[var(--accent-2)]/[0.32]" });
       return badges;
     }
 
     const food = item as FoodItem;
-    if (food.categoria) badges.push({ id: "categoria", label: food.categoria, className: "bg-[var(--bo-accent-2)]/[0.12] text-[var(--bo-accent-2)] border-[var(--bo-accent-2)]/[0.32]" });
+    if (food.categoria) badges.push({ id: "categoria", label: food.categoria, className: "bg-[var(--accent-2)]/[0.12] text-[var(--accent-2)] border-[var(--accent-2)]/[0.32]" });
     if (foodType === "platos" && Number(food.suplemento || 0) > 0) {
-      badges.push({ id: "extra", label: `+${formatEuro(food.suplemento || 0)}`, className: "bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border-[var(--bo-color-warning)]/[0.30]" });
+      badges.push({ id: "extra", label: `+${formatEuro(food.suplemento || 0)}`, className: "bg-[var(--text-warning)]/[0.16] text-[var(--text-warning)] border-[var(--text-warning)]/[0.30]" });
     }
 
     return badges;
@@ -551,22 +551,22 @@ export default function Page() {
           Volver a {FOOD_TYPE_LABELS[foodType]}
         </button>
         {item ? (
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${item.active ? "bg-[var(--bo-accent)]/[0.16] text-[var(--bo-accent)] border-[var(--bo-accent)]/[0.30]" : "bg-white/[0.06] text-bo-muted border-bo-border"}`}>
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${item.active ? "bg-[var(--accent)]/[0.16] text-[var(--accent)] border-[var(--accent)]/[0.30]" : "bg-white/[0.06] text-muted-foreground border"}`}>
             {item.active ? "Visible" : "Oculto"}
           </span>
         ) : null}
       </div>
 
       {!item ? (
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-foodDetailPanel">
+        <div className="rounded-lg bg-card shadow-soft bo-foodDetailPanel">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Elemento no disponible</div>
-            <div className="text-bo-xs text-bo-faint">No se pudo cargar el detalle solicitado.</div>
+            <div className="text-sm font-bold text-foreground">Elemento no disponible</div>
+            <div className="text-xs text-muted-foreground">No se pudo cargar el detalle solicitado.</div>
           </div>
         </div>
       ) : (
         <>
-          <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-foodDetailHero">
+          <div className="rounded-lg bg-card shadow-soft bo-foodDetailHero">
             <div className="bo-foodDetailMedia">
               {imageUrl ? (
                 <img src={imageUrl} alt={`Imagen de ${title}`} loading="lazy" decoding="async" />
@@ -603,12 +603,12 @@ export default function Page() {
               {isPlate ? (
                 <div className="bo-foodDetailHeroSections">
                   <div className="bo-foodDetailHeroSection">
-                    <div className="text-bo-sm font-bold text-bo-text">Datos clave</div>
-                    <div className="text-bo-xs text-bo-faint">Valores principales del elemento seleccionado.</div>
+                    <div className="text-sm font-bold text-foreground">Datos clave</div>
+                    <div className="text-xs text-muted-foreground">Valores principales del elemento seleccionado.</div>
                     <div className="bo-foodDetailFactsGrid">
                       {detailKeyFacts.map((fact) => (
                         <div key={fact.id} className="bo-kv bo-foodDetailFact">
-                          <div className="text-bo-sm text-bo-muted">{fact.label}</div>
+                          <div className="text-sm text-muted-foreground">{fact.label}</div>
                           <div className="bo-kvValue bo-kvValue--wrap">{fact.value}</div>
                         </div>
                       ))}
@@ -621,16 +621,16 @@ export default function Page() {
 
           {!isPlate ? (
             <div className="bo-foodDetailBodyGrid">
-              <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-foodDetailPanel bo-foodDetailPanel--facts">
+              <div className="rounded-lg bg-card shadow-soft bo-foodDetailPanel bo-foodDetailPanel--facts">
                 <div className="flex items-end justify-between pb-2 px-4 pt-4">
-                  <div className="text-bo-sm font-bold text-bo-text">Datos clave</div>
-                  <div className="text-bo-xs text-bo-faint">Valores principales del elemento seleccionado.</div>
+                  <div className="text-sm font-bold text-foreground">Datos clave</div>
+                  <div className="text-xs text-muted-foreground">Valores principales del elemento seleccionado.</div>
                 </div>
                 <div className="p-4">
                   <div className="bo-foodDetailFactsGrid">
                     {detailKeyFacts.map((fact) => (
                       <div key={fact.id} className="bo-kv bo-foodDetailFact">
-                        <div className="text-bo-sm text-bo-muted">{fact.label}</div>
+                        <div className="text-sm text-muted-foreground">{fact.label}</div>
                         <div className="bo-kvValue bo-kvValue--wrap">{fact.value}</div>
                       </div>
                     ))}
@@ -638,10 +638,10 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-foodDetailPanel bo-foodDetailPanel--description">
+              <div className="rounded-lg bg-card shadow-soft bo-foodDetailPanel bo-foodDetailPanel--description">
                 <div className="flex items-end justify-between pb-2 px-4 pt-4">
-                  <div className="text-bo-sm font-bold text-bo-text">Descripcion</div>
-                  <div className="text-bo-xs text-bo-faint">Texto que aparece en la carta publica.</div>
+                  <div className="text-sm font-bold text-foreground">Descripcion</div>
+                  <div className="text-xs text-muted-foreground">Texto que aparece en la carta publica.</div>
                 </div>
                 <div className="p-4">
                   <p className={`bo-foodDetailDescription${hasDescription ? "" : " is-empty"}`}>
@@ -653,30 +653,30 @@ export default function Page() {
           ) : null}
 
           {isPlate && currentPlate ? (
-            <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-foodDetailPanel bo-foodDetailQuickEditor">
-              <div className="bo-panelHead bo-foodDetailQuickHead">
+            <div className="rounded-lg bg-card shadow-soft bo-foodDetailPanel bo-foodDetailQuickEditor">
+              <div className="flex justify-between items-center p-4 bo-foodDetailQuickHead">
                 <div>
-                  <div className="text-bo-sm font-bold text-bo-text">Edicion rapida</div>
-                  <div className="text-bo-xs text-bo-faint">Atajos para ajustar este plato sin volver al listado.</div>
+                  <div className="text-sm font-bold text-foreground">Edicion rapida</div>
+                  <div className="text-xs text-muted-foreground">Atajos para ajustar este plato sin volver al listado.</div>
                 </div>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${quickDirty ? "bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border-[var(--bo-color-warning)]/[0.30]" : "bg-white/[0.06] text-bo-muted border-bo-border"}`}>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${quickDirty ? "bg-[var(--text-warning)]/[0.16] text-[var(--text-warning)] border-[var(--text-warning)]/[0.30]" : "bg-white/[0.06] text-muted-foreground border"}`}>
                   {quickDirty ? "Cambios sin guardar" : "Sin cambios"}
                 </span>
               </div>
               <div className="p-4">
                 <div className="bo-foodDetailQuickGrid">
                   <label className="grid gap-2">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Nombre</span>
+                    <span className="text-sm font-semibold text-muted-foreground">Nombre</span>
                     <input
                       type="text"
-                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                      className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                       value={quickName}
                       onChange={(event) => setQuickName(event.target.value)}
                       disabled={savingQuick}
                     />
                   </label>
                   <label className="grid gap-2">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Tipo</span>
+                    <span className="text-sm font-semibold text-muted-foreground">Tipo</span>
                     <Select
                       value={quickTipo}
                       onChange={setQuickTipo}
@@ -687,19 +687,19 @@ export default function Page() {
                     />
                   </label>
                   <label className="grid gap-2">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Precio</span>
+                    <span className="text-sm font-semibold text-muted-foreground">Precio</span>
                     <input
                       type="number"
                       min="0"
                       step="0.01"
-                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                      className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                       value={quickPrecio}
                       onChange={(event) => setQuickPrecio(event.target.value)}
                       disabled={savingQuick}
                     />
                   </label>
                   <label className="grid gap-2">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Categoria</span>
+                    <span className="text-sm font-semibold text-muted-foreground">Categoria</span>
                     <Select
                       value={quickCategoria}
                       onChange={setQuickCategoria}
@@ -711,7 +711,7 @@ export default function Page() {
                   </label>
                   <div className={`bo-foodDetailQuickStatus bo-foodDetailQuickSupplement${quickHasSuplemento ? " is-active" : ""}`}>
                     <div className="bo-foodDetailQuickStatusRow">
-                      <span className="text-bo-sm font-semibold text-bo-muted">Tiene suplemento</span>
+                      <span className="text-sm font-semibold text-muted-foreground">Tiene suplemento</span>
                       <Switch
                         checked={quickHasSuplemento}
                         onCheckedChange={setQuickHasSuplemento}
@@ -721,12 +721,12 @@ export default function Page() {
                     </div>
                     {quickHasSuplemento ? (
                       <label className="grid gap-2 bo-foodDetailQuickSupplementField">
-                        <span className="text-bo-sm font-semibold text-bo-muted">Importe suplemento</span>
+                        <span className="text-sm font-semibold text-muted-foreground">Importe suplemento</span>
                         <input
                           type="number"
                           min="0"
                           step="0.01"
-                          className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                          className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                           value={quickSuplemento}
                           onChange={(event) => setQuickSuplemento(event.target.value)}
                           disabled={savingQuick}
@@ -735,13 +735,13 @@ export default function Page() {
                     ) : null}
                   </div>
                   <div className="bo-foodDetailQuickStatus">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Visible en carta</span>
+                    <span className="text-sm font-semibold text-muted-foreground">Visible en carta</span>
                     <Switch checked={quickActive} onCheckedChange={setQuickActive} disabled={savingQuick} aria-label="Cambiar visibilidad del plato" />
                   </div>
                   <label className="grid gap-2 bo-foodDetailQuickDescription">
-                    <span className="text-bo-sm font-semibold text-bo-muted">Descripcion</span>
+                    <span className="text-sm font-semibold text-muted-foreground">Descripcion</span>
                     <textarea
-                      className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
+                      className="min-h-[80px] rounded-md border border bg-white/5 text-foreground p-3 outline-none"
                       rows={4}
                       value={quickDescripcion}
                       onChange={(event) => setQuickDescripcion(event.target.value)}
@@ -752,7 +752,7 @@ export default function Page() {
               </div>
               <div className="bo-foodDetailEditorActions">
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                   type="button"
                   onClick={onQuickSave}
                   disabled={!quickCanSave}
@@ -766,14 +766,14 @@ export default function Page() {
           ) : null}
 
           {!isWine ? (
-            <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-foodDetailPanel bo-foodDetailPanel--allergens">
-              <div className="bo-panelHead bo-foodDetailAllergenHead">
+            <div className="rounded-lg bg-card shadow-soft bo-foodDetailPanel bo-foodDetailPanel--allergens">
+              <div className="flex justify-between items-center p-4 bo-foodDetailAllergenHead">
                 <div>
-                  <div className="text-bo-sm font-bold text-bo-text">Alergenos</div>
-                  <div className="text-bo-xs text-bo-faint">Etiquetas usadas para informacion alergena del plato.</div>
+                  <div className="text-sm font-bold text-foreground">Alergenos</div>
+                  <div className="text-xs text-muted-foreground">Etiquetas usadas para informacion alergena del plato.</div>
                 </div>
                 {isPlate ? (
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={openAllergenModal}>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={openAllergenModal}>
                     Editar alergenos
                   </button>
                 ) : null}
@@ -796,8 +796,8 @@ export default function Page() {
 
           {isPlate ? (
             <Modal open={allergenModalOpen} title="Alergenos" onClose={() => setAllergenModalOpen(false)} widthPx={620}>
-              <div className="flex items-center justify-between p-4 border-b border-bo-border">
-                <div className="text-lg font-semibold text-bo-text">Selecciona alergenos</div>
+              <div className="flex items-center justify-between p-4 border-b border">
+                <div className="text-lg font-semibold text-foreground">Selecciona alergenos</div>
                 <button className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 cursor-pointer" type="button" onClick={() => setAllergenModalOpen(false)} aria-label="Cerrar">
                   ×
                 </button>
@@ -822,13 +822,13 @@ export default function Page() {
                   })}
                 </div>
               </div>
-              <div className="flex justify-end gap-2 p-4 border-t border-bo-border">
+              <div className="flex justify-end gap-2 p-4 border-t border">
                 {savingAllergens ? (
-                  <span className="text-bo-xs text-bo-faint">Guardando cambios...</span>
+                  <span className="text-xs text-muted-foreground">Guardando cambios...</span>
                 ) : (
-                  <span className="text-bo-xs text-bo-faint">Cambios guardados automaticamente.</span>
+                  <span className="text-xs text-muted-foreground">Cambios guardados automaticamente.</span>
                 )}
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setAllergenModalOpen(false)} disabled={savingAllergens}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setAllergenModalOpen(false)} disabled={savingAllergens}>
                   Cancelar
                 </button>
               </div>

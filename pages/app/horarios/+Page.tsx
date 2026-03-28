@@ -389,22 +389,22 @@ export default function Page() {
   return (
     <section aria-label="Horarios" className="grid grid-gap-4 w-full max-w-full min-w-0">
       <div className="grid grid-gap-4 grid-cols-1 w-full min-w-0">
-        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
+        <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-3">
           <div className="flex items-center justify-between p-4 pb-0">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
                 <CalendarClock size={16} strokeWidth={1.8} />
                 Horarios
                 {realtime.pendingScheduleUpdates && (
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-bo-accent opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-bo-accent"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                   </span>
                 )}
               </div>
               <div className="text-xs text-faint mt-1">Selecciona una fecha y asigna turnos al equipo.</div>
             </div>
-            <div className="h-[30px] rounded-full border border-bo-border px-3 inline-flex items-center text-xs font-medium text-bo-muted">
+            <div className="h-[30px] rounded-full border border px-3 inline-flex items-center text-xs font-medium text-muted-foreground">
               {selectedDate}
             </div>
           </div>
@@ -412,7 +412,7 @@ export default function Page() {
             <div className="grid grid-cols-2 w-full max-w-full" role="tablist" aria-label="Calendario de miembros y reservas">
               <button
                 type="button"
-                className={`appearance-none cursor-pointer bg-transparent text-bo-muted text-sm ${calendarTab === "miembros" ? "text-bo-accent" : ""}`}
+                className={`appearance-none cursor-pointer bg-transparent text-muted-foreground text-sm ${calendarTab === "miembros" ? "text-accent" : ""}`}
                 role="tab"
                 aria-selected={calendarTab === "miembros"}
                 onClick={() => setCalendarTab("miembros")}
@@ -427,7 +427,7 @@ export default function Page() {
               </button>
               <button
                 type="button"
-                className={`appearance-none cursor-pointer bg-transparent text-bo-muted text-sm ${calendarTab === "reservas" ? "text-bo-accent" : ""}`}
+                className={`appearance-none cursor-pointer bg-transparent text-muted-foreground text-sm ${calendarTab === "reservas" ? "text-accent" : ""}`}
                 role="tab"
                 aria-selected={calendarTab === "reservas"}
                 onClick={() => setCalendarTab("reservas")}
@@ -467,15 +467,15 @@ export default function Page() {
                 </AnimatePresence>
               </div>
 
-              <div className="w-[280px] flex-shrink-0 flex flex-col max-h-[480px] bg-bo-surface-2 border border-border rounded-lg p-3">
+              <div className="w-[280px] flex-shrink-0 flex flex-col max-h-[480px] bg-card-2 border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-sm font-semibold text-bo-text">Miembros</span>
+                  <span className="text-sm font-semibold text-foreground">Miembros</span>
                   <span className="text-xs text-text-muted">{filteredMembers.length}</span>
                 </div>
                 <div className="mb-2">
                   <input
                     type="text"
-                    className="w-full h-9 px-3 rounded-md border border-border bg-bo-surface text-bo-text text-xs placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-bo-accent/50"
+                    className="w-full h-9 px-3 rounded-md border border-border bg-card text-foreground text-xs placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
                     placeholder="Buscar..."
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}
@@ -484,13 +484,13 @@ export default function Page() {
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {filteredMembers.map((member) => (
-                    <button key={member.id} type="button" className="w-full flex items-center justify-between p-2 rounded-md hover:bg-bo-surface-2 transition-colors duration-150" onClick={() => openMemberModal(member)}>
-                      <span className="flex items-center gap-2 text-sm text-bo-text">
+                    <button key={member.id} type="button" className="w-full flex items-center justify-between p-2 rounded-md hover:bg-card-2 transition-colors duration-150" onClick={() => openMemberModal(member)}>
+                      <span className="flex items-center gap-2 text-sm text-foreground">
                         {fullName(member)}
                         {activeEntriesForDate.has(member.id) ? (
                           <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: "var(--bo-color-success)" }}></span>
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: "var(--bo-color-success)" }}></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: "var(--text-success)" }}></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: "var(--text-success)" }}></span>
                           </span>
                         ) : null}
                       </span>
@@ -511,17 +511,17 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-bo-surface-2">
+      <div className="rounded-xl border border-border bg-card-2">
         <div className="flex items-center justify-between p-4 pb-0">
           <div>
-            <div className="text-sm font-semibold text-bo-text">Horarios establecidos</div>
+            <div className="text-sm font-semibold text-foreground">Horarios establecidos</div>
             <div className="text-xs text-text-muted mt-0.5">{selectedDate}</div>
           </div>
         </div>
         <div className="p-4">
           <div className="overflow-x-auto">
             <div className="min-w-full">
-              <table className="w-full text-sm text-bo-text" aria-label="Tabla de horarios del día">
+              <table className="w-full text-sm text-foreground" aria-label="Tabla de horarios del día">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 px-2 font-medium">Miembro</th>
@@ -536,14 +536,14 @@ export default function Page() {
                   {schedules.map((schedule) => {
                     const live = activeEntriesForDate.get(schedule.memberId) || null;
                     return (
-                    <tr key={schedule.id} className="border-b border-border/50 hover:bg-bo-surface-3/50">
+                    <tr key={schedule.id} className="border-b border-border/50 hover:bg-card-3/50">
                       <td className="py-2 px-2">{schedule.memberName}</td>
                       <td className="py-2 px-2">{schedule.startTime}</td>
                       <td className="py-2 px-2">{schedule.endTime}</td>
                       <td className="py-2 px-2">{diffLabel(schedule.startTime, schedule.endTime)}</td>
                       <td className="py-2 px-2">
                         {live ? (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-success) 10%, transparent)", color: "var(--bo-color-success)" }}>
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--text-success) 10%, transparent)", color: "var(--text-success)" }}>
                             {elapsedForEntry(live, tick)}
                           </span>
                         ) : (
@@ -552,7 +552,7 @@ export default function Page() {
                       </td>
                       <td className="py-2 px-2">
                         <button
-                          className="h-8 px-3 rounded-md text-xs font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
+                          className="h-8 px-3 rounded-md text-xs font-medium text-text-muted hover:text-foreground hover:bg-card transition-colors duration-150"
                           type="button"
                           onClick={() => {
                             const member = membersSorted.find((m) => m.id === schedule.memberId);
@@ -569,17 +569,17 @@ export default function Page() {
                   {extraActiveEntries.map((entry) => {
                     const member = membersSorted.find((m) => m.id === entry.memberId);
                     return (
-                      <tr key={`live-${entry.id}`} className="border-b border-border/50 hover:bg-bo-surface-3/50">
+                      <tr key={`live-${entry.id}`} className="border-b border-border/50 hover:bg-card-3/50">
                         <td className="py-2 px-2">{entry.memberName}</td>
                         <td className="py-2 px-2">{entry.startTime}</td>
                         <td className="py-2 px-2">--:--</td>
                         <td className="py-2 px-2">--</td>
                         <td className="py-2 px-2">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-success) 10%, transparent)", color: "var(--bo-color-success)" }}>{elapsedForEntry(entry, tick)}</span>
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--text-success) 10%, transparent)", color: "var(--text-success)" }}>{elapsedForEntry(entry, tick)}</span>
                         </td>
                         <td className="py-2 px-2">
                           <button
-                            className="h-8 px-3 rounded-md text-xs font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150"
+                            className="h-8 px-3 rounded-md text-xs font-medium text-text-muted hover:text-foreground hover:bg-card transition-colors duration-150"
                             type="button"
                             onClick={() => {
                               if (member) openMemberModal(member);
@@ -609,17 +609,17 @@ export default function Page() {
 
       <Modal open={modalOpen} title="Asignar horario" onClose={() => setModalOpen(false)} widthPx={760}>
         <div className="flex items-center justify-between pb-4 border-b border-border">
-          <div className="text-base font-semibold text-bo-text">Asignar horario</div>
-          <button className="text-xl text-text-muted hover:text-bo-text leading-none w-8 h-8 flex items-center justify-center rounded-md hover:bg-bo-surface-2 transition-colors" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
+          <div className="text-base font-semibold text-foreground">Asignar horario</div>
+          <button className="text-xl text-text-muted hover:text-foreground leading-none w-8 h-8 flex items-center justify-center rounded-md hover:bg-card-2 transition-colors" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
             ×
           </button>
         </div>
 
-        <div className="mt-2.5 p-4 rounded-lg border border-border bg-bo-surface-2">
-          <div className="rounded-xl border border-border bg-bo-surface-2">
+        <div className="mt-2.5 p-4 rounded-lg border border-border bg-card-2">
+          <div className="rounded-xl border border-border bg-card-2">
             <div className="flex items-center justify-between p-4 pb-0">
               <div>
-                <div className="text-sm font-semibold text-bo-text">{selectedMember ? fullName(selectedMember) : "Miembro"}</div>
+                <div className="text-sm font-semibold text-foreground">{selectedMember ? fullName(selectedMember) : "Miembro"}</div>
                 <div className="text-xs text-text-muted mt-0.5">Fecha {selectedDate}</div>
               </div>
             </div>
@@ -627,7 +627,7 @@ export default function Page() {
             <div className="p-4">
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <div className="text-xs font-medium text-bo-text mb-2">Hora de entrada</div>
+                  <div className="text-xs font-medium text-foreground mb-2">Hora de entrada</div>
                   <div className="flex gap-2">
                     <div>
                       <div className="text-xs text-text-muted mb-1">Hora</div>
@@ -653,7 +653,7 @@ export default function Page() {
                 </div>
 
                 <div className="flex-1">
-                  <div className="text-xs font-medium text-bo-text mb-2">Hora de salida</div>
+                  <div className="text-xs font-medium text-foreground mb-2">Hora de salida</div>
                   <div className="flex gap-2">
                     <div>
                       <div className="text-xs text-text-muted mb-1">Hora</div>
@@ -673,7 +673,7 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="mt-4 inline-flex items-center gap-2 text-sm text-bo-text">
+              <div className="mt-4 inline-flex items-center gap-2 text-sm text-foreground">
                 <Clock3 size={14} strokeWidth={1.8} />
                 {`${entryHour}:${entryMinute}`} - {`${exitHour}:${exitMinute}`}
               </div>
@@ -682,10 +682,10 @@ export default function Page() {
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <button className="h-9 px-4 rounded-md text-sm font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface-2 transition-colors duration-150" type="button" onClick={() => setModalOpen(false)}>
+          <button className="h-9 px-4 rounded-md text-sm font-medium text-text-muted hover:text-foreground hover:bg-card-2 transition-colors duration-150" type="button" onClick={() => setModalOpen(false)}>
             Cancelar
           </button>
-          <button className="h-9 px-4 rounded-md text-sm font-medium bg-bo-accent text-bo-bg hover:opacity-90 transition-opacity duration-150" type="button" disabled={busy || !selectedMember} onClick={() => void saveSchedule()}>
+          <button className="h-9 px-4 rounded-md text-sm font-medium bg-accent text-background hover:opacity-90 transition-opacity duration-150" type="button" disabled={busy || !selectedMember} onClick={() => void saveSchedule()}>
             Guardar horario
           </button>
         </div>

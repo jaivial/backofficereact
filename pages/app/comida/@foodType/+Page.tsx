@@ -340,13 +340,13 @@ export default function Page() {
   return (
     <section aria-label={`Carta ${listLabel}`} className="relative pb-[98px]">
       <div className="max-w-[1200px] mx-auto px-4">
-        <button className="inline-flex items-center gap-1.5 w-fit p-0 border-0 bg-transparent text-[var(--text-muted)] text-sm font-semibold leading-tight cursor-pointer hover:text-bo-text transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--bo-accent)] focus-visible:outline-offset-2 rounded-sm" type="button" onClick={() => window.location.assign("/app/comida")}>
+        <button className="inline-flex items-center gap-1.5 w-fit p-0 border-0 bg-transparent text-[var(--text-muted)] text-sm font-semibold leading-tight cursor-pointer hover:text-foreground transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 rounded-sm" type="button" onClick={() => window.location.assign("/app/comida")}>
           <ChevronLeft size={16} />
           Volver a tipos de carta
         </button>
 
         <div className="py-6 pb-5 border-b border-[var(--border)] mb-5">
-          <h1 className="text-2xl font-bold text-bo-text mb-1">{listLabel}</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-1">{listLabel}</h1>
           <p className="text-base text-[var(--text-muted)]">Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.</p>
         </div>
 
@@ -390,11 +390,11 @@ export default function Page() {
         />
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-muted-foreground text-center gap-3">
             <LoadingSpinner centered size="sm" label="Cargando..." />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-muted-foreground text-center gap-3">
             <p>No hay {listLabel.toLowerCase()} con estos filtros.</p>
             <p>Usa el boton + para anadir el primer {singularLabel}.</p>
           </div>
@@ -417,8 +417,8 @@ export default function Page() {
           </div>
         )}
 
-        <div className={`flex items-center justify-between gap-[10px] p-4 border-t border-bo-border text-bo-muted text-xs${showPagerBtns ? "" : " justify-center text-center"}`} aria-label="Paginacion">
-          <div className="text-bo-muted text-sm">
+        <div className={`flex items-center justify-between gap-[10px] p-4 border-t border text-muted-foreground text-xs${showPagerBtns ? "" : " justify-center text-center"}`} aria-label="Paginacion">
+          <div className="text-muted-foreground text-sm">
             Pagina {page} de {totalPages} · {total} resultados
           </div>
           <div className="flex items-center gap-3">
@@ -447,7 +447,7 @@ export default function Page() {
         </div>
       </div>
 
-      <button className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[var(--bo-primary-alpha)] border border-[var(--bo-primary-alpha)] text-bo-text shadow-[0_14px_24px_rgba(0,0,0,0.35)] flex items-center justify-center cursor-pointer hover:bg-[var(--bo-bg-selected-hover)] focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2 z-30" type="button" aria-label={`Anadir ${singularLabel}`} onClick={onOpenCreate}>
+      <button className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[var(--primary-alpha)] border border-[var(--primary-alpha)] text-foreground shadow-[0_14px_24px_rgba(0,0,0,0.35)] flex items-center justify-center cursor-pointer hover:bg-[var(--background-selected-hover)] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 z-30" type="button" aria-label={`Anadir ${singularLabel}`} onClick={onOpenCreate}>
         <Plus size={24} />
       </button>
 

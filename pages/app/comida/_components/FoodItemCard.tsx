@@ -78,7 +78,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
             onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
           />
           <button
-            className="h-8 px-2.5 rounded-lg border border-[var(--border)] bg-transparent text-bo-text inline-flex items-center justify-center gap-2 text-xs transition-colors duration-150 hover:bg-[var(--bo-surface-hover)] disabled:opacity-55 disabled:cursor-not-allowed p-1.5"
+            className="h-8 px-2.5 rounded-lg border border-[var(--border)] bg-transparent text-foreground inline-flex items-center justify-center gap-2 text-xs transition-colors duration-150 hover:bg-[var(--card-hover)] disabled:opacity-55 disabled:cursor-not-allowed p-1.5"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -91,7 +91,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
             <PencilLine size={14} />
           </button>
           <button
-            className="h-8 px-2.5 rounded-lg border border-[color-mix(in srgb,var(--bo-color-danger)35%,transparent)] bg-[color-mix(in srgb,var(--bo-color-danger)14%,transparent)] text-red-500 inline-flex items-center justify-center gap-2 text-xs transition-colors duration-150 hover:bg-[color-mix(in srgb,var(--bo-color-danger)24%,transparent)] disabled:opacity-55 disabled:cursor-not-allowed p-1.5"
+            className="h-8 px-2.5 rounded-lg border border-[color-mix(in srgb,var(--text-danger)35%,transparent)] bg-[color-mix(in srgb,var(--text-danger)14%,transparent)] text-red-500 inline-flex items-center justify-center gap-2 text-xs transition-colors duration-150 hover:bg-[color-mix(in srgb,var(--text-danger)24%,transparent)] disabled:opacity-55 disabled:cursor-not-allowed p-1.5"
             type="button"
             onClick={(e) => {
               e.stopPropagation();

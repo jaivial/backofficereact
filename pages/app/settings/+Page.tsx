@@ -410,7 +410,7 @@ export default function Page() {
     <section aria-label="Ajustes">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5 flex-wrap">
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={reload} disabled={busy}>
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={reload} disabled={busy}>
             Recargar
           </button>
         </div>
@@ -420,17 +420,17 @@ export default function Page() {
       </div>
 
       <div className="flex flex-col gap-4 p-4">
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Integraciones">
+        <div className="rounded-lg bg-card shadow-soft" aria-label="Integraciones">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Integraciones</div>
-            <div className="text-bo-xs text-bo-faint">n8n, eventos y WhatsApp</div>
+            <div className="text-sm font-bold text-foreground">Integraciones</div>
+            <div className="text-xs text-muted-foreground">n8n, eventos y WhatsApp</div>
           </div>
           <div className="p-4">
             <div className="flex flex-col gap-4 p-4">
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">n8n Webhook URL</div>
+                <div className="text-sm font-semibold text-muted-foreground">n8n Webhook URL</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={integrations.n8nWebhookUrl}
                   placeholder="https://.../webhook/..."
                   onChange={(e) => setIntegrations((p) => ({ ...p, n8nWebhookUrl: e.target.value }))}
@@ -438,20 +438,20 @@ export default function Page() {
               </label>
 
               <div className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Eventos</div>
+                <div className="text-sm font-semibold text-muted-foreground">Eventos</div>
                 <div className="flex gap-4">
                   <Select value={eventsMode} onChange={onEventsModeChange} options={eventsModeOptions} size="sm" ariaLabel="Modo eventos" />
                   <div className="text-mutedText">{eventsMode === "all" ? "Se envían todos los eventos" : "Selecciona eventos a enviar"}</div>
                 </div>
                 {eventsMode === "custom" ? (
-                  <div className="bo-chips" aria-label="Eventos habilitados">
+                  <div className="rounded-fulls" aria-label="Eventos habilitados">
                     {EVENT_OPTIONS.map((ev) => {
                       const on = integrations.enabledEvents.includes(ev.value);
                       return (
                         <button
                           key={ev.value}
                           type="button"
-                          className={`bo-chip${on ? " is-on" : ""}`}
+                          className={`rounded-full${on ? " is-on" : ""}`}
                           onClick={() => toggleEvent(ev.value)}
                         >
                           {ev.label}
@@ -464,9 +464,9 @@ export default function Page() {
               </div>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">UAZAPI URL</div>
+                <div className="text-sm font-semibold text-muted-foreground">UAZAPI URL</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={integrations.uazapiUrl}
                   placeholder="https://...uazapi.com"
                   onChange={(e) => setIntegrations((p) => ({ ...p, uazapiUrl: e.target.value }))}
@@ -474,9 +474,9 @@ export default function Page() {
               </label>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">UAZAPI Token</div>
+                <div className="text-sm font-semibold text-muted-foreground">UAZAPI Token</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={integrations.uazapiToken}
                   placeholder="token"
                   onChange={(e) => setIntegrations((p) => ({ ...p, uazapiToken: e.target.value }))}
@@ -484,9 +484,9 @@ export default function Page() {
               </label>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Números WhatsApp del restaurante</div>
+                <div className="text-sm font-semibold text-muted-foreground">Números WhatsApp del restaurante</div>
                 <textarea
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors foregroundarea"
                   value={recipientsText}
                   placeholder={"Uno por línea. Ej:\n34692747052\n34638857294"}
                   onChange={(e) => setRecipientsText(e.target.value)}
@@ -495,7 +495,7 @@ export default function Page() {
               </label>
 
               <div className="flex gap-4">
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={saveIntegrations} disabled={busy}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={saveIntegrations} disabled={busy}>
                   Guardar integraciones
                 </button>
               </div>
@@ -503,65 +503,65 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Branding">
+        <div className="rounded-lg bg-card shadow-soft" aria-label="Branding">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Branding</div>
-            <div className="text-bo-xs text-bo-faint">Nombre, logo y emails</div>
+            <div className="text-sm font-bold text-foreground">Branding</div>
+            <div className="text-xs text-muted-foreground">Nombre, logo y emails</div>
           </div>
           <div className="p-4">
             <div className="flex flex-col gap-4 p-4">
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Nombre de marca</div>
+                <div className="text-sm font-semibold text-muted-foreground">Nombre de marca</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={branding.brandName}
                   onChange={(e) => setBranding((p) => ({ ...p, brandName: e.target.value }))}
                 />
               </label>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Logo URL</div>
-                <input className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={branding.logoUrl} onChange={(e) => setBranding((p) => ({ ...p, logoUrl: e.target.value }))} />
+                <div className="text-sm font-semibold text-muted-foreground">Logo URL</div>
+                <input className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" value={branding.logoUrl} onChange={(e) => setBranding((p) => ({ ...p, logoUrl: e.target.value }))} />
               </label>
 
               <div className="flex gap-4">
                 <label className="grid gap-2 flex-1">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Color primario</div>
+                  <div className="text-sm font-semibold text-muted-foreground">Color primario</div>
                   <div className="flex gap-4">
-                    <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={branding.primaryColor} onChange={(e) => setBranding((p) => ({ ...p, primaryColor: e.target.value }))} />
-                    <div className="w-3.5 h-3.5 rounded-full border border-bo-border shrink-0" style={{ background: primary }} aria-label="Preview color primario" />
+                    <input className="h-[34px] rounded-sm border border bg-card-2 text-foreground px-3 outline-none min-w-0 transition-colors" value={branding.primaryColor} onChange={(e) => setBranding((p) => ({ ...p, primaryColor: e.target.value }))} />
+                    <div className="w-3.5 h-3.5 rounded-full border border shrink-0" style={{ background: primary }} aria-label="Preview color primario" />
                   </div>
                 </label>
 
                 <label className="grid gap-2 flex-1">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Color acento</div>
+                  <div className="text-sm font-semibold text-muted-foreground">Color acento</div>
                   <div className="flex gap-4">
-                    <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={branding.accentColor} onChange={(e) => setBranding((p) => ({ ...p, accentColor: e.target.value }))} />
-                    <div className="w-3.5 h-3.5 rounded-full border border-bo-border shrink-0" style={{ background: accent }} aria-label="Preview color acento" />
+                    <input className="h-[34px] rounded-sm border border bg-card-2 text-foreground px-3 outline-none min-w-0 transition-colors" value={branding.accentColor} onChange={(e) => setBranding((p) => ({ ...p, accentColor: e.target.value }))} />
+                    <div className="w-3.5 h-3.5 rounded-full border border shrink-0" style={{ background: accent }} aria-label="Preview color acento" />
                   </div>
                 </label>
               </div>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Email From Name</div>
+                <div className="text-sm font-semibold text-muted-foreground">Email From Name</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={branding.emailFromName}
                   onChange={(e) => setBranding((p) => ({ ...p, emailFromName: e.target.value }))}
                 />
               </label>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Email From Address</div>
+                <div className="text-sm font-semibold text-muted-foreground">Email From Address</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={branding.emailFromAddress}
                   onChange={(e) => setBranding((p) => ({ ...p, emailFromAddress: e.target.value }))}
                 />
               </label>
 
               <div className="flex gap-4">
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveBranding} disabled={busy}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveBranding} disabled={busy}>
                   Guardar branding
                 </button>
               </div>
@@ -569,15 +569,15 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Pagina web">
+        <div className="rounded-lg bg-card shadow-soft" aria-label="Pagina web">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Pagina web</div>
-            <div className="text-bo-xs text-bo-faint">Plantillas premium para menus por tipo</div>
+            <div className="text-sm font-bold text-foreground">Pagina web</div>
+            <div className="text-xs text-muted-foreground">Plantillas premium para menus por tipo</div>
           </div>
           <div className="p-4">
             <div className="flex flex-col gap-4 p-4">
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Plantilla por defecto</div>
+                <div className="text-sm font-semibold text-muted-foreground">Plantilla por defecto</div>
                 <Select
                   value={websiteMenuTemplates.default_theme_id}
                   onChange={(value) => setWebsiteMenuTemplates((prev) => ({ ...prev, default_theme_id: value }))}
@@ -589,7 +589,7 @@ export default function Page() {
               </label>
 
               <div className="grid gap-2">
-                <label className="w-4 h-4 rounded border border-bo-border bg-bo-bg-primary">
+                <label className="w-4 h-4 rounded border border bg-background-primary">
                   <input
                     type="checkbox"
                     checked={websiteTemplateUsePerType}
@@ -603,7 +603,7 @@ export default function Page() {
                 <div className="flex flex-col gap-4 p-4">
                   {MENU_TYPE_OPTIONS.map((menuTypeOption) => (
                     <label className="grid gap-2" key={menuTypeOption.value}>
-                      <div className="text-bo-sm font-semibold text-bo-muted">{menuTypeOption.label}</div>
+                      <div className="text-sm font-semibold text-muted-foreground">{menuTypeOption.label}</div>
                       <Select
                         value={websiteMenuTemplates.overrides[menuTypeOption.value] || websiteMenuTemplates.default_theme_id}
                         onChange={(value) =>
@@ -625,7 +625,7 @@ export default function Page() {
               ) : null}
 
               <div className="flex gap-4">
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveWebsiteMenuTemplates} disabled={busy}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveWebsiteMenuTemplates} disabled={busy}>
                   Guardar pagina web
                 </button>
               </div>
@@ -633,10 +633,10 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Numeracion de facturas">
+        <div className="rounded-lg bg-card shadow-soft" aria-label="Numeracion de facturas">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Numeracion de facturas</div>
-            <div className="text-bo-xs text-bo-faint">Configura el formato de los numeros de factura</div>
+            <div className="text-sm font-bold text-foreground">Numeracion de facturas</div>
+            <div className="text-xs text-muted-foreground">Configura el formato de los numeros de factura</div>
           </div>
           <div className="p-4">
             <div className="flex flex-col gap-4 p-4">
@@ -645,9 +645,9 @@ export default function Page() {
               </div>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Formato</div>
+                <div className="text-sm font-semibold text-muted-foreground">Formato</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={invoiceSettings.format.format}
                   onChange={(e) => setInvoiceSettings((p) => ({ ...p, format: { ...p.format, format: e.target.value } }))}
                   placeholder="F-{YYYY}-{0001}"
@@ -656,9 +656,9 @@ export default function Page() {
 
               <div className="flex gap-4">
                 <label className="grid gap-2 flex-1">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Prefijo</div>
+                  <div className="text-sm font-semibold text-muted-foreground">Prefijo</div>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     value={invoiceSettings.format.prefix}
                     onChange={(e) => setInvoiceSettings((p) => ({ ...p, format: { ...p.format, prefix: e.target.value } }))}
                     placeholder="F-"
@@ -666,9 +666,9 @@ export default function Page() {
                 </label>
 
                 <label className="grid gap-2 flex-1">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Sufijo</div>
+                  <div className="text-sm font-semibold text-muted-foreground">Sufijo</div>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     value={invoiceSettings.format.suffix}
                     onChange={(e) => setInvoiceSettings((p) => ({ ...p, format: { ...p.format, suffix: e.target.value } }))}
                     placeholder=""
@@ -678,9 +678,9 @@ export default function Page() {
 
               <div className="flex gap-4">
                 <label className="grid gap-2 flex-1">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Numero inicial</div>
+                  <div className="text-sm font-semibold text-muted-foreground">Numero inicial</div>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     min="1"
                     value={invoiceSettings.format.startingNumber}
@@ -689,9 +689,9 @@ export default function Page() {
                 </label>
 
                 <label className="grid gap-2 flex-1">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Digitos de relleno (0001)</div>
+                  <div className="text-sm font-semibold text-muted-foreground">Digitos de relleno (0001)</div>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     min="1"
                     max="10"
@@ -702,9 +702,9 @@ export default function Page() {
               </div>
 
               <label className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Proximo numero</div>
+                <div className="text-sm font-semibold text-muted-foreground">Proximo numero</div>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="number"
                   min="1"
                   value={invoiceSettings.nextNumber}
@@ -714,12 +714,12 @@ export default function Page() {
               </label>
 
               <div className="grid gap-2 bo-panelPreview">
-                <div className="text-bo-sm font-semibold text-bo-muted">Vista previa del siguiente numero de factura</div>
+                <div className="text-sm font-semibold text-muted-foreground">Vista previa del siguiente numero de factura</div>
                 <div className="text-2xl font-semibold mt-2 font-mono">{previewInvoiceNumber}</div>
               </div>
 
               <div className="flex gap-4">
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveInvoiceSettings} disabled={busy}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveInvoiceSettings} disabled={busy}>
                   Guardar configuracion
                 </button>
               </div>
@@ -727,10 +727,10 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Renumerar facturas">
+        <div className="rounded-lg bg-card shadow-soft" aria-label="Renumerar facturas">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Renumerar facturas</div>
-            <div className="text-bo-xs text-bo-faint">Reasigna numeros de factura de forma masiva</div>
+            <div className="text-sm font-bold text-foreground">Renumerar facturas</div>
+            <div className="text-xs text-muted-foreground">Reasigna numeros de factura de forma masiva</div>
           </div>
           <div className="p-4">
             <div className="flex flex-col gap-4 p-4">
@@ -740,9 +740,9 @@ export default function Page() {
 
               <div className="flex gap-4">
                 <label className="grid gap-2 flex-1">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Numero inicial</div>
+                  <div className="text-sm font-semibold text-muted-foreground">Numero inicial</div>
                   <input
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     type="number"
                     min="1"
                     value={renumberStartingNumber}
@@ -753,7 +753,7 @@ export default function Page() {
               </div>
 
               <div className="grid gap-2">
-                <label className="w-4 h-4 rounded border border-bo-border bg-bo-bg-primary">
+                <label className="w-4 h-4 rounded border border bg-background-primary">
                   <input
                     type="checkbox"
                     checked={renumberGenerateByDate}
@@ -767,7 +767,7 @@ export default function Page() {
               {renumberGenerateByDate && (
                 <div className="flex gap-4">
                   <label className="grid gap-2 flex-1">
-                    <div className="text-bo-sm font-semibold text-bo-muted">Formato de fecha</div>
+                    <div className="text-sm font-semibold text-muted-foreground">Formato de fecha</div>
                     <Select
                       value={renumberDateFormat}
                       onChange={(v) => setRenumberDateFormat(v)}
@@ -784,7 +784,7 @@ export default function Page() {
 
               <div className="flex gap-4 mt-2">
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                   type="button"
                   onClick={previewRenumber}
                   disabled={renumberLoading}
@@ -795,9 +795,9 @@ export default function Page() {
 
               {renumberPreview && renumberPreview.length > 0 && (
                 <div className="grid gap-2 mt-4">
-                  <div className="text-bo-sm font-semibold text-bo-muted">Previsualizacion ({renumberPreview.length} facturas)</div>
-                  <div className="max-h-[300px] overflow-y-auto border border-bo-border rounded-bo-sm mt-2">
-                    <table className="w-full border-collapse text-bo-sm">
+                  <div className="text-sm font-semibold text-muted-foreground">Previsualizacion ({renumberPreview.length} facturas)</div>
+                  <div className="max-h-[300px] overflow-y-auto border border rounded-sm mt-2">
+                    <table className="w-full border-collapse text-sm">
                       <thead>
                         <tr>
                           <th>Factura Actual</th>
@@ -831,7 +831,7 @@ export default function Page() {
               {renumberPreview && renumberPreview.length > 0 && (
                 <div className="flex gap-4 mt-4">
                   <button
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
                     type="button"
                     onClick={() => setShowConfirmApply(true)}
                     disabled={renumberLoading}
@@ -842,7 +842,7 @@ export default function Page() {
               )}
 
               <div className="grid gap-2 mt-6">
-                <div className="text-bo-sm font-semibold text-bo-muted">Historial de renumeraciones</div>
+                <div className="text-sm font-semibold text-muted-foreground">Historial de renumeraciones</div>
                 {renumberHistory.length === 0 ? (
                   <div className="text-mutedText mt-2">No hay historial de renumeraciones</div>
                 ) : (
@@ -867,10 +867,10 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft" aria-label="Plantilla de PDF">
+        <div className="rounded-lg bg-card shadow-soft" aria-label="Plantilla de PDF">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Plantilla de PDF</div>
-            <div className="text-bo-xs text-bo-faint">Selecciona el diseño predeterminado para las facturas</div>
+            <div className="text-sm font-bold text-foreground">Plantilla de PDF</div>
+            <div className="text-xs text-muted-foreground">Selecciona el diseño predeterminado para las facturas</div>
           </div>
           <div className="p-4">
             <div className="flex flex-col gap-4 p-4">
@@ -904,7 +904,7 @@ export default function Page() {
               </div>
 
               <div className="flex gap-4">
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveInvoiceSettings} disabled={busy}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={saveInvoiceSettings} disabled={busy}>
                   Guardar configuracion
                 </button>
               </div>

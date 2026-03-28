@@ -37,7 +37,7 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
           <label className="text-xs text-[var(--text-muted)] font-semibold" htmlFor="food-category-name">Nombre categoria *</label>
           <input
             id="food-category-name"
-            className="h-10 rounded-lg border border-[var(--border)] bg-bo-surface-2 text-bo-text px-3 outline-none transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
+            className="h-10 rounded-lg border border-[var(--border)] bg-card-2 text-foreground px-3 outline-none transition-colors duration-150 focus:border-[color-mix(in srgb,var(--accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--accent)10%,transparent)]"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ejemplo: Fuera de carta"

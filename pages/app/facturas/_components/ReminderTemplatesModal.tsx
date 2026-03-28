@@ -232,11 +232,11 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft max-w-lg w-full bo-modal--lg" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-4 border-b border-bo-border">
-          <h2 className="text-lg font-semibold text-bo-text">Plantillas de recordatorios</h2>
+      <div className="rounded-lg bg-card shadow-soft max-w-lg w-full bo-modal--lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b border">
+          <h2 className="text-lg font-semibold text-foreground">Plantillas de recordatorios</h2>
           <button
-            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onClose}
             aria-label="Cerrar"
           >
@@ -249,12 +249,12 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
             // Edit/Create Form
             <div className="bo-templateForm">
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-name">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="template-name">
                   Nombre de la plantilla
                 </label>
                 <input
                   id="template-name"
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="ej: Recordatorio primera semana"
@@ -262,7 +262,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               </div>
 
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted">Tipo de envio</label>
+                <label className="text-sm font-semibold text-muted-foreground">Tipo de envio</label>
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -291,12 +291,12 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
 
               {formData.send_via === "email" && (
                 <div className="grid gap-2">
-                  <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-subject">
+                  <label className="text-sm font-semibold text-muted-foreground" htmlFor="template-subject">
                     Asunto
                   </label>
                   <input
                     id="template-subject"
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     value={formData.subject || ""}
                     onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
                     placeholder="Recordatorio de pago - Factura {invoice_number}"
@@ -308,12 +308,12 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               )}
 
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="template-body">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="template-body">
                   Cuerpo del mensaje
                 </label>
                 <textarea
                   id="template-body"
-                  className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
+                  className="min-h-[80px] rounded-md border border bg-white/5 text-foreground p-3 outline-none"
                   value={formData.body}
                   onChange={(e) => setFormData((prev) => ({ ...prev, body: e.target.value }))}
                   rows={8}
@@ -324,11 +324,11 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               </div>
 
               <div className="bo-formActions">
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={handleCancelEdit}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={handleCancelEdit}>
                   Cancelar
                 </button>
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                   onClick={handleSave}
                   disabled={saving || !formData.name.trim()}
                 >
@@ -340,21 +340,21 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
             // Templates List
             <>
               <div className="bo-templatesHeader">
-                <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
+                <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" onClick={handleCreateNew}>
                   <Plus size={16} />
                   Nueva plantilla
                 </button>
               </div>
 
               {loading && (
-                <div className="flex items-center justify-center py-8 text-bo-muted">
+                <div className="flex items-center justify-center py-8 text-muted-foreground">
                   <div className="animate-spin h-5 w-5" />
                   <span>Cargando plantillas...</span>
                 </div>
               )}
 
               {!loading && templates.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-muted-foreground text-center gap-3">
                   <AlertCircle size={32} />
                   <p>No hay plantillas de recordatorios</p>
                   <span className="text-mutedText">
@@ -378,7 +378,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             )}
                           </span>
                           {template.is_default && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[var(--bo-color-success)]/[0.14] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-[var(--text-success)]/[0.14] text-[var(--text-success)] border-[var(--text-success)]/[0.30]">
                               <Star size={10} />
                               Predeterminada
                             </span>
@@ -387,7 +387,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                         <div className="bo-templateItemActions">
                           {!template.is_default && (
                             <button
-                              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                               onClick={() => handleSetDefault(template)}
                               title="Establecer como predeterminada"
                             >
@@ -395,14 +395,14 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             </button>
                           )}
                           <button
-                            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                             onClick={() => handleEdit(template)}
                             title="Editar"
                           >
                             <Pencil size={14} />
                           </button>
                           <button
-                            className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-btn--sm bo-btn--danger"
+                            className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bg-transparent text-sm text-danger/80"
                             onClick={() => handleDelete(template)}
                             title="Eliminar"
                           >

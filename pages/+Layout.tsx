@@ -4,7 +4,6 @@ import { useHydrateAtoms } from "jotai/utils";
 import { usePageContext } from "vike-react/usePageContext";
 
 import "../ui/styles/shadcn.css";
-import "../components/bo.css";
 import type { BOSession } from "../api/types";
 import { ToastStack } from "../ui/feedback/ToastStack";
 import { FichajeRealtimeBridge } from "../ui/fichaje/FichajeRealtimeBridge";

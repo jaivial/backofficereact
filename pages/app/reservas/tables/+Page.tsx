@@ -211,7 +211,7 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
   const geom = previewGeometry(data.shape, data.capacity, data.rectShortSides);
   const shape = data.shape === "square" ? "is-square" : "is-round";
   const style: React.CSSProperties = {
-    ["--bo-table-fill" as any]: data.fillColor || "var(--bo-surface-2)",
+    ["--bo-table-fill" as any]: data.fillColor || "var(--secondary)",
     ["--bo-table-outline" as any]: data.outlineColor || "var(--border-2)",
     ["--bo-table-texture" as any]: data.textureImageUrl ? `url(${data.textureImageUrl})` : "none",
     transform: `rotate(${Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0}deg)`,
@@ -274,8 +274,8 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
         isVisible={data.editable}
         minWidth={24}
         minHeight={24}
-        lineStyle={{ borderColor: "var(--bo-accent)" }}
-        handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
+        lineStyle={{ borderColor: "var(--accent)" }}
+        handleStyle={{ width: 10, height: 10, border: "1px solid var(--accent)", background: "var(--card)" }}
       />
       {showAsset ? (
         assetImageUrl ? (
@@ -2208,14 +2208,14 @@ export default function TableManagerPage() {
               transition={dayVisibilityTransition}
             >
       <div className="bo-tableMapTopControls">
-        <button className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
+        <button className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
           <ChevronLeft size={18} strokeWidth={1.8} />
         </button>
 
         <div className="bo-tableMapTopCenter">
           <button
             ref={menuButtonRef}
-            className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass"
+            className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass"
             type="button"
             aria-label="Abrir menú de mapa"
             aria-expanded={menuVisible}
@@ -2306,7 +2306,7 @@ export default function TableManagerPage() {
           </div>
           {!rightSheetOpen ? (
             <button
-              className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass"
+              className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass"
               type="button"
               aria-label="Abrir panel derecho"
               aria-expanded={rightSheetOpen}
@@ -2408,8 +2408,8 @@ export default function TableManagerPage() {
                   cx={point.x}
                   cy={point.y}
                   r={isEditingLimitArea && mapMode === "draw" ? 9 : 6}
-                  fill={isEditingLimitArea && mapMode === "draw" ? "color-mix(in srgb, var(--bo-accent) 70%, var(--bo-surface))" : "var(--bo-accent)"}
-                  stroke="var(--bo-surface)"
+                  fill={isEditingLimitArea && mapMode === "draw" ? "color-mix(in srgb, var(--accent) 70%, var(--card))" : "var(--accent)"}
+                  stroke="var(--card)"
                   strokeWidth={2}
                   style={{
                     cursor: isEditingLimitArea && mapMode === "draw" ? "grab" : "default",
@@ -2423,7 +2423,7 @@ export default function TableManagerPage() {
                     y1={lineOverlayPoints[idx - 1].y}
                     x2={point.x}
                     y2={point.y}
-                    stroke="var(--bo-accent)"
+                    stroke="var(--accent)"
                     strokeWidth={2}
                     strokeDasharray={lineDrawing.isDrawing ? "5,5" : "none"}
                   />
@@ -2434,7 +2434,7 @@ export default function TableManagerPage() {
               <polygon
                 points={lineOverlayPoints.map((p) => `${p.x},${p.y}`).join(" ")}
                 fill="none"
-                stroke="var(--bo-accent)"
+                stroke="var(--accent)"
                 strokeWidth={2}
               />
             )}
@@ -2449,8 +2449,8 @@ export default function TableManagerPage() {
         onMouseLeave={closeDrawPanelHoverSoon}
       >
         <div className="bo-tableMapDrawPanelHead">
-          <div className="text-bo-sm font-bold text-bo-text">Dibujo</div>
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={closeDrawPanel}>Cerrar</button>
+          <div className="text-sm font-bold text-foreground">Dibujo</div>
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={closeDrawPanel}>Cerrar</button>
         </div>
         <div className="bo-tableMapDrawPanelBody">
           <div className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
@@ -2546,7 +2546,7 @@ export default function TableManagerPage() {
               <div className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">Hay una plantilla guardada para este salón.</div>
             ) : null}
             {!lineDrawing.isDrawing && lineDrawing.points.length === 0 ? (
-              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={startLineDrawing}>
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={startLineDrawing}>
                 <MapPin size={16} />
                 Dibujar limites
               </button>
@@ -2559,36 +2559,36 @@ export default function TableManagerPage() {
                   </div>
                 )}
                 {lineDrawing.isDrawing && lineDrawing.points.length > 0 && (
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={undoCreateAreaLastAction}>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={undoCreateAreaLastAction}>
                     <Undo size={14} />
                     Deshacer ultimo punto
                   </button>
                 )}
                 {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !isEditingLimitArea && (
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={startLimitAreaEditing}>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={startLimitAreaEditing}>
                     Editar area
                   </button>
                 )}
                 {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && isEditingLimitArea && (
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={stopLimitAreaEditing}>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={stopLimitAreaEditing}>
                     Guardar edición
                   </button>
                 )}
                 {isEditingLimitArea && (
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={undoEditAreaLastAction}>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={undoEditAreaLastAction}>
                     <Undo size={14} />
                     Deshacer ultimo cambio
                   </button>
                 )}
                 {lineDrawing.points.length >= 3 && lineDrawing.isDrawing && (
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={closeLineDrawing}>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={closeLineDrawing}>
                     <SquareMinus size={14} />
                     Cerrar area
                   </button>
                 )}
                 {lineDrawing.points.length > 0 && (
                   <button
-                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                     type="button"
                     onClick={isEditingLimitArea ? stopLimitAreaEditing : cancelLineDrawing}
                   >
@@ -2598,7 +2598,7 @@ export default function TableManagerPage() {
                 )}
                 {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
                   <button
-                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                     type="button"
                     onClick={() => void saveLimitAreaTemplate()}
                     disabled={savingLimitTemplate}
@@ -2618,7 +2618,7 @@ export default function TableManagerPage() {
           {bookingForAssignment ? (
             <div className="bo-assigningBanner">
               <span>Asignando: <strong>{bookingForAssignment.customer_name}</strong></span>
-              <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={cancelAssignmentMode}>Cancelar</button>
+              <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={cancelAssignmentMode}>Cancelar</button>
             </div>
           ) : (
             <div className="bo-tableMapSheetStats">
@@ -2635,16 +2635,16 @@ export default function TableManagerPage() {
           )}
           <div className="bo-tableMapSheetHeader">
             <div className="bo-tableMapSheetHeaderLeft">
-              <div className="text-bo-sm font-bold text-bo-text">Booking manager</div>
-              <div className="text-bo-xs text-bo-faint">{visibleTables.length} mesas</div>
+              <div className="text-sm font-bold text-foreground">Booking manager</div>
+              <div className="text-xs text-muted-foreground">{visibleTables.length} mesas</div>
             </div>
             <div className="bo-tableMapSheetHeaderActions">
-              <button className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-tableMapDateBtn" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
+              <button className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bg-transparent bo-tableMapDateBtn" type="button" onClick={() => setCalendarExpanded((v) => !v)} aria-expanded={calendarExpanded}>
                 <CalendarRange size={14} />
                 <span>{selectedDate}</span>
               </button>
               <button
-                className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass bo-tableMapSheetToggleBtn"
+                className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass bo-tableMapSheetToggleBtn"
                 type="button"
                 aria-label="Colapsar panel derecho"
                 onClick={closeRightSheet}
@@ -2708,7 +2708,7 @@ export default function TableManagerPage() {
                 <div className="bo-tableMapSectionTitle">Reservas del día</div>
                 {bookings.length > 0 && hasUnassignedBookings && !assignMode && (
                   <button
-                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-xs font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
                     type="button"
                     onClick={() => setAssignMode(true)}
                   >
@@ -2717,7 +2717,7 @@ export default function TableManagerPage() {
                 )}
                 {assignMode && (
                   <button
-                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                     type="button"
                     onClick={cancelAssignmentMode}
                   >
@@ -2729,7 +2729,7 @@ export default function TableManagerPage() {
                 <div className="bo-tableMapEmptyState">
                   <div className="bo-tableMapEmptyStateIcon"><CalendarDays size={24} /></div>
                   <div>No hay reservas para esta fecha</div>
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setSelectedDate(todayISO())}>Ver hoy</button>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setSelectedDate(todayISO())}>Ver hoy</button>
                 </div>
               ) : (
                 <div className="bo-tableMapBookingsList">
@@ -2773,7 +2773,7 @@ export default function TableManagerPage() {
                               }}
                               onClick={(e) => e.stopPropagation()}
                             />
-                            <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all" />
+                            <span className="w-5 h-5 rounded border-2 border bg-background-primary flex items-center justify-center transition-all" />
                           </label>
                         ) : (
                           <span className="bo-bookingDragIndicator"><GripVertical size={16} /></span>
@@ -2811,7 +2811,7 @@ export default function TableManagerPage() {
                 <div className="bo-tableMapEmptyState">
                   <div className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
                   <div>No hay mesas en este salón</div>
-                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setEditorOpen(true)}>Crear mesa</button>
+                  <button className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setEditorOpen(true)}>Crear mesa</button>
                 </div>
               ) : (
                 <div className="bo-tableMapTablesByStatus">
@@ -2844,7 +2844,7 @@ export default function TableManagerPage() {
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                   />
-                                  <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all" />
+                                  <span className="w-5 h-5 rounded border-2 border bg-background-primary flex items-center justify-center transition-all" />
                                 </label>
                               )}
                               <span className="bo-tableMapTableCardOcc" />
@@ -2890,7 +2890,7 @@ export default function TableManagerPage() {
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                   />
-                                  <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all" />
+                                  <span className="w-5 h-5 rounded border-2 border bg-background-primary flex items-center justify-center transition-all" />
                                 </label>
                               )}
                               <span className="bo-tableMapTableCardOcc" />
@@ -2934,7 +2934,7 @@ export default function TableManagerPage() {
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                   />
-                                  <span className="w-5 h-5 rounded border-2 border-bo-border bg-bo-bg-primary flex items-center justify-center transition-all" />
+                                  <span className="w-5 h-5 rounded border-2 border bg-background-primary flex items-center justify-center transition-all" />
                                 </label>
                               )}
                               <span className="bo-tableMapTableCardOcc" />
@@ -2955,8 +2955,8 @@ export default function TableManagerPage() {
       </aside>
 
       <Modal open={editorOpen} title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} widthPx={980} className="bo-tableEditorModal">
-        <div className="flex items-center justify-between p-4 border-b border-bo-border">
-          <div className="text-lg font-semibold text-bo-text">{editingTableId ? "Editar mesa" : "Nueva mesa"}</div>
+        <div className="flex items-center justify-between p-4 border-b border">
+          <div className="text-lg font-semibold text-foreground">{editingTableId ? "Editar mesa" : "Nueva mesa"}</div>
           <button className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 cursor-pointer" type="button" onClick={() => setEditorOpen(false)} aria-label="Cerrar">
             <X size={16} />
           </button>
@@ -2967,7 +2967,7 @@ export default function TableManagerPage() {
             <div className="bo-tableEditorRotate" role="group" aria-label="Giro de mesa">
               <button
                 type="button"
-                className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass bo-tableEditorRotateBtn"
+                className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass bo-tableEditorRotateBtn"
                 onClick={() =>
                   setDraft((prev) => {
                     const base = Math.round(prev.rotationDeg / DRAW_ROTATE_STEP) * DRAW_ROTATE_STEP;
@@ -2980,7 +2980,7 @@ export default function TableManagerPage() {
               </button>
               <button
                 type="button"
-                className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass bo-tableEditorRotateBtn"
+                className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass bo-tableEditorRotateBtn"
                 onClick={() =>
                   setDraft((prev) => {
                     const base = Math.round(prev.rotationDeg / DRAW_ROTATE_STEP) * DRAW_ROTATE_STEP;
@@ -3067,29 +3067,29 @@ export default function TableManagerPage() {
 
           <div className="bo-tableEditorConfig">
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="table-name">Nombre/numero</label>
+              <label className="text-sm font-semibold text-muted-foreground" htmlFor="table-name">Nombre/numero</label>
               <input
                 id="table-name"
-                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                 value={draft.name}
                 onChange={(e) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
               />
             </div>
 
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted">Forma</label>
+              <label className="text-sm font-semibold text-muted-foreground">Forma</label>
               <div className="bo-tableEditorShapeBtns">
-                <button type="button" className={`h-10 rounded-xl border border-bo-border bg-transparent text-bo-text cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 ${draft.shape === "round" ? "is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "round" }))}>
+                <button type="button" className={`h-10 rounded-xl border border bg-transparent text-foreground cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 ${draft.shape === "round" ? "is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "round" }))}>
                   Redonda
                 </button>
-                <button type="button" className={`h-10 rounded-xl border border-bo-border bg-transparent text-bo-text cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 ${draft.shape === "square" ? "is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "square" }))}>
+                <button type="button" className={`h-10 rounded-xl border border bg-transparent text-foreground cursor-pointer px-3.5 font-bold inline-flex items-center justify-center gap-2 ${draft.shape === "square" ? "is-active" : ""}`} onClick={() => setDraft((prev) => ({ ...prev, shape: "square" }))}>
                   Cuadrada
                 </button>
               </div>
             </div>
 
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted">Colores</label>
+              <label className="text-sm font-semibold text-muted-foreground">Colores</label>
               <div className="bo-tableEditorPresetGrid">
                 {COLOR_PRESETS.map((preset) => (
                   <button
@@ -3105,8 +3105,8 @@ export default function TableManagerPage() {
             </div>
 
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted">Subir textura</label>
-              <label className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--ghost bo-tableUploadBtn">
+              <label className="text-sm font-semibold text-muted-foreground">Subir textura</label>
+              <label className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bg-transparent bo-tableUploadBtn">
                 <ImagePlus size={16} strokeWidth={1.8} />
                 <span>Subir imagen</span>
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={onTextureInput} hidden />
@@ -3124,11 +3124,11 @@ export default function TableManagerPage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 p-4 border-t border-bo-border">
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setEditorOpen(false)} disabled={saving}>
+        <div className="flex justify-end gap-2 p-4 border-t border">
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setEditorOpen(false)} disabled={saving}>
             Cancelar
           </button>
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={() => void saveDraft()} disabled={saving}>
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={() => void saveDraft()} disabled={saving}>
             {saving ? "Guardando..." : "Guardar"}
           </button>
         </div>
@@ -3143,37 +3143,37 @@ export default function TableManagerPage() {
             </div>
             <div className="bo-kvGrid">
               <div className="grid grid-cols-[120px_1fr] gap-2">
-                <div className="text-bo-sm text-bo-muted">Nombre</div>
-                <div className="text-bo-sm text-bo-text">{selectedBooking.customer_name}</div>
+                <div className="text-sm text-muted-foreground">Nombre</div>
+                <div className="text-sm text-foreground">{selectedBooking.customer_name}</div>
               </div>
               <div className="grid grid-cols-[120px_1fr] gap-2">
-                <div className="text-bo-sm text-bo-muted">Hora</div>
-                <div className="text-bo-sm text-bo-text">{formatHHMM(selectedBooking.reservation_time)}</div>
+                <div className="text-sm text-muted-foreground">Hora</div>
+                <div className="text-sm text-foreground">{formatHHMM(selectedBooking.reservation_time)}</div>
               </div>
               <div className="grid grid-cols-[120px_1fr] gap-2">
-                <div className="text-bo-sm text-bo-muted">Comensales</div>
-                <div className="text-bo-sm text-bo-text">{selectedBooking.party_size}</div>
+                <div className="text-sm text-muted-foreground">Comensales</div>
+                <div className="text-sm text-foreground">{selectedBooking.party_size}</div>
               </div>
               <div className="bo-kv bo-kv--wide">
-                <div className="text-bo-sm text-bo-muted">Comentario</div>
+                <div className="text-sm text-muted-foreground">Comentario</div>
                 <div className="bo-kvValue bo-kvValue--wrap">{selectedBooking.commentary || "—"}</div>
               </div>
             </div>
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="booking-table-edit">Mesa</label>
-              <input id="booking-table-edit" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={bookingTableDraft} onChange={(e) => setBookingTableDraft(e.target.value)} />
+              <label className="text-sm font-semibold text-muted-foreground" htmlFor="booking-table-edit">Mesa</label>
+              <input id="booking-table-edit" className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" value={bookingTableDraft} onChange={(e) => setBookingTableDraft(e.target.value)} />
             </div>
-            <div className="flex justify-end gap-2 p-4 border-t border-bo-border">
-              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setSelectedBooking(null)}>Cerrar</button>
+            <div className="flex justify-end gap-2 p-4 border-t border">
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={() => setSelectedBooking(null)}>Cerrar</button>
               <button
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]"
                 type="button"
                 onClick={() => markBookingSeated(selectedBooking, !bookingStates[String(selectedBooking.id)]?.seated)}
               >
                 {bookingStates[String(selectedBooking.id)]?.seated ? "Marcar no sentada" : "Marcar sentada"}
               </button>
               <button
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                 type="button"
                 onClick={() => void setBookingTable(selectedBooking, bookingTableDraft.trim())}
               >
@@ -3194,7 +3194,7 @@ export default function TableManagerPage() {
               transition={dayVisibilityTransition}
             >
               <div className="bo-tableMapClosedTop">
-                <button className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
+                <button className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
                   <ChevronLeft size={18} strokeWidth={1.8} />
                 </button>
               </div>

@@ -24,8 +24,6 @@ import {
   Undo,
 } from "lucide-react";
 
-import "../../../components/bo.css";
-
 import { componentsApi, pagesApi, sitesApi } from "../../../api/site-builder-client";
 import type {
   ComponentDefinition,
@@ -133,8 +131,8 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilder {
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-4);
-  padding: var(--bo-space-4);
+  gap: var(--gap-4);
+  padding: var(--gap-4);
   min-height: calc(100dvh - 140px);
 }
 
@@ -142,9 +140,9 @@ const SITE_BUILDER_PAGE_STYLES = `
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--bo-space-3);
-  padding: var(--bo-space-3) var(--bo-space-4);
-  background: var(--bo-surface);
+  gap: var(--gap-3);
+  padding: var(--gap-3) var(--gap-4);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--rounded-md);
   box-shadow: var(--shadow-soft);
@@ -155,7 +153,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderToolbarRight {
   display: flex;
   align-items: center;
-  gap: var(--bo-space-3);
+  gap: var(--gap-3);
 }
 
 .bo-siteBuilderToolbarCenter {
@@ -164,15 +162,15 @@ const SITE_BUILDER_PAGE_STYLES = `
 }
 
 .bo-siteBuilderTitle {
-  color: var(--bo-text);
+  color: var(--foreground);
   font-size: var(--text-base);
-  font-weight: var(--bo-weight-semibold);
+  font-weight: var(--font-semibold);
 }
 
 .bo-siteBuilderPageName {
   display: inline-flex;
   align-items: center;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
   color: var(--text-muted);
   font-size: var(--text-sm);
 }
@@ -180,11 +178,11 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderViewportToggle {
   display: inline-flex;
   align-items: center;
-  gap: var(--bo-space-1);
+  gap: var(--gap-1);
   padding: 2px;
   border: 1px solid var(--border);
   border-radius: var(--rounded-sm);
-  background: var(--bo-surface-3);
+  background: var(--muted);
 }
 
 .bo-siteBuilderViewportBtn {
@@ -198,24 +196,24 @@ const SITE_BUILDER_PAGE_STYLES = `
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color var(--transition-base) var(--bo-ease), color var(--transition-base) var(--bo-ease);
+  transition: background-color var(--transition-base) var(--ease-base), color var(--transition-base) var(--ease-base);
 }
 
 .bo-siteBuilderViewportBtn:hover,
 .bo-siteBuilderViewportBtn:focus-visible {
-  background: var(--bo-surface-2);
-  color: var(--bo-text);
+  background: var(--secondary);
+  color: var(--foreground);
 }
 
 .bo-siteBuilderViewportBtn.is-active {
-  background: color-mix(in srgb, var(--bo-accent) 24%, transparent);
-  color: var(--bo-text);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--foreground);
 }
 
 .bo-siteBuilderMain {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr) 320px;
-  gap: var(--bo-space-4);
+  gap: var(--gap-4);
   min-height: 0;
   flex: 1;
 }
@@ -224,7 +222,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderRightPanel,
 .bo-siteBuilderCanvas {
   min-height: 0;
-  background: var(--bo-surface);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--rounded-md);
   box-shadow: var(--shadow-soft);
@@ -239,8 +237,8 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderPanelTabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--bo-space-1);
-  padding: var(--bo-space-2);
+  gap: var(--gap-1);
+  padding: var(--gap-2);
   border-bottom: 1px solid var(--border);
 }
 
@@ -255,25 +253,25 @@ const SITE_BUILDER_PAGE_STYLES = `
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
   cursor: pointer;
-  transition: background-color var(--transition-base) var(--bo-ease), color var(--transition-base) var(--bo-ease);
+  transition: background-color var(--transition-base) var(--ease-base), color var(--transition-base) var(--ease-base);
 }
 
 .bo-siteBuilderPanelTab:hover,
 .bo-siteBuilderPanelTab:focus-visible {
-  background: var(--bo-surface-2);
-  color: var(--bo-text);
+  background: var(--secondary);
+  color: var(--foreground);
 }
 
 .bo-siteBuilderPanelTab.is-active {
-  background: color-mix(in srgb, var(--bo-accent) 22%, transparent);
-  color: var(--bo-text);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--foreground);
 }
 
 .bo-siteBuilderPanelContent,
 .bo-siteBuilderProperties {
-  padding: var(--bo-space-3);
+  padding: var(--gap-3);
   min-height: 0;
   overflow: auto;
 }
@@ -284,7 +282,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderProperties {
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
 }
 
 .bo-siteBuilderComponentItem,
@@ -292,17 +290,17 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderLayerItem {
   width: 100%;
   min-height: 40px;
-  padding: var(--bo-space-2) var(--bo-space-3);
+  padding: var(--gap-2) var(--gap-3);
   border: 1px solid var(--border);
   border-radius: var(--rounded-sm);
-  background: var(--bo-surface-2);
-  color: var(--bo-text);
+  background: var(--secondary);
+  color: var(--foreground);
   display: flex;
   align-items: center;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--transition-base) var(--bo-ease), background-color var(--transition-base) var(--bo-ease);
+  transition: border-color var(--transition-base) var(--ease-base), background-color var(--transition-base) var(--ease-base);
 }
 
 .bo-siteBuilderComponentItem {
@@ -320,14 +318,14 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderPageItem:focus-visible,
 .bo-siteBuilderLayerItem:focus-visible {
   border-color: var(--border-2);
-  background: var(--bo-surface-3);
+  background: var(--muted);
 }
 
 .bo-siteBuilderPageItem.is-active,
 .bo-siteBuilderLayerItem.is-selected,
 .bo-siteBuilderNode.is-selected {
-  border-color: color-mix(in srgb, var(--bo-accent) 58%, var(--border));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .bo-siteBuilderComponentIcon,
@@ -341,13 +339,13 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderComponentLabel,
 .bo-siteBuilderLayerName {
   font-size: var(--text-sm);
-  color: var(--bo-text);
+  color: var(--foreground);
 }
 
 .bo-siteBuilderLayerItemContent {
   display: inline-flex;
   align-items: center;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
 }
 
 .bo-siteBuilderLayerBranch {
@@ -360,12 +358,12 @@ const SITE_BUILDER_PAGE_STYLES = `
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  padding: 2px var(--bo-space-2);
+  padding: 2px var(--gap-2);
   border-radius: var(--rounded-full);
   font-size: var(--text-xs);
-  font-weight: var(--bo-weight-semibold);
-  color: var(--bo-accent);
-  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+  font-weight: var(--font-semibold);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .bo-siteBuilderLayerDelete {
@@ -385,20 +383,20 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderLayerDelete:hover,
 .bo-siteBuilderLayerDelete:focus-visible {
   color: var(--text-danger);
-  background: color-mix(in srgb, var(--bo-color-danger) 16%, transparent);
+  background: color-mix(in srgb, var(--text-danger) 16%, transparent);
 }
 
 .bo-siteBuilderCanvas {
   overflow: auto;
-  padding: var(--bo-space-3);
+  padding: var(--gap-3);
 }
 
 .bo-siteBuilderPreview {
   margin: 0 auto;
   min-height: 100%;
   width: 100%;
-  padding: var(--bo-space-3);
-  background: color-mix(in srgb, var(--bo-bg) 72%, var(--bo-surface));
+  padding: var(--gap-3);
+  background: color-mix(in srgb, var(--background) 72%, var(--card));
   border: 1px solid var(--border);
   border-radius: var(--rounded-md);
   display: flex;
@@ -412,18 +410,18 @@ const SITE_BUILDER_PAGE_STYLES = `
   border-radius: var(--rounded-md);
   border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--bo-surface) 86%, white 14%), var(--bo-surface)),
-    var(--bo-surface);
+    linear-gradient(180deg, color-mix(in srgb, var(--card) 86%, white 14%), var(--card)),
+    var(--card);
   box-shadow: 0 20px 55px rgba(9, 11, 18, 0.24);
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
 }
 
 .bo-siteBuilderPageSurface.is-active {
-  border-color: color-mix(in srgb, var(--bo-accent) 58%, var(--border));
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--bo-accent) 26%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent),
     0 20px 55px rgba(9, 11, 18, 0.22);
 }
 
@@ -434,7 +432,7 @@ const SITE_BUILDER_PAGE_STYLES = `
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color var(--transition-base) var(--bo-ease), background-color var(--transition-base) var(--bo-ease), min-height var(--transition-base) var(--bo-ease);
+  transition: border-color var(--transition-base) var(--ease-base), background-color var(--transition-base) var(--ease-base), min-height var(--transition-base) var(--ease-base);
 }
 
 .bo-siteBuilderDropZone.is-visible {
@@ -442,15 +440,15 @@ const SITE_BUILDER_PAGE_STYLES = `
 }
 
 .bo-siteBuilderDropZone.is-active {
-  border-color: color-mix(in srgb, var(--bo-accent) 56%, var(--border));
-  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .bo-siteBuilderDropZoneLabel {
   font-size: var(--text-xs);
   color: var(--text-faint);
   opacity: 0;
-  transition: opacity var(--transition-fast) var(--bo-ease);
+  transition: opacity var(--transition-fast) var(--ease-base);
 }
 
 .bo-siteBuilderDropZone.is-visible .bo-siteBuilderDropZoneLabel,
@@ -463,28 +461,28 @@ const SITE_BUILDER_PAGE_STYLES = `
   border-radius: var(--rounded-sm);
   border: 1px solid transparent;
   background: transparent;
-  transition: border-color var(--transition-fast) var(--bo-ease), box-shadow var(--transition-fast) var(--bo-ease), background-color var(--transition-fast) var(--bo-ease);
+  transition: border-color var(--transition-fast) var(--ease-base), box-shadow var(--transition-fast) var(--ease-base), background-color var(--transition-fast) var(--ease-base);
 }
 
 .bo-siteBuilderNode:hover {
-  border-color: color-mix(in srgb, var(--bo-accent) 30%, var(--border));
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
 }
 
 .bo-siteBuilderNode.is-selected {
-  border-color: color-mix(in srgb, var(--bo-accent) 58%, var(--border));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-accent) 28%, transparent);
-  background: color-mix(in srgb, var(--bo-accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 /* Webflow-like selection outline with animated dashed border */
 .bo-siteBuilderSelectionOutline {
   position: absolute;
   inset: -2px;
-  border: 2px dashed var(--bo-accent);
+  border: 2px dashed var(--accent);
   border-radius: calc(var(--rounded-sm) + 2px);
   pointer-events: none;
   opacity: 0;
-  transition: opacity var(--transition-fast) var(--bo-ease);
+  transition: opacity var(--transition-fast) var(--ease-base);
   z-index: 10;
 }
 
@@ -506,7 +504,7 @@ const SITE_BUILDER_PAGE_STYLES = `
   pointer-events: none;
   z-index: 12;
   opacity: 0;
-  transition: opacity var(--transition-fast) var(--bo-ease);
+  transition: opacity var(--transition-fast) var(--ease-base);
 }
 
 .bo-siteBuilderNode.is-selected .bo-siteBuilderResizeHandles {
@@ -518,16 +516,16 @@ const SITE_BUILDER_PAGE_STYLES = `
   position: absolute;
   width: 10px;
   height: 10px;
-  background: var(--bo-surface);
-  border: 2px solid var(--bo-accent);
+  background: var(--card);
+  border: 2px solid var(--accent);
   border-radius: 2px;
   pointer-events: auto;
   cursor: pointer;
-  transition: transform var(--transition-fast) var(--bo-ease), background-color var(--transition-fast) var(--bo-ease);
+  transition: transform var(--transition-fast) var(--ease-base), background-color var(--transition-fast) var(--ease-base);
 }
 
 .bo-siteBuilderResizeHandle:hover {
-  background: var(--bo-accent);
+  background: var(--accent);
   transform: scale(1.2);
 }
 
@@ -549,8 +547,8 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderContextMenu {
   position: fixed;
   min-width: 180px;
-  padding: var(--bo-space-1);
-  background: var(--bo-surface);
+  padding: var(--gap-1);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--rounded-md);
   box-shadow: var(--shadow-soft), 0 8px 32px rgba(0, 0, 0, 0.24);
@@ -572,22 +570,22 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderContextMenuItem {
   display: flex;
   align-items: center;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
   width: 100%;
-  padding: var(--bo-space-2) var(--bo-space-3);
+  padding: var(--gap-2) var(--gap-3);
   border: 0;
   border-radius: var(--rounded-sm);
   background: transparent;
-  color: var(--bo-text);
+  color: var(--foreground);
   font-size: var(--text-sm);
   text-align: left;
   cursor: pointer;
-  transition: background-color var(--transition-fast) var(--bo-ease);
+  transition: background-color var(--transition-fast) var(--ease-base);
 }
 
 .bo-siteBuilderContextMenuItem:hover,
 .bo-siteBuilderContextMenuItem:focus-visible {
-  background: var(--bo-surface-2);
+  background: var(--secondary);
 }
 
 .bo-siteBuilderContextMenuItem.is-danger {
@@ -595,12 +593,12 @@ const SITE_BUILDER_PAGE_STYLES = `
 }
 
 .bo-siteBuilderContextMenuItem.is-danger:hover {
-  background: color-mix(in srgb, var(--bo-color-danger) 14%, transparent);
+  background: color-mix(in srgb, var(--text-danger) 14%, transparent);
 }
 
 .bo-siteBuilderContextMenuDivider {
   height: 1px;
-  margin: var(--bo-space-1) 0;
+  margin: var(--gap-1) 0;
   background: var(--border);
 }
 
@@ -617,10 +615,10 @@ const SITE_BUILDER_PAGE_STYLES = `
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--bo-space-2);
-  padding: var(--bo-space-1) var(--bo-space-2);
+  gap: var(--gap-2);
+  padding: var(--gap-1) var(--gap-2);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-  background: color-mix(in srgb, var(--bo-surface-3) 88%, transparent);
+  background: color-mix(in srgb, var(--muted) 88%, transparent);
   backdrop-filter: blur(8px);
 }
 
@@ -628,7 +626,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderNodeHeaderRight {
   display: inline-flex;
   align-items: center;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
 }
 
 .bo-siteBuilderNodeHeaderRight {
@@ -654,9 +652,9 @@ const SITE_BUILDER_PAGE_STYLES = `
 }
 
 .bo-siteBuilderNodeType {
-  color: var(--bo-text);
+  color: var(--foreground);
   font-size: var(--text-sm);
-  font-weight: var(--bo-weight-semibold);
+  font-weight: var(--font-semibold);
 }
 
 .bo-siteBuilderNodeId {
@@ -667,34 +665,34 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderNodeBody {
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-2);
-  padding: var(--bo-space-3);
+  gap: var(--gap-2);
+  padding: var(--gap-3);
 }
 
 .bo-siteBuilderNodeChildren {
   border: 1px dashed color-mix(in srgb, var(--border) 84%, transparent);
   border-radius: var(--rounded-sm);
-  padding: var(--bo-space-2);
+  padding: var(--gap-2);
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-2);
-  background: color-mix(in srgb, var(--bo-bg) 21%, transparent);
+  gap: var(--gap-2);
+  background: color-mix(in srgb, var(--background) 21%, transparent);
 }
 
 .bo-siteBuilderColumns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
 }
 
 .bo-siteBuilderColumn {
   border: 1px dashed color-mix(in srgb, var(--border) 84%, transparent);
   border-radius: var(--rounded-sm);
-  background: color-mix(in srgb, var(--bo-bg) 24%, transparent);
-  padding: var(--bo-space-2);
+  background: color-mix(in srgb, var(--background) 24%, transparent);
+  padding: var(--gap-2);
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
 }
 
 .bo-siteBuilderColumnTitle {
@@ -725,7 +723,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderNodeDelete:hover,
 .bo-siteBuilderNodeDelete:focus-visible {
   color: var(--text-danger);
-  background: color-mix(in srgb, var(--bo-color-danger) 16%, transparent);
+  background: color-mix(in srgb, var(--text-danger) 16%, transparent);
 }
 
 .bo-siteBuilderCanvasEmpty {
@@ -736,7 +734,7 @@ const SITE_BUILDER_PAGE_STYLES = `
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
   color: var(--text-muted);
   text-align: center;
 }
@@ -748,7 +746,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-nodePreviewGeneric {
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-2);
+  gap: var(--gap-2);
 }
 
 .bo-nodePreviewHero h3,
@@ -759,7 +757,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-nodePreviewHeading h5,
 .bo-nodePreviewHeading h6 {
   margin: 0;
-  color: var(--bo-text);
+  color: var(--foreground);
 }
 
 .bo-nodePreviewHero p,
@@ -779,7 +777,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-nodePreviewSpacer {
   border-radius: var(--rounded-sm);
   border: 1px dashed var(--border);
-  background: color-mix(in srgb, var(--bo-accent) 10%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .bo-nodePreviewDivider {
@@ -799,28 +797,28 @@ const SITE_BUILDER_PAGE_STYLES = `
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--bo-space-2);
-  padding: var(--bo-space-3);
+  gap: var(--gap-2);
+  padding: var(--gap-3);
   border-bottom: 1px solid var(--border);
 }
 
 .bo-siteBuilderPanelHeader h3 {
   margin: 0;
-  color: var(--bo-text);
+  color: var(--foreground);
   font-size: var(--text-base);
-  font-weight: var(--bo-weight-semibold);
+  font-weight: var(--font-semibold);
 }
 
 .bo-siteBuilderPropertyGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-1);
+  gap: var(--gap-1);
 }
 
 .bo-siteBuilderPropertyLabel {
   color: var(--text-muted);
   font-size: var(--text-xs);
-  font-weight: var(--bo-weight-semibold);
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -828,30 +826,30 @@ const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderPropertyType {
   display: inline-flex;
   align-self: flex-start;
-  padding: 2px var(--bo-space-2);
+  padding: 2px var(--gap-2);
   border-radius: var(--rounded-full);
   border: 1px solid var(--border);
-  background: var(--bo-surface-3);
-  color: var(--bo-text);
+  background: var(--muted);
+  color: var(--foreground);
   font-size: var(--text-xs);
 }
 
 .bo-siteBuilderPropertyActions {
-  margin-top: var(--bo-space-2);
+  margin-top: var(--gap-2);
   display: flex;
   justify-content: flex-end;
 }
 
 .bo-siteBuilderToggleRight {
   position: fixed;
-  right: var(--bo-space-4);
-  bottom: calc(var(--bo-space-4) + env(safe-area-inset-bottom));
+  right: var(--gap-4);
+  bottom: calc(var(--gap-4) + env(safe-area-inset-bottom));
   width: 40px;
   height: 40px;
   border: 1px solid var(--border);
   border-radius: var(--rounded-full);
-  background: var(--bo-surface);
-  color: var(--bo-text);
+  background: var(--card);
+  color: var(--foreground);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -866,9 +864,9 @@ const SITE_BUILDER_PAGE_STYLES = `
 
   .bo-siteBuilderRightPanel {
     position: fixed;
-    right: var(--bo-space-4);
+    right: var(--gap-4);
     top: 128px;
-    bottom: var(--bo-space-4);
+    bottom: var(--gap-4);
     width: min(360px, calc(100vw - 32px));
     z-index: 20;
   }
@@ -876,7 +874,7 @@ const SITE_BUILDER_PAGE_STYLES = `
 
 @media (max-width: 980px) {
   .bo-siteBuilder {
-    padding: var(--bo-space-3);
+    padding: var(--gap-3);
   }
 
   .bo-siteBuilderToolbar {
@@ -2099,7 +2097,7 @@ export default function SiteBuilderEditorPage() {
     if (node.type === "hero") {
       return (
         <div className="flex flex-col gap-2" data-ui="node-preview-hero">
-          <h3 className="m-0 text-bo-text" data-ui="node-preview-hero-title">{toInputValue(props.title) || "Hero Title"}</h3>
+          <h3 className="m-0 text-foreground" data-ui="node-preview-hero-title">{toInputValue(props.title) || "Hero Title"}</h3>
           {toInputValue(props.subtitle) ? <p className="m-0 text-muted" data-ui="node-preview-hero-subtitle">{toInputValue(props.subtitle)}</p> : null}
         </div>
       );
@@ -2120,12 +2118,12 @@ export default function SiteBuilderEditorPage() {
 
       return (
         <div className="flex flex-col gap-2" data-ui="node-preview-heading">
-          {clampedLevel === 1 && <h1 className="m-0 text-bo-text" data-ui="node-preview-heading-h1">{headingText}</h1>}
-          {clampedLevel === 2 && <h2 className="m-0 text-bo-text" data-ui="node-preview-heading-h2">{headingText}</h2>}
-          {clampedLevel === 3 && <h3 className="m-0 text-bo-text" data-ui="node-preview-heading-h3">{headingText}</h3>}
-          {clampedLevel === 4 && <h4 className="m-0 text-bo-text" data-ui="node-preview-heading-h4">{headingText}</h4>}
-          {clampedLevel === 5 && <h5 className="m-0 text-bo-text" data-ui="node-preview-heading-h5">{headingText}</h5>}
-          {clampedLevel === 6 && <h6 className="m-0 text-bo-text" data-ui="node-preview-heading-h6">{headingText}</h6>}
+          {clampedLevel === 1 && <h1 className="m-0 text-foreground" data-ui="node-preview-heading-h1">{headingText}</h1>}
+          {clampedLevel === 2 && <h2 className="m-0 text-foreground" data-ui="node-preview-heading-h2">{headingText}</h2>}
+          {clampedLevel === 3 && <h3 className="m-0 text-foreground" data-ui="node-preview-heading-h3">{headingText}</h3>}
+          {clampedLevel === 4 && <h4 className="m-0 text-foreground" data-ui="node-preview-heading-h4">{headingText}</h4>}
+          {clampedLevel === 5 && <h5 className="m-0 text-foreground" data-ui="node-preview-heading-h5">{headingText}</h5>}
+          {clampedLevel === 6 && <h6 className="m-0 text-foreground" data-ui="node-preview-heading-h6">{headingText}</h6>}
         </div>
       );
     }
@@ -2147,7 +2145,7 @@ export default function SiteBuilderEditorPage() {
     if (node.type === "button") {
       return (
         <div className="flex flex-col gap-2" data-ui="node-preview-button">
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" data-ui="node-preview-button-tag" type="button">
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" data-ui="node-preview-button-tag" type="button">
             {toInputValue(props.text) || "Button"}
           </button>
         </div>
@@ -2157,7 +2155,7 @@ export default function SiteBuilderEditorPage() {
     if (node.type === "spacer") {
       return (
         <div
-          className="rounded-sm border border-dashed border-border bg-bo-accent/10"
+          className="rounded-sm border border-dashed border-border bg-accent/10"
           data-ui="node-preview-spacer"
           style={{ height: Number(props.height) || 40 }}
         />
@@ -2189,7 +2187,7 @@ export default function SiteBuilderEditorPage() {
           className={cn(
             "min-h-[18px] border border-dashed rounded-sm flex items-center justify-center transition-colors duration-150",
             shouldShow && "min-h-6",
-            isActive && "border-bo-accent/56 bg-bo-accent/14",
+            isActive && "border-accent/56 bg-accent/14",
           )}
           data-ui="drop-zone"
           data-drop-target={placement.targetId ?? "root"}
@@ -2215,7 +2213,7 @@ export default function SiteBuilderEditorPage() {
     return (
       <div
         key={`${pathKey}-${node.id}`}
-        className={cn("relative rounded-sm border border-transparent bg-transparent transition-all duration-100 hover:border-bo-accent/30", isSelected && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.28)] bg-bo-accent/8")}
+        className={cn("relative rounded-sm border border-transparent bg-transparent transition-all duration-100 hover:border-accent/30", isSelected && "border-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.28)] bg-accent/8")}
         data-ui="canvas-node"
         data-node-id={node.id}
         data-node-type={node.type}
@@ -2230,19 +2228,19 @@ export default function SiteBuilderEditorPage() {
         onContextMenu={(event) => handleContextMenu(event, node.id)}
       >
         {/* Webflow-like selection outline */}
-        {isSelected && <div className="absolute inset-[-2px] border-2 border-dashed bo-accent rounded-[calc(0.25rem+2px)] pointer-events-none opacity-0 animate-pulse" data-ui="selection-outline" />}
+        {isSelected && <div className="absolute inset-[-2px] border-2 border-dashed accent rounded-[calc(0.25rem+2px)] pointer-events-none opacity-0 animate-pulse" data-ui="selection-outline" />}
         
         {/* 8-point resize handles */}
         {isSelected && (
           <div className="absolute inset-[-6px] pointer-events-none z-[12] opacity-100" data-ui="resize-handles">
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nwse-resize" data-handle="nw" title="Resize" />
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ns-resize top-0 left-1/2 -translate-x-1/2" data-handle="n" title="Resize" />
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nesw-resize" data-handle="ne" title="Resize" />
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ew-resize top-1/2 right-0 -translate-y-1/2" data-handle="e" title="Resize" />
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nwse-resize right-0 bottom-0" data-handle="se" title="Resize" />
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ns-resize bottom-0 left-1/2 -translate-x-1/2" data-handle="s" title="Resize" />
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-nesw-resize bottom-0 left-0" data-handle="sw" title="Resize" />
-            <div className="absolute w-2.5 h-2.5 bg-bo-surface border-2 border-bo-accent rounded-[2px] pointer-events-auto cursor-ew-resize top-1/2 left-0 -translate-y-1/2" data-handle="w" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-nwse-resize" data-handle="nw" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-ns-resize top-0 left-1/2 -translate-x-1/2" data-handle="n" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-nesw-resize" data-handle="ne" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-ew-resize top-1/2 right-0 -translate-y-1/2" data-handle="e" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-nwse-resize right-0 bottom-0" data-handle="se" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-ns-resize bottom-0 left-1/2 -translate-x-1/2" data-handle="s" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-nesw-resize bottom-0 left-0" data-handle="sw" title="Resize" />
+            <div className="absolute w-2.5 h-2.5 bg-card border-2 border-accent rounded-[2px] pointer-events-auto cursor-ew-resize top-1/2 left-0 -translate-y-1/2" data-handle="w" title="Resize" />
           </div>
         )}
         
@@ -2250,7 +2248,7 @@ export default function SiteBuilderEditorPage() {
           <div className="flex items-center gap-1" data-ui="canvas-node-header-left">
             <button
               type="button"
-              className="p-1 rounded cursor-grab active:cursor-grabbing text-muted hover:text-bo-text"
+              className="p-1 rounded cursor-grab active:cursor-grabbing text-muted hover:text-foreground"
               title="Arrastrar"
               aria-label={`Arrastrar ${node.type}`}
               data-ui="canvas-node-drag-handle"
@@ -2260,7 +2258,7 @@ export default function SiteBuilderEditorPage() {
             >
               <GripVertical size={14} />
             </button>
-            <span className="text-xs text-bo-text font-medium" data-ui="canvas-node-type">
+            <span className="text-xs text-foreground font-medium" data-ui="canvas-node-type">
               {node.type}
             </span>
             <span className="text-xs text-faint" data-ui="canvas-node-id">
@@ -2270,7 +2268,7 @@ export default function SiteBuilderEditorPage() {
           <div className="flex items-center gap-1" data-ui="canvas-node-header-right">
             <div className="flex items-center gap-1" data-ui="canvas-node-actions">
               <button
-                className="p-1.5 rounded text-muted hover:text-danger hover:bg-bo-color-danger/14"
+                className="p-1.5 rounded text-muted hover:text-danger hover:bg-destructive/14"
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -2304,7 +2302,7 @@ export default function SiteBuilderEditorPage() {
                   data-ui="canvas-node-column"
                   data-column-index={columnIndex}
                 >
-                  <div className="text-xs text-bo-text font-medium" data-ui="canvas-node-column-title">
+                  <div className="text-xs text-foreground font-medium" data-ui="canvas-node-column-title">
                     Columna {columnIndex + 1}
                   </div>
                   {renderNodeCollection(
@@ -2352,7 +2350,7 @@ export default function SiteBuilderEditorPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8 text-bo-muted" data-ui="site-builder-loading">
+      <div className="flex items-center justify-center py-8 text-muted-foreground" data-ui="site-builder-loading">
         <Loader2 className="animate-spin h-4 w-4" size={32} />
         <span data-ui="site-builder-loading-text">Cargando editor...</span>
       </div>
@@ -2363,21 +2361,21 @@ export default function SiteBuilderEditorPage() {
     <>
       <style data-ui="site-builder-inline-styles" dangerouslySetInnerHTML={{ __html: SITE_BUILDER_PAGE_STYLES }} />
       <div className="flex flex-col gap-4 p-4 min-h-[calc(100dvh-140px)]" data-ui="site-builder">
-        <header className="flex items-center justify-between gap-3 p-3 bg-bo-surface border border-bo-border rounded-lg shadow-soft" data-ui="site-builder-toolbar">
+        <header className="flex items-center justify-between gap-3 p-3 bg-card border border rounded-lg shadow-soft" data-ui="site-builder-toolbar">
           <div className="flex items-center gap-3" data-ui="toolbar-left">
-            <span className="text-base font-semibold text-bo-text" data-ui="toolbar-title">
+            <span className="text-base font-semibold text-foreground" data-ui="toolbar-title">
               {site?.name || "Site Builder"}
             </span>
-            <span className="inline-flex items-center gap-2 text-sm text-bo-muted" data-ui="toolbar-page-name">
+            <span className="inline-flex items-center gap-2 text-sm text-muted-foreground" data-ui="toolbar-page-name">
               <FileText size={14} />
               {currentPage?.name || "Sin página"}
             </span>
           </div>
 
           <div className="flex-1 flex justify-center" data-ui="toolbar-center">
-            <div className="inline-flex items-center gap-1 p-0.5 border border-bo-border rounded bg-bo-surface-3" data-ui="viewport-toggle">
+            <div className="inline-flex items-center gap-1 p-0.5 border border rounded bg-card-3" data-ui="viewport-toggle">
               <button
-                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", viewportSize === "desktop" && "bg-bo-accent/24 text-bo-text")}
+                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-card-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent", viewportSize === "desktop" && "bg-accent/24 text-foreground")}
                 type="button"
                 onClick={() => setViewportSize("desktop")}
                 title="Desktop"
@@ -2387,7 +2385,7 @@ export default function SiteBuilderEditorPage() {
                 <Monitor size={18} />
               </button>
               <button
-                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", viewportSize === "tablet" && "bg-bo-accent/24 text-bo-text")}
+                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-card-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent", viewportSize === "tablet" && "bg-accent/24 text-foreground")}
                 type="button"
                 onClick={() => setViewportSize("tablet")}
                 title="Tablet"
@@ -2397,7 +2395,7 @@ export default function SiteBuilderEditorPage() {
                 <Tablet size={18} />
               </button>
               <button
-                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", viewportSize === "mobile" && "bg-bo-accent/24 text-bo-text")}
+                className={cn("w-9 h-9 rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-card-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent", viewportSize === "mobile" && "bg-accent/24 text-foreground")}
                 type="button"
                 onClick={() => setViewportSize("mobile")}
                 title="Mobile"
@@ -2411,7 +2409,7 @@ export default function SiteBuilderEditorPage() {
 
           <div className="flex items-center gap-3" data-ui="toolbar-right">
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]"
               type="button"
               onClick={() => setLeftPanelOpen((prev) => !prev)}
               title={leftPanelOpen ? "Ocultar panel izquierdo" : "Mostrar panel izquierdo"}
@@ -2420,10 +2418,10 @@ export default function SiteBuilderEditorPage() {
             >
               {leftPanelOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
             </button>
-            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" title="Deshacer" aria-label="Deshacer" data-ui="toolbar-undo">
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" title="Deshacer" aria-label="Deshacer" data-ui="toolbar-undo">
               <Undo size={18} />
             </button>
-            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
+            <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed"
               type="button"
               onClick={handleSavePage}
               disabled={saving}
@@ -2437,10 +2435,10 @@ export default function SiteBuilderEditorPage() {
 
         <div className="grid grid-cols-[280px_minmax(0,1fr)_320px] gap-4 flex-1 min-h-0" data-ui="site-builder-main">
           {leftPanelOpen ? (
-            <aside className="flex flex-col min-h-0 bg-bo-surface border border-bo-border rounded-lg shadow-soft" data-ui="left-panel">
-              <div className="grid grid-cols-3 gap-1 p-2 border-b border-bo-border" data-ui="left-panel-tabs">
+            <aside className="flex flex-col min-h-0 bg-card border border rounded-lg shadow-soft" data-ui="left-panel">
+              <div className="grid grid-cols-3 gap-1 p-2 border-b border" data-ui="left-panel-tabs">
                 <button
-                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", activeLeftTab === "components" && "bg-bo-accent/22 text-bo-text")}
+                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-card-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent", activeLeftTab === "components" && "bg-accent/22 text-foreground")}
                   type="button"
                   onClick={() => setActiveLeftTab("components")}
                   data-ui="left-tab-components"
@@ -2449,7 +2447,7 @@ export default function SiteBuilderEditorPage() {
                   <span data-ui="left-tab-components-label">Componentes</span>
                 </button>
                 <button
-                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", activeLeftTab === "pages" && "bg-bo-accent/22 text-bo-text")}
+                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-card-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent", activeLeftTab === "pages" && "bg-accent/22 text-foreground")}
                   type="button"
                   onClick={() => setActiveLeftTab("pages")}
                   data-ui="left-tab-pages"
@@ -2458,7 +2456,7 @@ export default function SiteBuilderEditorPage() {
                   <span data-ui="left-tab-pages-label">Páginas</span>
                 </button>
                 <button
-                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-bo-surface-2 hover:text-bo-text focus:outline-none focus-visible:ring-2 focus-visible:ring-bo-accent", activeLeftTab === "layers" && "bg-bo-accent/22 text-bo-text")}
+                  className={cn("h-9 rounded-sm border-0 bg-transparent text-muted text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-colors duration-150 hover:bg-card-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent", activeLeftTab === "layers" && "bg-accent/22 text-foreground")}
                   type="button"
                   onClick={() => setActiveLeftTab("layers")}
                   data-ui="left-tab-layers"
@@ -2474,7 +2472,7 @@ export default function SiteBuilderEditorPage() {
                     {components.map((component) => (
                       <button
                         key={component.id}
-                        className="w-full min-h-[40px] p-2 border border-bo-border rounded bg-bo-surface-2 text-bo-text flex items-center gap-2 text-left cursor-pointer hover:bg-bo-surface-3 transition-colors"
+                        className="w-full min-h-[40px] p-2 border border rounded bg-card-2 text-foreground flex items-center gap-2 text-left cursor-pointer hover:bg-card-3 transition-colors"
                         type="button"
                         draggable
                         onDragStart={(event) => handleDragStartComponent(event, component.type)}
@@ -2484,16 +2482,16 @@ export default function SiteBuilderEditorPage() {
                         data-ui="component-item"
                         data-component-type={component.type}
                       >
-                        <span className="text-bo-muted" data-ui="component-item-icon">
+                        <span className="text-muted-foreground" data-ui="component-item-icon">
                           <Square size={16} />
                         </span>
-                        <span className="text-bo-text" data-ui="component-item-label">
+                        <span className="text-foreground" data-ui="component-item-label">
                           {component.label}
                         </span>
                       </button>
                     ))}
                     {components.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3" data-ui="components-empty-state">
+                      <div className="flex flex-col items-center justify-center py-12 px-4 text-muted-foreground text-center gap-3" data-ui="components-empty-state">
                         <Blocks size={32} />
                         <p data-ui="components-empty-text">No hay componentes disponibles</p>
                       </div>
@@ -2506,7 +2504,7 @@ export default function SiteBuilderEditorPage() {
                     {pages.map((page) => (
                       <button
                         key={page.id}
-                        className={cn("w-full min-h-[40px] p-2 border border-border rounded-sm bg-bo-surface-2 text-bo-text flex items-center gap-2 text-left cursor-pointer transition-colors duration-150 hover:border-border-2 hover:bg-bo-surface-3", currentPage?.id === page.id && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.30)]")}
+                        className={cn("w-full min-h-[40px] p-2 border border-border rounded-sm bg-card-2 text-foreground flex items-center gap-2 text-left cursor-pointer transition-colors duration-150 hover:border-border-2 hover:bg-card-3", currentPage?.id === page.id && "border-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.30)]")}
                         type="button"
                         onClick={() => {
                           setCurrentPage({
@@ -2520,7 +2518,7 @@ export default function SiteBuilderEditorPage() {
                       >
                         <FileText size={16} />
                         <span data-ui="page-item-name">{page.name}</span>
-                        {page.is_home ? <span className="ml-auto px-2 py-0.5 rounded-full text-xs font-semibold text-bo-accent bg-bo-accent/18" data-ui="page-item-badge">Home</span> : null}
+                        {page.is_home ? <span className="ml-auto px-2 py-0.5 rounded-full text-xs font-semibold text-accent bg-accent/18" data-ui="page-item-badge">Home</span> : null}
                       </button>
                     ))}
                   </div>
@@ -2531,7 +2529,7 @@ export default function SiteBuilderEditorPage() {
                     {layerItems.map((layer) => (
                       <div
                         key={layer.node.id}
-                        className={cn("w-full min-h-[40px] p-2 border border-border rounded-sm bg-bo-surface-2 text-bo-text flex items-center gap-2 text-left cursor-pointer transition-colors duration-150 hover:border-border-2 hover:bg-bo-surface-3", selectedNodeId === layer.node.id && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.30)]")}
+                        className={cn("w-full min-h-[40px] p-2 border border-border rounded-sm bg-card-2 text-foreground flex items-center gap-2 text-left cursor-pointer transition-colors duration-150 hover:border-border-2 hover:bg-card-3", selectedNodeId === layer.node.id && "border-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.30)]")}
                         onClick={() => {
                           setSelectedNodeId(layer.node.id);
                           setRightPanelOpen(true);
@@ -2557,7 +2555,7 @@ export default function SiteBuilderEditorPage() {
                           <Square size={12} />
                         </span>
                         <span className="inline-flex items-center gap-2" style={{ paddingLeft: `${layer.depth * 14}px` }} data-ui="layer-item-content">
-                          <span className="text-sm text-bo-text" data-ui="layer-item-name">
+                          <span className="text-sm text-foreground" data-ui="layer-item-name">
                             {layer.node.type}
                           </span>
                         </span>
@@ -2565,7 +2563,7 @@ export default function SiteBuilderEditorPage() {
                           {layer.branch}
                         </span>
                         <button
-                          className="ml-auto w-[30px] h-[30px] rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer hover:text-danger hover:bg-bo-color-danger/16"
+                          className="ml-auto w-[30px] h-[30px] rounded-sm border-0 bg-transparent text-muted inline-flex items-center justify-center cursor-pointer hover:text-danger hover:bg-destructive/16"
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
@@ -2580,7 +2578,7 @@ export default function SiteBuilderEditorPage() {
                       </div>
                     ))}
                     {layerItems.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3" data-ui="layers-empty-state">
+                      <div className="flex flex-col items-center justify-center py-12 px-4 text-muted-foreground text-center gap-3" data-ui="layers-empty-state">
                         <Layers size={32} />
                         <p data-ui="layers-empty-text">Arrastra componentes al canvas para empezar</p>
                       </div>
@@ -2602,7 +2600,7 @@ export default function SiteBuilderEditorPage() {
             }}
           >
             <div 
-              className="mx-auto min-h-full w-full py-3 px-4 bg-bo-surface/72 border border-border rounded-md flex flex-col gap-2" 
+              className="mx-auto min-h-full w-full py-3 px-4 bg-card/72 border border-border rounded-md flex flex-col gap-2" 
               style={{ maxWidth: viewportWidth }} 
               data-ui="canvas-preview"
               onClick={(event) => {
@@ -2613,7 +2611,7 @@ export default function SiteBuilderEditorPage() {
               }}
             >
               <div 
-                className={cn("w-full min-h-full p-[18px_2.8vw_34px] rounded-md border border-border/76 bg-gradient-to-b from-bo-surface/86 to-bo-surface shadow-[0_20px_55px_rgba(9,11,18,0.24)] flex flex-col gap-2", isDraggingCanvas && "border-bo-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.26),0_20px_55px_rgba(9,11,18,0.22)]")} 
+                className={cn("w-full min-h-full p-[18px_2.8vw_34px] rounded-md border border-border/76 bg-gradient-to-b from-card/86 to-card shadow-[0_20px_55px_rgba(9,11,18,0.24)] flex flex-col gap-2", isDraggingCanvas && "border-accent/58 shadow-[0_0_0_1px_rgba(185,168,255,0.26),0_20px_55px_rgba(9,11,18,0.22)]")} 
                 data-ui="canvas-page-surface"
                 onClick={(event) => {
                   // Deselect when clicking on page surface background
@@ -2652,11 +2650,11 @@ export default function SiteBuilderEditorPage() {
           </main>
 
           {rightPanelOpen && selectedNode ? (
-            <aside className="flex flex-col min-h-0 bg-bo-surface border border-bo-border rounded-lg shadow-soft" data-ui="right-panel">
-              <div className="flex items-center justify-between gap-2 p-3 border-b border-bo-border" data-ui="right-panel-header">
+            <aside className="flex flex-col min-h-0 bg-card border border rounded-lg shadow-soft" data-ui="right-panel">
+              <div className="flex items-center justify-between gap-2 p-3 border-b border" data-ui="right-panel-header">
                 <h3 data-ui="right-panel-title">Propiedades</h3>
                 <button
-                  className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+                  className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
                   type="button"
                   onClick={() => setRightPanelOpen(false)}
                   aria-label="Ocultar propiedades"
@@ -2667,63 +2665,63 @@ export default function SiteBuilderEditorPage() {
               </div>
 
               <div className="p-3 min-h-0 overflow-auto" data-ui="properties">
-                <div className="flex flex-col gap-1 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-type">
-                  <span className="text-xs text-bo-muted font-semibold uppercase tracking-wide" data-ui="property-label-type">
+                <div className="flex flex-col gap-1 p-3 bg-card-2 rounded-sm" data-ui="property-group-type">
+                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wide" data-ui="property-label-type">
                     Tipo
                   </span>
-                  <span className="inline-flex self-start px-2 py-0.5 rounded-full border border-border bg-bo-surface-3 text-bo-text text-xs" data-ui="property-value-type">
+                  <span className="inline-flex self-start px-2 py-0.5 rounded-full border border-border bg-card-3 text-foreground text-xs" data-ui="property-value-type">
                     {selectedNode.type}
                   </span>
                 </div>
 
                 {selectedNode.type === "hero" ? (
                   <>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-title">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-title" data-ui="property-label-hero-title">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-hero-title">
+                      <label className="text-sm text-muted-foreground" htmlFor="hero-title" data-ui="property-label-hero-title">
                         Título
                       </label>
                       <input
                         id="hero-title"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).title)}
                         onChange={(event) => updateSelectedNodeProps({ title: event.target.value })}
                         data-ui="property-input-hero-title"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-subtitle">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-subtitle" data-ui="property-label-hero-subtitle">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-hero-subtitle">
+                      <label className="text-sm text-muted-foreground" htmlFor="hero-subtitle" data-ui="property-label-hero-subtitle">
                         Subtítulo
                       </label>
                       <textarea
                         id="hero-subtitle"
-                        className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors w-full h-32 resize-y bg-bo-bg"
+                        className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors w-full h-32 resize-y bg-background"
                         value={toInputValue(parseNodeProps(selectedNode).subtitle)}
                         onChange={(event) => updateSelectedNodeProps({ subtitle: event.target.value })}
                         data-ui="property-input-hero-subtitle"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-button-text">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-button-text" data-ui="property-label-hero-button-text">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-hero-button-text">
+                      <label className="text-sm text-muted-foreground" htmlFor="hero-button-text" data-ui="property-label-hero-button-text">
                         Texto del botón
                       </label>
                       <input
                         id="hero-button-text"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).buttonText)}
                         onChange={(event) => updateSelectedNodeProps({ buttonText: event.target.value })}
                         data-ui="property-input-hero-button-text"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-hero-button-href">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="hero-button-href" data-ui="property-label-hero-button-href">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-hero-button-href">
+                      <label className="text-sm text-muted-foreground" htmlFor="hero-button-href" data-ui="property-label-hero-button-href">
                         URL del botón
                       </label>
                       <input
                         id="hero-button-href"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).buttonHref)}
                         onChange={(event) => updateSelectedNodeProps({ buttonHref: event.target.value })}
                         data-ui="property-input-hero-button-href"
@@ -2733,13 +2731,13 @@ export default function SiteBuilderEditorPage() {
                 ) : null}
 
                 {selectedNode.type === "text" ? (
-                  <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-text-content">
-                    <label className="text-bo-sm text-bo-muted" htmlFor="text-content" data-ui="property-label-text-content">
+                  <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-text-content">
+                    <label className="text-sm text-muted-foreground" htmlFor="text-content" data-ui="property-label-text-content">
                       Contenido
                     </label>
                     <textarea
                       id="text-content"
-                      className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors w-full h-40 resize-y bg-bo-bg"
+                      className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors w-full h-40 resize-y bg-background"
                       value={toInputValue(parseNodeProps(selectedNode).content)}
                       onChange={(event) => updateSelectedNodeProps({ content: event.target.value })}
                       data-ui="property-input-text-content"
@@ -2749,26 +2747,26 @@ export default function SiteBuilderEditorPage() {
 
                 {selectedNode.type === "heading" ? (
                   <>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-heading-text">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="heading-text" data-ui="property-label-heading-text">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-heading-text">
+                      <label className="text-sm text-muted-foreground" htmlFor="heading-text" data-ui="property-label-heading-text">
                         Texto
                       </label>
                       <input
                         id="heading-text"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).text)}
                         onChange={(event) => updateSelectedNodeProps({ text: event.target.value })}
                         data-ui="property-input-heading-text"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-heading-level">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="heading-level" data-ui="property-label-heading-level">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-heading-level">
+                      <label className="text-sm text-muted-foreground" htmlFor="heading-level" data-ui="property-label-heading-level">
                         Nivel
                       </label>
                       <select
                         id="heading-level"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={Number(parseNodeProps(selectedNode).level) || 2}
                         onChange={(event) => updateSelectedNodeProps({ level: Number(event.target.value) })}
                         data-ui="property-input-heading-level"
@@ -2786,27 +2784,27 @@ export default function SiteBuilderEditorPage() {
 
                 {selectedNode.type === "image" ? (
                   <>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-image-src">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="image-src" data-ui="property-label-image-src">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-image-src">
+                      <label className="text-sm text-muted-foreground" htmlFor="image-src" data-ui="property-label-image-src">
                         URL de imagen
                       </label>
                       <input
                         id="image-src"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).src)}
                         onChange={(event) => updateSelectedNodeProps({ src: event.target.value })}
                         data-ui="property-input-image-src"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-image-alt">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="image-alt" data-ui="property-label-image-alt">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-image-alt">
+                      <label className="text-sm text-muted-foreground" htmlFor="image-alt" data-ui="property-label-image-alt">
                         Texto alternativo
                       </label>
                       <input
                         id="image-alt"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).alt)}
                         onChange={(event) => updateSelectedNodeProps({ alt: event.target.value })}
                         data-ui="property-input-image-alt"
@@ -2817,39 +2815,39 @@ export default function SiteBuilderEditorPage() {
 
                 {selectedNode.type === "button" ? (
                   <>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-button-text">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="button-text" data-ui="property-label-button-text">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-button-text">
+                      <label className="text-sm text-muted-foreground" htmlFor="button-text" data-ui="property-label-button-text">
                         Texto
                       </label>
                       <input
                         id="button-text"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).text)}
                         onChange={(event) => updateSelectedNodeProps({ text: event.target.value })}
                         data-ui="property-input-button-text"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-button-href">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="button-href" data-ui="property-label-button-href">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-button-href">
+                      <label className="text-sm text-muted-foreground" htmlFor="button-href" data-ui="property-label-button-href">
                         URL
                       </label>
                       <input
                         id="button-href"
                         type="text"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).href)}
                         onChange={(event) => updateSelectedNodeProps({ href: event.target.value })}
                         data-ui="property-input-button-href"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-button-variant">
-                      <label className="text-bo-sm text-bo-muted" htmlFor="button-variant" data-ui="property-label-button-variant">
+                    <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-button-variant">
+                      <label className="text-sm text-muted-foreground" htmlFor="button-variant" data-ui="property-label-button-variant">
                         Variante
                       </label>
                       <select
                         id="button-variant"
-                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                        className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                         value={toInputValue(parseNodeProps(selectedNode).variant) || "primary"}
                         onChange={(event) => updateSelectedNodeProps({ variant: event.target.value })}
                         data-ui="property-input-button-variant"
@@ -2864,14 +2862,14 @@ export default function SiteBuilderEditorPage() {
                 ) : null}
 
                 {selectedNode.type === "spacer" ? (
-                  <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-spacer-height">
-                    <label className="text-bo-sm text-bo-muted" htmlFor="spacer-height" data-ui="property-label-spacer-height">
+                  <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-spacer-height">
+                    <label className="text-sm text-muted-foreground" htmlFor="spacer-height" data-ui="property-label-spacer-height">
                       Altura (px)
                     </label>
                     <input
                       id="spacer-height"
                       type="number"
-                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                      className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                       value={Number(parseNodeProps(selectedNode).height) || 40}
                       onChange={(event) => updateSelectedNodeProps({ height: Number(event.target.value) || 0 })}
                       data-ui="property-input-spacer-height"
@@ -2879,42 +2877,42 @@ export default function SiteBuilderEditorPage() {
                   </div>
                 ) : null}
 
-                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-padding-top">
-                  <label className="text-bo-sm text-bo-muted" htmlFor="style-padding-top" data-ui="property-label-style-padding-top">
+                <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-style-padding-top">
+                  <label className="text-sm text-muted-foreground" htmlFor="style-padding-top" data-ui="property-label-style-padding-top">
                     Padding superior (px)
                   </label>
                   <input
                     id="style-padding-top"
                     type="number"
-                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     value={Number(selectedNodeStyle.paddingTop ?? 0)}
                     onChange={(event) => updateSelectedNodeStyle({ paddingTop: Number(event.target.value) || 0 })}
                     data-ui="property-input-style-padding-top"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-padding-bottom">
-                  <label className="text-bo-sm text-bo-muted" htmlFor="style-padding-bottom" data-ui="property-label-style-padding-bottom">
+                <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-style-padding-bottom">
+                  <label className="text-sm text-muted-foreground" htmlFor="style-padding-bottom" data-ui="property-label-style-padding-bottom">
                     Padding inferior (px)
                   </label>
                   <input
                     id="style-padding-bottom"
                     type="number"
-                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     value={Number(selectedNodeStyle.paddingBottom ?? 0)}
                     onChange={(event) => updateSelectedNodeStyle({ paddingBottom: Number(event.target.value) || 0 })}
                     data-ui="property-input-style-padding-bottom"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-background-color">
-                  <label className="text-bo-sm text-bo-muted" htmlFor="style-background-color" data-ui="property-label-style-background-color">
+                <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-style-background-color">
+                  <label className="text-sm text-muted-foreground" htmlFor="style-background-color" data-ui="property-label-style-background-color">
                     Fondo
                   </label>
                   <input
                     id="style-background-color"
                     type="text"
-                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     placeholder="#ffffff o var(--token)"
                     value={toInputValue(selectedNodeStyle.backgroundColor)}
                     onChange={(event) => updateSelectedNodeStyle({ backgroundColor: event.target.value })}
@@ -2922,14 +2920,14 @@ export default function SiteBuilderEditorPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-text-color">
-                  <label className="text-bo-sm text-bo-muted" htmlFor="style-text-color" data-ui="property-label-style-text-color">
+                <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-style-text-color">
+                  <label className="text-sm text-muted-foreground" htmlFor="style-text-color" data-ui="property-label-style-text-color">
                     Color de texto
                   </label>
                   <input
                     id="style-text-color"
                     type="text"
-                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     placeholder="#111111 o var(--token)"
                     value={toInputValue(selectedNodeStyle.textColor)}
                     onChange={(event) => updateSelectedNodeStyle({ textColor: event.target.value })}
@@ -2937,14 +2935,14 @@ export default function SiteBuilderEditorPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 p-3 bg-bo-surface-2 rounded-bo-sm" data-ui="property-group-style-max-width">
-                  <label className="text-bo-sm text-bo-muted" htmlFor="style-max-width" data-ui="property-label-style-max-width">
+                <div className="flex flex-col gap-2 p-3 bg-card-2 rounded-sm" data-ui="property-group-style-max-width">
+                  <label className="text-sm text-muted-foreground" htmlFor="style-max-width" data-ui="property-label-style-max-width">
                     Ancho máximo
                   </label>
                   <input
                     id="style-max-width"
                     type="text"
-                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                    className="h-10 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground px-3 outline-none transition-colors hover:border-white/[0.09] focus:border-primary/38 focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                     placeholder="1200px, 80ch, min(100%, 960px)"
                     value={toInputValue(selectedNodeStyle.maxWidth)}
                     onChange={(event) => updateSelectedNodeStyle({ maxWidth: event.target.value })}
@@ -2969,7 +2967,7 @@ export default function SiteBuilderEditorPage() {
 
           {!rightPanelOpen ? (
             <button
-              className="fixed right-4 bottom-4 w-10 h-10 rounded-full border border-border bg-bo-surface text-bo-text inline-flex items-center justify-center shadow-soft cursor-pointer"
+              className="fixed right-4 bottom-4 w-10 h-10 rounded-full border border-border bg-card text-foreground inline-flex items-center justify-center shadow-soft cursor-pointer"
               type="button"
               onClick={() => setRightPanelOpen(true)}
               title="Mostrar propiedades"
@@ -2985,7 +2983,7 @@ export default function SiteBuilderEditorPage() {
         {contextMenu ? (
           <div
             ref={contextMenuRef}
-            className="fixed min-w-[180px] p-1 bg-bo-surface border border-border rounded-md shadow-soft shadow-[0_8px_32px_rgba(0,0,0,0.24)] z-[1000] animate-in fade-in zoom-in-95 slide-in-from-location-[var(--x)_var(--y)] duration-100"
+            className="fixed min-w-[180px] p-1 bg-card border border-border rounded-md shadow-soft shadow-[0_8px_32px_rgba(0,0,0,0.24)] z-[1000] animate-in fade-in zoom-in-95 slide-in-from-location-[var(--x)_var(--y)] duration-100"
             data-ui="context-menu"
             role="menu"
             style={{
@@ -2994,7 +2992,7 @@ export default function SiteBuilderEditorPage() {
             }}
           >
             <button
-              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-bo-text text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-surface-2"
+              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-foreground text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-card-2"
               type="button"
               role="menuitem"
               onClick={() => handleDuplicateNode(contextMenu.nodeId)}
@@ -3004,7 +3002,7 @@ export default function SiteBuilderEditorPage() {
               <span className="ml-auto text-xs text-muted">⌘D</span>
             </button>
             <button
-              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-bo-text text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-surface-2"
+              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-foreground text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-card-2"
               type="button"
               role="menuitem"
               onClick={() => handleCopyNode(contextMenu.nodeId)}
@@ -3015,7 +3013,7 @@ export default function SiteBuilderEditorPage() {
             </button>
             {clipboardNode ? (
               <button
-                className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-bo-text text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-surface-2"
+                className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-foreground text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-card-2"
                 type="button"
                 role="menuitem"
                 onClick={() => handlePasteNode(contextMenu.nodeId)}
@@ -3027,7 +3025,7 @@ export default function SiteBuilderEditorPage() {
             ) : null}
             <div className="h-px bg-border my-1" />
             <button
-              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-red-400 text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-bo-color-danger/14"
+              className="flex items-center gap-2 w-full p-2 rounded-sm border-0 bg-transparent text-red-400 text-sm text-left cursor-pointer transition-colors duration-100 hover:bg-destructive/14"
               type="button"
               role="menuitem"
               onClick={() => handleDeleteNode(contextMenu.nodeId)}

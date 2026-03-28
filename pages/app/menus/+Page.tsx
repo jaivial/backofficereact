@@ -98,14 +98,14 @@ const MenuFilters = React.memo(function MenuFilters({
   }, []);
 
   return (
-    <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-menuFilters" aria-label="Filtros de menus">
+    <div className="rounded-lg bg-card shadow-soft bo-menuFilters" aria-label="Filtros de menus">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-sm font-medium">
           <Filter size={15} />
           <span>Filtros</span>
         </div>
         <button
-          className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-bo-border bg-bo-surface-2 text-bo-muted cursor-pointer hover:bg-bo-surface hover:text-bo-text transition-colors focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border bg-card-2 text-muted-foreground cursor-pointer hover:bg-card hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
           type="button"
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
@@ -129,7 +129,7 @@ const MenuFilters = React.memo(function MenuFilters({
               <label className="flex flex-col gap-2">
                 <span className="text-xs text-faint font-medium">Buscar por titulo</span>
                 <input
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   type="search"
                   value={searchText}
                   placeholder="Ejemplo: San Valentin"
@@ -162,7 +162,7 @@ const MenuFilters = React.memo(function MenuFilters({
               <div className="text-xs text-faint">{summaryText}</div>
               <div className="flex items-center gap-2">
                 <button
-                  className={cn("h-8 rounded-lg border border-transparent bg-transparent text-bo-text cursor-pointer px-2 font-medium inline-flex items-center justify-center gap-1", !hasFilters && "invisible")}
+                  className={cn("h-8 rounded-lg border border-transparent bg-transparent text-foreground cursor-pointer px-2 font-medium inline-flex items-center justify-center gap-1", !hasFilters && "invisible")}
                   type="button"
                   disabled={disableActions || !hasFilters}
                   onClick={onResetFilters}
@@ -411,7 +411,7 @@ export default function Page() {
       ) : (
         <>
           <button
-            className="text-bo-accent hover:underline cursor-pointer"
+            className="text-accent hover:underline cursor-pointer"
             type="button"
             onClick={handleBackToPanels}
           >
@@ -449,7 +449,7 @@ export default function Page() {
             ))}
 
             {!filteredMenus.length ? (
-              <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-muted-foreground text-center gap-3">
                 {menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}
               </div>
             ) : null}
@@ -458,7 +458,7 @@ export default function Page() {
       )}
 
       <button
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-lg bg-gradient-to-br from-[var(--bo-accent)] to-[var(--bo-accent)]/80 text-bo-bg shadow-lg flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2 z-50 border border-[var(--bo-accent)]/40"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/80 text-background shadow-lg flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 z-50 border border-[var(--accent)]/40"
         type="button"
         aria-label="Crear menu"
         onClick={() => openEditor()}

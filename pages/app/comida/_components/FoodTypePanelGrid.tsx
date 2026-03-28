@@ -51,7 +51,7 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
                 "flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-border bg-linear-to-b from-white/[0.04] to-black/[0.08] cursor-pointer transition-all duration-150",
                 "hover:border-[rgba(185,168,255,0.42)] hover:bg-linear-to-b hover:from-[rgba(185,168,255,0.08)] hover:to-[rgba(185,168,255,0.04)] hover:-translate-y-0.5",
                 "active:translate-y-0",
-                "focus-visible:outline-2 focus-visible:outline-bo-accent focus-visible:outline-offset-2"
+                "focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
               )}
               type="button"
               onClick={() => onSelect(panel.value)}
@@ -63,7 +63,7 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
               <div className="w-14 h-14 rounded-full bg-[rgba(185,168,255,0.12)] grid place-items-center text-[rgba(185,168,255,0.9)]" aria-hidden="true">
                 <Icon size={28} />
               </div>
-              <div className="text-[13px] font-semibold text-bo-text text-center" id={labelId}>
+              <div className="text-[13px] font-semibold text-foreground text-center" id={labelId}>
                 {panel.label}
               </div>
               <div className="text-[11px] text-text-muted text-center" id={descId}>

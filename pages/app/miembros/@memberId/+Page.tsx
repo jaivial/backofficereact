@@ -188,15 +188,15 @@ export default function Page() {
   return (
     <section aria-label="Informacion del miembro" className="flex flex-col gap-4 p-4">
       {!member ? (
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Miembro no disponible</div>
-            <div className="text-bo-xs text-bo-faint">No se pudo cargar el detalle del miembro solicitado.</div>
+            <div className="text-sm font-bold text-foreground">Miembro no disponible</div>
+            <div className="text-xs text-muted-foreground">No se pudo cargar el detalle del miembro solicitado.</div>
           </div>
         </div>
       ) : (
         <>
-          <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="rounded-lg bg-card shadow-soft">
             <div className="flex items-end justify-between pb-2 px-4 pt-4">
               <div className="flex items-start gap-4">
                 <ImageDropInput
@@ -223,7 +223,7 @@ export default function Page() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed"
                   type="button"
                   onClick={() => setConfirmResendOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
@@ -232,7 +232,7 @@ export default function Page() {
                   Reenviar invitación
                 </button>
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed"
                   type="button"
                   onClick={() => setConfirmResetOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
@@ -240,12 +240,12 @@ export default function Page() {
                   <Mail size={14} strokeWidth={1.8} />
                   Recuperar contraseña
                 </button>
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
+                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
                   <Pencil size={14} strokeWidth={1.8} />
                   {editing ? "Cancelar" : "Editar"}
                 </button>
                 {editing ? (
-                  <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={onSave} disabled={saving || avatarBusy}>
+                  <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={onSave} disabled={saving || avatarBusy}>
                     <Check size={14} strokeWidth={1.8} />
                     {saving ? "Guardando..." : "Guardar cambios"}
                   </button>
@@ -255,55 +255,55 @@ export default function Page() {
             <div className="p-4">
               <div className="bo-memberSection">
                 <div className="flex flex-col gap-1">
-                  <div className="text-bo-xs text-bo-muted">Contrato semanal</div>
-                  <div className="text-bo-sm text-bo-text">{member.weeklyContractHours.toFixed(2)} h</div>
+                  <div className="text-xs text-muted-foreground">Contrato semanal</div>
+                  <div className="text-sm text-foreground">{member.weeklyContractHours.toFixed(2)} h</div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <div className="text-bo-xs text-bo-muted">DNI</div>
-                  <div className="text-bo-sm text-bo-text">{member.dni || "No definido"}</div>
+                  <div className="text-xs text-muted-foreground">DNI</div>
+                  <div className="text-sm text-foreground">{member.dni || "No definido"}</div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <div className="text-bo-xs text-bo-muted">Email</div>
-                  <div className="text-bo-sm text-bo-text">{member.email || "No definido"}</div>
+                  <div className="text-xs text-muted-foreground">Email</div>
+                  <div className="text-sm text-foreground">{member.email || "No definido"}</div>
                 </div>
                 {liveEntry ? (
                   <div className="flex flex-col gap-1">
-                    <div className="text-bo-xs text-bo-muted">Fichando ahora</div>
-                    <div className="text-bo-sm text-bo-text">{formatElapsedHHMMSS(liveEntry, tick)}</div>
+                    <div className="text-xs text-muted-foreground">Fichando ahora</div>
+                    <div className="text-sm text-foreground">{formatElapsedHHMMSS(liveEntry, tick)}</div>
                   </div>
                 ) : null}
               </div>
             </div>
           </div>
 
-          <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+          <div className="rounded-lg bg-card shadow-soft">
             <div className="flex items-end justify-between pb-2 px-4 pt-4">
-              <div className="text-bo-sm font-bold text-bo-text">Informacion de usuario</div>
+              <div className="text-sm font-bold text-foreground">Informacion de usuario</div>
             </div>
             <div className="p-4">
               <div className="grid grid-cols-auto-fit gap-4">
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Nombre</span>
-                  <input id="firstName" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
+                  <span className="text-sm font-semibold text-muted-foreground">Nombre</span>
+                  <input id="firstName" className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
                 </label>
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Apellidos</span>
-                  <input id="lastName" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)} />
+                  <span className="text-sm font-semibold text-muted-foreground">Apellidos</span>
+                  <input id="lastName" className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)} />
                 </label>
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Email</span>
-                  <input id="email" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)} />
+                  <span className="text-sm font-semibold text-muted-foreground">Email</span>
+                  <input id="email" className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)} />
                 </label>
                 <label className="grid gap-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">DNI (opcional)</span>
-                  <input id="dni" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
+                  <span className="text-sm font-semibold text-muted-foreground">DNI (opcional)</span>
+                  <input id="dni" className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
                 </label>
                 <label className="grid gap-2 bo-col-span-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Numero de cuenta (opcional)</span>
-                  <input id="bankAccount" className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
+                  <span className="text-sm font-semibold text-muted-foreground">Numero de cuenta (opcional)</span>
+                  <input id="bankAccount" className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
                 </label>
                 <label className="grid gap-2 bo-col-span-2">
-                  <span className="text-bo-sm font-semibold text-bo-muted">Telefono (opcional)</span>
+                  <span className="text-sm font-semibold text-muted-foreground">Telefono (opcional)</span>
                   <PhoneInput
                     countryCode={phoneCountryCode}
                     number={phoneNumber}

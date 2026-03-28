@@ -176,10 +176,10 @@ export default function Page() {
 
   return (
     <section aria-label="Preview de horarios" className="grid gap-3.5 w-full">
-      <div className="rounded-xl border border-border bg-bo-surface-2">
+      <div className="rounded-xl border border-border bg-card-2">
         <div className="flex items-center justify-between p-4 pb-0">
           <div>
-            <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
               <CalendarClock size={16} strokeWidth={1.8} />
               Preview
             </div>
@@ -190,25 +190,25 @@ export default function Page() {
             <div className="h-[30px] rounded-full border border-border px-3 inline-flex items-center text-xs font-medium text-text-muted">
               {busy ? "Cargando..." : date}
             </div>
-            <div className="grid grid-cols-2 p-1" style={{ background: "var(--bo-surface-3)", borderRadius: "var(--rounded-sm)" }} role="tablist" aria-label="Cambiar vista">
+            <div className="grid grid-cols-2 p-1" style={{ background: "var(--muted)", borderRadius: "var(--rounded-sm)" }} role="tablist" aria-label="Cambiar vista">
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "grid" ? "bg-bo-surface text-bo-text" : "text-text-muted hover:text-bo-text"}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "grid" ? "bg-card text-foreground" : "text-text-muted hover:text-foreground"}`}
                 role="tab"
                 aria-selected={view === "grid"}
                 onClick={() => setView("grid")}
               >
-                {view === "grid" ? <span className="block h-0.5 w-4 bg-bo-accent rounded-full mb-1" /> : null}
+                {view === "grid" ? <span className="block h-0.5 w-4 bg-accent rounded-full mb-1" /> : null}
                 <span>Grid</span>
               </button>
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-bo-surface text-bo-text" : "text-text-muted hover:text-bo-text"}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-card text-foreground" : "text-text-muted hover:text-foreground"}`}
                 role="tab"
                 aria-selected={view === "table"}
                 onClick={() => setView("table")}
               >
-                {view === "table" ? <span className="block h-0.5 w-4 bg-bo-accent rounded-full mb-1" /> : null}
+                {view === "table" ? <span className="block h-0.5 w-4 bg-accent rounded-full mb-1" /> : null}
                 <span>Tabla</span>
               </button>
             </div>
@@ -217,11 +217,11 @@ export default function Page() {
 
         <div className="p-4">
           <div className="flex gap-4 mb-4">
-            <div className="flex items-center gap-2 text-xs text-bo-text">
+            <div className="flex items-center gap-2 text-xs text-foreground">
               <Users size={14} strokeWidth={1.8} />
               En vivo: {liveMembers.length}
             </div>
-            <div className="flex items-center gap-2 text-xs text-bo-text">
+            <div className="flex items-center gap-2 text-xs text-foreground">
               <Clock3 size={14} strokeWidth={1.8} />
               Fuera de turno: {idleMembers.length}
             </div>
@@ -229,8 +229,8 @@ export default function Page() {
 
           {view === "grid" ? (
             <div className="grid gap-4 md:grid-cols-2">
-              <section className="rounded-lg border border-border bg-bo-surface-3/30 p-3" aria-label="Miembros en vivo">
-                <div className="text-sm font-semibold text-bo-text mb-3">Trabajando ahora</div>
+              <section className="rounded-lg border border-border bg-card-3/30 p-3" aria-label="Miembros en vivo">
+                <div className="text-sm font-semibold text-foreground mb-3">Trabajando ahora</div>
                 <div className="grid gap-2">
                   {liveMembers.map((member) => {
                     const entry = activeEntriesForDate.get(member.id);
@@ -238,7 +238,7 @@ export default function Page() {
                     return (
                       <article
                         key={`live-${member.id}`}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-150 hover:border-bo-accent/50 ${schedule ? "border-bo-accent/30 bg-bo-accent/5" : "border-border bg-bo-surface"}`}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-150 hover:border-accent/50 ${schedule ? "border-accent/30 bg-accent/5" : "border-border bg-card"}`}
                         onClick={() => onMemberClick(member)}
                         role="button"
                         tabIndex={0}
@@ -249,11 +249,11 @@ export default function Page() {
                           }
                         }}
                       >
-                        <div className="text-sm font-medium text-bo-text">{fullName(member)}</div>
+                        <div className="text-sm font-medium text-foreground">{fullName(member)}</div>
                         <div className="text-xs text-text-muted mt-0.5">{entry ? elapsedLabel(entry.startAtIso, tick) : "--:--:--"}</div>
                         <div className="flex flex-wrap gap-1 mt-2">
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-success) 10%, transparent)", color: "var(--bo-color-success)" }}>En vivo</span>
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${schedule ? "bg-bo-accent/10 text-bo-accent" : "bg-bo-surface-2 text-text-muted"}`}>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--text-success) 10%, transparent)", color: "var(--text-success)" }}>En vivo</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${schedule ? "bg-accent/10 text-accent" : "bg-card-2 text-text-muted"}`}>
                             {schedule ? "Asignado hoy" : "Sin asignar"}
                           </span>
                         </div>
@@ -266,15 +266,15 @@ export default function Page() {
                 </div>
               </section>
 
-              <section className="rounded-lg border border-border bg-bo-surface-3/30 p-3" aria-label="Miembros fuera de turno">
-                <div className="text-sm font-semibold text-bo-text mb-3">No trabajando ahora</div>
+              <section className="rounded-lg border border-border bg-card-3/30 p-3" aria-label="Miembros fuera de turno">
+                <div className="text-sm font-semibold text-foreground mb-3">No trabajando ahora</div>
                 <div className="grid gap-2">
                   {idleMembers.map((member) => {
                     const schedule = schedulesByMember.get(member.id);
                     return (
                       <article
                         key={`idle-${member.id}`}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-150 hover:border-bo-accent/50 ${schedule ? "border-bo-accent/30 bg-bo-accent/5" : "border-border bg-bo-surface"}`}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-150 hover:border-accent/50 ${schedule ? "border-accent/30 bg-accent/5" : "border-border bg-card"}`}
                         onClick={() => onMemberClick(member)}
                         role="button"
                         tabIndex={0}
@@ -285,9 +285,9 @@ export default function Page() {
                           }
                         }}
                       >
-                        <div className="text-sm font-medium text-bo-text">{fullName(member)}</div>
+                        <div className="text-sm font-medium text-foreground">{fullName(member)}</div>
                         <div className="flex flex-wrap gap-1 mt-2">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${schedule ? "bg-bo-accent/10 text-bo-accent" : "bg-bo-surface-2 text-text-muted"}`}>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${schedule ? "bg-accent/10 text-accent" : "bg-card-2 text-text-muted"}`}>
                             {schedule ? "Asignado hoy" : "Sin asignar"}
                           </span>
                         </div>

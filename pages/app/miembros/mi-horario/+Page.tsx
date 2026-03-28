@@ -89,7 +89,7 @@ export default function Page() {
   ];
 
   return (
-    <div className="rounded-[var(--rounded-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--bo-surface)] border-none shadow-[var(--shadow-soft)]" aria-label="Mi Horario">
+    <div className="rounded-[var(--rounded-lg)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.13)),var(--card)] border-none shadow-[var(--shadow-soft)]" aria-label="Mi Horario">
       <div className="flex items-end justify-between p-[16px_18px_10px]">
         <div>
           <div className="text-sm font-bold flex items-center gap-2">
@@ -99,7 +99,7 @@ export default function Page() {
           <div className="text-xs text-[var(--text-faint)]">Consulta tus horarios asignados.</div>
         </div>
         <button
-          className="h-8 px-[10px] rounded-lg text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-transparent text-bo-text cursor-pointer leading-none whitespace-nowrap"
+          className="h-8 px-[10px] rounded-lg text-xs font-bold inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-transparent text-foreground cursor-pointer leading-none whitespace-nowrap"
           onClick={() => void loadSchedules()}
           disabled={loading}
         >
@@ -111,7 +111,7 @@ export default function Page() {
         {error ? (
           <div className="mt-3 rounded-md border border-[rgba(220,53,69,0.32)] bg-[rgba(220,53,69,0.10)] p-3" role="alert">{error}</div>
         ) : sortedSchedules.length === 0 ? (
-          <div className="grid justify-items-center text-center gap-3 p-6 rounded-md border border-dashed border-[var(--border-2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.12)),var(--bo-surface-2)] text-[var(--text-muted)]">
+          <div className="grid justify-items-center text-center gap-3 p-6 rounded-md border border-dashed border-[var(--border-2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.12)),var(--secondary)] text-[var(--text-muted)]">
             <div className="text-[var(--text-faint)]">
               <User size={48} strokeWidth={1} />
             </div>

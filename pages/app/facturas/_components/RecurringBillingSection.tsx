@@ -148,7 +148,7 @@ export function RecurringBillingSection({
         {showStatus && data.is_active && onPause && (
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onPause}
             title="Pausar facturación recurrente"
           >
@@ -160,7 +160,7 @@ export function RecurringBillingSection({
         {showStatus && !data.is_active && onResume && (
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
             onClick={onResume}
             title="Reanudar facturación recurrente"
           >
@@ -178,7 +178,7 @@ export function RecurringBillingSection({
             onCheckedChange={handleToggle}
             disabled={disabled}
           />
-          <span className="text-bo-sm font-semibold text-bo-muted">Activar facturación recurrente</span>
+          <span className="text-sm font-semibold text-muted-foreground">Activar facturación recurrente</span>
         </div>
       </div>
 
@@ -188,7 +188,7 @@ export function RecurringBillingSection({
           {/* Frequency Selection */}
           <div className="bo-recurringBillingRow">
             <div className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">
+              <span className="text-sm font-semibold text-muted-foreground">
                 <Clock size={14} />
                 Frecuencia
               </span>
@@ -205,7 +205,7 @@ export function RecurringBillingSection({
           {/* Date Range */}
           <div className="bo-recurringBillingRow">
             <div className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">
+              <span className="text-sm font-semibold text-muted-foreground">
                 <Calendar size={14} />
                 Fecha de inicio
               </span>
@@ -217,7 +217,7 @@ export function RecurringBillingSection({
             </div>
 
             <div className="grid gap-2">
-              <span className="text-bo-sm font-semibold text-bo-muted">
+              <span className="text-sm font-semibold text-muted-foreground">
                 <Calendar size={14} />
                 Fecha de fin (opcional)
               </span>
@@ -251,7 +251,7 @@ export function RecurringBillingSection({
                 onCheckedChange={(checked) => onChange({ ...data, auto_send: checked })}
                 disabled={disabled}
               />
-              <span className="text-bo-sm font-semibold text-bo-muted">
+              <span className="text-sm font-semibold text-muted-foreground">
                 <Send size={14} />
                 Auto-enviar facturas
               </span>

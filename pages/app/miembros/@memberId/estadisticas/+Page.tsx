@@ -107,15 +107,15 @@ export default function Page() {
 
   return (
     <section aria-label="Estadisticas del miembro" className="bo-content-grid bo-memberDetailPage">
-      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-memberStatsPanel">
-        <div className="bo-panelHead bo-memberStatsHead">
+      <div className="rounded-lg bg-card shadow-soft bo-memberStatsPanel">
+        <div className="flex justify-between items-center p-4 bo-memberStatsHead">
           <div>
-            <div className="text-bo-sm font-bold text-bo-text">Estadisticas</div>
-            <div className="text-bo-xs text-bo-faint">Horas trabajadas y progreso respecto al contrato semanal.</div>
+            <div className="text-sm font-bold text-foreground">Estadisticas</div>
+            <div className="text-xs text-muted-foreground">Horas trabajadas y progreso respecto al contrato semanal.</div>
           </div>
           <div className="bo-memberStatsControls">
             <label className="grid gap-2 bo-memberControl">
-              <span className="text-bo-sm font-semibold text-bo-muted">Vista</span>
+              <span className="text-sm font-semibold text-muted-foreground">Vista</span>
               <Select
                 className="bo-memberControlSelect"
                 value={view}
@@ -130,7 +130,7 @@ export default function Page() {
               />
             </label>
             <label className="grid gap-2 bo-memberControl">
-              <span className="text-bo-sm font-semibold text-bo-muted">Grafico</span>
+              <span className="text-sm font-semibold text-muted-foreground">Grafico</span>
               <Select
                 className="bo-memberControlSelect"
                 value={chartType}
@@ -141,7 +141,7 @@ export default function Page() {
               />
             </label>
             <label className="grid gap-2 bo-memberControl">
-              <span className="text-bo-sm font-semibold text-bo-muted">Fecha</span>
+              <span className="text-sm font-semibold text-muted-foreground">Fecha</span>
               <DatePicker
                 value={date}
                 popoverOffsetX={-40}
@@ -151,7 +151,7 @@ export default function Page() {
                 }}
               />
             </label>
-            <button className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-memberRefreshBtn" type="button" onClick={onRefreshStats} disabled={loadingStats} aria-label="Recargar estadisticas">
+            <button className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors bo-memberRefreshBtn" type="button" onClick={onRefreshStats} disabled={loadingStats} aria-label="Recargar estadisticas">
               <RefreshCcw size={14} className={`bo-memberRefreshIcon${loadingStats ? " is-spinning" : ""}`} />
             </button>
           </div>
@@ -203,19 +203,19 @@ export default function Page() {
 
           <div className="bo-memberSummaryGrid">
             <div className="grid grid-cols-[120px_1fr] gap-2">
-              <div className="text-bo-sm text-bo-muted">Horas trabajadas</div>
-              <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
+              <div className="text-sm text-muted-foreground">Horas trabajadas</div>
+              <div className="text-sm text-foreground">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
             </div>
             <div className="grid grid-cols-[120px_1fr] gap-2">
-              <div className="text-bo-sm text-bo-muted">Horas esperadas</div>
-              <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
+              <div className="text-sm text-muted-foreground">Horas esperadas</div>
+              <div className="text-sm text-foreground">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
             </div>
             <div className="grid grid-cols-[120px_1fr] gap-2">
-              <div className="text-bo-sm text-bo-muted">Progreso periodo</div>
-              <div className="text-bo-sm text-bo-text">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
+              <div className="text-sm text-muted-foreground">Progreso periodo</div>
+              <div className="text-sm text-foreground">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
             </div>
             <div className="grid grid-cols-[120px_1fr] gap-2">
-              <div className="text-bo-sm text-bo-muted">Bolsa trimestral</div>
+              <div className="text-sm text-muted-foreground">Bolsa trimestral</div>
               <div className={`bo-kvValue bo-memberBalance${balanceHours >= 0 ? " is-positive" : " is-negative"}`}>
                 {balanceHours >= 0 ? "+" : ""}
                 {balanceHours.toFixed(2)} h
@@ -229,11 +229,11 @@ export default function Page() {
       </div>
 
       {/* Stats Table Section */}
-      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-statsTablePanel">
+      <div className="rounded-lg bg-card shadow-soft bo-statsTablePanel">
         <div className="flex items-end justify-between pb-2 px-4 pt-4">
           <div>
-            <div className="text-bo-sm font-bold text-bo-text">Tabla de Estadisticas</div>
-            <div className="text-bo-xs text-bo-faint">Datos detallados por período completo del año.</div>
+            <div className="text-sm font-bold text-foreground">Tabla de Estadisticas</div>
+            <div className="text-xs text-muted-foreground">Datos detallados por período completo del año.</div>
           </div>
         </div>
         <div className="p-4">
@@ -346,16 +346,16 @@ function MemberLinearChart({
             />
             <Tooltip
               contentStyle={{
-                background: "var(--bo-surface)",
+                background: "var(--card)",
                 border: "1px solid var(--border)",
                 borderRadius: "12px",
                 padding: "8px 12px",
                 fontSize: "12px",
               }}
-              labelStyle={{ color: "var(--bo-text)", fontWeight: 720 }}
-              itemStyle={{ color: "var(--bo-accent)" }}
+              labelStyle={{ color: "var(--foreground)", fontWeight: 720 }}
+              itemStyle={{ color: "var(--accent)" }}
               formatter={(value: unknown) => [`${Number(value).toFixed(2)} h`, "Horas"] }
-              cursor={{ stroke: "var(--bo-accent)", strokeWidth: 1 }}
+              cursor={{ stroke: "var(--accent)", strokeWidth: 1 }}
             />
             <Area
               type="monotone"

@@ -475,20 +475,20 @@ export default function Page() {
     <section aria-label="Configuración por defecto">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-bo-text text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => void reload()} disabled={busy}>
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] text-foreground text-sm font-bold transition-all hover:border-white/[0.09] hover:bg-white/[0.06] disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => void reload()} disabled={busy}>
             Recargar
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <div className="text-bo-xs text-bo-muted">{busy ? "Actualizando..." : "Valores por defecto"}</div>
+          <div className="text-xs text-muted-foreground">{busy ? "Actualizando..." : "Valores por defecto"}</div>
         </div>
       </div>
 
       <div className="flex flex-col gap-4 p-4">
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Modo de apertura</div>
-            <div className="text-bo-xs text-bo-faint">{openingModeLabel}</div>
+            <div className="text-sm font-bold text-foreground">Modo de apertura</div>
+            <div className="text-xs text-muted-foreground">{openingModeLabel}</div>
           </div>
           <div className="p-4 flex items-center gap-2 flex-wrap">
             <Select
@@ -501,14 +501,14 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Horarios por defecto</div>
-            <div className="text-bo-xs text-bo-faint">Slots de media hora con guardado inmediato</div>
+            <div className="text-sm font-bold text-foreground">Horarios por defecto</div>
+            <div className="text-xs text-muted-foreground">Slots de media hora con guardado inmediato</div>
           </div>
           <div className="p-4">
             <div className="flex flex-col gap-2">
-              <div className="bo-statLabel font-semibold">Mañana (08:00 - 17:00)</div>
+              <div className="text-xs text-muted-foreground font-semibold">Mañana (08:00 - 17:00)</div>
               <div className="flex flex-wrap gap-2">
                 {morningHourCards.map((slot) => {
                   const on = slot.active;
@@ -528,7 +528,7 @@ export default function Page() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <div className="bo-statLabel font-semibold">Noche (17:30 - 01:00)</div>
+              <div className="text-xs text-muted-foreground font-semibold">Noche (17:30 - 01:00)</div>
               <div className="flex flex-wrap gap-2">
                 {nightHourCards.map((slot) => {
                   const on = slot.active;
@@ -549,10 +549,10 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Calendario semanal</div>
-            <div className="text-bo-xs text-bo-faint">Semana genérica (lunes a domingo)</div>
+            <div className="text-sm font-bold text-foreground">Calendario semanal</div>
+            <div className="text-xs text-muted-foreground">Semana genérica (lunes a domingo)</div>
           </div>
           <div className="p-4 grid grid-cols-7 gap-2">
             {weekdayCardsWithState.map((weekday) => {
@@ -579,10 +579,10 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Límites por defecto</div>
-            <div className="text-bo-xs text-bo-faint">Autosave inmediato</div>
+            <div className="text-sm font-bold text-foreground">Límites por defecto</div>
+            <div className="text-xs text-muted-foreground">Autosave inmediato</div>
           </div>
           <div className="p-4 grid grid-cols-3 gap-4">
             <PlusMinusCounter
@@ -629,10 +629,10 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Plantas del restaurante</div>
-            <div className="text-bo-xs text-bo-faint">{floorCount} plantas</div>
+            <div className="text-sm font-bold text-foreground">Plantas del restaurante</div>
+            <div className="text-xs text-muted-foreground">{floorCount} plantas</div>
           </div>
           <div className="p-4">
             <Tabs tabs={floorTabs} activeId={floorTab} ariaLabel="Secciones de plantas" className="bo-tabs--reservas bo-configFloorTabs" onNavigate={onNavigateFloorTab} />

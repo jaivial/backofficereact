@@ -105,18 +105,18 @@ export function MemberCreateModal({
 
   return (
     <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate">
-      <div className="flex items-center justify-between p-4 border-b border-bo-border">
-        <div className="text-lg font-semibold text-bo-text">Añadir miembro</div>
+      <div className="flex items-center justify-between p-4 border-b border">
+        <div className="text-lg font-semibold text-foreground">Añadir miembro</div>
         <button className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 cursor-pointer" type="button" onClick={onClose} aria-label="Close">
           ×
         </button>
       </div>
 
       <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-memberCreatePanel">
+        <div className="rounded-lg bg-card shadow-soft bo-memberCreatePanel">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
             <div>
-              <div className="text-bo-sm font-bold text-bo-text">Datos de acceso y perfil</div>
+              <div className="text-sm font-bold text-foreground">Datos de acceso y perfil</div>
             </div>
           </div>
           <div className="p-4 bo-memberCreateBody">
@@ -141,27 +141,27 @@ export function MemberCreateModal({
 
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-bo-text">Nombre</span>
-                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
+                <span className="text-sm font-medium text-foreground">Nombre</span>
+                <input className="h-10 rounded-xl border border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-bo-text">Apellidos</span>
-                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
+                <span className="text-sm font-medium text-foreground">Apellidos</span>
+                <input className="h-10 rounded-xl border border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-bo-text">Email</span>
-                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
+                <span className="text-sm font-medium text-foreground">Email</span>
+                <input className="h-10 rounded-xl border border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-bo-text">DNI (opcional)</span>
-                <input className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
+                <span className="text-sm font-medium text-foreground">DNI (opcional)</span>
+                <input className="h-10 rounded-xl border border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
               </label>
 
               <label className="col-span-2 flex flex-col gap-1">
-                <span className="text-sm font-medium text-bo-text">Telefono (opcional)</span>
+                <span className="text-sm font-medium text-foreground">Telefono (opcional)</span>
                 <PhoneInput
                   countryCode={phoneCountryCode}
                   number={phoneNumber}
@@ -172,7 +172,7 @@ export function MemberCreateModal({
               </label>
 
               <label className="col-span-2 flex flex-col gap-1">
-                <span className="text-sm font-medium text-bo-text">Rol</span>
+                <span className="text-sm font-medium text-foreground">Rol</span>
                 <Select
                   value={roleSlug}
                   onChange={setRoleSlug}
@@ -186,9 +186,9 @@ export function MemberCreateModal({
               {!hasContact ? (
                 <>
                   <label className="col-span-2 flex flex-col gap-1">
-                    <span className="text-sm font-medium text-bo-text">Username</span>
+                    <span className="text-sm font-medium text-foreground">Username</span>
                     <input
-                      className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                      className="h-10 rounded-xl border border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                       value={username}
                       disabled={busy}
                       onChange={(e) => setUsername(e.target.value)}
@@ -197,9 +197,9 @@ export function MemberCreateModal({
                   </label>
 
                   <label className="col-span-2 flex flex-col gap-1">
-                    <span className="text-sm font-medium text-bo-text">Password temporal</span>
+                    <span className="text-sm font-medium text-foreground">Password temporal</span>
                     <input
-                      className="h-10 rounded-xl border border-bo-border bg-white/[0.03] text-bo-text px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+                      className="h-10 rounded-xl border border bg-white/[0.03] text-foreground px-3 outline-none min-w-0 transition-colors focus:border-[rgba(185,168,255,0.38)] focus:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
                       type="password"
                       value={temporaryPassword}
                       disabled={busy}
@@ -215,12 +215,12 @@ export function MemberCreateModal({
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 p-4 border-t border-bo-border">
-        <button className="h-10 rounded-xl border border-bo-border bg-transparent text-bo-text cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2" type="button" onClick={onClose} disabled={busy}>
+      <div className="flex justify-end gap-2 p-4 border-t border">
+        <button className="h-10 rounded-xl border border bg-transparent text-foreground cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2" type="button" onClick={onClose} disabled={busy}>
           Cancelar
         </button>
         <button
-          className="h-10 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2"
+          className="h-10 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground cursor-pointer px-[14px] font-bold inline-flex items-center justify-center gap-2"
           type="button"
           disabled={busy || !canSubmit}
           onClick={() => {

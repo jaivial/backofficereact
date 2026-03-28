@@ -3,7 +3,6 @@ import { atom, useAtom } from 'jotai';
 import { DndProvider, useDrag, useDrop, type DragSourceMonitor, type DropTargetMonitor } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import "../../../components/bo.css";
 import { websiteBuilderApi } from '../../../api/website-builder';
 import type { Website, WebsitePage, WebsitePageSection, WebsiteComponent, WebsiteSectionComponent } from '../../../api/website-builder-types';
 
@@ -86,15 +85,15 @@ export default function Page() {
   if (loading && !website) {
     return (
       <div className="h-64 flex items-center justify-center" data-ui="loading-state">
-        <div className="w-8 h-8 rounded-full border-2 border-bo-muted border-t-bo-accent animate-spin" />
-        <span className="ml-2 text-bo-muted">Loading...</span>
+        <div className="w-8 h-8 rounded-full border-2 border-muted-foreground border-t-accent animate-spin" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="m-6 p-4 rounded-lg bg-[var(--bo-color-danger)]/[0.12] border border-[var(--bo-color-danger)]/[0.30]" data-ui="error-state">
+      <div className="m-6 p-4 rounded-lg bg-[var(--text-danger)]/[0.12] border border-[var(--text-danger)]/[0.30]" data-ui="error-state">
         <p className="text-red-500">{error}</p>
         <button onClick={loadWebsite} className="mt-2 text-red-500 underline bg-transparent border-none cursor-pointer">
           Retry
@@ -105,18 +104,18 @@ export default function Page() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-bo-bg" data-ui="website-builder">
-        <header className="bg-bo-surface border-b border-bo-border" data-ui="header">
+      <div className="min-h-screen bg-background" data-ui="website-builder">
+        <header className="bg-card border-b border" data-ui="header">
           <div className="max-w-full px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold text-bo-text">
+              <h1 className="text-xl font-semibold text-foreground">
                 Website Builder
               </h1>
               {website && (
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   website.status === 'published' 
-                    ? 'bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)]' 
-                    : 'bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)]'
+                    ? 'bg-[var(--text-success)]/[0.16] text-[var(--text-success)]' 
+                    : 'bg-[var(--text-warning)]/[0.16] text-[var(--text-warning)]'
                 }`}>
                   {website.status}
                 </span>
@@ -125,20 +124,20 @@ export default function Page() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPreviewMode(!previewMode)}
-                className="px-3 py-1.5 rounded-md text-sm border border-bo-border text-bo-muted bg-transparent cursor-pointer hover:bg-bo-surface-2 transition-colors"
+                className="px-3 py-1.5 rounded-md text-sm border border text-muted-foreground bg-transparent cursor-pointer hover:bg-card-2 transition-colors"
               >
                 {previewMode ? 'Edit' : 'Preview'}
               </button>
               <button
                 onClick={handlePreview}
-                className="px-3 py-1.5 rounded-md text-sm border border-bo-border text-bo-muted bg-transparent cursor-pointer hover:bg-bo-surface-2 transition-colors"
+                className="px-3 py-1.5 rounded-md text-sm border border text-muted-foreground bg-transparent cursor-pointer hover:bg-card-2 transition-colors"
               >
                 Open Preview
               </button>
               <button
                 onClick={handlePublish}
                 disabled={loading}
-                className="px-3 py-1.5 rounded-md text-sm border border-bo-accent bg-bo-accent text-bo-bg cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 rounded-md text-sm border border-accent bg-accent text-background cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Publish
               </button>
@@ -148,9 +147,9 @@ export default function Page() {
 
         <div className="flex h-screen-nav">
           {!previewMode && (
-            <aside className="w-64 bg-bo-surface border-r border-bo-border overflow-y-auto" data-ui="sidebar">
+            <aside className="w-64 bg-card border-r border overflow-y-auto" data-ui="sidebar">
               <div className="p-4">
-                <h2 className="text-sm font-semibold mb-3 text-bo-text">
+                <h2 className="text-sm font-semibold mb-3 text-foreground">
                   Components
                 </h2>
                 <ComponentLibrary />
@@ -158,7 +157,7 @@ export default function Page() {
             </aside>
           )}
 
-          <main className="flex-1 overflow-y-auto bg-bo-bg" data-ui="canvas">
+          <main className="flex-1 overflow-y-auto bg-background" data-ui="canvas">
             {previewMode ? (
               <WebsitePreview website={website} currentPage={currentPage} />
             ) : (
@@ -175,9 +174,9 @@ export default function Page() {
           </main>
 
           {!previewMode && selectedComponent && (
-            <aside className="w-80 border-l overflow-y-auto" data-ui="properties-panel" style={{ backgroundColor: 'var(--bo-surface)', borderColor: 'var(--border)' }}>
+            <aside className="w-80 border-l overflow-y-auto" data-ui="properties-panel" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div className="p-4">
-                <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--bo-text)' }}>
+                <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--foreground)' }}>
                   Properties
                 </h2>
                 <PropertiesPanel componentId={selectedComponent} onUpdate={loadWebsite} />
@@ -235,16 +234,16 @@ function DraggableComponent({ component }: { component: UIComponent }) {
       }}
       className={`p-2 rounded cursor-move ${isDragging ? 'opacity-50' : ''}`}
       style={{ 
-        backgroundColor: 'var(--bo-surface-2)', 
+        backgroundColor: 'var(--secondary)', 
         border: '1px solid var(--border)',
-        color: 'var(--bo-text)'
+        color: 'var(--foreground)'
       }}
       data-ui="draggable-component"
       data-component-type={component.type}
     >
       <div className="flex items-center gap-2">
         <span style={{ fontSize: '1.125rem' }}>{component.icon}</span>
-        <span className="text-sm" style={{ color: 'var(--bo-text)' }}>{component.name}</span>
+        <span className="text-sm" style={{ color: 'var(--foreground)' }}>{component.name}</span>
       </div>
     </div>
   );
@@ -329,7 +328,7 @@ function WebsiteCanvas({
               }
             }}
             className="px-4 py-2 rounded"
-            style={{ backgroundColor: 'var(--bo-accent)', color: 'var(--bo-fg-inverted)' }}
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--bo-fg-inverted)' }}
           >
             Create Website
           </button>
@@ -347,8 +346,8 @@ function WebsiteCanvas({
             onClick={() => onSelectPage(String(page.id))}
             className="px-4 py-2 rounded text-sm whitespace-nowrap"
             style={String(page.id) === currentPage 
-              ? { backgroundColor: 'var(--bo-accent)', color: '#fff' }
-              : { backgroundColor: 'var(--bo-surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
+              ? { backgroundColor: 'var(--accent)', color: '#fff' }
+              : { backgroundColor: 'var(--secondary)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
             }
             data-ui="page-tab"
             data-page-id={page.id}
@@ -374,17 +373,17 @@ function WebsiteCanvas({
             }
           }}
           className="px-4 py-2 rounded text-sm border border-dashed"
-          style={{ backgroundColor: 'var(--bo-surface-2)', color: 'var(--text-muted)', borderColor: 'var(--border-2)' }}
+          style={{ backgroundColor: 'var(--secondary)', color: 'var(--text-muted)', borderColor: 'var(--border-2)' }}
           data-ui="add-page-btn"
         >
           + Add Page
         </button>
       </div>
 
-      <div className="rounded-lg border p-6" style={{ minHeight: '500px', backgroundColor: 'var(--bo-surface)', borderColor: 'var(--border)' }} data-ui="canvas-area">
+      <div className="rounded-lg border p-6" style={{ minHeight: '500px', backgroundColor: 'var(--card)', borderColor: 'var(--border)' }} data-ui="canvas-area">
         {loadingSections ? (
           <div className="flex items-center justify-center" style={{ height: '8rem' }}>
-            <div className="animate-spin rounded-full" style={{ width: '1.5rem', height: '1.5rem', borderBottomColor: 'var(--bo-accent)' }} />
+            <div className="animate-spin rounded-full" style={{ width: '1.5rem', height: '1.5rem', borderBottomColor: 'var(--accent)' }} />
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -481,7 +480,7 @@ function SectionDropZone({
         isOver ? '' : ''
       }`}
       style={isOver 
-        ? { borderColor: 'var(--bo-accent)', backgroundColor: 'color-mix(in srgb, var(--bo-accent) 8%, transparent)' }
+        ? { borderColor: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' }
         : { borderColor: 'var(--border-2)' }
       }
       data-ui="section-drop-zone"
@@ -489,7 +488,7 @@ function SectionDropZone({
       data-section-type={section.section_type}
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium capitalize" style={{ color: 'var(--bo-text)' }}>
+        <h3 className="text-sm font-medium capitalize" style={{ color: 'var(--foreground)' }}>
           {section.section_type}
         </h3>
         <div className="flex gap-2">
@@ -519,9 +518,9 @@ function SectionDropZone({
               onClick={() => onSelectComponent(String(comp.id))}
               className="p-2 rounded cursor-pointer"
               style={{ 
-                backgroundColor: 'var(--bo-surface-2)', 
+                backgroundColor: 'var(--secondary)', 
                 border: '1px solid var(--border)',
-                color: 'var(--bo-text)'
+                color: 'var(--foreground)'
               }}
               data-ui="section-component"
               data-component-id={comp.id}
@@ -535,7 +534,7 @@ function SectionDropZone({
                     {comp.component?.name || `Component ${comp.id}`}
                   </span>
                   {comp.dynamic_source && (
-                    <span className="text-xs" style={{ color: 'var(--bo-accent)' }}>
+                    <span className="text-xs" style={{ color: 'var(--accent)' }}>
                       ({comp.dynamic_source})
                     </span>
                   )}
@@ -580,7 +579,7 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
       </button>
       
       {isOpen && (
-        <div className="absolute z-10 mt-2 w-full rounded-lg shadow-xl p-2" data-ui="section-type-menu" style={{ backgroundColor: 'var(--bo-surface)', border: '1px solid var(--border)' }}>
+        <div className="absolute z-10 mt-2 w-full rounded-lg shadow-xl p-2" data-ui="section-type-menu" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
           {SECTION_TYPES.map(type => (
             <button
               key={type}
@@ -589,7 +588,7 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
                 setIsOpen(false);
               }}
               className="w-full text-left px-3 py-2 text-sm rounded capitalize"
-              style={{ color: 'var(--bo-text)' }}
+              style={{ color: 'var(--foreground)' }}
               data-ui="section-type-option"
               data-type={type}
             >
@@ -647,7 +646,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
   return (
     <div className="flex flex-col gap-4" data-ui="properties-form">
       <div>
-        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>
           Component ID
         </label>
         <input
@@ -655,12 +654,12 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
           value={componentId}
           disabled
           className="w-full px-3 py-2 rounded text-sm"
-          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+          style={{ backgroundColor: 'var(--secondary)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>
           Title
         </label>
         <input
@@ -668,12 +667,12 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
           value={settings.title || ''}
           onChange={(e) => setSettings({ ...settings, title: e.target.value })}
           className="w-full px-3 py-2 rounded text-sm"
-          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--border)', color: 'var(--bo-text)' }}
+          style={{ backgroundColor: 'var(--secondary)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--bo-text)' }}>
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>
           Background Color
         </label>
         <input
@@ -681,7 +680,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
           value={settings.bgColor || '#1e293b'}
           onChange={(e) => setSettings({ ...settings, bgColor: e.target.value })}
           className="w-full h-10 rounded cursor-pointer"
-          style={{ backgroundColor: 'var(--bo-surface-2)', border: '1px solid var(--border)' }}
+          style={{ backgroundColor: 'var(--secondary)', border: '1px solid var(--border)' }}
         />
       </div>
 
@@ -692,9 +691,9 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
             checked={settings.visible !== false}
             onChange={(e) => setSettings({ ...settings, visible: e.target.checked })}
             className="rounded"
-            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bo-surface-2)', accentColor: 'var(--bo-accent)' }}
+            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--secondary)', accentColor: 'var(--accent)' }}
           />
-          <span className="text-sm" style={{ color: 'var(--bo-text)' }}>Visible</span>
+          <span className="text-sm" style={{ color: 'var(--foreground)' }}>Visible</span>
         </label>
       </div>
 
@@ -702,7 +701,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
         onClick={handleSave}
         disabled={saving}
         className="w-full py-2 rounded text-sm transition-colors disabled:opacity-50"
-        style={{ backgroundColor: 'var(--bo-accent)', color: 'var(--bo-fg-inverted)' }}
+        style={{ backgroundColor: 'var(--accent)', color: 'var(--bo-fg-inverted)' }}
       >
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
