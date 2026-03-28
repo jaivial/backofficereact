@@ -16,6 +16,7 @@ export function Select({
   disabled,
   listMaxHeightPx,
   menuMinWidthPx,
+  listClassName,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -27,6 +28,7 @@ export function Select({
   disabled?: boolean;
   listMaxHeightPx?: number;
   menuMinWidthPx?: number;
+  listClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [direction, setDirection] = useState<"up" | "down">("down");
@@ -60,19 +62,20 @@ export function Select({
       const t = ev.target as Node | null;
       if (!t) return;
       if (wrapperRef.current?.contains(t)) return;
+      if (listRef.current?.contains(t)) return;
       close();
     };
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") close();
     };
-    const onScroll = () => {
+    const onScroll = (ev: Event) => {
+      if (listRef.current?.contains(ev.target as Node)) return;
       close();
     };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown, true);
     window.addEventListener("scroll", onScroll, { capture: true });
     return () => {
-      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointerdown", onDown, true);
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("scroll", onScroll, { capture: true });
     };
@@ -173,7 +176,7 @@ export function Select({
             {open && (
               <motion.div
                 ref={listRef}
-                className={`bo-selectList${direction === "up" ? " bo-selectList--up" : ""}`}
+                className={`bo-selectList${direction === "up" ? " bo-selectList--up" : ""}${listClassName ? ` ${listClassName}` : ""}`}
                 role="listbox"
                 tabIndex={-1}
                 onKeyDown={onListKey}

@@ -1570,21 +1570,18 @@ svg {
     color: var(--muted);
 }
 
-.specialMenuImageWrap {
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    box-shadow: var(--shadow-soft);
-    background: rgba(0, 0, 0, 0.04);
-    height: auto;
-    width: 100%;
+.specialMenuImageContainer {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+    max-width: 769px;
+    margin: 0 auto;
 }
 
 .specialMenuImage {
-    display: block;
-    width: 100%;
-    height: auto;
     max-width: 100%;
+    height: auto;
+    border-radius: var(--radius);
     object-fit: contain;
 }
 

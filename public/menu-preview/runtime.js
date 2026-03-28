@@ -346,6 +346,8 @@
       },
       sections: [],
       special_menu_image_url: "",
+      show_menu_preview_image: false,
+      menu_preview_image_url: "",
     };
     if (!menu || typeof menu !== "object") return fallback;
     return {
@@ -359,6 +361,8 @@
       sections: Array.isArray(menu.sections) ? menu.sections : [],
       menu_subtitle: Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle : [],
       show_dish_images: parseLooseBool(menu.show_dish_images, fallback.show_dish_images),
+      show_menu_preview_image: parseLooseBool(menu.show_menu_preview_image, fallback.show_menu_preview_image),
+      menu_preview_image_url: String(menu.menu_preview_image_url || "").trim(),
     };
   }
 
@@ -1036,14 +1040,23 @@
     }
 
     if (state.menuType === "special") {
-      const specialImageURL = resolveMediaURL(menu.special_menu_image_url || "");
-      const hasImage = Boolean(specialImageURL);
-      const imageSection = hasImage
-        ? '<div class="specialMenuImageWrap"><img class="specialMenuImage" src="' + escapeHtml(specialImageURL) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div>'
-        : '<div class="menuState">Sube una imagen para este menu especial.</div>';
+      var resolvedUrl = "";
+      if (parseLooseBool(menu.show_menu_preview_image, false)) {
+        var previewUrl = String(menu.menu_preview_image_url || "").trim();
+        if (previewUrl) resolvedUrl = resolveMediaURL(previewUrl);
+      }
+      if (!resolvedUrl) {
+        resolvedUrl = resolveMediaURL(menu.special_menu_image_url || "");
+      }
+      var hasSpecialImage = Boolean(resolvedUrl);
+      var imageSection = hasSpecialImage
+        ? '<div class="specialMenuImageContainer"><img class="specialMenuImage" src="' + escapeHtml(resolvedUrl) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div>'
+        : '<div class="menuState">No hay imagen subida para este menú especial.</div>';
 
+      var subtitle = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle[0] : "";
       return mountVillaTemplate({
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
+        MENU_SUBTITLE: escapeHtml(subtitle || "Menú especial (temporada)"),
         SPECIAL_IMAGE_SECTION: imageSection,
         CURRENT_YEAR: String(new Date().getFullYear()),
       });
