@@ -823,8 +823,11 @@
   }
 
   function mountVillaTemplate(tokens) {
+    console.log("[vc-preview] mountVillaTemplate", { hasTemplate: !!state.templateHtml, templateLength: state.templateHtml ? state.templateHtml.length : 0, tokens: tokens });
     if (!state.templateHtml) return false;
-    root.innerHTML = applyTokens(state.templateHtml, tokens || {});
+    var applied = applyTokens(state.templateHtml, tokens || {});
+    console.log("[vc-preview] applied html (first 500 chars)", applied.substring(0, 500));
+    root.innerHTML = applied;
     return true;
   }
 
@@ -1040,6 +1043,7 @@
     }
 
     if (state.menuType === "special") {
+      console.log("[vc-preview] special branch", { state: JSON.parse(JSON.stringify(state)), menu: JSON.parse(JSON.stringify(menu)) });
       var resolvedUrl = "";
       if (parseLooseBool(menu.show_menu_preview_image, false)) {
         var previewUrl = String(menu.menu_preview_image_url || "").trim();
@@ -1053,13 +1057,17 @@
         ? '<div class="specialMenuImageContainer"><img class="specialMenuImage" src="' + escapeHtml(resolvedUrl) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div>'
         : '<div class="menuState">No hay imagen subida para este menú especial.</div>';
 
-      var subtitle = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle[0] : "";
-      return mountVillaTemplate({
+      var subtitle = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle.filter(function (s) { return s && s.trim(); })[0] : "";
+      var subtitleBlock = '<p class="page-subtitle">' + escapeHtml(subtitle || "Menú especial (temporada)") + '</p>';
+      console.log("[vc-preview] special subtitle", { subtitle: subtitle, subtitleBlock: subtitleBlock, templateHtml: state.templateHtml ? state.templateHtml.substring(0, 200) : "(empty)" });
+      var tokens = {
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
-        MENU_SUBTITLE: escapeHtml(subtitle || "Menú especial (temporada)"),
+        MENU_SUBTITLE_BLOCK: subtitleBlock,
         SPECIAL_IMAGE_SECTION: imageSection,
         CURRENT_YEAR: String(new Date().getFullYear()),
-      });
+      };
+      console.log("[vc-preview] special tokens", tokens);
+      return mountVillaTemplate(tokens);
     }
 
     return false;
