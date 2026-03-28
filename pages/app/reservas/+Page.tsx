@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Download, FileText, Filter, Pencil, XCircle } from "lucide-react";
-
+import { Download, FileText, Filter, Pencil, XCircle, ExternalLink } from "lucide-react";
 import { createClient } from "../../../api/client";
 import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
@@ -22,6 +21,7 @@ import { ReservationDayPanel } from "../../../ui/widgets/ReservationDayPanel";
 import { Modal } from "../../../ui/overlays/Modal";
 import { BookingEditor, type BookingEditorDraft } from "./_components/BookingEditor";
 import { arrozRowsFromBooking, principalesRowsFromBooking } from "./_components/bookingDraft";
+import { BookingSearch, type BookingSearchParams } from "./_components/BookingSearch";
 
 type PageData = {
   date: string;
@@ -152,10 +152,19 @@ export default function Page() {
 
   const [edit, setEdit] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
 
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchResults, setSearchResults] = useState<Booking[]>([]);
+  const [searchTotalCount, setSearchTotalCount] = useState(0);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchCount, setSearchCount] = useState(15);
+  const [searchBusy, setSearchBusy] = useState(false);
+
+  const isDayOpen = day?.isOpen === true;
   const totalPages = Math.max(1, Math.ceil(totalCount / Math.max(1, count)));
   const showPagerBtns = totalPages > 1;
-  const isDayOpen = day?.isOpen !== false;
   const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
+  const searchTotalPages = Math.max(1, Math.ceil(searchTotalCount / Math.max(1, searchCount)));
+  const searchFadeTransition = reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" as const };
 
   const loadMonth = useCallback(
     async (year: number, month: number) => {
@@ -454,7 +463,6 @@ export default function Page() {
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar mesa" });
           return false;
         }
-        // Optimistic update for the row.
         setRows((prev) => normalizeBookings(prev).map((x) => (x.id === b.id ? { ...x, table_number: v || null } : x)));
         return true;
       } finally {
@@ -487,127 +495,321 @@ export default function Page() {
     }
   }, [api.config, count, date, day?.isOpen, dir, loadBookings, loadSummary, page, pushToast, q, sort, status]);
 
+  const loadGeneralSearch = useCallback(
+    async (params: BookingSearchParams) => {
+      if (!session) return;
+      setSearchBusy(true);
+      try {
+        const res = await api.reservas.search({ name: params.name, phone: params.phone, count: params.count });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "Error en búsqueda" });
+          return;
+        }
+        setSearchResults(normalizeBookings(res.bookings));
+        setSearchTotalCount(res.total_count || 0);
+        setSearchPage(res.page || 1);
+        setSearchCount(res.count || params.count);
+        setSearchMode(true);
+      } catch (e) {
+        pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error en búsqueda" });
+      } finally {
+        setSearchBusy(false);
+      }
+    },
+    [api, session, pushToast],
+  );
+
+  const loadGeneralSearchPage = useCallback(
+    async (params: BookingSearchParams, p: number) => {
+      if (!session) return;
+      setSearchBusy(true);
+      try {
+        const res = await api.reservas.search({ name: params.name, phone: params.phone, count: params.count, page: p });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "Error en búsqueda" });
+          return;
+        }
+        setSearchResults(normalizeBookings(res.bookings));
+        setSearchTotalCount(res.total_count || 0);
+        setSearchPage(res.page || p);
+        setSearchCount(res.count || params.count);
+      } catch (e) {
+        pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error en búsqueda" });
+      } finally {
+        setSearchBusy(false);
+      }
+    },
+    [api, session, pushToast],
+  );
+
+  const lastSearchParams = useRef<BookingSearchParams>({ name: "", phone: "", count: 15 });
+
+  const onSearch = useCallback(
+    (params: BookingSearchParams) => {
+      lastSearchParams.current = params;
+      void loadGeneralSearch(params);
+    },
+    [loadGeneralSearch],
+  );
+
+  const onSearchClear = useCallback(() => {
+    setSearchMode(false);
+    setSearchResults([]);
+    setSearchTotalCount(0);
+    setSearchPage(1);
+  }, []);
+
+  const onSearchPageChange = useCallback(
+    (p: number) => {
+      const clamped = Math.max(1, Math.min(searchTotalPages, p));
+      setSearchPage(clamped);
+      void loadGeneralSearchPage(lastSearchParams.current, clamped);
+    },
+    [loadGeneralSearchPage, searchTotalPages],
+  );
+
+  const navigateToBookingDay = useCallback(
+    (b: Booking) => {
+      setSearchMode(false);
+      setSearchResults([]);
+      onSelectDate(b.reservation_date);
+    },
+    [onSelectDate],
+  );
+
   const occPeople = dailyLimit?.totalPeople ?? 0;
   const occLimit = dailyLimit?.limit ?? 45;
 
   return (
     <section aria-label="Reservas">
-      <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`}>
-        <MonthCalendar
-          year={view.year}
-          month={view.month}
-          days={calendarDays}
-          selectedDateISO={date}
-          onSelectDate={onSelectDate}
-          onPrevMonth={onPrevMonth}
-          onNextMonth={onNextMonth}
-          loading={monthBusy}
-        />
+      <BookingSearch
+        onSearch={onSearch}
+        onClear={onSearchClear}
+        busy={busy || searchBusy}
+        reduceMotion={reduceMotion === true}
+      />
 
-        <AnimatePresence initial={false}>
-          {isDayOpen ? (
-            <motion.div
-              key="reservas-side"
-              className="bo-reservasSide"
-              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              transition={dayVisibilityTransition}
-            >
-              <DonutOccupancy
-                totalPeople={occPeople}
-                limit={occLimit}
-                totalBookings={metrics?.total}
-                pending={metrics?.pending}
-                confirmed={metrics?.confirmed}
-              />
-
-              <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas">
-                <div className="bo-filtersTop">
-                  <button
-                    className="bo-btn bo-btn--ghost bo-filtersToggle"
-                    type="button"
-                    onClick={() => setFiltersOpen((v) => !v)}
-                    aria-expanded={filtersOpen}
-                    aria-controls="bo-reservas-filters-body"
-                  >
-                    <Filter className="bo-ico" />
-                    Filtros
-                  </button>
-                  <button
-                    className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadTop"
-                    type="button"
-                    onClick={onDownloadPDF}
-                    disabled={pdfBusy || busy}
-                  >
-                    <Download className="bo-ico" /> Descargar
-                  </button>
-                </div>
-                <div id="bo-reservas-filters-body" className="bo-filtersBody">
-                  <div className="bo-filterRow bo-filterRow--selects">
-                    <Select value={status} onChange={onStatusChange} options={statusOptions} size="sm" ariaLabel="Estado" />
-                    <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" />
-                    <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Dirección" />
-                    <Select
-                      value={String(count)}
-                      onChange={onCountChange}
-                      options={pageSizeOptions}
-                      size="sm"
-                      ariaLabel="Tamaño página"
-                    />
-                  </div>
-                  <div className="bo-filterRow bo-filterRow--actions">
-                    <div className="bo-search">
-                      <input
-                        className="bo-input bo-input--sm"
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        placeholder="Buscar por nombre"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") applyFilters();
-                        }}
-                      />
-                      <button className="bo-btn bo-btn--ghost" type="button" onClick={applyFilters} disabled={busy}>
-                        Buscar
-                      </button>
-                    </div>
-                    <button
-                      className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadInline"
-                      type="button"
-                      onClick={onDownloadPDF}
-                      disabled={pdfBusy || busy}
-                    >
-                      <Download className="bo-ico" /> Descargar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
-
-      <AnimatePresence mode="wait" initial={false}>
-        {isDayOpen ? (
+      <AnimatePresence initial={false}>
+        {!searchMode ? (
           <motion.div
-            key="reservas-open-content"
+            key="reservas-grid"
             initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            transition={dayVisibilityTransition}
+            transition={searchFadeTransition}
+            style={searchMode ? { display: "none" } : undefined}
+          >
+            <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`}>
+              <MonthCalendar
+                year={view.year}
+                month={view.month}
+                days={calendarDays}
+                selectedDateISO={date}
+                onSelectDate={onSelectDate}
+                onPrevMonth={onPrevMonth}
+                onNextMonth={onNextMonth}
+                loading={monthBusy}
+              />
+
+              <AnimatePresence initial={false}>
+                {isDayOpen ? (
+                  <motion.div
+                    key="reservas-side"
+                    className="bo-reservasSide"
+                    initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                    transition={dayVisibilityTransition}
+                  >
+                    <DonutOccupancy
+                      totalPeople={occPeople}
+                      limit={occLimit}
+                      totalBookings={metrics?.total}
+                      pending={metrics?.pending}
+                      confirmed={metrics?.confirmed}
+                    />
+
+                    <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas">
+                      <div className="bo-filtersTop">
+                        <button
+                          className="bo-btn bo-btn--ghost bo-filtersToggle"
+                          type="button"
+                          onClick={() => setFiltersOpen((v) => !v)}
+                          aria-expanded={filtersOpen}
+                          aria-controls="bo-reservas-filters-body"
+                        >
+                          <Filter className="bo-ico" />
+                          Filtros
+                        </button>
+                        <button
+                          className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadTop"
+                          type="button"
+                          onClick={onDownloadPDF}
+                          disabled={pdfBusy || busy}
+                        >
+                          <Download className="bo-ico" /> Descargar
+                        </button>
+                      </div>
+                      <div id="bo-reservas-filters-body" className="bo-filtersBody">
+                        <div className="bo-filterRow bo-filterRow--selects">
+                          <Select value={status} onChange={onStatusChange} options={statusOptions} size="sm" ariaLabel="Estado" />
+                          <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" />
+                          <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Dirección" />
+                          <Select
+                            value={String(count)}
+                            onChange={onCountChange}
+                            options={pageSizeOptions}
+                            size="sm"
+                            ariaLabel="Tamaño página"
+                            className="bo-reservasCountSelect"
+                            style={{ width: 60 }}
+                            menuMinWidthPx={60}
+                            listClassName="bo-bookingSearchCountList"
+                          />
+                        </div>
+                        <div className="bo-filterRow bo-filterRow--actions">
+                          <div className="bo-search">
+                            <input
+                              className="bo-input bo-input--sm"
+                              value={q}
+                              onChange={(e) => setQ(e.target.value)}
+                              placeholder="Buscar por nombre"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") applyFilters();
+                              }}
+                            />
+                            <button className="bo-btn bo-btn--ghost" type="button" onClick={applyFilters} disabled={busy}>
+                              Buscar
+                            </button>
+                          </div>
+                          <button
+                            className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadInline"
+                            type="button"
+                            onClick={onDownloadPDF}
+                            disabled={pdfBusy || busy}
+                          >
+                            <Download className="bo-ico" /> Descargar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+
+            <AnimatePresence mode="wait" initial={false}>
+              {isDayOpen ? (
+                <motion.div
+                  key="reservas-open-content"
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  transition={dayVisibilityTransition}
+                >
+                  <div className="bo-tableWrap" style={{ marginTop: 14 }}>
+                    <div className="bo-tableScroll">
+                      <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas">
+                        <thead>
+                          <tr>
+                            <th className="col-added">Añadida</th>
+                            <th className="col-mesa">Mesa</th>
+                            <th className="col-time">Hora</th>
+                            <th className="col-client">Cliente</th>
+                            <th className="col-status">Estado</th>
+                            <th className="num">Pax</th>
+                            <th className="col-children num">Niños</th>
+                            <th className="col-phone">Teléfono</th>
+                            <th className="col-rice">Arroz</th>
+                            <th className="col-comment">Comentario</th>
+                            <th className="end" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((b) => (
+                            <BookingRow
+                              key={b.id}
+                              booking={b}
+                              onCancel={onCancel}
+                              onEdit={openEdit}
+                              onOpenDetails={openDetails}
+                              onSaveTable={saveTableNumber}
+                              busy={busy}
+                            />
+                          ))}
+                          {!rows.length ? (
+                            <tr>
+                              <td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>
+                                {busy ? "Cargando..." : "No hay reservas para este filtro."}
+                              </td>
+                            </tr>
+                          ) : null}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación">
+                      <div className="bo-pagerText">
+                        Página {page} de {totalPages} · {totalCount} resultados
+                      </div>
+                      {showPagerBtns ? (
+                        <div className="bo-pagerBtns">
+                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
+                            Anterior
+                          </button>
+                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
+                            Siguiente
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="reservas-closed-content"
+                  style={{ marginTop: 14 }}
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  transition={dayVisibilityTransition}
+                >
+                  <ReservationDayPanel
+                    title="Día cerrado"
+                    meta={date}
+                    day={day ?? { date, isOpen: false }}
+                    busy={busy}
+                    onToggleDay={openDay}
+                    actionMode="openOnly"
+                    bodyClassName="bo-configDayLimitRow--single"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence initial={false}>
+        {searchMode ? (
+          <motion.div
+            key="search-results"
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0 }}
+            transition={searchFadeTransition}
           >
             <div className="bo-tableWrap" style={{ marginTop: 14 }}>
               <div className="bo-tableScroll">
-                <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas">
+                <table className="bo-table bo-table--reservas" aria-label="Tabla de búsqueda">
                   <thead>
                     <tr>
                       <th className="col-added">Añadida</th>
-                      <th className="col-mesa">Mesa</th>
+                      <th className="col-date">Fecha</th>
                       <th className="col-time">Hora</th>
                       <th className="col-client">Cliente</th>
                       <th className="col-status">Estado</th>
                       <th className="num">Pax</th>
-                      <th className="col-children num">Niños</th>
                       <th className="col-phone">Teléfono</th>
                       <th className="col-rice">Arroz</th>
                       <th className="col-comment">Comentario</th>
@@ -615,65 +817,43 @@ export default function Page() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((b) => (
-                      <BookingRow
+                    {searchResults.map((b) => (
+                      <SearchResultRow
                         key={b.id}
                         booking={b}
-                        onCancel={onCancel}
-                        onEdit={openEdit}
-                        onOpenDetails={openDetails}
-                        onSaveTable={saveTableNumber}
-                        busy={busy}
+                        onNavigate={navigateToBookingDay}
+                        busy={searchBusy}
+        reduceMotion={reduceMotion === true}
                       />
                     ))}
-                    {!rows.length ? (
+                    {!searchResults.length ? (
                       <tr>
-                        <td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>
-                          {busy ? "Cargando..." : "No hay reservas para este filtro."}
+                        <td colSpan={10} style={{ padding: 16, color: "var(--bo-muted)" }}>
+                          {searchBusy ? "Buscando..." : "Sin resultados."}
                         </td>
                       </tr>
                     ) : null}
                   </tbody>
                 </table>
               </div>
-
-              <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación">
-                <div className="bo-pagerText">
-                  Página {page} de {totalPages} · {totalCount} resultados
-                </div>
-                {showPagerBtns ? (
+              {searchTotalPages > 1 ? (
+                <div className="bo-pager" aria-label="Paginación búsqueda">
+                  <div className="bo-pagerText">
+                    Página {searchPage} de {searchTotalPages} · {searchTotalCount} resultados
+                  </div>
                   <div className="bo-pagerBtns">
-                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
+                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onSearchPageChange(searchPage - 1)} disabled={searchBusy || searchPage <= 1}>
                       Anterior
                     </button>
-                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
+                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onSearchPageChange(searchPage + 1)} disabled={searchBusy || searchPage >= searchTotalPages}>
                       Siguiente
                     </button>
                   </div>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
             </div>
           </motion.div>
-        ) : (
-          <motion.div
-            key="reservas-closed-content"
-            style={{ marginTop: 14 }}
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            transition={dayVisibilityTransition}
-          >
-            <ReservationDayPanel
-              title="Día cerrado"
-              meta={date}
-              day={day ?? { date, isOpen: false }}
-              busy={busy}
-              onToggleDay={openDay}
-              actionMode="openOnly"
-              bodyClassName="bo-configDayLimitRow--single"
-            />
-          </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
 
       <ConfirmDialog
@@ -788,7 +968,6 @@ const BookingRow = React.memo(function BookingRow({
     <tr
       onClick={() => {
         if (typeof window === "undefined") return;
-        // Row click only on mobile when the table collapses.
         if (!window.matchMedia("(max-width: 760px)").matches) return;
         onOpenDetails(booking);
       }}
@@ -837,6 +1016,55 @@ const BookingRow = React.memo(function BookingRow({
             { id: "cancel", label: "Cancelar", tone: "danger", onSelect: () => onCancel(booking), icon: <XCircle size={16} strokeWidth={1.8} /> },
           ]}
         />
+      </td>
+    </tr>
+  );
+});
+
+const SearchResultRow = React.memo(function SearchResultRow({
+  booking,
+  onNavigate,
+  busy,
+  reduceMotion,
+}: {
+  booking: Booking;
+  onNavigate: (b: Booking) => void;
+  busy: boolean;
+  reduceMotion: boolean | null;
+}) {
+  const arroz = useMemo(() => formatArrozShort(booking.arroz_type, booking.arroz_servings), [booking.arroz_servings, booking.arroz_type]);
+  const added = useMemo(() => formatAddedDate(booking.added_date), [booking.added_date]);
+
+  return (
+    <tr
+      onClick={() => onNavigate(booking)}
+      style={{ cursor: "pointer" }}
+    >
+      <td className="col-added">{added}</td>
+      <td className="col-date">{booking.reservation_date}</td>
+      <td className="col-time">{formatHHMM(booking.reservation_time)}</td>
+      <td className="col-client">{booking.customer_name}</td>
+      <td className="col-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td className="num">{booking.party_size}</td>
+      <td className="col-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
+      <td className="col-rice">{arroz}</td>
+      <td className="col-comment">{booking.commentary || ""}</td>
+      <td
+        className="end"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <button
+          className="bo-btn bo-btn--ghost bo-actionBtn"
+          type="button"
+          onClick={() => onNavigate(booking)}
+          disabled={busy}
+          aria-label={`Ir al día ${booking.reservation_date}`}
+          data-slot="go-to-day"
+        >
+          <ExternalLink size={16} strokeWidth={1.8} />
+        </button>
       </td>
     </tr>
   );

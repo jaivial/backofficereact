@@ -775,6 +775,21 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(patch),
         });
       },
+      async search(params: {
+        name?: string;
+        phone?: string;
+        page?: number;
+        count?: number;
+      }): Promise<
+        APISuccess<{ bookings: Booking[]; floors?: ConfigFloor[]; total_count: number; total: number; page: number; count: number }> | APIError
+      > {
+        const q = new URLSearchParams();
+        if (params.name) q.set("name", params.name);
+        if (params.phone) q.set("phone", params.phone);
+        if (params.page !== undefined) q.set("page", String(params.page));
+        if (params.count !== undefined) q.set("count", String(params.count));
+        return json(`/api/admin/bookings/search?${q.toString()}`, { method: "GET" });
+      },
     },
     tables: {
       async list(params?: { date?: string; floor_number?: number }): Promise<APISuccess<{ data: TableMapArea[]; areas: TableMapArea[]; tables: TableMapItem[]; layout?: Record<string, unknown> }> | APIError> {
