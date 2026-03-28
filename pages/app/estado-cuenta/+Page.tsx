@@ -277,17 +277,17 @@ export default function Page() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-bo-text">Estado de Cuenta</h1>
+          <h1 className="text-2xl font-bold text-foreground">Estado de Cuenta</h1>
           <p className="text-faint">Genera estados de cuenta para clientes</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4 mb-6">
+      <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
           {/* Customer Select */}
           <div>
-            <label className="text-bo-sm font-semibold text-bo-muted">Cliente</label>
+            <label className="text-sm font-semibold text-muted-foreground">Cliente</label>
             <select
               value={selectedCustomer}
               onChange={(e) => {
@@ -296,7 +296,7 @@ export default function Page() {
                   loadCustomers();
                 }
               }}
-              className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+              className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
             >
               <option value="">Seleccionar cliente...</option>
               {customers.map((c) => (
@@ -309,23 +309,23 @@ export default function Page() {
 
           {/* Date from */}
           <div>
-            <label className="text-bo-sm font-semibold text-bo-muted">Desde</label>
+            <label className="text-sm font-semibold text-muted-foreground">Desde</label>
             <input
               type="date"
               value={statementDateFrom}
               onChange={(e) => setStatementDateFrom(e.target.value)}
-              className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+              className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
             />
           </div>
 
           {/* Date to */}
           <div>
-            <label className="text-bo-sm font-semibold text-bo-muted">Hasta</label>
+            <label className="text-sm font-semibold text-muted-foreground">Hasta</label>
             <input
               type="date"
               value={statementDateTo}
               onChange={(e) => setStatementDateTo(e.target.value)}
-              className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+              className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
             />
           </div>
 
@@ -334,7 +334,7 @@ export default function Page() {
             <button
               onClick={loadCustomers}
               disabled={customersLoading}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
             >
               {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
               Cargar Clientes
@@ -347,7 +347,7 @@ export default function Page() {
           <button
             onClick={handleGenerateCustomerStatement}
             disabled={customerLoading || !selectedCustomer}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
           >
             {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
             Generar Estado de Cuenta
@@ -380,82 +380,82 @@ export default function Page() {
       {customerStatement ? (
         <>
           {/* Customer Info */}
-          <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4 mb-6">
-            <h3 className="text-lg font-semibold text-bo-text mb-4">Informacion del Cliente</h3>
+          <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-4 mb-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Informacion del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 grid-gap-4">
               <div>
                 <span className="text-sm text-faint">Nombre</span>
-                <p className="text-lg font-medium text-bo-text">{customerStatement.customer_name}</p>
+                <p className="text-lg font-medium text-foreground">{customerStatement.customer_name}</p>
               </div>
               {customerStatement.customer_dni_cif && (
                 <div>
                   <span className="text-sm text-faint">DNI/CIF</span>
-                  <p className="text-lg font-medium text-bo-text">{customerStatement.customer_dni_cif}</p>
+                  <p className="text-lg font-medium text-foreground">{customerStatement.customer_dni_cif}</p>
                 </div>
               )}
               {customerStatement.customer_email && (
                 <div>
                   <span className="text-sm text-faint">Email</span>
-                  <p className="text-lg font-medium text-bo-text">{customerStatement.customer_email}</p>
+                  <p className="text-lg font-medium text-foreground">{customerStatement.customer_email}</p>
                 </div>
               )}
               <div>
                 <span className="text-sm text-faint">Periodo</span>
-                <p className="text-lg font-medium text-bo-text">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
+                <p className="text-lg font-medium text-foreground">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
               </div>
             </div>
           </div>
 
           {/* Balance Summary */}
           <div className="grid grid-cols-1 md:grid-cols-5 grid-gap-4 mb-6">
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
+            <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-4">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-5 h-5 text-faint" />
                 <span className="text-sm text-faint">Saldo Inicial</span>
               </div>
-              <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.opening_balance, "EUR")}</p>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(customerStatement.opening_balance, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
+            <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Receipt className="w-5 h-5" style={{ color: "var(--bo-color-info)" }} />
+                <Receipt className="w-5 h-5" style={{ color: "var(--text-info)" }} />
                 <span className="text-sm text-faint">Total Facturado</span>
               </div>
-              <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.summary.total_invoiced, "EUR")}</p>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(customerStatement.summary.total_invoiced, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
+            <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-4">
               <div className="flex items-center gap-2 mb-2">
-                <CreditCard className="w-5 h-5" style={{ color: "var(--bo-color-success)" }} />
+                <CreditCard className="w-5 h-5" style={{ color: "var(--text-success)" }} />
                 <span className="text-sm text-faint">Total Pagado</span>
               </div>
-              <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.summary.total_paid, "EUR")}</p>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(customerStatement.summary.total_paid, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
+            <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-5 h-5" style={{ color: "var(--bo-color-warning)" }} />
+                <Calendar className="w-5 h-5" style={{ color: "var(--text-warning)" }} />
                 <span className="text-sm text-faint">Pendiente</span>
               </div>
-              <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.summary.total_pending, "EUR")}</p>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(customerStatement.summary.total_pending, "EUR")}</p>
             </div>
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-4">
+            <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-4">
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-5 h-5" style={{ color: "var(--bo-color-danger)" }} />
+                <DollarSign className="w-5 h-5" style={{ color: "var(--text-danger)" }} />
                 <span className="text-sm text-faint">Saldo Final</span>
               </div>
-              <p className="text-xl font-bold text-bo-text">{formatCurrency(customerStatement.closing_balance, "EUR")}</p>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(customerStatement.closing_balance, "EUR")}</p>
             </div>
           </div>
 
           {/* Invoices and Payments Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-2 grid-gap-6">
             {/* Invoices */}
-            <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
-              <div className="flex items-center justify-between p-3 border-b border-bo-border">
-                <h3 className="text-lg font-semibold text-bo-text">Facturas ({customerStatement.invoices.length})</h3>
+            <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-3">
+              <div className="flex items-center justify-between p-3 border-b border">
+                <h3 className="text-lg font-semibold text-foreground">Facturas ({customerStatement.invoices.length})</h3>
               </div>
               {customerStatement.invoices.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-bo-surface-2">
+                    <thead className="bg-card-2">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
@@ -463,17 +463,17 @@ export default function Page() {
                         <th className="px-4 py-3 text-center text-xs font-medium text-muted uppercase">Estado</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-bo-surface divide-y divide-gray-200">
+                    <tbody className="bg-card divide-y divide-gray-200">
                       {customerStatement.invoices.map((inv, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-bo-text">
+                        <tr key={idx} className={idx % 2 === 0 ? "card" : "secondary"}>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">
                             {inv.invoice_number || `#${inv.id}`}
-                            {inv.is_credit_note && <span className="ml-2 px-2 py-1 text-xs rounded-full" style={{ backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 18%, transparent)", color: "var(--bo-color-warning)" }}>NC</span>}
+                            {inv.is_credit_note && <span className="ml-2 px-2 py-1 text-xs rounded-full" style={{ backgroundColor: "color-mix(in srgb, var(--text-warning) 18%, transparent)", color: "var(--text-warning)" }}>NC</span>}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{formatDate(inv.invoice_date)}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-bo-text">{formatCurrency(inv.total, "EUR")}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">{formatCurrency(inv.total, "EUR")}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-center">
-                            <span className="px-2 py-1 text-xs rounded-full" style={inv.status === "pagada" ? { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 18%, transparent)", color: "var(--bo-color-success)" } : inv.status === "pendiente" ? { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 18%, transparent)", color: "var(--bo-color-warning)" } : inv.status === "enviada" ? { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 18%, transparent)", color: "var(--bo-color-info)" } : {}}>
+                            <span className="px-2 py-1 text-xs rounded-full" style={inv.status === "pagada" ? { backgroundColor: "color-mix(in srgb, var(--text-success) 18%, transparent)", color: "var(--text-success)" } : inv.status === "pendiente" ? { backgroundColor: "color-mix(in srgb, var(--text-warning) 18%, transparent)", color: "var(--text-warning)" } : inv.status === "enviada" ? { backgroundColor: "color-mix(in srgb, var(--text-info) 18%, transparent)", color: "var(--text-info)" } : {}}>
                               {inv.status}
                             </span>
                           </td>
@@ -490,14 +490,14 @@ export default function Page() {
             </div>
 
             {/* Payments */}
-            <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
-              <div className="px-6 py-4 border-b border bo-surface-2">
-                <h3 className="text-lg font-semibold text-bo-text">Pagos ({customerStatement.payments.length})</h3>
+            <div className="bg-card rounded-md shadow-soft border border overflow-hidden">
+              <div className="px-6 py-4 border-b border secondary">
+                <h3 className="text-lg font-semibold text-foreground">Pagos ({customerStatement.payments.length})</h3>
               </div>
               {customerStatement.payments.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-bo-surface-2">
+                    <thead className="bg-card-2">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
@@ -505,13 +505,13 @@ export default function Page() {
                         <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">Importe</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-bo-surface divide-y divide-gray-200">
+                    <tbody className="bg-card divide-y divide-gray-200">
                       {customerStatement.payments.map((pay, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-bo-text">{pay.invoice_number || `#${pay.invoice_id}`}</td>
+                        <tr key={idx} className={idx % 2 === 0 ? "card" : "secondary"}>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">{pay.invoice_number || `#${pay.invoice_id}`}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{formatDate(pay.payment_date)}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{pay.payment_method}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-bo-text">{formatCurrency(pay.amount, "EUR")}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">{formatCurrency(pay.amount, "EUR")}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -526,9 +526,9 @@ export default function Page() {
           </div>
         </>
       ) : (
-        <div className="bg-bo-surface rounded-md shadow-soft border border p-12 text-center">
+        <div className="bg-card rounded-md shadow-soft border border p-12 text-center">
           <Receipt className="w-12 h-12 text-faint mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-bo-text mb-2">Sin estado de cuenta</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">Sin estado de cuenta</h3>
           <p className="text-muted mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
         </div>
       )}

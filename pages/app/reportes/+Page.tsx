@@ -563,13 +563,13 @@ export default function Page() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between" style={{ marginBottom: "var(--bo-space-6)" }}>
         <div>
-          <h1 className="text-2xl font-bold text-bo-text">Reportes</h1>
+          <h1 className="text-2xl font-bold text-foreground">Reportes</h1>
           <p className="text-muted">Reportes de IVA y estados de cuenta de clientes</p>
         </div>
       </div>
 
       {/* Main Tabs */}
-      <div className="bg-bo-surface rounded-md shadow-soft border border mb-6">
+      <div className="bg-card rounded-md shadow-soft border border mb-6">
         <SimpleTabs defaultValue="iva">
           <SimpleTabsList className="border-b">
             <SimpleTabsContent value="iva" trigger="Reportes de IVA" />
@@ -580,11 +580,11 @@ export default function Page() {
           <SimpleTabsContent value="customer">
             <div className="p-6">
               {/* Customer Statement Filters */}
-              <div className="bg-bo-surface rounded-md shadow-soft border border p-4 mb-6">
+              <div className="bg-card rounded-md shadow-soft border border p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Customer Select */}
                   <div>
-                    <label className="block text-sm font-medium text-bo-text mb-1">Cliente</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Cliente</label>
                     <select
                       value={selectedCustomer}
                       onChange={(e) => {
@@ -593,7 +593,7 @@ export default function Page() {
                           loadCustomers();
                         }
                       }}
-                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <option value="">Seleccionar cliente...</option>
                       {customers.map((c) => (
@@ -606,23 +606,23 @@ export default function Page() {
 
                   {/* Statement Date from */}
                   <div>
-                    <label className="block text-sm font-medium text-bo-text mb-1">Desde</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Desde</label>
                     <input
                       type="date"
                       value={statementDateFrom}
                       onChange={(e) => setStatementDateFrom(e.target.value)}
-                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
 
                   {/* Statement Date to */}
                   <div>
-                    <label className="block text-sm font-medium text-bo-text mb-1">Hasta</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Hasta</label>
                     <input
                       type="date"
                       value={statementDateTo}
                       onChange={(e) => setStatementDateTo(e.target.value)}
-                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
 
@@ -631,7 +631,7 @@ export default function Page() {
                     <button
                       onClick={loadCustomers}
                       disabled={customersLoading}
-                      className="flex items-center gap-2 px-4 py-2 bg-bo-surface-2 bo-bg rounded-sm hover:bg-bo-surface disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-card-2 background rounded-sm hover:bg-card disabled:opacity-50"
                     >
                       {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
                       Cargar Clientes
@@ -640,11 +640,11 @@ export default function Page() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2" style={{ marginTop: "var(--bo-space-4)" }}>
+                <div className="flex gap-2" style={{ marginTop: "var(--gap-4)" }}>
                   <button
                     onClick={handleGenerateCustomerStatement}
                     disabled={customerLoading || !selectedCustomer}
-                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 accent background rounded-sm hover:opacity-90 disabled:opacity-50"
                   >
                     {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
                     Generar Estado de Cuenta
@@ -655,7 +655,7 @@ export default function Page() {
                       <button
                         onClick={handleExportCustomerStatementPDF}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 text-danger background rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileText className="w-4 h-4" />
                         Exportar PDF
@@ -663,7 +663,7 @@ export default function Page() {
                       <button
                         onClick={handleExportCustomerStatementCSV}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 text-success background rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileSpreadsheet className="w-4 h-4" />
                         Exportar Excel
@@ -677,28 +677,28 @@ export default function Page() {
               {customerStatement ? (
                 <>
                   {/* Customer Info */}
-                  <div className="bg-bo-surface rounded-md shadow-soft border border p-4 mb-6">
-                    <h3 className="text-lg font-semibold bo-text mb-4">Informacion del Cliente</h3>
+                  <div className="bg-card rounded-md shadow-soft border border p-4 mb-6">
+                    <h3 className="text-lg font-semibold foreground mb-4">Informacion del Cliente</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 grid-gap-4">
                       <div>
                         <span className="text-sm text-muted">Nombre</span>
-                        <p className="text-lg font-medium bo-text">{customerStatement.customer_name}</p>
+                        <p className="text-lg font-medium foreground">{customerStatement.customer_name}</p>
                       </div>
                       {customerStatement.customer_dni_cif && (
                         <div>
                           <span className="text-sm text-muted">DNI/CIF</span>
-                          <p className="text-lg font-medium bo-text">{customerStatement.customer_dni_cif}</p>
+                          <p className="text-lg font-medium foreground">{customerStatement.customer_dni_cif}</p>
                         </div>
                       )}
                       {customerStatement.customer_email && (
                         <div>
                           <span className="text-sm text-muted">Email</span>
-                          <p className="text-lg font-medium bo-text">{customerStatement.customer_email}</p>
+                          <p className="text-lg font-medium foreground">{customerStatement.customer_email}</p>
                         </div>
                       )}
                       <div>
                         <span className="text-sm text-muted">Periodo</span>
-                        <p className="text-lg font-medium bo-text">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
+                        <p className="text-lg font-medium foreground">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
                       </div>
                     </div>
                   </div>
@@ -735,14 +735,14 @@ export default function Page() {
                   {/* Invoices and Payments Tables */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 grid-gap-6">
                     {/* Invoices */}
-                    <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
-                      <div className="px-6 py-4 border-b border bo-surface-2">
-                        <h3 className="text-lg font-semibold bo-text">Facturas ({customerStatement.invoices.length})</h3>
+                    <div className="bg-card rounded-md shadow-soft border border overflow-hidden">
+                      <div className="px-6 py-4 border-b border secondary">
+                        <h3 className="text-lg font-semibold foreground">Facturas ({customerStatement.invoices.length})</h3>
                       </div>
                       {customerStatement.invoices.length > 0 ? (
                         <div className="overflow-x-auto">
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-bo-surface-2">
+                            <thead className="bg-card-2">
                               <tr>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
@@ -750,21 +750,21 @@ export default function Page() {
                                 <th className="px-4 py-3 text-center text-xs font-medium text-muted uppercase">Estado</th>
                               </tr>
                             </thead>
-                            <tbody className="bg-bo-surface divide-y divide-gray-200">
+                            <tbody className="bg-card divide-y divide-gray-200">
                               {customerStatement.invoices.map((inv, idx) => (
-                                <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm bo-text">
+                                <tr key={idx} className={idx % 2 === 0 ? "card" : "secondary"}>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm foreground">
                                     {inv.invoice_number || `#${inv.id}`}
-                                    {inv.is_credit_note && <span className="bo-creditBadge bo-creditBadge--warning">NC</span>}
+                                    {inv.is_credit_note && <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-500/20 text-amber-500">NC</span>}
                                   </td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{formatDate(inv.invoice_date)}</td>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(inv.total, "EUR")}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right foreground">{formatCurrency(inv.total, "EUR")}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-center">
                                     <span className={`px-2 py-1 text-xs rounded-full ${inv.status === "pagada" ? "" :
                                         inv.status === "pendiente" ? "" :
                                           inv.status === "enviada" ? "" :
                                             ""
-                                      }`} style={inv.status === "pagada" ? { backgroundColor: "color-mix(in srgb, var(--bo-color-success) 18%, transparent)", color: "var(--bo-color-success)" } : inv.status === "pendiente" ? { backgroundColor: "color-mix(in srgb, var(--bo-color-warning) 18%, transparent)", color: "var(--bo-color-warning)" } : inv.status === "enviada" ? { backgroundColor: "color-mix(in srgb, var(--bo-color-info) 18%, transparent)", color: "var(--bo-color-info)" } : {}}>
+                                      }`} style={inv.status === "pagada" ? { backgroundColor: "color-mix(in srgb, var(--text-success) 18%, transparent)", color: "var(--text-success)" } : inv.status === "pendiente" ? { backgroundColor: "color-mix(in srgb, var(--text-warning) 18%, transparent)", color: "var(--text-warning)" } : inv.status === "enviada" ? { backgroundColor: "color-mix(in srgb, var(--text-info) 18%, transparent)", color: "var(--text-info)" } : {}}>
                                       {inv.status}
                                     </span>
                                   </td>
@@ -781,14 +781,14 @@ export default function Page() {
                     </div>
 
                     {/* Payments */}
-                    <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
-                      <div className="px-6 py-4 border-b border bo-surface-2">
-                        <h3 className="text-lg font-semibold bo-text">Pagos ({customerStatement.payments.length})</h3>
+                    <div className="bg-card rounded-md shadow-soft border border overflow-hidden">
+                      <div className="px-6 py-4 border-b border secondary">
+                        <h3 className="text-lg font-semibold foreground">Pagos ({customerStatement.payments.length})</h3>
                       </div>
                       {customerStatement.payments.length > 0 ? (
                         <div className="overflow-x-auto">
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-bo-surface-2">
+                            <thead className="bg-card-2">
                               <tr>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Factura</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Fecha</th>
@@ -796,13 +796,13 @@ export default function Page() {
                                 <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">Importe</th>
                               </tr>
                             </thead>
-                            <tbody className="bg-bo-surface divide-y divide-gray-200">
+                            <tbody className="bg-card divide-y divide-gray-200">
                               {customerStatement.payments.map((pay, idx) => (
-                                <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm bo-text">{pay.invoice_number || `#${pay.invoice_id}`}</td>
+                                <tr key={idx} className={idx % 2 === 0 ? "card" : "secondary"}>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm foreground">{pay.invoice_number || `#${pay.invoice_id}`}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{formatDate(pay.payment_date)}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-muted">{pay.payment_method}</td>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(pay.amount, "EUR")}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right foreground">{formatCurrency(pay.amount, "EUR")}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -817,9 +817,9 @@ export default function Page() {
                   </div>
                 </>
               ) : (
-                <div className="bg-bo-surface rounded-md shadow-soft border border p-12 text-center">
+                <div className="bg-card rounded-md shadow-soft border border p-12 text-center">
                   <Receipt className="w-12 h-12 text-faint mx-auto mb-4" />
-                  <h3 className="text-lg font-medium bo-text mb-2">Sin estado de cuenta</h3>
+                  <h3 className="text-lg font-medium foreground mb-2">Sin estado de cuenta</h3>
                   <p className="text-muted mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
                 </div>
               )}
@@ -829,15 +829,15 @@ export default function Page() {
           {/* IVA Report Tab */}
           <SimpleTabsContent value="iva">
             <div>
-              <div className="bg-bo-surface rounded-md shadow-soft border border p-4 mb-6">
+              <div className="bg-card rounded-md shadow-soft border border p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 grid-gap-4">
                   {/* Date preset */}
                   <div>
-                    <label className="block text-sm font-medium bo-text mb-1">Periodo</label>
+                    <label className="block text-sm font-medium foreground mb-1">Periodo</label>
                     <select
                       value={datePreset}
                       onChange={(e) => handleDatePresetChange(e.target.value as DatePreset)}
-                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       {DATE_PRESETS.map(preset => (
                         <option key={preset.value} value={preset.value}>{preset.label}</option>
@@ -847,7 +847,7 @@ export default function Page() {
 
                   {/* Date from */}
                   <div>
-                    <label className="block text-sm font-medium bo-text mb-1">Desde</label>
+                    <label className="block text-sm font-medium foreground mb-1">Desde</label>
                     <input
                       type="date"
                       value={dateFrom}
@@ -855,13 +855,13 @@ export default function Page() {
                         setDateFrom(e.target.value);
                         setDatePreset("custom");
                       }}
-                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
 
                   {/* Date to */}
                   <div>
-                    <label className="block text-sm font-medium bo-text mb-1">Hasta</label>
+                    <label className="block text-sm font-medium foreground mb-1">Hasta</label>
                     <input
                       type="date"
                       value={dateTo}
@@ -869,7 +869,7 @@ export default function Page() {
                         setDateTo(e.target.value);
                         setDatePreset("custom");
                       }}
-                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-bo-accent"
+                      className="w-full px-3 py-2 border border rounded-sm focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
 
@@ -880,19 +880,19 @@ export default function Page() {
                         type="checkbox"
                         checked={includeCreditNotes}
                         onChange={(e) => setIncludeCreditNotes(e.target.checked)}
-                        className="w-4 h-4 bo-accent border rounded focus:ring-bo-accent"
+                        className="w-4 h-4 accent border rounded focus:ring-accent"
                       />
-                      <span className="text-sm bo-text">Incluir notas de credito</span>
+                      <span className="text-sm foreground">Incluir notas de credito</span>
                     </label>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2" style={{ marginTop: "var(--bo-space-4)" }}>
+                <div className="flex gap-2" style={{ marginTop: "var(--gap-4)" }}>
                   <button
                     onClick={handleGenerateReport}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 accent background rounded-sm hover:opacity-90 disabled:opacity-50"
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
                     Generar Reporte
@@ -903,7 +903,7 @@ export default function Page() {
                       <button
                         onClick={handleExportPDF}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-danger bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 text-danger background rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileText className="w-4 h-4" />
                         Exportar PDF
@@ -911,7 +911,7 @@ export default function Page() {
                       <button
                         onClick={handleExportExcel}
                         disabled={exporting}
-                        className="flex items-center gap-2 px-4 py-2 bo-color-success bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 text-success background rounded-sm hover:opacity-90 disabled:opacity-50"
                       >
                         <FileSpreadsheet className="w-4 h-4" />
                         Exportar Excel
@@ -950,24 +950,24 @@ export default function Page() {
 
                   {/* Credit Notes Summary (if included) */}
                   {includeCreditNotes && report.summary.credit_note_count > 0 && (
-                    <div className="rounded-bo-md p-4 mb-6 bg-bo-warning-bg border border-[var(--bo-color-warning)]/[0.38]">
-                      <h3 className="text-bo-lg font-semibold mb-3 text-bo-color-warning">Notas de Credito</h3>
+                    <div className="rounded-md p-4 mb-6 bg-warning-bg border border-[var(--text-warning)]/[0.38]">
+                      <h3 className="text-lg font-semibold mb-3 text-warning">Notas de Credito</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 grid-gap-4">
                         <div>
-                          <span className="text-bo-sm text-bo-color-warning">Cantidad</span>
-                          <p className="text-bo-xl font-bold text-bo-color-warning">{report.summary.credit_note_count}</p>
+                          <span className="text-sm text-warning">Cantidad</span>
+                          <p className="text-xl font-bold text-warning">{report.summary.credit_note_count}</p>
                         </div>
                         <div>
-                          <span className="text-bo-sm text-bo-color-warning">Base</span>
-                          <p className="text-bo-xl font-bold text-bo-color-warning">{formatCurrency(report.summary.credit_note_base, "EUR")}</p>
+                          <span className="text-sm text-warning">Base</span>
+                          <p className="text-xl font-bold text-warning">{formatCurrency(report.summary.credit_note_base, "EUR")}</p>
                         </div>
                         <div>
-                          <span className="text-bo-sm text-bo-color-warning">IVA</span>
-                          <p className="text-bo-xl font-bold text-bo-color-warning">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p>
+                          <span className="text-sm text-warning">IVA</span>
+                          <p className="text-xl font-bold text-warning">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p>
                         </div>
                         <div>
-                          <span className="text-bo-sm text-bo-color-warning">Total</span>
-                          <p className="text-bo-xl font-bold text-bo-color-warning">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p>
+                          <span className="text-sm text-warning">Total</span>
+                          <p className="text-xl font-bold text-warning">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p>
                         </div>
                       </div>
                     </div>
@@ -975,20 +975,20 @@ export default function Page() {
 
                   {/* Net Total (after credit notes) */}
                   {includeCreditNotes && report.summary.credit_note_count > 0 && (
-                    <div className="rounded-bo-md p-4 mb-6 bg-bo-success-bg border border-[var(--bo-color-success)]/[0.38]">
-                      <h3 className="text-bo-lg font-semibold mb-3 text-bo-color-success">Total Neto (despues de notas de credito)</h3>
+                    <div className="rounded-md p-4 mb-6 bg-success-bg border border-[var(--text-success)]/[0.38]">
+                      <h3 className="text-lg font-semibold mb-3 text-success">Total Neto (despues de notas de credito)</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 grid-gap-4">
                         <div>
-                          <span className="text-bo-sm text-bo-color-success">Base neta</span>
-                          <p className="text-bo-2xl font-bold text-bo-color-success">{formatCurrency(report.summary.net_base, "EUR")}</p>
+                          <span className="text-sm text-success">Base neta</span>
+                          <p className="text-2xl font-bold text-success">{formatCurrency(report.summary.net_base, "EUR")}</p>
                         </div>
                         <div>
-                          <span className="text-bo-sm text-bo-color-success">IVA neto</span>
-                          <p className="text-bo-2xl font-bold text-bo-color-success">{formatCurrency(report.summary.net_iva, "EUR")}</p>
+                          <span className="text-sm text-success">IVA neto</span>
+                          <p className="text-2xl font-bold text-success">{formatCurrency(report.summary.net_iva, "EUR")}</p>
                         </div>
                         <div>
-                          <span className="bo-reportStatLabel bo-reportStatLabel--success">Total neto</span>
-                          <p className="bo-reportStatValue bo-reportStatValue--success bo-reportStatValue--xl">{formatCurrency(report.summary.net_total, "EUR")}</p>
+                          <span className="text-xs text-muted-foreground">Total neto</span>
+                          <p className="text-3xl font-bold text-green-500">{formatCurrency(report.summary.net_total, "EUR")}</p>
                         </div>
                       </div>
                     </div>
@@ -1004,9 +1004,9 @@ export default function Page() {
 
                     {/* Breakdown by IVA Rate */}
                     <SimpleTabsContent value="breakdown">
-                      <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
+                      <div className="bg-card rounded-md shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-bo-surface-2">
+                          <thead className="bg-card-2">
                             <tr>
                               <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Tipo IVA</th>
                               <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Base</th>
@@ -1022,13 +1022,13 @@ export default function Page() {
                               )}
                             </tr>
                           </thead>
-                          <tbody className="bg-bo-surface divide-y divide-gray-200">
+                          <tbody className="bg-card divide-y divide-gray-200">
                             {report.breakdown_by_rate.map((item, idx) => (
-                              <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium bo-text">{item.iva_rate}%</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.base_amount, "EUR")}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.iva_amount, "EUR")}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text font-semibold">{formatCurrency(item.base_amount + item.iva_amount, "EUR")}</td>
+                              <tr key={idx} className={idx % 2 === 0 ? "card" : "secondary"}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium foreground">{item.iva_rate}%</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground">{formatCurrency(item.base_amount, "EUR")}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground">{formatCurrency(item.iva_amount, "EUR")}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground font-semibold">{formatCurrency(item.base_amount + item.iva_amount, "EUR")}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{item.invoice_count}</td>
                                 {includeCreditNotes && (
                                   <>
@@ -1040,18 +1040,18 @@ export default function Page() {
                               </tr>
                             ))}
                           </tbody>
-                          <tfoot className="bo-surface-3">
+                          <tfoot className="muted">
                             <tr>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-bold bo-text">TOTAL</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold bo-text">{formatCurrency(report.summary.total_base, "EUR")}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold bo-text">{formatCurrency(report.summary.total_iva, "EUR")}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold bo-text">{formatCurrency(report.summary.total, "EUR")}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold bo-text">{report.summary.invoice_count}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-bold foreground">TOTAL</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold foreground">{formatCurrency(report.summary.total_base, "EUR")}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold foreground">{formatCurrency(report.summary.total_iva, "EUR")}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold foreground">{formatCurrency(report.summary.total, "EUR")}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold foreground">{report.summary.invoice_count}</td>
                               {includeCreditNotes && (
                                 <>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold bo-text">{report.summary.credit_note_count}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold bo-text">{formatCurrency(report.summary.credit_note_base, "EUR")}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold bo-text">{formatCurrency(report.summary.credit_note_iva, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold foreground">{report.summary.credit_note_count}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold foreground">{formatCurrency(report.summary.credit_note_base, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold foreground">{formatCurrency(report.summary.credit_note_iva, "EUR")}</td>
                                 </>
                               )}
                             </tr>
@@ -1062,9 +1062,9 @@ export default function Page() {
 
                     {/* Quarterly Breakdown */}
                     <SimpleTabsContent value="quarterly">
-                      <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
+                      <div className="bg-card rounded-md shadow-soft border border overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-bo-surface-2">
+                          <thead className="bg-card-2">
                             <tr>
                               <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Trimestre</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Periodo</th>
@@ -1075,15 +1075,15 @@ export default function Page() {
                               <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Notas Cred.</th>
                             </tr>
                           </thead>
-                          <tbody className="bg-bo-surface divide-y divide-gray-200">
+                          <tbody className="bg-card divide-y divide-gray-200">
                             {data.quarterlyBreakdown.length > 0 ? (
                               data.quarterlyBreakdown.map((item, idx) => (
-                                <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium bo-text">{item.quarterLabel}</td>
+                                <tr key={idx} className={idx % 2 === 0 ? "card" : "secondary"}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium foreground">{item.quarterLabel}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{formatDate(item.start_date)} - {formatDate(item.end_date)}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.base_amount, "EUR")}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(item.iva_amount, "EUR")}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text font-semibold">{formatCurrency(item.total, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground">{formatCurrency(item.base_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground">{formatCurrency(item.iva_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground font-semibold">{formatCurrency(item.total, "EUR")}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{item.invoice_count}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{item.credit_note_count}</td>
                                 </tr>
@@ -1102,17 +1102,17 @@ export default function Page() {
 
                     {/* Invoice List */}
                     <SimpleTabsContent value="invoices">
-                      <div className="bg-bo-surface rounded-md shadow-soft border border overflow-hidden">
+                      <div className="bg-card rounded-md shadow-soft border border overflow-hidden">
                         <button
                           onClick={toggleInvoices}
-                          className="w-full px-6 py-4 flex items-center justify-between bo-surface-2 hover:bo-surface-3"
+                          className="w-full px-6 py-4 flex items-center justify-between secondary hover:muted"
                         >
-                          <span className="text-sm font-medium bo-text">Lista de facturas ({report.invoices.length})</span>
+                          <span className="text-sm font-medium foreground">Lista de facturas ({report.invoices.length})</span>
                           {expandedInvoices ? <ChevronUp className="w-5 h-5 text-muted" /> : <ChevronDown className="w-5 h-5 text-muted" />}
                         </button>
                         {expandedInvoices && (
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-bo-surface-2">
+                            <thead className="bg-card-2">
                               <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Factura</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Cliente</th>
@@ -1124,21 +1124,21 @@ export default function Page() {
                                 <th className="px-6 py-3 text-center text-xs font-medium text-muted uppercase tracking-wider">Tipo</th>
                               </tr>
                             </thead>
-                            <tbody className="bg-bo-surface divide-y divide-gray-200">
+                            <tbody className="bg-card divide-y divide-gray-200">
                               {report.invoices.map((inv, idx) => (
-                                <tr key={idx} className={idx % 2 === 0 ? "bo-surface" : "bo-surface-2"}>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm bo-text">{inv.invoice_number || ` #${inv.id}`}</td>
+                                <tr key={idx} className={idx % 2 === 0 ? "card" : "secondary"}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm foreground">{inv.invoice_number || ` #${inv.id}`}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{inv.customer_name}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{formatDate(inv.invoice_date)}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(inv.base_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground">{formatCurrency(inv.base_amount, "EUR")}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-muted">{inv.iva_rate}%</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text">{formatCurrency(inv.iva_amount, "EUR")}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right bo-text font-semibold">{formatCurrency(inv.total, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground">{formatCurrency(inv.iva_amount, "EUR")}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right foreground font-semibold">{formatCurrency(inv.total, "EUR")}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                     {inv.is_credit_note ? (
-                                      <span className="bo-creditBadge bo-creditBadge--warning">NC</span>
+                                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-amber-500/20 text-amber-500">NC</span>
                                     ) : (
-                                      <span className="bo-creditBadge bo-creditBadge--info">Factura</span>
+                                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-500/20 text-blue-500">Factura</span>
                                     )}
                                   </td>
                                 </tr>
@@ -1152,14 +1152,14 @@ export default function Page() {
                 </>
 
               ) : (
-                <div className="bg-bo-surface rounded-md shadow-soft border border p-12 text-center">
+                <div className="bg-card rounded-md shadow-soft border border p-12 text-center">
                   <FileText className="w-12 h-12 text-faint mx-auto mb-4" />
-                  <h3 className="text-lg font-medium bo-text mb-2">No hay reporte generado</h3>
+                  <h3 className="text-lg font-medium foreground mb-2">No hay reporte generado</h3>
                   <p className="text-muted mb-4">Selecciona un periodo y genera el reporte para ver el resumen de IVA</p>
                   <button
                     onClick={handleGenerateReport}
                     disabled={loading}
-                    className="inline-flex items-center gap-2 px-4 py-2 bo-accent bo-bg rounded-sm hover:opacity-90 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 accent background rounded-sm hover:opacity-90 disabled:opacity-50"
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
                     Generar Reporte

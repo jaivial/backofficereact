@@ -108,7 +108,7 @@ export function InvoicePdfPreviewModal({
                 href={pdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-bo-surface-2 text-bo-text text-xs font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+                className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-card-2 text-foreground text-xs font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                 download
               >
                 <Download size={14} />
@@ -117,7 +117,7 @@ export function InvoicePdfPreviewModal({
             )}
             <button
               type="button"
-              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-bo-surface-2 text-bo-text text-xs font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.09] bg-card-2 text-foreground text-xs font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={onEdit}
               disabled={isSending}
             >
@@ -148,7 +148,7 @@ export function InvoicePdfPreviewModal({
               {hasInvoiceId && (
                 <button
                   type="button"
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                   onClick={retryLoadPdf}
                 >
                   Reintentar
@@ -156,7 +156,7 @@ export function InvoicePdfPreviewModal({
               )}
               <button
                 type="button"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={onEdit}
               >
                 Volver a editar
@@ -190,7 +190,7 @@ export function InvoicePdfPreviewModal({
           <div className="bo-pdf-preview-footer-actions">
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={onEdit}
               disabled={isSending}
             >
@@ -199,7 +199,7 @@ export function InvoicePdfPreviewModal({
             </button>
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
               onClick={onConfirmSend}
               disabled={isSending || !hasInvoiceId}
               title={!hasInvoiceId ? "Guarde la factura primero" : "Enviar factura"}

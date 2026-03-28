@@ -328,19 +328,19 @@ export function BookingEditor({
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
       <div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`}>
 
-      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft bo-bookingPanel--customer">
+      <div className="rounded-lg bg-card shadow-soft bo-bookingPanel--customer">
         <div className="flex items-end justify-between pb-2 px-4 pt-4">
-          <div className="text-bo-sm font-bold text-bo-text">Datos</div>
-          <div className="text-bo-xs text-bo-faint">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
+          <div className="text-sm font-bold text-foreground">Datos</div>
+          <div className="text-xs text-muted-foreground">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
         <div className="p-4 bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }}>
           <div className="flex gap-4 bo-bookingRow bo-bookingRow--schedule">
             <div className="flex flex-row items-center gap-2 bo-bookingField bo-bookingField--date">
-              <div className="text-bo-sm font-semibold text-bo-muted">Fecha</div>
+              <div className="text-sm font-semibold text-muted-foreground">Fecha</div>
               <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
             </div>
             <div className="flex flex-row items-center gap-2 bo-bookingField bo-bookingField--time">
-              <div className="text-bo-sm font-semibold text-bo-muted">Hora</div>
+              <div className="text-sm font-semibold text-muted-foreground">Hora</div>
               <TimePicker value={draft.reservation_time} onChange={(v) => setField("reservation_time", v)} ariaLabel="Hora" />
             </div>
             <CounterField
@@ -355,14 +355,14 @@ export function BookingEditor({
 
           <div className="flex gap-4 bo-bookingRow bo-bookingRow--contact">
             <div className="grid gap-2 bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }}>
-              <div className="text-bo-sm font-semibold text-bo-muted">Cliente</div>
-              <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} />
+              <div className="text-sm font-semibold text-muted-foreground">Cliente</div>
+              <input className="h-[34px] rounded-sm border border bg-card-2 text-foreground px-3 outline-none min-w-0 transition-colors" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} />
             </div>
             <div className="grid gap-2 bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }}>
-              <div className="text-bo-sm font-semibold text-bo-muted">Teléfono</div>
+              <div className="text-sm font-semibold text-muted-foreground">Teléfono</div>
               <div className="bo-phone">
                 <Select
-                  className="bo-selectBtn--sm bo-phoneCC"
+                  className="text-sm bo-phoneCC"
                   size="sm"
                   value={draft.contact_phone_country_code}
                   onChange={(v) => setField("contact_phone_country_code", v)}
@@ -370,7 +370,7 @@ export function BookingEditor({
                   options={phoneCodeOptions}
                 />
                 <input
-                  className="h-8 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-phoneNum"
+                  className="h-8 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors bo-phoneNum"
                   inputMode="tel"
                   value={draft.contact_phone}
                   onChange={(e) => setField("contact_phone", e.target.value)}
@@ -379,16 +379,16 @@ export function BookingEditor({
               </div>
             </div>
             <div className="grid gap-2 bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }}>
-              <div className="text-bo-sm font-semibold text-bo-muted">Email (opcional)</div>
-              <input className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} />
+              <div className="text-sm font-semibold text-muted-foreground">Email (opcional)</div>
+              <input className="h-[34px] rounded-sm border border bg-card-2 text-foreground px-3 outline-none min-w-0 transition-colors" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} />
             </div>
           </div>
 
           <div className="flex gap-4 bo-bookingRow bo-bookingRow--extras">
             <div className="grid gap-2 bo-bookingField bo-bookingField--table">
-              <div className="text-bo-sm font-semibold text-bo-muted">Mesa</div>
+              <div className="text-sm font-semibold text-muted-foreground">Mesa</div>
               <input
-                className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                className="h-[34px] rounded-sm border border bg-card-2 text-foreground px-3 outline-none min-w-0 transition-colors"
                 style={{ width: 110 }}
                 value={draft.table_number}
                 onChange={(e) => setField("table_number", e.target.value)}
@@ -411,9 +411,9 @@ export function BookingEditor({
               onChange={(v) => setField("highChairs", v)}
             />
             <div className="grid gap-2 bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }}>
-              <div className="text-bo-sm font-semibold text-bo-muted">Salón</div>
+              <div className="text-sm font-semibold text-muted-foreground">Salón</div>
               <Select
-                className="bo-selectBtn--sm"
+                className="text-sm"
                 size="sm"
                 value={draft.preferred_floor_number != null ? String(draft.preferred_floor_number) : ""}
                 onChange={(v) => setField("preferred_floor_number", v ? Number(v) : null)}
@@ -425,17 +425,17 @@ export function BookingEditor({
         </div>
       </div>
 
-      <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+      <div className="rounded-lg bg-card shadow-soft">
         <div className="flex items-end justify-between pb-2 px-4 pt-4">
-          <div className="text-bo-sm font-bold text-bo-text">Menú de grupo</div>
-          <div className="text-bo-xs text-bo-faint">{draft.special_menu ? "Sí" : "No"}</div>
+          <div className="text-sm font-bold text-foreground">Menú de grupo</div>
+          <div className="text-xs text-muted-foreground">{draft.special_menu ? "Sí" : "No"}</div>
         </div>
         <div className="p-4">
-          <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo">
-            <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy}>
+          <div className="rounded-fulls bo-bookingBinaryChips" role="group" aria-label="Menú de grupo">
+            <button type="button" className={`rounded-full${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy}>
               No
             </button>
-            <button type="button" className={`bo-chip${draft.special_menu ? " is-on" : ""}`} onClick={() => toggleSpecialMenu(true)} disabled={busy}>
+            <button type="button" className={`rounded-full${draft.special_menu ? " is-on" : ""}`} onClick={() => toggleSpecialMenu(true)} disabled={busy}>
               Sí
             </button>
           </div>
@@ -443,9 +443,9 @@ export function BookingEditor({
           {draft.special_menu ? (
             <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
               <div className="grid gap-2">
-                <div className="text-bo-sm font-semibold text-bo-muted">Seleccionar menú</div>
+                <div className="text-sm font-semibold text-muted-foreground">Seleccionar menú</div>
                 <Select
-                  className="bo-selectBtn--sm"
+                  className="text-sm"
                   size="sm"
                   style={{ width: "100%" }}
                   value={draft.menu_de_grupo_id ? String(draft.menu_de_grupo_id) : ""}
@@ -460,7 +460,7 @@ export function BookingEditor({
                 {draft.principales.map((row, idx) => (
                   <div key={idx} className="flex gap-4 bo-bookingChoiceRow" style={{ gap: 8 }}>
                     <Select
-                      className="bo-selectBtn--sm bo-bookingChoiceSelect"
+                      className="text-sm bo-bookingChoiceSelect"
                       size="sm"
                       style={{ flex: "1 1 0px" }}
                       value={row.name}
@@ -478,13 +478,13 @@ export function BookingEditor({
                         disabled={busy}
                         className="bo-bookingChoiceServings"
                       />
-                      <button type="button" className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy}>
+                      <button type="button" className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy}>
                         <Trash2 size={18} strokeWidth={1.8} />
                       </button>
                     </div>
                   </div>
                 ))}
-                <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={addPrincipalRow} disabled={busy || !principalesItems.length}>
+                <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={addPrincipalRow} disabled={busy || !principalesItems.length}>
                   <Plus size={18} strokeWidth={1.8} /> Añadir principal
                 </button>
                 {!principalesItems.length ? <div className="text-mutedText">Este menú no tiene lista de principales.</div> : null}
@@ -495,17 +495,17 @@ export function BookingEditor({
       </div>
 
       {!draft.special_menu ? (
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Arroz</div>
-            <div className="text-bo-xs text-bo-faint">{draft.arroz_enabled ? "Sí" : "No"}</div>
+            <div className="text-sm font-bold text-foreground">Arroz</div>
+            <div className="text-xs text-muted-foreground">{draft.arroz_enabled ? "Sí" : "No"}</div>
           </div>
           <div className="p-4">
-            <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?">
-              <button type="button" className={`bo-chip${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy}>
+            <div className="rounded-fulls bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?">
+              <button type="button" className={`rounded-full${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy}>
                 No
               </button>
-              <button type="button" className={`bo-chip${draft.arroz_enabled ? " is-on" : ""}`} onClick={() => toggleArroz(true)} disabled={busy}>
+              <button type="button" className={`rounded-full${draft.arroz_enabled ? " is-on" : ""}`} onClick={() => toggleArroz(true)} disabled={busy}>
                 Sí
               </button>
             </div>
@@ -516,7 +516,7 @@ export function BookingEditor({
                 {draft.arroz.map((row, idx) => (
                   <div key={idx} className="flex gap-4 bo-bookingChoiceRow" style={{ gap: 8 }}>
                     <Select
-                      className="bo-selectBtn--sm bo-bookingChoiceSelect"
+                      className="text-sm bo-bookingChoiceSelect"
                       size="sm"
                       style={{ flex: "1 1 0px" }}
                       value={row.type}
@@ -534,13 +534,13 @@ export function BookingEditor({
                         disabled={busy}
                         className="bo-bookingChoiceServings"
                       />
-                      <button type="button" className="w-9 h-9 rounded-bo-sm border border-bo-border bg-white/5 text-bo-muted inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy}>
+                      <button type="button" className="w-9 h-9 rounded-sm border border bg-white/5 text-muted-foreground inline-flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy}>
                         <Trash2 size={18} strokeWidth={1.8} />
                       </button>
                     </div>
                   </div>
                 ))}
-                <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={addRiceRow} disabled={busy || !riceTypes.length}>
+                <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={addRiceRow} disabled={busy || !riceTypes.length}>
                   <Plus size={18} strokeWidth={1.8} /> Añadir arroz
                 </button>
                 {!riceTypes.length ? <div className="text-mutedText">Cargando tipos de arroz…</div> : null}
@@ -551,13 +551,13 @@ export function BookingEditor({
       ) : null}
 
       {!draft.special_menu ? (
-        <div className="rounded-bo-lg bg-bo-surface shadow-bo-soft">
+        <div className="rounded-lg bg-card shadow-soft">
           <div className="flex items-end justify-between pb-2 px-4 pt-4">
-            <div className="text-bo-sm font-bold text-bo-text">Comentario</div>
-            <div className="text-bo-xs text-bo-faint">Opcional</div>
+            <div className="text-sm font-bold text-foreground">Comentario</div>
+            <div className="text-xs text-muted-foreground">Opcional</div>
           </div>
           <div className="p-4">
-            <textarea className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} />
+            <textarea className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors foregroundarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} />
           </div>
         </div>
       ) : null}
@@ -568,11 +568,11 @@ export function BookingEditor({
         style={stickyFooter ? undefined : { justifyContent: "flex-end" }}
       >
         {onCancel ? (
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={onCancel} disabled={busy}>
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={onCancel} disabled={busy}>
             Cerrar
           </button>
         ) : null}
-        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={() => void submit()} disabled={busy}>
+        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto" type="button" onClick={() => void submit()} disabled={busy}>
           {submitLabel}
         </button>
       </div>
@@ -598,7 +598,7 @@ function CounterField({
   const safeValue = clampInt(Number(value || 0), min, max);
   return (
     <div className={["flex flex-col gap-1 flex flex-row items-center gap-2", className].filter(Boolean).join(" ")}>
-      <div className="text-bo-sm font-semibold text-bo-muted">{label}</div>
+      <div className="text-sm font-semibold text-muted-foreground">{label}</div>
       <div className="bo-counter">
         <button
           type="button"
@@ -610,7 +610,7 @@ function CounterField({
           <Minus size={16} strokeWidth={2} />
         </button>
         <input
-          className="h-8 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors bo-counterInput"
+          className="h-8 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors bo-counterInput"
           value={String(safeValue)}
           inputMode="numeric"
           onChange={(e) => onChange(clampInt(Number(e.target.value), min, max))}

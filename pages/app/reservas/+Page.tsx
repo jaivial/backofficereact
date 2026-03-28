@@ -525,7 +525,7 @@ export default function Page() {
               <div className={`bo-card${filtersOpen ? "" : " collapsed"}`} aria-label="Filtros reservas">
                 <div className="bo-filtersHeaderRow">
                   <button
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
                     type="button"
                     onClick={() => setFiltersOpen((v) => !v)}
                     aria-expanded={filtersOpen}
@@ -535,7 +535,7 @@ export default function Page() {
                     Filtros
                   </button>
                   <button
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                     type="button"
                     onClick={onDownloadPDF}
                     disabled={pdfBusy || busy}
@@ -559,7 +559,7 @@ export default function Page() {
                   <div className="bo-filtersRow bo-filtersRow--between">
                     <div className="flex items-center gap-2">
                       <input
-                        className="h-[34px] rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                        className="h-[34px] rounded-sm border border bg-card-2 text-foreground px-3 outline-none min-w-0 transition-colors"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                         placeholder="Buscar por nombre"
@@ -567,12 +567,12 @@ export default function Page() {
                           if (e.key === "Enter") applyFilters();
                         }}
                       />
-                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={applyFilters} disabled={busy}>
+                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={applyFilters} disabled={busy}>
                         Buscar
                       </button>
                     </div>
                     <button
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
                       type="button"
                       onClick={onDownloadPDF}
                       disabled={pdfBusy || busy}
@@ -628,7 +628,7 @@ export default function Page() {
                     ))}
                     {!rows.length ? (
                       <tr>
-                        <td colSpan={11} className="p-4 text-bo-muted">
+                        <td colSpan={11} className="p-4 text-muted-foreground">
                           {busy ? "Cargando..." : "No hay reservas para este filtro."}
                         </td>
                       </tr>
@@ -643,10 +643,10 @@ export default function Page() {
                 </div>
                 {showPagerBtns ? (
                   <div className="flex gap-2">
-                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>
                       Anterior
                     </button>
-                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>
                       Siguiente
                     </button>
                   </div>
@@ -689,7 +689,7 @@ export default function Page() {
       <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820}>
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="font-semibold text-sm">Reserva completa</div>
-          <button className="w-8 h-8 rounded-lg border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails} aria-label="Close">
+          <button className="w-8 h-8 rounded-lg border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-card-3" type="button" onClick={closeDetails} aria-label="Close">
             ×
           </button>
         </div>
@@ -697,12 +697,12 @@ export default function Page() {
           {details.booking ? <BookingDetails booking={details.booking} floors={floors} /> : null}
         </div>
         <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--border)] mt-4">
-          <button className="h-9 px-3 rounded-xl border border-[var(--border)] bg-transparent text-bo-text cursor-pointer font-semibold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeDetails}>
+          <button className="h-9 px-3 rounded-xl border border-[var(--border)] bg-transparent text-foreground cursor-pointer font-semibold inline-flex items-center justify-center gap-2 transition-all duration-150 hover:bg-card-3" type="button" onClick={closeDetails}>
             Cerrar
           </button>
           {details.booking ? (
             <button
-              className="h-9 px-3 rounded-xl border border-[color-mix(in srgb,var(--bo-accent)30%,transparent)] bg-[color-mix(in srgb,var(--bo-accent)16%,transparent)] text-bo-text cursor-pointer font-semibold inline-flex items-center justify-center gap-2 mx-auto transition-all duration-150 hover:bg-[color-mix(in srgb,var(--bo-accent)24%,transparent)]"
+              className="h-9 px-3 rounded-xl border border-[color-mix(in srgb,var(--accent)30%,transparent)] bg-[color-mix(in srgb,var(--accent)16%,transparent)] text-foreground cursor-pointer font-semibold inline-flex items-center justify-center gap-2 mx-auto transition-all duration-150 hover:bg-[color-mix(in srgb,var(--accent)24%,transparent)]"
               type="button"
               onClick={() => {
                 closeDetails();
@@ -718,7 +718,7 @@ export default function Page() {
       <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040}>
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="font-semibold text-sm">Editar reserva</div>
-          <button className="w-8 h-8 rounded-lg border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-bo-surface-3" type="button" onClick={closeEdit} aria-label="Close">
+          <button className="w-8 h-8 rounded-lg border border-[var(--border)] bg-transparent text-[var(--text-muted)] cursor-pointer inline-flex items-center justify-center text-xl leading-none transition-all duration-150 hover:bg-card-3" type="button" onClick={closeEdit} aria-label="Close">
             ×
           </button>
         </div>
@@ -793,7 +793,7 @@ const BookingRow = React.memo(function BookingRow({
         onOpenDetails(booking);
       }}
     >
-      <td className="text-left p-3 text-bo-text w-24">{added}</td>
+      <td className="text-left p-3 text-foreground w-24">{added}</td>
       <td
         className="p-3 w-16 pl-2 pr-2"
         onClick={(e) => {
@@ -801,7 +801,7 @@ const BookingRow = React.memo(function BookingRow({
         }}
       >
         <input
-          className="h-[28px] min-w-[60px] rounded-xl border border-[var(--border)] bg-bo-surface-2 text-bo-text px-2 outline-none text-xs w-16 text-center transition-colors duration-150 focus:border-[color-mix(in srgb,var(--bo-accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--bo-accent)10%,transparent)]"
+          className="h-[28px] min-w-[60px] rounded-xl border border-[var(--border)] bg-card-2 text-foreground px-2 outline-none text-xs w-16 text-center transition-colors duration-150 focus:border-[color-mix(in srgb,var(--accent)38%,transparent)] focus:shadow-[0_0_0_3px_color-mix(in srgb,var(--accent)10%,transparent)]"
           value={draftMesa}
           onChange={(e) => setDraftMesa(e.target.value)}
           onBlur={() => void save()}
@@ -815,14 +815,14 @@ const BookingRow = React.memo(function BookingRow({
           aria-label={`Mesa reserva #${booking.id}`}
         />
       </td>
-      <td className="text-left p-3 text-bo-text w-16">{formatHHMM(booking.reservation_time)}</td>
-      <td className="text-left p-3 text-bo-text min-w-[180px]">{booking.customer_name}</td>
-      <td className="text-left p-3 text-bo-text w-28">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
-      <td className="text-right p-3 text-bo-text w-16">{booking.party_size}</td>
-      <td className="text-right p-3 text-bo-text w-16">{booking.children ?? 0}</td>
-      <td className="text-left p-3 text-bo-text w-32">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
-      <td className="text-left p-3 text-bo-text min-w-[210px]">{arroz}</td>
-      <td className="text-left p-3 text-bo-text min-w-[320px] max-w-[360px] whitespace-pre-line">{booking.commentary || ""}</td>
+      <td className="text-left p-3 text-foreground w-16">{formatHHMM(booking.reservation_time)}</td>
+      <td className="text-left p-3 text-foreground min-w-[180px]">{booking.customer_name}</td>
+      <td className="text-left p-3 text-foreground w-28">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td className="text-right p-3 text-foreground w-16">{booking.party_size}</td>
+      <td className="text-right p-3 text-foreground w-16">{booking.children ?? 0}</td>
+      <td className="text-left p-3 text-foreground w-32">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
+      <td className="text-left p-3 text-foreground min-w-[210px]">{arroz}</td>
+      <td className="text-left p-3 text-foreground min-w-[320px] max-w-[360px] whitespace-pre-line">{booking.commentary || ""}</td>
       <td
         className="w-10 text-right"
         onClick={(e) => {
@@ -861,14 +861,14 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
   }, [booking.preferred_floor_number, floors]);
   const badgeCls =
     booking.status === "confirmed"
-      ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-success)]/20 text-[var(--text-success)]"
+      ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--text-success)]/20 text-[var(--text-success)]"
       : booking.status === "pending"
-        ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bo-color-warning)]/20 text-[var(--text-warning)]"
-        : "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-bo-surface-2 text-[var(--text-muted)]";
+        ? "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--text-warning)]/20 text-[var(--text-warning)]"
+        : "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-card-2 text-[var(--text-muted)]";
 
   return (
     <div className="flex flex-col gap-3 bo-bookingDetails">
-      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--card)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
         <div className="flex items-end justify-between p-4 pb-2">
           <div className="font-semibold text-sm">{booking.customer_name || "Reserva"}</div>
           <div className="text-xs text-[var(--text-faint)]">{booking.reservation_date}</div>
@@ -916,7 +916,7 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
         </div>
       </div>
 
-      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--card)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
         <div className="flex items-end justify-between p-4 pb-2">
           <div className="font-semibold text-sm">Detalles</div>
           <div className="text-xs text-[var(--text-faint)]">{booking.special_menu ? "Menú de grupo" : "Reserva"}</div>
@@ -943,7 +943,7 @@ function BookingDetails({ booking, floors }: { booking: Booking; floors: ConfigF
         </div>
       </div>
 
-      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--bo-surface)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
+      <div className="rounded-[18px] bg-[linear-gradient(180deg,color-mix(in srgb,white,3%,transparent),color-mix(in srgb,black,13%,transparent)),var(--card)] shadow-[0_10px_26px_rgba(0,0,0,0.36)]">
         <div className="flex items-end justify-between p-4 pb-2">
           <div className="font-semibold text-sm">Comentario</div>
           <div className="text-xs text-[var(--text-faint)]">Opcional</div>

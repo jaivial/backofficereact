@@ -302,7 +302,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             />
             <button
               type="button"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
             >
@@ -323,13 +323,13 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
           <div className="bo-foodModal-fields">
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="nombre">
+              <label className="text-sm font-semibold text-muted-foreground" htmlFor="nombre">
                 {isPostre ? "Descripcion *" : "Nombre *"}
               </label>
               <input
                 id="nombre"
                 type="text"
-                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                 value={isPostre ? descripcion : nombre}
                 onChange={(e) => {
                   if (isPostre) setDescripcion(e.target.value);
@@ -342,13 +342,13 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
             {!isPostre ? (
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="titulo">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="titulo">
                   Titulo (opcional)
                 </label>
                 <input
                   id="titulo"
                   type="text"
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                   placeholder="Texto secundario para card"
@@ -358,10 +358,10 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
             <div className="grid gap-4">
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="tipo">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="tipo">
                   Tipo
                 </label>
-                <select id="tipo" className="h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer" value={tipo} onChange={(e) => setTipo(e.target.value)}>
+                <select id="tipo" className="h-10 rounded-sm border border bg-card-2 text-foreground px-3 cursor-pointer" value={tipo} onChange={(e) => setTipo(e.target.value)}>
                   {TIPO_OPTIONS[foodType].map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -372,7 +372,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
               {!isPostre ? (
                 <div className="grid gap-2">
-                  <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="precio">
+                  <label className="text-sm font-semibold text-muted-foreground" htmlFor="precio">
                     Precio *
                   </label>
                   <input
@@ -380,7 +380,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                     type="number"
                     step="0.01"
                     min="0"
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     value={precio}
                     onChange={(e) => setPrecio(e.target.value)}
                     placeholder="0.00"
@@ -391,7 +391,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
               {supportsSuplemento ? (
                 <div className="grid gap-2">
-                  <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="suplemento">
+                  <label className="text-sm font-semibold text-muted-foreground" htmlFor="suplemento">
                     Suplemento
                   </label>
                   <input
@@ -399,7 +399,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                     type="number"
                     step="0.01"
                     min="0"
-                    className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                    className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                     value={suplemento}
                     onChange={(e) => setSuplemento(e.target.value)}
                     placeholder="0.00"
@@ -411,15 +411,15 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             {supportsCategoria ? (
               <div className="grid gap-2">
                 <div className="bo-foodModalCategoryHead">
-                  <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="categoria">
+                  <label className="text-sm font-semibold text-muted-foreground" htmlFor="categoria">
                     Categoria
                   </label>
-                  <button type="button" className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onRequestCreateCategory}>
+                  <button type="button" className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]" onClick={onRequestCreateCategory}>
                     <Plus size={14} />
                     Anadir categoria
                   </button>
                 </div>
-                <select id="categoria" className="h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                <select id="categoria" className="h-10 rounded-sm border border bg-card-2 text-foreground px-3 cursor-pointer" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
                   <option value="">Sin categoria</option>
                   {categoryOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -432,12 +432,12 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
             {!isPostre ? (
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="descripcion">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="descripcion">
                   Detalle
                 </label>
                 <textarea
                   id="descripcion"
-                  className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
+                  className="min-h-[80px] rounded-md border border bg-white/5 text-foreground p-3 outline-none"
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   placeholder="Descripcion del elemento..."
@@ -448,10 +448,10 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
             {supportsAlergenos ? (
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted">Alergenos</label>
+                <label className="text-sm font-semibold text-muted-foreground">Alergenos</label>
                 <div className="bo-foodModal-alergenos">
                   {ALERGEN_OPTIONS.map((opt) => (
-                    <label key={opt.value} className="text-bo-sm text-bo-text">
+                    <label key={opt.value} className="text-sm text-foreground">
                       <input
                         type="checkbox"
                         checked={alergenos.includes(opt.value)}
@@ -465,7 +465,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             ) : null}
 
             <div className="grid gap-2">
-              <label className="text-bo-sm text-bo-text">
+              <label className="text-sm text-foreground">
                 <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
                 <span>Activo</span>
               </label>
@@ -474,10 +474,10 @@ export const FoodItemModal = React.memo(function FoodItemModal({
         </div>
 
         <div className="bo-foodModal-actions">
-          <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} disabled={saving}>
+          <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} disabled={saving}>
             Cancelar
           </button>
-          <button type="submit" className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--primary" disabled={saving}>
+          <button type="submit" className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--primary" disabled={saving}>
             {saving ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />

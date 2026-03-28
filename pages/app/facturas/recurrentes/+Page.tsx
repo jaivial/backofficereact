@@ -121,14 +121,14 @@ export default function RecurringInvoicesPage() {
   const getStatusBadge = (isActive: boolean) => {
     if (isActive) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border border-[var(--bo-color-success)]/[0.30]">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--text-success)]/[0.16] text-[var(--text-success)] border border-[var(--text-success)]/[0.30]">
           <CheckCircle size={12} />
           Activa
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border border-[var(--bo-color-warning)]/[0.30]">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--text-warning)]/[0.16] text-[var(--text-warning)] border border-[var(--text-warning)]/[0.30]">
         <Pause size={12} />
         Pausada
       </span>
@@ -144,7 +144,7 @@ export default function RecurringInvoicesPage() {
         </div>
         <div className="flex items-center gap-2.5">
           <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
             onClick={() => navigate("/app/facturas/crear?recurring=true")}
           >
             <Plus size={16} />
@@ -155,22 +155,22 @@ export default function RecurringInvoicesPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 grid-gap-4">
-        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
+        <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-3">
           <div className="font-bold text-2xl">{data.total}</div>
-          <div className="text-bo-xs text-bo-muted">Total</div>
+          <div className="text-xs text-muted-foreground">Total</div>
         </div>
-        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
+        <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-3">
           <div className="font-bold text-2xl text-success">{data.activeCount}</div>
-          <div className="text-bo-xs text-bo-muted">Activas</div>
+          <div className="text-xs text-muted-foreground">Activas</div>
         </div>
-        <div className="rounded-bo-md bg-bo-surface-2 border border-white/6 shadow-bo-soft p-3">
+        <div className="rounded-md bg-card-2 border border-white/6 shadow-soft p-3">
           <div className="font-bold text-2xl text-warning">{data.pausedCount}</div>
-          <div className="text-bo-xs text-bo-muted">Pausadas</div>
+          <div className="text-xs text-muted-foreground">Pausadas</div>
         </div>
       </div>
 
       {data.error && (
-        <div className="bo-alert bo-alert--error">
+        <div className="bg-surface-2 border border-border rounded-lg p-4 bg-red-500/10 border-red-500/30 text-red-500">
           <AlertCircle size={16} />
           {data.error}
         </div>
@@ -179,12 +179,12 @@ export default function RecurringInvoicesPage() {
       {/* Recurring Invoices List */}
       <div className="flex flex-col gap-4 p-4">
         {data.recurringInvoices.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-bo-muted text-center gap-3">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-muted-foreground text-center gap-3">
             <RefreshCw size={48} className="text-mutedText mb-4" />
-            <h3 className="bo-h4 mb-2">No hay facturación recurrente</h3>
+            <h3 className="text-lg font-bold mb-2">No hay facturación recurrente</h3>
             <p className="text-mutedText mb-4 max-w-sm">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
               onClick={() => window.location.href = "/app/facturas/crear?recurring=true"}
             >
               <Plus size={16} />
@@ -192,55 +192,55 @@ export default function RecurringInvoicesPage() {
             </button>
           </div>
         ) : (
-          <div className="max-h-[300px] overflow-y-auto border border-bo-border rounded-bo-sm">
-            <table className="w-full border-collapse text-bo-sm">
+          <div className="max-h-[300px] overflow-y-auto border border rounded-sm">
+            <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bo-tableHeader">
-                  <th className="p-3 text-left font-semibold text-bo-faint">Cliente</th>
-                  <th className="p-3 text-left font-semibold text-bo-faint">Importe</th>
-                  <th className="p-3 text-left font-semibold text-bo-faint">Frecuencia</th>
-                  <th className="p-3 text-left font-semibold text-bo-faint">Próxima facturación</th>
-                  <th className="p-3 text-left font-semibold text-bo-faint">Facturas</th>
-                  <th className="p-3 text-left font-semibold text-bo-faint">Estado</th>
-                  <th className="p-3 text-left font-semibold text-bo-faint">Acciones</th>
+                <tr className="border-b border-border">
+                  <th className="p-3 text-left font-semibold text-muted-foreground">Cliente</th>
+                  <th className="p-3 text-left font-semibold text-muted-foreground">Importe</th>
+                  <th className="p-3 text-left font-semibold text-muted-foreground">Frecuencia</th>
+                  <th className="p-3 text-left font-semibold text-muted-foreground">Próxima facturación</th>
+                  <th className="p-3 text-left font-semibold text-muted-foreground">Facturas</th>
+                  <th className="p-3 text-left font-semibold text-muted-foreground">Estado</th>
+                  <th className="p-3 text-left font-semibold text-muted-foreground">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recurringInvoices.map((item) => (
-                  <tr key={item.id} className="border-b border-bo-border">
-                    <td className="p-3 text-bo-text">
+                  <tr key={item.id} className="border-b border">
+                    <td className="p-3 text-foreground">
                       <div className="flex flex-col gap-1">
                         <span className="font-medium">{item.customer_name}</span>
                         <span className="text-xs text-mutedText">{item.customer_email}</span>
                       </div>
                     </td>
-                    <td className="p-3 text-bo-text">
+                    <td className="p-3 text-foreground">
                       <span className="font-medium">
                         {CURRENCY_SYMBOLS[item.currency] || "€"}{item.amount.toFixed(2)}
                       </span>
                     </td>
-                    <td className="p-3 text-bo-text">
+                    <td className="p-3 text-foreground">
                       <span>{getFrequencyLabel(item.frequency)}</span>
                     </td>
-                    <td className="p-3 text-bo-text">
+                    <td className="p-3 text-foreground">
                       <div className="flex gap-4 gap-1">
                         <Calendar size={14} className="text-mutedText" />
                         {item.next_billing_date}
                       </div>
                     </td>
-                    <td className="p-3 text-bo-text">
+                    <td className="p-3 text-foreground">
                       <div className="flex gap-4 gap-1">
                         <span className="font-semibold">{item.invoice_count}</span>
                         <span className="text-mutedText">facturas</span>
                       </div>
                     </td>
-                    <td className="p-3 text-bo-text">
+                    <td className="p-3 text-foreground">
                       {getStatusBadge(item.is_active)}
                     </td>
-                    <td className="p-3 text-bo-text">
-                      <div className="flex gap-4" style={{ gap: "var(--bo-space-1)" }}>
+                    <td className="p-3 text-foreground">
+                      <div className="flex gap-4" style={{ gap: "var(--gap-1)" }}>
                         <button
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-bo-text transition-all hover:bg-white/[0.06]"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-foreground transition-all hover:bg-white/[0.06]"
                           onClick={() => handleGenerateNow(item.id)}
                           disabled={isLoading || !item.is_active}
                           title="Generar factura ahora"
@@ -248,7 +248,7 @@ export default function RecurringInvoicesPage() {
                           <RefreshCw size={14} />
                         </button>
                         <button
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-bo-text transition-all hover:bg-white/[0.06]"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-foreground transition-all hover:bg-white/[0.06]"
                           onClick={() => handleToggleActive(item.id, item.is_active)}
                           disabled={isLoading}
                           title={item.is_active ? "Pausar" : "Reanudar"}
@@ -256,7 +256,7 @@ export default function RecurringInvoicesPage() {
                           {item.is_active ? <Pause size={14} /> : <Play size={14} />}
                         </button>
                         <button
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-bo-text transition-all hover:bg-white/[0.06]"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-foreground transition-all hover:bg-white/[0.06]"
                           onClick={() => window.location.href = `/app/facturas/${item.id}`}
                           title="Ver detalles"
                         >
@@ -282,20 +282,20 @@ export default function RecurringInvoicesPage() {
 
       {/* Pagination */}
       {data.total > data.limit && (
-        <div className="flex items-center justify-between gap-3 border-t border-bo-border mt-4 pt-4">
-          <div className="text-bo-sm text-bo-muted">
+        <div className="flex items-center justify-between gap-3 border-t border mt-4 pt-4">
+          <div className="text-sm text-muted-foreground">
             Mostrando {((data.page - 1) * data.limit) + 1} - {Math.min(data.page * data.limit, data.total)} de {data.total}
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]"
               disabled={data.page <= 1}
               onClick={() => window.location.href = `/app/facturas/recurrentes?page=${data.page - 1}`}
             >
               Anterior
             </button>
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]"
               disabled={data.page * data.limit >= data.total}
               onClick={() => window.location.href = `/app/facturas/recurrentes?page=${data.page + 1}`}
             >

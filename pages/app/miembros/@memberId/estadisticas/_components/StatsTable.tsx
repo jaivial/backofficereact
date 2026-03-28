@@ -117,7 +117,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
       <div className="bo-statsTableControls">
         <div className="bo-statsTableFilters">
           <div className="grid gap-2">
-            <label className="text-bo-sm font-semibold text-bo-muted">Vista</label>
+            <label className="text-sm font-semibold text-muted-foreground">Vista</label>
             <Select
               className="bo-statsTableSelect"
               value={view}
@@ -130,7 +130,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
           </div>
 
           <div className="grid gap-2">
-            <label className="text-bo-sm font-semibold text-bo-muted">Año</label>
+            <label className="text-sm font-semibold text-muted-foreground">Año</label>
             <Select
               className="bo-statsTableSelect"
               value={String(year)}
@@ -143,7 +143,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
           </div>
 
           <div className="grid gap-2 bo-statsTableRangeField">
-            <label className="text-bo-sm font-semibold text-bo-muted">Rango personalizado</label>
+            <label className="text-sm font-semibold text-muted-foreground">Rango personalizado</label>
             <DateRangePicker
               from={customFrom}
               to={customTo}
@@ -161,7 +161,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
           {showCustomRange ? (
             <button
               type="button"
-              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-bo-text text-xs font-bold transition-all hover:bg-white/[0.04]"
+              className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-transparent text-foreground text-xs font-bold transition-all hover:bg-white/[0.04]"
               onClick={() => {
                 setCustomFrom("");
                 setCustomTo("");
@@ -175,7 +175,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
         {showCustomRange ? <div className="bo-statsTableModeTag">Mostrando rango personalizado.</div> : null}
       </div>
 
-      {error && <div className="bo-alert bo-alert--error">{error}</div>}
+      {error && <div className="bg-surface-2 border border-border rounded-lg p-4 bg-red-500/10 border-red-500/30 text-red-500">{error}</div>}
 
       <div className="bo-statsTableSurface">
         <div className="bo-tableWrap bo-statsTableWrap">
@@ -192,7 +192,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             <tbody>
               {isBusy ? (
                 <tr>
-                  <td colSpan={4} className="bo-loading">
+                  <td colSpan={4} className="py-8 text-center text-muted-foreground">
                     Cargando...
                   </td>
                 </tr>
@@ -208,7 +208,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
                     <td>{row.label}</td>
                     <td>{formatHours(row.workedHours)} h</td>
                     <td>{formatHours(row.expectedHours)} h</td>
-                    <td className={row.difference >= 0 ? "bo-positive" : "bo-negative"}>
+                    <td className={row.difference >= 0 ? "text-green-500" : "text-red-500"}>
                       {row.difference >= 0 ? "+" : ""}
                       {formatHours(row.difference)} h
                     </td>
@@ -234,7 +234,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
                   <td>
                     <strong>{formatHours(totalExpected)} h</strong>
                   </td>
-                  <td className={totalDifference >= 0 ? "bo-positive" : "bo-negative"}>
+                  <td className={totalDifference >= 0 ? "text-green-500" : "text-red-500"}>
                     <strong>
                       {totalDifference >= 0 ? "+" : ""}
                       {formatHours(totalDifference)} h

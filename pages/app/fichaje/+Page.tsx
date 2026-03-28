@@ -374,10 +374,10 @@ export default function Page() {
   if (!data.isAdminView) {
     return (
       <section aria-label="Fichaje" className="grid gap-3.5 w-full max-w-full min-w-0">
-        <div className="rounded-xl border border-border bg-bo-surface-2">
+        <div className="rounded-xl border border-border bg-card-2">
           <div className="flex items-center justify-between p-4 pb-0">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
                 <Clock3 size={16} strokeWidth={1.8} />
                 Fichaje
               </div>
@@ -389,7 +389,7 @@ export default function Page() {
                     : "Sincronización por API"}
               </div>
             </div>
-            <div className={`h-[30px] rounded-full border px-3 inline-flex items-center text-xs font-medium ${realtime.wsConnected ? "border-bo-accent text-bo-accent" : "border-border text-text-muted"}`}>
+            <div className={`h-[30px] rounded-full border px-3 inline-flex items-center text-xs font-medium ${realtime.wsConnected ? "border-accent text-accent" : "border-border text-text-muted"}`}>
               {realtime.wsConnected ? <Wifi size={15} strokeWidth={1.8} /> : <WifiOff size={15} strokeWidth={1.8} />}
               {realtime.wsConnected ? "WS" : "OFF"}
             </div>
@@ -407,16 +407,16 @@ export default function Page() {
                   transition={transition}
                 >
                   <div className="text-xs text-text-muted">Fichaje inicial · {realtime.activeEntry.startTime}</div>
-                  <div className="text-2xl font-mono font-semibold text-bo-accent" aria-live="polite">
+                  <div className="text-2xl font-mono font-semibold text-accent" aria-live="polite">
                     {elapsedForEntry(realtime.activeEntry, tick)}
                   </div>
-                  <div className="text-sm font-medium text-bo-text">{realtime.activeEntry.memberName}</div>
+                  <div className="text-sm font-medium text-foreground">{realtime.activeEntry.memberName}</div>
                   <div className="text-xs text-text-muted">
                     {realtime.scheduleToday
                       ? `Horario previsto: ${realtime.scheduleToday.startTime} - ${realtime.scheduleToday.endTime}`
                       : "Sin horario previsto para hoy"}
                   </div>
-                  <button className="w-full h-9 px-4 rounded-md text-sm font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150" type="button" disabled={busyStop} onClick={onStop}>
+                  <button className="w-full h-9 px-4 rounded-md text-sm font-medium text-text-muted hover:text-foreground hover:bg-card transition-colors duration-150" type="button" disabled={busyStop} onClick={onStop}>
                     <Square size={16} strokeWidth={1.8} />
                     {busyStop ? "Cerrando..." : "Finalizar fichaje"}
                   </button>
@@ -432,12 +432,12 @@ export default function Page() {
                   onSubmit={onStart}
                 >
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-bo-text mb-1.5" htmlFor="bo-fichaje-dni">
+                    <label className="text-xs font-medium text-foreground mb-1.5" htmlFor="bo-fichaje-dni">
                       DNI
                     </label>
                     <input
                       id="bo-fichaje-dni"
-                      className="w-full h-9 px-3 rounded-md border border-border bg-bo-surface text-bo-text text-xs placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-bo-accent/50"
+                      className="w-full h-9 px-3 rounded-md border border-border bg-card text-foreground text-xs placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
                       value={dni}
                       onChange={(ev) => setDni(ev.target.value)}
                       placeholder="00000000X"
@@ -446,13 +446,13 @@ export default function Page() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-bo-text mb-1.5" htmlFor="bo-fichaje-password">
+                    <label className="text-xs font-medium text-foreground mb-1.5" htmlFor="bo-fichaje-password">
                       Contraseña
                     </label>
                     <input
                       id="bo-fichaje-password"
                       type="password"
-                      className="w-full h-9 px-3 rounded-md border border-border bg-bo-surface text-bo-text text-xs placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-bo-accent/50"
+                      className="w-full h-9 px-3 rounded-md border border-border bg-card text-foreground text-xs placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
                       value={password}
                       onChange={(ev) => setPassword(ev.target.value)}
                       placeholder="••••••••"
@@ -460,7 +460,7 @@ export default function Page() {
                     />
                   </div>
 
-                  <button className="w-full h-9 px-4 rounded-md text-sm font-medium bg-bo-accent text-bo-bg hover:opacity-90 transition-opacity duration-150" type="submit" disabled={busyStart}>
+                  <button className="w-full h-9 px-4 rounded-md text-sm font-medium bg-accent text-background hover:opacity-90 transition-opacity duration-150" type="submit" disabled={busyStart}>
                     <Play size={16} strokeWidth={1.8} />
                     {busyStart ? "Validando..." : "Fichar"}
                   </button>
@@ -475,10 +475,10 @@ export default function Page() {
 
   return (
     <section aria-label="Fichaje administrado" className="grid gap-3.5 w-full max-w-full min-w-0">
-      <div className="rounded-xl border border-border bg-bo-surface-2">
+      <div className="rounded-xl border border-border bg-card-2">
         <div className="flex items-center justify-between p-4 pb-0">
           <div>
-            <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
               <Clock3 size={16} strokeWidth={1.8} />
               Fichaje Admin
             </div>
@@ -487,7 +487,7 @@ export default function Page() {
           <div className="flex items-center gap-2">
             <DatePicker value={date} onChange={(nextDate) => void onDateChange(nextDate)} />
             <div className="h-[30px] rounded-full border border-border px-3 inline-flex items-center text-xs font-medium text-text-muted">{date}</div>
-            <div className={`h-[30px] rounded-full border px-3 inline-flex items-center text-xs font-medium ${realtime.wsConnected ? "border-bo-accent text-bo-accent" : "border-border text-text-muted"}`}>
+            <div className={`h-[30px] rounded-full border px-3 inline-flex items-center text-xs font-medium ${realtime.wsConnected ? "border-accent text-accent" : "border-border text-text-muted"}`}>
               {realtime.wsConnected ? <Wifi size={15} strokeWidth={1.8} /> : <WifiOff size={15} strokeWidth={1.8} />}
               {realtime.wsConnected ? "WS" : "OFF"}
             </div>
@@ -507,7 +507,7 @@ export default function Page() {
 
           <section className="flex flex-col gap-4" aria-label="Panel de control de fichaje">
             <div className="flex flex-col gap-1">
-              <div className="text-sm font-semibold text-bo-text">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
+              <div className="text-sm font-semibold text-foreground">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
               <div className="text-xs text-text-muted mt-0.5">
                 {selectedSchedule
                   ? `Horario previsto: ${selectedSchedule.startTime} - ${selectedSchedule.endTime}`
@@ -518,18 +518,18 @@ export default function Page() {
             {selectedEntry ? (
               <div className="flex flex-col items-center gap-2 p-4">
                 <div className="text-xs text-text-muted">Fichaje inicial · {selectedEntry.startTime}</div>
-                <div className="text-2xl font-mono font-semibold text-bo-accent" aria-live="polite">
+                <div className="text-2xl font-mono font-semibold text-accent" aria-live="polite">
                   {elapsedForEntry(selectedEntry, tick)}
                 </div>
-                <div className="text-sm font-medium text-bo-text">{selectedEntry.memberName}</div>
-                <button className="w-full h-9 px-4 rounded-md text-sm font-medium text-text-muted hover:text-bo-text hover:bg-bo-surface transition-colors duration-150" type="button" disabled={busyAdminAction} onClick={() => void onAdminStop()}>
+                <div className="text-sm font-medium text-foreground">{selectedEntry.memberName}</div>
+                <button className="w-full h-9 px-4 rounded-md text-sm font-medium text-text-muted hover:text-foreground hover:bg-card transition-colors duration-150" type="button" disabled={busyAdminAction} onClick={() => void onAdminStop()}>
                   <Square size={16} strokeWidth={1.8} />
                   {busyAdminAction ? "Cerrando..." : "Finalizar fichaje"}
                 </button>
               </div>
             ) : (
               <div className="flex justify-center py-4">
-                <button className="w-full h-9 px-4 rounded-md text-sm font-medium bg-bo-accent text-bo-bg hover:opacity-90 transition-opacity duration-150" type="button" disabled={!selectedMemberId || busyAdminAction} onClick={() => void onAdminStart()}>
+                <button className="w-full h-9 px-4 rounded-md text-sm font-medium bg-accent text-background hover:opacity-90 transition-opacity duration-150" type="button" disabled={!selectedMemberId || busyAdminAction} onClick={() => void onAdminStart()}>
                   <Play size={16} strokeWidth={1.8} />
                   {busyAdminAction ? "Iniciando..." : "Iniciar fichaje"}
                 </button>
@@ -537,7 +537,7 @@ export default function Page() {
             )}
 
             <div className="flex flex-col gap-2">
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-bo-text">
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
                 <CalendarClock size={15} strokeWidth={1.8} />
                 Turno asignado
               </div>

@@ -181,13 +181,13 @@ export const WineModal = React.memo(function WineModal({
         <div className="grid grid-gap-6" style={{ gridTemplateColumns: "200px 1fr" }}>
           {/* Image upload */}
           <div className="flex flex-col gap-3">
-            <div className="w-[200px] h-[280px] rounded-md overflow-hidden bg-bo-surface-2 relative">
+            <div className="w-[200px] h-[280px] rounded-md overflow-hidden bg-card-2 relative">
               {imagePreview ? (
                 <>
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                   <button
                     type="button"
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-[var(--bo-color-danger)] text-white border-0 cursor-pointer flex items-center justify-center hover:scale-110 transition-transform duration-150"
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-[var(--text-danger)] text-white border-0 cursor-pointer flex items-center justify-center hover:scale-110 transition-transform duration-150"
                     onClick={handleRemoveImage}
                     aria-label="Eliminar imagen"
                   >
@@ -210,7 +210,7 @@ export const WineModal = React.memo(function WineModal({
             />
             <button
               type="button"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-bo-surface-2 text-bo-text text-sm font-bold transition-all hover:border-bo-primary hover:bg-bo-surface-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-card-2 text-foreground text-sm font-bold transition-all hover:border-primary hover:bg-card-2/80 disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
             >
@@ -232,13 +232,13 @@ export const WineModal = React.memo(function WineModal({
           {/* Form fields */}
           <div className="flex flex-col gap-3.5">
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="nombre">
+              <label className="text-sm font-semibold text-muted-foreground" htmlFor="nombre">
                 Nombre *
               </label>
               <input
                 id="nombre"
                 type="text"
-                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Nombre del vino"
@@ -248,12 +248,12 @@ export const WineModal = React.memo(function WineModal({
 
             <div className="grid grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="tipo">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="tipo">
                   Tipo
                 </label>
                 <select
                   id="tipo"
-                  className="h-10 rounded-bo-sm border border-bo-border bg-bo-surface-2 text-bo-text px-3 cursor-pointer"
+                  className="h-10 rounded-sm border border bg-card-2 text-foreground px-3 cursor-pointer"
                   value={tipo}
                   onChange={(e) => setTipo(e.target.value)}
                 >
@@ -266,7 +266,7 @@ export const WineModal = React.memo(function WineModal({
               </div>
 
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="precio">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="precio">
                   Precio *
                 </label>
                 <input
@@ -274,7 +274,7 @@ export const WineModal = React.memo(function WineModal({
                   type="number"
                   step="0.01"
                   min="0"
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={precio}
                   onChange={(e) => setPrecio(e.target.value)}
                   placeholder="0.00"
@@ -284,13 +284,13 @@ export const WineModal = React.memo(function WineModal({
             </div>
 
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="bodega">
+              <label className="text-sm font-semibold text-muted-foreground" htmlFor="bodega">
                 Bodega *
               </label>
               <input
                 id="bodega"
                 type="text"
-                className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                 value={bodega}
                 onChange={(e) => setBodega(e.target.value)}
                 placeholder="Nombre de la bodega"
@@ -300,13 +300,13 @@ export const WineModal = React.memo(function WineModal({
 
             <div className="grid grid-gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="denominacion">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="denominacion">
                   Denominacion de Origen
                 </label>
                 <input
                   id="denominacion"
                   type="text"
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={denominacionOrigen}
                   onChange={(e) => setDenominacionOrigen(e.target.value)}
                   placeholder="D.O. Rioja, D.O. Ribera..."
@@ -314,13 +314,13 @@ export const WineModal = React.memo(function WineModal({
               </div>
 
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="anyo">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="anyo">
                   Ano
                 </label>
                 <input
                   id="anyo"
                   type="text"
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={anyo}
                   onChange={(e) => setAnyo(e.target.value)}
                   placeholder="2020"
@@ -329,7 +329,7 @@ export const WineModal = React.memo(function WineModal({
               </div>
 
               <div className="grid gap-2">
-                <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="graduacion">
+                <label className="text-sm font-semibold text-muted-foreground" htmlFor="graduacion">
                   Graduacion (%)
                 </label>
                 <input
@@ -338,7 +338,7 @@ export const WineModal = React.memo(function WineModal({
                   step="0.1"
                   min="0"
                   max="25"
-                  className="h-10 rounded-bo-md border border-bo-border bg-white/5 text-bo-text px-3 outline-none min-w-0 transition-colors"
+                  className="h-10 rounded-md border border bg-white/5 text-foreground px-3 outline-none min-w-0 transition-colors"
                   value={graduacion}
                   onChange={(e) => setGraduacion(e.target.value)}
                   placeholder="13.5"
@@ -347,12 +347,12 @@ export const WineModal = React.memo(function WineModal({
             </div>
 
             <div className="grid gap-2">
-              <label className="text-bo-sm font-semibold text-bo-muted" htmlFor="descripcion">
+              <label className="text-sm font-semibold text-muted-foreground" htmlFor="descripcion">
                 Descripcion
               </label>
               <textarea
                 id="descripcion"
-                className="min-h-[80px] rounded-bo-md border border-bo-border bg-white/5 text-bo-text p-3 outline-none"
+                className="min-h-[80px] rounded-md border border bg-white/5 text-foreground p-3 outline-none"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 placeholder="Notas de cata, maridaje..."
@@ -361,7 +361,7 @@ export const WineModal = React.memo(function WineModal({
             </div>
 
             <div className="grid gap-2">
-              <label className="text-bo-sm text-bo-text">
+              <label className="text-sm text-foreground">
                 <input
                   type="checkbox"
                   checked={active}
@@ -375,10 +375,10 @@ export const WineModal = React.memo(function WineModal({
 
         {/* Actions */}
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--border)]">
-          <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} disabled={saving}>
+          <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" onClick={onClose} disabled={saving}>
             Cancelar
           </button>
-          <button type="submit" className="h-9 px-4 rounded-bo-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--primary" disabled={saving}>
+          <button type="submit" className="h-9 px-4 rounded-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-transparent hover:bg-white/5 bo-btn--primary" disabled={saving}>
             {saving ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />

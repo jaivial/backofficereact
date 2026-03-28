@@ -77,11 +77,11 @@ export default function ErrorPage() {
   return (
     <div className="flex flex-col items-center text-center max-w-[400px] p-6">
       <div className="flex flex-col items-center">
-        <div className="text-bo-accent mb-4">
+        <div className="text-accent mb-4">
           <AlertTriangle size={48} strokeWidth={1.5} />
         </div>
-        <div className="text-7xl font-bold leading-none text-bo-text opacity-15 mb-[-8px]">{statusCode}</div>
-        <h1 className="text-xl font-bold text-bo-text mb-2">{content.title}</h1>
+        <div className="text-7xl font-bold leading-none text-foreground opacity-15 mb-[-8px]">{statusCode}</div>
+        <h1 className="text-xl font-bold text-foreground mb-2">{content.title}</h1>
         <p className="text-sm text-text-muted mb-4">{content.message}</p>
         <div className="flex flex-wrap gap-2 justify-center">
           {content.primaryAction === "reload" ? (

@@ -21,20 +21,20 @@ function formatDate(dateStr: string): string {
 }
 
 const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; className: string }> = {
-  borrador: { label: "Borrador", className: "bg-white/[0.06] text-bo-muted border-bo-border" },
-  solicitada: { label: "Solicitada", className: "bg-[var(--bo-color-warning)]/[0.16] text-[var(--bo-color-warning)] border-[var(--bo-color-warning)]/[0.30]" },
-  pendiente: { label: "Pendiente", className: "bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]" },
-  enviada: { label: "Enviada", className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]" },
-  pagada: { label: "Pagada", className: "bg-[var(--bo-color-success)]/[0.16] text-[var(--bo-color-success)] border-[var(--bo-color-success)]/[0.30]" },
+  borrador: { label: "Borrador", className: "bg-white/[0.06] text-muted-foreground border" },
+  solicitada: { label: "Solicitada", className: "bg-[var(--text-warning)]/[0.16] text-[var(--text-warning)] border-[var(--text-warning)]/[0.30]" },
+  pendiente: { label: "Pendiente", className: "bg-[var(--text-info)]/[0.16] text-[var(--text-info)] border-[var(--text-info)]/[0.30]" },
+  enviada: { label: "Enviada", className: "bg-[var(--text-success)]/[0.16] text-[var(--text-success)] border-[var(--text-success)]/[0.30]" },
+  pagada: { label: "Pagada", className: "bg-[var(--text-success)]/[0.16] text-[var(--text-success)] border-[var(--text-success)]/[0.30]" },
 };
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
-  const config = INVOICE_STATUS_CONFIG[status] || { label: status, className: "bg-white/[0.06] text-bo-muted border-bo-border" };
+  const config = INVOICE_STATUS_CONFIG[status] || { label: status, className: "bg-white/[0.06] text-muted-foreground border" };
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${config.className}`}>{config.label}</span>;
 }
 
 function PaymentMethodBadge({ method }: { method?: string }) {
-  if (!method) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bg-white/[0.06] text-bo-muted border-bo-border">Sin especificar</span>;
+  if (!method) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/[0.06] text-muted-foreground border">Sin especificar</span>;
 
   const methodLabels: Record<string, string> = {
     efectivo: "Efectivo",
@@ -44,7 +44,7 @@ function PaymentMethodBadge({ method }: { method?: string }) {
     cheque: "Cheque",
   };
 
-  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-bo-xs font-medium bg-[var(--bo-color-info)]/[0.16] text-[var(--bo-color-info)] border-[var(--bo-color-info)]/[0.30]">{methodLabels[method] || method}</span>;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--text-info)]/[0.16] text-[var(--text-info)] border-[var(--text-info)]/[0.30]">{methodLabels[method] || method}</span>;
 }
 
 export function CustomerHistoryModal({
@@ -252,13 +252,13 @@ export function CustomerHistoryModal({
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 p-4 border-t border-bo-border">
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-bo-text text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={onClose}>
+        <div className="flex justify-end gap-2 p-4 border-t border">
+          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-transparent text-foreground text-sm font-bold transition-all hover:bg-white/[0.04]" type="button" onClick={onClose}>
             Cerrar
           </button>
           <a
             href={`/app/facturas?search=${encodeURIComponent(customerEmail)}`}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-bo-text text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[rgba(185,168,255,0.30)] bg-[rgba(185,168,255,0.16)] text-foreground text-sm font-bold transition-all hover:border-[rgba(185,168,255,0.40)] hover:bg-[rgba(185,168,255,0.24)] disabled:opacity-55 disabled:cursor-not-allowed mx-auto"
           >
             Ver todas las facturas
           </a>
