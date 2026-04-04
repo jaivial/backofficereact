@@ -125,6 +125,9 @@ export type Vino = {
   active: boolean;
   has_foto: boolean;
   foto_url?: string;
+  ai_requested_img?: boolean;
+  ai_generating_img?: boolean;
+  ai_generated_img?: string | null;
 };
 
 export type FoodItem = {
@@ -392,6 +395,15 @@ export type ConfigFloor = {
   active: boolean;
 };
 
+export type RestaurantInfo = {
+  direccion: string;
+  telefono: string;
+  email: string;
+  cif: string;
+  direccionFacturacion: string;
+  clasificacion: "persona_fisica" | "sociedad";
+};
+
 export type TableMapItem = {
   id: number;
   restaurant_id: number;
@@ -596,6 +608,7 @@ export type FichajeSchedule = {
   date: string;
   startTime: string;
   endTime: string;
+  breakMinutes?: number;
   updatedAt: string;
 };
 

@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed } from "lucide-react";
 
 import { createClient } from "../../../api/client";
-import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../../../api/types";
+import type { ConfigDefaults, ConfigFloor, OpeningMode, RestaurantInfo, WeekdayOpen } from "../../../api/types";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -15,8 +15,13 @@ import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 type PageData = {
   defaults: ConfigDefaults | null;
   floors: ConfigFloor[];
+  restaurantInfo: RestaurantInfo | null;
   error: string | null;
 };
+
+type ContentTab = "restaurante" | "contacto";
+
+// ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
 type HourSlot = {
   id: string;
@@ -58,10 +63,6 @@ function normalizeToHHMM(totalMinutes: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
-function formatHourLabel(hhmm: string): string {
-  return hhmm;
-}
-
 function buildHalfHourSlots(startMinutes: number, endMinutes: number, prefix: string): HourSlot[] {
   const out: HourSlot[] = [];
   const target = endMinutes < startMinutes ? endMinutes + 24 * 60 : endMinutes;
@@ -70,7 +71,7 @@ function buildHalfHourSlots(startMinutes: number, endMinutes: number, prefix: st
     out.push({
       id: `${prefix}-${value.replace(":", "")}`,
       value,
-      label: formatHourLabel(value),
+      label: value,
     });
   }
   return out;
@@ -195,30 +196,32 @@ function readAPIMessage(result: unknown, fallback: string): string {
   return trimmed || fallback;
 }
 
-export default function Page() {
-  const pageContext = usePageContext();
-  const data = pageContext.data as PageData;
-  const api = useMemo(() => createClient({ baseUrl: "" }), []);
-  const { pushToast } = useToasts();
-  const floorTabFromQuery = pageContext.urlParsed?.search?.tab === "salones" ? "salones" : "plantas";
+// ─── Restaurante content ─────────────────────────────────────────────────────
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(data.error);
-  const [defaults, setDefaults] = useState<ConfigDefaults | null>(data.defaults);
-  const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
-  const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery);
+type RestauranteContentProps = {
+  defaults: ConfigDefaults;
+  floors: ConfigFloor[];
+  busy: boolean;
+  setBusy: (v: boolean) => void;
+  setError: (v: string | null) => void;
+  api: ReturnType<typeof createClient>;
+  pushToast: (t: { kind: "success"; title: string; message: string }) => void;
+};
+
+function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast }: RestauranteContentProps) {
+  const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
+  const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
+  const floorTabFromQuery =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("floortab") : null;
+  const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery === "salones" ? "salones" : "plantas");
+
   const floorTabs = useMemo<TabItem[]>(
     () => [
-      { id: "plantas", label: "Plantas", href: "/app/config?tab=plantas", icon: <Building2 className="bo-ico" /> },
-      { id: "salones", label: "Salones", href: "/app/config?tab=salones", icon: <LayoutGrid className="bo-ico" /> },
+      { id: "plantas", label: "Plantas", href: "/app/config?floortab=plantas", icon: <Building2 className="bo-ico" /> },
+      { id: "salones", label: "Salones", href: "/app/config?floortab=salones", icon: <LayoutGrid className="bo-ico" /> },
     ],
     [],
   );
-
-  const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
-  const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
-
-  useErrorToast(error);
 
   const saveDefaults = useCallback(
     async (
@@ -241,7 +244,6 @@ export default function Page() {
           setError(readAPIMessage(res, "No se pudo guardar"));
           return;
         }
-        setDefaults(res);
         if (successMessage) {
           pushToast({ kind: "success", title: "Actualizado", message: successMessage });
         }
@@ -251,32 +253,8 @@ export default function Page() {
         setBusy(false);
       }
     },
-    [api.config, pushToast],
+    [api.config, setBusy, setError, pushToast],
   );
-
-  const reload = useCallback(async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const [defaultsRes, floorsRes] = await Promise.all([api.config.getDefaults(), api.config.getDefaultFloors()]);
-
-      if (!defaultsRes.success) {
-        setError(readAPIMessage(defaultsRes, "Error cargando configuración por defecto"));
-        return;
-      }
-      if (!floorsRes.success) {
-        setError(readAPIMessage(floorsRes, "Error cargando plantas"));
-        return;
-      }
-
-      setDefaults(defaultsRes);
-      setFloors(floorsRes.floors || []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error cargando configuración");
-    } finally {
-      setBusy(false);
-    }
-  }, [api.config]);
 
   const saveFloorsCount = useCallback(
     async (count: number) => {
@@ -288,29 +266,18 @@ export default function Page() {
           setError(readAPIMessage(res, "No se pudo actualizar plantas"));
           return;
         }
-        setFloors(res.floors || []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "No se pudo actualizar plantas");
       } finally {
         setBusy(false);
       }
     },
-    [api.config],
-  );
-
-  const onNavigateFloorTab = useCallback(
-    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
-      void _href;
-      event.preventDefault();
-      setFloorTab(id === "salones" ? "salones" : "plantas");
-    },
-    [setFloorTab],
+    [api.config, setBusy, setError],
   );
 
   const toggleFloorDefault = useCallback(
     async (floor: ConfigFloor, explicitValue?: boolean) => {
       const nextActive = typeof explicitValue === "boolean" ? explicitValue : !floor.active;
-
       setBusy(true);
       setError(null);
       try {
@@ -319,45 +286,34 @@ export default function Page() {
           setError(readAPIMessage(res, "No se pudo actualizar la planta"));
           return;
         }
-        setFloors(res.floors || []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "No se pudo actualizar la planta");
       } finally {
         setBusy(false);
       }
     },
-    [api.config],
+    [api.config, setBusy, setError],
   );
 
-  const weekdayOpen = useMemo(() => normalizeWeekdayOpenMap(defaults?.weekdayOpen), [defaults?.weekdayOpen]);
+  const weekdayOpen = useMemo(() => normalizeWeekdayOpenMap(defaults.weekdayOpen), [defaults.weekdayOpen]);
   const floorCount = useMemo(() => floors.length || 1, [floors.length]);
   const canGrow = useMemo(() => floorCount < 8, [floorCount]);
   const canShrink = useMemo(() => floorCount > 1, [floorCount]);
-  const mesasDeDosValue = useMemo(() => normalizeTableLimit(defaults?.mesasDeDosLimit), [defaults?.mesasDeDosLimit]);
-  const mesasDeTresValue = useMemo(() => normalizeTableLimit(defaults?.mesasDeTresLimit), [defaults?.mesasDeTresLimit]);
+  const mesasDeDosValue = useMemo(() => normalizeTableLimit(defaults.mesasDeDosLimit), [defaults.mesasDeDosLimit]);
+  const mesasDeTresValue = useMemo(() => normalizeTableLimit(defaults.mesasDeTresLimit), [defaults.mesasDeTresLimit]);
 
   const morningHourCards = useMemo(() => {
-    const active = new Set(defaults?.morningHours || []);
-    return morningSlots.map((slot) => ({
-      ...slot,
-      active: active.has(slot.value),
-    }));
-  }, [defaults?.morningHours, morningSlots]);
+    const active = new Set(defaults.morningHours || []);
+    return morningSlots.map((slot) => ({ ...slot, active: active.has(slot.value) }));
+  }, [defaults.morningHours, morningSlots]);
 
   const nightHourCards = useMemo(() => {
-    const active = new Set(defaults?.nightHours || []);
-    return nightSlots.map((slot) => ({
-      ...slot,
-      active: active.has(slot.value),
-    }));
-  }, [defaults?.nightHours, nightSlots]);
+    const active = new Set(defaults.nightHours || []);
+    return nightSlots.map((slot) => ({ ...slot, active: active.has(slot.value) }));
+  }, [defaults.nightHours, nightSlots]);
 
   const weekdayCardsWithState = useMemo(
-    () =>
-      weekdayCards.map((weekday) => ({
-        ...weekday,
-        isOpen: Boolean(weekdayOpen[weekday.key]),
-      })),
+    () => weekdayCards.map((weekday) => ({ ...weekday, isOpen: Boolean(weekdayOpen[weekday.key]) })),
     [weekdayOpen],
   );
 
@@ -376,29 +332,22 @@ export default function Page() {
 
   const handleMorningHour = useCallback(
     (hour: string) => {
-      void saveDefaults({
-        morningHours: toggleHour(defaults?.morningHours || [], hour),
-      });
+      void saveDefaults({ morningHours: toggleHour(defaults.morningHours || [], hour) });
     },
-    [defaults?.morningHours, saveDefaults],
+    [saveDefaults, defaults.morningHours],
   );
 
   const handleNightHour = useCallback(
     (hour: string) => {
-      void saveDefaults({
-        nightHours: toggleHour(defaults?.nightHours || [], hour),
-      });
+      void saveDefaults({ nightHours: toggleHour(defaults.nightHours || [], hour) });
     },
-    [defaults?.nightHours, saveDefaults],
+    [saveDefaults, defaults.nightHours],
   );
 
   const toggleWeekdayOpen = useCallback(
     (weekdayKey: keyof WeekdayOpen) => {
       void saveDefaults({
-        weekdayOpen: {
-          ...weekdayOpen,
-          [weekdayKey]: !weekdayOpen[weekdayKey],
-        },
+        weekdayOpen: { ...weekdayOpen, [weekdayKey]: !weekdayOpen[weekdayKey] },
       });
     },
     [saveDefaults, weekdayOpen],
@@ -414,10 +363,11 @@ export default function Page() {
     void saveFloorsCount(floorCount + 1);
   }, [canGrow, floorCount, saveFloorsCount]);
 
-  const dailyLimit = useMemo(() => defaults?.dailyLimit ?? 0, [defaults?.dailyLimit]);
+  const dailyLimit = useMemo(() => defaults.dailyLimit ?? 0, [defaults.dailyLimit]);
   const openingModeLabel = useMemo(
-    () => (defaults?.openingMode === "both" ? "Mañana + noche" : defaults?.openingMode === "morning" ? "Mañana" : "Noche"),
-    [defaults?.openingMode],
+    () =>
+      defaults.openingMode === "both" ? "Mañana + noche" : defaults.openingMode === "morning" ? "Mañana" : "Noche",
+    [defaults.openingMode],
   );
 
   const canDailyDecrease = useMemo(() => dailyLimit > 0, [dailyLimit]);
@@ -467,12 +417,523 @@ export default function Page() {
     void saveDefaults({ mesasDeTresLimit: next });
   }, [mesasDeTresValue, saveDefaults]);
 
+  const onNavigateFloorTab = useCallback(
+    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
+      void _href;
+      event.preventDefault();
+      setFloorTab(id === "salones" ? "salones" : "plantas");
+    },
+    [],
+  );
+
+  return (
+    <>
+      <div className="bo-panel">
+        <div className="bo-panelHead">
+          <div className="bo-panelTitle">Modo de apertura</div>
+          <div className="bo-panelMeta">{openingModeLabel}</div>
+        </div>
+        <div className="bo-panelBody bo-row">
+          <Select
+            value={defaults.openingMode}
+            onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
+            options={openingModeOptions as any}
+            size="sm"
+            ariaLabel="Modo de apertura por defecto"
+          />
+        </div>
+      </div>
+
+      <div className="bo-panel">
+        <div className="bo-panelHead">
+          <div className="bo-panelTitle">Horarios por defecto</div>
+          <div className="bo-panelMeta">Slots de media hora con guardado inmediato</div>
+        </div>
+        <div className="bo-panelBody bo-hourCardsContainer">
+          <div className="bo-field">
+            <div className="bo-label">Mañana (08:00 - 17:00)</div>
+            <div className="bo-hourCards bo-hourCards--slots">
+              {morningHourCards.map((slot) => (
+                <button
+                  key={slot.id}
+                  type="button"
+                  className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                  onClick={() => void handleMorningHour(slot.value)}
+                  disabled={busy}
+                >
+                  {slot.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bo-field">
+            <div className="bo-label">Noche (17:30 - 01:00)</div>
+            <div className="bo-hourCards bo-hourCards--slots">
+              {nightHourCards.map((slot) => (
+                <button
+                  key={slot.id}
+                  type="button"
+                  className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                  onClick={() => void handleNightHour(slot.value)}
+                  disabled={busy}
+                >
+                  {slot.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bo-panel">
+        <div className="bo-panelHead">
+          <div className="bo-panelTitle">Calendario semanal</div>
+          <div className="bo-panelMeta">Semana genérica (lunes a domingo)</div>
+        </div>
+        <div className="bo-panelBody bo-configWeekdayGrid">
+          {weekdayCardsWithState.map((weekday) => (
+            <button
+              key={weekday.key}
+              type="button"
+              className={`bo-hourCard bo-configDayCard${weekday.isOpen ? " is-on" : ""}`}
+              disabled={busy}
+              aria-pressed={weekday.isOpen}
+              aria-label={`${weekday.label} (${weekday.isOpen ? "abierto" : "cerrado"})`}
+              onClick={() => void toggleWeekdayOpen(weekday.key)}
+            >
+              <div className="bo-configDayCardLabel">
+                <span className="bo-configDayCardLabelFull">{weekday.label}</span>
+                <span className="bo-configDayCardLabelShort" aria-hidden="true">
+                  {weekday.shortLabel}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bo-panel">
+        <div className="bo-panelHead">
+          <div className="bo-panelTitle">Límites por defecto</div>
+          <div className="bo-panelMeta">Autosave inmediato</div>
+        </div>
+        <div className="bo-panelBody bo-configLimitGrid">
+          <PlusMinusCounter
+            label="Límite diario"
+            value={dailyLimitLabel}
+            className="bo-configLimitCounterCard"
+            onDecrease={handleDailyDecrease}
+            onIncrease={handleDailyIncrease}
+            canDecrease={canDailyDecrease}
+            canIncrease={canDailyIncrease}
+            disabled={busy}
+            helperText="Rango permitido: 0-500"
+            decrementAriaLabel="Reducir límite diario"
+            incrementAriaLabel="Aumentar límite diario"
+          />
+
+          <PlusMinusCounter
+            label="Mesas de 2"
+            value={mesasDeDosLabel}
+            className="bo-configLimitCounterCard"
+            onDecrease={handleMesasDeDosDecrease}
+            onIncrease={handleMesasDeDosIncrease}
+            canDecrease={canMesasDeDosDecrease}
+            canIncrease={canMesasDeDosIncrease}
+            disabled={busy}
+            helperText="0-40 o Sin límite"
+            decrementAriaLabel="Reducir mesas de 2"
+            incrementAriaLabel="Aumentar mesas de 2"
+          />
+
+          <PlusMinusCounter
+            label="Mesas de 3"
+            value={mesasDeTresLabel}
+            className="bo-configLimitCounterCard"
+            onDecrease={handleMesasDeTresDecrease}
+            onIncrease={handleMesasDeTresIncrease}
+            canDecrease={canMesasDeTresDecrease}
+            canIncrease={canMesasDeTresIncrease}
+            disabled={busy}
+            helperText="0-40 o Sin límite"
+            decrementAriaLabel="Reducir mesas de 3"
+            incrementAriaLabel="Aumentar mesas de 3"
+          />
+        </div>
+      </div>
+
+      <div className="bo-panel">
+        <div className="bo-panelHead">
+          <div className="bo-panelTitle">Plantas del restaurante</div>
+          <div className="bo-panelMeta">{floorCount} plantas</div>
+        </div>
+        <div className="bo-panelBody bo-configFloorsPanel">
+          <Tabs
+            tabs={floorTabs}
+            activeId={floorTab}
+            ariaLabel="Secciones de plantas"
+            className="bo-tabs--reservas bo-configFloorTabs mx-auto"
+            onNavigate={onNavigateFloorTab}
+          />
+
+          {floorTab === "plantas" ? (
+            <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent">
+              <PlusMinusCounter
+                label="Total de plantas"
+                value={String(floorCount)}
+                className="bo-configLimitCounterCard bo-configFloorCounter"
+                onDecrease={handleFloorsDecrease}
+                onIncrease={handleFloorsIncrease}
+                canDecrease={canShrink}
+                canIncrease={canGrow}
+                disabled={busy}
+                helperText="Planta baja incluida"
+                decrementAriaLabel="Quitar planta"
+                incrementAriaLabel="Añadir planta"
+              />
+
+              <div className="bo-configSalonCards" aria-label="Plantas del restaurante">
+                {floorCards.map((floor) => (
+                  <div key={`planta-${floor.keyPrefix}`} className="bo-floorSalonCard">
+                    <div>
+                      <div className="bo-floorCardName">{floor.plantaLabel}</div>
+                      <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                    </div>
+
+                    <div className="bo-floorSalonCardState">
+                      <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                      <Switch
+                        checked={floor.floor.active}
+                        disabled={busy}
+                        onCheckedChange={(checked) => {
+                          void toggleFloorDefault(floor.floor, checked);
+                        }}
+                        aria-label={`Estado por defecto de ${floor.plantaLabel}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalonCards">
+              {floorCards.map((floor) => (
+                <div key={`salon-${floor.keyPrefix}`} className="bo-floorSalonCard">
+                  <div>
+                    <div className="bo-floorCardName">{floor.salonLabel}</div>
+                    <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                  </div>
+
+                  <div className="bo-floorSalonCardState">
+                    <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                    <Switch
+                      checked={floor.floor.active}
+                      disabled={busy}
+                      onCheckedChange={(checked) => {
+                        void toggleFloorDefault(floor.floor, checked);
+                      }}
+                      aria-label={`Estado por defecto de ${floor.salonLabel}`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Contacto content ─────────────────────────────────────────────────────────
+
+type ContactoContentProps = {
+  initialInfo: RestaurantInfo;
+  busy: boolean;
+  setBusy: (v: boolean) => void;
+  setError: (v: string | null) => void;
+  api: ReturnType<typeof createClient>;
+  pushToast: (t: { kind: "success"; title: string; message: string }) => void;
+};
+
+const clasificacionOptions = [
+  { value: "sociedad", label: "Sociedad" },
+  { value: "persona_fisica", label: "Persona física" },
+];
+
+const DEBOUNCE_MS = 400;
+
+function ConfigContactoContent({ initialInfo, busy, setBusy, setError, api, pushToast }: ContactoContentProps) {
+  const [info, setInfo] = useState<RestaurantInfo>(initialInfo);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstRender = useRef(true);
+
+  // Sync when initialInfo changes (e.g. after page reload)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setInfo(initialInfo);
+  }, [initialInfo]);
+
+  const save = useCallback(
+    async (patch: Partial<RestaurantInfo>) => {
+      setError(null);
+      try {
+        const res = await api.config.setRestaurantInfo(patch);
+        if (!res.success) {
+          setError(readAPIMessage(res, "No se pudo guardar"));
+          return;
+        }
+        setInfo(res.restaurantInfo);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo guardar");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api.config, setError, setBusy],
+  );
+
+  const scheduleDebouncedSave = useCallback(
+    (patch: Partial<RestaurantInfo>) => {
+      setBusy(true);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        void save(patch);
+        pushToast({ kind: "success", title: "Guardado", message: "Cambios guardados" });
+      }, DEBOUNCE_MS);
+    },
+    [save, pushToast],
+  );
+
+  const handleField = useCallback(
+    (field: keyof RestaurantInfo, value: string) => {
+      const patch = { [field]: value } as Partial<RestaurantInfo>;
+      setInfo((prev) => ({ ...prev, [field]: value }));
+      scheduleDebouncedSave(patch);
+    },
+    [scheduleDebouncedSave],
+  );
+
+  const handleClasificacion = useCallback(
+    (value: string) => {
+      const patch = { clasificacion: value as "persona_fisica" | "sociedad" };
+      setInfo((prev) => ({ ...prev, clasificacion: value as "persona_fisica" | "sociedad" }));
+      scheduleDebouncedSave(patch);
+    },
+    [scheduleDebouncedSave],
+  );
+
+  return (
+    <>
+      <div className="bo-panel">
+        <div className="bo-panelHead">
+          <div className="bo-panelTitle">Contacto</div>
+        </div>
+        <div className="bo-panelBody bo-stack">
+          <div className="bo-field">
+            <label className="bo-label" htmlFor="config-contacto-direccion">
+              Dirección
+            </label>
+            <input
+              id="config-contacto-direccion"
+              type="text"
+              className="bo-input"
+              value={info.direccion}
+              onChange={(e) => handleField("direccion", e.target.value)}
+              disabled={busy}
+              placeholder="Calle, número, CP, ciudad..."
+              aria-label="Dirección del restaurante"
+            />
+          </div>
+
+          <div className="bo-field">
+            <label className="bo-label" htmlFor="config-contacto-telefono">
+              Teléfono
+            </label>
+            <input
+              id="config-contacto-telefono"
+              type="tel"
+              className="bo-input"
+              value={info.telefono}
+              onChange={(e) => handleField("telefono", e.target.value)}
+              disabled={busy}
+              placeholder="+34 600 000 000"
+              aria-label="Teléfono de contacto"
+            />
+          </div>
+
+          <div className="bo-field">
+            <label className="bo-label" htmlFor="config-contacto-email">
+              Email
+            </label>
+            <input
+              id="config-contacto-email"
+              type="email"
+              className="bo-input"
+              value={info.email}
+              onChange={(e) => handleField("email", e.target.value)}
+              disabled={busy}
+              placeholder="info@restaurante.com"
+              aria-label="Email de contacto"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="bo-panel">
+        <div className="bo-panelHead">
+          <div className="bo-panelTitle">Información fiscal</div>
+          <div className="bo-panelMeta">Datos para facturación</div>
+        </div>
+        <div className="bo-panelBody bo-stack">
+          <div className="bo-field">
+            <label className="bo-label" htmlFor="config-contacto-cif">
+              CIF / NIF
+            </label>
+            <input
+              id="config-contacto-cif"
+              type="text"
+              className="bo-input"
+              value={info.cif}
+              onChange={(e) => handleField("cif", e.target.value)}
+              disabled={busy}
+              placeholder="B12345678"
+              aria-label="CIF o NIF del restaurante"
+            />
+          </div>
+
+          <div className="bo-field">
+            <label className="bo-label" htmlFor="config-contacto-dir-fact">
+              Dirección de facturación
+            </label>
+            <input
+              id="config-contacto-dir-fact"
+              type="text"
+              className="bo-input"
+              value={info.direccionFacturacion}
+              onChange={(e) => handleField("direccionFacturacion", e.target.value)}
+              disabled={busy}
+              placeholder="Calle de facturación, número, CP, ciudad..."
+              aria-label="Dirección de facturación"
+            />
+          </div>
+
+          <div className="bo-field">
+            <div className="bo-label">Clasificación</div>
+            <Select
+              value={info.clasificacion}
+              onChange={handleClasificacion}
+              options={clasificacionOptions}
+              size="sm"
+              disabled={busy}
+              ariaLabel="Clasificación fiscal"
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+export default function Page() {
+  const pageContext = usePageContext();
+  const data = pageContext.data as PageData;
+  const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const { pushToast } = useToasts();
+
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(data.error);
+  const [defaults, setDefaults] = useState<ConfigDefaults | null>(data.defaults);
+  const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
+  const [restaurantInfo, setRestaurantInfo] = useState<RestaurantInfo | null>(
+    data.restaurantInfo ?? {
+      direccion: "",
+      telefono: "",
+      email: "",
+      cif: "",
+      direccionFacturacion: "",
+      clasificacion: "sociedad",
+    },
+  );
+
+  const contentTabFromQuery =
+    typeof window !== "undefined"
+      ? (new URLSearchParams(window.location.search).get("content") as ContentTab | null)
+      : null;
+  const [contentTab, setContentTab] = useState<ContentTab>(contentTabFromQuery ?? "restaurante");
+
+  const contentTabs = useMemo<TabItem[]>(
+    () => [
+      {
+        id: "restaurante",
+        label: "Restaurante",
+        href: "/app/config",
+        icon: <UtensilsCrossed className="bo-ico" />,
+      },
+      {
+        id: "contacto",
+        label: "Contacto",
+        href: "/app/config",
+        icon: <Phone className="bo-ico" />,
+      },
+    ],
+    [],
+  );
+
+  useErrorToast(error);
+
+  const reload = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const [defaultsRes, floorsRes, infoRes] = await Promise.all([
+        api.config.getDefaults(),
+        api.config.getDefaultFloors(),
+        api.config.getRestaurantInfo(),
+      ]);
+
+      if (!defaultsRes.success) {
+        setError(readAPIMessage(defaultsRes, "Error cargando configuración por defecto"));
+        return;
+      }
+      if (!floorsRes.success) {
+        setError(readAPIMessage(floorsRes, "Error cargando plantas"));
+        return;
+      }
+
+      setDefaults(defaultsRes);
+      setFloors(floorsRes.floors || []);
+      if (infoRes.success) {
+        setRestaurantInfo(infoRes.restaurantInfo);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error cargando configuración");
+    } finally {
+      setBusy(false);
+    }
+  }, [api.config]);
+
+  const onNavigateContentTab = useCallback(
+    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
+      void _href;
+      event.preventDefault();
+      setContentTab(id as ContentTab);
+    },
+    [],
+  );
+
   if (!defaults) {
     return <InlineAlert kind="info" title="Cargando" message="Preparando configuración..." />;
   }
 
   return (
-    <section aria-label="Configuración por defecto">
+    <section aria-label="Configuración" className="max-w-3xl mx-auto">
       <div className="bo-toolbar">
         <div className="bo-toolbarLeft">
           <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy}>
@@ -484,240 +945,44 @@ export default function Page() {
         </div>
       </div>
 
+      <Tabs
+        tabs={contentTabs}
+        activeId={contentTab}
+        ariaLabel="Secciones de configuración"
+        className="bo-tabs--reservas mx-auto mb-6"
+        onNavigate={onNavigateContentTab}
+      />
+
       <div className="bo-stack">
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Modo de apertura</div>
-            <div className="bo-panelMeta">{openingModeLabel}</div>
-          </div>
-          <div className="bo-panelBody bo-row">
-            <Select
-              value={defaults.openingMode}
-              onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
-              options={openingModeOptions as any}
-              size="sm"
-              ariaLabel="Modo de apertura por defecto"
-            />
-          </div>
-        </div>
-
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Horarios por defecto</div>
-            <div className="bo-panelMeta">Slots de media hora con guardado inmediato</div>
-          </div>
-          <div className="bo-panelBody bo-hourCardsContainer">
-            <div className="bo-field">
-              <div className="bo-label">Mañana (08:00 - 17:00)</div>
-              <div className="bo-hourCards bo-hourCards--slots">
-                {morningHourCards.map((slot) => {
-                  const on = slot.active;
-                  return (
-                    <button
-                      key={slot.id}
-                      type="button"
-                      className={`bo-hourCard bo-hourCard--slot${on ? " is-on" : ""}`}
-                      onClick={() => void handleMorningHour(slot.value)}
-                      disabled={busy}
-                    >
-                      {slot.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="bo-field">
-              <div className="bo-label">Noche (17:30 - 01:00)</div>
-              <div className="bo-hourCards bo-hourCards--slots">
-                {nightHourCards.map((slot) => {
-                  const on = slot.active;
-                  return (
-                    <button
-                      key={slot.id}
-                      type="button"
-                      className={`bo-hourCard bo-hourCard--slot${on ? " is-on" : ""}`}
-                      onClick={() => void handleNightHour(slot.value)}
-                      disabled={busy}
-                    >
-                      {slot.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Calendario semanal</div>
-            <div className="bo-panelMeta">Semana genérica (lunes a domingo)</div>
-          </div>
-          <div className="bo-panelBody bo-configWeekdayGrid">
-            {weekdayCardsWithState.map((weekday) => {
-              const isOpen = weekday.isOpen;
-              return (
-                <button
-                  key={weekday.key}
-                  type="button"
-                  className={`bo-hourCard bo-configDayCard${isOpen ? " is-on" : ""}`}
-                  disabled={busy}
-                  aria-pressed={isOpen}
-                  aria-label={`${weekday.label} (${isOpen ? "abierto" : "cerrado"})`}
-                  onClick={() => void toggleWeekdayOpen(weekday.key)}
-                >
-                  <div className="bo-configDayCardLabel">
-                    <span className="bo-configDayCardLabelFull">{weekday.label}</span>
-                    <span className="bo-configDayCardLabelShort" aria-hidden="true">
-                      {weekday.shortLabel}
-                    </span>
-                  </div>
-                  </button>
-                );
-              })}
-            </div>
-        </div>
-
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Límites por defecto</div>
-            <div className="bo-panelMeta">Autosave inmediato</div>
-          </div>
-          <div className="bo-panelBody bo-configLimitGrid">
-            <PlusMinusCounter
-              label="Límite diario"
-              value={dailyLimitLabel}
-              className="bo-configLimitCounterCard"
-              onDecrease={handleDailyDecrease}
-              onIncrease={handleDailyIncrease}
-              canDecrease={canDailyDecrease}
-              canIncrease={canDailyIncrease}
-              disabled={busy}
-              helperText="Rango permitido: 0-500"
-              decrementAriaLabel="Reducir límite diario"
-              incrementAriaLabel="Aumentar límite diario"
-            />
-
-            <PlusMinusCounter
-              label="Mesas de 2"
-              value={mesasDeDosLabel}
-              className="bo-configLimitCounterCard"
-              onDecrease={handleMesasDeDosDecrease}
-              onIncrease={handleMesasDeDosIncrease}
-              canDecrease={canMesasDeDosDecrease}
-              canIncrease={canMesasDeDosIncrease}
-              disabled={busy}
-              helperText="0-40 o Sin límite"
-              decrementAriaLabel="Reducir mesas de 2"
-              incrementAriaLabel="Aumentar mesas de 2"
-            />
-
-            <PlusMinusCounter
-              label="Mesas de 3"
-              value={mesasDeTresLabel}
-              className="bo-configLimitCounterCard"
-              onDecrease={handleMesasDeTresDecrease}
-              onIncrease={handleMesasDeTresIncrease}
-              canDecrease={canMesasDeTresDecrease}
-              canIncrease={canMesasDeTresIncrease}
-              disabled={busy}
-              helperText="0-40 o Sin límite"
-              decrementAriaLabel="Reducir mesas de 3"
-              incrementAriaLabel="Aumentar mesas de 3"
-            />
-          </div>
-        </div>
-
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Plantas del restaurante</div>
-            <div className="bo-panelMeta">{floorCount} plantas</div>
-          </div>
-          <div className="bo-panelBody bo-configFloorsPanel">
-            <Tabs tabs={floorTabs} activeId={floorTab} ariaLabel="Secciones de plantas" className="bo-tabs--reservas bo-configFloorTabs" onNavigate={onNavigateFloorTab} />
-
-            {floorTab === "plantas" ? (
-              <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent">
-                <PlusMinusCounter
-                  label="Total de plantas"
-                  value={String(floorCount)}
-                  className="bo-configLimitCounterCard bo-configFloorCounter"
-                  onDecrease={handleFloorsDecrease}
-                  onIncrease={handleFloorsIncrease}
-                  canDecrease={canShrink}
-                  canIncrease={canGrow}
-                  disabled={busy}
-                  helperText="Planta baja incluida"
-                  decrementAriaLabel="Quitar planta"
-                  incrementAriaLabel="Añadir planta"
-                />
-
-                <div className="bo-configSalonCards" aria-label="Plantas del restaurante">
-                  {floorCards.map((floor) => {
-                    const salonLabel = floor.plantaLabel;
-                    return (
-                      <div
-                        key={`planta-${floor.keyPrefix}`}
-                        className="bo-floorSalonCard"
-                      >
-                        <div>
-                          <div className="bo-floorCardName">{salonLabel}</div>
-                          <div className="bo-floorCardHint">
-                            {floor.defaultLabel}
-                          </div>
-                        </div>
-
-                        <div className="bo-floorSalonCardState">
-                          <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
-                          <Switch
-                            checked={floor.floor.active}
-                            disabled={busy}
-                            onCheckedChange={(checked) => {
-                              void toggleFloorDefault(floor.floor, checked);
-                            }}
-                            aria-label={`Estado por defecto de ${salonLabel}`}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalonCards">
-                {floorCards.map((floor) => {
-                  const salonLabel = floor.salonLabel;
-                  return (
-                    <div
-                      key={`salon-${floor.keyPrefix}`}
-                      className="bo-floorSalonCard"
-                    >
-                      <div>
-                        <div className="bo-floorCardName">{salonLabel}</div>
-                        <div className="bo-floorCardHint">
-                          {floor.defaultLabel}
-                        </div>
-                      </div>
-
-                      <div className="bo-floorSalonCardState">
-                        <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
-                        <Switch
-                          checked={floor.floor.active}
-                          disabled={busy}
-                          onCheckedChange={(checked) => {
-                            void toggleFloorDefault(floor.floor, checked);
-                          }}
-                          aria-label={`Estado por defecto de ${salonLabel}`}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+        {contentTab === "restaurante" ? (
+          <ConfigRestauranteContent
+            defaults={defaults}
+            floors={floors}
+            busy={busy}
+            setBusy={setBusy}
+            setError={setError}
+            api={api}
+            pushToast={pushToast}
+          />
+        ) : (
+          <ConfigContactoContent
+            initialInfo={
+              restaurantInfo ?? {
+                direccion: "",
+                telefono: "",
+                email: "",
+                cif: "",
+                direccionFacturacion: "",
+                clasificacion: "sociedad",
+              }
+            }
+            busy={busy}
+            setBusy={setBusy}
+            setError={setError}
+            api={api}
+            pushToast={pushToast}
+          />
+        )}
       </div>
     </section>
   );

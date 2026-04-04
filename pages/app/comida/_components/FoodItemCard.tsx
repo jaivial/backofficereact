@@ -87,6 +87,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
             aria-label={`Editar ${item.nombre}`}
             title="Editar"
             disabled={busy}
+            data-role="food-card-edit-btn"
           >
             <PencilLine size={14} />
           </button>
@@ -100,6 +101,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
             aria-label={`Eliminar ${item.nombre}`}
             title="Eliminar"
             disabled={busy}
+            data-role="food-card-delete-btn"
           >
             <Trash2 size={14} />
           </button>

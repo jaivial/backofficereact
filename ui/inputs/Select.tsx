@@ -148,7 +148,7 @@ export function Select({
   }, [listMaxHeightPx, maxHeight, minWidth, open, options, value]);
 
   return (
-    <div ref={wrapperRef} className="bo-selectWrapper" style={style}>
+    <div ref={wrapperRef} className="bo-selectWrapper" style={style} data-ui="select-wrapper">
       <button
         ref={btnRef}
         className={[btnClass, className].filter(Boolean).join(" ")}
@@ -159,14 +159,15 @@ export function Select({
         disabled={disabled}
         onClick={toggle}
         onKeyDown={onBtnKey}
+        data-role="select-trigger"
       >
-        <span className="bo-selectLabelWrap">
+        <span className="bo-selectLabelWrap" data-ui="select-label-wrap">
           {selected?.icon ? (
-            <span className="bo-selectIcon" aria-hidden="true">
+            <span className="bo-selectIcon" aria-hidden="true" data-ui="select-selected-icon">
               {selected.icon}
             </span>
           ) : null}
-          <span className="bo-selectLabel">{selected?.label ?? ""}</span>
+          <span className="bo-selectLabel" data-ui="select-selected-label">{selected?.label ?? ""}</span>
         </span>
         <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
       </button>
@@ -191,6 +192,7 @@ export function Select({
                   width: `${listPosition.width}px`,
                   maxHeight: `${maxHeight}px`,
                 }}
+                data-ui="select-listbox"
               >
                 {options.map((o, idx) => {
                   const isSel = o.value === value;
@@ -210,13 +212,14 @@ export function Select({
                         close();
                         btnRef.current?.focus();
                       }}
+                      data-role="select-option"
                     >
                       {o.icon ? (
-                        <span className="bo-selectItemIcon" aria-hidden="true">
+                        <span className="bo-selectItemIcon" aria-hidden="true" data-ui="select-item-icon">
                           {o.icon}
                         </span>
                       ) : null}
-                      <span>{o.label}</span>
+                      <span data-ui="select-item-label">{o.label}</span>
                     </button>
                   );
                 })}

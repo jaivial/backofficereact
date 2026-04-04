@@ -54,11 +54,12 @@ export function Switch({
           <motion.span
             className="bo-sc-switchThumb"
             data-state={isChecked ? "checked" : "unchecked"}
+            data-slot="switch-thumb"
             animate={pressed ? { width: pressedWidth } : { width: 18 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             {thumbIcon ? (
-              <motion.span className="bo-sc-switchThumbIcon" animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", bounce: 0 }}>
+              <motion.span className="bo-sc-switchThumbIcon" data-slot="switch-thumb-icon" animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", bounce: 0 }}>
                 {thumbIcon}
               </motion.span>
             ) : null}
@@ -67,6 +68,7 @@ export function Switch({
           {startIcon ? (
             <motion.span
               className="bo-sc-switchIcon bo-sc-switchIcon--left"
+              data-slot="switch-icon-start"
               animate={isChecked ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
               transition={{ type: "spring", bounce: 0 }}
             >
@@ -77,6 +79,7 @@ export function Switch({
           {endIcon ? (
             <motion.span
               className="bo-sc-switchIcon bo-sc-switchIcon--right"
+              data-slot="switch-icon-end"
               animate={!isChecked ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
               transition={{ type: "spring", bounce: 0 }}
             >

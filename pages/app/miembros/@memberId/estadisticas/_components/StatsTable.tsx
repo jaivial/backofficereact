@@ -101,16 +101,6 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
   );
   const isBusy = loading || customLoading;
 
-  function renderColGroup() {
-    return (
-      <colgroup>
-        <col className="bo-statsTableCol bo-statsTableCol--period" />
-        <col className="bo-statsTableCol bo-statsTableCol--worked" />
-        <col className="bo-statsTableCol bo-statsTableCol--expected" />
-        <col className="bo-statsTableCol bo-statsTableCol--difference" />
-      </colgroup>
-    );
-  }
 
   return (
     <div className="bo-statsTable">
@@ -152,7 +142,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
                 setCustomTo(to);
                 if (!from || !to) setCustomRows([]);
               }}
-              className="bo-statsRangePicker"
+              className="bo-statsRangePicker !ms-auto !w-fit"
               buttonLabel="Rango personalizado"
               ariaLabel="Seleccionar rango personalizado"
             />
@@ -177,10 +167,9 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
 
       {error && <div className="bo-alert bo-alert--error">{error}</div>}
 
-      <div className="bo-statsTableSurface">
-        <div className="bo-tableWrap bo-statsTableWrap">
-          <table className="bo-table bo-table--stats" aria-label="Tabla de estadisticas">
-            {renderColGroup()}
+      <div className=" overflow-x-auto">
+        <div className=" mt-0">
+          <table className="bo-table bo-table--stats overflow-x-scroll" aria-label="Tabla de estadisticas">
             <thead>
               <tr>
                 <th>Periodo</th>
@@ -216,25 +205,19 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
                 ))
               )}
             </tbody>
-          </table>
-        </div>
-
-        {!isBusy && displayRows.length > 0 ? (
-          <div className="bo-statsTableFooter">
-            <table className="bo-table bo-table--stats bo-table--statsFooter" aria-hidden="true">
-              {renderColGroup()}
-              <tfoot>
+            {!isBusy && displayRows.length > 0 ? (
+              <tfoot className="bo-table--statsFooter">
                 <tr>
-                  <td>
+                  <td className="p-4">
                     <strong>Total</strong>
                   </td>
-                  <td>
+                  <td className="p-4">
                     <strong>{formatHours(totalWorked)} h</strong>
                   </td>
-                  <td>
+                  <td className="p-4">
                     <strong>{formatHours(totalExpected)} h</strong>
                   </td>
-                  <td className={totalDifference >= 0 ? "bo-positive" : "bo-negative"}>
+                  <td className={`p-4 ${totalDifference >= 0 ? "bo-positive" : "bo-negative"}`}>
                     <strong>
                       {totalDifference >= 0 ? "+" : ""}
                       {formatHours(totalDifference)} h
@@ -242,9 +225,9 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
                   </td>
                 </tr>
               </tfoot>
-            </table>
-          </div>
-        ) : null}
+            ) : null}
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -223,7 +223,7 @@ export default function Page() {
               </div>
               <div className="bo-memberHeroActions">
                 <button
-                  className="bo-btn bo-btn--ghost"
+                  className="bo-btn bo-btn--ghost flex-wrap !text-wrap !h-fit !py-4"
                   type="button"
                   onClick={() => setConfirmResendOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
@@ -232,7 +232,7 @@ export default function Page() {
                   Reenviar invitación
                 </button>
                 <button
-                  className="bo-btn bo-btn--ghost"
+                  className="bo-btn bo-btn--ghost flex-wrap !text-wrap !h-fit !py-4"
                   type="button"
                   onClick={() => setConfirmResetOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
@@ -245,7 +245,7 @@ export default function Page() {
                   {editing ? "Cancelar" : "Editar"}
                 </button>
                 {editing ? (
-                  <button className="bo-btn bo-btn--primary" type="button" onClick={onSave} disabled={saving || avatarBusy}>
+                  <button className="bo-btn bo-btn--primary flex-wrap !text-wrap !h-fit !py-4" type="button" onClick={onSave} disabled={saving || avatarBusy}>
                     <Check size={14} strokeWidth={1.8} />
                     {saving ? "Guardando..." : "Guardar cambios"}
                   </button>

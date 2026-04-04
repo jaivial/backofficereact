@@ -7,6 +7,13 @@ import { FOOD_TYPE_LABELS, parseFoodType, type FoodType } from "../../_component
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
+function isFoodIdNew(pageContext: PageContextServer): boolean {
+  const raw = String((pageContext as any).routeParams?.foodId ?? "");
+  if (raw === "new") return true;
+  const m = String(pageContext.urlPathname ?? "").match(/\/app\/comida\/[^/]+\/(new)$/);
+  return !!m;
+}
+
 function parseFoodId(pageContext: PageContextServer): number {
   const fromRoute = Number((pageContext as any).routeParams?.foodId);
   if (Number.isFinite(fromRoute) && fromRoute > 0) return fromRoute;
@@ -37,14 +44,37 @@ export async function data(pageContext: PageContextServer) {
   const typeParam = String((pageContext as any).routeParams?.foodType ?? "");
   const foodType = parseFoodType(typeParam);
   const foodId = parseFoodId(pageContext);
+  const isNew = isFoodIdNew(pageContext);
 
   const config = useConfig();
   config({ title: "Detalle de carta" });
 
-  if (!foodType || !foodId) {
+  if (!foodType) {
+    return {
+      foodType: "platos" as FoodType,
+      foodId: 0,
+      isNew: false,
+      item: null as FoodItem | Vino | null,
+      error: "Detalle invalido",
+    };
+  }
+
+  if (isNew) {
+    config({ title: `Nuevo ${FOOD_TYPE_LABELS[foodType]}` });
+    return {
+      foodType,
+      foodId: 0,
+      isNew: true,
+      item: null as FoodItem | Vino | null,
+      error: null as string | null,
+    };
+  }
+
+  if (!foodId) {
     return {
       foodType: (foodType || "platos") as FoodType,
       foodId,
+      isNew: false,
       item: null as FoodItem | Vino | null,
       error: "Detalle invalido",
     };
@@ -85,5 +115,5 @@ export async function data(pageContext: PageContextServer) {
     error = err instanceof Error ? err.message : "No se pudo cargar el detalle";
   }
 
-  return { foodType, foodId, item, error };
+  return { foodType, foodId, isNew: false, item, error };
 }

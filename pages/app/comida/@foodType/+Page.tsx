@@ -10,12 +10,12 @@ import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { Select } from "../../../../ui/inputs/Select";
+import { Switch } from "../../../../ui/shadcn/Switch";
 import { FoodCategoryModal } from "../_components/FoodCategoryModal";
 import { FoodFilters } from "../_components/FoodFilters";
 import { FoodItemCard } from "../_components/FoodItemCard";
 import { FoodItemModal } from "../_components/FoodItemModal";
 import { FOOD_TYPE_LABELS, FOOD_TYPE_SINGULAR, FOOD_TYPE_TIPO_OPTIONS, type FoodType } from "../_components/foodTypes";
-import { WineModal } from "../_components/WineModal";
 
 type ListItem = FoodItem | Vino;
 type ActiveFilter = "all" | "active" | "inactive";
@@ -71,6 +71,44 @@ export default function Page() {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [categoryBusy, setCategoryBusy] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; item: ListItem | null }>({ open: false, item: null });
+
+  // Page visibility state (only for cafes/bebidas)
+  const [pageActive, setPageActive] = useState(true);
+  const [pageVisibilityLoading, setPageVisibilityLoading] = useState(false);
+  const showPageVisibilityToggle = foodType === "cafes" || foodType === "bebidas";
+
+  useEffect(() => {
+    if (!showPageVisibilityToggle) return;
+    const load = async () => {
+      try {
+        const res = await api.settings.getPageVisibility();
+        if (res.success) {
+          setPageActive(foodType === "cafes" ? Boolean(res.cafe_page_active) : Boolean(res.bebidas_page_active));
+        }
+      } catch {
+        // ignore
+      }
+    };
+    void load();
+  }, [api.settings, foodType, showPageVisibilityToggle]);
+
+  const togglePageActive = useCallback(async (checked: boolean) => {
+    setPageVisibilityLoading(true);
+    try {
+      const payload = foodType === "cafes" ? { cafe_page_active: checked } : { bebidas_page_active: checked };
+      const res = await api.settings.setPageVisibility(payload);
+      if (res.success) {
+        setPageActive(checked);
+        pushToast({ kind: "success", title: checked ? "Pagina activada" : "Pagina desactivada" });
+      } else {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar" });
+      }
+    } catch {
+      pushToast({ kind: "error", title: "Error", message: "No se pudo actualizar la visibilidad" });
+    } finally {
+      setPageVisibilityLoading(false);
+    }
+  }, [api.settings, foodType, pushToast]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [pageSize, total]);
   const showPagerBtns = totalPages > 1;
@@ -201,9 +239,12 @@ export default function Page() {
   }, [loadItems]);
 
   useEffect(() => {
-    if (foodType !== "platos") return;
+    if (foodType !== "platos" && foodType !== "bebidas") return;
     let cancelled = false;
-    void api.comida.platos.categories.list()
+    const targetCategories = foodType === "bebidas"
+      ? api.comida.bebidas.categories
+      : api.comida.platos.categories;
+    void targetCategories.list()
       .then((res) => {
         if (cancelled || !res.success) return;
         setCategories(Array.isArray(res.categories) ? res.categories : []);
@@ -212,7 +253,7 @@ export default function Page() {
     return () => {
       cancelled = true;
     };
-  }, [api.comida.platos.categories, foodType]);
+  }, [api.comida.platos.categories, api.comida.bebidas.categories, foodType]);
 
   const onResetFilters = useCallback(() => {
     setSearch("");
@@ -225,14 +266,22 @@ export default function Page() {
   }, []);
 
   const onOpenCreate = useCallback(() => {
+    if (foodType === "vinos") {
+      window.location.assign(`/app/comida/vinos/new`);
+      return;
+    }
     setEditingItem(null);
     setModalOpen(true);
-  }, []);
+  }, [foodType]);
 
   const onOpenEdit = useCallback((item: ListItem) => {
+    if (foodType === "vinos") {
+      window.location.assign(`/app/comida/vinos/${item.num}`);
+      return;
+    }
     setEditingItem(item);
     setModalOpen(true);
-  }, []);
+  }, [foodType]);
 
   const onOpenDetail = useCallback((item: ListItem) => {
     window.location.assign(`/app/comida/${foodType}/${item.num}`);
@@ -349,6 +398,22 @@ export default function Page() {
           <p className="bo-pageSubtitle">Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.</p>
         </div>
 
+        {showPageVisibilityToggle && (
+          <div className="bo-foodPageVisibility" data-ui="food-page-visibility">
+            <div className="bo-foodPageVisibilityRow flex flex-row justify-center align-center gap-4 py-4" data-ui="food-page-visibility-row">
+              <div className="bo-foodPageVisibilityLabel" data-ui="food-page-visibility-label">
+                <span className="bo-foodPageVisibilityTitle">Pagina publica activa</span>
+              </div>
+              <Switch
+                checked={pageActive}
+                onCheckedChange={togglePageActive}
+                disabled={pageVisibilityLoading}
+                data-ui="food-page-visibility-switch"
+              />
+            </div>
+          </div>
+        )}
+
         <FoodFilters
           foodType={foodType}
           search={search}
@@ -398,7 +463,7 @@ export default function Page() {
             <p>Usa el boton + para anadir el primer {singularLabel}.</p>
           </div>
         ) : (
-          <div className="bo-foodGrid" role="list">
+          <div className="bo-foodGrid pb-4" role="list">
             {items.map((item) => (
               <FoodItemCard
                 key={item.num}
@@ -450,28 +515,19 @@ export default function Page() {
         <Plus size={24} />
       </button>
 
-      {foodType === "vinos" ? (
-        <WineModal
-          open={modalOpen}
-          wine={editingItem as Vino | null}
-          onClose={() => {
-            if (!processing) setModalOpen(false);
-          }}
-          onSave={onSaveItem}
-        />
-      ) : (
+      {foodType !== "vinos" ? (
         <FoodItemModal
           open={modalOpen}
           item={editingItem as FoodItem | null}
           foodType={foodType}
-          categoryOptions={foodType === "platos" ? categoryOptions.slice(1) : []}
-          onRequestCreateCategory={foodType === "platos" ? () => setCategoryModalOpen(true) : undefined}
+          categoryOptions={(foodType === "platos" || foodType === "bebidas") ? categoryOptions.slice(1) : []}
+          onRequestCreateCategory={(foodType === "platos" || foodType === "bebidas") ? () => setCategoryModalOpen(true) : undefined}
           onClose={() => {
             if (!processing) setModalOpen(false);
           }}
           onSave={onSaveItem}
         />
-      )}
+      ) : null}
 
       <FoodCategoryModal
         open={foodType === "platos" && categoryModalOpen}
