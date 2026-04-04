@@ -147,13 +147,13 @@ export default function Page() {
 
   return (
     <section aria-label="Miembros y roles" className="bo-content-grid bo-membersPage">
-      <div className="bo-panel">
-        <div className="bo-panelHead bo-membersIntroHead">
+      <div className="bo-panel !w-fit mx-auto">
+        <div className="!w-fit bo-panelHead bo-membersIntroHead">
           <div>
-            <div className="bo-panelTitle">Equipo y permisos</div>
+            <div className="bo-panelTitle text-center">Equipo y permisos</div>
             <div className="bo-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
-          <div className="bo-membersIntroBadge">
+          <div className="bo-membersIntroBadge mx-auto">
             <ShieldUser size={16} strokeWidth={1.8} />
             {members.length} miembros
           </div>
@@ -199,13 +199,13 @@ export default function Page() {
                   <span className="bo-memberMeta">Contrato semanal</span>
                   <span className="bo-badge bo-memberHours">{member.weeklyContractHours.toFixed(2)} h</span>
                 </div>
-                <button
+                {/* <button
                   onClick={(e) => handleOpenWhatsApp(e, member)}
                   className="p-2 rounded-full hover:bg-green-500/20 text-slate-400 hover:text-green-400 transition-colors"
                   aria-label="Enviar WhatsApp"
-                >
-                  <MessageCircle size={18} />
-                </button>
+                > */}
+                  {/* <MessageCircle size={18} />
+                </button> */}
               </div>
             </button>
           );

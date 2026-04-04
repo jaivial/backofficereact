@@ -6,6 +6,11 @@ const VISIBLE_ITEMS = 5;
 const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 const PADDING_Y = (WHEEL_HEIGHT - ITEM_HEIGHT) / 2;
 
+const SMALL_ITEM_HEIGHT = 28;
+const SMALL_VISIBLE_ITEMS = 5;
+const SMALL_WHEEL_HEIGHT = SMALL_ITEM_HEIGHT * SMALL_VISIBLE_ITEMS;
+const SMALL_PADDING_Y = (SMALL_WHEEL_HEIGHT - SMALL_ITEM_HEIGHT) / 2;
+
 function clampIndex(index: number, maxIndex: number): number {
   return Math.max(0, Math.min(maxIndex, index));
 }
@@ -16,12 +21,14 @@ export function SpinWheel({
   onChange,
   ariaLabel,
   className,
+  size,
 }: {
   values: string[];
   value: string;
   onChange: (nextValue: string) => void;
   ariaLabel: string;
   className?: string;
+  size?: "sm" | "md";
 }) {
   const reduceMotion = useReducedMotion();
   const safeValues = values.length > 0 ? values : ["00"];
@@ -31,20 +38,25 @@ export function SpinWheel({
     return idx >= 0 ? idx : 0;
   }, [safeValues, value]);
 
+  const isSmall = size === "sm";
+  const itemH = isSmall ? SMALL_ITEM_HEIGHT : ITEM_HEIGHT;
+  const visibleH = isSmall ? SMALL_WHEEL_HEIGHT : WHEEL_HEIGHT;
+  const pY = isSmall ? SMALL_PADDING_Y : PADDING_Y;
+
   const [activeIndex, setActiveIndex] = useState(selectedIndex);
   const activeIndexRef = useRef(selectedIndex);
   const valueRef = useRef(value);
   const draggingRef = useRef(false);
   const wheelTickRef = useRef(0);
 
-  const minY = -maxIndex * ITEM_HEIGHT;
+  const minY = -maxIndex * itemH;
   const maxY = 0;
-  const y = useMotionValue(-selectedIndex * ITEM_HEIGHT);
+  const y = useMotionValue(-selectedIndex * itemH);
 
   const animateToIndex = useCallback(
     (nextIndex: number, velocity = 0) => {
       const clamped = clampIndex(nextIndex, maxIndex);
-      const targetY = -clamped * ITEM_HEIGHT;
+      const targetY = -clamped * itemH;
       if (reduceMotion) {
         y.set(targetY);
         return;
@@ -82,7 +94,7 @@ export function SpinWheel({
     activeIndexRef.current = selectedIndex;
     setActiveIndex(selectedIndex);
     if (!valueChanged || reduceMotion) {
-      y.set(-selectedIndex * ITEM_HEIGHT);
+      y.set(-selectedIndex * itemH);
       return;
     }
 
@@ -93,7 +105,7 @@ export function SpinWheel({
   useEffect(() => {
     return y.on("change", (latest) => {
       if (!draggingRef.current) return;
-      const nearestIndex = clampIndex(Math.round(-latest / ITEM_HEIGHT), maxIndex);
+      const nearestIndex = clampIndex(Math.round(-latest / itemH), maxIndex);
       if (nearestIndex !== activeIndexRef.current) {
         activeIndexRef.current = nearestIndex;
         setActiveIndex(nearestIndex);
@@ -142,9 +154,20 @@ export function SpinWheel({
   const activeValue = safeValues[activeIndex] ?? "";
 
   return (
-    <div className={`bo-spinWheel${className ? ` ${className}` : ""}`}>
+    <div
+      className={`bo-spinWheel${className ? ` ${className}` : ""}`}
+      data-slot="spinWheel"
+      data-size={isSmall ? "sm" : "md"}
+      style={
+        {
+          "--bo-wheel-item-h": `${itemH}px`,
+          "--bo-wheel-view-h": `${visibleH}px`,
+        } as React.CSSProperties
+      }
+    >
       <div
         className="bo-spinWheelViewport"
+        data-slot="spinWheelViewport"
         role="spinbutton"
         aria-label={ariaLabel}
         aria-valuemin={1}
@@ -157,7 +180,8 @@ export function SpinWheel({
       >
         <motion.div
           className="bo-spinWheelTrack"
-          style={{ y, paddingTop: PADDING_Y, paddingBottom: PADDING_Y }}
+          data-slot="spinWheelTrack"
+          style={{ y, paddingTop: pY, paddingBottom: pY }}
           drag="y"
           dragElastic={reduceMotion ? 0 : 0.12}
           dragMomentum={false}
@@ -169,7 +193,7 @@ export function SpinWheel({
             draggingRef.current = false;
             const projected = y.get() + info.velocity.y * (reduceMotion ? 0.12 : 0.22);
             const bounded = Math.max(minY, Math.min(maxY, projected));
-            const nextIndex = clampIndex(Math.round(-bounded / ITEM_HEIGHT), maxIndex);
+            const nextIndex = clampIndex(Math.round(-bounded / itemH), maxIndex);
             selectIndex(nextIndex, info.velocity.y);
           }}
         >
@@ -187,6 +211,9 @@ export function SpinWheel({
                 key={option}
                 type="button"
                 className={`bo-spinWheelItem${idx === activeIndex ? " is-active" : ""}`}
+                data-role="wheelItem"
+                data-state={idx === activeIndex ? "selected" : "normal"}
+                data-index={idx}
                 style={style}
                 onClick={() => selectIndex(idx)}
               >
@@ -196,9 +223,9 @@ export function SpinWheel({
           })}
         </motion.div>
 
-        <div className="bo-spinWheelCenter" aria-hidden="true" />
-        <div className="bo-spinWheelFade bo-spinWheelFade--top" aria-hidden="true" />
-        <div className="bo-spinWheelFade bo-spinWheelFade--bottom" aria-hidden="true" />
+        <div className="bo-spinWheelCenter" data-slot="spinWheelCenter" aria-hidden="true" />
+        <div className="bo-spinWheelFade bo-spinWheelFade--top" data-slot="spinWheelFade" data-position="top" aria-hidden="true" />
+        <div className="bo-spinWheelFade bo-spinWheelFade--bottom" data-slot="spinWheelFade" data-position="bottom" aria-hidden="true" />
       </div>
     </div>
   );

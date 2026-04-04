@@ -174,12 +174,18 @@ export function Tabs({
           const date = sp.get("date");
           return date ? `${t.href}?date=${encodeURIComponent(date)}` : t.href;
         })();
+        const motionTransition = reduceMotion
+          ? { duration: 0 }
+          : { type: "spring" as const, stiffness: 520, damping: 42, mass: 0.9 };
+
         return (
-          <a
+          <motion.a
             key={t.id}
+            layoutId="boTabIndicator"
             className={`bo-tab${active ? " is-active" : ""}`}
             href={href}
             aria-current={active ? "page" : undefined}
+            transition={motionTransition}
             onClick={(ev) => {
               if (!onNavigate) return;
               if (active) return;
@@ -188,16 +194,8 @@ export function Tabs({
               onNavigate(href, t.id, ev);
             }}
           >
-            {active ? (
-              mounted ? (
-                <motion.span
-                  className="bo-tabIndicator"
-                  layoutId="boTabIndicator"
-                  transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
-                />
-              ) : (
-                <span className="bo-tabIndicator" />
-              )
+            {active || !mounted ? (
+              <span className="bo-tabIndicator" />
             ) : null}
             <span className="bo-tabInner">
               <span className="bo-tabIcon" aria-hidden="true">
@@ -205,7 +203,7 @@ export function Tabs({
               </span>
               <span className="bo-tabLabel">{t.label}</span>
             </span>
-          </a>
+          </motion.a>
         );
       })}
     </nav>

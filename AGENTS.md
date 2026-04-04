@@ -1,11 +1,30 @@
 # Backoffice UI (vanilla) reglas de estilo
 
-Scope: todo lo que cuelga de `backofficereact/`.
+Scope: todo lo que cuelga de `backoffice/`.
 
 ## Objetivo
 - Replicar el estilo del dashboard (tema oscuro, cards suaves, acentos lila/cian) usando solo HTML + CSS vanilla.
 - Mantener el CSS ligero: sin frameworks, sin dependencias, sin JS para layout.
 - Soporte completo para temas claro y oscuro con cumplimiento WCAG.
+
+## Reglas obligatorias de componentes React
+
+### Atributo HTML obligatorio en todo tag (regla estricta)
+- TODO tag HTML escrito en `.html`, `.jsx` o `.tsx` — sin excepción, incluyendo `<div>`, `<span>`, `<button>`, `<input>`, `<svg>`, wrappers, fragments renderizados, etc. — debe llevar un atributo `data-*` diferenciador (`data-ui`, `data-slot`, `data-role` o equivalente).
+- El valor debe describir el rol semántico del nodo y ser único dentro de su bloque lógico (componente funcional).
+- No dejar ningún tag sin este atributo.
+
+### TailwindCSS obligatorio para componentes nuevos
+- **Todo componente React nuevo** debe usar **TailwindCSS** para estilos.
+- Tailwind coexiste con las clases `bo-` legacy (vanilla CSS): los componentes existentes que usan `bo-` se mantienen, pero los nuevos usan utilidades Tailwind.
+- Los tokens `bo.css` se integran en Tailwind via config (`extend`) para mantener consistencia visual.
+- No mezclar `bo-` classes y Tailwind utilities en el mismo componente nuevo: elegir uno u otro. Para nuevos, siempre Tailwind.
+
+### SOLID / Open-Closed Principle
+- Todo componente reusable debe seguir SOLID, con especial foco en el **Open-Closed Principle**: los componentes deben estar abiertos a extensión pero cerrados a modificación.
+- Diseñar componentes con props/variantes/compound patterns que permitan personalización sin editar el componente base.
+- Evitar lógica hardcoded dentro de componentes UI; abstraerla via props, render props, slots o children.
+- Si existe un componente en `ui/` que cubre el 80% del caso, extenderlo con props/variantes en vez de crear uno nuevo.
 
 ## Skills a usar en este scope
 - `villacarmen-backoffice-ssr`:
@@ -16,10 +35,10 @@ Scope: todo lo que cuelga de `backofficereact/`.
   usar al cerrar tareas para validacion rapida de typecheck/build e integracion.
 
 ## Estructura
-- Componentes y preview viven en `backofficereact/components/`.
-- CSS base/tokens (FUENTE UNICA DE VERDAD): `backofficereact/components/bo.css` (no duplicar tokens en otros CSS).
-- `backofficereact/public/bo.css` no define la guia visual: no usarlo como referencia de estilos y no editarlo manualmente para cambios de diseño.
-- Vista previa de todos los componentes: `backofficereact/components/index.html`.
+- Componentes y preview viven en `backoffice/components/`.
+- CSS base/tokens (FUENTE UNICA DE VERDAD): `backoffice/components/bo.css` (no duplicar tokens en otros CSS).
+- `backoffice/public/bo.css` no define la guia visual: no usarlo como referencia de estilos y no editarlo manualmente para cambios de diseño.
+- Vista previa de todos los componentes: `backoffice/components/index.html`.
 
 ## Convenciones
 - Prefijo de clases: `bo-` (evita colisiones).
@@ -27,10 +46,10 @@ Scope: todo lo que cuelga de `backofficereact/`.
 - Iconos: siempre inline SVG (stroke `currentColor`, `stroke-width: 1.8`, caps/joins redondeados).
 - **NUNCA hardcodear colores, spacing, border-radius o transiciones** - usar siempre tokens CSS.
 - **NUNCA usar `transition: all`** - especificar propiedades.
-- **SIEMPRE tomar tokens y estilos base desde `backofficereact/components/bo.css`**.
+- **SIEMPRE tomar tokens y estilos base desde `backoffice/components/bo.css`**.
 
 ## Tokens (no hardcodear)
-- Colores, radios y sombras se consumen desde `:root` en `backofficereact/components/bo.css`.
+- Colores, radios y sombras se consumen desde `:root` en `backoffice/components/bo.css`.
 - Superficies: usar `--bo-surface*` con overlays `linear-gradient(...)` para profundidad.
 - Acentos: `--bo-accent` (lila), `--bo-accent-2` (cian), `--bo-accent-3` (card clara).
 
@@ -291,7 +310,7 @@ select:focus-visible,
 - `card-monthly-billing.html` - Facturación mensual
 
 ## Componentes reutilizables (React)
-- Regla estricta: antes de crear UI nueva, revisar `backofficereact/ui/` y reutilizar componentes existentes.
+- Regla estricta: antes de crear UI nueva, revisar `backoffice/ui/` y reutilizar componentes existentes.
 - Si existe componente equivalente en `ui/`, es obligatorio usarlo o extenderlo con props/variantes; no duplicar markup/estilos.
 - Navegación:
   - `ui/nav/Tabs.tsx` (tabs de ruta)
@@ -318,6 +337,63 @@ select:focus-visible,
 - Si un patrón visual/funcional aparece en 2 o más páginas, extraerlo a `ui/widgets/`.
 - Si el patrón ya existe en `ui/`, reutilizarlo primero; extraer solo cuando no exista una opción reusable.
 - No duplicar tokens visuales fuera de `components/bo.css`.
+
+## Organización frontend por capas (obligatorio)
+
+### Capa 1 — Page Components (páginas)
+- Cada página tiene su propia carpeta bajo `pages/{page_name}/` (o la ruta equivalente del proyecto).
+- Contenido obligatorio dentro de cada carpeta de página:
+  ```
+  {page_name}/
+  ├── {page_name}.tsx          # Componente página principal
+  ├── constants/               # Constantes estáticas de la página
+  ├── types/                   # Tipos/interfaces TypeScript específicos
+  ├── atoms/                   # Átomos Jotai (estado) de la página
+  ├── hooks/                   # Custom hooks de la página
+  ├── utils/                   # Funciones utilitarias de la página
+  ├── lib/                     # Lógica de negocio/dominio de la página
+  ├── functionalComponents/    # Componentes funcionales (Capa 2)
+  └── styles/                  # CSS parcial solo para componentes legacy que aún usan CSS
+  ```
+- **Regla de abstracción**: toda la lógica de un componente debe abstractirse y organizarse en la carpeta correspondiente. Nada de lógica inline en el componente página.
+- **Límite máximo**: 800 líneas por archivo. Si un archivo supera este límite, debe dividirse extrayendo lógica a `utils/`, `hooks/`, `lib/` o `functionalComponents/`.
+
+### Capa 2 — Functional Components (componentes funcionales)
+- Viven dentro de `functionalComponents/` de cada página.
+- Cada componente funcional tiene su propia carpeta:
+  ```
+  functionalComponents/
+  └── {functional_component_name}/
+      ├── {functional_component_name}.tsx   # Componente funcional
+      ├── constants/                         # Constantes propias
+      ├── types/                             # Tipos propios
+      ├── hooks/                             # Hooks propios
+      ├── utils/                             # Utilidades propias
+      ├── lib/                               # Lógica de negocio propia
+      └── ui/                                # Sub-componentes UI (solo si son específicos de este funcional)
+  ```
+- **Regla de ui/ local**: solo crear componentes en `ui/` dentro de un funcional si el componente NO es reusable en otras páginas. Si el componente es genérico/reusable, debe vivir en la **Capa 3** (`ui/`).
+
+### Capa 3 — Reusable UI Components (componentes UI reutilizables)
+- Ubicación: `ui/` (raíz del proyecto backoffice).
+- Todos los componentes UI verdaderamente reutilizables deben declararse aquí.
+- Cada componente reusable debe seguir **SOLID / Open-Closed Principle**:
+  - Abierto a extensión (via props, variantes, render props, slots, children).
+  - Cerrado a modificación (no editar el componente base para casos específicos).
+- Estructura típica:
+  ```
+  ui/
+  ├── widgets/        # Componentes compuestos (cards, pickers, etc.)
+  ├── inputs/         # Inputs, selects, date pickers, etc.
+  ├── overlays/       # Modales, dialogs, tooltips
+  ├── feedback/       # Toasts, alerts, badges
+  ├── nav/            # Tabs, breadcrumbs, sidebar items
+  └── layout/         # Layout wrappers, grids
+  ```
+
+### Regla de extracción
+- Si un patrón visual/funcional aparece en **2+ páginas**, extraerlo a `ui/`.
+- Si un componente solo se usa en una página pero crece > 800 líneas, extraer sub-componentes a `functionalComponents/ui/`.
 
 ## Colores de estado (para badges, alerts, etc.)
 **IMPORTANTE**: Usar siempre variables CSS, no hardcodear colores.
@@ -352,7 +428,7 @@ Los colores de estado deben mantener contraste WCAG AA en ambos temas:
 3. Agregar link en `index.html`
 
 ### Agregar nuevo componente React
-1. Revisar `backofficereact/ui/` para confirmar si ya existe un componente reusable equivalente.
+1. Revisar `backoffice/ui/` para confirmar si ya existe un componente reusable equivalente.
 2. Si existe, reutilizarlo/extenderlo (no crear duplicado).
 3. Si no existe, crear en `ui/widgets/` o `ui/inputs/` según tipo.
 4. Usar mismas clases CSS (`bo-` prefix).

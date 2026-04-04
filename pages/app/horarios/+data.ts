@@ -3,6 +3,8 @@ import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../api/client";
 import type { CalendarDay, FichajeSchedule, HorarioMonthPoint, Member } from "../../../api/types";
+import { canManageHorarios } from "../../../lib/rbac";
+import type { BOSession } from "../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -33,6 +35,28 @@ export async function data(pageContext: PageContextServer) {
   const cookieHeader = pageContext.boRequest?.cookieHeader ?? "";
   const api = createClient({ baseUrl: backendOrigin, cookieHeader });
 
+  const session = (pageContext as any).bo?.session as BOSession | null | undefined;
+  const role = session?.user?.role ?? null;
+  const roleImportance = session?.user?.roleImportance ?? 0;
+  const isAdmin = canManageHorarios(role, roleImportance);
+
+  // Non-admin users: only fetch their own schedule via the secure my-schedule endpoint
+  if (!isAdmin) {
+    let error: string | null = null;
+    let schedules: FichajeSchedule[] = [];
+
+    try {
+      const res = await api.horarios.getMySchedule();
+      if (res.success) schedules = res.schedules;
+      else error = res.message || "Error cargando horarios";
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Error cargando horarios";
+    }
+
+    return { date, year, month, members: [] as Member[], schedules, monthDays: [] as HorarioMonthPoint[], bookingMonthDays: [] as CalendarDay[], error, isAdmin: false };
+  }
+
+  // Admin/root users: full data loading
   let error: string | null = null;
   let members: Member[] = [];
   let schedules: FichajeSchedule[] = [];
@@ -62,5 +86,5 @@ export async function data(pageContext: PageContextServer) {
     error = err instanceof Error ? err.message : "Error cargando horarios";
   }
 
-  return { date, year, month, members, schedules, monthDays, bookingMonthDays, error };
+  return { date, year, month, members, schedules, monthDays, bookingMonthDays, error, isAdmin: true };
 }

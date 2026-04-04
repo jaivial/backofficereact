@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarClock, CalendarDays, Clock3, UserRoundPlus, Users } from "lucide-react";
+import { CalendarClock, CalendarDays, CalendarRange, Clock3, UserRoundPlus, Users, Loader2 } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { CalendarDay, FichajeActiveEntry, FichajeSchedule, HorarioMonthPoint, Member } from "../../../api/types";
@@ -13,6 +13,11 @@ import { Modal } from "../../../ui/overlays/Modal";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { SpinWheel } from "../../../ui/inputs/SpinWheel";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
+import { DateRangePicker } from "../../../ui/inputs/DateRangePicker";
+import { SimpleTabs } from "../../../ui/nav/SimpleTabs";
+import { DailyScheduleCard } from "../horarios/preview/functionalComponents/MemberFilterView/DailyScheduleCard";
+import { WeeklyScheduleTable } from "../horarios/preview/functionalComponents/MemberFilterView/WeeklyScheduleTable";
+import { generateDateRange, getWeekGroups } from "../horarios/preview/helpers";
 
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
@@ -98,7 +103,157 @@ function todayISO(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function addDays(date: string, days: number): string {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
 type HorariosCalendarTab = "miembros" | "reservas";
+
+const MY_SCHEDULE_VIEW_TAB_ITEMS = [
+  { id: "diario", label: "Diario" },
+  { id: "semanal", label: "Semanal" },
+];
+
+const MY_SCHEDULE_VIEW_KEY = "bo_horarios_my_schedule_view";
+
+function getInitialMyView(): "diario" | "semanal" {
+  if (typeof window === "undefined") return "diario";
+  const stored = localStorage.getItem(MY_SCHEDULE_VIEW_KEY);
+  if (stored === "diario" || stored === "semanal") return stored;
+  return "diario";
+}
+
+/** Non-admin view: shows only the current user's schedule with daily/weekly toggle and date range picker */
+function MyScheduleView({ initialSchedules }: { initialSchedules: FichajeSchedule[] }) {
+  const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const [schedules, setSchedules] = useState<FichajeSchedule[]>(initialSchedules);
+  const [dateFrom, setDateFrom] = useState(() => todayISO());
+  const [dateTo, setDateTo] = useState(() => addDays(todayISO(), 6));
+  const [view, setView] = useState<"diario" | "semanal">(getInitialMyView);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useErrorToast(error);
+
+  useEffect(() => {
+    localStorage.setItem(MY_SCHEDULE_VIEW_KEY, view);
+  }, [view]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchSchedules() {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await api.horarios.getMySchedule({ from: dateFrom, to: dateTo });
+        if (cancelled) return;
+        if (result.success) {
+          setSchedules(result.schedules || []);
+        } else {
+          setError(result.message || "Error al obtener horarios");
+          setSchedules([]);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Error al obtener horarios");
+        setSchedules([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchSchedules();
+    return () => { cancelled = true; };
+  }, [api.horarios, dateFrom, dateTo]);
+
+  const schedulesByDate = useMemo(() => {
+    const map = new Map<string, FichajeSchedule>();
+    for (const s of schedules) {
+      if (s.date) map.set(s.date, s);
+    }
+    return map;
+  }, [schedules]);
+
+  const datesInRange = useMemo(
+    () => (dateFrom && dateTo ? generateDateRange(dateFrom, dateTo) : []),
+    [dateFrom, dateTo],
+  );
+
+  const weekGroups = useMemo(
+    () => getWeekGroups(datesInRange),
+    [datesInRange],
+  );
+
+  const handleDateRangeChange = useCallback((next: { from: string; to: string }) => {
+    setDateFrom(next.from);
+    setDateTo(next.to);
+  }, []);
+
+  const handleViewChange = useCallback((id: string) => {
+    setView(id as "diario" | "semanal");
+  }, []);
+
+  return (
+    <section aria-label="Mis horarios" data-ui="myScheduleSection" className="bo-content-grid bo-horariosPage">
+      <div data-ui="scheduleArea" className="flex-1 min-w-0">
+        <div
+          data-ui="controlsBar"
+          className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4"
+        >
+          <div data-slot="dateRange" className="flex items-center gap-2 !mx-auto">
+            <CalendarRange data-slot="icon" size={16} strokeWidth={1.8} className="dark:text-white/60 text-purple-400" aria-hidden="true" />
+            <DateRangePicker
+              from={dateFrom}
+              to={dateTo}
+              onChange={handleDateRangeChange}
+              buttonLabel="Rango de fechas"
+              ariaLabel="Seleccionar rango de fechas"
+            />
+          </div>
+
+          <div data-slot="viewTabs" className="flex-1 flex justify-end mx-auto">
+            <SimpleTabs
+              items={MY_SCHEDULE_VIEW_TAB_ITEMS}
+              activeId={view}
+              onChange={handleViewChange}
+              aria-label="Cambiar vista"
+              layoutId="horariosMyScheduleTabs"
+              className="bo-tabs--glass rounded-xl !w-fit !mx-auto"
+            />
+          </div>
+        </div>
+
+        {loading ? (
+          <div data-ui="loadingState" className="flex items-center justify-center py-12">
+            <Loader2 data-slot="spinner" size={24} strokeWidth={1.8} className="dark:text-white/60 text-purple-400 animate-spin" aria-hidden="true" />
+            <span data-slot="label" className="ml-2 dark:text-white/60 text-zinc-500">Cargando horarios...</span>
+          </div>
+        ) : error ? (
+          <div data-ui="errorState" className="text-center py-12 dark:text-red-400 text-red-600">
+            {error}
+          </div>
+        ) : view === "diario" ? (
+          <div data-ui="dailyView" className="space-y-4">
+            {datesInRange.map((date) => (
+              <DailyScheduleCard
+                key={date}
+                date={date}
+                schedule={schedulesByDate.get(date) || null}
+              />
+            ))}
+          </div>
+        ) : (
+          <WeeklyScheduleTable
+            weekGroups={weekGroups}
+            schedulesByDate={schedulesByDate}
+          />
+        )}
+      </div>
+    </section>
+  );
+}
 
 export default function Page() {
   const pageContext = usePageContext();
@@ -111,7 +266,18 @@ export default function Page() {
     monthDays: [],
     bookingMonthDays: [],
     error: null,
+    isAdmin: true,
   }) as Data;
+
+  // Non-admin branch: render the restricted "Mis horarios" view
+  if (data.isAdmin === false) {
+    return <MyScheduleView initialSchedules={data.schedules} />;
+  }
+
+  return <AdminHorariosView data={data} />;
+}
+
+function AdminHorariosView({ data }: { data: Data }) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const realtime = useAtomValue(fichajeRealtimeAtom);
@@ -404,7 +570,7 @@ export default function Page() {
             <div className="bo-horariosDateBadge">{selectedDate}</div>
           </div>
           <div className="bo-panelBody bo-horariosCalendarBody">
-            <div className="bo-tabs bo-horariosCalendarTabs" role="tablist" aria-label="Calendario de miembros y reservas">
+            <div className="bo-tabs bo-horariosCalendarTabs !w-fit mx-auto" role="tablist" aria-label="Calendario de miembros y reservas">
               <button
                 type="button"
                 className={`bo-tab bo-horariosCalendarTab${calendarTab === "miembros" ? " is-active" : ""}`}
@@ -501,15 +667,15 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="bo-panel bo-horariosTablePanel">
+      <div className="bo-panel bo-horariosTablePanel min-w-0">
         <div className="bo-panelHead">
           <div>
             <div className="bo-panelTitle">Horarios establecidos</div>
             <div className="bo-panelMeta">{selectedDate}</div>
           </div>
         </div>
-        <div className="bo-panelBody">
-          <div className="bo-tableWrap">
+        <div className="bo-panelBody overflow-hidden !p-0">
+          <div className="bo-tableWrap min-w-0 !mt-0">
             <div className="bo-tableScroll">
               <table className="bo-table bo-table--horarios" aria-label="Tabla de horarios del día">
                 <thead>
@@ -597,87 +763,109 @@ export default function Page() {
         </div>
       </div>
 
-      <Modal open={modalOpen} title="Asignar horario" onClose={() => setModalOpen(false)} widthPx={760}>
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Asignar horario</div>
-          <button className="bo-modalX" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
+      <Modal
+        open={modalOpen}
+        title="Asignar horario"
+        onClose={() => setModalOpen(false)}
+        widthPx={760}
+        className="max-md:w-[95vw] md:w-[620px]"
+      >
+        <div className="bo-modalHead" data-slot="modalHead">
+          <div className="bo-modalTitle" data-ui="modalTitle">Asignar horario</div>
+          <button
+            className="bo-modalX"
+            type="button"
+            onClick={() => setModalOpen(false)}
+            aria-label="Close"
+            data-role="closeBtn"
+          >
             ×
           </button>
         </div>
 
-        <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-          <div className="bo-panel bo-horariosModalPanel">
-            <div className="bo-panelHead">
-              <div>
-                <div className="bo-panelTitle">{selectedMember ? fullName(selectedMember) : "Miembro"}</div>
-                <div className="bo-panelMeta">Fecha {selectedDate}</div>
+        <div className="bo-modalOutline sm:mt-3 mt-2" data-ui="modalContent">
+          <div className="bo-panel bo-horariosModalPanel" data-role="modalPanel">
+            <div className="bo-panelHead" data-slot="panelHead">
+              <div data-slot="panelHeadInfo">
+                <div className="bo-panelTitle text-sm sm:text-base" data-ui="memberName">{selectedMember ? fullName(selectedMember) : "Miembro"}</div>
+                <div className="bo-panelMeta text-xs" data-ui="selectedDate">Fecha {selectedDate}</div>
               </div>
             </div>
 
-            <div className="bo-panelBody bo-horariosModalBody">
-              <div className="bo-horariosWheels">
-                <div className="bo-horariosWheelGroup">
-                  <div className="bo-label">Hora de entrada</div>
-                  <div className="bo-horariosWheelRow">
-                    <div>
-                      <div className="bo-horariosWheelLabel">Hora</div>
+            <div className="bo-panelBody bo-horariosModalBody sm:gap-4 gap-3" data-slot="panelBody">
+              <div className="bo-horariosWheels" data-ui="wheelsGrid">
+                <div className="bo-horariosWheelGroup" data-role="entryWheelCard">
+                  <div className="bo-label sm:text-xs text-[11px]" data-ui="entryLabel">Hora de entrada</div>
+                  <div className="bo-horariosWheelRow" data-slot="entryWheelsRow">
+                    <div data-slot="entryHourCol">
+                      <div className="bo-horariosWheelLabel sm:text-[11px] text-[10px]" data-ui="hourLabel">Hora</div>
                       <SpinWheel
                         className="bo-horariosWheelSpin"
                         values={hourOptions}
                         value={entryHour}
                         onChange={(nextHour) => setEntryTime(nextHour, entryMinute)}
                         ariaLabel="Hora de entrada"
+                        size="sm"
                       />
                     </div>
-                    <div>
-                      <div className="bo-horariosWheelLabel">Minutos</div>
+                    <div data-slot="entryMinuteCol">
+                      <div className="bo-horariosWheelLabel sm:text-[11px] text-[10px]" data-ui="minuteLabel">Minutos</div>
                       <SpinWheel
                         className="bo-horariosWheelSpin"
                         values={minuteOptions}
                         value={entryMinute}
                         onChange={(nextMinute) => setEntryTime(entryHour, nextMinute)}
                         ariaLabel="Minutos de entrada"
+                        size="sm"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="bo-horariosWheelGroup">
-                  <div className="bo-label">Hora de salida</div>
-                  <div className="bo-horariosWheelRow">
-                    <div>
-                      <div className="bo-horariosWheelLabel">Hora</div>
-                      <SpinWheel className="bo-horariosWheelSpin" values={exitHourOptions} value={exitHour} onChange={setExitHour} ariaLabel="Hora de salida" />
+                <div className="bo-horariosWheelGroup" data-role="exitWheelCard">
+                  <div className="bo-label sm:text-xs text-[11px]" data-ui="exitLabel">Hora de salida</div>
+                  <div className="bo-horariosWheelRow" data-slot="exitWheelsRow">
+                    <div data-slot="exitHourCol">
+                      <div className="bo-horariosWheelLabel sm:text-[11px] text-[10px]" data-ui="exitHourLabel">Hora</div>
+                      <SpinWheel
+                        className="bo-horariosWheelSpin"
+                        values={exitHourOptions}
+                        value={exitHour}
+                        onChange={setExitHour}
+                        ariaLabel="Hora de salida"
+                        size="sm"
+                      />
                     </div>
-                    <div>
-                      <div className="bo-horariosWheelLabel">Minutos</div>
+                    <div data-slot="exitMinuteCol">
+                      <div className="bo-horariosWheelLabel sm:text-[11px] text-[10px]" data-ui="exitMinuteLabel">Minutos</div>
                       <SpinWheel
                         className="bo-horariosWheelSpin"
                         values={exitMinuteOptions}
                         value={exitMinute}
                         onChange={setExitMinute}
                         ariaLabel="Minutos de salida"
+                        size="sm"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bo-horariosPreview">
-                <Clock3 size={14} strokeWidth={1.8} />
+              <div className="bo-horariosPreview sm:text-sm text-xs sm:py-2.5 sm:px-3 py-2 px-2.5" data-ui="timePreview">
+                <Clock3 className="sm:w-3.5 sm:h-3.5 w-3 h-3" strokeWidth={1.8} data-slot="previewIcon" />
                 {`${entryHour}:${entryMinute}`} - {`${exitHour}:${exitMinute}`}
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="bo-modalActions">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setModalOpen(false)}>
-            Cancelar
-          </button>
-          <button className="bo-btn bo-btn--primary" type="button" disabled={busy || !selectedMember} onClick={() => void saveSchedule()}>
-            Guardar horario
-          </button>
+            <div className="border-t border-[var(--bo-border)] bg-[var(--bo-surface)] px-4 py-3 sm:px-5 sm:py-4 flex flex-row-reverse gap-2 justify-start" data-ui="modalActions">
+              <button className="bo-btn bo-btn--primary" type="button" disabled={busy || !selectedMember} onClick={() => void saveSchedule()} data-role="saveBtn">
+                Guardar horario
+              </button>
+              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setModalOpen(false)} data-role="cancelBtn">
+                Cancelar
+              </button>
+            </div>
+          </div>
         </div>
       </Modal>
     </section>

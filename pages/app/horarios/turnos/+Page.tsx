@@ -389,8 +389,7 @@ export default function Page() {
           </div>
           <div className="bo-horariosPreviewActions">
             <DatePicker value={date} onChange={(nextDate) => void selectDate(nextDate)} />
-            <div className="bo-horariosDateBadge">{loading ? "Cargando..." : date}</div>
-            <div className="bo-tabs bo-tabs--glass bo-viewTabs" role="tablist" aria-label="Cambiar vista">
+            <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Cambiar vista">
               <button
                 type="button"
                 className={`bo-tab${view === "grid" ? " is-active" : ""}`}

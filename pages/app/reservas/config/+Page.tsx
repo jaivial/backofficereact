@@ -463,78 +463,86 @@ export default function Page() {
   }
 
   return (
-    <section aria-label="Configuración diaria reservas">
-      <div className="bo-toolbar">
-        <div className="bo-toolbarLeft">
+    <section data-ui="reservas-config" aria-label="Configuración diaria reservas">
+      <div data-slot="toolbar" className="bo-toolbar">
+        <div data-slot="toolbar-left" className="bo-toolbarLeft">
           <DateDropdown value={date} onChange={onDateChange} />
-          <button className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy}>
+          <button data-action="reload" className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy}>
             Recargar
           </button>
         </div>
       </div>
 
-      <div className="bo-stack">
+      <div data-slot="panels-stack" className="bo-stack">
         <ReservationDayPanel
-          title="Estado del día y límite"
+          title="Estado del día"
           meta={day.isOpen ? `${dailyLimit.totalPeople}/${dailyLimit.limit} pax` : "Día cerrado"}
           day={day}
           busy={busy}
           onToggleDay={toggleDay}
           bodyClassName={day.isOpen ? undefined : "bo-configDayLimitRow--single"}
-          rightSlot={
-            <AnimatePresence initial={false}>
-              {day.isOpen ? (
-                <motion.div
-                  key="config-daily-limit"
-                  className="bo-configDayDailyLimit"
-                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-                  transition={dayVisibilityTransition}
-                >
-                  <div className="bo-label">Límite diario</div>
-                  <div className="bo-counter bo-configLimitCounter">
-                    <button
-                      className="bo-counterBtn"
-                      type="button"
-                      onClick={() => stepDailyLimit(-1)}
-                      disabled={busy || Number(draftLimit || 0) <= 0}
-                      aria-label="Reducir límite diario"
-                    >
-                      <Minus size={14} strokeWidth={2.2} />
-                    </button>
-                    <input
-                      className="bo-input bo-input--sm bo-counterInput bo-configLimitInput"
-                      value={draftLimit}
-                      inputMode="numeric"
-                      onChange={(e) => setDraftLimit(e.target.value.replace(/[^\d]/g, ""))}
-                      onBlur={saveDailyLimitFromDraft}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          (e.target as HTMLInputElement).blur();
-                        }
-                      }}
-                    />
-                    <button
-                      className="bo-counterBtn"
-                      type="button"
-                      onClick={() => stepDailyLimit(1)}
-                      disabled={busy || Number(draftLimit || 0) >= 500}
-                      aria-label="Aumentar límite diario"
-                    >
-                      <Plus size={14} strokeWidth={2.2} />
-                    </button>
-                  </div>
-                  <div className="bo-mutedText">Libres: {dailyLimit.freeBookingSeats}</div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          }
         />
 
         <AnimatePresence initial={false}>
           {day.isOpen ? (
             <motion.div
+              data-ui="config-daily-limit-panel"
+              key="config-daily-limit-panel"
+              className="bo-dailyLimitPanel"
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={dayVisibilityTransition}
+            >
+              <div data-slot="panel-head" className="bo-panelHead">
+                <div data-role="title" className="bo-panelTitle">Límite diario</div>
+              </div>
+              <div data-slot="daily-limit-body" className="bo-dailyLimitBody">
+                <div data-ui="limit-counter" className="bo-dailyLimitCounter">
+                  <button
+                    data-action="decrement"
+                    className="bo-counterBtn"
+                    type="button"
+                    onClick={() => stepDailyLimit(-1)}
+                    disabled={busy || Number(draftLimit || 0) <= 0}
+                    aria-label="Reducir límite diario"
+                  >
+                    <Minus size={14} strokeWidth={2.2} />
+                  </button>
+                  <input
+                    data-role="limit-input"
+                    className="bo-input bo-input--sm bo-counterInput bo-configLimitInput"
+                    value={draftLimit}
+                    inputMode="numeric"
+                    onChange={(e) => setDraftLimit(e.target.value.replace(/[^\d]/g, ""))}
+                    onBlur={saveDailyLimitFromDraft}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        (e.target as HTMLInputElement).blur();
+                      }
+                    }}
+                  />
+                  <button
+                    data-action="increment"
+                    className="bo-counterBtn"
+                    type="button"
+                    onClick={() => stepDailyLimit(1)}
+                    disabled={busy || Number(draftLimit || 0) >= 500}
+                    aria-label="Aumentar límite diario"
+                  >
+                    <Plus size={14} strokeWidth={2.2} />
+                  </button>
+                </div>
+                <div data-ui="free-seats" className="bo-mutedText">Libres: {dailyLimit.freeBookingSeats}</div>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence initial={false}>
+          {day.isOpen ? (
+            <motion.div
+              data-ui="open-sections"
               key="config-open-sections"
               className="bo-stack"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -542,12 +550,12 @@ export default function Page() {
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               transition={dayVisibilityTransition}
             >
-              <div className="bo-panel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Horario del día</div>
+              <div data-ui="hours-panel" className="bo-panel">
+                <div data-slot="panel-head" className="bo-panelHead">
+                  <div data-role="title" className="bo-panelTitle">Horario del día</div>
                 </div>
-                <div className="bo-panelBody" style={{ display: "grid", gap: 14 }}>
-                  <div className="bo-row">
+                <div data-slot="panel-body" className="bo-panelBody" style={{ display: "grid", gap: 14 }}>
+                  <div data-slot="opening-mode" className="bo-row">
                     <Select
                       value={openingModeDraft}
                       onChange={handleOpeningModeChange}
@@ -558,9 +566,9 @@ export default function Page() {
                   </div>
 
                   {showMorningHours ? (
-                    <div className="bo-field">
-                      <div className="bo-label">Mañana (08:00 - 17:00)</div>
-                      <div className="bo-hourCards bo-hourCards--slots">
+                    <div data-slot="morning-hours" className="bo-field">
+                      <div data-role="label" className="bo-label">Mañana (08:00 - 17:00)</div>
+                      <div data-ui="morning-slots" className="bo-hourCards bo-hourCards--slots">
                         {morningHourCards.map((slot) => (
                           <button
                             key={slot.id}
@@ -577,9 +585,9 @@ export default function Page() {
                   ) : null}
 
                   {showNightHours ? (
-                    <div className="bo-field">
-                      <div className="bo-label">Noche (17:30 - 01:00)</div>
-                      <div className="bo-hourCards bo-hourCards--slots">
+                    <div data-slot="night-hours" className="bo-field">
+                      <div data-role="label" className="bo-label">Noche (17:30 - 01:00)</div>
+                      <div data-ui="night-slots" className="bo-hourCards bo-hourCards--slots">
                         {nightHourCards.map((slot) => (
                           <button
                             key={slot.id}
@@ -597,13 +605,13 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="bo-panel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Mesas</div>
+              <div data-ui="tables-panel" className="bo-panel">
+                <div data-slot="panel-head" className="bo-panelHead">
+                  <div data-role="title" className="bo-panelTitle">Mesas</div>
                 </div>
-                <div className="bo-panelBody bo-row bo-configTableLimitsRow">
-                  <div className="bo-field bo-field--inline bo-configTableLimitField">
-                    <div className="bo-label">Mesas de 2</div>
+                <div data-slot="panel-body" className="bo-panelBody bo-row bo-configTableLimitsRow">
+                  <div data-slot="mesas-dos" className="bo-field bo-field--inline bo-configTableLimitField">
+                    <div data-role="label" className="bo-label">Mesas de 2</div>
                     <Select
                       value={mesasDeDos.limit || "999"}
                       onChange={(v) => void setMesasDos(v)}
@@ -612,8 +620,8 @@ export default function Page() {
                       ariaLabel="Mesas de 2"
                     />
                   </div>
-                  <div className="bo-field bo-field--inline bo-configTableLimitField">
-                    <div className="bo-label">Mesas de 3</div>
+                  <div data-slot="mesas-tres" className="bo-field bo-field--inline bo-configTableLimitField">
+                    <div data-role="label" className="bo-label">Mesas de 3</div>
                     <Select
                       value={mesasDeTres.limit || "999"}
                       onChange={(v) => void setMesasTres(v)}
@@ -625,20 +633,20 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="bo-panel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Plantas activas del día</div>
-                  <div className="bo-panelMeta">{floors.length} plantas</div>
+              <div data-ui="floors-panel" className="bo-panel">
+                <div data-slot="panel-head" className="bo-panelHead">
+                  <div data-role="title" className="bo-panelTitle">Plantas activas del día</div>
+                  <div data-slot="meta" className="bo-panelMeta">{floors.length} plantas</div>
                 </div>
-                <div className="bo-panelBody">
-                  <div className="bo-floorRows">
+                <div data-slot="panel-body" className="bo-panelBody">
+                  <div data-ui="floor-rows" className="bo-floorRows">
                     {floors.map((floor) => (
-                      <div key={floor.id} className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
-                        <div className="bo-floorRowName">
+                      <div key={floor.id} data-ui="floor-row" className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
+                        <div data-slot="floor-name" className="bo-floorRowName">
                           {floor.name}
                         </div>
-                        <div className="bo-floorRowState">
-                          <span className="bo-floorRowStateText">{floor.active ? "Activa" : "Inactiva"}</span>
+                        <div data-slot="floor-state" className="bo-floorRowState">
+                          <span data-ui="floor-state-label" className="bo-floorRowStateText">{floor.active ? "Activa" : "Inactiva"}</span>
                           <Switch
                             checked={floor.active}
                             disabled={busy}

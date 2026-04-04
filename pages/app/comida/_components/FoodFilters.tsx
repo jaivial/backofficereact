@@ -89,12 +89,12 @@ export const FoodFilters = React.memo(function FoodFilters({
   }, []);
 
   return (
-    <div className="bo-foodFilters" aria-label="Filtros">
-      <div className="bo-foodFiltersHead">
-        <div className="bo-foodFiltersTitle">
-          <Filter size={15} />
-          <span>Filtros</span>
-          <span className="bo-foodFiltersCount">({count})</span>
+    <div className="bo-foodFilters" aria-label="Filtros" data-ui="food-filters-container">
+      <div className="bo-foodFiltersHead" data-ui="food-filters-header">
+        <div className="bo-foodFiltersTitle" data-ui="food-filters-title">
+          <Filter size={15} data-ui="food-filters-icon" />
+          <span data-role="food-filters-label">Filtros</span>
+          <span className="bo-foodFiltersCount" data-role="food-filters-count">({count})</span>
         </div>
         <button
           className="bo-btn bo-btn--ghost bo-btn--sm bo-foodFiltersToggle"
@@ -102,8 +102,9 @@ export const FoodFilters = React.memo(function FoodFilters({
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
           aria-label={isExpanded ? "Colapsar filtros" : "Expandir filtros"}
+          data-ui="food-filters-toggle-btn"
         >
-          {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          {isExpanded ? <ChevronUp size={15} data-ui="food-filters-toggle-icon-up" /> : <ChevronDown size={15} data-ui="food-filters-toggle-icon-down" />}
         </button>
       </div>
 
@@ -116,31 +117,33 @@ export const FoodFilters = React.memo(function FoodFilters({
             animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
+            data-ui="food-filters-expandable"
           >
-            <div className="bo-foodFiltersGrid bo-foodFiltersGrid--extended">
-              <div className="bo-field bo-foodFilter bo-foodFilter--search">
-                <span className="bo-label">
-                  <Search size={14} />
+            <div className="bo-foodFiltersGrid bo-foodFiltersGrid--extended" data-ui="food-filters-grid">
+              <div className="bo-field bo-foodFilter bo-foodFilter--search" data-slot="food-filters-search">
+                <span className="bo-label" data-role="food-filters-search-label">
+                  <Search size={14} data-ui="food-filters-search-icon" />
                   Buscar
                 </span>
-                <div className="bo-input-wrapper">
+                <div className="bo-input-wrapper" data-ui="food-filters-search-input-wrapper">
                   <input
                     className="bo-input"
                     type="search"
                     value={search}
                     placeholder="Buscar por nombre..."
                     onChange={(e) => onSearchChange(e.target.value)}
+                    data-role="food-filters-search-input"
                   />
                 </div>
               </div>
 
-              <div className="bo-field bo-foodFilter bo-foodFilter--tipo">
-                <span className="bo-label">Tipo</span>
+              <div className="bo-field bo-foodFilter bo-foodFilter--tipo" data-slot="food-filters-tipo">
+                <span className="bo-label" data-role="food-filters-tipo-label">Tipo</span>
                 <Select value={tipoFilter} onChange={onTipoChange} options={tipoOptions} ariaLabel="Tipo" />
               </div>
 
-              <div className="bo-field bo-foodFilter bo-foodFilter--active">
-                <span className="bo-label">Estado</span>
+              <div className="bo-field bo-foodFilter bo-foodFilter--active" data-slot="food-filters-active">
+                <span className="bo-label" data-role="food-filters-active-label">Estado</span>
                 <Select
                   value={activeFilter}
                   onChange={(v) => onActiveChange(v as ActiveFilter)}
@@ -150,8 +153,8 @@ export const FoodFilters = React.memo(function FoodFilters({
               </div>
 
               {supportsCategories ? (
-                <div className="bo-field bo-foodFilter">
-                  <span className="bo-label">Categoria</span>
+                <div className="bo-field bo-foodFilter" data-slot="food-filters-category">
+                  <span className="bo-label" data-role="food-filters-category-label">Categoria</span>
                   <Select
                     value={categoryFilter}
                     onChange={onCategoryChange}
@@ -162,8 +165,8 @@ export const FoodFilters = React.memo(function FoodFilters({
               ) : null}
 
               {supportsAlergenos ? (
-                <div className="bo-field bo-foodFilter">
-                  <span className="bo-label">Alergeno</span>
+                <div className="bo-field bo-foodFilter" data-slot="food-filters-alergeno">
+                  <span className="bo-label" data-role="food-filters-alergeno-label">Alergeno</span>
                   <Select
                     value={alergenoFilter}
                     onChange={onAlergenoChange}
@@ -174,8 +177,8 @@ export const FoodFilters = React.memo(function FoodFilters({
               ) : null}
 
               {supportsSuplemento ? (
-                <div className="bo-field bo-foodFilter">
-                  <span className="bo-label">Suplemento</span>
+                <div className="bo-field bo-foodFilter" data-slot="food-filters-suplemento">
+                  <span className="bo-label" data-role="food-filters-suplemento-label">Suplemento</span>
                   <Select
                     value={suplementoFilter}
                     onChange={(v) => onSuplementoChange(v as SuplementoFilter)}
@@ -185,7 +188,7 @@ export const FoodFilters = React.memo(function FoodFilters({
                 </div>
               ) : null}
 
-              <div className="bo-foodFilterActions">
+              <div className="bo-foodFilterActions" data-ui="food-filters-actions">
                 <button
                   className={`bo-btn bo-btn--ghost bo-btn--sm bo-foodClearBtn ${hasFilters ? "" : "is-hidden"}`}
                   type="button"
@@ -193,8 +196,9 @@ export const FoodFilters = React.memo(function FoodFilters({
                   onClick={onReset}
                   tabIndex={hasFilters ? 0 : -1}
                   aria-hidden={!hasFilters}
+                  data-ui="food-filters-clear-btn"
                 >
-                  <FilterX size={15} />
+                  <FilterX size={15} data-ui="food-filters-clear-icon" />
                   Limpiar
                 </button>
               </div>

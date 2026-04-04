@@ -30,9 +30,9 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
 
   return (
     <Modal open={open} onClose={onClose} title="Anadir categoria custom" size="sm">
-      <form onSubmit={onSubmit}>
-        <div className="bo-field">
-          <label className="bo-label" htmlFor="food-category-name">Nombre categoria *</label>
+      <form onSubmit={onSubmit} data-ui="food-cat-modal-form">
+        <div className="bo-field" data-ui="food-cat-modal-field">
+          <label className="bo-label" htmlFor="food-category-name" data-ui="food-cat-modal-label">Nombre categoria *</label>
           <input
             id="food-category-name"
             className="bo-input"
@@ -40,12 +40,12 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
             onChange={(e) => setName(e.target.value)}
             placeholder="Ejemplo: Fuera de carta"
             required
+            data-ui="food-cat-modal-input"
           />
         </div>
 
-        <div className="bo-foodModal-actions">
-          <button type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={busy}>
-            Cancelar
+        <div className="bo-foodModal-actions" data-ui="food-cat-modal-actions">
+          <button type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={busy} data-ui="food-cat-modal-cancel">            Cancelar
           </button>
           <button type="submit" className="bo-btn bo-btn--primary" disabled={busy || !name.trim()}>
             {busy ? (

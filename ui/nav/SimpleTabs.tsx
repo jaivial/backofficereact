@@ -22,6 +22,8 @@ export function SimpleTabs({
   children,
   className,
   "aria-label": ariaLabel,
+  panelled,
+  layoutId,
 }: {
   items?: SimpleTabItem[];
   activeId?: string;
@@ -30,6 +32,9 @@ export function SimpleTabs({
   children?: React.ReactNode;
   className?: string;
   "aria-label"?: string;
+  /** Set true when tab panels exist in the DOM. Adds aria-controls/id on tabs. */
+  panelled?: boolean;
+  layoutId?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
@@ -48,6 +53,7 @@ export function SimpleTabs({
   }
 
   const activeIndex = items.findIndex((t) => t.id === activeId);
+  const effectiveLayoutId = layoutId ?? "boTabIndicator";
 
   return (
     <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label={ariaLabel || "Tabs"}>
@@ -59,8 +65,7 @@ export function SimpleTabs({
             className={`bo-tab${active ? " is-active" : ""}`}
             role="tab"
             aria-selected={active}
-            aria-controls={`panel-${item.id}`}
-            id={`tab-${item.id}`}
+            {...(panelled ? { "aria-controls": `panel-${item.id}`, id: `tab-${item.id}` } : null)}
             onClick={() => onChange(item.id)}
             type="button"
             title={item.title}
@@ -69,7 +74,7 @@ export function SimpleTabs({
               mounted ? (
                 <motion.span
                   className="bo-tabIndicator"
-                  layoutId="boTabIndicator"
+                  layoutId={effectiveLayoutId}
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
@@ -103,6 +108,7 @@ export function SimpleTabsList({
 
   if (!ctx) return <>{children}</>;
 
+  const effectiveLayoutId = "boTabIndicator";
   const tabs = React.Children.toArray(children).flatMap((child) => {
     if (!React.isValidElement(child)) return [];
     const props = child.props as { value?: string; trigger?: string };
@@ -129,7 +135,7 @@ export function SimpleTabsList({
               mounted ? (
                 <motion.span
                   className="bo-tabIndicator"
-                  layoutId="boTabIndicator"
+                  layoutId={effectiveLayoutId}
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
