@@ -113,7 +113,6 @@ export function BookingSearch({ onSearch, onClear, busy, reduceMotion }: Booking
             value={name}
             onChange={onNameChange}
             placeholder="Buscar por nombre o email"
-            disabled={busy}
             aria-label="Buscar por nombre o email"
             data-slot="search-name"
           />
@@ -126,7 +125,6 @@ export function BookingSearch({ onSearch, onClear, busy, reduceMotion }: Booking
             value={phone}
             onChange={onPhoneChange}
             placeholder="Teléfono"
-            disabled={busy}
             aria-label="Buscar por teléfono"
             data-slot="search-phone"
           />
@@ -139,7 +137,7 @@ export function BookingSearch({ onSearch, onClear, busy, reduceMotion }: Booking
           ariaLabel="Resultados por página"
           disabled={busy}
           className="bo-bookingSearchCount"
-          style={{ width: 60 }}
+          style={{ width: 60, overflow: "hidden" }}
           menuMinWidthPx={60}
           listClassName="bo-bookingSearchCountList"
         />

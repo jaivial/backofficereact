@@ -14,7 +14,7 @@ import ReactFlow, {
   useNodesState,
 } from "reactflow";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarDays, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical, Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil, Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle, CalendarRange, Users, LayoutGrid, MapPin } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical, Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil, Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle, CalendarRange, Users, LayoutGrid, MapPin } from "lucide-react";
 import "reactflow/dist/style.css";
 import { usePageContext } from "vike-react/usePageContext";
 import { tableSheetViewAtom, selectedTableCardIdAtom } from "../../../../state/tableManagerAtoms";
@@ -53,6 +53,7 @@ import {
   type RectSize,
 } from "./mapLimits";
 import { areaMetadata, floorNumberForArea, limitAreaTemplatePointsForFloor, normalizeTableArea } from "./areaLayout";
+import { LineDrawingToolbar } from "./functionalComponents/LineDrawingToolbar/LineDrawingToolbar";
 
 type TableShape = "round" | "square";
 type RectShortSide = "left" | "right";
@@ -601,6 +602,7 @@ export default function TableManagerPage() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuTooltipStyle, setMenuTooltipStyle] = useState<React.CSSProperties>({});
   const [drawPanelHover, setDrawPanelHover] = useState(false);
+  const [elementosOpen, setElementosOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [dayBusy, setDayBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -2045,23 +2047,35 @@ export default function TableManagerPage() {
   useEffect(() => {
     if (!menuVisible) return;
     const tooltipEl = document.querySelector('[data-ui="map-menu-tooltip"]') as HTMLElement | null;
-    const updateMenuPosition = () => {
-      const btn = menuButtonRef.current;
-      if (!btn) return;
-      const btnRect = btn.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const tooltipWidth = tooltipEl?.getBoundingClientRect().width ?? 240;
+        const btnRect = menuButtonRef.current?.getBoundingClientRect();
+        if (!btnRect) return;
+        const centerX = btnRect.left + btnRect.width / 2;
+        const top = btnRect.bottom + 8;
+        setMenuTooltipStyle({
+          position: "fixed" as const,
+          left: `${centerX - tooltipWidth / 2}px`,
+          top: `${top}px`,
+        });
+      });
+    });
+    const onResize = () => {
+      const tooltipWidth = tooltipEl?.getBoundingClientRect().width ?? 240;
+      const btnRect = menuButtonRef.current?.getBoundingClientRect();
+      if (!btnRect) return;
       const centerX = btnRect.left + btnRect.width / 2;
       const top = btnRect.bottom + 8;
-      const tooltipWidth = tooltipEl?.offsetWidth ?? 240;
       setMenuTooltipStyle({
         position: "fixed" as const,
         left: `${centerX - tooltipWidth / 2}px`,
         top: `${top}px`,
       });
     };
-    requestAnimationFrame(updateMenuPosition);
-    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("resize", onResize);
     return () => {
-      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("resize", onResize);
     };
   }, [menuVisible, rightSheetOpen]);
 
@@ -2141,6 +2155,7 @@ export default function TableManagerPage() {
       }
       return next;
     });
+    setDrawPanelHover(false);
     setMenuVisible(false);
   }, []);
 
@@ -2150,6 +2165,7 @@ export default function TableManagerPage() {
     setDraggingLimitVertexIndex(null);
     limitEditHistoryRef.current = [];
     setMapMode("tables");
+    setDrawPanelHover(false);
   }, []);
 
   const startLineDrawing = useCallback(() => {
@@ -2160,6 +2176,7 @@ export default function TableManagerPage() {
     lineDrawingPointsRef.current = [];
     setMapMode("draw");
     setMenuVisible(false);
+    setDrawPanelHover(false);
   }, []);
 
   const addLinePoint = useCallback((point: LinePoint) => {
@@ -2450,6 +2467,14 @@ export default function TableManagerPage() {
         </div>
       </div>
 
+      <LineDrawingToolbar
+        pointCount={lineDrawing.points.length}
+        isDrawing={lineDrawing.isDrawing}
+        onCloseArea={closeLineDrawing}
+        onUndoPoint={undoCreateAreaLastAction}
+        onCancel={cancelLineDrawing}
+      />
+
       <div ref={flowWrapRef} data-ui="flow-wrapper" className="bo-tableMapFlowWrap">
         <ReactFlow
           nodes={nodes}
@@ -2580,7 +2605,7 @@ export default function TableManagerPage() {
 
       <aside
         data-ui="draw-panel"
-        className={`bo-tableMapDrawPanel${mapMode === "draw" || drawPanelHover ? " is-open" : ""}`}
+        className={`bo-tableMapDrawPanel${(mapMode === "draw" && !lineDrawing.isDrawing) || drawPanelHover ? " is-open" : ""}`}
         aria-label="Panel de dibujo"
         onMouseEnter={openDrawPanelHover}
         onMouseLeave={closeDrawPanelHoverSoon}
@@ -2591,94 +2616,6 @@ export default function TableManagerPage() {
         </div>
         <div data-slot="draw-panel-body" className="bo-tableMapDrawPanelBody">
           <div data-ui="draw-hint" className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
-
-          <div data-ui="draw-elements-section" className="bo-tableMapDrawSection">
-            <div data-slot="draw-section-head" className="bo-tableMapDrawSectionHead">
-              <div data-ui="draw-section-title" className="bo-tableMapDrawSectionTitle">Elementos</div>
-              <div data-ui="draw-section-hint" className="bo-tableMapDrawHint">Añade objetos con un solo click. Los nuevos quedan seleccionados.</div>
-            </div>
-            <div data-ui="draw-preset-groups" className="bo-drawPresetGroups" aria-label="Herramientas de dibujo">
-              {DRAW_PANEL_GROUPS.map((group) => (
-                <section key={group.id} data-ui="draw-preset-group" className="bo-drawPresetGroup" aria-label={group.title}>
-                  <div data-ui="draw-group-title" className="bo-drawPresetGroupTitle">{group.title}</div>
-                  <div data-ui="draw-preset-grid" className="bo-drawPresetGrid">
-                    {group.presets.map((preset) => {
-                      const previewUrl = drawPresetAssetImageUrl(preset);
-                      const isActivePreset = selectedDrawElement?.preset === preset;
-                      return (
-                        <button
-                          key={preset}
-                          data-ui="draw-preset-btn"
-                          className={`bo-drawPresetBtn${isActivePreset ? " is-active" : ""}`}
-                          type="button"
-                          onClick={() => addDrawElement(preset)}
-                        >
-                          <span data-ui="preset-icon" className="bo-drawPresetBtnIcon" aria-hidden="true">
-                            {previewUrl ? (
-                              <img data-ui="preset-asset" className="bo-drawPresetBtnAsset" src={previewUrl} alt="" />
-                            ) : (
-                              DRAW_PRESET_ICON[preset]
-                            )}
-                          </span>
-                          <span data-ui="preset-label" className="bo-drawPresetBtnLabel">{drawPresetLabel(preset)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
-            </div>
-          </div>
-
-          <div data-ui="draw-visual-section" className="bo-tableMapDrawSection">
-            <div data-ui="draw-visual-title" className="bo-tableMapDrawSectionTitle">Visual del elemento</div>
-            {selectedDrawElement ? (
-              <>
-                <div data-ui="selected-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
-                  Seleccionado: <strong data-ui="selected-element-name">{selectedDrawElement.label}</strong>
-                </div>
-                <div data-ui="rotation-controls" className="bo-drawRotationControls" role="group" aria-label="Rotación del elemento">
-                  <button data-ui="rotate-left-btn" className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(-1)}>
-                    <RotateCcw size={14} />
-                    -10°
-                  </button>
-                  <div data-ui="rotation-value" className="bo-drawRotationValue">{Math.round(selectedDrawElement.rotationDeg)}°</div>
-                  <button data-ui="rotate-right-btn" className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(1)}>
-                    +10°
-                    <RotateCw size={14} />
-                  </button>
-                </div>
-                <div data-ui="display-mode-picker" className="bo-drawDisplayModePicker" role="group" aria-label="Modo de visualización del elemento">
-                  <button
-                    data-ui="display-mode-both"
-                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "both" ? " is-active" : ""}`}
-                    type="button"
-                    onClick={() => updateSelectedDrawElementDisplayMode("both")}
-                  >
-                    Ambos
-                  </button>
-                  <button
-                    data-ui="display-mode-asset"
-                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "asset" ? " is-active" : ""}`}
-                    type="button"
-                    onClick={() => updateSelectedDrawElementDisplayMode("asset")}
-                  >
-                    Solo asset
-                  </button>
-                  <button
-                    data-ui="display-mode-text"
-                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "text" ? " is-active" : ""}`}
-                    type="button"
-                    onClick={() => updateSelectedDrawElementDisplayMode("text")}
-                  >
-                    Solo texto
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div data-ui="no-element-hint" className="bo-tableMapDrawHint">Selecciona un elemento del mapa para cambiar su visual.</div>
-            )}
-          </div>
 
           <div data-ui="limit-section" className="bo-tableMapDrawSection">
             <div data-ui="limit-title" className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
@@ -2751,6 +2688,105 @@ export default function TableManagerPage() {
                   </button>
                 )}
               </div>
+            )}
+          </div>
+
+          <div data-ui="draw-elements-section" className="bo-tableMapDrawSection">
+            <button
+              data-ui="draw-elements-toggle"
+              className="bo-drawAccordionToggle"
+              type="button"
+              onClick={() => setElementosOpen((v) => !v)}
+              aria-expanded={elementosOpen}
+            >
+              <div data-slot="toggle-label" className="bo-drawAccordionToggleLabel">
+                <div data-ui="draw-section-title" className="bo-tableMapDrawSectionTitle">Elementos</div>
+                <div data-ui="draw-section-hint" className="bo-tableMapDrawHint">Añade objetos con un solo click.</div>
+              </div>
+              <ChevronDown size={16} className={`bo-drawAccordionChevron${elementosOpen ? " is-open" : ""}`} />
+            </button>
+            {elementosOpen && (
+              <div data-ui="draw-preset-groups" className="bo-drawPresetGroups" aria-label="Herramientas de dibujo">
+                {DRAW_PANEL_GROUPS.map((group) => (
+                  <section key={group.id} data-ui="draw-preset-group" className="bo-drawPresetGroup" aria-label={group.title}>
+                    <div data-ui="draw-group-title" className="bo-drawPresetGroupTitle">{group.title}</div>
+                    <div data-ui="draw-preset-grid" className="bo-drawPresetGrid">
+                      {group.presets.map((preset) => {
+                        const previewUrl = drawPresetAssetImageUrl(preset);
+                        const isActivePreset = selectedDrawElement?.preset === preset;
+                        return (
+                          <button
+                            key={preset}
+                            data-ui="draw-preset-btn"
+                            className={`bo-drawPresetBtn${isActivePreset ? " is-active" : ""}`}
+                            type="button"
+                            onClick={() => addDrawElement(preset)}
+                          >
+                            <span data-ui="preset-icon" className="bo-drawPresetBtnIcon" aria-hidden="true">
+                              {previewUrl ? (
+                                <img data-ui="preset-asset" className="bo-drawPresetBtnAsset" src={previewUrl} alt="" />
+                              ) : (
+                                DRAW_PRESET_ICON[preset]
+                              )}
+                            </span>
+                            <span data-ui="preset-label" className="bo-drawPresetBtnLabel">{drawPresetLabel(preset)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div data-ui="draw-visual-section" className="bo-tableMapDrawSection">
+            <div data-ui="draw-visual-title" className="bo-tableMapDrawSectionTitle">Visual del elemento</div>
+            {selectedDrawElement ? (
+              <>
+                <div data-ui="selected-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                  Seleccionado: <strong data-ui="selected-element-name">{selectedDrawElement.label}</strong>
+                </div>
+                <div data-ui="rotation-controls" className="bo-drawRotationControls" role="group" aria-label="Rotación del elemento">
+                  <button data-ui="rotate-left-btn" className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(-1)}>
+                    <RotateCcw size={14} />
+                    -10°
+                  </button>
+                  <div data-ui="rotation-value" className="bo-drawRotationValue">{Math.round(selectedDrawElement.rotationDeg)}°</div>
+                  <button data-ui="rotate-right-btn" className="bo-drawRotateBtn" type="button" onClick={() => rotateSelectedDrawElement(1)}>
+                    +10°
+                    <RotateCw size={14} />
+                  </button>
+                </div>
+                <div data-ui="display-mode-picker" className="bo-drawDisplayModePicker" role="group" aria-label="Modo de visualización del elemento">
+                  <button
+                    data-ui="display-mode-both"
+                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "both" ? " is-active" : ""}`}
+                    type="button"
+                    onClick={() => updateSelectedDrawElementDisplayMode("both")}
+                  >
+                    Ambos
+                  </button>
+                  <button
+                    data-ui="display-mode-asset"
+                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "asset" ? " is-active" : ""}`}
+                    type="button"
+                    onClick={() => updateSelectedDrawElementDisplayMode("asset")}
+                  >
+                    Solo asset
+                  </button>
+                  <button
+                    data-ui="display-mode-text"
+                    className={`bo-drawDisplayModeBtn${selectedDrawElement.displayMode === "text" ? " is-active" : ""}`}
+                    type="button"
+                    onClick={() => updateSelectedDrawElementDisplayMode("text")}
+                  >
+                    Solo texto
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div data-ui="no-element-hint" className="bo-tableMapDrawHint">Selecciona un elemento del mapa para cambiar su visual.</div>
             )}
           </div>
         </div>

@@ -47,6 +47,8 @@ export const FOOD_TYPE_TIPO_OPTIONS: Record<FoodType, FoodTipoOption[]> = {
     { value: "ZUMO", label: "Zumo" },
     { value: "CERVEZA", label: "Cerveza" },
     { value: "COPA", label: "Copa" },
+    { value: "LICOR", label: "Licor" },
+    { value: "COCKTAIL", label: "Cocktail" },
   ],
 };
 

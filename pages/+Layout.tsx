@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { Provider as JotaiProvider, createStore } from "jotai";
-import { useHydrateAtoms } from "jotai/utils";
 import { usePageContext } from "vike-react/usePageContext";
 
 import "../ui/styles/shadcn.css";
@@ -12,22 +11,12 @@ import { SessionExpiryGuard } from "../ui/session/SessionExpiryGuard";
 import { ThemeSync } from "../ui/theme/ThemeSync";
 import { sessionAtom, sessionMovingExpirationAtom, themeAtom, type ThemeMode } from "../state/atoms";
 
-function Hydrate({
-  theme,
-  session,
-  movingExpirationDate,
-}: {
-  theme: ThemeMode;
-  session: BOSession | null;
-  movingExpirationDate: string | null;
-}) {
-  // Prevent cross-request leakage on SSR by hydrating the per-request store.
-  useHydrateAtoms([
-    [themeAtom, theme],
-    [sessionAtom, session],
-    [sessionMovingExpirationAtom, movingExpirationDate],
-  ]);
-  return null;
+function initStore(theme: ThemeMode, session: BOSession | null, movingExpirationDate: string | null) {
+  const store = createStore();
+  store.set(themeAtom, theme);
+  store.set(sessionAtom, session);
+  store.set(sessionMovingExpirationAtom, movingExpirationDate);
+  return store;
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -36,16 +25,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const initialSession = pageContext.bo?.session ?? null;
   const initialMovingExpirationDate = pageContext.bo?.movingExpirationDate ?? null;
 
-  const store = useMemo(() => createStore(), []);
+  const store = useMemo(
+    () => initStore(initialTheme, initialSession, initialMovingExpirationDate),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   return (
     <JotaiProvider store={store}>
-      <Hydrate theme={initialTheme} session={initialSession} movingExpirationDate={initialMovingExpirationDate} />
       <ThemeSync />
       <SessionExpiryGuard />
       <FichajeRealtimeBridge />
       <ToastStack />
-      <div id="bo-portal" />
+      <div id="bo-portal" data-slot="portal-target" />
       {children}
     </JotaiProvider>
   );

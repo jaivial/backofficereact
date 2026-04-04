@@ -34,8 +34,8 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
   }, []);
 
   return (
-    <div className="bo-menuTypePanels">
-      <div className="bo-menuTypePanelsGrid" role="group" aria-label="Tipos de carta">
+    <div className="bo-menuTypePanels" data-ui="panel-grid-container">
+      <div className="bo-menuTypePanelsGrid" role="group" aria-label="Tipos de carta" data-ui="panel-grid-group">
         {orderedPanels.map((panel) => {
           const Icon = panel.icon;
           const count = countsByType[panel.value] || 0;
@@ -55,16 +55,16 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
               data-menu-type={panel.value}
               data-surface="minimal-glass"
             >
-              <div className="bo-menuTypePanelIcon" aria-hidden="true">
+              <div className="bo-menuTypePanelIcon" aria-hidden="true" data-ui="panel-grid-icon">
                 <Icon size={28} />
               </div>
-              <div className="bo-menuTypePanelLabel" id={labelId}>
+              <div className="bo-menuTypePanelLabel" id={labelId} data-role="panel-grid-label">
                 {panel.label}
               </div>
-              <div className="bo-menuTypePanelDesc" id={descId}>
+              <div className="bo-menuTypePanelDesc" id={descId} data-role="panel-grid-description">
                 {panel.description}
               </div>
-              <div className="bo-menuTypePanelCount" id={countId}>
+              <div className="bo-menuTypePanelCount" id={countId} data-role="panel-grid-count">
                 {count} item{count !== 1 ? "s" : ""}
               </div>
             </button>

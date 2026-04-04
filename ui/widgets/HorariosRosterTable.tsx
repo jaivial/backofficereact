@@ -1,4 +1,3 @@
-import React from "react";
 import type { FichajeSchedule, Member } from "../../api/types";
 
 export type HorariosRosterTableView = "grid" | "table";
@@ -25,41 +24,69 @@ export function HorariosRosterTable({
   onRowClick,
 }: HorariosRosterTableProps) {
   if (rows.length === 0) {
-    return <div className="bo-mutedText p-4 text-center">{emptyLabel || "Sin datos"}</div>;
+    return <div data-ui="rosterEmpty" className="bo-horariosRosterEmpty">{emptyLabel || "Sin datos"}</div>;
   }
 
   return (
-    <div className="bo-tableWrapper">
-      <table className="bo-table w-full text-left border-collapse">
-        <thead className="bg-gray-50 border-b">
-          <tr>
-            <th className="p-3 font-medium text-gray-500">Miembro</th>
-            <th className="p-3 font-medium text-gray-500">Horario Asignado</th>
-            <th className="p-3 font-medium text-gray-500">Estado / Fichaje</th>
+    <div data-ui="horariosRosterWrap" className="bo-horariosRosterWrap bo-horariosRosterWrap--glass">
+      <table data-ui="horariosRosterTable" className="bo-horariosRosterTable">
+        <thead data-slot="tableHead">
+          <tr data-role="header-row">
+            <th data-col="member" className="bo-horariosRosterCol--member">Miembro</th>
+            <th data-col="shift" className="bo-horariosRosterCol--shift">Horario Asignado</th>
+            <th data-col="status" className="bo-horariosRosterCol--status">Estado / Fichaje</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
-          {rows.map((row) => (
-            <tr
-              key={row.member.id}
-              onClick={() => onRowClick(row.member)}
-              className="cursor-pointer hover:bg-gray-50 transition-colors"
-            >
-              <td className="p-3">
-                {row.member.firstName} {row.member.lastName}
-              </td>
-              <td className="p-3">
-                {row.schedule ? `${row.schedule.startTime} - ${row.schedule.endTime}` : "Sin asignar"}
-              </td>
-              <td className="p-3">
-                {row.activeEntry ? (
-                  <span className="text-green-600 font-medium">Trabajando</span>
-                ) : (
-                  <span className="text-gray-400">Inactivo</span>
-                )}
-              </td>
-            </tr>
-          ))}
+        <tbody data-slot="tableBody">
+          {rows.map((row) => {
+            const isLive = !!row.activeEntry;
+            return (
+              <tr
+                key={row.member.id}
+                data-ui={`rosterRow-${row.member.id}`}
+                className={`bo-horariosRosterRow is-clickable${isLive ? " is-live" : ""}${row.schedule ? " is-assigned" : ""}`}
+                onClick={() => onRowClick(row.member)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onRowClick(row.member);
+                  }
+                }}
+              >
+                <td data-col="member" className="bo-horariosRosterCol--member">
+                  <div data-ui="rosterMember" className="bo-horariosRosterMember">
+                    <div data-slot="memberText" className="bo-horariosRosterMemberText">
+                      <div data-slot="memberName" className="bo-horariosRosterMemberName">
+                        {row.member.firstName} {row.member.lastName}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td data-col="shift" className="bo-horariosRosterCol--shift">
+                  <span data-slot="shiftLabel" className={`bo-horariosRosterShift${row.schedule ? "" : " is-empty"}`}>
+                    {row.schedule ? `${row.schedule.startTime} - ${row.schedule.endTime}` : "Sin asignar"}
+                  </span>
+                </td>
+                <td data-col="status" className="bo-horariosRosterCol--status">
+                  <span data-ui="statusBadge" className="bo-horariosRosterStatus">
+                    {isLive ? (
+                      <>
+                        <span data-slot="liveDot" className="bo-horariosLiveDot" />
+                        <span data-slot="statusLabel" className="bo-horariosRosterStatusLabel">Trabajando</span>
+                      </>
+                    ) : (
+                      <>
+                        <span data-slot="idleDot" className="bo-horariosIdleDot" />
+                        <span data-slot="statusLabel" className="bo-horariosRosterStatusLabel">Inactivo</span>
+                      </>
+                    )}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -12,6 +12,8 @@ import {
   Loader2,
   Milk,
   Nut,
+  Plus,
+  X,
   Save,
   Shell,
   Shrimp,
@@ -32,6 +34,8 @@ import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { Modal } from "../../../../../ui/overlays/Modal";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { FOOD_TYPE_LABELS, type FoodType } from "../../_components/foodTypes";
+import { WineDetailEditor } from "./functionalComponents/WineDetailEditor/WineDetailEditor";
+import { BeverageCategoryModal } from "../../_components/BeverageCategoryModal";
 
 type HeroBadge = {
   id: string;
@@ -170,6 +174,7 @@ export default function Page() {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [savingQuick, setSavingQuick] = useState(false);
   const [quickName, setQuickName] = useState("");
+  const [quickTitulo, setQuickTitulo] = useState("");
   const [quickTipo, setQuickTipo] = useState("");
   const [quickPrecio, setQuickPrecio] = useState("");
   const [quickSuplemento, setQuickSuplemento] = useState("");
@@ -181,14 +186,34 @@ export default function Page() {
   const [allergenModalOpen, setAllergenModalOpen] = useState(false);
   const [allergenDraft, setAllergenDraft] = useState<string[]>([]);
   const [savingAllergens, setSavingAllergens] = useState(false);
+  const [bebidaCatModalOpen, setBebidaCatModalOpen] = useState(false);
 
   const item = itemState;
   const foodType = data.foodType;
   const isPlate = foodType === "platos";
+  const isCafe = foodType === "cafes";
+  const isBebida = foodType === "bebidas";
+  const isWine = foodType === "vinos";
+  const supportsQuickEditor = isPlate || isCafe || isBebida;
+
+  const onWineSave = useCallback((saved: Vino) => {
+    setItemState(saved);
+  }, []);
+
+  if (isWine) {
+    return (
+      <WineDetailEditor
+        vino={data.item as Vino | null}
+        isNew={!!data.isNew}
+        onSave={onWineSave}
+      />
+    );
+  }
 
   const syncQuickFromItem = useCallback((nextItem: FoodItem | null) => {
     if (!nextItem) {
       setQuickName("");
+      setQuickTitulo("");
       setQuickTipo("");
       setQuickPrecio("0.00");
       setQuickSuplemento("0.00");
@@ -201,6 +226,7 @@ export default function Page() {
     }
     const suplementoValue = Number(nextItem.suplemento || 0);
     setQuickName(String(nextItem.nombre || ""));
+    setQuickTitulo(String(nextItem.titulo || ""));
     setQuickTipo(String(nextItem.tipo || ""));
     setQuickPrecio(toMoneyInput(nextItem.precio));
     setQuickSuplemento(toMoneyInput(suplementoValue));
@@ -216,15 +242,18 @@ export default function Page() {
   }, [data.item]);
 
   useEffect(() => {
-    if (!isPlate) return;
+    if (!supportsQuickEditor) return;
     syncQuickFromItem(item as FoodItem | null);
-  }, [isPlate, item, syncQuickFromItem]);
+  }, [supportsQuickEditor, item, syncQuickFromItem]);
 
   useEffect(() => {
-    if (!isPlate) return;
+    if (!isPlate && !isBebida) return;
     let active = true;
     setCategoriesLoading(true);
-    void api.comida.platos.categories.list()
+    const targetCategories = isBebida
+      ? api.comida.bebidas.categories
+      : api.comida.platos.categories;
+    void targetCategories.list()
       .then((res) => {
         if (!active || !res.success) return;
         const mapped = (res.categories || [])
@@ -246,13 +275,19 @@ export default function Page() {
     return () => {
       active = false;
     };
-  }, [api.comida.platos.categories, isPlate]);
+  }, [api.comida.platos.categories, api.comida.bebidas.categories, isPlate, isBebida]);
 
   const currentPlate = useMemo(() => (isPlate && item ? (item as FoodItem) : null), [isPlate, item]);
+  const currentFoodItem = useMemo(
+    () => (supportsQuickEditor && item ? (item as FoodItem) : null),
+    [supportsQuickEditor, item],
+  );
   const currentCategoryValue = useMemo(() => {
-    if (!currentPlate) return "";
-    return currentPlate.category_id ? String(currentPlate.category_id) : String(currentPlate.categoria || "");
-  }, [currentPlate]);
+    if (!currentPlate && !isBebida) return "";
+    const foodItem = (currentPlate || (isBebida ? currentFoodItem : null)) as FoodItem | null;
+    if (!foodItem) return "";
+    return foodItem.category_id ? String(foodItem.category_id) : String(foodItem.categoria || "");
+  }, [currentPlate, currentFoodItem, isBebida]);
   const quickPriceNumber = useMemo(() => parseDecimalInput(quickPrecio), [quickPrecio]);
   const quickSuppNumber = useMemo(() => parseDecimalInput(quickSuplemento), [quickSuplemento]);
   const quickSuppEffectiveNumber = useMemo(
@@ -287,42 +322,46 @@ export default function Page() {
     [quickCategoryOptions],
   );
   const quickDirty = useMemo(() => {
-    if (!currentPlate) return false;
+    if (!currentFoodItem) return false;
     const epsilon = 0.001;
+    const categoryCheck = (isPlate || isBebida) ? quickCategoria.trim() !== currentCategoryValue.trim() : false;
     return (
-      quickName.trim() !== String(currentPlate.nombre || "").trim()
-      || quickTipo.trim() !== String(currentPlate.tipo || "").trim()
-      || quickDescripcion.trim() !== String(currentPlate.descripcion || "").trim()
-      || quickCategoria.trim() !== currentCategoryValue.trim()
-      || quickActive !== !!currentPlate.active
-      || !areAllergenSetsEqual(quickAllergens, Array.isArray(currentPlate.alergenos) ? currentPlate.alergenos : [])
+      quickName.trim() !== String(currentFoodItem.nombre || "").trim()
+      || quickTitulo.trim() !== String(currentFoodItem.titulo || "").trim()
+      || (isPlate ? quickTipo.trim() !== String(currentFoodItem.tipo || "").trim() : false)
+      || quickDescripcion.trim() !== String(currentFoodItem.descripcion || "").trim()
+      || categoryCheck
+      || quickActive !== !!currentFoodItem.active
+      || !areAllergenSetsEqual(quickAllergens, Array.isArray(currentFoodItem.alergenos) ? currentFoodItem.alergenos : [])
       || quickPriceNumber === null
       || quickSuppEffectiveNumber === null
-      || Math.abs(quickPriceNumber - Number(currentPlate.precio || 0)) > epsilon
-      || Math.abs(quickSuppEffectiveNumber - Number(currentPlate.suplemento || 0)) > epsilon
+      || Math.abs(quickPriceNumber - Number(currentFoodItem.precio || 0)) > epsilon
+      || Math.abs(quickSuppEffectiveNumber - Number(currentFoodItem.suplemento || 0)) > epsilon
     );
   }, [
     currentCategoryValue,
-    currentPlate,
+    currentFoodItem,
+    isPlate,
     quickActive,
     quickAllergens,
     quickCategoria,
     quickDescripcion,
     quickName,
+    quickPrecio,
     quickPriceNumber,
     quickSuppEffectiveNumber,
+    quickTitulo,
     quickTipo,
   ]);
   const quickCanSave = useMemo(() => {
-    if (!currentPlate || savingQuick) return false;
+    if (!currentFoodItem || savingQuick) return false;
     if (!quickDirty) return false;
     if (quickName.trim().length === 0) return false;
     if (quickPriceNumber === null || quickPriceNumber < 0) return false;
     if (quickSuppEffectiveNumber === null || quickSuppEffectiveNumber < 0) return false;
     return true;
-  }, [currentPlate, quickDirty, quickName, quickPriceNumber, quickSuppEffectiveNumber, savingQuick]);
+  }, [currentFoodItem, quickDirty, quickName, quickPriceNumber, quickSuppEffectiveNumber, savingQuick]);
 
-  const isWine = foodType === "vinos";
   const title = useMemo(() => {
     if (!item) return "Detalle no disponible";
     return item.nombre || `Elemento #${data.foodId}`;
@@ -338,17 +377,6 @@ export default function Page() {
       { id: "state", label: "Estado", value: item.active ? "Activo" : "Inactivo" },
       { id: "price", label: "Precio base", value: formatEuro(item.precio) },
     ];
-
-    if (foodType === "vinos") {
-      const wine = item as Vino;
-      facts.push(
-        { id: "bodega", label: "Bodega", value: wine.bodega || "-" },
-        { id: "origen", label: "D.O.", value: wine.denominacion_origen || "-" },
-        { id: "anyo", label: "Anyo", value: wine.anyo || "-" },
-        { id: "graduacion", label: "Graduacion", value: Number(wine.graduacion || 0) > 0 ? `${wine.graduacion}% vol` : "-" },
-      );
-      return facts;
-    }
 
     const food = item as FoodItem;
     const normalizedAllergens = foodType === "platos"
@@ -374,12 +402,6 @@ export default function Page() {
 
     if (item.tipo) badges.push({ id: "tipo", label: item.tipo, className: "bo-badge--lila" });
 
-    if (foodType === "vinos") {
-      const wine = item as Vino;
-      if (wine.denominacion_origen) badges.push({ id: "do", label: wine.denominacion_origen, className: "bo-badge--cyan" });
-      return badges;
-    }
-
     const food = item as FoodItem;
     if (food.categoria) badges.push({ id: "categoria", label: food.categoria, className: "bo-badge--cyan" });
     if (foodType === "platos" && Number(food.suplemento || 0) > 0) {
@@ -390,11 +412,11 @@ export default function Page() {
   }, [foodType, item]);
 
   const allergenList = useMemo<string[]>(() => {
-    if (!item || isWine) return [];
+    if (!item) return [];
     if (isPlate) return quickAllergens;
     const alergenos = Array.isArray((item as FoodItem).alergenos) ? (item as FoodItem).alergenos : [];
     return normalizeToCardAllergens(alergenos);
-  }, [isPlate, isWine, item, quickAllergens]);
+  }, [isPlate, item, quickAllergens]);
 
   const imageUrl = useMemo(() => {
     if (!item) return "";
@@ -409,7 +431,7 @@ export default function Page() {
   const descriptionFallback = useMemo(() => getEmptyDescription(foodType), [foodType]);
 
   const onQuickSave = useCallback(async () => {
-    if (!currentPlate || !quickCanSave) return;
+    if (!currentFoodItem || !quickCanSave) return;
     const precioNumber = parseDecimalInput(quickPrecio);
     const suplementoNumber = quickHasSuplemento ? parseDecimalInput(quickSuplemento) : 0;
     if (precioNumber === null || precioNumber < 0) {
@@ -422,76 +444,101 @@ export default function Page() {
     }
     const patch: Record<string, unknown> = {
       nombre: quickName.trim(),
-      tipo: quickTipo.trim() || currentPlate.tipo || "PRINCIPAL",
+      titulo: quickTitulo.trim(),
+      tipo: isPlate ? (quickTipo.trim() || currentFoodItem.tipo || "PRINCIPAL") : currentFoodItem.tipo || (isCafe ? "CAFE" : isBebida ? "REFRESCO" : ""),
       precio: precioNumber,
       suplemento: suplementoNumber ?? 0,
       descripcion: quickDescripcion.trim(),
       active: quickActive,
       alergenos: quickAllergens,
     };
-    const categoryValue = quickCategoria.trim();
-    if (!categoryValue) {
-      patch.category_id = null;
-      patch.categoria = "";
-    } else {
-      const parsedCategoryId = Number(categoryValue);
-      if (Number.isFinite(parsedCategoryId) && parsedCategoryId > 0) patch.category_id = parsedCategoryId;
-      else patch.categoria = categoryValue;
+    if (isPlate || isBebida) {
+      const categoryValue = quickCategoria.trim();
+      if (!categoryValue) {
+        patch.category_id = null;
+        patch.categoria = "";
+      } else {
+        const parsedCategoryId = Number(categoryValue);
+        if (Number.isFinite(parsedCategoryId) && parsedCategoryId > 0) patch.category_id = parsedCategoryId;
+        else patch.categoria = categoryValue;
+      }
     }
 
     setSavingQuick(true);
     try {
-      const res = await api.comida.platos.patch(currentPlate.num, patch as any);
+      const itemNum = currentFoodItem.num;
+      let res: { success: boolean; message?: string };
+      let fresh: { success: boolean; item?: FoodItem | null };
+
+      if (isPlate) {
+        res = await api.comida.platos.patch(itemNum, patch as any);
+        fresh = res.success ? await api.comida.platos.get(itemNum) : { success: false };
+      } else if (isCafe) {
+        res = await api.comida.cafes.patch(itemNum, patch as any);
+        fresh = res.success ? await api.comida.cafes.get(itemNum) : { success: false };
+      } else if (isBebida) {
+        res = await api.comida.bebidas.patch(itemNum, patch as any);
+        fresh = res.success ? await api.comida.bebidas.get(itemNum) : { success: false };
+      } else {
+        return;
+      }
+
       if (!res.success) {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudieron guardar los cambios" });
         return;
       }
-      const fresh = await api.comida.platos.get(currentPlate.num);
       if (fresh.success && fresh.item) {
         setItemState(fresh.item);
         syncQuickFromItem(fresh.item);
       } else {
         const fallbackItem: FoodItem = {
-          ...currentPlate,
-          nombre: String((patch.nombre as string | undefined) ?? currentPlate.nombre),
-          tipo: String((patch.tipo as string | undefined) ?? currentPlate.tipo),
-          precio: Number((patch.precio as number | undefined) ?? currentPlate.precio ?? 0),
-          suplemento: Number((patch.suplemento as number | undefined) ?? currentPlate.suplemento ?? 0),
-          descripcion: String((patch.descripcion as string | undefined) ?? currentPlate.descripcion ?? ""),
+          ...currentFoodItem,
+          nombre: String((patch.nombre as string | undefined) ?? currentFoodItem.nombre),
+          titulo: String((patch.titulo as string | undefined) ?? currentFoodItem.titulo ?? ""),
+          tipo: String((patch.tipo as string | undefined) ?? currentFoodItem.tipo),
+          precio: Number((patch.precio as number | undefined) ?? currentFoodItem.precio ?? 0),
+          suplemento: Number((patch.suplemento as number | undefined) ?? currentFoodItem.suplemento ?? 0),
+          descripcion: String((patch.descripcion as string | undefined) ?? currentFoodItem.descripcion ?? ""),
           active: Boolean(patch.active),
           category_id: typeof patch.category_id === "number" ? patch.category_id as number : null,
-          categoria: quickCategoryLabel || "",
-          alergenos: Array.isArray(patch.alergenos) ? patch.alergenos as string[] : currentPlate.alergenos,
+          categoria: (isPlate || isBebida) ? quickCategoryLabel || "" : currentFoodItem.categoria || "",
+          alergenos: Array.isArray(patch.alergenos) ? patch.alergenos as string[] : currentFoodItem.alergenos,
         };
         setItemState(fallbackItem);
         syncQuickFromItem(fallbackItem);
       }
-      pushToast({ kind: "success", title: "Plato actualizado" });
+      const toastTitle = isPlate ? "Plato actualizado" : isCafe ? "Cafe actualizado" : "Bebida actualizada";
+      pushToast({ kind: "success", title: toastTitle });
     } catch {
       pushToast({ kind: "error", title: "Error", message: "Error de conexion" });
     } finally {
       setSavingQuick(false);
     }
   }, [
+    api.comida.bebidas,
+    api.comida.cafes,
     api.comida.platos,
-    currentPlate,
+    currentFoodItem,
+    isBebida,
+    isCafe,
+    isPlate,
     pushToast,
     quickActive,
+    quickAllergens,
     quickCanSave,
     quickCategoria,
-    quickCategoryLabel,
     quickDescripcion,
     quickHasSuplemento,
-    quickAllergens,
     quickName,
     quickPrecio,
     quickSuplemento,
+    quickTitulo,
     quickTipo,
     syncQuickFromItem,
   ]);
 
   useEffect(() => {
-    if (!isPlate) return;
+    if (!supportsQuickEditor) return;
     const onKeyDown = (event: KeyboardEvent) => {
       const saveCombo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s";
       if (!saveCombo) return;
@@ -503,7 +550,7 @@ export default function Page() {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isPlate, onQuickSave, quickCanSave]);
+  }, [onQuickSave, quickCanSave, supportsQuickEditor]);
 
   const openAllergenModal = useCallback(() => {
     setAllergenDraft(quickAllergens);
@@ -511,7 +558,7 @@ export default function Page() {
   }, [quickAllergens]);
 
   const onToggleAllergenAndPersist = useCallback(async (key: string) => {
-    if (!currentPlate || savingAllergens) return;
+    if (!currentFoodItem || savingAllergens) return;
     const prevDraft = normalizeToCardAllergens(allergenDraft);
     const prevAllergens = quickAllergens;
     const nextDraft = prevDraft.includes(key)
@@ -526,7 +573,17 @@ export default function Page() {
 
     setSavingAllergens(true);
     try {
-      const res = await api.comida.platos.patch(currentPlate.num, { alergenos: nextAllergens });
+      const itemNum = currentFoodItem.num;
+      let res: { success: boolean; message?: string };
+      if (isPlate) {
+        res = await api.comida.platos.patch(itemNum, { alergenos: nextAllergens });
+      } else if (isCafe) {
+        res = await api.comida.cafes.patch(itemNum, { alergenos: nextAllergens });
+      } else if (isBebida) {
+        res = await api.comida.bebidas.patch(itemNum, { alergenos: nextAllergens });
+      } else {
+        return;
+      }
       if (!res.success) {
         setAllergenDraft(prevDraft);
         setQuickAllergens(prevAllergens);
@@ -541,142 +598,122 @@ export default function Page() {
     } finally {
       setSavingAllergens(false);
     }
-  }, [allergenDraft, api.comida.platos, currentPlate, pushToast, quickAllergens, savingAllergens]);
+  }, [allergenDraft, api.comida.bebidas, api.comida.cafes, api.comida.platos, currentFoodItem, isBebida, isCafe, isPlate, pushToast, quickAllergens, savingAllergens]);
+
+  const handleBebidaCatAdd = useCallback(async (name: string) => {
+    const res = await api.comida.bebidas.categories.create({ name });
+    if (!res.success) throw new Error(res.message || "No se pudo crear la categoria");
+    return { id: (res as any).category?.id ?? 0, name, slug: (res as any).category?.slug ?? "" };
+  }, [api.comida.bebidas.categories]);
+
+  const handleBebidaCatOptimistic = useCallback((category: { value: string; label: string }) => {
+    setCategories((prev) => {
+      if (prev.some((c) => c.value === category.value)) return prev;
+      return [...prev, category];
+    });
+    setQuickCategoria(category.value);
+  }, []);
 
   return (
-    <section aria-label="Detalle comida" className="bo-content-grid bo-memberDetailPage bo-foodDetailPage">
-      <div className="bo-foodDetailTopbar">
-        <button className="bo-menuBackBtn" type="button" onClick={() => window.location.assign(backHref)}>
+    <section aria-label="Detalle comida" className="bo-content-grid bo-memberDetailPage bo-foodDetailPage" data-role="food-detail-page">
+      <div className="bo-foodDetailTopbar" data-ui="food-detail-topbar">
+        <button className="bo-menuBackBtn" type="button" onClick={() => window.location.assign(backHref)} data-role="food-detail-back-btn">
           <ChevronLeft size={16} />
           Volver a {FOOD_TYPE_LABELS[foodType]}
         </button>
         {item ? (
-          <span className={`bo-badge bo-badge--sm ${item.active ? "bo-badge--active" : "bo-badge--inactive"}`}>
+          <span className={`bo-badge bo-badge--sm ${item.active ? "bo-badge--active" : "bo-badge--inactive"}`} data-role="food-detail-status-badge">
             {item.active ? "Visible" : "Oculto"}
           </span>
         ) : null}
       </div>
 
       {!item ? (
-        <div className="bo-panel bo-foodDetailPanel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Elemento no disponible</div>
-            <div className="bo-panelMeta">No se pudo cargar el detalle solicitado.</div>
+        <div className="bo-panel bo-foodDetailPanel" data-ui="food-detail-empty-panel">
+          <div className="bo-panelHead" data-slot="food-detail-empty-head">
+            <div className="bo-panelTitle" data-role="food-detail-empty-title">Elemento no disponible</div>
+            <div className="bo-panelMeta" data-role="food-detail-empty-meta">No se pudo cargar el detalle solicitado.</div>
           </div>
         </div>
       ) : (
         <>
-          <div className="bo-panel bo-foodDetailHero">
-            <div className="bo-foodDetailMedia">
+          <div className="bo-panel bo-foodDetailHero" data-ui="food-detail-hero">
+            <div className="bo-foodDetailMedia" data-slot="food-detail-media">
               {imageUrl ? (
-                <img src={imageUrl} alt={`Imagen de ${title}`} loading="lazy" decoding="async" />
+                <img src={imageUrl} alt={`Imagen de ${title}`} loading="lazy" decoding="async" data-role="food-detail-image" />
               ) : (
-                <div className="bo-foodDetailMediaPlaceholder" aria-hidden="true">
-                  <TypeIcon size={42} />
+                <div className="bo-foodDetailMediaPlaceholder" aria-hidden="true" data-role="food-detail-media-placeholder">
+                  <TypeIcon size={42} data-role="food-detail-type-icon" />
                 </div>
               )}
             </div>
 
-            <div className="bo-foodDetailHeroBody">
-              <div className="bo-foodDetailHeroIdentity">
-                <div className="bo-foodDetailEyebrow">
+            <div className="bo-foodDetailHeroBody" data-slot="food-detail-hero-body !flex !flex-col !justify-center" style={{ display: "flex", flexDirection: "column", justifyContent: "center"}}>
+              <div className="bo-foodDetailHeroIdentity" data-slot="food-detail-hero-identity">
+                <div className="bo-foodDetailEyebrow" data-role="food-detail-eyebrow">
                   {FOOD_TYPE_LABELS[foodType]} · #{item.num}
                 </div>
-                <div className="bo-foodDetailTitleRow">
-                  <TypeIcon className="bo-foodDetailTypeIcon" size={18} aria-hidden="true" />
-                  <div className="bo-panelTitle bo-foodDetailTitle">{title}</div>
+                <div className="bo-foodDetailTitleRow" data-ui="food-detail-title-row">
+                  <TypeIcon className="bo-foodDetailTypeIcon" size={18} aria-hidden="true" data-ui="food-detail-title-icon" />
+                  <div className="bo-panelTitle bo-foodDetailTitle" data-role="food-detail-title">{title}</div>
                 </div>
-                <div className="bo-foodDetailBadgeRow">
+                <div className="bo-foodDetailBadgeRow" data-slot="food-detail-badge-row">
                   {heroBadges.map((badge) => (
-                    <span key={badge.id} className={`bo-badge ${badge.className}`}>
+                    <span key={badge.id} className={`bo-badge ${badge.className}`} data-role="food-detail-hero-badge">
                       {badge.label}
                     </span>
                   ))}
                 </div>
               </div>
               {!isPlate ? (
-                <div className="bo-foodDetailPriceWrap">
-                  <span className="bo-foodDetailPriceLabel">Precio carta</span>
-                  <div className="bo-foodDetailPrice">{formatEuro(item.precio)}</div>
-                </div>
-              ) : null}
-              {isPlate ? (
-                <div className="bo-foodDetailHeroSections">
-                  <div className="bo-foodDetailHeroSection">
-                    <div className="bo-panelTitle">Datos clave</div>
-                    <div className="bo-panelMeta">Valores principales del elemento seleccionado.</div>
-                    <div className="bo-foodDetailFactsGrid">
-                      {detailKeyFacts.map((fact) => (
-                        <div key={fact.id} className="bo-kv bo-foodDetailFact">
-                          <div className="bo-kvLabel">{fact.label}</div>
-                          <div className="bo-kvValue bo-kvValue--wrap">{fact.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="bo-foodDetailPriceWrap !bg-transparent !shadow-none !border-none" style={{ background: "none" }} data-ui="food-detail-price-wrap">
+                  <span className="bo-foodDetailPriceLabel" data-role="food-detail-price-label">Precio carta</span>
+                  <div className="bo-foodDetailPrice" data-role="food-detail-price-value">{formatEuro(item.precio)}</div>
                 </div>
               ) : null}
             </div>
           </div>
 
-          {!isPlate ? (
-            <div className="bo-foodDetailBodyGrid">
-              <div className="bo-panel bo-foodDetailPanel bo-foodDetailPanel--facts">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Datos clave</div>
-                  <div className="bo-panelMeta">Valores principales del elemento seleccionado.</div>
-                </div>
-                <div className="bo-panelBody">
-                  <div className="bo-foodDetailFactsGrid">
-                    {detailKeyFacts.map((fact) => (
-                      <div key={fact.id} className="bo-kv bo-foodDetailFact">
-                        <div className="bo-kvLabel">{fact.label}</div>
-                        <div className="bo-kvValue bo-kvValue--wrap">{fact.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+          
 
-              <div className="bo-panel bo-foodDetailPanel bo-foodDetailPanel--description">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Descripcion</div>
-                  <div className="bo-panelMeta">Texto que aparece en la carta publica.</div>
+          {supportsQuickEditor && currentFoodItem ? (
+            <div className="bo-panel bo-foodDetailPanel bo-foodDetailQuickEditor" data-ui="food-detail-quick-editor">
+              <div className="bo-panelHead bo-foodDetailQuickHead" data-slot="food-detail-quick-head">
+                <div data-slot="food-detail-quick-title-wrap">
+                  <div className="bo-panelTitle" data-role="food-detail-quick-title">Edicion rapida</div>
+                  <div className="bo-panelMeta" data-role="food-detail-quick-meta">Atajos para ajustar este plato sin volver al listado.</div>
                 </div>
-                <div className="bo-panelBody">
-                  <p className={`bo-foodDetailDescription${hasDescription ? "" : " is-empty"}`}>
-                    {hasDescription ? descriptionValue : descriptionFallback}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          {isPlate && currentPlate ? (
-            <div className="bo-panel bo-foodDetailPanel bo-foodDetailQuickEditor">
-              <div className="bo-panelHead bo-foodDetailQuickHead">
-                <div>
-                  <div className="bo-panelTitle">Edicion rapida</div>
-                  <div className="bo-panelMeta">Atajos para ajustar este plato sin volver al listado.</div>
-                </div>
-                <span className={`bo-badge bo-badge--sm ${quickDirty ? "bo-badge--warning" : "bo-badge--muted"}`}>
+                <span className={`bo-badge bo-badge--sm ${quickDirty ? "bo-badge--warning" : "bo-badge--muted"}`} data-role="food-detail-quick-dirty-badge">
                   {quickDirty ? "Cambios sin guardar" : "Sin cambios"}
                 </span>
               </div>
-              <div className="bo-panelBody">
-                <div className="bo-foodDetailQuickGrid">
-                  <label className="bo-field">
-                    <span className="bo-label">Nombre</span>
+              <div className="bo-panelBody" data-slot="food-detail-quick-body">
+                <div className="bo-foodDetailQuickGrid" data-ui="food-detail-quick-grid">
+                  <label className="bo-field" data-slot="food-detail-quick-name-field">
+                    <span className="bo-label" data-role="food-detail-quick-name-label">Nombre</span>
                     <input
                       type="text"
                       className="bo-input"
                       value={quickName}
                       onChange={(event) => setQuickName(event.target.value)}
                       disabled={savingQuick}
+                      data-role="food-detail-quick-name-input"
                     />
                   </label>
-                  <label className="bo-field">
-                    <span className="bo-label">Tipo</span>
+                  <label className="bo-field" data-slot="food-detail-quick-titulo-field">
+                    <span className="bo-label" data-role="food-detail-quick-titulo-label">Titulo</span>
+                    <input
+                      type="text"
+                      className="bo-input"
+                      value={quickTitulo}
+                      onChange={(event) => setQuickTitulo(event.target.value)}
+                      disabled={savingQuick}
+                      data-role="food-detail-quick-titulo-input"
+                    />
+                  </label>
+                  {isPlate ? (
+                  <label className="bo-field" data-slot="food-detail-quick-tipo-field">
+                    <span className="bo-label" data-role="food-detail-quick-tipo-label">Tipo</span>
                     <Select
                       value={quickTipo}
                       onChange={setQuickTipo}
@@ -686,8 +723,9 @@ export default function Page() {
                       disabled={savingQuick}
                     />
                   </label>
-                  <label className="bo-field">
-                    <span className="bo-label">Precio</span>
+                  ) : null}
+                  <label className="bo-field" data-slot="food-detail-quick-precio-field">
+                    <span className="bo-label" data-role="food-detail-quick-precio-label">Precio</span>
                     <input
                       type="number"
                       min="0"
@@ -696,10 +734,24 @@ export default function Page() {
                       value={quickPrecio}
                       onChange={(event) => setQuickPrecio(event.target.value)}
                       disabled={savingQuick}
+                      data-role="food-detail-quick-precio-input"
                     />
                   </label>
-                  <label className="bo-field">
-                    <span className="bo-label">Categoria</span>
+                  <label className="bo-field" data-slot="food-detail-quick-categoria-field">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="bo-label" data-role="food-detail-quick-categoria-label">Categoria</span>
+                      {isBebida ? (
+                        <button
+                          data-role="food-detail-add-category-btn"
+                          type="button"
+                          className="bo-btn bo-btn--ghost bo-btn--sm"
+                          onClick={() => setBebidaCatModalOpen(true)}
+                        >
+                          <Plus size={14} />
+                          Añadir categoria
+                        </button>
+                      ) : null}
+                    </div>
                     <Select
                       value={quickCategoria}
                       onChange={setQuickCategoria}
@@ -709,9 +761,9 @@ export default function Page() {
                       disabled={savingQuick || categoriesLoading}
                     />
                   </label>
-                  <div className={`bo-foodDetailQuickStatus bo-foodDetailQuickSupplement${quickHasSuplemento ? " is-active" : ""}`}>
-                    <div className="bo-foodDetailQuickStatusRow">
-                      <span className="bo-label">Tiene suplemento</span>
+                  <div className={`bo-foodDetailQuickStatus bo-foodDetailQuickSupplement${quickHasSuplemento ? " is-active" : ""}`} data-ui="food-detail-quick-supplement">
+                    <div className="bo-foodDetailQuickStatusRow" data-ui="food-detail-quick-supplement-row">
+                      <span className="bo-label" data-role="food-detail-quick-supplement-label">Tiene suplemento</span>
                       <Switch
                         checked={quickHasSuplemento}
                         onCheckedChange={setQuickHasSuplemento}
@@ -720,8 +772,8 @@ export default function Page() {
                       />
                     </div>
                     {quickHasSuplemento ? (
-                      <label className="bo-field bo-foodDetailQuickSupplementField">
-                        <span className="bo-label">Importe suplemento</span>
+                      <label className="bo-field bo-foodDetailQuickSupplementField" data-slot="food-detail-quick-supplement-field">
+                        <span className="bo-label" data-role="food-detail-quick-supplement-amount-label">Importe suplemento</span>
                         <input
                           type="number"
                           min="0"
@@ -730,27 +782,29 @@ export default function Page() {
                           value={quickSuplemento}
                           onChange={(event) => setQuickSuplemento(event.target.value)}
                           disabled={savingQuick}
+                          data-role="food-detail-quick-supplement-input"
                         />
                       </label>
                     ) : null}
                   </div>
-                  <div className="bo-foodDetailQuickStatus">
-                    <span className="bo-label">Visible en carta</span>
+                  <div className="bo-foodDetailQuickStatus" data-ui="food-detail-quick-active">
+                    <span className="bo-label" data-role="food-detail-quick-active-label">Visible en carta</span>
                     <Switch checked={quickActive} onCheckedChange={setQuickActive} disabled={savingQuick} aria-label="Cambiar visibilidad del plato" />
                   </div>
-                  <label className="bo-field bo-foodDetailQuickDescription">
-                    <span className="bo-label">Descripcion</span>
+                  <label className="bo-field bo-foodDetailQuickDescription" data-slot="food-detail-quick-description-field">
+                    <span className="bo-label" data-role="food-detail-quick-description-label">Descripcion</span>
                     <textarea
                       className="bo-textarea"
                       rows={4}
                       value={quickDescripcion}
                       onChange={(event) => setQuickDescripcion(event.target.value)}
                       disabled={savingQuick}
+                      data-role="food-detail-quick-description-textarea"
                     />
                   </label>
                 </div>
               </div>
-              <div className="bo-foodDetailEditorActions">
+              <div className="bo-foodDetailEditorActions" data-slot="food-detail-quick-actions">
                 <button
                   className="bo-btn bo-btn--primary"
                   type="button"
@@ -758,6 +812,7 @@ export default function Page() {
                   disabled={!quickCanSave}
                   aria-label="Guardar cambios"
                   title="Guardar cambios"
+                  data-role="food-detail-quick-save-btn"
                 >
                   {savingQuick ? <Loader2 size={14} className="bo-foodDetailSpinIcon" /> : <Save size={14} />}
                 </button>
@@ -765,45 +820,54 @@ export default function Page() {
             </div>
           ) : null}
 
-          {!isWine ? (
-            <div className="bo-panel bo-foodDetailPanel bo-foodDetailPanel--allergens">
-              <div className="bo-panelHead bo-foodDetailAllergenHead">
-                <div>
-                  <div className="bo-panelTitle">Alergenos</div>
-                  <div className="bo-panelMeta">Etiquetas usadas para informacion alergena del plato.</div>
-                </div>
-                {isPlate ? (
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={openAllergenModal}>
-                    Editar alergenos
-                  </button>
-                ) : null}
+          <div className="bo-panel bo-foodDetailPanel bo-foodDetailPanel--allergens" data-ui="food-detail-allergens-panel">
+            <div className="bo-panelHead bo-foodDetailAllergenHead" data-slot="food-detail-allergens-head">
+              <div data-slot="food-detail-allergens-title-wrap">
+                <div className="bo-panelTitle" data-role="food-detail-allergens-title">Alergenos</div>
+                <div className="bo-panelMeta" data-role="food-detail-allergens-meta">Etiquetas usadas para informacion alergena del plato.</div>
               </div>
-              <div className="bo-panelBody">
-                {allergenList.length > 0 ? (
-                  <div className="bo-tagsList bo-foodDetailTags">
-                    {allergenList.map((alergeno) => (
-                      <span key={alergeno} className="bo-tagItem bo-foodDetailTag">
-                        {alergeno}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bo-foodDetailEmptyNote">No hay alergenos declarados para este elemento.</div>
-                )}
-              </div>
+              {supportsQuickEditor ? (
+                <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={openAllergenModal} data-role="food-detail-allergens-edit-btn">
+                  <Plus size={14} />
+                  Añadir
+                </button>
+              ) : null}
             </div>
-          ) : null}
+            <div className="bo-panelBody" data-slot="food-detail-allergens-body">
+              {allergenList.length > 0 ? (
+                <div className="bo-tagsList bo-foodDetailTags" data-ui="food-detail-allergens-tags">
+                  {allergenList.map((alergeno) => (
+                    <span key={alergeno} className="bo-tagItem bo-foodDetailTag bo-foodDetailTag--removable" data-role="food-detail-allergen-tag">
+                      <span data-role="food-detail-allergen-tag-text">{alergeno}</span>
+                      <button
+                        type="button"
+                        className="bo-tagItemRemove"
+                        onClick={() => void onToggleAllergenAndPersist(alergeno)}
+                        aria-label={`Eliminar ${alergeno}`}
+                        disabled={savingAllergens}
+                        data-role="food-detail-allergen-tag-remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="bo-foodDetailEmptyNote" data-role="food-detail-allergens-empty">Sin alergenos</div>
+              )}
+            </div>
+          </div>
 
-          {isPlate ? (
+          {supportsQuickEditor ? (
             <Modal open={allergenModalOpen} title="Alergenos" onClose={() => setAllergenModalOpen(false)} widthPx={620}>
-              <div className="bo-modalHead">
-                <div className="bo-modalTitle">Selecciona alergenos</div>
-                <button className="bo-modalX" type="button" onClick={() => setAllergenModalOpen(false)} aria-label="Cerrar">
+              <div className="bo-modalHead" data-slot="food-detail-allergen-modal-head">
+                <div className="bo-modalTitle" data-role="food-detail-allergen-modal-title">Selecciona alergenos</div>
+                <button className="bo-modalX" type="button" onClick={() => setAllergenModalOpen(false)} aria-label="Cerrar" data-role="food-detail-allergen-modal-close">
                   ×
                 </button>
               </div>
-              <div className="bo-modalBody">
-                <div className="bo-allergenGrid">
+              <div className="bo-modalBody" data-slot="food-detail-allergen-modal-body">
+                <div className="bo-allergenGrid" data-ui="food-detail-allergen-modal-grid">
                   {CARD_ALLERGENS.map((item) => {
                     const selected = allergenDraft.includes(item.key);
                     const Icon = item.icon;
@@ -814,25 +878,36 @@ export default function Page() {
                         className={`bo-allergenCircle ${selected ? "is-selected" : ""}`}
                         onClick={() => void onToggleAllergenAndPersist(item.key)}
                         disabled={savingAllergens}
+                        data-role="food-detail-allergen-modal-item"
                       >
-                        <span className="bo-allergenCircleIcon"><Icon size={16} /></span>
-                        <span className="bo-allergenCircleLabel">{item.key}</span>
+                        <span className="bo-allergenCircleIcon" data-role="food-detail-allergen-modal-item-icon"><Icon size={16} /></span>
+                        <span className="bo-allergenCircleLabel" data-role="food-detail-allergen-modal-item-label">{item.key}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
-              <div className="bo-modalActions">
+              <div className="bo-modalActions" data-slot="food-detail-allergen-modal-actions">
                 {savingAllergens ? (
-                  <span className="bo-panelMeta">Guardando cambios...</span>
+                  <span className="bo-panelMeta" data-role="food-detail-allergen-modal-saving">Guardando cambios...</span>
                 ) : (
-                  <span className="bo-panelMeta">Cambios guardados automaticamente.</span>
+                  <span className="bo-panelMeta" data-role="food-detail-allergen-modal-autosaved">Cambios guardados automaticamente.</span>
                 )}
-                <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setAllergenModalOpen(false)} disabled={savingAllergens}>
+                <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setAllergenModalOpen(false)} disabled={savingAllergens} data-role="food-detail-allergen-modal-cancel">
                   Cancelar
                 </button>
               </div>
             </Modal>
+          ) : null}
+
+          {isBebida ? (
+            <BeverageCategoryModal
+              open={bebidaCatModalOpen}
+              defaultCategoryNames={["Refrescos", "Aguas", "Zumos", "Cervezas", "Copas", "Licores", "Cocktails"]}
+              onClose={() => setBebidaCatModalOpen(false)}
+              onAddCategory={handleBebidaCatAdd}
+              onOptimisticAdd={handleBebidaCatOptimistic}
+            />
           ) : null}
         </>
       )}

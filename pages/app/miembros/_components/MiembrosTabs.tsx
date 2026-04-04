@@ -18,5 +18,5 @@ export function MiembrosTabs({
     [],
   );
 
-  return <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembros" className="bo-tabs--members" onNavigate={onNavigate} />;
+  return <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembros" className="bo-tabs--members !w-fit mx-auto" onNavigate={onNavigate} />;
 }

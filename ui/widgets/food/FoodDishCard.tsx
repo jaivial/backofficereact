@@ -96,6 +96,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
 
   return (
     <article
+      data-ui="dish-card"
       className={`bo-memberCard bo-foodMemberCard${clickable ? " is-clickable" : ""}${className ? ` ${className}` : ""}`}
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
@@ -104,9 +105,10 @@ export const FoodDishCard = React.memo(function FoodDishCard({
       onKeyDown={clickable ? onKeyDown : undefined}
     >
       {showMedia ? (
-        <div className="bo-foodMemberMedia">
+        <div data-ui="dish-card-media" className="bo-foodMemberMedia">
           {mediaInteractive ? (
             <button
+              data-role="dish-card-media-trigger"
               type="button"
               className="bo-foodMemberMediaButton"
               onClick={onMediaClick}
@@ -114,26 +116,26 @@ export const FoodDishCard = React.memo(function FoodDishCard({
               disabled={mediaActionDisabled || isMediaLoading}
             >
               {isMediaLoading ? (
-                <div className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
+                <div data-ui="dish-card-media-skeleton" className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
               ) : hasImage ? (
-                <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
+                <img data-role="dish-card-image" src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
               ) : (
-                <div className="bo-foodMemberMediaPlaceholder">
+                <div data-ui="dish-card-media-placeholder" className="bo-foodMemberMediaPlaceholder">
                   <UtensilsCrossed size={30} />
                 </div>
               )}
-              <span className="bo-foodMemberMediaOverlay" aria-hidden="true">
+              <span data-ui="dish-card-media-overlay" className="bo-foodMemberMediaOverlay" aria-hidden="true">
                 <Upload size={22} />
               </span>
             </button>
           ) : (
             <>
               {isMediaLoading ? (
-                <div className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
+                <div data-ui="dish-card-media-skeleton" className="bo-foodMemberMediaSkeleton" aria-hidden="true" />
               ) : hasImage ? (
-                <img src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} aria-hidden="true" />
+                <img data-role="dish-card-image" src={imageUrl || undefined} alt="" loading="lazy" decoding="async" onError={() => setImageFailed(true)} aria-hidden="true" />
               ) : (
-                <div className="bo-foodMemberMediaPlaceholder" aria-hidden="true">
+                <div data-ui="dish-card-media-placeholder" className="bo-foodMemberMediaPlaceholder" aria-hidden="true">
                   <UtensilsCrossed size={30} />
                 </div>
               )}
@@ -142,21 +144,21 @@ export const FoodDishCard = React.memo(function FoodDishCard({
         </div>
       ) : null}
 
-      <div className={`bo-foodMemberBody${bodyClassName ? ` ${bodyClassName}` : ""}`}>
-        <div className="bo-foodMemberTitleRow">
-          <h3 className="bo-foodMemberTitle">{title}</h3>
-          {inactive ? <span className="bo-badge bo-badge--danger">Inactivo</span> : null}
+      <div data-ui="dish-card-body" className={`bo-foodMemberBody${bodyClassName ? ` ${bodyClassName}` : ""}`}>
+        <div data-ui="dish-card-title-row" className="bo-foodMemberTitleRow">
+          <h3 data-role="dish-card-title" className="bo-foodMemberTitle">{title}</h3>
+          {inactive ? <span data-role="dish-card-inactive-badge" className="bo-badge bo-badge--danger">Inactivo</span> : null}
         </div>
 
-        {primaryMeta ? <div className="bo-foodMemberMeta">{primaryMeta}</div> : null}
-        {secondaryMeta ? <div className="bo-foodMemberSubMeta">{secondaryMeta}</div> : null}
+        {primaryMeta ? <div data-ui="dish-card-meta" className="bo-foodMemberMeta">{primaryMeta}</div> : null}
+        {secondaryMeta ? <div data-ui="dish-card-submeta" className="bo-foodMemberSubMeta">{secondaryMeta}</div> : null}
 
         {children}
 
         {priceLabel || footerActions ? (
-          <div className="bo-foodMemberFooter">
-            {priceLabel ? <span className="bo-foodMemberPrice">{priceLabel}</span> : <span className="bo-foodMemberPriceSpacer" aria-hidden="true" />}
-            {footerActions ? <div className="bo-foodMemberActions">{footerActions}</div> : null}
+          <div data-ui="dish-card-footer" className="bo-foodMemberFooter">
+            {priceLabel ? <span data-role="dish-card-price" className="bo-foodMemberPrice">{priceLabel}</span> : <span data-ui="dish-card-price-spacer" className="bo-foodMemberPriceSpacer" aria-hidden="true" />}
+            {footerActions ? <div data-ui="dish-card-actions" className="bo-foodMemberActions">{footerActions}</div> : null}
           </div>
         ) : null}
       </div>
