@@ -181,7 +181,6 @@ export function Tabs({
         return (
           <motion.a
             key={t.id}
-            layoutId="boTabIndicator"
             className={`bo-tab${active ? " is-active" : ""}`}
             href={href}
             aria-current={active ? "page" : undefined}
@@ -195,7 +194,7 @@ export function Tabs({
             }}
           >
             {active || !mounted ? (
-              <span className="bo-tabIndicator" />
+              <motion.span layoutId="boTabIndicator" className="bo-tabIndicator" />
             ) : null}
             <span className="bo-tabInner">
               <span className="bo-tabIcon" aria-hidden="true">
