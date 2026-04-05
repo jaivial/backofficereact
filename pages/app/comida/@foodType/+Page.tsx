@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, Plus } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Plus } from "lucide-react";
+import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
@@ -11,11 +12,15 @@ import { useToasts } from "../../../../ui/feedback/useToasts";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
+import { Breadcrumbs } from "../../../../ui/nav/Breadcrumbs";
+import type { BreadcrumbItem } from "../../../../ui/nav/Breadcrumbs";
+import { sessionAtom } from "../../../../state/atoms";
 import { FoodCategoryModal } from "../_components/FoodCategoryModal";
 import { FoodFilters } from "../_components/FoodFilters";
 import { FoodItemCard } from "../_components/FoodItemCard";
 import { FoodItemModal } from "../_components/FoodItemModal";
 import { FOOD_TYPE_LABELS, FOOD_TYPE_SINGULAR, FOOD_TYPE_TIPO_OPTIONS, type FoodType } from "../_components/foodTypes";
+import { useComidaAI, type ComidaAIEvent } from "../_components/hooks/useComidaAI";
 
 type ListItem = FoodItem | Vino;
 type ActiveFilter = "all" | "active" | "inactive";
@@ -48,6 +53,7 @@ export default function Page() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   useErrorToast(data.error);
+  const session = useAtomValue(sessionAtom);
 
   const foodType = data.foodType as FoodType;
 
@@ -76,6 +82,39 @@ export default function Page() {
   const [pageActive, setPageActive] = useState(true);
   const [pageVisibilityLoading, setPageVisibilityLoading] = useState(false);
   const showPageVisibilityToggle = foodType === "cafes" || foodType === "bebidas";
+
+  // Wire WebSocket for real-time AI image generation status
+  const handleAIWSEvent = useCallback(
+    (event: ComidaAIEvent) => {
+      if (!event.item_id) return;
+      if (event.type === "comida_ai_started") {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.num === event.item_id ? { ...item, ai_generating: true } as ListItem : item,
+          ),
+        );
+      }
+      if (event.type === "comida_ai_completed") {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.num === event.item_id
+              ? { ...item, ai_generating: false, foto_url: event.foto_url } as ListItem
+              : item,
+          ),
+        );
+      }
+      if (event.type === "comida_ai_failed") {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.num === event.item_id ? { ...item, ai_generating: false } as ListItem : item,
+          ),
+        );
+      }
+    },
+    [],
+  );
+
+  useComidaAI(session?.activeRestaurantId, { onEvent: handleAIWSEvent });
 
   useEffect(() => {
     if (!showPageVisibilityToggle) return;
@@ -385,13 +424,15 @@ export default function Page() {
   const listLabel = FOOD_TYPE_LABELS[foodType];
   const singularLabel = FOOD_TYPE_SINGULAR[foodType];
 
+  const breadcrumbs = useMemo<BreadcrumbItem[]>(() => [
+    { label: "Carta", href: "/app/comida" },
+    { label: listLabel },
+  ], [listLabel]);
+
   return (
     <section aria-label={`Carta ${listLabel}`} className="bo-foodPage">
       <div className="bo-container">
-        <button className="bo-menuBackBtn" type="button" onClick={() => window.location.assign("/app/comida")}>
-          <ChevronLeft size={16} />
-          Volver a tipos de carta
-        </button>
+        <Breadcrumbs items={breadcrumbs} />
 
         <div className="bo-foodPage-hero">
           <h1 className="bo-pageTitle">{listLabel}</h1>

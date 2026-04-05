@@ -14,12 +14,14 @@ export function Tabs({
   ariaLabel,
   className,
   onNavigate,
+  layoutId = "boTabIndicator",
 }: {
   tabs: TabItem[];
   activeId: string;
   ariaLabel: string;
   className?: string;
   onNavigate?: (href: string, id: string, ev: React.MouseEvent<HTMLAnchorElement>) => void;
+  layoutId?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
@@ -194,7 +196,7 @@ export function Tabs({
             }}
           >
             {active || !mounted ? (
-              <motion.span layoutId="boTabIndicator" className="bo-tabIndicator" />
+              <motion.span layoutId={layoutId} className="bo-tabIndicator" />
             ) : null}
             <span className="bo-tabInner">
               <span className="bo-tabIcon" aria-hidden="true">

@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bean,
-  ChevronLeft,
+  Camera,
   CircleDot,
   Coffee,
   Egg,
@@ -13,6 +13,7 @@ import {
   Milk,
   Nut,
   Plus,
+  Upload,
   X,
   Save,
   Shell,
@@ -33,9 +34,13 @@ import { Select } from "../../../../../ui/inputs/Select";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { Modal } from "../../../../../ui/overlays/Modal";
 import { Switch } from "../../../../../ui/shadcn/Switch";
-import { FOOD_TYPE_LABELS, type FoodType } from "../../_components/foodTypes";
+import { Breadcrumbs } from "../../../../../ui/nav/Breadcrumbs";
+import type { BreadcrumbItem } from "../../../../../ui/nav/Breadcrumbs";
+import { FOOD_TYPE_LABELS, FOOD_TYPE_SINGULAR, type FoodType } from "../../_components/foodTypes";
 import { WineDetailEditor } from "./functionalComponents/WineDetailEditor/WineDetailEditor";
 import { BeverageCategoryModal } from "../../_components/BeverageCategoryModal";
+import { compressImageToWebP, isValidImageFile } from "../../../../../lib/imageCompressor";
+import { useComidaAIWebSocket, type ComidaAIWSMessage } from "./functionalComponents/FoodDetailImageEditor/hooks/useComidaAIWebSocket";
 
 type HeroBadge = {
   id: string;
@@ -56,6 +61,8 @@ const FOOD_TYPE_ICONS: Record<FoodType, LucideIcon> = {
   vinos: Wine,
   postres: UtensilsCrossed,
 };
+
+const AI_ADVISOR_FOOD_TYPES = new Set<FoodType>(["bebidas", "cafes"]);
 
 const CARD_ALLERGENS = [
   { key: "Gluten", icon: Wheat },
@@ -135,7 +142,7 @@ function normalizeToCardAllergens(values: string[]): string[] {
   const unknown: string[] = [];
   values.forEach((raw) => {
     const trimmed = String(raw || "").trim();
-    if (!trimmed) return;
+    if (!trimmed || trimmed === "[]") return;
     const normalized = normalizeToken(trimmed);
     const mapped = ALLERGEN_ALIAS_TO_CARD[normalized];
     if (mapped) {
@@ -188,6 +195,16 @@ export default function Page() {
   const [savingAllergens, setSavingAllergens] = useState(false);
   const [bebidaCatModalOpen, setBebidaCatModalOpen] = useState(false);
 
+  // Image handling state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [showAIAdvisor, setShowAIAdvisor] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [pendingAIEnhance, setPendingAIEnhance] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
+
   const item = itemState;
   const foodType = data.foodType;
   const isPlate = foodType === "platos";
@@ -195,6 +212,28 @@ export default function Page() {
   const isBebida = foodType === "bebidas";
   const isWine = foodType === "vinos";
   const supportsQuickEditor = isPlate || isCafe || isBebida;
+
+  // WebSocket for AI events
+  const itemNum = item ? (item as FoodItem).num : null;
+  const showAdvisorForType = AI_ADVISOR_FOOD_TYPES.has(foodType);
+
+  useComidaAIWebSocket({
+    itemNum,
+    onEvent: useCallback((msg: ComidaAIWSMessage) => {
+      if (msg.type === "comida_ai_started" && msg.item_id === itemNum) {
+        setAiGenerating(true);
+      } else if (msg.type === "comida_ai_completed" && msg.item_id === itemNum) {
+        setAiGenerating(false);
+        if (msg.foto_url) {
+          setItemState((prev) => prev ? { ...prev, foto_url: msg.foto_url } : prev);
+        }
+        pushToast({ kind: "success", title: "IA aplicada", message: "Imagen mejorada con IA" });
+      } else if (msg.type === "comida_ai_failed" && msg.item_id === itemNum) {
+        setAiGenerating(false);
+        pushToast({ kind: "error", title: "Error IA", message: msg.message || "Error al mejorar la imagen" });
+      }
+    }, [itemNum, pushToast]),
+  });
 
   const onWineSave = useCallback((saved: Vino) => {
     setItemState(saved);
@@ -368,7 +407,20 @@ export default function Page() {
   }, [data.foodId, item]);
   const TypeIcon = FOOD_TYPE_ICONS[foodType];
 
-  const backHref = `/app/comida/${foodType}`;
+  const breadcrumbs = useMemo<BreadcrumbItem[]>(() => {
+    const items: BreadcrumbItem[] = [
+      { label: "Carta", href: "/app/comida" },
+      { label: FOOD_TYPE_LABELS[foodType], href: `/app/comida/${foodType}` },
+    ];
+    if (data.isNew) {
+      items.push({ label: `Nuevo ${FOOD_TYPE_SINGULAR[foodType]}` });
+    } else if (item) {
+      items.push({ label: item.nombre || `#${data.foodId}` });
+    } else if (data.foodId) {
+      items.push({ label: `#${data.foodId}` });
+    }
+    return items;
+  }, [data.foodId, data.isNew, foodType, item]);
   const detailKeyFacts = useMemo<DetailFact[]>(() => {
     if (!item) return [];
 
@@ -413,9 +465,9 @@ export default function Page() {
 
   const allergenList = useMemo<string[]>(() => {
     if (!item) return [];
-    if (isPlate) return quickAllergens;
+    if (isPlate) return quickAllergens.filter((a) => a.trim().length > 0);
     const alergenos = Array.isArray((item as FoodItem).alergenos) ? (item as FoodItem).alergenos : [];
-    return normalizeToCardAllergens(alergenos);
+    return normalizeToCardAllergens(alergenos).filter((a) => a.trim().length > 0);
   }, [isPlate, item, quickAllergens]);
 
   const imageUrl = useMemo(() => {
@@ -614,13 +666,83 @@ export default function Page() {
     setQuickCategoria(category.value);
   }, []);
 
+  // Image selection handler
+  const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!isValidImageFile(file)) {
+      pushToast({ kind: "error", title: "Error", message: "Tipo de archivo no valido. Usa JPG, PNG, WebP o GIF." });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const compressed = await compressImageToWebP(file, 80);
+      setImageBase64(compressed);
+      setImagePreview(compressed);
+      if (showAdvisorForType) {
+        setShowAIAdvisor(true);
+      }
+    } catch {
+      pushToast({ kind: "error", title: "Error", message: "No se pudo procesar la imagen" });
+    } finally {
+      setUploading(false);
+    }
+  }, [pushToast, showAdvisorForType]);
+
+  const runAIEnhance = useCallback(async (targetNum: number) => {
+    setAiBusy(true);
+    setAiGenerating(true);
+    setShowAIAdvisor(false);
+
+    try {
+      const targetApi = isBebida
+        ? api.comida.bebidas
+        : api.comida.cafes;
+      const b64 = imageBase64?.split(",")[1];
+      if (!b64) throw new Error("No image data");
+
+      const byteChars = atob(b64);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteArray[i] = byteChars.charCodeAt(i);
+      }
+      const blob = new Blob([byteArray], { type: "image/webp" });
+      const webpFile = new File([blob], "comida-ai.webp", { type: "image/webp" });
+
+      const res = await targetApi.uploadImageAI(targetNum, webpFile);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error IA", message: res.message || "No se pudo aplicar IA" });
+        setAiGenerating(false);
+      }
+    } catch {
+      pushToast({ kind: "error", title: "Error IA", message: "Error al mejorar la imagen con IA" });
+      setAiGenerating(false);
+    } finally {
+      setAiBusy(false);
+    }
+  }, [api.comida.bebidas, api.comida.cafes, imageBase64, isBebida, pushToast]);
+
+  const handleAIAdvisorClose = useCallback(() => {
+    setShowAIAdvisor(false);
+  }, []);
+
+  const handleAIContinueWithout = useCallback(() => {
+    setShowAIAdvisor(false);
+    setImageBase64(null);
+    setImagePreview(null);
+  }, []);
+
+  const handleAIEnhance = useCallback(() => {
+    if (!currentFoodItem) return;
+    runAIEnhance(currentFoodItem.num);
+  }, [currentFoodItem, runAIEnhance]);
+
   return (
     <section aria-label="Detalle comida" className="bo-content-grid bo-memberDetailPage bo-foodDetailPage" data-role="food-detail-page">
       <div className="bo-foodDetailTopbar" data-ui="food-detail-topbar">
-        <button className="bo-menuBackBtn" type="button" onClick={() => window.location.assign(backHref)} data-role="food-detail-back-btn">
-          <ChevronLeft size={16} />
-          Volver a {FOOD_TYPE_LABELS[foodType]}
-        </button>
+        <Breadcrumbs items={breadcrumbs} />
         {item ? (
           <span className={`bo-badge bo-badge--sm ${item.active ? "bo-badge--active" : "bo-badge--inactive"}`} data-role="food-detail-status-badge">
             {item.active ? "Visible" : "Oculto"}
@@ -638,18 +760,42 @@ export default function Page() {
       ) : (
         <>
           <div className="bo-panel bo-foodDetailHero" data-ui="food-detail-hero">
-            <div className="bo-foodDetailMedia" data-slot="food-detail-media">
-              {imageUrl ? (
+            <div className="bo-foodDetailMedia max-w-[280px] mx-auto max-h-auto" data-slot="food-detail-media">
+              {aiGenerating ? (
+                <div className="bo-foodDetailMediaSkeleton flex items-center justify-center" data-role="food-detail-image-skeleton" style={{ minHeight: 160 }}>
+                  <Loader2 size={32} className="bo-foodDetailSpinIcon animate-spin" data-role="food-detail-skeleton-spinner" />
+                </div>
+              ) : imageUrl ? (
                 <img src={imageUrl} alt={`Imagen de ${title}`} loading="lazy" decoding="async" data-role="food-detail-image" />
               ) : (
                 <div className="bo-foodDetailMediaPlaceholder" aria-hidden="true" data-role="food-detail-media-placeholder">
                   <TypeIcon size={42} data-role="food-detail-type-icon" />
                 </div>
               )}
+              {supportsQuickEditor && (
+                <button
+                  data-role="food-detail-change-photo-btn"
+                  type="button"
+                  className="bo-btn bo-btn--glass w-full mt-3"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || aiBusy}
+                >
+                  <Camera size={14} data-role="food-detail-camera-icon" />
+                  Cambiar foto
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleImageSelect}
+                className="hidden"
+                data-role="food-detail-file-input"
+              />
             </div>
 
             <div className="bo-foodDetailHeroBody" data-slot="food-detail-hero-body !flex !flex-col !justify-center" style={{ display: "flex", flexDirection: "column", justifyContent: "center"}}>
-              <div className="bo-foodDetailHeroIdentity" data-slot="food-detail-hero-identity">
+              <div className="bo-foodDetailHeroIdentity w-fit mx-auto" data-slot="food-detail-hero-identity">
                 <div className="bo-foodDetailEyebrow" data-role="food-detail-eyebrow">
                   {FOOD_TYPE_LABELS[foodType]} · #{item.num}
                 </div>
@@ -666,7 +812,7 @@ export default function Page() {
                 </div>
               </div>
               {!isPlate ? (
-                <div className="bo-foodDetailPriceWrap !bg-transparent !shadow-none !border-none" style={{ background: "none" }} data-ui="food-detail-price-wrap">
+                <div className="bo-foodDetailPriceWrap !bg-transparent !shadow-none !border-none w-fit mx-auto justify-center" style={{ background: "none" }} data-ui="food-detail-price-wrap">
                   <span className="bo-foodDetailPriceLabel" data-role="food-detail-price-label">Precio carta</span>
                   <div className="bo-foodDetailPrice" data-role="food-detail-price-value">{formatEuro(item.precio)}</div>
                 </div>
@@ -908,6 +1054,76 @@ export default function Page() {
               onAddCategory={handleBebidaCatAdd}
               onOptimisticAdd={handleBebidaCatOptimistic}
             />
+          ) : null}
+
+          {/* AI Advisor Modal for image enhancement */}
+          {showAIAdvisor && imagePreview ? (
+            <div
+              data-role="food-detail-ai-advisor-overlay"
+              className="fixed inset-0 z-[210] flex items-center justify-center bg-black/60"
+              onClick={(e) => { if (e.target === e.currentTarget) handleAIAdvisorClose(); }}
+            >
+              <div
+                data-ui="food-detail-ai-advisor-content"
+                className="bg-[var(--bo-surface)] rounded-2xl border border-[var(--bo-border)] shadow-xl max-w-md w-full mx-4 overflow-hidden"
+              >
+                <div data-slot="food-detail-ai-advisor-header" className="flex items-center justify-between p-4 border-b border-[var(--bo-border)]">
+                  <span data-role="food-detail-ai-advisor-title" className="text-sm font-semibold text-[var(--bo-text)]">
+                    Asesor IA de imagen
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAIAdvisorClose}
+                    data-role="food-detail-ai-advisor-close"
+                    className="p-1 rounded-lg hover:bg-[var(--bo-surface-2)] transition-colors duration-150"
+                    disabled={aiBusy}
+                  >
+                    <X size={16} className="text-[var(--bo-muted)]" data-role="food-detail-ai-advisor-close-icon" />
+                  </button>
+                </div>
+
+                <div data-slot="food-detail-ai-advisor-preview" className="p-4">
+                  <img
+                    src={imagePreview}
+                    alt="Vista previa"
+                    data-role="food-detail-ai-advisor-preview-img"
+                    className="w-full aspect-square object-cover rounded-xl"
+                  />
+                </div>
+
+                <div data-slot="food-detail-ai-advisor-actions" className="flex gap-3 p-4 border-t border-[var(--bo-border)]">
+                  <button
+                    type="button"
+                    onClick={handleAIContinueWithout}
+                    disabled={aiBusy}
+                    data-role="food-detail-ai-advisor-without-btn"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+                      bg-[var(--bo-surface-2)] text-[var(--bo-text)] border border-[var(--bo-border)]
+                      hover:bg-[var(--bo-surface-3)] transition-colors duration-150
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Upload size={14} data-slot="upload-icon" />
+                    Continuar sin mejorar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAIEnhance}
+                    disabled={aiBusy}
+                    data-role="food-detail-ai-advisor-enhance-btn"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+                      bg-purple-950/40 border-white/20 border-solid !border-[0.5px] hover:bg-purple-500/20 hover:cursor-pointer text-white
+                      hover:opacity-90 transition-opacity duration-150
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {aiBusy ? (
+                      <Loader2 size={14} className="animate-spin" data-slot="ai-spinner" />
+                    ) : (
+                      "Mejorar con IA"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : null}
         </>
       )}

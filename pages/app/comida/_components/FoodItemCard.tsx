@@ -62,6 +62,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
     <FoodDishCard
       title={item.nombre}
       imageUrl={item.foto_url}
+      mediaLoading={!!(item as { ai_generating?: boolean }).ai_generating}
       inactive={!item.active}
       primaryMeta={secondaryMeta}
       secondaryMeta={extraMeta}

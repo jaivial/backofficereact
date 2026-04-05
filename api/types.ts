@@ -145,6 +145,7 @@ export type FoodItem = {
   categoria?: string;
   category_id?: number | null;
   category_slug?: string;
+  ai_generating?: boolean;
 };
 
 export type ComidaTipo = "vinos" | "cafes" | "postres" | "platos" | "bebidas";
@@ -1761,3 +1762,27 @@ export const INVOICE_DEPOSIT_TYPE_OPTIONS: { value: InvoiceDepositType; label: s
   { value: "advance", label: "Anticipo" },
   { value: "deposit", label: "Seña" },
 ];
+
+// Mandatory Menus Types
+
+export type MandatoryMenuConfig = {
+  date: string;
+  status: boolean;
+  mandatory: boolean;
+  menuIds: number[];
+  menuChooseMain: number[];
+};
+
+export type MandatoryMenuSavePayload = {
+  date: string;
+  status: boolean;
+  mandatory: boolean;
+  menuIds: number[];
+  menuChooseMain: number[];
+};
+
+export type MenuSelectorItem = {
+  id: number;
+  menu_title: string;
+  menu_type: string;
+};

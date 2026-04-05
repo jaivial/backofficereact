@@ -48,9 +48,9 @@ export function ReservationDayStateBlock({
   const buttonLabel = actionLabel ?? (actionMode === "openOnly" ? "Abrir día" : day.isOpen ? "Cerrar día" : "Abrir día");
 
   return (
-    <div className={["bo-configDayState", className].filter(Boolean).join(" ")}>
-      <div className="bo-label">{label}</div>
-      <div className="bo-configStatus">
+    <div className={["bo-configDayState flex flex-col !justify-center !items-center !gap-4 pt-4", className].filter(Boolean).join(" ")}>
+      <div className="bo-label !text-center">{label}</div>
+      <div className="bo-configStatus !text-center flex flex-row justify-center">
         {day.isOpen ? <LockOpen size={16} strokeWidth={1.8} /> : <Lock size={16} strokeWidth={1.8} />}
         <span>{day.isOpen ? "Abierto" : "Cerrado"}</span>
       </div>
@@ -80,12 +80,12 @@ export function ReservationDayPanel({
   bodyClassName,
 }: ReservationDayPanelProps) {
   return (
-    <div className={["bo-panel", "bo-dayStatePanel", panelClassName].filter(Boolean).join(" ")}>
-      <div className="bo-panelHead">
-        <div className="bo-panelTitle">{title}</div>
-        {meta ? <div className="bo-panelMeta">{meta}</div> : null}
+    <div className={["bo-panel", "bo-dayStatePanel", "!w-fit py-4 px-14 !mx-auto", panelClassName].filter(Boolean).join(" ")}>
+      <div className="bo-panelHead flex flex-col gap-2 justify-center !items-center">
+        <div className="bo-panelTitle !text-center">{title}</div>
+        {meta ? <div className="bo-panelMeta !text-center">{meta}</div> : null}
       </div>
-      <div className={["bo-panelBody", "bo-configDayLimitRow", bodyClassName].filter(Boolean).join(" ")}>
+      <div className={["bo-panelBody", "bo-configDayLimitRow", "!flex !flex-col gap-2 !justify-center !items-center", bodyClassName].filter(Boolean).join(" ")}>
         <ReservationDayStateBlock
           day={day}
           busy={busy}

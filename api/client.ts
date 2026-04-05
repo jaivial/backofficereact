@@ -59,6 +59,7 @@ import type {
   ReminderSettings,
   InvoiceReminder,
   SendReminderInput,
+  MenuSelectorItem,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 import { emitSessionExpired, emitSessionExpirationUpdate } from "../lib/session-expiration";
@@ -1587,6 +1588,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           });
         },
       },
+      async getSelector(): Promise<APISuccess<{ menus: MenuSelectorItem[] }> | APIError> {
+        return json("/api/admin/menus/selector", { method: "GET" });
+      },
     },
     config: {
       async getDefaults(): Promise<APISuccess<ConfigDefaults> | APIError> {
@@ -1710,6 +1714,17 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       },
       async setRestaurantInfo(input: Partial<import("./types").RestaurantInfo>): Promise<APISuccess<{ restaurantInfo: import("./types").RestaurantInfo }> | APIError> {
         return json("/api/admin/config/restaurant-info", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async getMandatoryMenus(date: string): Promise<APISuccess<import("./types").MandatoryMenuConfig> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/mandatory-menus?${q.toString()}`, { method: "GET" });
+      },
+      async saveMandatoryMenus(input: import("./types").MandatoryMenuSavePayload): Promise<APISuccess<import("./types").MandatoryMenuConfig> | APIError> {
+        return json("/api/admin/config/mandatory-menus", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 
-type ComidaAIEvent = {
+export type ComidaAIEvent = {
   type: string;
   tipo?: string;
   item_id?: number;
@@ -10,13 +10,19 @@ type ComidaAIEvent = {
   restaurant_id?: number;
 };
 
-export function useComidaAI(restaurantId?: number) {
+type UseComidaAIOptions = {
+  onEvent?: (event: ComidaAIEvent) => void;
+};
+
+export function useComidaAI(restaurantId?: number, options?: UseComidaAIOptions) {
   const { pushToast } = useToasts();
   const [generating, setGenerating] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const onEventRef = useRef(options?.onEvent);
+  onEventRef.current = options?.onEvent;
 
-  const onEvent = useCallback(
+  const handleInternalEvent = useCallback(
     (data: ComidaAIEvent) => {
       switch (data.type) {
         case "comida_ai_started":
@@ -36,6 +42,14 @@ export function useComidaAI(restaurantId?: number) {
     [pushToast],
   );
 
+  const onMessage = useCallback(
+    (data: ComidaAIEvent) => {
+      handleInternalEvent(data);
+      onEventRef.current?.(data);
+    },
+    [handleInternalEvent],
+  );
+
   useEffect(() => {
     if (!restaurantId) return;
 
@@ -50,25 +64,21 @@ export function useComidaAI(restaurantId?: number) {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        // Connection established
       };
 
       ws.onmessage = (ev) => {
         try {
           const data = JSON.parse(ev.data) as ComidaAIEvent;
-          onEvent(data);
+          onMessage(data);
         } catch {
-          // ignore malformed messages
         }
       };
 
       ws.onerror = () => {
-        // Error will trigger onclose
       };
 
       ws.onclose = () => {
         wsRef.current = null;
-        // Auto-reconnect after 3 seconds
         reconnectTimer = setTimeout(connect, 3000);
       };
     }
@@ -82,7 +92,7 @@ export function useComidaAI(restaurantId?: number) {
         wsRef.current = null;
       }
     };
-  }, [restaurantId, onEvent]);
+  }, [restaurantId, onMessage]);
 
   return { generating, imageUrl, setImageUrl };
 }

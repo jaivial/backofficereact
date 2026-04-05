@@ -4,9 +4,13 @@ import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { formatISODate, parseISODate } from "../lib/format";
-
-type Pos = { top: number; left: number };
-type Placement = "bottom" | "top";
+import {
+  DATE_DROPDOWN_MARGIN,
+  DATE_DROPDOWN_POPOVER_HEIGHT,
+  DATE_DROPDOWN_POPOVER_WIDTH,
+} from "./constants/dateDropdown";
+import { calculatePopoverPosition, clamp, type Pos } from "./hooks/usePopoverPosition";
+import type { Placement } from "./constants/dateDropdown";
 
 type DateDropdownProps = {
   value: string;
@@ -30,10 +34,6 @@ function formatDateLabel(iso: string): string {
 
 function portalEl(): HTMLElement | null {
   return document.getElementById("bo-portal") || document.body;
-}
-
-function clamp(n: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, n));
 }
 
 function monthLabel(year: number, month0: number): string {
@@ -114,22 +114,17 @@ export function DateDropdown({
   const reposition = useCallback(() => {
     const anchor = btnRef.current || wrapperRef.current;
     if (!open || !anchor) return;
-
-    const rect = anchor.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const popRect = popRef.current?.getBoundingClientRect();
-    const popW = popRect?.width ?? 280;
-    const popH = popRect?.height ?? 320;
-    const left = clamp(rect.left, 8, vw - popW - 8);
-    const spaceBelow = vh - rect.bottom - 8;
-    const nextPlacement: Placement = spaceBelow < popH && rect.top > spaceBelow ? "top" : "bottom";
-    const top = nextPlacement === "top" ? Math.max(8, rect.top - 8 - popH) : rect.bottom + 8;
-
-    setPlacement((current) => (current === nextPlacement ? current : nextPlacement));
+    const { pos: newPos, placement: newPlacement } = calculatePopoverPosition(
+      anchor,
+      popRef.current,
+      DATE_DROPDOWN_POPOVER_WIDTH,
+      DATE_DROPDOWN_POPOVER_HEIGHT,
+      DATE_DROPDOWN_MARGIN,
+    );
+    setPlacement((current) => (current === newPlacement ? current : newPlacement));
     setPos((current) => {
-      if (current && current.top === top && current.left === left) return current;
-      return { top, left };
+      if (current && current.top === newPos.top && current.left === newPos.left) return current;
+      return newPos;
     });
   }, [open]);
 
