@@ -249,6 +249,134 @@ select:focus-visible,
 }
 ```
 
+## Reglas de Test-Driven Development (TDD) — Obligatorio
+
+### Principio general
+Todo código nuevo en `backoffice/` debe seguir TDD estricto. Los tests NO son opcionales: son parte del definition of done.
+
+### Configuración de testing
+
+- **Framework de unit tests**: Vitest con jsdom
+- **Librería de testing**: @testing-library/react
+- **Framework e2e**: Playwright (Chromium)
+- **Ficheros de config**:
+  - Unit tests: `vitest.config.ts`
+  - E2E tests: `playwright.config.ts`
+  - Setup: `vitest.setup.ts`
+
+### Flujo TDD estricto (cycle)
+
+```
+1. Escribir test FALLANDO primero (test -> producción)
+   - El test debe fallar ANTES de escribir código
+   - El nombre del test describe el comportamiento esperado
+   
+2. Implementar el código MINIMO para pasar
+   - Solo lo suficiente para que el test pase
+   - No over-engineering
+
+3. Refactorizar (opcional)
+   - Mejorar código manteniendo tests verdes
+   - Si un refactor rompe tests, reverting obligatorio
+
+4. Commit: test + código juntos en el mismo commit
+```
+
+### Reglas de unit tests
+
+#### Estructura de archivos (OBLIGATORIO)
+```
+{component}/
+├── {Component}.tsx           # Componente
+└── {Component}.test.tsx      # Tests unitarios
+```
+
+#### Nomenclatura de tests
+```typescript
+describe("{ComponentName}", () => {
+  it("renders {expected behavior}", () => { ... });
+  it("calls {callback} when {action}", () => { ... });
+  it("shows {element} when {condition}", () => { ... });
+});
+```
+
+#### Reglas de aserciones
+- Usar `expect().toBeInTheDocument()` (no `toBeTruthy()`)
+- Usar `expect().toHaveBeenCalledWith(...)` (no `toHaveBeenCalled()` sin verificar args)
+- Usar `describe()` para agrupar tests relacionados
+- Usar `beforeEach()` para resetear mocks
+
+#### Mocking obligatorio
+- **Iconos**: siempre mockear `lucide-react` (no renderizar SVGs reales)
+- **Componentes hijos**: mockear con `vi.mock()` si no son el sujeto del test
+- **APIs**: mockear con `msw` o funciones mock locales
+
+```typescript
+// Ejemplo mock obligatorio
+vi.mock("lucide-react", () => ({
+  Plus: () => React.createElement("span", { "data-testid": "plus-icon" }),
+  Trash2: () => React.createElement("span", { "data-testid": "trash-icon" }),
+}));
+```
+
+### Reglas de e2e tests
+
+#### Estructura de archivos
+```
+e2e/
+├── specs/
+│   ├── {feature}/
+│   │   └── {feature}.spec.ts
+│   └── ...
+├── helpers/
+│   └── api.ts
+└── fixtures/
+    └── session.ts
+```
+
+#### Reglas de selectores
+- **PRIORIDAD 1**: `data-testid` en elementos interactivos (botones, inputs)
+- **PRIORIDAD 2**: roles ARIA (`role="button"`, `role="dialog"`)
+- **PRIORIDAD 3**: texto visible (`getByText("texto")`)
+- **NUNCA**: selectores CSS frágiles (`#id`, `.class`) — pueden cambiar
+
+#### Reglas de estructura
+```typescript
+test("{feature}: {behavior}", async ({ page }) => {
+  await page.goto("/{route}");
+  
+  // Arrange: setup si necesario
+  
+  // Act
+  await page.click("[data-testid='submit-button']");
+  
+  // Assert
+  await expect(page.getByTestId("result")).toBeVisible();
+});
+```
+
+### Comandos de testing
+
+```bash
+# Unit tests
+bun test              # Run tests once
+bun test:watch       # Watch mode (desarrollo)
+
+# E2E tests
+bun test:e2e         # Run e2e tests
+bun test:e2e:ui      # Run e2e con UI de Playwright
+```
+
+### Cobertura minima
+- Componentes reutilizables (`ui/`): 80% coverage mínimo
+- Componentes funcionales: 70% coverage mínimo
+- Componentes de página: 50% coverage mínimo (más enfocados en integración)
+
+### Integración continua
+- Tests deben pasar en CI antes de merge
+- `forbidOnly: true` en CI (no `test.only()`)
+- Retries: 2 en CI, 0 en local
+
 ## Componentes disponibles
 
 ### Layout

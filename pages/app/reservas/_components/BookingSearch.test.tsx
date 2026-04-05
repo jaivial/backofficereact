@@ -15,8 +15,8 @@ describe("BookingSearch", () => {
       />,
     );
 
-    expect(screen.getByPlaceholderText(/nombre.*email/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/teléfono/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/^Buscar por nombre/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/^Teléfono$/i)).toBeInTheDocument();
   });
 
   it("calls onSearch after debounce when typing in name input", async () => {
@@ -32,7 +32,7 @@ describe("BookingSearch", () => {
       />,
     );
 
-    const nameInput = screen.getByPlaceholderText(/nombre.*email/i);
+    const nameInput = screen.getByPlaceholderText(/^Buscar por nombre/i);
     fireEvent.change(nameInput, { target: { value: "Beatriz" } });
 
     expect(onSearch).not.toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe("BookingSearch", () => {
       />,
     );
 
-    const nameInput = screen.getByPlaceholderText(/nombre.*email/i);
+    const nameInput = screen.getByPlaceholderText(/^Buscar por nombre/i);
     fireEvent.change(nameInput, { target: { value: "test" } });
 
     act(() => {
@@ -90,7 +90,7 @@ describe("BookingSearch", () => {
       />,
     );
 
-    const nameInput = screen.getByPlaceholderText(/nombre.*email/i);
+    const nameInput = screen.getByPlaceholderText(/^Buscar por nombre/i);
     fireEvent.change(nameInput, { target: { value: "test" } });
 
     act(() => {
@@ -114,7 +114,7 @@ describe("BookingSearch", () => {
       />,
     );
 
-    const nameInput = screen.getByPlaceholderText(/nombre.*email/i);
+    const nameInput = screen.getByPlaceholderText(/^Buscar por nombre/i);
     fireEvent.change(nameInput, { target: { value: "B" } });
 
     act(() => {
