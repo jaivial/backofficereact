@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Minus, Plus } from "lucide-react";
+import { Info, Minus, Plus } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
 import type {
@@ -11,6 +11,8 @@ import type {
   ConfigMesasDeDos,
   ConfigMesasDeTres,
   ConfigOpeningHours,
+  MandatoryMenuConfig,
+  MenuSelectorItem,
   OpeningMode,
 } from "../../../../api/types";
 import { DateDropdown } from "../../../../ui/inputs/DateDropdown";
@@ -20,6 +22,8 @@ import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
+import { MandatoryMenuSelector } from "../../../../ui/widgets/MandatoryMenuSelector";
+import { InfoModal } from "../../../../ui/overlays/InfoModal";
 
 type PageData = {
   date: string;
@@ -143,6 +147,16 @@ export default function Page() {
   const [mesasDeTres, setMesasDeTres] = useState<ConfigMesasDeTres | null>(data.mesasDeTres);
   const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
 
+  // Mandatory menu config state
+  const [mandatoryMenuStatus, setMandatoryMenuStatus] = useState(false);
+  const [mandatoryMenuConfig, setMandatoryMenuConfig] = useState<MandatoryMenuConfig | null>(null);
+  const [availableMenus, setAvailableMenus] = useState<MenuSelectorItem[]>([]);
+  const [selectedMenuIds, setSelectedMenuIds] = useState<number[]>([]);
+  const [menuChooseMain, setMenuChooseMain] = useState<number[]>([]);
+  const [mandatoryBooking, setMandatoryBooking] = useState(false);
+  const [showMandatoryInfo, setShowMandatoryInfo] = useState(false);
+  const [mandatoryMenuBusy, setMandatoryMenuBusy] = useState(false);
+
   const [draftLimit, setDraftLimit] = useState(() => String(data.dailyLimit?.limit ?? 45));
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
   const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
@@ -170,6 +184,11 @@ export default function Page() {
     if (!openingHours) return;
     setOpeningModeDraft(openingHours.openingMode);
   }, [openingHours?.openingMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load mandatory menu config on mount
+  useEffect(() => {
+    void loadMandatoryMenuConfig(date);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const mesasOptions = useMemo(() => {
     const out = [{ value: "999", label: "Sin límite" }];
@@ -221,6 +240,100 @@ export default function Page() {
     [api],
   );
 
+  const loadMandatoryMenuConfig = useCallback(
+    async (d: string) => {
+      setMandatoryMenuBusy(true);
+      try {
+        // Load available menus for selector
+        const menusRes = await api.menus.getSelector();
+        if (menusRes.success) {
+          setAvailableMenus(menusRes.menus || []);
+        }
+
+        // Load mandatory menu config for date
+        const configRes = await api.config.getMandatoryMenus(d);
+        if (configRes.success) {
+          setMandatoryMenuConfig(configRes);
+          setMandatoryMenuStatus(configRes.status);
+          setSelectedMenuIds(configRes.menuIds || []);
+          setMenuChooseMain(configRes.menuChooseMain || []);
+          setMandatoryBooking(configRes.mandatory);
+        } else {
+          setMandatoryMenuConfig(null);
+          setMandatoryMenuStatus(false);
+          setSelectedMenuIds([]);
+          setMenuChooseMain([]);
+          setMandatoryBooking(false);
+        }
+      } catch (e) {
+        setMandatoryMenuConfig(null);
+        setMandatoryMenuStatus(false);
+        setSelectedMenuIds([]);
+        setMenuChooseMain([]);
+        setMandatoryBooking(false);
+      } finally {
+        setMandatoryMenuBusy(false);
+      }
+    },
+    [api],
+  );
+
+  const saveMandatoryMenus = useCallback(async () => {
+    setMandatoryMenuBusy(true);
+    try {
+      const res = await api.config.saveMandatoryMenus({
+        date,
+        status: true,
+        mandatory: mandatoryBooking,
+        menuIds: selectedMenuIds,
+        menuChooseMain: menuChooseMain,
+      });
+      if (res.success) {
+        setMandatoryMenuConfig(res);
+        pushToast({ kind: "success", title: "Guardado", message: "Configuración de menus guardada" });
+      } else {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la configuración" });
+      }
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar la configuración" });
+    } finally {
+      setMandatoryMenuBusy(false);
+    }
+  }, [api, date, mandatoryBooking, selectedMenuIds, menuChooseMain, pushToast]);
+
+  const handleMandatoryMenuToggle = useCallback(
+    async (checked: boolean) => {
+      if (!checked) {
+        // Turn OFF: call save with status=false
+        setMandatoryMenuBusy(true);
+        try {
+          const res = await api.config.saveMandatoryMenus({
+            date,
+            status: false,
+            mandatory: false,
+            menuIds: [],
+            menuChooseMain: [],
+          });
+          if (res.success) {
+            setMandatoryMenuStatus(false);
+            setMandatoryMenuConfig(res);
+            setSelectedMenuIds([]);
+            setMenuChooseMain([]);
+            setMandatoryBooking(false);
+            pushToast({ kind: "success", title: "Desactivado", message: "Menús obligatorios desactivados para este día" });
+          }
+        } catch (e) {
+          pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo actualizar" });
+        } finally {
+          setMandatoryMenuBusy(false);
+        }
+      } else {
+        setMandatoryMenuStatus(true);
+      }
+    },
+    [api, date, pushToast],
+  );
+
   const onDateChange = useCallback(
     (d: string) => {
       setDate(d);
@@ -228,8 +341,9 @@ export default function Page() {
       url.searchParams.set("date", d);
       window.history.replaceState(null, "", url.toString());
       void loadAll(d);
+      void loadMandatoryMenuConfig(d);
     },
-    [loadAll],
+    [loadAll, loadMandatoryMenuConfig],
   );
 
   const pushSuccess = useCallback(
@@ -488,17 +602,17 @@ export default function Page() {
             <motion.div
               data-ui="config-daily-limit-panel"
               key="config-daily-limit-panel"
-              className="bo-dailyLimitPanel"
+              className="bo-dailyLimitPanel !shadow-md !w-fit p-4 px-8 bo-panel mx-auto"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               transition={dayVisibilityTransition}
             >
-              <div data-slot="panel-head" className="bo-panelHead">
-                <div data-role="title" className="bo-panelTitle">Límite diario</div>
+              <div data-slot="panel-head" className="bo-panelHead !pt-0 !w-fit !mx-auto">
+                <div data-role="title" className="bo-panelTitle !text-center">Límite diario</div>
               </div>
               <div data-slot="daily-limit-body" className="bo-dailyLimitBody">
-                <div data-ui="limit-counter" className="bo-dailyLimitCounter">
+                <div data-ui="limit-counter" className="bo-dailyLimitCounter justify-center items-center flex !flex-row !gap-4">
                   <button
                     data-action="decrement"
                     className="bo-counterBtn"
@@ -533,8 +647,100 @@ export default function Page() {
                     <Plus size={14} strokeWidth={2.2} />
                   </button>
                 </div>
-                <div data-ui="free-seats" className="bo-mutedText">Libres: {dailyLimit.freeBookingSeats}</div>
+                <div data-ui="free-seats" className="bo-mutedText pt-4 !w-fit !mx-auto">Libres: {dailyLimit.freeBookingSeats}</div>
               </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence initial={false}>
+          {day.isOpen ? (
+            <motion.div
+              data-ui="mandatory-menus-panel"
+              key="config-mandatory-menus"
+              className="bo-panel"
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={dayVisibilityTransition}
+            >
+              <div data-slot="panel-head" className="bo-panelHead">
+                <div data-role="title" className="bo-panelTitle">Reserva menus</div>
+                <div data-slot="meta" className="bo-panelMeta">
+                  Puedes cambiar y seleccionar si la fecha seleccionada solo admite menus especificos para las reservas de ese dia
+                </div>
+              </div>
+              <div data-slot="panel-body" className="bo-panelBody">
+                <div className="flex justify-center py-2" data-ui="mandatory-toggle">
+                  <Switch
+                    checked={mandatoryMenuStatus}
+                    onCheckedChange={handleMandatoryMenuToggle}
+                    disabled={mandatoryMenuBusy}
+                    aria-label="Activar menus obligatorios"
+                  />
+                </div>
+
+                {mandatoryMenuStatus && (
+                  <>
+                    <div className="bo-mutedText text-center mt-2 text-sm" data-ui="mandatory-subtitle">
+                      Ahora el cliente debe elegir entre los menus seleccionados para realizar la reserva en un nuevo paso
+                    </div>
+
+                    <div className="mt-4" data-ui="menu-selector-wrapper">
+                      <MandatoryMenuSelector
+                        menus={availableMenus}
+                        selectedMenuIds={selectedMenuIds}
+                        menuChooseMain={menuChooseMain}
+                        onChange={(ids, chooseMain) => {
+                          setSelectedMenuIds(ids);
+                          setMenuChooseMain(chooseMain);
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2 mt-4" data-ui="mandatory-booking-row">
+                      <label className="flex items-center gap-2 text-sm text-(--bo-text)">
+                        <input
+                          type="checkbox"
+                          checked={mandatoryBooking}
+                          onChange={(e) => setMandatoryBooking(e.target.checked)}
+                          className="bo-checkbox"
+                          data-ui="mandatory-booking-checkbox"
+                        />
+                        Reserva obligatoria
+                      </label>
+                      <button
+                        type="button"
+                        className="bo-btn bo-btn--ghost bo-btn--icon p-1"
+                        onClick={() => setShowMandatoryInfo(true)}
+                        aria-label="Info reserva obligatoria"
+                        data-ui="mandatory-info-btn"
+                      >
+                        <Info size={16} strokeWidth={1.8} aria-hidden="true" />
+                      </button>
+                    </div>
+
+                    <div className="flex justify-center mt-4" data-ui="mandatory-save">
+                      <button
+                        type="button"
+                        className="bo-btn primary"
+                        onClick={() => void saveMandatoryMenus()}
+                        disabled={mandatoryMenuBusy}
+                        data-ui="save-mandatory-btn"
+                      >
+                        {mandatoryMenuBusy ? "Guardando..." : "Guardar"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <InfoModal
+                open={showMandatoryInfo}
+                title="Reserva obligatoria"
+                content="Si se seleciona reserva obligatoria, los clientes deben seleccionar un menu para poder avanzar con su reserva. Si no se seleciona la casilla, los menus seran mostrados en un paso del gestor de reservas, pero el cliente puede realizar la reserva sin necesidad de seleccionar un menu."
+                onClose={() => setShowMandatoryInfo(false)}
+              />
             </motion.div>
           ) : null}
         </AnimatePresence>

@@ -82,6 +82,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const [bebidaCatModalOpen, setBebidaCatModalOpen] = useState(false);
   const [showAIAdvisor, setShowAIAdvisor] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
+  const [pendingAIEnhance, setPendingAIEnhance] = useState(false);
 
   const isPostre = foodType === "postres";
   const supportsAlergenos = foodType === "platos" || foodType === "postres";
@@ -118,6 +119,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     setImagePreview(null);
     setShowAIAdvisor(false);
     setAiBusy(false);
+    setPendingAIEnhance(false);
   }, [item, foodType, open]);
 
   useEffect(() => {
@@ -184,60 +186,17 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     setShowAIAdvisor(false);
   }, []);
 
-  const handleAIEnhance = useCallback(async () => {
-    if (!item || !imageBase64) return;
-    setAiBusy(true);
-    try {
-      const targetApi = isBebida
-        ? api.comida.bebidas
-        : api.comida.cafes;
-      const b64 = imageBase64.split(",")[1];
-      if (!b64) throw new Error("No image data");
-      const byteChars = atob(b64);
-      const byteArray = new Uint8Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
-      const blob = new Blob([byteArray], { type: "image/webp" });
-      const file = new File([blob], "comida-ai.webp", { type: "image/webp" });
-      const res = await targetApi.uploadImageAI(item.num, file);
-      if (res.success) {
-        pushToast({ kind: "success", title: "IA aplicada", message: "Imagen mejorada con IA" });
-        setShowAIAdvisor(false);
-      } else {
-        pushToast({ kind: "error", title: "Error IA", message: res.message || "No se pudo aplicar IA" });
-      }
-    } catch {
-      pushToast({ kind: "error", title: "Error IA", message: "Error al mejorar la imagen con IA" });
-    } finally {
-      setAiBusy(false);
-    }
-  }, [api.comida.bebidas, api.comida.cafes, imageBase64, isBebida, item, pushToast]);
-
-  const handleBebidaCatAdd = useCallback(async (name: string) => {
-    const res = await api.comida.bebidas.categories.create({ name });
-    if (!res.success) throw new Error(res.message || "No se pudo crear la categoria");
-    return { id: (res as any).category?.id ?? 0, name, slug: (res as any).category?.slug ?? "" };
-  }, [api.comida.bebidas.categories]);
-
-  const handleBebidaCatOptimistic = useCallback((category: { value: string; label: string }) => {
-    setBebidaCategories((prev) => {
-      if (prev.some((c) => c.value === category.value)) return prev;
-      return [...prev, category];
-    });
-    setCategoria(category.value);
-  }, []);
-
-  const onSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveItem = useCallback(async (): Promise<FoodItem | null> => {
     const nombreOrDesc = isPostre ? (descripcion.trim() || nombre.trim()) : nombre.trim();
     if (!nombreOrDesc) {
       pushToast({ kind: "error", title: "Error", message: isPostre ? "La descripcion es requerida" : "El nombre es requerido" });
-      return;
+      return null;
     }
 
     const precioNum = isPostre ? 0 : Number(precio);
     if (!isPostre && (!Number.isFinite(precioNum) || precioNum < 0)) {
       pushToast({ kind: "error", title: "Error", message: "Precio invalido" });
-      return;
+      return null;
     }
     const suplementoNum = supportsSuplemento ? Number(suplemento || 0) : 0;
 
@@ -256,7 +215,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
         if (!res.success) {
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
-          return;
+          return null;
         }
 
         const saved = ((res as any).item as FoodItem | undefined) ?? {
@@ -272,8 +231,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
           has_foto: false,
         };
         pushToast({ kind: "success", title: item ? "Actualizado" : "Creado" });
-        onSave(saved);
-        return;
+        return saved;
       }
 
       const payload: Record<string, any> = {
@@ -286,6 +244,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
         alergenos: alergenos.length > 0 ? alergenos : undefined,
         active,
         imageBase64: imageBase64 || undefined,
+        ai_generating: pendingAIEnhance || undefined,
       };
 
       if (supportsCategoria) {
@@ -309,7 +268,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
       if (!res.success) {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
-        return;
+        return null;
       }
 
       const categoriaLabel = supportsCategoria
@@ -330,9 +289,10 @@ export const FoodItemModal = React.memo(function FoodItemModal({
         categoria: categoriaLabel,
       };
       pushToast({ kind: "success", title: item ? "Actualizado" : "Creado" });
-      onSave(saved);
+      return saved;
     } catch {
       pushToast({ kind: "error", title: "Error", message: "Error de conexion" });
+      return null;
     } finally {
       setSaving(false);
     }
@@ -352,7 +312,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     isPostre,
     item,
     nombre,
-    onSave,
+    pendingAIEnhance,
     precio,
     pushToast,
     suplemento,
@@ -361,6 +321,68 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     tipo,
     titulo,
   ]);
+
+  const runAIEnhance = useCallback(async (targetNum: number) => {
+    setAiBusy(true);
+    try {
+      const targetApi = isBebida
+        ? api.comida.bebidas
+        : api.comida.cafes;
+      const b64 = imageBase64?.split(",")[1];
+      if (!b64) throw new Error("No image data");
+      const byteChars = atob(b64);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([byteArray], { type: "image/webp" });
+      const file = new File([blob], "comida-ai.webp", { type: "image/webp" });
+      const res = await targetApi.uploadImageAI(targetNum, file);
+      if (res.success) {
+        pushToast({ kind: "success", title: "IA aplicada", message: "Imagen mejorada con IA" });
+      } else {
+        pushToast({ kind: "error", title: "Error IA", message: res.message || "No se pudo aplicar IA" });
+      }
+    } catch {
+      pushToast({ kind: "error", title: "Error IA", message: "Error al mejorar la imagen con IA" });
+    } finally {
+      setAiBusy(false);
+    }
+  }, [api.comida.bebidas, api.comida.cafes, imageBase64, isBebida, pushToast]);
+
+  const handleAIEnhance = useCallback(() => {
+    if (item) {
+      setShowAIAdvisor(false);
+      runAIEnhance(item.num);
+    } else {
+      setPendingAIEnhance(true);
+      setShowAIAdvisor(false);
+    }
+  }, [item, runAIEnhance]);
+
+  const handleBebidaCatAdd = useCallback(async (name: string) => {
+    const res = await api.comida.bebidas.categories.create({ name });
+    if (!res.success) throw new Error(res.message || "No se pudo crear la categoria");
+    return { id: (res as any).category?.id ?? 0, name, slug: (res as any).category?.slug ?? "" };
+  }, [api.comida.bebidas.categories]);
+
+  const handleBebidaCatOptimistic = useCallback((category: { value: string; label: string }) => {
+    setBebidaCategories((prev) => {
+      if (prev.some((c) => c.value === category.value)) return prev;
+      return [...prev, category];
+    });
+    setCategoria(category.value);
+  }, []);
+
+  const onSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    const saved = await saveItem();
+    if (!saved) return;
+    onSave(saved);
+
+    if (pendingAIEnhance) {
+      setPendingAIEnhance(false);
+      runAIEnhance(saved.num);
+    }
+  }, [onSave, pendingAIEnhance, runAIEnhance, saveItem]);
 
   const title = item ? "Editar elemento" : "Nuevo elemento";
 
@@ -666,11 +688,11 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               <button
                 type="button"
                 onClick={handleAIEnhance}
-                disabled={aiBusy || !item}
-                title={!item ? "Guarda el elemento primero para usar IA" : undefined}
+                disabled={aiBusy || saving}
+                title={saving ? "Guardando elemento..." : undefined}
                 data-role="food-modal-ai-advisor-enhance-btn"
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
-                  bg-[var(--bo-accent)] text-white
+                  bg-purple-950/40 border-white/20 border-solid !border-[0.5px] hover:bg-purple-500/20 hover:cursor-pointer text-white
                   hover:opacity-90 transition-opacity duration-150
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >

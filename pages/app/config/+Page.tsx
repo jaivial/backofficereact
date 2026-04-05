@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 import { Building2, LayoutGrid, Phone, UtensilsCrossed } from "lucide-react";
 
@@ -217,8 +218,8 @@ function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, a
 
   const floorTabs = useMemo<TabItem[]>(
     () => [
-      { id: "plantas", label: "Plantas", href: "/app/config?floortab=plantas", icon: <Building2 className="bo-ico" /> },
-      { id: "salones", label: "Salones", href: "/app/config?floortab=salones", icon: <LayoutGrid className="bo-ico" /> },
+      { id: "plantas", label: "Plantas", href: "#plantas", icon: <Building2 className="bo-ico" /> },
+      { id: "salones", label: "Salones", href: "#salones", icon: <LayoutGrid className="bo-ico" /> },
     ],
     [],
   );
@@ -575,71 +576,82 @@ function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, a
             ariaLabel="Secciones de plantas"
             className="bo-tabs--reservas bo-configFloorTabs mx-auto"
             onNavigate={onNavigateFloorTab}
+            layoutId="boFloorTabIndicator"
           />
 
-          {floorTab === "plantas" ? (
-            <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent">
-              <PlusMinusCounter
-                label="Total de plantas"
-                value={String(floorCount)}
-                className="bo-configLimitCounterCard bo-configFloorCounter"
-                onDecrease={handleFloorsDecrease}
-                onIncrease={handleFloorsIncrease}
-                canDecrease={canShrink}
-                canIncrease={canGrow}
-                disabled={busy}
-                helperText="Planta baja incluida"
-                decrementAriaLabel="Quitar planta"
-                incrementAriaLabel="Añadir planta"
-              />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={floorTab}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              {floorTab === "plantas" ? (
+                <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent">
+                  <PlusMinusCounter
+                    label="Total de plantas"
+                    value={String(floorCount)}
+                    className="bo-configLimitCounterCard bo-configFloorCounter"
+                    onDecrease={handleFloorsDecrease}
+                    onIncrease={handleFloorsIncrease}
+                    canDecrease={canShrink}
+                    canIncrease={canGrow}
+                    disabled={busy}
+                    helperText="Planta baja incluida"
+                    decrementAriaLabel="Quitar planta"
+                    incrementAriaLabel="Añadir planta"
+                  />
 
-              <div className="bo-configSalonCards" aria-label="Plantas del restaurante">
-                {floorCards.map((floor) => (
-                  <div key={`planta-${floor.keyPrefix}`} className="bo-floorSalonCard">
-                    <div>
-                      <div className="bo-floorCardName">{floor.plantaLabel}</div>
-                      <div className="bo-floorCardHint">{floor.defaultLabel}</div>
-                    </div>
+                  <div className="bo-configSalonCards" aria-label="Plantas del restaurante">
+                    {floorCards.map((floor) => (
+                      <div key={`planta-${floor.keyPrefix}`} className="bo-floorSalonCard">
+                        <div>
+                          <div className="bo-floorCardName">{floor.plantaLabel}</div>
+                          <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                        </div>
 
-                    <div className="bo-floorSalonCardState">
-                      <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
-                      <Switch
-                        checked={floor.floor.active}
-                        disabled={busy}
-                        onCheckedChange={(checked) => {
-                          void toggleFloorDefault(floor.floor, checked);
-                        }}
-                        aria-label={`Estado por defecto de ${floor.plantaLabel}`}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalonCards">
-              {floorCards.map((floor) => (
-                <div key={`salon-${floor.keyPrefix}`} className="bo-floorSalonCard">
-                  <div>
-                    <div className="bo-floorCardName">{floor.salonLabel}</div>
-                    <div className="bo-floorCardHint">{floor.defaultLabel}</div>
-                  </div>
-
-                  <div className="bo-floorSalonCardState">
-                    <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
-                    <Switch
-                      checked={floor.floor.active}
-                      disabled={busy}
-                      onCheckedChange={(checked) => {
-                        void toggleFloorDefault(floor.floor, checked);
-                      }}
-                      aria-label={`Estado por defecto de ${floor.salonLabel}`}
-                    />
+                        <div className="bo-floorSalonCardState">
+                          <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                          <Switch
+                            checked={floor.floor.active}
+                            disabled={busy}
+                            onCheckedChange={(checked) => {
+                              void toggleFloorDefault(floor.floor, checked);
+                            }}
+                            aria-label={`Estado por defecto de ${floor.plantaLabel}`}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ) : (
+                <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalonCards">
+                  {floorCards.map((floor) => (
+                    <div key={`salon-${floor.keyPrefix}`} className="bo-floorSalonCard">
+                      <div>
+                        <div className="bo-floorCardName">{floor.salonLabel}</div>
+                        <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                      </div>
+
+                      <div className="bo-floorSalonCardState">
+                        <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                        <Switch
+                          checked={floor.floor.active}
+                          disabled={busy}
+                          onCheckedChange={(checked) => {
+                            void toggleFloorDefault(floor.floor, checked);
+                          }}
+                          aria-label={`Estado por defecto de ${floor.salonLabel}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </>
@@ -873,13 +885,13 @@ export default function Page() {
       {
         id: "restaurante",
         label: "Restaurante",
-        href: "/app/config",
+        href: "#restaurante",
         icon: <UtensilsCrossed className="bo-ico" />,
       },
       {
         id: "contacto",
         label: "Contacto",
-        href: "/app/config",
+        href: "#contacto",
         icon: <Phone className="bo-ico" />,
       },
     ],
@@ -951,39 +963,49 @@ export default function Page() {
         ariaLabel="Secciones de configuración"
         className="bo-tabs--reservas mx-auto mb-6"
         onNavigate={onNavigateContentTab}
+        layoutId="boContentTabIndicator"
       />
 
-      <div className="bo-stack">
-        {contentTab === "restaurante" ? (
-          <ConfigRestauranteContent
-            defaults={defaults}
-            floors={floors}
-            busy={busy}
-            setBusy={setBusy}
-            setError={setError}
-            api={api}
-            pushToast={pushToast}
-          />
-        ) : (
-          <ConfigContactoContent
-            initialInfo={
-              restaurantInfo ?? {
-                direccion: "",
-                telefono: "",
-                email: "",
-                cif: "",
-                direccionFacturacion: "",
-                clasificacion: "sociedad",
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={contentTab}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="bo-stack"
+        >
+          {contentTab === "restaurante" ? (
+            <ConfigRestauranteContent
+              defaults={defaults}
+              floors={floors}
+              busy={busy}
+              setBusy={setBusy}
+              setError={setError}
+              api={api}
+              pushToast={pushToast}
+            />
+          ) : (
+            <ConfigContactoContent
+              initialInfo={
+                restaurantInfo ?? {
+                  direccion: "",
+                  telefono: "",
+                  email: "",
+                  cif: "",
+                  direccionFacturacion: "",
+                  clasificacion: "sociedad",
+                }
               }
-            }
-            busy={busy}
-            setBusy={setBusy}
-            setError={setError}
-            api={api}
-            pushToast={pushToast}
-          />
-        )}
-      </div>
+              busy={busy}
+              setBusy={setBusy}
+              setError={setError}
+              api={api}
+              pushToast={pushToast}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }
