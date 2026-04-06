@@ -17,6 +17,7 @@ export function Select({
   listMaxHeightPx,
   menuMinWidthPx,
   listClassName,
+  "data-testid": dataTestId,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -29,6 +30,7 @@ export function Select({
   listMaxHeightPx?: number;
   menuMinWidthPx?: number;
   listClassName?: string;
+  "data-testid"?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [direction, setDirection] = useState<"up" | "down">("down");
@@ -160,6 +162,7 @@ export function Select({
         onClick={toggle}
         onKeyDown={onBtnKey}
         data-role="select-trigger"
+        data-testid={dataTestId}
       >
         <span className="bo-selectLabelWrap" data-ui="select-label-wrap">
           {selected?.icon ? (
@@ -167,7 +170,7 @@ export function Select({
               {selected.icon}
             </span>
           ) : null}
-          <span className="bo-selectLabel" data-ui="select-selected-label">{selected?.label ?? ""}</span>
+          <span className="bo-selectLabel !max-w-[200px]" data-ui="select-selected-label">{selected?.label ?? ""}</span>
         </span>
         <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
       </button>

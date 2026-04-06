@@ -2417,6 +2417,341 @@ tr.is-inactive {
   border: 1px solid var(--bo-border);
   background: rgba(255, 255, 255, 0.02);
   color: var(--bo-muted);
+}
+
+/* ── Booking Manager ─────────────────────────────────── */
+.bo-widget-colors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.bo-colorPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bo-colorPickerLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-text);
+}
+
+.bo-colorPickerField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface-2);
+  padding: 4px 6px 4px 4px;
+}
+
+.bo-colorPickerSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+  flex: 0 0 auto;
+}
+
+.bo-colorPickerInput {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  flex: 0 0 auto;
+}
+
+.bo-colorPickerInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.bo-colorPickerInput::-webkit-color-swatch {
+  border: 0;
+  border-radius: 6px;
+}
+
+.bo-colorPickerCopy {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--bo-muted);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Install Guide */
+.bo-install-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bo-install-step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bo-install-stepHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bo-install-stepTitle {
+  font-size: 13px;
+  font-weight: 660;
+  color: var(--bo-text);
+}
+
+.bo-install-stepMeta {
+  font-size: 11px;
+  color: var(--bo-muted);
+}
+
+.bo-install-codeBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--bo-surface-3);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 10px 12px;
+  overflow: auto;
+}
+
+.bo-install-code {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--bo-muted);
+  white-space: pre;
+  overflow: auto;
+}
+
+.bo-install-note {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: var(--bo-radius-md);
+  padding: 10px 14px;
+}
+
+.bo-install-noteLabel {
+  font-size: 11px;
+  font-weight: 660;
+  color: var(--bo-primary);
+  margin-bottom: 4px;
+}
+
+.bo-install-noteText {
+  font-size: 11px;
+  color: var(--bo-muted);
+  line-height: 1.5;
+}
+
+/* Widget Preview */
+.bo-widget-preview-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.bo-widget-preview {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 12px;
+  border: 1px solid var(--vc-color-border, #e5e7eb);
+  background: var(--vc-color-surface, #ffffff);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  font-family: var(--vc-font-stack, system-ui);
+  color: var(--vc-color-text, #1f2937);
+}
+
+.vc-widget-header {
+  background: var(--vc-color-primary, #7c3aed);
+  padding: 14px 16px;
+}
+
+.vc-widget-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.vc-widget-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vc-widget-steps {
+  display: flex;
+  gap: 4px;
+}
+
+.vc-widget-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.vc-widget-stepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.vc-widget-stepLabel {
+  font-size: 9px;
+  color: var(--vc-color-muted, #6b7280);
+}
+
+.vc-widget-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vc-widget-sectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--vc-color-text);
+}
+
+.vc-widget-calendar {
+  border: 1px solid var(--vc-color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vc-widget-calHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--vc-color-primary);
+}
+
+.vc-widget-calNav {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+}
+
+.vc-widget-calMonth {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vc-widget-calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  padding: 8px;
+  background: var(--vc-color-border);
+}
+
+.vc-widget-calWeekday {
+  font-size: 9px;
+  color: var(--vc-color-muted);
+  text-align: center;
+  padding: 3px 0;
+}
+
+.vc-widget-calDay {
+  background: var(--vc-color-surface);
+  border: 0;
+  padding: 5px 2px;
+  font-size: 10px;
+  color: var(--vc-color-text);
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.vc-widget-calDay:hover:not(.is-disabled) {
+  background: var(--vc-color-primary);
+  color: #fff;
+}
+
+.vc-widget-calDay.is-selected {
+  background: var(--vc-color-primary);
+  color: #fff;
+}
+
+.vc-widget-calDay.is-today {
+  font-weight: 700;
+  border: 1px solid var(--vc-color-primary);
+}
+
+.vc-widget-calDay.is-disabled {
+  color: var(--vc-color-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.vc-widget-guestCounter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid var(--vc-color-border);
+  border-radius: 8px;
+}
+
+.vc-widget-guestBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--vc-color-border);
+  background: var(--vc-color-surface);
+  color: var(--vc-color-text);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vc-widget-guestBtn:hover {
+  border-color: var(--vc-color-primary);
+  color: var(--vc-color-primary);
+}
+
+.vc-widget-guestCount {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vc-color-text);
+  min-width: 20px;
+  text-align: center;
+}
+
+.vc-widget-cta {
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
 }
 

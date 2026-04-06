@@ -84,67 +84,118 @@ export function MandatoryMenuSelector({
     [selectedMenuIds, menuChooseMain, onChange],
   );
 
+  // Empty state - show prompt to add first menu
+  if (selectedMenuIds.length === 0) {
+    return (
+      <div 
+        className={`flex flex-col items-center justify-center py-8 px-4 rounded-xl border-2 border-dashed border-(--bo-border) bg-(--bo-surface-2) ${className}`} 
+        data-ui="mandatory-menu-selector-empty"
+      >
+        <div className="text-(--bo-muted) text-sm text-center mb-4">
+          Selecciona un menú para continuar
+        </div>
+        <button
+          type="button"
+          onClick={handleAddRow}
+          disabled={menus.length === 0}
+          className="bo-btn primary flex items-center gap-2"
+          data-ui="add-first-menu-btn"
+        >
+          <Plus size={16} strokeWidth={1.8} aria-hidden="true" />
+          <span>Añadir menú</span>
+        </button>
+        {menus.length === 0 && (
+          <div className="text-(--bo-faint) text-xs mt-3">
+            No hay menus disponibles
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col gap-3 ${className}`} data-ui="mandatory-menu-selector">
+      {/* Header row - hidden on mobile */}
+      <div className="hidden sm:flex flex-row items-center gap-3 px-3 py-1 text-xs text-(--bo-muted) uppercase tracking-wide">
+        <div className="flex-1">Menú</div>
+        <div className="w-36 text-center">Principales</div>
+        <div className="w-10"></div>
+      </div>
+
       {selectedMenus.map((menu, idx) => (
         <div
           key={`${menu.id}-${idx}`}
-          className="flex flex-row items-center gap-2"
+          className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-3 rounded-lg bg-(--bo-surface-2) border border-(--bo-border)"
           data-ui="menu-row"
           data-row-index={idx}
         >
-          <Select
-            value={String(menu.id)}
-            onChange={(v) => handleMenuSelect(idx, v)}
-            options={menuOptions}
-            size="sm"
-            ariaLabel={`Seleccionar menu para fila ${idx + 1}`}
-            className="flex-1"
-          />
-
-          <label
-            className="flex items-center gap-1.5 text-sm whitespace-nowrap"
-            data-ui="choose-main-label"
-          >
-            <input
-              type="checkbox"
-              checked={menuChooseMain.includes(menu.id)}
-              onChange={(e) => handleChooseMainToggle(menu.id, e.target.checked)}
-              className="bo-checkbox"
-              data-ui="choose-main-checkbox"
+          {/* Menu selector - centered on mobile */}
+          <div className="flex flex-col items-center sm:items-start flex-1 min-w-0 w-full">
+            <Select
+              value={String(menu.id)}
+              onChange={(v) => handleMenuSelect(idx, v)}
+              options={menuOptions}
+              size="sm"
+              ariaLabel={`Seleccionar menú ${idx + 1}`}
+              className="w-full sm:w-auto sm:min-w-[200px]"
             />
-            <span className="text-(--bo-muted)">Principales seleccionables</span>
-          </label>
+            {/* Show menu type label on mobile */}
+            <div className="sm:hidden text-xs text-(--bo-muted) mt-1">
+              {getMenuTypeLabel(menu.menu_type)}
+            </div>
+          </div>
 
-          {selectedMenuIds.length > 1 && (
-            <button
-              type="button"
-              onClick={() => handleDeleteRow(idx)}
-              className="bo-btn bo-btn--ghost bo-btn--icon p-1.5"
-              aria-label={`Eliminar menu ${menu.menu_title}`}
-              data-ui="delete-row-btn"
+          {/* Checkbox - centered on mobile and desktop */}
+          <div className="flex items-center justify-center gap-2 sm:w-36">
+            <label 
+              className="flex items-center gap-2 cursor-pointer"
+              data-ui="choose-main-label"
             >
-              <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
-            </button>
-          )}
+              <input
+                type="checkbox"
+                checked={menuChooseMain.includes(menu.id)}
+                onChange={(e) => handleChooseMainToggle(menu.id, e.target.checked)}
+                className="bo-checkbox"
+                data-ui="choose-main-checkbox"
+              />
+              <span className="text-sm text-(--bo-text) sm:hidden">Principales</span>
+            </label>
+          </div>
+
+          {/* Delete button - centered on mobile */}
+          <div className="flex justify-center sm:w-10">
+            {selectedMenuIds.length > 1 && (
+              <button
+                type="button"
+                onClick={() => handleDeleteRow(idx)}
+                className="bo-btn bo-btn--ghost bo-btn--icon p-2 text-(--bo-muted) hover:text-(--bo-text-danger) transition-colors duration-150"
+                aria-label={`Eliminar menú ${menu.menu_title}`}
+                data-ui="delete-row-btn"
+              >
+                <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
+              </button>
+            )}
+          </div>
         </div>
       ))}
 
+      {/* Add more button */}
       {menus.length > selectedMenuIds.length && (
         <button
           type="button"
           onClick={handleAddRow}
-          className="bo-btn bo-btn--ghost flex items-center justify-center gap-1.5"
+          className="bo-btn bo-btn--ghost flex items-center justify-center gap-2 py-2 text-sm w-fit mx-auto"
           data-ui="add-menu-btn"
         >
           <Plus size={16} strokeWidth={1.8} aria-hidden="true" />
-          <span>Añadir menu</span>
+          <span>Añadir otro menú</span>
         </button>
       )}
 
-      {menus.length === 0 && (
-        <div className="text-(--bo-muted) text-sm" data-ui="no-menus-message">
-          No hay menus disponibles
+      {/* No menus available */}
+      {menus.length === 0 && selectedMenuIds.length === 0 && (
+        <div className="text-center py-6 text-(--bo-muted) text-sm" data-ui="no-menus-message">
+          No hay menús disponibles
         </div>
       )}
     </div>
