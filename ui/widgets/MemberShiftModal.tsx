@@ -4,6 +4,7 @@ import { Clock, Play, Square, Plus, Trash2 } from "lucide-react";
 
 import { createClient } from "../../api/client";
 import type { FichajeSchedule, Member, TimeEntry } from "../../api/types";
+import { cn } from "../shadcn/utils";
 import { Modal } from "../overlays/Modal";
 import { SpinWheel } from "../inputs/SpinWheel";
 import { TimeAdjustCounter } from "./TimeAdjustCounter";
@@ -69,11 +70,13 @@ export function MemberShiftModal({
   selectedDate,
   open,
   onClose,
+  className,
 }: {
   member: Member;
   selectedDate: string;
   open: boolean;
   onClose: () => void;
+  className?: string;
 }) {
   const { pushToast } = useToasts();
   const [api] = useState(() => createClient({ baseUrl: "" }));
@@ -283,7 +286,7 @@ export function MemberShiftModal({
   const isActive = !!activeEntry;
 
   return (
-    <Modal open={open} onClose={onClose} title={fullName} widthPx={760} className="bo-modal--memberShift">
+    <Modal open={open} onClose={onClose} title={fullName} widthPx={760} className={cn("bo-modal--memberShift", className)}>
       <div className="bo-shiftModal">
         <div className="bo-shiftModalDate">
           <Clock size={14} strokeWidth={1.8} />

@@ -1,6 +1,7 @@
 import React from "react";
 import { Clock3 } from "lucide-react";
 
+import { cn } from "../shadcn/utils";
 import { TimeAdjustCounter } from "./TimeAdjustCounter";
 
 export type EditableTimeEntry = {
@@ -25,19 +26,21 @@ export function TimeEntriesEditor({
   onShiftStart,
   onShiftEnd,
   onCloseLive,
+  className,
 }: {
   entries: EditableTimeEntry[];
   busyEntryId: number | null;
   onShiftStart: (entryId: number, deltaMinutes: number) => void;
   onShiftEnd: (entryId: number, deltaMinutes: number) => void;
   onCloseLive: (entryId: number) => void;
+  className?: string;
 }) {
   if (entries.length === 0) {
     return <div className="bo-mutedText bo-timeEntriesEmpty">Sin registros para este miembro y fecha.</div>;
   }
 
   return (
-    <div className="bo-timeEntriesList">
+    <div className={cn("bo-timeEntriesList", className)}>
       {entries.map((entry) => {
         const busy = busyEntryId === entry.id;
         return (

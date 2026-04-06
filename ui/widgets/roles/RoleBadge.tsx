@@ -1,5 +1,6 @@
 import React from "react";
 
+import { cn } from "../../shadcn/utils";
 import { roleLabel } from "../../../lib/rbac";
 
 export function RoleBadge({
@@ -16,7 +17,7 @@ export function RoleBadge({
   const label = roleName || roleLabel(roleSlug);
   const suffix = typeof importance === "number" ? ` · ${importance}` : "";
   return (
-    <span className={`bo-badge bo-roleBadge ${className}`.trim()}>
+    <span className={cn("bo-badge bo-roleBadge", className)}>
       {label}
       {suffix}
     </span>

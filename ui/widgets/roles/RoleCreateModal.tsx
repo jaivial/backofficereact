@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Select } from "../../inputs/Select";
 import { Slider } from "../../inputs/Slider";
 import { Modal } from "../../overlays/Modal";
+import { cn } from "../../shadcn/utils";
 import { RoleIcon } from "./RoleIcon";
 
 const ALL_SECTIONS = [
@@ -50,12 +51,14 @@ export function RoleCreateModal({
   onCreate,
   busy,
   actorImportance,
+  className,
 }: {
   open: boolean;
   onClose: () => void;
   onCreate: (input: CreateRoleInput) => Promise<void>;
   busy: boolean;
   actorImportance: number;
+  className?: string;
 }) {
   const maxAllowed = Math.max(0, actorImportance - 1);
   const [label, setLabel] = useState("");

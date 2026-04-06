@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Node } from "reactflow";
+import type { LinePoint } from "./lineDrawing";
 
 describe("onNodeDragStop callback behavior", () => {
   describe("restaurant table drag stop", () => {
@@ -202,7 +203,7 @@ describe("onNodeDragStop callback behavior", () => {
     it("queues layout persistence for draw elements", () => {
       const queuePersistLayout = vi.fn();
       const bookingStates = {};
-      const limitPoints = [];
+      const limitPoints: LinePoint[] = [];
       let drawElements = [
         { id: "draw-wall-1", x: 50, y: 60, displayMode: "both" as const },
       ];

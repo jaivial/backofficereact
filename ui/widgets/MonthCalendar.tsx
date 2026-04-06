@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 
+import { cn } from "../shadcn/utils";
 import type { CalendarDay } from "../../api/types";
 
 const WEEKDAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"] as const;
@@ -14,6 +15,7 @@ type MonthCalendarProps = {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   loading: boolean;
+  className?: string;
 };
 
 type MonthCalendarCell =
@@ -111,7 +113,7 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
 
 MonthCalendarGrid.displayName = "MonthCalendarGrid";
 
-function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, loading }: MonthCalendarProps) {
+function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, loading, className }: MonthCalendarProps) {
   const today = useMemo(() => todayISO(), []);
   const monthLabel = useMemo(() => `${monthNameES(month)} ${year}`, [month, year]);
   const handlePrevMonth = useCallback(() => {
@@ -177,7 +179,7 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
   }, [days, month, selectedDateISO, today, year]);
 
   return (
-    <section className="bo-mcal bo-mcal--glass" aria-label="Calendario mensual" aria-busy={loading}>
+    <section className={cn("bo-mcal bo-mcal--glass", className)} aria-label="Calendario mensual" aria-busy={loading}>
       <header className="bo-mcalHead">
         <div className="bo-mcalTitle">{monthLabel}</div>
         <div className="bo-mcalNav">

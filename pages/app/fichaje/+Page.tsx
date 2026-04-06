@@ -13,6 +13,7 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { DatePicker } from "../../../ui/inputs/DatePicker";
 import { MemberPicker, type MemberPickerItem } from "../../../ui/widgets/MemberPicker";
 import { TimeAdjust } from "../../../ui/widgets/TimeAdjust";
+import { fullName } from "../../../lib/member";
 
 function formatElapsed(totalSeconds: number): string {
   const seconds = Math.max(0, Math.floor(totalSeconds));
@@ -35,11 +36,6 @@ function toActiveEntriesByMember(entries: FichajeActiveEntry[] | null | undefine
     out[entry.memberId] = entry;
   }
   return out;
-}
-
-function fullName(member: Member): string {
-  const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
-  return name || `Miembro #${member.id}`;
 }
 
 function parseHHMM(value: string): number | null {

@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Clock3 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
+import { cn } from "../shadcn/utils";
+
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
@@ -30,11 +32,13 @@ export function TimePicker({
   onChange,
   stepMinutes,
   ariaLabel,
+  className,
 }: {
   value: string;
   onChange: (hhmm: string) => void;
   stepMinutes?: number;
   ariaLabel?: string;
+  className?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
@@ -113,7 +117,7 @@ export function TimePicker({
   );
 
   return (
-    <div ref={wrapperRef} className="bo-selectWrapper">
+    <div ref={wrapperRef} className={cn("bo-selectWrapper", className)} data-ui="time-picker-wrapper">
       <button
         ref={btnRef}
         className="bo-dateBtn"
@@ -123,6 +127,7 @@ export function TimePicker({
         aria-expanded={open}
         onClick={toggle}
         onKeyDown={onBtnKey}
+        data-ui="time-picker-btn"
       >
         <Clock3 size={18} strokeWidth={1.8} aria-hidden="true" />
         <span className="bo-dateBtnLabel">{selected || "—:—"}</span>
@@ -139,6 +144,7 @@ export function TimePicker({
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
+            data-ui="time-picker-list"
           >
             {times.map((t, idx) => {
               const isSel = t === selected;
@@ -158,6 +164,8 @@ export function TimePicker({
                     close();
                     btnRef.current?.focus();
                   }}
+                  data-ui="time-picker-option"
+                  data-time={t}
                 >
                   {t}
                 </button>

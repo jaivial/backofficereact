@@ -4,6 +4,7 @@ import { Clock3, Play, Square, Plus, Minus, Trash2, Check } from "lucide-react";
 
 import { createClient } from "../../api/client";
 import type { FichajeSchedule, Member, FichajeActiveEntry } from "../../api/types";
+import { cn } from "../shadcn/utils";
 import { Modal } from "../overlays/Modal";
 import { SpinWheel } from "../inputs/SpinWheel";
 
@@ -45,6 +46,7 @@ type ShiftModalProps = {
   activeEntry: FichajeActiveEntry | undefined;
   onClose: () => void;
   onSuccess: () => void;
+  className?: string;
 };
 
 export function ShiftModal({
@@ -55,6 +57,7 @@ export function ShiftModal({
   activeEntry,
   onClose,
   onSuccess,
+  className,
 }: ShiftModalProps) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
 
@@ -286,7 +289,7 @@ export function ShiftModal({
   if (!member) return null;
 
   return (
-    <Modal open={open} title={fullName(member)} onClose={onClose} widthPx={420}>
+    <Modal open={open} title={fullName(member)} onClose={onClose} widthPx={420} className={cn(className)}>
       <div className="bo-shiftModal">
         {error && <div className="bo-shiftModalError">{error}</div>}
 

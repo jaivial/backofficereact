@@ -1,21 +1,25 @@
 import React from "react";
 import { Minus, Plus } from "lucide-react";
 
+import { cn } from "../shadcn/utils";
+
 export function TimeAdjustCounter({
   label,
   value,
   onMinus,
   onPlus,
   disabled,
+  className,
 }: {
   label: string;
   value: string;
   onMinus: () => void;
   onPlus: () => void;
   disabled?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="bo-timeAdjustCounter bo-timeAdjustCounter--glass" aria-label={label}>
+    <div className={cn("bo-timeAdjustCounter bo-timeAdjustCounter--glass", className)} aria-label={label}>
       <div className="bo-timeAdjustCounterLabel">{label}</div>
       <div className="bo-timeAdjustCounterCtrls">
         <button

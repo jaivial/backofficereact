@@ -64,7 +64,7 @@ describe("touchDragHandler", () => {
     });
 
     it("prevents drag in pan mode", () => {
-      const interactionMode = "pan";
+      const interactionMode: string = "pan";
       const canDrag = interactionMode === "select";
 
       expect(canDrag).toBe(false);

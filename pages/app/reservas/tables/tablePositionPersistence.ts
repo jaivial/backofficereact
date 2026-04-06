@@ -1,5 +1,6 @@
 import type { XYPosition } from "reactflow";
-import type { DrawElement, LinePoint, BookingState } from "./+Page";
+import type { DrawElement, BookingState } from "./types/tables";
+import type { LinePoint } from "./lineDrawing";
 
 export interface PositionSavePayload {
   id: number;

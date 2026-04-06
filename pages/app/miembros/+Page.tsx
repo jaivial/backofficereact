@@ -5,6 +5,7 @@ import { usePageContext } from "vike-react/usePageContext";
 
 import type { Member, RoleCatalogItem, RoleUserItem } from "../../../api/types";
 import { roleLabel } from "../../../lib/rbac";
+import { fullName } from "../../../lib/member";
 import { sessionAtom } from "../../../state/atoms";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/shell/Avatar";
 import { RoleBadge } from "../../../ui/widgets/roles/RoleBadge";
@@ -18,11 +19,6 @@ function initials(firstName: string, lastName: string) {
   const a = firstName.trim()[0] ?? "";
   const b = lastName.trim()[0] ?? "";
   return (a + b).toUpperCase() || "MM";
-}
-
-function fullName(member: Member): string {
-  const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
-  return name || `Miembro #${member.id}`;
 }
 
 function normalizeEmail(v: string | null | undefined): string {

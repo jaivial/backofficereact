@@ -7,15 +7,17 @@ type InfoModalProps = {
   title: string;
   content: string;
   onClose: () => void;
+  className?: string;
 };
 
-export function InfoModal({ open, title, content, onClose }: InfoModalProps) {
+export function InfoModal({ open, title, content, onClose, className }: InfoModalProps) {
   return (
     <Modal
       open={open}
       title={title}
       onClose={onClose}
       size="sm"
+      className={className}
     >
       <div className="bo-modal-body" data-ui="info-modal-content">
         <p className="text-(--bo-text) text-sm leading-relaxed" data-ui="info-modal-text">

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { formatISODate, parseISODate } from "../lib/format";
+import { cn } from "../shadcn/utils";
 
 type Pos = { top: number; left: number };
 type DatePickerProps = {
@@ -14,6 +15,7 @@ type DatePickerProps = {
   minDate?: string;
   maxDate?: string;
   id?: string;
+  className?: string;
 };
 
 function portalEl(): HTMLElement | null {
@@ -43,7 +45,7 @@ function buildMonthGrid(year: number, month0: number) {
   return cells;
 }
 
-export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = false, minDate, maxDate, id }: DatePickerProps) {
+export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = false, minDate, maxDate, id, className }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -133,41 +135,43 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
           style={{ top: pos.top, left: pos.left }}
           role="dialog"
           aria-label="Calendar"
+          data-ui="date-picker-popover"
         >
-          <div className="bo-dateHead">
+          <div className="bo-dateHead" data-ui="date-picker-header">
             <button
               type="button"
               className="bo-actionBtn bo-actionBtn--glass"
               onClick={prevMonth}
               aria-label="Prev month"
+              data-ui="date-picker-prev-btn"
             >
               <ChevronLeft size={18} strokeWidth={1.8} />
             </button>
-            <div className="bo-dateTitle">{monthLabel(viewYear, viewMonth0)}</div>
+            <div className="bo-dateTitle" data-ui="date-picker-month-label">{monthLabel(viewYear, viewMonth0)}</div>
             <button
               type="button"
               className="bo-actionBtn bo-actionBtn--glass"
               onClick={nextMonth}
               aria-label="Next month"
+              data-ui="date-picker-next-btn"
             >
               <ChevronRight size={18} strokeWidth={1.8} />
             </button>
           </div>
-          <div className="bo-calDows" aria-hidden="true">
-            <div>L</div>
-            <div>M</div>
-            <div>M</div>
-            <div>J</div>
-            <div>V</div>
-            <div>S</div>
-            <div>D</div>
+          <div className="bo-calDows" aria-hidden="true" data-ui="date-picker-weekdays">
+            <div data-ui="date-picker-weekday">L</div>
+            <div data-ui="date-picker-weekday">M</div>
+            <div data-ui="date-picker-weekday">M</div>
+            <div data-ui="date-picker-weekday">J</div>
+            <div data-ui="date-picker-weekday">V</div>
+            <div data-ui="date-picker-weekday">S</div>
+            <div data-ui="date-picker-weekday">D</div>
           </div>
-          <div className="bo-calGrid" aria-label="Calendar grid">
+          <div className="bo-calGrid" aria-label="Calendar grid" data-ui="date-picker-grid">
             {grid.map((c, idx) => {
-              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" />;
+              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-picker-empty-cell" />;
               const iso = c.iso;
               const isSelected = iso === selectedISO;
-              const cls = isSelected ? "bo-calDay is-selected" : "bo-calDay";
               const isBeforeMin = Boolean(minDate && iso < minDate);
               const isAfterMax = Boolean(maxDate && iso > maxDate);
               const isDisabled = isBeforeMin || isAfterMax;
@@ -175,13 +179,16 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
                 <button
                   key={iso}
                   type="button"
-                  className={`${cls}${isDisabled ? " is-disabled" : ""}`}
+                  className={cn("bo-calDay", isSelected && "is-selected", isDisabled && "is-disabled")}
                   disabled={isDisabled}
                   onClick={() => {
                     if (isDisabled) return;
                     onChange(iso);
                     close();
                   }}
+                  data-ui="date-picker-day"
+                  data-date={iso}
+                  data-selected={isSelected ? "true" : "false"}
                 >
                   {c.day}
                 </button>
@@ -199,7 +206,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
       <button
         id={id}
         ref={btnRef}
-        className="bo-dateBtn bo-dateBtn--glass"
+        className={cn("bo-dateBtn bo-dateBtn--glass", className)}
         type="button"
         onClick={toggle}
         aria-expanded={open}
@@ -207,6 +214,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
         aria-label="Select date"
         aria-disabled={disabled}
         disabled={disabled}
+        data-ui="date-picker-btn"
       >
         <CalendarDays size={18} strokeWidth={1.8} />
         <span className="bo-dateBtnLabel">{value}</span>

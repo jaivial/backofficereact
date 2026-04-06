@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
+import { cn } from "../shadcn/utils";
 
 const ITEM_HEIGHT = 38;
 const VISIBLE_ITEMS = 5;
@@ -155,7 +156,7 @@ export function SpinWheel({
 
   return (
     <div
-      className={`bo-spinWheel${className ? ` ${className}` : ""}`}
+      className={cn("bo-spinWheel", className)}
       data-slot="spinWheel"
       data-size={isSmall ? "sm" : "md"}
       style={

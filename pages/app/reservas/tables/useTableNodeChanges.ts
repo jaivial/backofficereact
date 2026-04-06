@@ -1,8 +1,9 @@
 import { useCallback, useRef } from "react";
 import type { Node, NodeChange, XYPosition } from "reactflow";
 import { applyNodeChanges } from "reactflow";
-import type { TableNodeData, DrawNodeData, DrawElement, LinePoint, BookingState } from "./+Page";
-import { previewGeometry } from "./+Page";
+import type { TableNodeData, DrawNodeData, DrawElement, BookingState } from "./types/tables";
+import type { LinePoint } from "./lineDrawing";
+import { previewGeometry } from "./helpers/tables";
 
 const TABLE_LIMIT_PADDING = 40;
 

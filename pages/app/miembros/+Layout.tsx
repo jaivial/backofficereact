@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import { MiembrosTabs } from "./_components/MiembrosTabs";
+import { MiembrosTabs } from "./functionalComponents/MiembrosTabs/MiembrosTabs";
 
 const TAB_FADE_DURATION_MS = 380;
 const TAB_NAV_DELAY_MS = 440;
