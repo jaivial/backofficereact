@@ -1,0 +1,469 @@
+import React, { useCallback, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Building2, LayoutGrid } from "lucide-react";
+
+import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../../../../../api/types";
+import type { FloorTab, HourSlot } from "../../../config/helpers/configHelpers";
+import { buildHalfHourSlots, clampDailyLimit, formatTableLimit, normalizeTableLimit, normalizeWeekdayOpenMap, readAPIMessage, stepTableLimit, tableLimitValues, toggleHour } from "../../../config/helpers/configHelpers";
+import { openingModeOptions, weekdayCards, type WeekdayCard } from "../../../config/constants/config.constants";
+import type { RestauranteContentProps, FloorCard } from "./types/ConfigRestaurante.types";
+import { Select } from "../../../../../ui/inputs/Select";
+import { Switch } from "../../../../../ui/shadcn/Switch";
+import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
+import { Tabs, type TabItem } from "../../../../../ui/nav/Tabs";
+
+export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast }: RestauranteContentProps) {
+  const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
+  const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
+  const floorTabFromQuery =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("floortab") : null;
+  const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery === "salones" ? "salones" : "plantas");
+
+  const floorTabs = useMemo<TabItem[]>(
+    () => [
+      { id: "plantas", label: "Plantas", href: "#plantas", icon: <Building2 className="bo-ico" /> },
+      { id: "salones", label: "Salones", href: "#salones", icon: <LayoutGrid className="bo-ico" /> },
+    ],
+    [],
+  );
+
+  const saveDefaults = useCallback(
+    async (
+      patch: Partial<{
+        openingMode: OpeningMode;
+        morningHours: string[];
+        nightHours: string[];
+        dailyLimit: number;
+        mesasDeDosLimit: string;
+        mesasDeTresLimit: string;
+        weekdayOpen: WeekdayOpen;
+      }>,
+      successMessage?: string,
+    ) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await api.config.setDefaults(patch);
+        if (!res.success) {
+          setError(readAPIMessage(res, "No se pudo guardar"));
+          return;
+        }
+        if (successMessage) {
+          pushToast({ kind: "success", title: "Actualizado", message: successMessage });
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo guardar");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api.config, setBusy, setError, pushToast],
+  );
+
+  const saveFloorsCount = useCallback(
+    async (count: number) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await api.config.setDefaultFloors({ count });
+        if (!res.success) {
+          setError(readAPIMessage(res, "No se pudo actualizar plantas"));
+          return;
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo actualizar plantas");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api.config, setBusy, setError],
+  );
+
+  const toggleFloorDefault = useCallback(
+    async (floor: ConfigFloor, explicitValue?: boolean) => {
+      const nextActive = typeof explicitValue === "boolean" ? explicitValue : !floor.active;
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await api.config.setDefaultFloors({ floorNumber: floor.floorNumber, active: nextActive });
+        if (!res.success) {
+          setError(readAPIMessage(res, "No se pudo actualizar la planta"));
+          return;
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo actualizar la planta");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api.config, setBusy, setError],
+  );
+
+  const weekdayOpen = useMemo(() => normalizeWeekdayOpenMap(defaults.weekdayOpen), [defaults.weekdayOpen]);
+  const floorCount = useMemo(() => floors.length || 1, [floors.length]);
+  const canGrow = useMemo(() => floorCount < 8, [floorCount]);
+  const canShrink = useMemo(() => floorCount > 1, [floorCount]);
+  const mesasDeDosValue = useMemo(() => normalizeTableLimit(defaults.mesasDeDosLimit), [defaults.mesasDeDosLimit]);
+  const mesasDeTresValue = useMemo(() => normalizeTableLimit(defaults.mesasDeTresLimit), [defaults.mesasDeTresLimit]);
+
+  const morningHourCards = useMemo(() => {
+    const active = new Set(defaults.morningHours || []);
+    return morningSlots.map((slot) => ({ ...slot, active: active.has(slot.value) }));
+  }, [defaults.morningHours, morningSlots]);
+
+  const nightHourCards = useMemo(() => {
+    const active = new Set(defaults.nightHours || []);
+    return nightSlots.map((slot) => ({ ...slot, active: active.has(slot.value) }));
+  }, [defaults.nightHours, nightSlots]);
+
+  const weekdayCardsWithState = useMemo(
+    (): Array<WeekdayCard & { isOpen: boolean }> =>
+      weekdayCards.map((weekday) => ({ ...weekday, isOpen: Boolean(weekdayOpen[weekday.key]) })),
+    [weekdayOpen],
+  );
+
+  const floorCards = useMemo<FloorCard[]>(
+    () =>
+      floors.map((floor) => ({
+        floor,
+        plantaLabel: floor.name,
+        salonLabel: floor.isGround ? "Salón principal" : `Salón ${floor.floorNumber}`,
+        statusLabel: floor.active ? "Abierto" : "Cerrado",
+        defaultLabel: `${floor.active ? "Abierto por defecto" : "Cerrado por defecto"}`,
+        keyPrefix: `${floor.id}`,
+      })),
+    [floors],
+  );
+
+  const handleMorningHour = useCallback(
+    (hour: string) => {
+      void saveDefaults({ morningHours: toggleHour(defaults.morningHours || [], hour) });
+    },
+    [saveDefaults, defaults.morningHours],
+  );
+
+  const handleNightHour = useCallback(
+    (hour: string) => {
+      void saveDefaults({ nightHours: toggleHour(defaults.nightHours || [], hour) });
+    },
+    [saveDefaults, defaults.nightHours],
+  );
+
+  const toggleWeekdayOpen = useCallback(
+    (weekdayKey: keyof WeekdayOpen) => {
+      void saveDefaults({
+        weekdayOpen: { ...weekdayOpen, [weekdayKey]: !weekdayOpen[weekdayKey] },
+      });
+    },
+    [saveDefaults, weekdayOpen],
+  );
+
+  const handleFloorsDecrease = useCallback(() => {
+    if (!canShrink) return;
+    void saveFloorsCount(floorCount - 1);
+  }, [canShrink, floorCount, saveFloorsCount]);
+
+  const handleFloorsIncrease = useCallback(() => {
+    if (!canGrow) return;
+    void saveFloorsCount(floorCount + 1);
+  }, [canGrow, floorCount, saveFloorsCount]);
+
+  const dailyLimit = useMemo(() => defaults.dailyLimit ?? 0, [defaults.dailyLimit]);
+  const openingModeLabel = useMemo(
+    () =>
+      defaults.openingMode === "both" ? "Mañana + noche" : defaults.openingMode === "morning" ? "Mañana" : "Noche",
+    [defaults.openingMode],
+  );
+
+  const canDailyDecrease = useMemo(() => dailyLimit > 0, [dailyLimit]);
+  const canDailyIncrease = useMemo(() => dailyLimit < 500, [dailyLimit]);
+  const dailyLimitLabel = useMemo(() => String(dailyLimit), [dailyLimit]);
+
+  const handleDailyDecrease = useCallback(() => {
+    const next = clampDailyLimit(dailyLimit - 1);
+    if (next === dailyLimit) return;
+    void saveDefaults({ dailyLimit: next });
+  }, [dailyLimit, saveDefaults]);
+
+  const handleDailyIncrease = useCallback(() => {
+    const next = clampDailyLimit(dailyLimit + 1);
+    if (next === dailyLimit) return;
+    void saveDefaults({ dailyLimit: next });
+  }, [dailyLimit, saveDefaults]);
+
+  const mesasDeDosLabel = useMemo(() => formatTableLimit(mesasDeDosValue), [mesasDeDosValue]);
+  const mesasDeTresLabel = useMemo(() => formatTableLimit(mesasDeTresValue), [mesasDeTresValue]);
+  const canMesasDeDosDecrease = useMemo(() => mesasDeDosValue !== "0", [mesasDeDosValue]);
+  const canMesasDeDosIncrease = useMemo(() => mesasDeDosValue !== "999", [mesasDeDosValue]);
+  const canMesasDeTresDecrease = useMemo(() => mesasDeTresValue !== "0", [mesasDeTresValue]);
+  const canMesasDeTresIncrease = useMemo(() => mesasDeTresValue !== "999", [mesasDeTresValue]);
+
+  const handleMesasDeDosDecrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeDosValue, -1);
+    if (next === mesasDeDosValue) return;
+    void saveDefaults({ mesasDeDosLimit: next });
+  }, [mesasDeDosValue, saveDefaults]);
+
+  const handleMesasDeDosIncrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeDosValue, 1);
+    if (next === mesasDeDosValue) return;
+    void saveDefaults({ mesasDeDosLimit: next });
+  }, [mesasDeDosValue, saveDefaults]);
+
+  const handleMesasDeTresDecrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeTresValue, -1);
+    if (next === mesasDeTresValue) return;
+    void saveDefaults({ mesasDeTresLimit: next });
+  }, [mesasDeTresValue, saveDefaults]);
+
+  const handleMesasDeTresIncrease = useCallback(() => {
+    const next = stepTableLimit(mesasDeTresValue, 1);
+    if (next === mesasDeTresValue) return;
+    void saveDefaults({ mesasDeTresLimit: next });
+  }, [mesasDeTresValue, saveDefaults]);
+
+  const onNavigateFloorTab = useCallback(
+    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
+      void _href;
+      event.preventDefault();
+      setFloorTab(id === "salones" ? "salones" : "plantas");
+    },
+    [],
+  );
+
+  return (
+    <>
+      <div className="bo-panel" data-ui="config-restaurante-opening-panel">
+        <div className="bo-panelHead" data-ui="config-restaurante-opening-header">
+          <div className="bo-panelTitle">Modo de apertura</div>
+          <div className="bo-panelMeta">{openingModeLabel}</div>
+        </div>
+        <div className="bo-panelBody bo-row" data-ui="config-restaurante-opening-body">
+          <Select
+            value={defaults.openingMode}
+            onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
+            options={openingModeOptions as any}
+            size="sm"
+            ariaLabel="Modo de apertura por defecto"
+          />
+        </div>
+      </div>
+
+      <div className="bo-panel" data-ui="config-restaurante-hours-panel">
+        <div className="bo-panelHead" data-ui="config-restaurante-hours-header">
+          <div className="bo-panelTitle">Horarios por defecto</div>
+          <div className="bo-panelMeta">Slots de media hora con guardado inmediato</div>
+        </div>
+        <div className="bo-panelBody bo-hourCardsContainer" data-ui="config-restaurante-hours-body">
+          <div className="bo-field" data-ui="config-restaurante-morning-field">
+            <div className="bo-label">Mañana (08:00 - 17:00)</div>
+            <div className="bo-hourCards bo-hourCards--slots" data-ui="config-restaurante-morning-slots">
+              {morningHourCards.map((slot) => (
+                <button
+                  key={slot.id}
+                  type="button"
+                  className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                  onClick={() => void handleMorningHour(slot.value)}
+                  disabled={busy}
+                  data-slot="morning-hour-button"
+                  aria-label={`Hora ${slot.label}`}
+                >
+                  {slot.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bo-field" data-ui="config-restaurante-night-field">
+            <div className="bo-label">Noche (17:30 - 01:00)</div>
+            <div className="bo-hourCards bo-hourCards--slots" data-ui="config-restaurante-night-slots">
+              {nightHourCards.map((slot) => (
+                <button
+                  key={slot.id}
+                  type="button"
+                  className={`bo-hourCard bo-hourCard--slot${slot.active ? " is-on" : ""}`}
+                  onClick={() => void handleNightHour(slot.value)}
+                  disabled={busy}
+                  data-slot="night-hour-button"
+                  aria-label={`Hora ${slot.label}`}
+                >
+                  {slot.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bo-panel" data-ui="config-restaurante-weekday-panel">
+        <div className="bo-panelHead" data-ui="config-restaurante-weekday-header">
+          <div className="bo-panelTitle">Calendario semanal</div>
+          <div className="bo-panelMeta">Semana genérica (lunes a domingo)</div>
+        </div>
+        <div className="bo-panelBody bo-configWeekdayGrid" data-ui="config-restaurante-weekday-body">
+          {weekdayCardsWithState.map((weekday: WeekdayCard & { isOpen: boolean }) => (
+            <button
+              key={weekday.key}
+              type="button"
+              className={`bo-hourCard bo-configDayCard${weekday.isOpen ? " is-on" : ""}`}
+              disabled={busy}
+              aria-pressed={weekday.isOpen}
+              aria-label={`${weekday.label} (${weekday.isOpen ? "abierto" : "cerrado"})`}
+              onClick={() => void toggleWeekdayOpen(weekday.key)}
+              data-slot="weekday-button"
+            >
+              <div className="bo-configDayCardLabel">
+                <span className="bo-configDayCardLabelFull">{weekday.label}</span>
+                <span className="bo-configDayCardLabelShort" aria-hidden="true">
+                  {weekday.shortLabel}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bo-panel" data-ui="config-restaurante-limits-panel">
+        <div className="bo-panelHead" data-ui="config-restaurante-limits-header">
+          <div className="bo-panelTitle">Límites por defecto</div>
+          <div className="bo-panelMeta">Autosave inmediato</div>
+        </div>
+        <div className="bo-panelBody bo-configLimitGrid" data-ui="config-restaurante-limits-body">
+          <PlusMinusCounter
+            label="Límite diario"
+            value={dailyLimitLabel}
+            className="bo-configLimitCounterCard"
+            onDecrease={handleDailyDecrease}
+            onIncrease={handleDailyIncrease}
+            canDecrease={canDailyDecrease}
+            canIncrease={canDailyIncrease}
+            disabled={busy}
+            helperText="Rango permitido: 0-500"
+            decrementAriaLabel="Reducir límite diario"
+            incrementAriaLabel="Aumentar límite diario"
+          />
+
+          <PlusMinusCounter
+            label="Mesas de 2"
+            value={mesasDeDosLabel}
+            className="bo-configLimitCounterCard"
+            onDecrease={handleMesasDeDosDecrease}
+            onIncrease={handleMesasDeDosIncrease}
+            canDecrease={canMesasDeDosDecrease}
+            canIncrease={canMesasDeDosIncrease}
+            disabled={busy}
+            helperText="0-40 o Sin límite"
+            decrementAriaLabel="Reducir mesas de 2"
+            incrementAriaLabel="Aumentar mesas de 2"
+          />
+
+          <PlusMinusCounter
+            label="Mesas de 3"
+            value={mesasDeTresLabel}
+            className="bo-configLimitCounterCard"
+            onDecrease={handleMesasDeTresDecrease}
+            onIncrease={handleMesasDeTresIncrease}
+            canDecrease={canMesasDeTresDecrease}
+            canIncrease={canMesasDeTresIncrease}
+            disabled={busy}
+            helperText="0-40 o Sin límite"
+            decrementAriaLabel="Reducir mesas de 3"
+            incrementAriaLabel="Aumentar mesas de 3"
+          />
+        </div>
+      </div>
+
+      <div className="bo-panel" data-ui="config-restaurante-floors-panel">
+        <div className="bo-panelHead" data-ui="config-restaurante-floors-header">
+          <div className="bo-panelTitle">Plantas del restaurante</div>
+          <div className="bo-panelMeta">{floorCount} plantas</div>
+        </div>
+        <div className="bo-panelBody bo-configFloorsPanel" data-ui="config-restaurante-floors-body">
+          <Tabs
+            tabs={floorTabs}
+            activeId={floorTab}
+            ariaLabel="Secciones de plantas"
+            className="bo-tabs--reservas bo-configFloorTabs mx-auto"
+            onNavigate={onNavigateFloorTab}
+            layoutId="boFloorTabIndicator"
+          />
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={floorTab}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              data-slot="floor-tab-content"
+            >
+              {floorTab === "plantas" ? (
+                <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent" data-ui="config-floors-tabpanel">
+                  <PlusMinusCounter
+                    label="Total de plantas"
+                    value={String(floorCount)}
+                    className="bo-configLimitCounterCard bo-configFloorCounter"
+                    onDecrease={handleFloorsDecrease}
+                    onIncrease={handleFloorsIncrease}
+                    canDecrease={canShrink}
+                    canIncrease={canGrow}
+                    disabled={busy}
+                    helperText="Planta baja incluida"
+                    decrementAriaLabel="Quitar planta"
+                    incrementAriaLabel="Añadir planta"
+                  />
+
+                  <div className="bo-configSalonCards" aria-label="Plantas del restaurante" data-ui="config-floors-cards-container">
+                    {floorCards.map((floor) => (
+                      <div key={`planta-${floor.keyPrefix}`} className="bo-floorSalonCard" data-slot="floor-card">
+                        <div data-ui="floor-card-info">
+                          <div className="bo-floorCardName">{floor.plantaLabel}</div>
+                          <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                        </div>
+
+                        <div className="bo-floorSalonCardState" data-ui="floor-card-state">
+                          <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                          <Switch
+                            checked={floor.floor.active}
+                            disabled={busy}
+                            onCheckedChange={(checked) => {
+                              void toggleFloorDefault(floor.floor, checked);
+                            }}
+                            aria-label={`Estado por defecto de ${floor.plantaLabel}`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalonCards" data-ui="config-salons-tabpanel">
+                  {floorCards.map((floor) => (
+                    <div key={`salon-${floor.keyPrefix}`} className="bo-floorSalonCard" data-slot="salon-card">
+                      <div data-ui="salon-card-info">
+                        <div className="bo-floorCardName">{floor.salonLabel}</div>
+                        <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                      </div>
+
+                      <div className="bo-floorSalonCardState" data-ui="salon-card-state">
+                        <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                        <Switch
+                          checked={floor.floor.active}
+                          disabled={busy}
+                          onCheckedChange={(checked) => {
+                            void toggleFloorDefault(floor.floor, checked);
+                          }}
+                          aria-label={`Estado por defecto de ${floor.salonLabel}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </>
+  );
+}
