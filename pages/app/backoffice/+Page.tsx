@@ -6,8 +6,7 @@ import type { SidebarItem } from "../../../lib/rbac";
 import { sidebarItemsForRole } from "../../../lib/rbac";
 import { sessionAtom } from "../../../state/atoms";
 import { iconForSidebarItemKey } from "../../../ui/nav/sectionIcons";
-
-type OrbitItem = SidebarItem & { angleDeg: number };
+import type { OrbitItem } from "./types/index";
 
 export default function Page() {
   const session = useAtomValue(sessionAtom);
@@ -36,21 +35,21 @@ export default function Page() {
   }, [name]);
 
   return (
-    <div className="bo-homePage">
-      <header className="bo-homeHero">
-        <div className="bo-homeKicker">Panel de administracion</div>
-        <h1 className="bo-homeTitle">
-          Bienvenido, <span className="bo-homeTitleAccent">{firstName}</span>
+    <div className="bo-homePage" data-ui="backoffice-home">
+      <header className="bo-homeHero" data-ui="backoffice-hero">
+        <div className="bo-homeKicker" data-ui="backoffice-kicker">Panel de administracion</div>
+        <h1 className="bo-homeTitle" data-ui="backoffice-title">
+          Bienvenido, <span className="bo-homeTitleAccent" data-ui="backoffice-name">{firstName}</span>
         </h1>
-        <p className="bo-homeSub">Selecciona una seccion para empezar.</p>
+        <p className="bo-homeSub" data-ui="backoffice-subtitle">Selecciona una seccion para empezar.</p>
       </header>
 
-      <section className="bo-homeNav" aria-label="Accesos rapidos">
-        <div className="bo-homeOrbit" role="navigation" aria-label="Secciones del backoffice">
-          <div className="bo-homeRing bo-homeRing--outer" aria-hidden="true" />
-          <div className="bo-homeRing bo-homeRing--inner" aria-hidden="true" />
+      <section className="bo-homeNav" aria-label="Accesos rapidos" data-ui="backoffice-nav-orbit">
+        <div className="bo-homeOrbit" role="navigation" aria-label="Secciones del backoffice" data-ui="orbit-nav">
+          <div className="bo-homeRing bo-homeRing--outer" aria-hidden="true" data-ui="ring-outer" />
+          <div className="bo-homeRing bo-homeRing--inner" aria-hidden="true" data-ui="ring-inner" />
 
-          <div className="bo-homeCenter" aria-hidden="true">
+          <div className="bo-homeCenter" aria-hidden="true" data-ui="orbit-center">
             <ChefHat className="bo-homeCenterIcon" />
           </div>
 
@@ -59,27 +58,29 @@ export default function Page() {
               key={item.key}
               className="bo-homeNode"
               href={item.href}
+              data-ui="orbit-node"
+              data-role="nav-item"
               style={{
                 ["--bo-home-angle" as any]: `${item.angleDeg}deg`,
                 ["--bo-home-node-delay" as any]: `${index * 42}ms`,
               }}
             >
-              <span className="bo-homeNodeIcon" aria-hidden="true">
+              <span className="bo-homeNodeIcon" aria-hidden="true" data-ui="orbit-node-icon">
                 {iconForSidebarItemKey(item.key, { size: 18, strokeWidth: 1.8 })}
               </span>
-              <span className="bo-homeNodeLabel">{item.label}</span>
+              <span className="bo-homeNodeLabel" data-ui="orbit-node-label">{item.label}</span>
             </a>
           ))}
         </div>
       </section>
 
-      <section className="bo-homeList" aria-label="Secciones (lista)">
+      <section className="bo-homeList" aria-label="Secciones (lista)" data-ui="backoffice-nav-list">
         {items.map((item) => (
-          <a key={`list-${item.key}`} className="bo-homeListItem" href={item.href}>
-            <span className="bo-homeListIcon" aria-hidden="true">
+          <a key={`list-${item.key}`} className="bo-homeListItem" href={item.href} data-ui="list-item" data-role="nav-item">
+            <span className="bo-homeListIcon" aria-hidden="true" data-ui="list-item-icon">
               {iconForSidebarItemKey(item.key, { size: 18, strokeWidth: 1.8 })}
             </span>
-            <span className="bo-homeListLabel">{item.label}</span>
+            <span className="bo-homeListLabel" data-ui="list-item-label">{item.label}</span>
           </a>
         ))}
       </section>
