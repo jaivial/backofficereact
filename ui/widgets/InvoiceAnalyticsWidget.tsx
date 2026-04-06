@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { cn } from "../shadcn/utils";
 import {
   BarChart,
   Bar,
@@ -67,6 +68,7 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 interface InvoiceAnalyticsWidgetProps {
   analytics: InvoiceAnalytics;
   loading?: boolean;
+  className?: string;
 }
 
 // Custom tooltip for charts
@@ -99,6 +101,7 @@ const CustomTooltip = ({
 export function InvoiceAnalyticsWidget({
   analytics,
   loading = false,
+  className,
 }: InvoiceAnalyticsWidgetProps) {
   // Prepare data for status pie chart
   const statusData = useMemo(() => {
@@ -149,7 +152,7 @@ export function InvoiceAnalyticsWidget({
   const formatCurrency = (value: number) => `${value.toLocaleString()} €`;
 
   return (
-    <div className="bo-invoiceAnalytics">
+    <div className={cn("bo-invoiceAnalytics", className)}>
       {/* Summary Cards */}
       <div className="bo-analyticsSummary">
         <div className="bo-analyticsSummaryCard">

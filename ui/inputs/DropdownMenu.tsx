@@ -111,12 +111,14 @@ export function DropdownMenu({
   triggerContent,
   triggerClassName,
   menuMinWidthPx,
+  className,
 }: {
   label: string;
   items: MenuItem[];
   triggerContent?: React.ReactNode;
   triggerClassName?: string;
   menuMinWidthPx?: number;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -201,6 +203,7 @@ export function DropdownMenu({
       aria-expanded={open}
       aria-label={label}
       onClick={toggle}
+      data-ui="dropdown-trigger"
     >
       {triggerContent || <MoreVertical size={18} strokeWidth={1.8} />}
     </button>
@@ -228,6 +231,7 @@ export function DropdownMenu({
             transformOrigin: pos.direction === "up" ? "bottom left" : "top left",
             visibility: pos.ready ? "visible" : "hidden",
           }}
+          data-ui="dropdown-menu"
         >
           {items.map((it) => (
             <button
@@ -240,6 +244,8 @@ export function DropdownMenu({
                 close();
                 it.onSelect();
               }}
+              data-ui="dropdown-menu-item"
+              data-item-id={it.id}
             >
               {it.icon ? <span className="bo-menuIcon" aria-hidden="true">{it.icon}</span> : null}
               <span className="bo-menuLabel">{it.label}</span>

@@ -1,6 +1,8 @@
 import React from "react";
 import { Search } from "lucide-react";
 
+import { cn } from "../shadcn/utils";
+
 export type MemberPickerItem = {
   id: number;
   name: string;
@@ -16,6 +18,7 @@ export function MemberPicker({
   selectedId,
   onSelect,
   emptyLabel,
+  className,
 }: {
   title: string;
   searchValue: string;
@@ -24,9 +27,10 @@ export function MemberPicker({
   selectedId: number | null;
   onSelect: (memberId: number) => void;
   emptyLabel: string;
+  className?: string;
 }) {
   return (
-    <aside className="bo-memberPicker bo-memberPicker--glass" aria-label={title}>
+    <aside className={cn("bo-memberPicker bo-memberPicker--glass", className)} aria-label={title}>
       <div className="bo-memberPickerHead">
         <div className="bo-panelTitle">{title}</div>
         <div className="bo-memberPickerCount">{items.length}</div>

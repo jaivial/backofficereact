@@ -4,6 +4,7 @@ import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { formatISODate, parseISODate } from "../lib/format";
+import { cn } from "../shadcn/utils";
 import {
   DATE_DROPDOWN_MARGIN,
   DATE_DROPDOWN_POPOVER_HEIGHT,
@@ -19,6 +20,7 @@ type DateDropdownProps = {
   id?: string;
   daysBefore?: number;
   daysAfter?: number;
+  className?: string;
 };
 
 function formatDateLabel(iso: string): string {
@@ -71,6 +73,7 @@ export function DateDropdown({
   id,
   daysBefore = 7,
   daysAfter = 60,
+  className,
 }: DateDropdownProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -215,39 +218,42 @@ export function DateDropdown({
         style={{ top: pos.top, left: pos.left }}
         role="dialog"
         aria-label="Seleccionar fecha"
+        data-ui="date-dropdown-popover"
       >
-        <div className="bo-dateHead">
+        <div className="bo-dateHead" data-ui="date-dropdown-header">
           <button
             type="button"
             className="bo-actionBtn bo-actionBtn--glass"
             onClick={prevMonth}
             aria-label="Mes anterior"
+            data-ui="date-dropdown-prev-btn"
           >
             <ChevronLeft size={18} strokeWidth={1.8} />
           </button>
-          <div className="bo-dateTitle">{monthLabel(viewYear, viewMonth0)}</div>
+          <div className="bo-dateTitle" data-ui="date-dropdown-month-label">{monthLabel(viewYear, viewMonth0)}</div>
           <button
             type="button"
             className="bo-actionBtn bo-actionBtn--glass"
             onClick={nextMonth}
             aria-label="Mes siguiente"
+            data-ui="date-dropdown-next-btn"
           >
             <ChevronRight size={18} strokeWidth={1.8} />
           </button>
         </div>
-        <div className="bo-calDows" aria-hidden="true">
-          <div>L</div>
-          <div>M</div>
-          <div>M</div>
-          <div>J</div>
-          <div>V</div>
-          <div>S</div>
-          <div>D</div>
+        <div className="bo-calDows" aria-hidden="true" data-ui="date-dropdown-weekdays">
+          <div data-ui="date-dropdown-weekday">L</div>
+          <div data-ui="date-dropdown-weekday">M</div>
+          <div data-ui="date-dropdown-weekday">M</div>
+          <div data-ui="date-dropdown-weekday">J</div>
+          <div data-ui="date-dropdown-weekday">V</div>
+          <div data-ui="date-dropdown-weekday">S</div>
+          <div data-ui="date-dropdown-weekday">D</div>
         </div>
-        <div className="bo-calGrid" aria-label="Calendario">
+        <div className="bo-calGrid" aria-label="Calendario" data-ui="date-dropdown-grid">
           {grid.map((cell, index) => {
             if (!cell.day || !cell.iso) {
-              return <div key={index} className="bo-calDay bo-calDay--empty" aria-hidden="true" />;
+              return <div key={index} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-dropdown-empty-cell" />;
             }
 
             const iso = cell.iso;
@@ -257,7 +263,7 @@ export function DateDropdown({
               <button
                 key={iso}
                 type="button"
-                className={`bo-calDay${isSelected ? " is-selected" : ""}${isDisabled ? " is-disabled" : ""}`}
+                className={cn("bo-calDay", isSelected && "is-selected", isDisabled && "is-disabled")}
                 disabled={isDisabled}
                 onClick={() => {
                   if (isDisabled) return;
@@ -265,6 +271,9 @@ export function DateDropdown({
                   close();
                   btnRef.current?.focus();
                 }}
+                data-ui="date-dropdown-day"
+                data-date={iso}
+                data-selected={isSelected ? "true" : "false"}
               >
                 {cell.day}
               </button>
@@ -278,7 +287,7 @@ export function DateDropdown({
 
   return (
     <>
-      <div ref={wrapperRef} className="bo-selectWrapper" style={{ minWidth: 180 }}>
+      <div ref={wrapperRef} className={cn("bo-selectWrapper", className)} style={{ minWidth: 180 }} data-ui="date-dropdown-wrapper">
         <button
           id={id}
           ref={btnRef}

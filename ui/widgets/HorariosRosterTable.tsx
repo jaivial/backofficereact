@@ -1,3 +1,4 @@
+import { cn } from "../shadcn/utils";
 import type { FichajeSchedule, Member } from "../../api/types";
 
 export type HorariosRosterTableView = "grid" | "table";
@@ -16,19 +17,21 @@ export type HorariosRosterTableProps = {
   onEditMember: (member: Member) => void;
   ariaLabel?: string;
   emptyLabel?: string;
+  className?: string;
 };
 
 export function HorariosRosterTable({
   rows,
   emptyLabel,
   onRowClick,
+  className,
 }: HorariosRosterTableProps) {
   if (rows.length === 0) {
     return <div data-ui="rosterEmpty" className="bo-horariosRosterEmpty">{emptyLabel || "Sin datos"}</div>;
   }
 
   return (
-    <div data-ui="horariosRosterWrap" className="bo-horariosRosterWrap bo-horariosRosterWrap--glass">
+    <div data-ui="horariosRosterWrap" className={cn("bo-horariosRosterWrap bo-horariosRosterWrap--glass", className)}>
       <table data-ui="horariosRosterTable" className="bo-horariosRosterTable">
         <thead data-slot="tableHead">
           <tr data-role="header-row">

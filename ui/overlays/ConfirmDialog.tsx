@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../shadcn/utils";
 
 import { Modal } from "./Modal";
 
@@ -16,6 +17,7 @@ export function ConfirmDialog({
   onCancel,
   onConfirm,
   busy,
+  className,
 }: {
   open?: boolean;
   isOpen?: boolean;
@@ -30,6 +32,7 @@ export function ConfirmDialog({
   onCancel?: () => void;
   onConfirm: () => void | Promise<void>;
   busy?: boolean;
+  className?: string;
 }) {
   const effectiveOpen = open ?? isOpen ?? false;
   const handleClose = onClose ?? onCancel ?? (() => {});
@@ -37,7 +40,7 @@ export function ConfirmDialog({
   const effectiveCancelText = cancelText ?? cancelLabel ?? "Volver";
 
   return (
-    <Modal open={effectiveOpen} title={title} onClose={handleClose} className="bo-modal--confirm">
+    <Modal open={effectiveOpen} title={title} onClose={handleClose} className={cn("bo-modal--confirm", className)}>
       <div data-slot="modal-head" className="bo-modalHead">
         <div data-ui="modal-title" className="bo-modalTitle">{title}</div>
         <button data-ui="close-modal-btn" className="bo-modalX" type="button" onClick={handleClose} aria-label="Close">

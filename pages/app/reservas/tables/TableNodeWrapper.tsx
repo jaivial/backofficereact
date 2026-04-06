@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from "react";
-import type { TableNodeData, DrawNodeData } from "./+Page";
+import type { TableNodeData, DrawNodeData } from "./types/tables";
 
 interface TouchNodeWrapperProps {
   children: React.ReactNode;
