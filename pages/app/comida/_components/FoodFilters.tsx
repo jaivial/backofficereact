@@ -4,9 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Select } from "../../../../ui/inputs/Select";
 import type { FoodType } from "./foodTypes";
-
-type ActiveFilter = "all" | "active" | "inactive";
-type SuplementoFilter = "all" | "yes" | "no";
+import type { ActiveFilter, SuplementoFilter } from "../@foodType/types";
 
 interface FilterOption {
   value: string;

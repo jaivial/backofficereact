@@ -11,6 +11,7 @@ import { DailyScheduleCard } from "./DailyScheduleCard";
 import { WeeklyScheduleTable } from "./WeeklyScheduleTable";
 
 import { generateDateRange, getWeekGroups } from "../../helpers";
+import { fullName } from "../../../../../../lib/member";
 
 const MEMBER_VIEW_TAB_ITEMS = [
   { id: "diario", label: "Diario" },
@@ -34,11 +35,6 @@ function getInitialView(): "diario" | "semanal" {
   const stored = localStorage.getItem(MEMBER_FILTER_VIEW_KEY);
   if (stored === "diario" || stored === "semanal") return stored;
   return "diario";
-}
-
-function fullName(m: Member): string {
-  const parts = [m.firstName, m.lastName].filter(Boolean);
-  return parts.join(" ").trim() || `Miembro #${m.id}`;
 }
 
 export function MemberFilterView({ members, className }: MemberFilterViewProps) {

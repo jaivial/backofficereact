@@ -1,0 +1,493 @@
+{
+  "title": "Backoffice — Extract Constants & Types to Proper Files",
+  "description": "Extract all inline type declarations and const values from .tsx files into proper constants/ and types/ folders, replacing inline definitions with imports. Fix duplicate definitions between parallel component trees.",
+  "totalItems": 107,
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Phase 1 — Audit and Fix Stale Duplicates in comida",
+      "description": "Fix comida/+Page.tsx which has stale inline FoodType, FoodEntry, and FOOD_ENTRIES that are already extracted. Also fix OrbitItem duplicate in backoffice. Quick wins.",
+      "tasks": [
+        {
+          "id": "1.1",
+          "description": "Fix comida/+Page.tsx — remove stale inline FoodType, FoodEntry, FOOD_ENTRIES",
+          "files": ["pages/app/comida/+Page.tsx"],
+          "action": "replace_inline_with_import",
+          "importFrom": "./@foodType/constants",
+          "items": ["FoodType", "FoodEntry", "FOOD_ENTRIES"],
+          "expectedChanges": "Remove 3 inline definitions from +Page.tsx, add imports"
+        },
+        {
+          "id": "1.2",
+          "description": "Fix backoffice — extract OrbitItem to types/ and import from both +Page.tsx and backoffice.tsx",
+          "files": ["pages/app/backoffice/+Page.tsx", "pages/app/backoffice/backoffice.tsx"],
+          "action": "extract_type_to_shared",
+          "type": "OrbitItem",
+          "target": "pages/app/backoffice/types/backoffice.types.ts",
+          "note": "Create types/ folder and extract OrbitItem type. Both files should import from it."
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Phase 2 — facturas: Audit Parallel Tree (Decision)",
+      "description": "The facturas/ directory has two nearly identical parallel trees (_components/ and functionalComponents/) with 82+ duplicate definitions. Before extracting, decide which tree to keep. The functionalComponents/ tree was the intended target from the previous refactor.",
+      "tasks": [
+        {
+          "id": "2.1",
+          "description": "Audit facturas/ parallel trees — compare _components/ vs functionalComponents/ to determine which to keep",
+          "action": "audit_and_decide",
+          "files": ["pages/app/facturas/_components/", "pages/app/facturas/functionalComponents/"],
+          "note": "functionalComponents/ is the canonical tree. _components/ should be deleted after extracting shared types/constants to pages/app/facturas/types/ and pages/app/facturas/constants/. All duplicate definitions (82 items) will be consolidated into shared files that both trees can import from."
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3 — facturas: Extract Shared Types to facturas/types/",
+      "description": "Extract all duplicate type declarations from the facturas/ parallel trees into shared types/ folder. These types are defined identically in both _components/ and functionalComponents/ and should live in one canonical location.",
+      "tasks": [
+        {
+          "id": "3.1",
+          "description": "Create pages/app/facturas/types/invoiceTable.types.ts — extract InvoiceTable types",
+          "types": ["SortField", "SortDirection", "InvoiceTableProps"],
+          "currentlyIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.2",
+          "description": "Create pages/app/facturas/types/invoiceForm.types.ts — extract InvoiceForm types",
+          "types": ["InvoiceFormProps", "AutoSaveStatus"],
+          "currentlyIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.3",
+          "description": "Create pages/app/facturas/types/invoiceFilters.types.ts — extract InvoiceFilters types",
+          "types": ["DatePreset", "InvoiceFilterPreset", "InvoiceFiltersProps", "SearchByOption", "InvoiceFiltersRef"],
+          "currentlyIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.4",
+          "description": "Create pages/app/facturas/types/invoice.types.ts — extract InvoiceMain types",
+          "types": ["InvoiceDetailProps", "InvoiceDetailRef", "InvoiceData"],
+          "currentlyIn": ["pages/app/facturas/_components/InvoiceDetail.tsx", "pages/app/facturas/functionalComponents/InvoiceDetail.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.5",
+          "description": "Create pages/app/facturas/types/batchSend.types.ts — extract BatchSend types",
+          "types": ["BatchSendModalProps", "SendResult", "SendStatus"],
+          "currentlyIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.6",
+          "description": "Create pages/app/facturas/types/sendEmail.types.ts — extract SendEmail types",
+          "types": ["SendEmailModalProps", "DEFAULT_SUBJECT", "DEFAULT_MESSAGE"],
+          "currentlyIn": ["pages/app/facturas/_components/SendEmailModal.tsx", "pages/app/facturas/functionalComponents/SendEmailModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.7",
+          "description": "Create pages/app/facturas/types/reminder.types.ts — extract ReminderModal types",
+          "types": ["ReminderModalProps", "DEFAULT_EMAIL_SUBJECT", "DEFAULT_EMAIL_BODY", "DEFAULT_WHATSAPP_BODY"],
+          "currentlyIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.8",
+          "description": "Create pages/app/facturas/types/reminderTemplates.types.ts — extract ReminderTemplatesModal types",
+          "types": ["ReminderTemplatesModalProps", "DEFAULT_EMAIL_TEMPLATE", "DEFAULT_WHATSAPP_TEMPLATE"],
+          "currentlyIn": ["pages/app/facturas/_components/ReminderTemplatesModal.tsx", "pages/app/facturas/functionalComponents/ReminderTemplatesModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.9",
+          "description": "Create pages/app/facturas/types/invoiceHistory.types.ts — extract InvoiceHistoryModal types",
+          "types": ["InvoiceHistoryModalProps", "ACTION_CONFIG"],
+          "currentlyIn": ["pages/app/facturas/_components/InvoiceHistoryModal.tsx", "pages/app/facturas/functionalComponents/InvoiceHistoryModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.10",
+          "description": "Create pages/app/facturas/types/customerHistory.types.ts — extract CustomerHistoryModal types",
+          "types": ["CustomerHistoryModalProps", "INVOICE_STATUS_CONFIG"],
+          "currentlyIn": ["pages/app/facturas/_components/CustomerHistoryModal.tsx", "pages/app/facturas/functionalComponents/CustomerHistoryModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.11",
+          "description": "Create pages/app/facturas/types/registerPayment.types.ts — extract RegisterPaymentModal types",
+          "types": ["RegisterPaymentModalProps"],
+          "currentlyIn": ["pages/app/facturas/_components/RegisterPaymentModal.tsx", "pages/app/facturas/functionalComponents/RegisterPaymentModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.12",
+          "description": "Create pages/app/facturas/types/fillFromReservation.types.ts — extract FillFromReservationModal types",
+          "types": ["FillFromReservationModalProps", "PARTY_SIZE_OPTIONS", "TIME_OPTIONS"],
+          "currentlyIn": ["pages/app/facturas/_components/FillFromReservationModal.tsx", "pages/app/facturas/functionalComponents/FillFromReservationModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.13",
+          "description": "Create pages/app/facturas/types/mergeInvoices.types.ts — extract MergeInvoicesModal types",
+          "types": ["MergeInvoicesModalProps"],
+          "currentlyIn": ["pages/app/facturas/_components/MergeInvoicesModal.tsx", "pages/app/facturas/functionalComponents/MergeInvoicesModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.14",
+          "description": "Create pages/app/facturas/types/splitInvoice.types.ts — extract SplitInvoiceModal types",
+          "types": ["SplitInvoiceModalProps", "INITIAL_SPLIT_ITEM"],
+          "currentlyIn": ["pages/app/facturas/_components/SplitInvoiceModal.tsx", "pages/app/facturas/functionalComponents/SplitInvoiceModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.15",
+          "description": "Create pages/app/facturas/types/attachments.types.ts — extract AttachmentsModal types",
+          "types": ["AttachmentsModalProps"],
+          "currentlyIn": ["pages/app/facturas/_components/AttachmentsModal.tsx", "pages/app/facturas/functionalComponents/AttachmentsModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.16",
+          "description": "Create pages/app/facturas/types/lineItems.types.ts — extract LineItems types",
+          "types": ["LineItemsProps", "LineItemsRef"],
+          "currentlyIn": ["pages/app/facturas/_components/LineItems.tsx", "pages/app/facturas/functionalComponents/LineItems.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.17",
+          "description": "Create pages/app/facturas/types/importWizard.types.ts — extract ImportWizard types",
+          "types": ["ImportWizardProps", "WizardStep", "ParsedCSVData"],
+          "currentlyIn": ["pages/app/facturas/_components/ImportWizard.tsx", "pages/app/facturas/functionalComponents/ImportWizard.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.18",
+          "description": "Create pages/app/facturas/types/importHistory.types.ts — extract ImportHistoryModal types",
+          "types": ["ImportHistoryModalProps", "STORAGE_KEY"],
+          "currentlyIn": ["pages/app/facturas/_components/ImportHistoryModal.tsx", "pages/app/facturas/functionalComponents/ImportHistoryModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.19",
+          "description": "Create pages/app/facturas/types/recurringBilling.types.ts — extract RecurringBillingSection types",
+          "types": ["RecurringBillingSectionProps", "RecurringBillingData"],
+          "currentlyIn": ["pages/app/facturas/_components/RecurringBillingSection.tsx", "pages/app/facturas/functionalComponents/RecurringBillingSection.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.20",
+          "description": "Create pages/app/facturas/types/comments.types.ts — extract CommentsPanel types",
+          "types": ["CommentsPanelProps"],
+          "currentlyIn": ["pages/app/facturas/_components/CommentsPanel.tsx", "pages/app/facturas/functionalComponents/CommentsPanel.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.21",
+          "description": "Create pages/app/facturas/types/invoicePreview.types.ts — extract InvoicePreviewModal types",
+          "types": ["InvoicePreviewModalProps", "PAYMENT_METHOD_LABELS", "INVOICE_STATUS_CONFIG"],
+          "currentlyIn": ["pages/app/facturas/_components/InvoicePreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePreviewModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.22",
+          "description": "Create pages/app/facturas/types/invoicePdfPreview.types.ts — extract InvoicePdfPreviewModal types",
+          "types": ["InvoicePdfPreviewModalProps"],
+          "currentlyIn": ["pages/app/facturas/_components/InvoicePdfPreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePdfPreviewModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.23",
+          "description": "Create pages/app/facturas/types/sendWhatsApp.types.ts — extract SendWhatsAppModal types",
+          "types": ["SendWhatsAppModalProps", "DEFAULT_WHATSAPP_MESSAGE"],
+          "currentlyIn": ["pages/app/facturas/_components/SendWhatsAppModal.tsx", "pages/app/facturas/functionalComponents/SendWhatsAppModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.24",
+          "description": "Create pages/app/facturas/types/selectTemplate.types.ts — extract SelectTemplateModal types",
+          "types": ["SelectTemplateModalProps", "TemplateFormProps"],
+          "currentlyIn": ["pages/app/facturas/_components/SelectTemplateModal.tsx", "pages/app/facturas/functionalComponents/SelectTemplateModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "3.25",
+          "description": "Quality gate after Phase 3",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+          "verify": "All pass"
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Phase 4 — facturas: Extract Shared Constants to facturas/constants/",
+      "description": "Extract all duplicate const declarations from the facturas/ parallel trees into shared constants/ folder. These const values are defined identically in both trees and should be centralized.",
+      "tasks": [
+        {
+          "id": "4.1",
+          "description": "Create pages/app/facturas/constants/invoiceTable.constants.ts — PAYMENT_METHOD_LABELS, INVOICE_STATUS_CONFIG, ALL_STATUSES, CATEGORY_CONFIG, DEPOSIT_CONFIG",
+          "currentlyIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+          "action": "create_shared_constants"
+        },
+        {
+          "id": "4.2",
+          "description": "Create pages/app/facturas/constants/invoiceForm.constants.ts — PAYMENT_METHOD_OPTIONS, PAYMENT_TERMS_OPTIONS, STATUS_OPTIONS",
+          "currentlyIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+          "action": "create_shared_constants"
+        },
+        {
+          "id": "4.3",
+          "description": "Quality gate after Phase 4",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+          "verify": "All pass"
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Phase 5 — factura/+Page.tsx Inline Types",
+      "description": "Extract inline types from the factura public invoice page.",
+      "tasks": [
+        {
+          "id": "5.1",
+          "description": "Audit factura/@invoiceId/+Page.tsx for inline types",
+          "file": "pages/factura/@invoiceId/+Page.tsx",
+          "note": "This page was already refactored in Phase 2 — check if any types remain inline"
+        }
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Phase 6 — comida: Extract Shared Types to comida/_types/ and comida/_constants/",
+      "description": "Extract duplicate type and const declarations from the comida/ parallel trees (_components/ and functionalComponents/) into shared location. Unlike facturas, comida's functionalComponents/ was the NEW canonical tree created by the Phase 6 refactoring agent, while _components/ was the OLD tree. The functionalComponents/ files already have extracted types/constants but the _components/ files still have inline copies.",
+      "tasks": [
+        {
+          "id": "6.1",
+          "description": "Create pages/app/comida/_types/foodFilters.types.ts — extract FoodFilters types",
+          "types": ["ActiveFilter", "SuplementoFilter", "FilterOption", "FoodFiltersProps"],
+          "currentlyIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "6.2",
+          "description": "Create pages/app/comida/_types/foodTypePanelGrid.types.ts — extract FoodTypePanelGrid types",
+          "types": ["FoodPanelDef"],
+          "currentlyIn": ["pages/app/comida/_components/FoodTypePanelGrid.tsx", "pages/app/comida/functionalComponents/FoodTypePanelGrid.tsx"],
+          "note": "DIFFERENT from MenuTypePanelDef in menuEditor.constants — distinct type",
+          "action": "create_shared_types"
+        },
+        {
+          "id": "6.3",
+          "description": "Create pages/app/comida/_types/foodItemModal.types.ts — extract FoodItemModal types",
+          "types": ["FoodItemModalProps"],
+          "currentlyIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "6.4",
+          "description": "Create pages/app/comida/_types/wineModal.types.ts — extract WineModal types",
+          "types": ["WineModalProps"],
+          "currentlyIn": ["pages/app/comida/_components/WineModal.tsx", "pages/app/comida/functionalComponents/WineModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "6.5",
+          "description": "Create pages/app/comida/_types/foodCategoryModal.types.ts — extract FoodCategoryModal types",
+          "types": ["FoodCategoryModalProps"],
+          "currentlyIn": ["pages/app/comida/_components/FoodCategoryModal.tsx", "pages/app/comida/functionalComponents/FoodCategoryModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "6.6",
+          "description": "Create pages/app/comida/_types/beverageCategoryModal.types.ts — extract BeverageCategoryModal types",
+          "types": ["BeverageCategoryModalProps"],
+          "currentlyIn": ["pages/app/comida/_components/BeverageCategoryModal.tsx", "pages/app/comida/functionalComponents/BeverageCategoryModal.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "6.7",
+          "description": "Create pages/app/comida/_types/foodItemCard.types.ts — extract FoodItemCard types",
+          "types": ["FoodItemCardProps"],
+          "currentlyIn": ["pages/app/comida/_components/FoodItemCard.tsx", "pages/app/comida/functionalComponents/FoodItemCard.tsx"],
+          "action": "create_shared_types"
+        },
+        {
+          "id": "6.8",
+          "description": "Create pages/app/comida/_constants/foodFilters.constants.ts — extract FoodFilters consts",
+          "consts": ["ACTIVE_OPTIONS", "SUPLEMENTO_OPTIONS"],
+          "currentlyIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+          "action": "create_shared_constants"
+        },
+        {
+          "id": "6.9",
+          "description": "Create pages/app/comida/_constants/foodItemModal.constants.ts — extract FoodItemModal consts",
+          "consts": ["ALERGEN_OPTIONS", "TIPO_OPTIONS", "BEBIDA_DEFAULT_CATEGORY_NAMES", "AI_ADVISOR_FOOD_TYPES"],
+          "currentlyIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+          "action": "create_shared_constants"
+        },
+        {
+          "id": "6.10",
+          "description": "Create pages/app/comida/_constants/foodTypePanelGrid.constants.ts — extract FoodTypePanelGrid consts",
+          "consts": ["FOOD_TYPE_PANELS"],
+          "currentlyIn": ["pages/app/comida/_components/FoodTypePanelGrid.tsx", "pages/app/comida/functionalComponents/FoodTypePanelGrid.tsx"],
+          "action": "create_shared_constants"
+        },
+        {
+          "id": "6.11",
+          "description": "Create pages/app/comida/_constants/wineModal.constants.ts — extract WineModal consts",
+          "consts": ["WINE_TYPE_OPTIONS"],
+          "currentlyIn": ["pages/app/comida/_components/WineModal.tsx", "pages/app/comida/functionalComponents/WineModal.tsx"],
+          "action": "create_shared_constants"
+        },
+        {
+          "id": "6.12",
+          "description": "Quality gate after Phase 6",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+          "verify": "All pass"
+        }
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "Phase 7 — miembros/estadisticas/_components/ Inline Types",
+      "description": "Extract inline types from miembros estadisticas shared components.",
+      "tasks": [
+        {
+          "id": "7.1",
+          "description": "Audit miembros/@memberId/estadisticas/_components/StatsTable.tsx for inline types",
+          "file": "pages/app/miembros/@memberId/estadisticas/_components/StatsTable.tsx",
+          "note": "Check for inline type declarations that should be extracted"
+        },
+        {
+          "id": "7.2",
+          "description": "Quality gate after Phase 7",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+          "verify": "All pass"
+        }
+      ]
+    },
+    {
+      "phase": 8,
+      "name": "Phase 8 — Scan for Remaining Inline Types in Page Files",
+      "description": "Systematic scan of all page +Page.tsx files (the companion .tsx files, not vike entry points) for remaining inline type declarations that should be extracted.",
+      "tasks": [
+        {
+          "id": "8.1",
+          "description": "Scan pages/app/menus/+Page.tsx for inline types",
+          "file": "pages/app/menus/+Page.tsx"
+        },
+        {
+          "id": "8.2",
+          "description": "Scan pages/app/fichaje/+Page.tsx for inline types",
+          "file": "pages/app/fichaje/+Page.tsx"
+        },
+        {
+          "id": "8.3",
+          "description": "Scan pages/app/estado-cuenta/+Page.tsx for inline types",
+          "file": "pages/app/estado-cuenta/+Page.tsx"
+        },
+        {
+          "id": "8.4",
+          "description": "Scan pages/app/horarios/turnos/+Page.tsx for inline types",
+          "file": "pages/app/horarios/turnos/+Page.tsx"
+        },
+        {
+          "id": "8.5",
+          "description": "Scan pages/app/miembros/+Page.tsx for inline types",
+          "file": "pages/app/miembros/+Page.tsx"
+        },
+        {
+          "id": "8.6",
+          "description": "Scan pages/app/facturas/+Page.tsx for inline types",
+          "file": "pages/app/facturas/+Page.tsx"
+        },
+        {
+          "id": "8.7",
+          "description": "Quality gate after Phase 8",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+          "verify": "All pass"
+        }
+      ]
+    },
+    {
+      "phase": 9,
+      "name": "Phase 9 — ui/ Components: Scan and Extract Shared Types",
+      "description": "Scan ui/ components for types that are shared across multiple files or that belong in shared types/ rather than inline.",
+      "tasks": [
+        {
+          "id": "9.1",
+          "description": "Audit ui/inputs/ for inline types that should be shared — Pos type appears in DateRangePicker, DropdownMenu, DatePicker (identical { top: number; left: number })",
+          "files": ["ui/inputs/DateRangePicker.tsx", "ui/inputs/DropdownMenu.tsx", "ui/inputs/DatePicker.tsx"],
+          "note": "Keep Pos inline — it's an internal utility type within the ui/inputs package. Low priority."
+        },
+        {
+          "id": "9.2",
+          "description": "Audit ui/widgets/ for inline types that should be shared across widgets",
+          "files": ["ui/widgets/"],
+          "note": "Most are component-local prop types — appropriate to keep inline. Focus on types shared across 2+ files."
+        },
+        {
+          "id": "9.3",
+          "description": "Quality gate after Phase 9",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+          "verify": "All pass"
+        }
+      ]
+    },
+    {
+      "phase": 10,
+      "name": "Phase 10 — Final Verification",
+      "description": "Run full quality gates and verify no regressions.",
+      "tasks": [
+        {
+          "id": "10.1",
+          "description": "Final lint check",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint",
+          "verify": "Exit code 0"
+        },
+        {
+          "id": "10.2",
+          "description": "Final typecheck",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run typecheck",
+          "verify": "Exit code 0"
+        },
+        {
+          "id": "10.3",
+          "description": "Final build",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run build",
+          "verify": "Exit code 0"
+        },
+        {
+          "id": "10.4",
+          "description": "Final test run",
+          "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun test",
+          "verify": "Same or better results than baseline"
+        },
+        {
+          "id": "10.5",
+          "description": "Verify all extracted files exist and are imported",
+          "action": "verify_imports",
+          "note": "Confirm all created types/ and constants/ files are imported in their consumers"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "typesToExtract": 84,
+    "constsToExtract": 23,
+    "facturasTypes": 54,
+    "facturasConsts": 10,
+    "comidaTypes": 7,
+    "comidaConsts": 6,
+    "staleDuplicates": 3,
+    "totalTypesToCreate": 23,
+    "totalConstantsToCreate": 6,
+    "preExistingInConstantsFolders": 73,
+    "duplicatePairsResolved": 82
+  }
+}

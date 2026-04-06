@@ -12,6 +12,7 @@ import { RoleCard } from "../../../../ui/widgets/roles/RoleCard";
 import { CreateRoleInput, RoleCreateModal } from "../../../../ui/widgets/roles/RoleCreateModal";
 import { RoleDetailModal } from "../../../../ui/widgets/roles/RoleDetailModal";
 import type { Data } from "./+data";
+import { fullName } from "../../../../lib/member";
 
 function fallbackRoleImportance(roleRaw: string | null | undefined): number {
   const role = String(roleRaw ?? "").trim().toLowerCase();
@@ -26,11 +27,6 @@ function sortRoles(list: RoleCatalogItem[]): RoleCatalogItem[] {
     if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
     return a.slug.localeCompare(b.slug);
   });
-}
-
-function fullName(member: Member): string {
-  const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
-  return name || `Miembro #${member.id}`;
 }
 
 export default function Page() {

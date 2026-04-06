@@ -1,9 +1,6 @@
-import type { FichajeSchedule, Member } from "../../../../../api/types";
+import type { FichajeSchedule } from "../../../../../api/types";
 
-export function fullName(member: Member): string {
-  const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
-  return name || `Miembro #${member.id}`;
-}
+export { fullName } from "../../../../../lib/member";
 
 export function formatElapsed(totalSeconds: number): string {
   const seconds = Math.max(0, Math.floor(totalSeconds));
