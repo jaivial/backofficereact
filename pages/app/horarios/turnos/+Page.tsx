@@ -13,6 +13,7 @@ import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { TimeEntriesEditor, type EditableTimeEntry } from "../../../../ui/widgets/TimeEntriesEditor";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { HorariosRosterTable, type HorariosRosterRow, type HorariosRosterTableView } from "../../../../ui/widgets/HorariosRosterTable";
+import { fullName } from "../../../../lib/member";
 
 type PageData = {
   date: string;
@@ -22,11 +23,6 @@ type PageData = {
 };
 
 const VIEW_STORAGE_KEY = "bo_horarios_turnos_view";
-
-function fullName(member: Member): string {
-  const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
-  return name || `Miembro #${member.id}`;
-}
 
 function parseHHMM(value: string): number | null {
   const [h, m] = value.split(":").map((v) => Number(v));

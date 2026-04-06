@@ -1,0 +1,1 @@
+export { useFoodDetailPage } from "./useFoodDetailPage";

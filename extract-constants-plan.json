@@ -1,0 +1,1570 @@
+{
+  "totalTypeDeclarations": 120,
+  "totalConstDeclarations": 65,
+  "typesToExtract": [
+    {
+      "name": "OrbitItem",
+      "currentlyIn": "pages/app/backoffice/+Page.tsx",
+      "line": 10,
+      "lines": 1,
+      "usedIn": ["pages/app/backoffice/+Page.tsx", "pages/app/backoffice/backoffice.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/backoffice/types/",
+      "proposedFile": "backoffice.types.ts"
+    },
+    {
+      "name": "SortField",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceTable.tsx",
+      "line": 10,
+      "lines": 1,
+      "usedIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceTable.types.ts"
+    },
+    {
+      "name": "SortDirection",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceTable.tsx",
+      "line": 11,
+      "lines": 1,
+      "usedIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceTable.types.ts"
+    },
+    {
+      "name": "InvoiceTableProps",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceTable.tsx",
+      "line": 13,
+      "lines": 40,
+      "usedIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceTable.types.ts"
+    },
+    {
+      "name": "InvoiceFormProps",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceForm.tsx",
+      "line": 21,
+      "lines": 17,
+      "usedIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceForm.types.ts"
+    },
+    {
+      "name": "AutoSaveStatus",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceForm.tsx",
+      "line": 39,
+      "lines": 1,
+      "usedIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceForm.types.ts"
+    },
+    {
+      "name": "SearchByOption",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceFilters.tsx",
+      "line": 111,
+      "lines": 1,
+      "usedIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceFilters.types.ts"
+    },
+    {
+      "name": "InvoiceFiltersProps",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceFilters.tsx",
+      "line": 113,
+      "lines": 50,
+      "usedIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceFilters.types.ts"
+    },
+    {
+      "name": "DatePreset",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceFilters.tsx",
+      "line": 10,
+      "lines": 1,
+      "usedIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceFilters.types.ts"
+    },
+    {
+      "name": "InvoiceFilterPreset",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceFilters.tsx",
+      "line": 12,
+      "lines": 20,
+      "usedIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceFilters.types.ts"
+    },
+    {
+      "name": "InvoiceFiltersRef",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceFilters.tsx",
+      "line": 107,
+      "lines": 3,
+      "usedIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceFilters.types.ts"
+    },
+    {
+      "name": "BatchSendModalProps",
+      "currentlyIn": "pages/app/facturas/_components/BatchSendModal.tsx",
+      "line": 8,
+      "lines": 6,
+      "usedIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "batchSend.types.ts"
+    },
+    {
+      "name": "SendResult",
+      "currentlyIn": "pages/app/facturas/_components/BatchSendModal.tsx",
+      "line": 30,
+      "lines": 8,
+      "usedIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "batchSend.types.ts"
+    },
+    {
+      "name": "SendStatus",
+      "currentlyIn": "pages/app/facturas/_components/BatchSendModal.tsx",
+      "line": 39,
+      "lines": 1,
+      "usedIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "batchSend.types.ts"
+    },
+    {
+      "name": "SendEmailModalProps",
+      "currentlyIn": "pages/app/facturas/_components/SendEmailModal.tsx",
+      "line": 8,
+      "lines": 6,
+      "usedIn": ["pages/app/facturas/_components/SendEmailModal.tsx", "pages/app/facturas/functionalComponents/SendEmailModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "sendEmail.types.ts"
+    },
+    {
+      "name": "SendWhatsAppModalProps",
+      "currentlyIn": "pages/app/facturas/_components/SendWhatsAppModal.tsx",
+      "line": 8,
+      "lines": 6,
+      "usedIn": ["pages/app/facturas/_components/SendWhatsAppModal.tsx", "pages/app/facturas/functionalComponents/SendWhatsAppModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "sendWhatsApp.types.ts"
+    },
+    {
+      "name": "InvoicePreviewModalProps",
+      "currentlyIn": "pages/app/facturas/_components/InvoicePreviewModal.tsx",
+      "line": 6,
+      "lines": 7,
+      "usedIn": ["pages/app/facturas/_components/InvoicePreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePreviewModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoicePreview.types.ts"
+    },
+    {
+      "name": "InvoicePdfPreviewModalProps",
+      "currentlyIn": "pages/app/facturas/_components/InvoicePdfPreviewModal.tsx",
+      "line": 5,
+      "lines": 20,
+      "usedIn": ["pages/app/facturas/_components/InvoicePdfPreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePdfPreviewModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoicePdfPreview.types.ts"
+    },
+    {
+      "name": "ReminderModalProps",
+      "currentlyIn": "pages/app/facturas/_components/ReminderModal.tsx",
+      "line": 8,
+      "lines": 6,
+      "usedIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "reminder.types.ts"
+    },
+    {
+      "name": "ReminderTemplatesModalProps",
+      "currentlyIn": "pages/app/facturas/_components/ReminderTemplatesModal.tsx",
+      "line": 8,
+      "lines": 5,
+      "usedIn": ["pages/app/facturas/_components/ReminderTemplatesModal.tsx", "pages/app/facturas/functionalComponents/ReminderTemplatesModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "reminderTemplates.types.ts"
+    },
+    {
+      "name": "SelectTemplateModalProps",
+      "currentlyIn": "pages/app/facturas/_components/SelectTemplateModal.tsx",
+      "line": 8,
+      "lines": 5,
+      "usedIn": ["pages/app/facturas/_components/SelectTemplateModal.tsx", "pages/app/facturas/functionalComponents/SelectTemplateModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "selectTemplate.types.ts"
+    },
+    {
+      "name": "TemplateFormProps",
+      "currentlyIn": "pages/app/facturas/_components/SelectTemplateModal.tsx",
+      "line": 209,
+      "lines": 4,
+      "usedIn": ["pages/app/facturas/_components/SelectTemplateModal.tsx", "pages/app/facturas/functionalComponents/SelectTemplateModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "selectTemplate.types.ts"
+    },
+    {
+      "name": "InvoiceHistoryModalProps",
+      "currentlyIn": "pages/app/facturas/_components/InvoiceHistoryModal.tsx",
+      "line": 6,
+      "lines": 7,
+      "usedIn": ["pages/app/facturas/_components/InvoiceHistoryModal.tsx", "pages/app/facturas/functionalComponents/InvoiceHistoryModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "invoiceHistory.types.ts"
+    },
+    {
+      "name": "CustomerHistoryModalProps",
+      "currentlyIn": "pages/app/facturas/_components/CustomerHistoryModal.tsx",
+      "line": 6,
+      "lines": 7,
+      "usedIn": ["pages/app/facturas/_components/CustomerHistoryModal.tsx", "pages/app/facturas/functionalComponents/CustomerHistoryModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "customerHistory.types.ts"
+    },
+    {
+      "name": "RegisterPaymentModalProps",
+      "currentlyIn": "pages/app/facturas/_components/RegisterPaymentModal.tsx",
+      "line": 8,
+      "lines": 6,
+      "usedIn": ["pages/app/facturas/_components/RegisterPaymentModal.tsx", "pages/app/facturas/functionalComponents/RegisterPaymentModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "registerPayment.types.ts"
+    },
+    {
+      "name": "MergeInvoicesModalProps",
+      "currentlyIn": "pages/app/facturas/_components/MergeInvoicesModal.tsx",
+      "line": 6,
+      "lines": 6,
+      "usedIn": ["pages/app/facturas/_components/MergeInvoicesModal.tsx", "pages/app/facturas/functionalComponents/MergeInvoicesModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "mergeInvoices.types.ts"
+    },
+    {
+      "name": "FillFromReservationModalProps",
+      "currentlyIn": "pages/app/facturas/_components/FillFromReservationModal.tsx",
+      "line": 8,
+      "lines": 12,
+      "usedIn": ["pages/app/facturas/_components/FillFromReservationModal.tsx", "pages/app/facturas/functionalComponents/FillFromReservationModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "fillFromReservation.types.ts"
+    },
+    {
+      "name": "SplitInvoiceModalProps",
+      "currentlyIn": "pages/app/facturas/_components/SplitInvoiceModal.tsx",
+      "line": 7,
+      "lines": 6,
+      "usedIn": ["pages/app/facturas/_components/SplitInvoiceModal.tsx", "pages/app/facturas/functionalComponents/SplitInvoiceModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "splitInvoice.types.ts"
+    },
+    {
+      "name": "AttachmentsModalProps",
+      "currentlyIn": "pages/app/facturas/_components/AttachmentsModal.tsx",
+      "line": 5,
+      "lines": 9,
+      "usedIn": ["pages/app/facturas/_components/AttachmentsModal.tsx", "pages/app/facturas/functionalComponents/AttachmentsModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "attachments.types.ts"
+    },
+    {
+      "name": "LineItemsProps",
+      "currentlyIn": "pages/app/facturas/_components/LineItems.tsx",
+      "line": 13,
+      "lines": 7,
+      "usedIn": ["pages/app/facturas/_components/LineItems.tsx", "pages/app/facturas/functionalComponents/LineItems.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "lineItems.types.ts"
+    },
+    {
+      "name": "LineItemsRef",
+      "currentlyIn": "pages/app/facturas/_components/LineItems.tsx",
+      "line": 8,
+      "lines": 4,
+      "usedIn": ["pages/app/facturas/_components/LineItems.tsx", "pages/app/facturas/functionalComponents/LineItems.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "lineItems.types.ts"
+    },
+    {
+      "name": "ImportWizardProps",
+      "currentlyIn": "pages/app/facturas/_components/ImportWizard.tsx",
+      "line": 42,
+      "lines": 7,
+      "usedIn": ["pages/app/facturas/_components/ImportWizard.tsx", "pages/app/facturas/functionalComponents/ImportWizard.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "importWizard.types.ts"
+    },
+    {
+      "name": "WizardStep",
+      "currentlyIn": "pages/app/facturas/_components/ImportWizard.tsx",
+      "line": 50,
+      "lines": 1,
+      "usedIn": ["pages/app/facturas/_components/ImportWizard.tsx", "pages/app/facturas/functionalComponents/ImportWizard.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "importWizard.types.ts"
+    },
+    {
+      "name": "ParsedCSVData",
+      "currentlyIn": "pages/app/facturas/_components/ImportWizard.tsx",
+      "line": 52,
+      "lines": 5,
+      "usedIn": ["pages/app/facturas/_components/ImportWizard.tsx", "pages/app/facturas/functionalComponents/ImportWizard.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "importWizard.types.ts"
+    },
+    {
+      "name": "ImportHistoryModalProps",
+      "currentlyIn": "pages/app/facturas/_components/ImportHistoryModal.tsx",
+      "line": 14,
+      "lines": 4,
+      "usedIn": ["pages/app/facturas/_components/ImportHistoryModal.tsx", "pages/app/facturas/functionalComponents/ImportHistoryModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "importHistory.types.ts"
+    },
+    {
+      "name": "RecurringBillingSectionProps",
+      "currentlyIn": "pages/app/facturas/_components/RecurringBillingSection.tsx",
+      "line": 21,
+      "lines": 9,
+      "usedIn": ["pages/app/facturas/_components/RecurringBillingSection.tsx", "pages/app/facturas/functionalComponents/RecurringBillingSection.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "recurringBilling.types.ts"
+    },
+    {
+      "name": "RecurringBillingData",
+      "currentlyIn": "pages/app/facturas/_components/RecurringBillingSection.tsx",
+      "line": 9,
+      "lines": 11,
+      "usedIn": ["pages/app/facturas/_components/RecurringBillingSection.tsx", "pages/app/facturas/functionalComponents/RecurringBillingSection.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "recurringBilling.types.ts"
+    },
+    {
+      "name": "CommentsPanelProps",
+      "currentlyIn": "pages/app/facturas/_components/CommentsPanel.tsx",
+      "line": 7,
+      "lines": 5,
+      "usedIn": ["pages/app/facturas/_components/CommentsPanel.tsx", "pages/app/facturas/functionalComponents/CommentsPanel.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/types/",
+      "proposedFile": "comments.types.ts"
+    },
+    {
+      "name": "ActiveFilter",
+      "currentlyIn": "pages/app/comida/_components/FoodFilters.tsx",
+      "line": 8,
+      "lines": 1,
+      "usedIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodFilters.types.ts"
+    },
+    {
+      "name": "SuplementoFilter",
+      "currentlyIn": "pages/app/comida/_components/FoodFilters.tsx",
+      "line": 9,
+      "lines": 1,
+      "usedIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodFilters.types.ts"
+    },
+    {
+      "name": "FilterOption",
+      "currentlyIn": "pages/app/comida/_components/FoodFilters.tsx",
+      "line": 11,
+      "lines": 4,
+      "usedIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodFilters.types.ts"
+    },
+    {
+      "name": "FoodFiltersProps",
+      "currentlyIn": "pages/app/comida/_components/FoodFilters.tsx",
+      "line": 16,
+      "lines": 20,
+      "usedIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodFilters.types.ts"
+    },
+    {
+      "name": "FoodPanelDef",
+      "currentlyIn": "pages/app/comida/_components/FoodTypePanelGrid.tsx",
+      "line": 8,
+      "lines": 6,
+      "usedIn": ["pages/app/comida/_components/FoodTypePanelGrid.tsx", "pages/app/comida/functionalComponents/FoodTypePanelGrid.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodTypePanelGrid.types.ts"
+    },
+    {
+      "name": "FoodItemModalProps",
+      "currentlyIn": "pages/app/comida/_components/FoodItemModal.tsx",
+      "line": 13,
+      "lines": 9,
+      "usedIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodItemModal.types.ts"
+    },
+    {
+      "name": "FoodItemCardProps",
+      "currentlyIn": "pages/app/comida/_components/FoodItemCard.tsx",
+      "line": 9,
+      "lines": 9,
+      "usedIn": ["pages/app/comida/_components/FoodItemCard.tsx", "pages/app/comida/functionalComponents/FoodItemCard.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodItemCard.types.ts"
+    },
+    {
+      "name": "WineModalProps",
+      "currentlyIn": "pages/app/comida/_components/WineModal.tsx",
+      "line": 10,
+      "lines": 6,
+      "usedIn": ["pages/app/comida/_components/WineModal.tsx", "pages/app/comida/functionalComponents/WineModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "wineModal.types.ts"
+    },
+    {
+      "name": "FoodCategoryModalProps",
+      "currentlyIn": "pages/app/comida/_components/FoodCategoryModal.tsx",
+      "line": 5,
+      "lines": 6,
+      "usedIn": ["pages/app/comida/_components/FoodCategoryModal.tsx", "pages/app/comida/functionalComponents/FoodCategoryModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "foodCategoryModal.types.ts"
+    },
+    {
+      "name": "BeverageCategoryModalProps",
+      "currentlyIn": "pages/app/comida/_components/BeverageCategoryModal.tsx",
+      "line": 5,
+      "lines": 8,
+      "usedIn": ["pages/app/comida/_components/BeverageCategoryModal.tsx", "pages/app/comida/functionalComponents/BeverageCategoryModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/comida/comida/types/",
+      "proposedFile": "beverageCategoryModal.types.ts"
+    },
+    {
+      "name": "FoodType",
+      "currentlyIn": "pages/app/comida/+Page.tsx",
+      "line": 5,
+      "lines": 1,
+      "usedIn": ["pages/app/comida/+Page.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/comida/constants/",
+      "proposedFile": "foodTypes.ts",
+      "note": "DUPLICATES: already extracted in pages/app/comida/@foodType/constants/index.ts as FoodType. Remove from +Page.tsx and import from @foodType/constants/."
+    },
+    {
+      "name": "FoodEntry",
+      "currentlyIn": "pages/app/comida/+Page.tsx",
+      "line": 7,
+      "lines": 6,
+      "usedIn": ["pages/app/comida/+Page.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/comida/constants/",
+      "proposedFile": "foodTypes.ts",
+      "note": "DUPLICATES: already extracted in pages/app/comida/@foodType/constants/index.ts as FoodEntry and FOOD_ENTRIES. Remove from +Page.tsx and import from @foodType/constants/."
+    },
+    {
+      "name": "DashboardMetrics",
+      "currentlyIn": "pages/app/reservas/functionalComponents/ReservationSide/ReservationSide.tsx",
+      "line": 6,
+      "lines": 6,
+      "usedIn": ["pages/app/reservas/functionalComponents/ReservationSide/ReservationSide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/functionalComponents/ReservationSide/types/",
+      "proposedFile": "reservationSide.types.ts"
+    },
+    {
+      "name": "ConfigDailyLimit",
+      "currentlyIn": "pages/app/reservas/functionalComponents/ReservationSide/ReservationSide.tsx",
+      "line": 12,
+      "lines": 5,
+      "usedIn": ["pages/app/reservas/functionalComponents/ReservationSide/ReservationSide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/functionalComponents/ReservationSide/types/",
+      "proposedFile": "reservationSide.types.ts"
+    },
+    {
+      "name": "ReservationSideProps",
+      "currentlyIn": "pages/app/reservas/functionalComponents/ReservationSide/ReservationSide.tsx",
+      "line": 17,
+      "lines": 10,
+      "usedIn": ["pages/app/reservas/functionalComponents/ReservationSide/ReservationSide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/functionalComponents/ReservationSide/types/",
+      "proposedFile": "reservationSide.types.ts"
+    },
+    {
+      "name": "UIComponent",
+      "currentlyIn": "pages/app/website-builder/index.tsx",
+      "line": 9,
+      "lines": 25,
+      "usedIn": ["pages/app/website-builder/index.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/website-builder/types/",
+      "proposedFile": "websiteBuilder.types.ts"
+    },
+    {
+      "name": "TouchNodeWrapperProps",
+      "currentlyIn": "pages/app/reservas/tables/TableNodeWrapper.tsx",
+      "line": 4,
+      "lines": 10,
+      "usedIn": ["pages/app/reservas/tables/TableNodeWrapper.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/types/",
+      "proposedFile": "tableNodeWrapper.types.ts"
+    },
+    {
+      "name": "TouchState",
+      "currentlyIn": "pages/app/reservas/tables/TableNodeWrapper.tsx",
+      "line": 14,
+      "lines": 6,
+      "usedIn": ["pages/app/reservas/tables/TableNodeWrapper.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/types/",
+      "proposedFile": "tableNodeWrapper.types.ts"
+    },
+    {
+      "name": "BookingRowProps",
+      "currentlyIn": "pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx",
+      "line": 14,
+      "lines": 15,
+      "usedIn": ["pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/functionalComponents/TableLegend/types/",
+      "proposedFile": "tableLegend.types.ts"
+    },
+    {
+      "name": "TableCardProps",
+      "currentlyIn": "pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx",
+      "line": 82,
+      "lines": 30,
+      "usedIn": ["pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/functionalComponents/TableLegend/types/",
+      "proposedFile": "tableLegend.types.ts"
+    },
+    {
+      "name": "TableLegendProps",
+      "currentlyIn": "pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx",
+      "line": 112,
+      "lines": 5,
+      "usedIn": ["pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/functionalComponents/TableLegend/types/",
+      "proposedFile": "tableLegend.types.ts"
+    },
+    {
+      "name": "QuarterlyBreakdownItem",
+      "currentlyIn": "pages/app/reportes/functionalComponents/QuarterlyBreakdownTable/QuarterlyBreakdownTable.tsx",
+      "line": 4,
+      "lines": 11,
+      "usedIn": ["pages/app/reportes/functionalComponents/QuarterlyBreakdownTable/QuarterlyBreakdownTable.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/QuarterlyBreakdownTable/types/",
+      "proposedFile": "quarterlyBreakdown.types.ts"
+    },
+    {
+      "name": "QuarterlyBreakdownTableProps",
+      "currentlyIn": "pages/app/reportes/functionalComponents/QuarterlyBreakdownTable/QuarterlyBreakdownTable.tsx",
+      "line": 15,
+      "lines": 5,
+      "usedIn": ["pages/app/reportes/functionalComponents/QuarterlyBreakdownTable/QuarterlyBreakdownTable.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/QuarterlyBreakdownTable/types/",
+      "proposedFile": "quarterlyBreakdown.types.ts"
+    },
+    {
+      "name": "IVABreakdownItem",
+      "currentlyIn": "pages/app/reportes/functionalComponents/IVABreakdownTable/IVABreakdownTable.tsx",
+      "line": 4,
+      "lines": 10,
+      "usedIn": ["pages/app/reportes/functionalComponents/IVABreakdownTable/IVABreakdownTable.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/IVABreakdownTable/types/",
+      "proposedFile": "ivaBreakdown.types.ts"
+    },
+    {
+      "name": "IVABreakdownTableProps",
+      "currentlyIn": "pages/app/reportes/functionalComponents/IVABreakdownTable/IVABreakdownTable.tsx",
+      "line": 14,
+      "lines": 5,
+      "usedIn": ["pages/app/reportes/functionalComponents/IVABreakdownTable/IVABreakdownTable.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/IVABreakdownTable/types/",
+      "proposedFile": "ivaBreakdown.types.ts"
+    },
+    {
+      "name": "IVASummaryProps",
+      "currentlyIn": "pages/app/reportes/functionalComponents/IVASummary/IVASummary.tsx",
+      "line": 5,
+      "lines": 5,
+      "usedIn": ["pages/app/reportes/functionalComponents/IVASummary/IVASummary.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/IVASummary/types/",
+      "proposedFile": "ivaSummary.types.ts"
+    },
+    {
+      "name": "CustomerStatementContentProps",
+      "currentlyIn": "pages/app/reportes/functionalComponents/CustomerStatementContent/CustomerStatementContent.tsx",
+      "line": 6,
+      "lines": 8,
+      "usedIn": ["pages/app/reportes/functionalComponents/CustomerStatementContent/CustomerStatementContent.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/CustomerStatementContent/types/",
+      "proposedFile": "customerStatement.types.ts"
+    },
+    {
+      "name": "Customer",
+      "currentlyIn": "pages/app/reportes/functionalComponents/CustomerStatementFilters/CustomerStatementFilters.tsx",
+      "line": 4,
+      "lines": 6,
+      "usedIn": ["pages/app/reportes/functionalComponents/CustomerStatementFilters/CustomerStatementFilters.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/CustomerStatementFilters/types/",
+      "proposedFile": "customerStatementFilters.types.ts"
+    },
+    {
+      "name": "CustomerStatementFiltersProps",
+      "currentlyIn": "pages/app/reportes/functionalComponents/CustomerStatementFilters/CustomerStatementFilters.tsx",
+      "line": 10,
+      "lines": 8,
+      "usedIn": ["pages/app/reportes/functionalComponents/CustomerStatementFilters/CustomerStatementFilters.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/CustomerStatementFilters/types/",
+      "proposedFile": "customerStatementFilters.types.ts"
+    },
+    {
+      "name": "IVAFiltersProps",
+      "currentlyIn": "pages/app/reportes/functionalComponents/IVAFilters/IVAFilters.tsx",
+      "line": 6,
+      "lines": 16,
+      "usedIn": ["pages/app/reportes/functionalComponents/IVAFilters/IVAFilters.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/IVAFilters/types/",
+      "proposedFile": "ivaFilters.types.ts"
+    },
+    {
+      "name": "Invoice",
+      "currentlyIn": "pages/app/reportes/functionalComponents/InvoiceList/InvoiceList.tsx",
+      "line": 5,
+      "lines": 12,
+      "usedIn": ["pages/app/reportes/functionalComponents/InvoiceList/InvoiceList.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/InvoiceList/types/",
+      "proposedFile": "invoiceList.types.ts"
+    },
+    {
+      "name": "InvoiceListProps",
+      "currentlyIn": "pages/app/reportes/functionalComponents/InvoiceList/InvoiceList.tsx",
+      "line": 17,
+      "lines": 8,
+      "usedIn": ["pages/app/reportes/functionalComponents/InvoiceList/InvoiceList.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reportes/functionalComponents/InvoiceList/types/",
+      "proposedFile": "invoiceList.types.ts"
+    },
+    {
+      "name": "ConfigDayManagerProps",
+      "currentlyIn": "pages/app/reservas/config/functionalComponents/ConfigDayManager/helpers/ConfigDayManager.helpers.tsx",
+      "line": 4,
+      "lines": 10,
+      "usedIn": ["pages/app/reservas/config/functionalComponents/ConfigDayManager/helpers/ConfigDayManager.helpers.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/config/functionalComponents/ConfigDayManager/types/",
+      "proposedFile": "configDayManager.types.ts"
+    },
+    {
+      "name": "StatsView",
+      "currentlyIn": "pages/app/miembros/@memberId/estadisticas/+Page.tsx",
+      "line": 14,
+      "lines": 1,
+      "usedIn": ["pages/app/miembros/@memberId/estadisticas/+Page.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/miembros/@memberId/estadisticas/types/",
+      "proposedFile": "memberStats.types.ts"
+    },
+    {
+      "name": "ChartType",
+      "currentlyIn": "pages/app/miembros/@memberId/estadisticas/+Page.tsx",
+      "line": 15,
+      "lines": 1,
+      "usedIn": ["pages/app/miembros/@memberId/estadisticas/+Page.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/miembros/@memberId/estadisticas/types/",
+      "proposedFile": "memberStats.types.ts"
+    },
+    {
+      "name": "RechartsComponents",
+      "currentlyIn": "pages/app/miembros/@memberId/estadisticas/+Page.tsx",
+      "line": 251,
+      "lines": 30,
+      "usedIn": ["pages/app/miembros/@memberId/estadisticas/+Page.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/miembros/@memberId/estadisticas/types/",
+      "proposedFile": "memberStats.types.ts"
+    },
+    {
+      "name": "TableView",
+      "currentlyIn": "pages/app/miembros/@memberId/estadisticas/_components/StatsTable.tsx",
+      "line": 7,
+      "lines": 1,
+      "usedIn": ["pages/app/miembros/@memberId/estadisticas/_components/StatsTable.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/miembros/@memberId/estadisticas/_components/types/",
+      "proposedFile": "statsTable.types.ts"
+    },
+    {
+      "name": "StatsTableProps",
+      "currentlyIn": "pages/app/miembros/@memberId/estadisticas/_components/StatsTable.tsx",
+      "line": 9,
+      "lines": 8,
+      "usedIn": ["pages/app/miembros/@memberId/estadisticas/_components/StatsTable.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/miembros/@memberId/estadisticas/_components/types/",
+      "proposedFile": "statsTable.types.ts"
+    },
+    {
+      "name": "TopControlsProps",
+      "currentlyIn": "pages/app/reservas/tables/functionalComponents/TableControls/TableControls.tsx",
+      "line": 5,
+      "lines": 8,
+      "usedIn": ["pages/app/reservas/tables/functionalComponents/TableControls/TableControls.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/functionalComponents/TableControls/types/",
+      "proposedFile": "tableControls.types.ts"
+    },
+    {
+      "name": "Step",
+      "currentlyIn": "pages/app/config/booking/InstallGuide.tsx",
+      "line": 10,
+      "lines": 6,
+      "usedIn": ["pages/app/config/booking/InstallGuide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/config/booking/types/",
+      "proposedFile": "installGuide.types.ts"
+    },
+    {
+      "name": "FoodDetailAIAdvisorProps",
+      "currentlyIn": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAIAdvisor/FoodDetailAIAdvisor.tsx",
+      "line": 4,
+      "lines": 5,
+      "usedIn": ["pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAIAdvisor/FoodDetailAIAdvisor.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAIAdvisor/types/",
+      "proposedFile": "foodDetailAIAdvisor.types.ts"
+    },
+    {
+      "name": "FoodDetailHeroProps",
+      "currentlyIn": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailHero/FoodDetailHero.tsx",
+      "line": 11,
+      "lines": 8,
+      "usedIn": ["pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailHero/FoodDetailHero.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailHero/types/",
+      "proposedFile": "foodDetailHero.types.ts"
+    },
+    {
+      "name": "WineImageAdvisorProps",
+      "currentlyIn": "pages/app/comida/@foodType/@foodId/functionalComponents/WineDetailEditor/ui/WineImageAdvisor.tsx",
+      "line": 4,
+      "lines": 5,
+      "usedIn": ["pages/app/comida/@foodType/@foodId/functionalComponents/WineDetailEditor/ui/WineImageAdvisor.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/@foodType/@foodId/functionalComponents/WineDetailEditor/types/",
+      "proposedFile": "wineImageAdvisor.types.ts"
+    },
+    {
+      "name": "FoodDetailAllergenModalProps",
+      "currentlyIn": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAllergenModal/FoodDetailAllergenModal.tsx",
+      "line": 5,
+      "lines": 5,
+      "usedIn": ["pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAllergenModal/FoodDetailAllergenModal.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAllergenModal/types/",
+      "proposedFile": "foodDetailAllergenModal.types.ts"
+    },
+    {
+      "name": "FoodDetailAllergensProps",
+      "currentlyIn": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAllergens/FoodDetailAllergens.tsx",
+      "line": 4,
+      "lines": 5,
+      "usedIn": ["pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAllergens/FoodDetailAllergens.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailAllergens/types/",
+      "proposedFile": "foodDetailAllergens.types.ts"
+    },
+    {
+      "name": "FoodDetailQuickEditorProps",
+      "currentlyIn": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailQuickEditor/FoodDetailQuickEditor.tsx",
+      "line": 7,
+      "lines": 5,
+      "usedIn": ["pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailQuickEditor/FoodDetailQuickEditor.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailQuickEditor/types/",
+      "proposedFile": "foodDetailQuickEditor.types.ts"
+    }
+  ],
+  "constsToExtract": [
+    {
+      "name": "COMPONENT_CATALOG",
+      "currentlyIn": "pages/app/website-builder/index.tsx",
+      "line": 196,
+      "type": "object[]",
+      "usedIn": ["pages/app/website-builder/index.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/website-builder/constants/",
+      "proposedFile": "componentCatalog.ts"
+    },
+    {
+      "name": "SECTION_TYPES",
+      "currentlyIn": "pages/app/website-builder/index.tsx",
+      "line": 552,
+      "type": "string[]",
+      "usedIn": ["pages/app/website-builder/index.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/website-builder/constants/",
+      "proposedFile": "sectionTypes.ts"
+    },
+    {
+      "name": "WEBSITE_THEMES",
+      "currentlyIn": "pages/app/website/+Page.tsx",
+      "line": 20,
+      "type": "object[]",
+      "usedIn": ["pages/app/website/+Page.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/website/website/constants/",
+      "proposedFile": "websiteThemes.ts"
+    },
+    {
+      "name": "ALL_SECTIONS",
+      "currentlyIn": "ui/widgets/roles/RoleCreateModal.tsx",
+      "line": 9,
+      "type": "object[]",
+      "usedIn": ["ui/widgets/roles/RoleCreateModal.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "ui/widgets/roles/constants/",
+      "proposedFile": "roleCreate.constants.ts"
+    },
+    {
+      "name": "ICON_OPTIONS",
+      "currentlyIn": "ui/widgets/roles/RoleCreateModal.tsx",
+      "line": 18,
+      "type": "object[]",
+      "usedIn": ["ui/widgets/roles/RoleCreateModal.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "ui/widgets/roles/constants/",
+      "proposedFile": "roleCreate.constants.ts"
+    },
+    {
+      "name": "VIEW_STORAGE_KEY",
+      "currentlyIn": "pages/app/horarios/turnos/+Page.tsx",
+      "line": 24,
+      "type": "string",
+      "usedIn": ["pages/app/horarios/turnos/+Page.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/horarios/turnos/constants/",
+      "proposedFile": "turnos.constants.ts"
+    },
+    {
+      "name": "ICONS",
+      "currentlyIn": "ui/widgets/roles/RoleIcon.tsx",
+      "line": 32,
+      "type": "Record",
+      "usedIn": ["ui/widgets/roles/RoleIcon.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "ui/widgets/roles/constants/",
+      "proposedFile": "roleIcon.constants.ts"
+    },
+    {
+      "name": "STEPS",
+      "currentlyIn": "pages/app/config/booking/WidgetPreview.tsx",
+      "line": 4,
+      "type": "string[]",
+      "usedIn": ["pages/app/config/booking/WidgetPreview.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/config/booking/constants/",
+      "proposedFile": "bookingWidget.constants.ts"
+    },
+    {
+      "name": "DEFAULT_WHATSAPP_MESSAGE",
+      "currentlyIn": "pages/app/facturas/_components/SendWhatsAppModal.tsx",
+      "line": 44,
+      "type": "string",
+      "usedIn": ["pages/app/facturas/_components/SendWhatsAppModal.tsx", "pages/app/facturas/functionalComponents/SendWhatsAppModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/constants/",
+      "proposedFile": "sendWhatsApp.constants.ts"
+    },
+    {
+      "name": "DEFAULT_SUBJECT",
+      "currentlyIn": "pages/app/facturas/_components/SendEmailModal.tsx",
+      "line": 25,
+      "type": "string",
+      "usedIn": ["pages/app/facturas/_components/SendEmailModal.tsx", "pages/app/facturas/functionalComponents/SendEmailModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/constants/",
+      "proposedFile": "sendEmail.constants.ts"
+    },
+    {
+      "name": "DEFAULT_MESSAGE",
+      "currentlyIn": "pages/app/facturas/_components/SendEmailModal.tsx",
+      "line": 26,
+      "type": "string",
+      "usedIn": ["pages/app/facturas/_components/SendEmailModal.tsx", "pages/app/facturas/functionalComponents/SendEmailModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/constants/",
+      "proposedFile": "sendEmail.constants.ts"
+    },
+    {
+      "name": "CDN_BASE",
+      "currentlyIn": "pages/app/config/booking/InstallGuide.tsx",
+      "line": 5,
+      "type": "string",
+      "usedIn": ["pages/app/config/booking/InstallGuide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/config/booking/constants/",
+      "proposedFile": "installGuide.constants.ts"
+    },
+    {
+      "name": "SCRIPT_TAG",
+      "currentlyIn": "pages/app/config/booking/InstallGuide.tsx",
+      "line": 6,
+      "type": "function",
+      "usedIn": ["pages/app/config/booking/InstallGuide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/config/booking/constants/",
+      "proposedFile": "installGuide.constants.ts",
+      "note": "Function const - extract if desired"
+    },
+    {
+      "name": "SHORTCODE",
+      "currentlyIn": "pages/app/config/booking/InstallGuide.tsx",
+      "line": 8,
+      "type": "function",
+      "usedIn": ["pages/app/config/booking/InstallGuide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/config/booking/constants/",
+      "proposedFile": "installGuide.constants.ts",
+      "note": "Function const - extract if desired"
+    },
+    {
+      "name": "STEPS",
+      "currentlyIn": "pages/app/config/booking/InstallGuide.tsx",
+      "line": 16,
+      "type": "function",
+      "usedIn": ["pages/app/config/booking/InstallGuide.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/config/booking/constants/",
+      "proposedFile": "installGuide.constants.ts",
+      "note": "Function const - extract if desired"
+    },
+    {
+      "name": "EVENT_OPTIONS",
+      "currentlyIn": "pages/app/settings/functionalComponents/IntegrationsPanel/IntegrationsPanel.tsx",
+      "line": 5,
+      "type": "object[]",
+      "usedIn": ["pages/app/settings/functionalComponents/IntegrationsPanel/IntegrationsPanel.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/settings/functionalComponents/IntegrationsPanel/constants/",
+      "proposedFile": "integrationsPanel.constants.ts"
+    },
+    {
+      "name": "DEFAULT_EMAIL_SUBJECT",
+      "currentlyIn": "pages/app/facturas/_components/ReminderModal.tsx",
+      "line": 15,
+      "type": "string",
+      "usedIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/constants/",
+      "proposedFile": "reminder.constants.ts"
+    },
+    {
+      "name": "DEFAULT_EMAIL_BODY",
+      "currentlyIn": "pages/app/facturas/_components/ReminderModal.tsx",
+      "line": 16,
+      "type": "string",
+      "usedIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/constants/",
+      "proposedFile": "reminder.constants.ts"
+    },
+    {
+      "name": "DEFAULT_WHATSAPP_BODY",
+      "currentlyIn": "pages/app/facturas/_components/ReminderModal.tsx",
+      "line": 25,
+      "type": "string",
+      "usedIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "shouldBeShared": true,
+      "targetFolder": "pages/app/facturas/constants/",
+      "proposedFile": "reminder.constants.ts"
+    },
+    {
+      "name": "DEBOUNCE_MS",
+      "currentlyIn": "pages/app/config/functionalComponents/ConfigContacto/ConfigContacto.tsx",
+      "line": 11,
+      "type": "number",
+      "usedIn": ["pages/app/config/functionalComponents/ConfigContacto/ConfigContacto.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/config/functionalComponents/ConfigContacto/constants/",
+      "proposedFile": "configContacto.constants.ts"
+    },
+    {
+      "name": "NODE_TYPES",
+      "currentlyIn": "pages/app/reservas/tables/tables.tsx",
+      "line": 273,
+      "type": "object",
+      "usedIn": ["pages/app/reservas/tables/tables.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/constants/",
+      "proposedFile": "tables.constants.ts"
+    },
+    {
+      "name": "LONG_PRESS_DELAY",
+      "currentlyIn": "pages/app/reservas/tables/TableNodeWrapper.tsx",
+      "line": 21,
+      "type": "number",
+      "usedIn": ["pages/app/reservas/tables/TableNodeWrapper.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/constants/",
+      "proposedFile": "tableNodeWrapper.constants.ts"
+    },
+    {
+      "name": "MOVEMENT_THRESHOLD",
+      "currentlyIn": "pages/app/reservas/tables/TableNodeWrapper.tsx",
+      "line": 22,
+      "type": "number",
+      "usedIn": ["pages/app/reservas/tables/TableNodeWrapper.tsx"],
+      "shouldBeShared": false,
+      "targetFolder": "pages/app/reservas/tables/constants/",
+      "proposedFile": "tableNodeWrapper.constants.ts"
+    }
+  ],
+  "alreadyExtracted": [
+    { "name": "ErrorStatus", "location": "pages/_error/constants/errorContent.ts" },
+    { "name": "ErrorContent", "location": "pages/_error/constants/errorContent.ts" },
+    { "name": "ERROR_CONTENT", "location": "pages/_error/constants/errorContent.ts" },
+    { "name": "ANIMATION_TRANSITION_REDUCED", "location": "pages/app/fichaje/constants/index.ts" },
+    { "name": "ANIMATION_TRANSITION_NORMAL", "location": "pages/app/fichaje/constants/index.ts" },
+    { "name": "MONTH_NAMES", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "DEFAULT_THEME", "location": "pages/app/site-builder/constants/index.ts" },
+    { "name": "ViewportSize", "location": "pages/app/site-builder/constants/index.ts" },
+    { "name": "VIEWPORT_CANVAS_WIDTH", "location": "pages/app/site-builder/constants/index.ts" },
+    { "name": "ROOT_PARENT_TYPE", "location": "pages/app/site-builder/constants/index.ts" },
+    { "name": "WILDCARD", "location": "pages/app/site-builder/constants/index.ts" },
+    { "name": "DRAG_DATA_MIME", "location": "pages/app/site-builder/constants/index.ts" },
+    { "name": "HorariosCalendarTab", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "MY_SCHEDULE_VIEW_TAB_ITEMS", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "MY_SCHEDULE_VIEW_KEY", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "ANIMATION_CALENDAR_TRANSITION", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "ANIMATION_CALENDAR_TRANSITION_REDUCED", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "HOUR_OPTIONS", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "MINUTE_OPTIONS", "location": "pages/app/horarios/constants/index.ts" },
+    { "name": "MEMBER_VIEW_TAB_ITEMS", "location": "pages/app/horarios/preview/constants/memberFilter.ts" },
+    { "name": "MAIN_VIEW_TAB_ITEMS", "location": "pages/app/horarios/preview/constants/memberFilter.ts" },
+    { "name": "FoodType", "location": "pages/app/comida/@foodType/constants/index.ts" },
+    { "name": "FoodEntry", "location": "pages/app/comida/@foodType/constants/index.ts" },
+    { "name": "FOOD_ENTRIES", "location": "pages/app/comida/@foodType/constants/index.ts" },
+    { "name": "VIEW_STORAGE_KEY", "location": "pages/app/horarios/preview/constants/index.ts" },
+    { "name": "VIEW_TAB_ITEMS", "location": "pages/app/horarios/preview/constants/index.ts" },
+    { "name": "INVOICE_STATUS_OPTIONS", "location": "pages/app/facturas/constants/index.ts" },
+    { "name": "INVOICE_SORT_OPTIONS", "location": "pages/app/facturas/constants/index.ts" },
+    { "name": "PAGE_TABS", "location": "pages/app/facturas/constants/index.ts" },
+    { "name": "WEBSITE_THEMES", "location": "pages/app/website/website/constants/index.ts" },
+    { "name": "openingModeOptions", "location": "pages/app/reservas/config/constants/config.constants.ts" },
+    { "name": "PAGE_SIZE_OPTIONS", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "MenuTypePanelDef", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "MENU_TYPE_HINTS", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "MENU_TYPES", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "menuTypeOptions", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "DEFAULT_BEVERAGE", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "ALLERGENS", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "beverageTypeOptions", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "dishVisibilityOptions", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "menuPreviewVisibilityOptions", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "DISH_IMAGE_AI_MAX_KB", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "MENU_AI_TRACE_PREFIX", "location": "pages/app/menus/crear/constants/menuEditor.constants.ts" },
+    { "name": "ContentTab", "location": "pages/app/config/constants/config.constants.ts" },
+    { "name": "openingModeOptions", "location": "pages/app/config/constants/config.constants.ts" },
+    { "name": "weekdayCards", "location": "pages/app/config/constants/config.constants.ts" },
+    { "name": "clasificacionOptions", "location": "pages/app/config/constants/config.constants.ts" },
+    { "name": "FOOD_TYPE_ICONS", "location": "pages/app/comida/@foodType/@foodId/constants/index.ts" },
+    { "name": "AI_ADVISOR_FOOD_TYPES", "location": "pages/app/comida/@foodType/@foodId/constants/index.ts" },
+    { "name": "CARD_ALLERGENS", "location": "pages/app/comida/@foodType/@foodId/constants/index.ts" },
+    { "name": "CARD_ALLERGEN_KEYS", "location": "pages/app/comida/@foodType/@foodId/constants/index.ts" },
+    { "name": "ALLERGEN_ALIAS_TO_CARD", "location": "pages/app/comida/@foodType/@foodId/constants/index.ts" },
+    { "name": "QUICK_TIPO_OPTIONS", "location": "pages/app/comida/@foodType/@foodId/constants/index.ts" },
+    { "name": "BEBIDA_CATEGORY_SUGGESTIONS", "location": "pages/app/comida/@foodType/@foodId/constants/index.ts" },
+    { "name": "Placement", "location": "ui/inputs/constants/dateDropdown.ts" },
+    { "name": "DATE_DROPDOWN_POPOVER_WIDTH", "location": "ui/inputs/constants/dateDropdown.ts" },
+    { "name": "DATE_DROPDOWN_POPOVER_HEIGHT", "location": "ui/inputs/constants/dateDropdown.ts" },
+    { "name": "DATE_DROPDOWN_MARGIN", "location": "ui/inputs/constants/dateDropdown.ts" },
+    { "name": "WINE_TIPO_OPTIONS", "location": "pages/app/comida/@foodType/@foodId/functionalComponents/WineDetailEditor/constants/index.ts" },
+    { "name": "EMPTY_WINE_FORM", "location": "pages/app/comida/@foodType/@foodId/functionalComponents/WineDetailEditor/constants/index.ts" },
+    { "name": "COLOR_PRESETS", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "STATUS_LABEL", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "RECT_SEAT_OFFSET", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "DRAW_ROTATE_STEP", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "TABLE_LIMIT_PADDING", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "DRAW_PANEL_GROUPS", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "DRAW_PRESET_ICONS", "location": "pages/app/reservas/tables/constants/tables.tsx" },
+    { "name": "MENU_STATUS_FILTER_OPTIONS", "location": "pages/app/menus/constants/index.ts" },
+    { "name": "MENU_SORT_OPTIONS", "location": "pages/app/menus/constants/index.ts" },
+    { "name": "DEFAULT_MENU_TYPE_FILTER", "location": "pages/app/menus/constants/index.ts" },
+    { "name": "DEFAULT_STATUS_FILTER", "location": "pages/app/menus/constants/index.ts" },
+    { "name": "DEFAULT_SORT_OPTION", "location": "pages/app/menus/constants/index.ts" }
+  ],
+  "duplicates": [
+    {
+      "name": "OrbitItem",
+      "foundIn": ["pages/app/backoffice/+Page.tsx", "pages/app/backoffice/backoffice.tsx"],
+      "note": "Identical definition in both files"
+    },
+    {
+      "name": "SortField",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "SortDirection",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "InvoiceTableProps",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "PAYMENT_METHOD_LABELS",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx", "pages/app/facturas/_components/SelectTemplateModal.tsx", "pages/app/facturas/functionalComponents/SelectTemplateModal.tsx", "pages/app/facturas/_components/InvoicePreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePreviewModal.tsx"],
+      "note": "Identical Record definition in all 6 files"
+    },
+    {
+      "name": "INVOICE_STATUS_CONFIG",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx", "pages/app/facturas/_components/InvoicePreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePreviewModal.tsx", "pages/app/facturas/_components/CustomerHistoryModal.tsx", "pages/app/facturas/functionalComponents/CustomerHistoryModal.tsx"],
+      "note": "Identical Record definition in all 6 files"
+    },
+    {
+      "name": "ALL_STATUSES",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "CATEGORY_CONFIG",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "DEPOSIT_CONFIG",
+      "foundIn": ["pages/app/facturas/_components/InvoiceTable.tsx", "pages/app/facturas/functionalComponents/InvoiceTable.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "InvoiceFormProps",
+      "foundIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "AutoSaveStatus",
+      "foundIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "PAYMENT_METHOD_OPTIONS",
+      "foundIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx", "pages/app/facturas/_components/RegisterPaymentModal.tsx", "pages/app/facturas/functionalComponents/RegisterPaymentModal.tsx"],
+      "note": "Identical definition in 4 files"
+    },
+    {
+      "name": "PAYMENT_TERMS_OPTIONS",
+      "foundIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "STATUS_OPTIONS",
+      "foundIn": ["pages/app/facturas/_components/InvoiceForm.tsx", "pages/app/facturas/functionalComponents/InvoiceForm.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "DatePreset",
+      "foundIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "note": "Identical definition. DIFFERENT from DatePreset in pages/app/reportes/functionalComponents/IVAFilters/IVAFilters.tsx (which uses 'this_quarter' instead of 'today')"
+    },
+    {
+      "name": "InvoiceFilterPreset",
+      "foundIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "InvoiceFiltersRef",
+      "foundIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "SearchByOption",
+      "foundIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "InvoiceFiltersProps",
+      "foundIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "STORAGE_KEY",
+      "foundIn": ["pages/app/facturas/_components/InvoiceFilters.tsx", "pages/app/facturas/functionalComponents/InvoiceFilters.tsx"],
+      "note": "Identical 'invoice_date_preset' string"
+    },
+    {
+      "name": "BatchSendModalProps",
+      "foundIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "SendResult",
+      "foundIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "SendStatus",
+      "foundIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "DEFAULT_SUBJECT",
+      "foundIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx", "pages/app/facturas/_components/SendEmailModal.tsx", "pages/app/facturas/functionalComponents/SendEmailModal.tsx"],
+      "note": "Identical string template in all 4 files"
+    },
+    {
+      "name": "DEFAULT_MESSAGE",
+      "foundIn": ["pages/app/facturas/_components/BatchSendModal.tsx", "pages/app/facturas/functionalComponents/BatchSendModal.tsx", "pages/app/facturas/_components/SendEmailModal.tsx", "pages/app/facturas/functionalComponents/SendEmailModal.tsx"],
+      "note": "Identical string template in all 4 files"
+    },
+    {
+      "name": "SendEmailModalProps",
+      "foundIn": ["pages/app/facturas/_components/SendEmailModal.tsx", "pages/app/facturas/functionalComponents/SendEmailModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "SendWhatsAppModalProps",
+      "foundIn": ["pages/app/facturas/_components/SendWhatsAppModal.tsx", "pages/app/facturas/functionalComponents/SendWhatsAppModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "DEFAULT_WHATSAPP_MESSAGE",
+      "foundIn": ["pages/app/facturas/_components/SendWhatsAppModal.tsx", "pages/app/facturas/functionalComponents/SendWhatsAppModal.tsx"],
+      "note": "Identical string template in both files"
+    },
+    {
+      "name": "InvoicePreviewModalProps",
+      "foundIn": ["pages/app/facturas/_components/InvoicePreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePreviewModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "InvoicePdfPreviewModalProps",
+      "foundIn": ["pages/app/facturas/_components/InvoicePdfPreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePdfPreviewModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "PAYMENT_METHOD_LABELS",
+      "foundIn": ["pages/app/facturas/_components/InvoicePreviewModal.tsx", "pages/app/facturas/functionalComponents/InvoicePreviewModal.tsx"],
+      "note": "Identical Record definition"
+    },
+    {
+      "name": "ReminderModalProps",
+      "foundIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "DEFAULT_EMAIL_SUBJECT",
+      "foundIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "note": "Identical string in both files"
+    },
+    {
+      "name": "DEFAULT_EMAIL_BODY",
+      "foundIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "note": "Identical string in both files"
+    },
+    {
+      "name": "DEFAULT_WHATSAPP_BODY",
+      "foundIn": ["pages/app/facturas/_components/ReminderModal.tsx", "pages/app/facturas/functionalComponents/ReminderModal.tsx"],
+      "note": "Identical string in both files"
+    },
+    {
+      "name": "ReminderTemplatesModalProps",
+      "foundIn": ["pages/app/facturas/_components/ReminderTemplatesModal.tsx", "pages/app/facturas/functionalComponents/ReminderTemplatesModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "DEFAULT_EMAIL_TEMPLATE",
+      "foundIn": ["pages/app/facturas/_components/ReminderTemplatesModal.tsx", "pages/app/facturas/functionalComponents/ReminderTemplatesModal.tsx"],
+      "note": "Identical object in both files"
+    },
+    {
+      "name": "DEFAULT_WHATSAPP_TEMPLATE",
+      "foundIn": ["pages/app/facturas/_components/ReminderTemplatesModal.tsx", "pages/app/facturas/functionalComponents/ReminderTemplatesModal.tsx"],
+      "note": "Identical object in both files"
+    },
+    {
+      "name": "SelectTemplateModalProps",
+      "foundIn": ["pages/app/facturas/_components/SelectTemplateModal.tsx", "pages/app/facturas/functionalComponents/SelectTemplateModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "TemplateFormProps",
+      "foundIn": ["pages/app/facturas/_components/SelectTemplateModal.tsx", "pages/app/facturas/functionalComponents/SelectTemplateModal.tsx"],
+      "note": "Identical definition at line 209 in both files"
+    },
+    {
+      "name": "InvoiceHistoryModalProps",
+      "foundIn": ["pages/app/facturas/_components/InvoiceHistoryModal.tsx", "pages/app/facturas/functionalComponents/InvoiceHistoryModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "ACTION_CONFIG",
+      "foundIn": ["pages/app/facturas/_components/InvoiceHistoryModal.tsx", "pages/app/facturas/functionalComponents/InvoiceHistoryModal.tsx"],
+      "note": "Identical Record definition"
+    },
+    {
+      "name": "CustomerHistoryModalProps",
+      "foundIn": ["pages/app/facturas/_components/CustomerHistoryModal.tsx", "pages/app/facturas/functionalComponents/CustomerHistoryModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "RegisterPaymentModalProps",
+      "foundIn": ["pages/app/facturas/_components/RegisterPaymentModal.tsx", "pages/app/facturas/functionalComponents/RegisterPaymentModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "MergeInvoicesModalProps",
+      "foundIn": ["pages/app/facturas/_components/MergeInvoicesModal.tsx", "pages/app/facturas/functionalComponents/MergeInvoicesModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "FillFromReservationModalProps",
+      "foundIn": ["pages/app/facturas/_components/FillFromReservationModal.tsx", "pages/app/facturas/functionalComponents/FillFromReservationModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "PARTY_SIZE_OPTIONS",
+      "foundIn": ["pages/app/facturas/_components/FillFromReservationModal.tsx", "pages/app/facturas/functionalComponents/FillFromReservationModal.tsx"],
+      "note": "Identical object array in both files"
+    },
+    {
+      "name": "TIME_OPTIONS",
+      "foundIn": ["pages/app/facturas/_components/FillFromReservationModal.tsx", "pages/app/facturas/functionalComponents/FillFromReservationModal.tsx"],
+      "note": "Identical object array in both files"
+    },
+    {
+      "name": "SplitInvoiceModalProps",
+      "foundIn": ["pages/app/facturas/_components/SplitInvoiceModal.tsx", "pages/app/facturas/functionalComponents/SplitInvoiceModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "INITIAL_SPLIT_ITEM",
+      "foundIn": ["pages/app/facturas/_components/SplitInvoiceModal.tsx", "pages/app/facturas/functionalComponents/SplitInvoiceModal.tsx"],
+      "note": "Identical object in both files"
+    },
+    {
+      "name": "AttachmentsModalProps",
+      "foundIn": ["pages/app/facturas/_components/AttachmentsModal.tsx", "pages/app/facturas/functionalComponents/AttachmentsModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "LineItemsProps",
+      "foundIn": ["pages/app/facturas/_components/LineItems.tsx", "pages/app/facturas/functionalComponents/LineItems.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "LineItemsRef",
+      "foundIn": ["pages/app/facturas/_components/LineItems.tsx", "pages/app/facturas/functionalComponents/LineItems.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "ImportWizardProps",
+      "foundIn": ["pages/app/facturas/_components/ImportWizard.tsx", "pages/app/facturas/functionalComponents/ImportWizard.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "WizardStep",
+      "foundIn": ["pages/app/facturas/_components/ImportWizard.tsx", "pages/app/facturas/functionalComponents/ImportWizard.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "ParsedCSVData",
+      "foundIn": ["pages/app/facturas/_components/ImportWizard.tsx", "pages/app/facturas/functionalComponents/ImportWizard.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "ImportHistoryModalProps",
+      "foundIn": ["pages/app/facturas/_components/ImportHistoryModal.tsx", "pages/app/facturas/functionalComponents/ImportHistoryModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "STORAGE_KEY",
+      "foundIn": ["pages/app/facturas/_components/ImportHistoryModal.tsx", "pages/app/facturas/functionalComponents/ImportHistoryModal.tsx"],
+      "note": "Identical 'invoice_import_history' string in both files"
+    },
+    {
+      "name": "RecurringBillingSectionProps",
+      "foundIn": ["pages/app/facturas/_components/RecurringBillingSection.tsx", "pages/app/facturas/functionalComponents/RecurringBillingSection.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "RecurringBillingData",
+      "foundIn": ["pages/app/facturas/_components/RecurringBillingSection.tsx", "pages/app/facturas/functionalComponents/RecurringBillingSection.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "CommentsPanelProps",
+      "foundIn": ["pages/app/facturas/_components/CommentsPanel.tsx", "pages/app/facturas/functionalComponents/CommentsPanel.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "ActiveFilter",
+      "foundIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "SuplementoFilter",
+      "foundIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "FilterOption",
+      "foundIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "FoodFiltersProps",
+      "foundIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "ACTIVE_OPTIONS",
+      "foundIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "note": "Identical object array in both files"
+    },
+    {
+      "name": "SUPLEMENTO_OPTIONS",
+      "foundIn": ["pages/app/comida/_components/FoodFilters.tsx", "pages/app/comida/functionalComponents/FoodFilters.tsx"],
+      "note": "Identical object array in both files"
+    },
+    {
+      "name": "FoodPanelDef",
+      "foundIn": ["pages/app/comida/_components/FoodTypePanelGrid.tsx", "pages/app/comida/functionalComponents/FoodTypePanelGrid.tsx"],
+      "note": "Identical definition. NOTE: this is DIFFERENT from the FoodPanelDef type exported from pages/app/menus/crear/constants/menuEditor.constants.ts (MenuTypePanelDef), these are different types."
+    },
+    {
+      "name": "FOOD_TYPE_PANELS",
+      "foundIn": ["pages/app/comida/_components/FoodTypePanelGrid.tsx", "pages/app/comida/functionalComponents/FoodTypePanelGrid.tsx"],
+      "note": "Identical object array in both files"
+    },
+    {
+      "name": "FoodItemModalProps",
+      "foundIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "ALERGEN_OPTIONS",
+      "foundIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+      "note": "Identical object array in both files"
+    },
+    {
+      "name": "TIPO_OPTIONS",
+      "foundIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+      "note": "Identical reference in both files"
+    },
+    {
+      "name": "BEBIDA_DEFAULT_CATEGORY_NAMES",
+      "foundIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+      "note": "Identical string array in both files"
+    },
+    {
+      "name": "AI_ADVISOR_FOOD_TYPES",
+      "foundIn": ["pages/app/comida/_components/FoodItemModal.tsx", "pages/app/comida/functionalComponents/FoodItemModal.tsx"],
+      "note": "Identical Set definition in both files"
+    },
+    {
+      "name": "FoodItemCardProps",
+      "foundIn": ["pages/app/comida/_components/FoodItemCard.tsx", "pages/app/comida/functionalComponents/FoodItemCard.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "WineModalProps",
+      "foundIn": ["pages/app/comida/_components/WineModal.tsx", "pages/app/comida/functionalComponents/WineModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "WINE_TYPE_OPTIONS",
+      "foundIn": ["pages/app/comida/_components/WineModal.tsx", "pages/app/comida/functionalComponents/WineModal.tsx"],
+      "note": "Identical object array in both files"
+    },
+    {
+      "name": "FoodCategoryModalProps",
+      "foundIn": ["pages/app/comida/_components/FoodCategoryModal.tsx", "pages/app/comida/functionalComponents/FoodCategoryModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "BeverageCategoryModalProps",
+      "foundIn": ["pages/app/comida/_components/BeverageCategoryModal.tsx", "pages/app/comida/functionalComponents/BeverageCategoryModal.tsx"],
+      "note": "Identical definition"
+    },
+    {
+      "name": "FoodType",
+      "foundIn": ["pages/app/comida/+Page.tsx", "pages/app/comida/@foodType/constants/index.ts"],
+      "note": "DUPLICATE: defined in +Page.tsx but already extracted to @foodType/constants/index.ts. +Page.tsx should import from constants instead."
+    },
+    {
+      "name": "FoodEntry",
+      "foundIn": ["pages/app/comida/+Page.tsx", "pages/app/comida/@foodType/constants/index.ts"],
+      "note": "DUPLICATE: defined in +Page.tsx but already extracted to @foodType/constants/index.ts. +Page.tsx should import FOOD_ENTRIES from constants instead."
+    },
+    {
+      "name": "Pos",
+      "foundIn": ["ui/inputs/DateRangePicker.tsx", "ui/inputs/DropdownMenu.tsx", "ui/inputs/DatePicker.tsx"],
+      "note": "Identical type { top: number; left: number } defined in 3 UI files. Keep as-is (internal to ui package)."
+    }
+  ]
+}

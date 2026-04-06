@@ -1,0 +1,1 @@
+export { FoodDetailAIAdvisor } from "./FoodDetailAIAdvisor";

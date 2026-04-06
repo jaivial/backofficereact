@@ -1,5 +1,8 @@
-export type FoodType = "platos" | "postres" | "vinos" | "bebidas" | "cafes";
+// Canonical FoodType imported from shared constants.
+import type { FoodType } from "../@foodType/constants/index";
+export type { FoodType };
 
+// All food type categories in display order.
 export const FOOD_TYPE_ORDER: FoodType[] = ["vinos", "cafes", "postres", "platos", "bebidas"];
 
 export const FOOD_TYPE_LABELS: Record<FoodType, string> = {

@@ -1,0 +1,1 @@
+export { FoodDetailQuickEditor } from "./FoodDetailQuickEditor";
