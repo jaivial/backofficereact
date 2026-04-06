@@ -23,7 +23,7 @@ export function ToastStack() {
   }, [dismissToast, toasts]);
 
   return (
-    <div className="bo-toastWrap" aria-label="Notifications" aria-live="polite">
+    <div className="bo-toastWrap" aria-label="Notifications" aria-live="polite" data-ui="toast-stack">
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <motion.div

@@ -1786,3 +1786,27 @@ export type MenuSelectorItem = {
   menu_title: string;
   menu_type: string;
 };
+
+export type EmailProviderConfig = {
+  id: number;
+  provider: "smtp" | "gmail";
+  smtpHost: string;
+  smtpPort: number;
+  smtpUsername: string;
+  smtpPassword: string;
+  smtpFromEmail: string;
+  smtpEncryption: "none" | "tls" | "ssl";
+  gmailAppPassword: string;
+  gmailFromEmail: string;
+  isActive: boolean;
+};
+
+export type WidgetSettings = {
+  primary_color: string;
+  success_color: string;
+  border_color: string;
+  surface_color: string;
+  text_color: string;
+  muted_color: string;
+  font_stack: string;
+};

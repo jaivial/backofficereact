@@ -1719,6 +1719,16 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      async getEmailProviderConfig(): Promise<APISuccess<{ config: import("./types").EmailProviderConfig }> | APIError> {
+        return json("/api/admin/config/email-provider", { method: "GET" });
+      },
+      async setEmailProviderConfig(input: Partial<import("./types").EmailProviderConfig>): Promise<APISuccess<{ config: import("./types").EmailProviderConfig }> | APIError> {
+        return json("/api/admin/config/email-provider", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
       async getMandatoryMenus(date: string): Promise<APISuccess<import("./types").MandatoryMenuConfig> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/mandatory-menus?${q.toString()}`, { method: "GET" });
@@ -1726,6 +1736,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async saveMandatoryMenus(input: import("./types").MandatoryMenuSavePayload): Promise<APISuccess<import("./types").MandatoryMenuConfig> | APIError> {
         return json("/api/admin/config/mandatory-menus", {
           method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+    },
+
+    widget: {
+      async getSettings(): Promise<APISuccess<{ settings: import("./types").WidgetSettings }> | APIError> {
+        return json("/admin/widget/settings", { method: "GET" });
+      },
+      async updateSettings(input: Partial<import("./types").WidgetSettings>): Promise<APISuccess | APIError> {
+        return json("/admin/widget/settings", {
+          method: "PUT",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
         });

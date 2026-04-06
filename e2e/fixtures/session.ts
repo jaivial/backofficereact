@@ -1,4 +1,4 @@
-import { test as base, type Page, type BrowserContext, type Fixtures } from "@playwright/test";
+import { test as base, type Page, type BrowserContext, type Fixtures, devices } from "@playwright/test";
 import type { BOSession } from "../../api/types";
 
 // Cache for session reuse within a test run
@@ -6,7 +6,7 @@ let cachedSession: BOSession | null = null;
 type CookieOptions = { name: string; value: string; domain: string; path: string; httpOnly?: boolean; secure?: boolean; sameSite?: "Lax" | "Strict" | "None" };
 let cachedCookies: CookieOptions[] = [];
 
-export { expect } from "@playwright/test";
+export { expect, devices } from "@playwright/test";
 
 /**
  * Combined test fixture with session and adminPage support.

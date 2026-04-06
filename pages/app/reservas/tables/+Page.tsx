@@ -1275,6 +1275,7 @@ export default function TableManagerPage() {
         ? lineDrawingPointsRef.current
         : null;
       let nextNodesSnapshot: Node<any>[] = [];
+      const pendingTableSaves: Array<{ id: string; x: number; y: number }> = [];
 
       setNodes((nds) => {
         const next = applyNodeChanges(changes, nds) as Node<any>[];
@@ -1464,7 +1465,8 @@ export default function TableManagerPage() {
       let drawElementsChanged = false;
 
       for (const c of changes as any[]) {
-        if (c.type === "position" && c.dragging !== true) {
+        // Only save position when drag ENDS (dragging === false), not during drag
+        if (c.type === "position" && c.dragging === false) {
           const updatedNode = nextNodesSnapshot.find((n) => n.id === c.id);
           if (!updatedNode?.position) continue;
 
@@ -1484,7 +1486,12 @@ export default function TableManagerPage() {
               drawElementsChanged = true;
             }
           } else if (updatedNode.type === "restaurantTable") {
-            void savePosition(c.id, updatedNode.position.x, updatedNode.position.y);
+            // Collect table saves to fire after setNodes completes
+            pendingTableSaves.push({
+              id: c.id,
+              x: Math.round(updatedNode.position.x),
+              y: Math.round(updatedNode.position.y),
+            });
           }
         }
         if (c.type === "dimensions" && String(c.id).startsWith("draw-")) {
@@ -1513,6 +1520,11 @@ export default function TableManagerPage() {
         drawElementsRef.current = nextDrawElements;
         setDrawElements(nextDrawElements);
         queuePersistLayout(nextDrawElements, bookingStatesRef.current, lineDrawingPointsRef.current);
+      }
+
+      // Fire table position saves AFTER setNodes has completed to ensure constrained positions
+      for (const save of pendingTableSaves) {
+        void savePosition(save.id, save.x, save.y);
       }
     },
     [lineDrawing.isDrawing, mapMode, queuePersistLayout, savePosition, setNodes],
@@ -2523,7 +2535,29 @@ export default function TableManagerPage() {
           nodesDraggable={interactionMode === "select"}
           panOnDrag={interactionMode === "pan"}
           selectionOnDrag={interactionMode === "select"}
+          selectNodesOnDrag={false}
+          onNodeDragStop={(_event, node) => {
+            if (node.type === "restaurantTable" && node.position) {
+              void savePosition(node.id, node.position.x, node.position.y);
+            }
+            if (node.type === "drawElement" && node.position && mapMode === "draw") {
+              // Update draw element position
+              const x = Math.round(node.position.x);
+              const y = Math.round(node.position.y);
+              setDrawElements((prev) =>
+                prev.map((el) => (el.id === node.id ? { ...el, x, y } : el))
+              );
+              queuePersistLayout(
+                drawElementsRef.current.map((el) =>
+                  el.id === node.id ? { ...el, x, y } : el
+                ),
+                bookingStatesRef.current,
+                lineDrawingPointsRef.current
+              );
+            }
+          }}
           className="bo-tableMapFlow"
+          style={{ touchAction: "none" }}
         >
           <Background gap={20} />
           <Controls>
