@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronRight, Users } from "lucide-react";
 
+import { cn } from "../../shadcn/utils";
 import type { RoleCatalogItem } from "../../../api/types";
 import { RoleIcon } from "./RoleIcon";
 
@@ -8,13 +9,15 @@ export function RoleCard({
   role,
   usersCount,
   onOpen,
+  className,
 }: {
   role: RoleCatalogItem;
   usersCount: number;
   onOpen: () => void;
+  className?: string;
 }) {
   return (
-    <button type="button" className="bo-roleCard" onClick={onOpen} aria-label={`Abrir rol ${role.label}`}>
+    <button type="button" className={cn("bo-roleCard", className)} onClick={onOpen} aria-label={`Abrir rol ${role.label}`}>
       <div className="bo-roleCardHead">
         <div className="bo-roleCardIcon" aria-hidden="true">
           <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={20} strokeWidth={1.8} />

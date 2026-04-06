@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../shadcn/utils";
 
 type AvatarProps = {
   className?: string;
@@ -6,7 +7,7 @@ type AvatarProps = {
 };
 
 export function Avatar({ className, children }: AvatarProps) {
-  return <div className={`bo-avatar ${className || ""}`}>{children}</div>;
+  return <div className={cn("bo-avatar", className)}>{children}</div>;
 }
 
 type AvatarImageProps = {
@@ -17,7 +18,7 @@ type AvatarImageProps = {
 
 export function AvatarImage({ src, alt, className }: AvatarImageProps) {
   if (!src) return null;
-  return <img src={src} alt={alt} className={`bo-avatarImg ${className || ""}`} />;
+  return <img src={src} alt={alt} className={cn("bo-avatarImg", className)} />;
 }
 
 type AvatarFallbackProps = {
@@ -26,5 +27,5 @@ type AvatarFallbackProps = {
 };
 
 export function AvatarFallback({ className, children }: AvatarFallbackProps) {
-  return <span className={`bo-avatarFallback ${className || ""}`}>{children}</span>;
+  return <span className={cn("bo-avatarFallback", className)}>{children}</span>;
 }

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { cn } from "../shadcn/utils";
 import { Select } from "../inputs/Select";
 import type { MenuSelectorItem } from "../../api/types";
 
@@ -88,7 +89,7 @@ export function MandatoryMenuSelector({
   if (selectedMenuIds.length === 0) {
     return (
       <div 
-        className={`flex flex-col items-center justify-center py-8 px-4 rounded-xl border-2 border-dashed border-(--bo-border) bg-(--bo-surface-2) ${className}`} 
+        className={cn("flex flex-col items-center justify-center py-8 px-4 rounded-xl border-2 border-dashed border-(--bo-border) bg-(--bo-surface-2)", className)}
         data-ui="mandatory-menu-selector-empty"
       >
         <div className="text-(--bo-muted) text-sm text-center mb-4">
@@ -114,7 +115,7 @@ export function MandatoryMenuSelector({
   }
 
   return (
-    <div className={`flex flex-col gap-3 ${className}`} data-ui="mandatory-menu-selector">
+    <div className={cn("flex flex-col gap-3", className)} data-ui="mandatory-menu-selector">
       {/* Header row - hidden on mobile */}
       <div className="hidden sm:flex flex-row items-center gap-3 px-3 py-1 text-xs text-(--bo-muted) uppercase tracking-wide">
         <div className="flex-1">Menú</div>

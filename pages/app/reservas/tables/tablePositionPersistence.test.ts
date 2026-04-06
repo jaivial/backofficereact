@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { DrawElement, BookingState, LinePoint } from "./+Page";
+import type { DrawElement, BookingState } from "./types/tables";
+import type { LinePoint } from "./lineDrawing";
 
 interface MockTablePosition {
   id: number;
@@ -100,7 +101,7 @@ describe("tablePositionPersistence", () => {
       queuePersistLayout(elements2);
 
       expect(timerId).not.toBeNull();
-      expect(mockClearTimeout(timerId)).toBeUndefined();
+      expect(mockClearTimeout(timerId!)).toBeUndefined();
 
       if (timerId) clearTimeout(timerId);
       expect(callCount).toBe(0);

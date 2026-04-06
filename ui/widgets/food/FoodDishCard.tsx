@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Upload, UtensilsCrossed } from "lucide-react";
 
+import { cn } from "../../shadcn/utils";
+
 type FoodDishCardProps = {
   title: string;
   imageUrl?: string | null;
@@ -97,7 +99,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
   return (
     <article
       data-ui="dish-card"
-      className={`bo-memberCard bo-foodMemberCard${clickable ? " is-clickable" : ""}${className ? ` ${className}` : ""}`}
+      className={cn("bo-memberCard bo-foodMemberCard", clickable && "is-clickable", className)}
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
       aria-label={clickable ? openAriaLabel || `Abrir detalle de ${title}` : undefined}

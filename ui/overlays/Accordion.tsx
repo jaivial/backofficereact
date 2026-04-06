@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { cn } from "../shadcn/utils";
 
 type AccordionProps = {
   title: string;
@@ -13,7 +14,7 @@ export function Accordion({ title, defaultOpen = false, children, className }: A
   const toggle = useCallback(() => setOpen((v) => !v), []);
 
   return (
-    <div className={`bo-accordionItem${open ? " is-active" : ""}${className ? " " + className : ""}`} data-role="accordion" data-ui="accordion-root">
+    <div className={cn("bo-accordionItem", open && "is-active", className)} data-role="accordion" data-ui="accordion-root">
       <button
         type="button"
         className="bo-accordionTrigger"

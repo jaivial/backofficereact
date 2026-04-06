@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../shadcn/utils";
 
 import { phoneCodeOptions } from "../lib/phone";
 import { Select } from "./Select";
@@ -11,6 +12,7 @@ export function PhoneInput({
   disabled,
   countryAriaLabel = "Prefijo",
   numberAriaLabel = "Telefono",
+  className,
 }: {
   countryCode: string;
   number: string;
@@ -19,9 +21,10 @@ export function PhoneInput({
   disabled?: boolean;
   countryAriaLabel?: string;
   numberAriaLabel?: string;
+  className?: string;
 }) {
   return (
-    <div className="bo-phone">
+    <div className={cn("bo-phone", className)} data-ui="phone-input">
       <Select
         className="bo-phoneCC"
         value={countryCode || "34"}

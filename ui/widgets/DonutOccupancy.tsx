@@ -1,5 +1,7 @@
 import React, { useMemo } from "react";
 
+import { cn } from "../shadcn/utils";
+
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
@@ -18,12 +20,14 @@ export function DonutOccupancy({
   totalBookings,
   pending,
   confirmed,
+  className,
 }: {
   totalPeople: number;
   limit: number;
   totalBookings?: number;
   pending?: number;
   confirmed?: number;
+  className?: string;
 }) {
   const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 1;
   const pctRaw = (Number(totalPeople) / safeLimit) * 100;
@@ -39,7 +43,7 @@ export function DonutOccupancy({
   }, [pctArc]);
 
   return (
-    <section className={`bo-donut bo-donut--${tone}`} aria-label="Ocupación">
+    <section className={cn(`bo-donut bo-donut--${tone}`, className)} aria-label="Ocupación">
       <div className="bo-donutSvg" aria-hidden="true">
         <svg viewBox="0 0 120 120" width="120" height="120">
           <circle className="bo-donutTrack" cx="60" cy="60" r="44" fill="none" strokeWidth="10" />

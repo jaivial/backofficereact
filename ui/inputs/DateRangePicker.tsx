@@ -246,28 +246,29 @@ export function DateRangePicker({
           style={{ top: pos.top, left: pos.left }}
           role="dialog"
           aria-label="Selector de rango de fechas"
+          data-ui="date-range-picker-popover"
         >
-          <div className="bo-dateHead">
-            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={prevMonth} aria-label="Mes anterior">
+          <div className="bo-dateHead" data-ui="date-range-picker-header">
+            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={prevMonth} aria-label="Mes anterior" data-ui="date-range-picker-prev-btn">
               <ChevronLeft size={18} strokeWidth={1.8} />
             </button>
-            <div className="bo-dateTitle">{monthLabel(viewYear, viewMonth0)}</div>
-            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={nextMonth} aria-label="Mes siguiente">
+            <div className="bo-dateTitle" data-ui="date-range-picker-month-label">{monthLabel(viewYear, viewMonth0)}</div>
+            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={nextMonth} aria-label="Mes siguiente" data-ui="date-range-picker-next-btn">
               <ChevronRight size={18} strokeWidth={1.8} />
             </button>
           </div>
-          <div className="bo-calDows" aria-hidden="true">
-            <div>L</div>
-            <div>M</div>
-            <div>M</div>
-            <div>J</div>
-            <div>V</div>
-            <div>S</div>
-            <div>D</div>
+          <div className="bo-calDows" aria-hidden="true" data-ui="date-range-picker-weekdays">
+            <div data-ui="date-range-picker-weekday">L</div>
+            <div data-ui="date-range-picker-weekday">M</div>
+            <div data-ui="date-range-picker-weekday">M</div>
+            <div data-ui="date-range-picker-weekday">J</div>
+            <div data-ui="date-range-picker-weekday">V</div>
+            <div data-ui="date-range-picker-weekday">S</div>
+            <div data-ui="date-range-picker-weekday">D</div>
           </div>
-          <div className="bo-calGrid" aria-label="Calendario de rango">
+          <div className="bo-calGrid" aria-label="Calendario de rango" data-ui="date-range-picker-grid">
             {grid.map((c, idx) => {
-              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" />;
+              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-range-picker-empty-cell" />;
               const iso = c.iso;
               const isStart = hasDraft && iso === fromISO;
               const isEnd = hasDraft && iso === toISO;
@@ -281,17 +282,17 @@ export function DateRangePicker({
                 .filter(Boolean)
                 .join(" ");
               return (
-                <button key={iso} type="button" className={cls} onClick={() => onSelectDay(iso)}>
+                <button key={iso} type="button" className={cls} onClick={() => onSelectDay(iso)} data-ui="date-range-picker-day" data-date={iso}>
                   {c.day}
                 </button>
               );
             })}
           </div>
-          <div className="bo-dateRangeActions">
-            <button type="button" className="bo-btn bo-btn--sm bo-btn--ghost" onClick={clear}>
+          <div className="bo-dateRangeActions" data-ui="date-range-picker-actions">
+            <button type="button" className="bo-btn bo-btn--sm bo-btn--ghost" onClick={clear} data-ui="date-range-picker-clear-btn">
               Limpiar
             </button>
-            <button type="button" className="bo-btn bo-btn--sm bo-btn--primary" onClick={apply} disabled={!canApply}>
+            <button type="button" className="bo-btn bo-btn--sm bo-btn--primary" onClick={apply} disabled={!canApply} data-ui="date-range-picker-apply-btn">
               Aplicar
             </button>
           </div>

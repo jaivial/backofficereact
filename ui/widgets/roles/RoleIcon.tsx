@@ -19,11 +19,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { cn } from "../../shadcn/utils";
+
 type Props = {
   roleSlug: string;
   iconKey?: string | null;
   size?: number;
   strokeWidth?: number;
+  className?: string;
 };
 
 const ICONS: Record<string, LucideIcon> = {
@@ -76,9 +79,9 @@ function fallbackIconKeyForRole(roleSlug: string): string {
   }
 }
 
-export function RoleIcon({ roleSlug, iconKey, size = 18, strokeWidth = 1.8 }: Props) {
+export function RoleIcon({ roleSlug, iconKey, size = 18, strokeWidth = 1.8, className }: Props) {
   const normalized = String(iconKey ?? "").trim().toLowerCase();
   const key = normalized && ICONS[normalized] ? normalized : fallbackIconKeyForRole(roleSlug);
   const Icon = ICONS[key] ?? ShieldUser;
-  return <Icon size={size} strokeWidth={strokeWidth} />;
+  return <Icon size={size} strokeWidth={strokeWidth} className={cn(className)} />;
 }

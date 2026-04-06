@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Info, Users } from "lucide-react";
 
+import { cn } from "../../shadcn/utils";
+
 import type { Member, RoleCatalogItem, RoleUserItem } from "../../../api/types";
 import { roleLabel } from "../../../lib/rbac";
 import { Modal } from "../../overlays/Modal";
@@ -19,6 +21,7 @@ type Props = {
   busyAssign: boolean;
   onChangeUserRole: (userId: number, nextRole: string) => Promise<void>;
   onAssignRoleToMembers: (memberIds: number[], roleSlug: string) => Promise<void>;
+  className?: string;
 };
 
 type MemberRoleRow = {
@@ -62,6 +65,7 @@ export function RoleDetailModal({
   busyAssign,
   onChangeUserRole,
   onAssignRoleToMembers,
+  className,
 }: Props) {
   const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
 
@@ -126,7 +130,7 @@ export function RoleDetailModal({
   }, [onAssignRoleToMembers, role, selectedMemberIds]);
 
   return (
-    <Modal open={open} title={role?.label || "Rol"} onClose={onClose} widthPx={960} className="bo-modal--roleDetail">
+    <Modal open={open} title={role?.label || "Rol"} onClose={onClose} widthPx={960} className={cn("bo-modal--roleDetail", className)}>
       {role ? (
         <>
           <div className="bo-modalHead">

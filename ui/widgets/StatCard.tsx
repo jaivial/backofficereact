@@ -1,6 +1,8 @@
 import React, { memo } from "react";
 import { CalendarDays, CheckCircle2, Clock3, Users, FileText, TrendingUp } from "lucide-react";
 
+import { cn } from "../shadcn/utils";
+
 type IconKey = "calendar" | "check" | "clock" | "users" | "file-text" | "trending-up";
 
 function Icon({ k }: { k: IconKey }) {
@@ -19,17 +21,19 @@ export const StatCard = memo(function StatCard({
   value,
   icon,
   onClick,
+  className,
 }: {
   label?: string;
   title?: string;
   value: string;
   icon: IconKey;
   onClick?: () => void;
+  className?: string;
 }) {
   const displayLabel = label ?? title ?? "";
   return (
     <div
-      className={`bo-card bo-card--glass ${onClick ? "bo-card--clickable" : ""}`}
+      className={cn("bo-card bo-card--glass", onClick ? "bo-card--clickable" : "", className)}
       aria-label={displayLabel}
       onClick={onClick}
       role={onClick ? "button" : undefined}
