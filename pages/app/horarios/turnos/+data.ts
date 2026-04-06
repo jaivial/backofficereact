@@ -1,5 +1,5 @@
 import type { PageContextServer } from "vike/types";
-import { useConfig } from "vike-react/useConfig";
+import { useConfig } from "vike-react/useConfiuseg";
 
 import { createClient } from "../../../../api/client";
 import type { FichajeSchedule, Member } from "../../../../api/types";
