@@ -1,0 +1,904 @@
+{
+  "title": "Backoffice Page Refactoring Plan — Three-Layer Organization",
+  "description": "Refactor all backoffice pages to strictly follow Capa 1 (Page Components), Capa 2 (Functional Components), and Capa 3 (Reusable UI) organization with 800-line max per file. Includes lint, type, and build checks after each phase.",
+  "total_pages": 45,
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Phase 1 — Instrument Lint, Type, Build Baseline",
+      "description": "Establish baseline by running lint, typecheck, and build to understand existing errors. This ensures we have a clean starting point and can detect regressions introduced during refactoring.",
+      "subphases": [
+        {
+          "subphase": "1.1",
+          "name": "Run baseline quality gates",
+          "tasks": [
+            {
+              "id": "1.1.1",
+              "description": "Run bun run lint and capture all errors/warnings",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint 2>&1 | tee /tmp/backoffice-lint-baseline.txt",
+              "verify": "Exit code 0 (or document known errors)"
+            },
+            {
+              "id": "1.1.2",
+              "description": "Run bun run typecheck and capture all errors",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run typecheck 2>&1 | tee /tmp/backoffice-type-baseline.txt",
+              "verify": "Exit code 0 (or document known errors)"
+            },
+            {
+              "id": "1.1.3",
+              "description": "Run bun run build and capture all errors",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run build 2>&1 | tee /tmp/backoffice-build-baseline.txt",
+              "verify": "Exit code 0 (or document known errors)"
+            },
+            {
+              "id": "1.1.4",
+              "description": "Run bun test unit tests",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun test 2>&1 | tee /tmp/backoffice-test-baseline.txt",
+              "verify": "Exit code 0"
+            },
+            {
+              "id": "1.1.5",
+              "description": "Save baseline snapshots for comparison after each phase",
+              "command": "echo \"Baseline saved to /tmp/backoffice-*-baseline.txt\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Phase 2 — Small Flat Pages (No Structure, <200 lines)",
+      "description": "Refactor 12 small flat pages that are under 200 lines. Create folder structure and ensure they stay under 800 lines. These are low-risk starting pages.",
+      "subphases": [
+        {
+          "subphase": "2.1",
+          "name": "Top-level small pages (batch 1 of 3)",
+          "tasks": [
+            {
+              "id": "2.1.1",
+              "description": "Refactor pages/index/ — create folder structure (index/index.tsx, constants/, hooks/)",
+              "files": ["pages/index/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 7
+            },
+            {
+              "id": "2.1.2",
+              "description": "Refactor pages/login/ — create folder structure (login/login.tsx, constants/, hooks/, utils/)",
+              "files": ["pages/login/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 84
+            },
+            {
+              "id": "2.1.3",
+              "description": "Refactor pages/change-password/ — create folder structure",
+              "files": ["pages/change-password/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 101
+            },
+            {
+              "id": "2.1.4",
+              "description": "Refactor pages/_error/ — create folder structure",
+              "files": ["pages/_error/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 106
+            },
+            {
+              "id": "2.1.5",
+              "description": "Run lint + typecheck + build after batch 1",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "2.2",
+          "name": "Top-level small pages (batch 2 of 3)",
+          "tasks": [
+            {
+              "id": "2.2.1",
+              "description": "Refactor pages/onboarding/ — create folder structure",
+              "files": ["pages/onboarding/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 50
+            },
+            {
+              "id": "2.2.2",
+              "description": "Refactor pages/invitacion/@token/ — create folder structure",
+              "files": ["pages/invitacion/@token/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 35
+            },
+            {
+              "id": "2.2.3",
+              "description": "Refactor pages/confirm/@token/ — create folder structure",
+              "files": ["pages/confirm/@token/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 35
+            },
+            {
+              "id": "2.2.4",
+              "description": "Refactor pages/reset-password/@guid/@token/ — create folder structure",
+              "files": ["pages/reset-password/@guid/@token/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 35
+            },
+            {
+              "id": "2.2.5",
+              "description": "Run lint + typecheck + build after batch 2",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "2.3",
+          "name": "Top-level small pages (batch 3 of 3)",
+          "tasks": [
+            {
+              "id": "2.3.1",
+              "description": "Refactor pages/cancel/ — create folder structure",
+              "files": ["pages/cancel/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 35
+            },
+            {
+              "id": "2.3.2",
+              "description": "Refactor pages/update-rice/ — create folder structure",
+              "files": ["pages/update-rice/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 35
+            },
+            {
+              "id": "2.3.3",
+              "description": "Refactor pages/factura/@invoiceId/ — create folder structure (304 lines)",
+              "files": ["pages/factura/@invoiceId/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 304
+            },
+            {
+              "id": "2.3.4",
+              "description": "Run lint + typecheck + build after batch 3",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3 — App-level Small Flat Pages (<300 lines, no structure)",
+      "description": "Refactor 9 app-level pages that are under 300 lines and have no folder structure. These are moderate complexity and mostly routing/layout pages.",
+      "subphases": [
+        {
+          "subphase": "3.1",
+          "name": "App-level flat pages batch 1",
+          "tasks": [
+            {
+              "id": "3.1.1",
+              "description": "Refactor pages/app/+Page.tsx — create folder structure (1 line, trivial redirect)",
+              "files": ["pages/app/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 1
+            },
+            {
+              "id": "3.1.2",
+              "description": "Refactor pages/app/+Layout.tsx — create folder structure (75 lines)",
+              "files": ["pages/app/+Layout.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 75
+            },
+            {
+              "id": "3.1.3",
+              "description": "Refactor pages/app/comsit/+Page.tsx — create folder structure",
+              "files": ["pages/app/comsit/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 1
+            },
+            {
+              "id": "3.1.4",
+              "description": "Refactor pages/app/backoffice/+Page.tsx — create folder structure",
+              "files": ["pages/app/backoffice/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 88
+            },
+            {
+              "id": "3.1.5",
+              "description": "Refactor pages/app/dashboard/+Page.tsx — create folder structure",
+              "files": ["pages/app/dashboard/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 105
+            },
+            {
+              "id": "3.1.6",
+              "description": "Run lint + typecheck + build after batch 1",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "3.2",
+          "name": "App-level flat pages batch 2",
+          "tasks": [
+            {
+              "id": "3.2.1",
+              "description": "Refactor pages/app/comida/+Page.tsx — create missing subfolders (partial structure exists)",
+              "files": ["pages/app/comida/+Page.tsx"],
+              "action": "complete_folder_structure",
+              "expected_lines": 83
+            },
+            {
+              "id": "3.2.2",
+              "description": "Refactor pages/app/miembros/roles/+Page.tsx — create folder structure",
+              "files": ["pages/app/miembros/roles/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 288
+            },
+            {
+              "id": "3.2.3",
+              "description": "Refactor pages/app/miembros/mi-horario/+Page.tsx — create folder structure",
+              "files": ["pages/app/miembros/mi-horario/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 156
+            },
+            {
+              "id": "3.2.4",
+              "description": "Refactor pages/app/reservas/anadir/+Page.tsx — create folder structure",
+              "files": ["pages/app/reservas/anadir/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 99
+            },
+            {
+              "id": "3.2.5",
+              "description": "Refactor pages/app/website/+Page.tsx — create folder structure",
+              "files": ["pages/app/website/+Page.tsx"],
+              "action": "create_folders_and_move",
+              "expected_lines": 402
+            },
+            {
+              "id": "3.2.6",
+              "description": "Run lint + typecheck + build after batch 2",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Phase 4 — Medium Flat Pages (300-1000 lines, no structure)",
+      "description": "Refactor 5 medium-sized flat pages (300-1000 lines) that need folder structure and internal logic extraction. These are moderate complexity.",
+      "subphases": [
+        {
+          "subphase": "4.1",
+          "name": "Refactor app/config/ (1,032 lines) — full decomposition",
+          "tasks": [
+            {
+              "id": "4.1.1",
+              "description": "Analyze app/config/+Page.tsx to identify logical sections",
+              "action": "analyze_file",
+              "files": ["pages/app/config/+Page.tsx"],
+              "expected_lines": 1032
+            },
+            {
+              "id": "4.1.2",
+              "description": "Create folder structure for config: constants/, types/, atoms/, hooks/, utils/, helpers/, lib/, functionalComponents/",
+              "action": "create_folder_structure"
+            },
+            {
+              "id": "4.1.3",
+              "description": "Extract constants to constants/config.constants.ts",
+              "action": "extract_to_file",
+              "target": "constants/"
+            },
+            {
+              "id": "4.1.4",
+              "description": "Extract type definitions to types/config.types.ts",
+              "action": "extract_to_file",
+              "target": "types/"
+            },
+            {
+              "id": "4.1.5",
+              "description": "Extract Jotai atoms to atoms/config.atoms.ts",
+              "action": "extract_to_file",
+              "target": "atoms/"
+            },
+            {
+              "id": "4.1.6",
+              "description": "Extract custom hooks to hooks/useConfig*.ts",
+              "action": "extract_to_file",
+              "target": "hooks/"
+            },
+            {
+              "id": "4.1.7",
+              "description": "Extract utility functions to utils/config*.ts",
+              "action": "extract_to_file",
+              "target": "utils/"
+            },
+            {
+              "id": "4.1.8",
+              "description": "Extract helper functions to helpers/config*.ts",
+              "action": "extract_to_file",
+              "target": "helpers/"
+            },
+            {
+              "id": "4.1.9",
+              "description": "Extract business logic to lib/config*.ts",
+              "action": "extract_to_file",
+              "target": "lib/"
+            },
+            {
+              "id": "4.1.10",
+              "description": "Extract UI sections to functionalComponents/ subfolders (each <400 lines)",
+              "action": "extract_functional_components"
+            },
+            {
+              "id": "4.1.11",
+              "description": "Refactor config/config.tsx to orchestrate imports (main component <800 lines)",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "4.1.12",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "4.2",
+          "name": "Refactor app/reservas/config/ (911 lines) — full decomposition",
+          "tasks": [
+            {
+              "id": "4.2.1",
+              "description": "Analyze app/reservas/config/+Page.tsx to identify logical sections",
+              "files": ["pages/app/reservas/config/+Page.tsx"],
+              "expected_lines": 911
+            },
+            {
+              "id": "4.2.2",
+              "description": "Create folder structure for reservas/config: constants/, types/, atoms/, hooks/, utils/, helpers/, lib/, functionalComponents/",
+              "action": "create_folder_structure"
+            },
+            {
+              "id": "4.2.3",
+              "description": "Extract all inline code to appropriate subfolders",
+              "action": "extract_all_inline_logic"
+            },
+            {
+              "id": "4.2.4",
+              "description": "Refactor reservas/config/config.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "4.2.5",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Phase 5 — Large Pages Already With Structure (800-1200 lines)",
+      "description": "Refactor 4 pages that already have folder structure but exceed 800 lines. Extract inline logic into functionalComponents/ subfolders to get main component under 800 lines.",
+      "subphases": [
+        {
+          "subphase": "5.1",
+          "name": "Refactor app/reservas/ (1,185 lines) — split into functionalComponents",
+          "tasks": [
+            {
+              "id": "5.1.1",
+              "description": "Analyze reservas/+Page.tsx — identify 3-5 logical sections to extract",
+              "files": ["pages/app/reservas/+Page.tsx"],
+              "expected_lines": 1185
+            },
+            {
+              "id": "5.1.2",
+              "description": "Create functionalComponents/ subfolders for each extracted section",
+              "action": "create_functional_component_folders"
+            },
+            {
+              "id": "5.1.3",
+              "description": "Extract reservation list logic to functionalComponents/ReservationList/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "5.1.4",
+              "description": "Extract filters/search logic to functionalComponents/ReservationFilters/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "5.1.5",
+              "description": "Extract stats/summary logic to functionalComponents/ReservationStats/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "5.1.6",
+              "description": "Refactor reservas/reservas.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "5.1.7",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "5.2",
+          "name": "Refactor app/reportes/ (1,175 lines) — split into functionalComponents",
+          "tasks": [
+            {
+              "id": "5.2.1",
+              "description": "Analyze reportes/+Page.tsx — identify logical sections to extract",
+              "files": ["pages/app/reportes/+Page.tsx"],
+              "expected_lines": 1175
+            },
+            {
+              "id": "5.2.2",
+              "description": "Create functionalComponents/ subfolders for each section",
+              "action": "create_functional_component_folders"
+            },
+            {
+              "id": "5.2.3",
+              "description": "Extract report generation logic to functionalComponents/ReportGenerator/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "5.2.4",
+              "description": "Extract chart/visualization logic to functionalComponents/ReportCharts/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "5.2.5",
+              "description": "Refactor reportes/reportes.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "5.2.6",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "5.3",
+          "name": "Refactor app/horarios/ and app/settings/ (just over 800 lines)",
+          "tasks": [
+            {
+              "id": "5.3.1",
+              "description": "Analyze horarios/+Page.tsx (879 lines) — extract minor sections",
+              "files": ["pages/app/horarios/+Page.tsx"],
+              "expected_lines": 879
+            },
+            {
+              "id": "5.3.2",
+              "description": "Refactor horarios/horarios.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "5.3.3",
+              "description": "Analyze settings/+Page.tsx (928 lines) — extract minor sections",
+              "files": ["pages/app/settings/+Page.tsx"],
+              "expected_lines": 928
+            },
+            {
+              "id": "5.3.4",
+              "description": "Refactor settings/settings.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "5.3.5",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Phase 6 — Massive Flat Pages (>2000 lines, no structure)",
+      "description": "Refactor 3 massive flat pages that need complete decomposition. These are the highest priority and most complex refactors: menus/crear (5,294 lines), site-builder (2,994 lines), and comida pages.",
+      "subphases": [
+        {
+          "subphase": "6.1",
+          "name": "Refactor app/menus/crear/ (5,294 lines) — CRITICAL",
+          "tasks": [
+            {
+              "id": "6.1.1",
+              "description": "DEEP ANALYZE menus/crear/+Page.tsx — map ALL logical sections, components, state, and handlers",
+              "files": ["pages/app/menus/crear/+Page.tsx"],
+              "expected_lines": 5294,
+              "priority": "critical"
+            },
+            {
+              "id": "6.1.2",
+              "description": "Create complete folder structure: constants/, types/, atoms/, hooks/, utils/, helpers/, lib/, functionalComponents/, components/",
+              "action": "create_folder_structure"
+            },
+            {
+              "id": "6.1.3",
+              "description": "Extract type definitions to types/menu.types.ts (MenuItem, MenuSection, etc.)",
+              "action": "extract_to_file",
+              "target": "types/"
+            },
+            {
+              "id": "6.1.4",
+              "description": "Extract constants to constants/menu.constants.ts (menu types, categories, defaults)",
+              "action": "extract_to_file",
+              "target": "constants/"
+            },
+            {
+              "id": "6.1.5",
+              "description": "Extract Jotai atoms to atoms/menu.atoms.ts (form state, selection state, draft state)",
+              "action": "extract_to_file",
+              "target": "atoms/"
+            },
+            {
+              "id": "6.1.6",
+              "description": "Extract API/data hooks to hooks/useMenuEditor.ts, hooks/useMenuItems.ts",
+              "action": "extract_to_file",
+              "target": "hooks/"
+            },
+            {
+              "id": "6.1.7",
+              "description": "Extract utility functions to utils/menuFormatters.ts, utils/menuValidators.ts",
+              "action": "extract_to_file",
+              "target": "utils/"
+            },
+            {
+              "id": "6.1.8",
+              "description": "Extract helper/transform functions to helpers/menuTransformers.ts",
+              "action": "extract_to_file",
+              "target": "helpers/"
+            },
+            {
+              "id": "6.1.9",
+              "description": "Extract business logic to lib/menuEditor.ts (CRUD operations, validation, draft management)",
+              "action": "extract_to_file",
+              "target": "lib/"
+            },
+            {
+              "id": "6.1.10",
+              "description": "Extract MenuItemEditor functional component to functionalComponents/MenuItemEditor/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "6.1.11",
+              "description": "Extract MenuSectionManager functional component to functionalComponents/MenuSectionManager/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "6.1.12",
+              "description": "Extract MenuPreview functional component to functionalComponents/MenuPreview/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "6.1.13",
+              "description": "Extract MenuPricing functional component to functionalComponents/MenuPricing/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "6.1.14",
+              "description": "Extract MenuMediaUploader functional component to functionalComponents/MenuMediaUploader/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "6.1.15",
+              "description": "Refactor crear/crear.tsx main component — import all extracted pieces, orchestrate, <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "6.1.16",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "6.2",
+          "name": "Refactor app/site-builder/ (2,994 lines) — CRITICAL",
+          "tasks": [
+            {
+              "id": "6.2.1",
+              "description": "DEEP ANALYZE site-builder/+Page.tsx — identify all sections",
+              "files": ["pages/app/site-builder/+Page.tsx"],
+              "expected_lines": 2994,
+              "priority": "critical"
+            },
+            {
+              "id": "6.2.2",
+              "description": "Create complete folder structure for site-builder",
+              "action": "create_folder_structure"
+            },
+            {
+              "id": "6.2.3",
+              "description": "Extract types, constants, atoms, hooks, utils, helpers, lib",
+              "action": "extract_all_inline_logic"
+            },
+            {
+              "id": "6.2.4",
+              "description": "Extract functional components (site builder has block editor, page tree, etc.)",
+              "action": "extract_functional_components"
+            },
+            {
+              "id": "6.2.5",
+              "description": "Refactor site-builder/site-builder.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "6.2.6",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "6.3",
+          "name": "Refactor app/comida/ pages (large flat files)",
+          "tasks": [
+            {
+              "id": "6.3.1",
+              "description": "DEEP ANALYZE comida/@foodType/+Page.tsx (large flat file) — identify all sections",
+              "files": ["pages/app/comida/@foodType/+Page.tsx"],
+              "priority": "high"
+            },
+            {
+              "id": "6.3.2",
+              "description": "Create folder structure and extract logic for comida/@foodType/",
+              "action": "create_folder_structure_and_extract"
+            },
+            {
+              "id": "6.3.3",
+              "description": "DEEP ANALYZE comida/@foodType/@foodId/+Page.tsx (2.7K bytes)",
+              "files": ["pages/app/comida/@foodType/@foodId/+Page.tsx"],
+              "priority": "high"
+            },
+            {
+              "id": "6.3.4",
+              "description": "Create folder structure and extract logic for comida/@foodType/@foodId/",
+              "action": "create_folder_structure_and_extract"
+            },
+            {
+              "id": "6.3.5",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        },
+        {
+          "subphase": "6.4",
+          "name": "Refactor app/reservas/tables/ (very large flat file)",
+          "tasks": [
+            {
+              "id": "6.4.1",
+              "description": "DEEP ANALYZE reservas/tables/+Page.tsx (very large flat file)",
+              "files": ["pages/app/reservas/tables/+Page.tsx"],
+              "priority": "high"
+            },
+            {
+              "id": "6.4.2",
+              "description": "Create folder structure and extract logic for reservas/tables/",
+              "action": "create_folder_structure_and_extract"
+            },
+            {
+              "id": "6.4.3",
+              "description": "Refactor reservas/tables/tables.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "6.4.4",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "Phase 7 — Shared Components (_components) Cleanup",
+      "description": "Refactor shared components under _components/ folders into proper Capa 2 or Capa 3 locations. BookingEditor (631 lines) and BookingSearch need proper organization.",
+      "subphases": [
+        {
+          "subphase": "7.1",
+          "name": "Move shared components to appropriate layers",
+          "tasks": [
+            {
+              "id": "7.1.1",
+              "description": "Analyze miembros/_components/MemberCreateModal.tsx (251 lines) — determine if reusable (Capa 3) or page-specific (Capa 2)",
+              "files": ["pages/app/miembros/_components/MemberCreateModal.tsx"]
+            },
+            {
+              "id": "7.1.2",
+              "description": "Move MemberCreateModal to appropriate layer (ui/ if reusable, miembros/functionalComponents/ if page-specific)",
+              "action": "move_to_appropriate_layer"
+            },
+            {
+              "id": "7.1.3",
+              "description": "Analyze reservas/_components/BookingEditor.tsx (631 lines) — if it exceeds 800 lines when moved, split further",
+              "files": ["pages/app/reservas/_components/BookingEditor.tsx"],
+              "expected_lines": 631
+            },
+            {
+              "id": "7.1.4",
+              "description": "Move BookingEditor to proper location with folder structure",
+              "action": "move_to_appropriate_layer"
+            },
+            {
+              "id": "7.1.5",
+              "description": "Analyze reservas/_components/BookingSearch.tsx — apply same analysis",
+              "files": ["pages/app/reservas/_components/BookingSearch.tsx"]
+            },
+            {
+              "id": "7.1.6",
+              "description": "Remove empty _components/ folders",
+              "action": "cleanup_empty_folders"
+            },
+            {
+              "id": "7.1.7",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 8,
+      "name": "Phase 8 — miembros/@memberId/+Layout.tsx Split (2,600 lines)",
+      "description": "The miembros member detail layout is 2,600 lines and has folder structure. Split into functionalComponents/.",
+      "subphases": [
+        {
+          "subphase": "8.1",
+          "name": "Split miembros/@memberId/+Layout.tsx",
+          "tasks": [
+            {
+              "id": "8.1.1",
+              "description": "DEEP ANALYZE miembros/@memberId/+Layout.tsx — identify all sections (tabs, forms, stats)",
+              "files": ["pages/app/miembros/@memberId/+Layout.tsx"],
+              "expected_lines": 2600
+            },
+            {
+              "id": "8.1.2",
+              "description": "Extract MemberTabs to functionalComponents/MemberTabs/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "8.1.3",
+              "description": "Extract MemberInfoForm to functionalComponents/MemberInfoForm/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "8.1.4",
+              "description": "Extract MemberStats to functionalComponents/MemberStats/",
+              "action": "extract_functional_component"
+            },
+            {
+              "id": "8.1.5",
+              "description": "Refactor +Layout.tsx main component <800 lines",
+              "action": "rewrite_main_component"
+            },
+            {
+              "id": "8.1.6",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 9,
+      "name": "Phase 9 — ui/ Layer Audit and Cleanup",
+      "description": "Audit the shared ui/ layer to ensure all reusable components follow SOLID/Open-Closed and have proper folder structure.",
+      "subphases": [
+        {
+          "subphase": "9.1",
+          "name": "Audit ui/ components for compliance",
+          "tasks": [
+            {
+              "id": "9.1.1",
+              "description": "List all files in ui/ directory recursively",
+              "command": "find /home/jaime/projects/newvillacarmen/backoffice/ui -type f -name '*.tsx' | sort"
+            },
+            {
+              "id": "9.1.2",
+              "description": "Identify ui components that exceed 800 lines",
+              "action": "audit_file_sizes"
+            },
+            {
+              "id": "9.1.3",
+              "description": "Identify ui components missing className props (violate Open-Closed)",
+              "action": "audit_ocp_compliance"
+            },
+            {
+              "id": "9.1.4",
+              "description": "Fix any oversized ui components",
+              "action": "fix_oversized_components"
+            },
+            {
+              "id": "9.1.5",
+              "description": "Fix any ui components missing className prop",
+              "action": "add_className_props"
+            },
+            {
+              "id": "9.1.6",
+              "description": "Run lint + typecheck + build",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint && bun run typecheck && bun run build",
+              "verify": "All pass, 0 new errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 10,
+      "name": "Phase 10 — Final Quality Gates",
+      "description": "Run complete quality gate suite: lint + typecheck + build + tests + e2e smoke.",
+      "subphases": [
+        {
+          "subphase": "10.1",
+          "name": "Final comprehensive check",
+          "tasks": [
+            {
+              "id": "10.1.1",
+              "description": "Run bun run lint — 0 errors",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run lint 2>&1 | tee /tmp/backoffice-lint-final.txt",
+              "verify": "Exit code 0, 0 errors"
+            },
+            {
+              "id": "10.1.2",
+              "description": "Run bun run typecheck — 0 errors",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run typecheck 2>&1 | tee /tmp/backoffice-type-final.txt",
+              "verify": "Exit code 0, 0 errors"
+            },
+            {
+              "id": "10.1.3",
+              "description": "Run bun run build — 0 errors",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun run build 2>&1 | tee /tmp/backoffice-build-final.txt",
+              "verify": "Exit code 0, 0 errors"
+            },
+            {
+              "id": "10.1.4",
+              "description": "Run bun test — all pass",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun test 2>&1 | tee /tmp/backoffice-test-final.txt",
+              "verify": "Exit code 0"
+            },
+            {
+              "id": "10.1.5",
+              "description": "Count all +Page.tsx and +Layout.tsx files — verify all main components <800 lines",
+              "action": "verify_all_under_800_lines"
+            },
+            {
+              "id": "10.1.6",
+              "description": "Verify all pages have proper folder structure",
+              "action": "verify_folder_structure"
+            },
+            {
+              "id": "10.1.7",
+              "description": "Run e2e smoke test if available",
+              "command": "cd /home/jaime/projects/newvillacarmen/backoffice && bun test:e2e 2>&1 || echo 'e2e skipped (may need auth)'",
+              "verify": "Exit code 0 or documented skip"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
