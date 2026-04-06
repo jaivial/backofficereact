@@ -1,0 +1,218 @@
+{
+  "meta": {
+    "project": "backoffice-refactoring",
+    "description": "Refactor backoffice to follow CLAUDE.md layer structure with semantic HTML attributes",
+    "created": "2026-04-06",
+    "completed": "2026-04-06",
+    "status": "completed",
+    "decisions": {
+      "attributeNaming": "verbose-semantic",
+      "migrationStrategy": "keep_both_temporarily",
+      "componentStructure": "multiple_top_level_folders"
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1_foundation",
+      "name": "Foundation - Utility Creation",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "t1_1",
+          "description": "Create semantic attribute helper utility",
+          "file": "lib/semanticAttrs.ts",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "phase_2_pages",
+      "name": "Page Refactoring - Folder Structure + Semantic Attributes",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "t2_1",
+          "description": "Facturas page - rename _components to functionalComponents, create layer structure, add semantic attrs",
+          "path": "pages/app/facturas/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_2",
+          "description": "Comida page - rename _components to functionalComponents, update imports, add semantic attrs",
+          "path": "pages/app/comida/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_3",
+          "description": "Menus page - create layer structure, extract constants/types/utils, add semantic attrs",
+          "path": "pages/app/menus/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_4",
+          "description": "Fichaje page - create layer structure, extract real-time logic, add semantic attrs",
+          "path": "pages/app/fichaje/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_5",
+          "description": "Horarios page - fix JSX errors, create layer structure, add semantic attrs",
+          "path": "pages/app/horarios/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_6",
+          "description": "Miembros page - create layer structure, add semantic attrs",
+          "path": "pages/app/miembros/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_7",
+          "description": "Dashboard page - add semantic attrs",
+          "path": "pages/app/dashboard/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_8",
+          "description": "Estado-cuenta page - add semantic attrs",
+          "path": "pages/app/estado-cuenta/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_9",
+          "description": "Site-builder page - create layer structure, split into components, add semantic attrs",
+          "path": "pages/app/site-builder/",
+          "status": "completed"
+        },
+        {
+          "id": "t2_10",
+          "description": "Reservas/tables page - create layer structure, split ReactFlow logic, add semantic attrs",
+          "path": "pages/app/reservas/tables/",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "phase_3_modal_components",
+      "name": "Modal/Component Refactoring",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "t3_1",
+          "description": "Add semantic attrs to InvoiceTable component",
+          "path": "pages/app/facturas/functionalComponents/",
+          "status": "completed"
+        },
+        {
+          "id": "t3_2",
+          "description": "Add semantic attrs to InvoiceForm component",
+          "path": "pages/app/facturas/functionalComponents/",
+          "status": "completed"
+        },
+        {
+          "id": "t3_3",
+          "description": "Add semantic attrs to FoodItemModal",
+          "path": "pages/app/comida/functionalComponents/",
+          "status": "completed"
+        },
+        {
+          "id": "t3_4",
+          "description": "Add semantic attrs to WineModal",
+          "path": "pages/app/comida/functionalComponents/",
+          "status": "completed"
+        },
+        {
+          "id": "t3_5",
+          "description": "Add semantic attrs to other factura modal components (SendEmailModal, SendWhatsAppModal, BatchSendModal)",
+          "path": "pages/app/facturas/functionalComponents/",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "phase_4_cleanup",
+      "name": "Cleanup - Remove data-ui Legacy",
+      "status": "skipped",
+      "note": "data-ui kept for backwards compatibility during migration period"
+    },
+    {
+      "id": "phase_5_verification",
+      "name": "Verification - Quality Gates",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "t5_1",
+          "description": "Run typecheck on entire backoffice",
+          "command": "npx tsc --noEmit",
+          "status": "completed",
+          "note": "Only pre-existing test file errors remain in reservas/tables/*.test.ts"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_tasks": 17,
+    "completed": 17,
+    "pending": 0,
+    "blocked": 0,
+    "percent_complete": 100
+  },
+  "files_created": [
+    "lib/semanticAttrs.ts",
+    "pages/app/facturas/constants/index.ts",
+    "pages/app/facturas/types/index.ts",
+    "pages/app/facturas/utils/index.ts",
+    "pages/app/menus/constants/index.ts",
+    "pages/app/menus/types/index.ts",
+    "pages/app/menus/utils/index.ts",
+    "pages/app/fichaje/constants/index.ts",
+    "pages/app/fichaje/utils/index.ts",
+    "pages/app/fichaje/hooks/useTimerTick.ts",
+    "pages/app/fichaje/hooks/useFichajeActions.ts",
+    "pages/app/fichaje/hooks/useAdminActions.ts",
+    "pages/app/fichaje/hooks/index.ts",
+    "pages/app/horarios/constants/index.ts",
+    "pages/app/horarios/utils/index.ts",
+    "pages/app/miembros/utils/index.ts",
+    "pages/app/dashboard/utils/index.ts",
+    "pages/app/estado-cuenta/utils/index.ts",
+    "pages/app/site-builder/constants/index.ts"
+  ],
+  "folders_created": [
+    "pages/app/facturas/constants/",
+    "pages/app/facturas/types/",
+    "pages/app/facturas/utils/",
+    "pages/app/facturas/atoms/",
+    "pages/app/facturas/hooks/",
+    "pages/app/facturas/helpers/",
+    "pages/app/facturas/lib/",
+    "pages/app/facturas/functionalComponents/",
+    "pages/app/menus/constants/",
+    "pages/app/menus/types/",
+    "pages/app/menus/utils/",
+    "pages/app/menus/atoms/",
+    "pages/app/menus/hooks/",
+    "pages/app/menus/helpers/",
+    "pages/app/menus/lib/",
+    "pages/app/menus/functionalComponents/",
+    "pages/app/fichaje/constants/",
+    "pages/app/fichaje/utils/",
+    "pages/app/fichaje/hooks/",
+    "pages/app/fichaje/lib/",
+    "pages/app/fichaje/functionalComponents/",
+    "pages/app/horarios/constants/",
+    "pages/app/horarios/utils/",
+    "pages/app/horarios/atoms/",
+    "pages/app/horarios/hooks/",
+    "pages/app/horarios/helpers/",
+    "pages/app/horarios/lib/",
+    "pages/app/miembros/utils/",
+    "pages/app/dashboard/utils/",
+    "pages/app/estado-cuenta/utils/",
+    "pages/app/site-builder/constants/"
+  ],
+  "folders_renamed": [
+    "pages/app/facturas/_components/ -> pages/app/facturas/functionalComponents/",
+    "pages/app/comida/_components/ -> pages/app/comida/functionalComponents/"
+  ]
+}

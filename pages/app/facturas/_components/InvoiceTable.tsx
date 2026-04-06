@@ -1,54 +1,14 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { Copy, Paperclip, PencilLine, FolderOpen, Trash2, FileDown, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, Check, X, Eye, History, Printer, CreditCard, Calendar, AlertTriangle, Bell, BellOff, MessageSquare, Mail, Tag, Combine, Scissors, Receipt, MessageCircle } from "lucide-react";
 import type { Invoice, InvoiceStatus, InvoiceAttachment, PaymentMethod, CurrencyCode, InvoiceCategory, InvoiceDepositType } from "../../../../api/types";
-import { CURRENCY_SYMBOLS, INVOICE_CATEGORY_OPTIONS, INVOICE_DEPOSIT_TYPE_OPTIONS } from "../../../../api/types";
+import { CURRENCY_SYMBOLS } from "../../../../api/types";
+import type { SortField, SortDirection, InvoiceTableProps } from "../types/table";
+import { DEPOSIT_CONFIG } from "../types/table";
+import { INVOICE_STATUS_CONFIG, PAYMENT_METHOD_LABELS, CATEGORY_CONFIG, ALL_INVOICE_STATUSES } from "../types/invoice";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { AttachmentsModal } from "./AttachmentsModal";
 import { MergeInvoicesModal } from "./MergeInvoicesModal";
-
-type SortField = "amount" | "invoice_date";
-type SortDirection = "asc" | "desc";
-
-type InvoiceTableProps = {
-  invoices: Invoice[];
-  loading: boolean;
-  page: number;
-  totalPages: number;
-  total: number;
-  sortField: SortField | null;
-  sortDirection: SortDirection;
-  onSort: (field: SortField) => void;
-  hasFilters: boolean;
-  onCreateNew: () => void;
-  onEdit: (invoice: Invoice) => void;
-  onDuplicate: (invoice: Invoice) => void;
-  onSplit: (invoice: Invoice) => void;
-  onDelete: (invoice: Invoice) => void;
-  onDownloadPdf: (invoice: Invoice) => void;
-  onSendEmail: (invoice: Invoice) => void;
-  onSendWhatsApp: (invoice: Invoice) => void;
-  onPageChange: (page: number) => void;
-  onStatusChange: (invoice: Invoice, newStatus: InvoiceStatus) => void;
-  onBulkStatusChange: (invoices: Invoice[], newStatus: InvoiceStatus) => void;
-  onBulkDelete: (invoices: Invoice[]) => void;
-  onBulkPrint: (invoices: Invoice[]) => void;
-  onBulkMerge: (invoices: Invoice[]) => void;
-  onBulkSendEmail: (invoices: Invoice[]) => void;
-  onPrintAllVisible: () => void;
-  onPreview: (invoice: Invoice) => void;
-  onViewCustomerHistory: (customerName: string, customerEmail: string) => void;
-  onShowHistory: (invoice: Invoice) => void;
-  onViewNotes: (invoice: Invoice) => void;
-  onRegisterPayment: (invoice: Invoice) => void;
-  onSendReminder: (invoice: Invoice) => void;
-  onShowReminderHistory: (invoice: Invoice) => void;
-  onManageTemplates: () => void;
-  onCreateCreditNote?: (invoice: Invoice) => void;
-  onRemoveAttachment?: (invoiceId: number, attachmentId: number) => Promise<void>;
-  onDownloadAllAttachments?: (attachments: InvoiceAttachment[]) => Promise<void>;
-  onMergeInvoices?: (input: { invoice_ids: number[]; delete_originals: boolean }) => Promise<void>;
-};
 
 function formatPrice(price: number, currency: CurrencyCode = "EUR"): string {
   const symbol = CURRENCY_SYMBOLS[currency] || "€";
@@ -69,24 +29,6 @@ function getDaysOverdue(invoiceDate: string): number {
   return diffDays;
 }
 
-// Payment method labels
-const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  efectivo: "Efectivo",
-  tarjeta: "Tarjeta",
-  transferencia: "Transferencia",
-  bizum: "Bizum",
-  cheque: "Cheque",
-};
-
-const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; className: string }> = {
-  borrador: { label: "Borrador", className: "bo-badge--muted" },
-  solicitada: { label: "Solicitada", className: "bo-badge--warning" },
-  pendiente: { label: "Pendiente", className: "bo-badge--info" },
-  enviada: { label: "Enviada", className: "bo-badge--success" },
-  pagada: { label: "Pagada", className: "bo-badge--success" },
-};
-
-const ALL_STATUSES: InvoiceStatus[] = ["borrador", "solicitada", "pendiente", "enviada", "pagada"];
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
   const config = INVOICE_STATUS_CONFIG[status] || { label: status, className: "" };
@@ -100,7 +42,7 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
 }) {
   const currentConfig = INVOICE_STATUS_CONFIG[invoice.status] || { label: invoice.status, className: "" };
 
-  const statusOptions = ALL_STATUSES.map((status) => ({
+  const statusOptions = ALL_INVOICE_STATUSES.map((status) => ({
     id: status,
     label: INVOICE_STATUS_CONFIG[status].label,
     tone: "default" as const,
@@ -153,13 +95,6 @@ function SplitBadge({ isSplitChild, isSplitParent, percentage }: { isSplitChild?
   );
 }
 
-const CATEGORY_CONFIG: Record<InvoiceCategory, { label: string; className: string }> = {
-  reserva: { label: "Reserva", className: "bo-badge--info" },
-  productos: { label: "Productos", className: "bo-badge--success" },
-  servicios: { label: "Servicios", className: "bo-badge--warning" },
-  otros: { label: "Otros", className: "bo-badge--muted" },
-  nota_credito: { label: "Nota de credito", className: "bo-badge--warning" },
-};
 
 function CategoryBadge({ category }: { category?: InvoiceCategory }) {
   if (!category) return null;
@@ -182,11 +117,6 @@ function CreditNoteBadge({ invoice }: { invoice: Invoice }) {
     </div>
   );
 }
-
-const DEPOSIT_CONFIG: Record<InvoiceDepositType, { label: string; className: string }> = {
-  advance: { label: "Anticipo", className: "bo-badge--info" },
-  deposit: { label: "Seña", className: "bo-badge--warning" },
-};
 
 function DepositBadge({ invoice }: { invoice: Invoice }) {
   if (!invoice.deposit_type) return null;
@@ -569,7 +499,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
   }, [invoices]);
 
   // Status options for bulk status change dropdown
-  const bulkStatusOptions = ALL_STATUSES.map((status) => ({
+  const bulkStatusOptions = ALL_INVOICE_STATUSES.map((status) => ({
     id: status,
     label: INVOICE_STATUS_CONFIG[status].label,
     tone: "default" as const,
