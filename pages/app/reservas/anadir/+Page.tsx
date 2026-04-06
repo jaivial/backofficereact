@@ -5,7 +5,7 @@ import { createClient } from "../../../../api/client";
 import type { ConfigFloor } from "../../../../api/types";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
-import { BookingEditor, type BookingEditorDraft } from "../_components/BookingEditor";
+import { BookingEditor, type BookingEditorDraft } from "../functionalComponents/BookingEditor/BookingEditor";
 
 type PageData = { date: string };
 

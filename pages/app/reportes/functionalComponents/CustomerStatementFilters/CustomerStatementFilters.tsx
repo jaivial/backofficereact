@@ -1,0 +1,139 @@
+import React from "react";
+import { RefreshCw, User, Receipt, FileText, FileSpreadsheet } from "lucide-react";
+
+interface Customer {
+  name: string;
+  email?: string;
+  dni_cif?: string;
+}
+
+interface CustomerStatementFiltersProps {
+  selectedCustomer: string;
+  statementDateFrom: string;
+  statementDateTo: string;
+  customers: Customer[];
+  customersLoading: boolean;
+  customerLoading: boolean;
+  customerStatement: object | null;
+  exporting: boolean;
+  onCustomerChange: (value: string) => void;
+  onDateFromChange: (value: string) => void;
+  onDateToChange: (value: string) => void;
+  onLoadCustomers: () => void;
+  onGenerate: () => void;
+  onExportPDF: () => void;
+  onExportCSV: () => void;
+}
+
+export function CustomerStatementFilters({
+  selectedCustomer,
+  statementDateFrom,
+  statementDateTo,
+  customers,
+  customersLoading,
+  customerLoading,
+  customerStatement,
+  exporting,
+  onCustomerChange,
+  onDateFromChange,
+  onDateToChange,
+  onLoadCustomers,
+  onGenerate,
+  onExportPDF,
+  onExportCSV,
+}: CustomerStatementFiltersProps) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-ui="customer-statement-filters">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-ui="filters-grid">
+        <div data-ui="customer-select-wrapper">
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="customer-select">Cliente</label>
+          <select
+            id="customer-select"
+            value={selectedCustomer}
+            onChange={(e) => onCustomerChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            data-ui="customer-select"
+          >
+            <option value="">Seleccionar cliente...</option>
+            {customers.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name} {c.dni_cif ? `(${c.dni_cif})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div data-ui="date-from-wrapper">
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-from">Desde</label>
+          <input
+            id="statement-date-from"
+            type="date"
+            value={statementDateFrom}
+            onChange={(e) => onDateFromChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            data-ui="statement-date-from"
+          />
+        </div>
+
+        <div data-ui="date-to-wrapper">
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-to">Hasta</label>
+          <input
+            id="statement-date-to"
+            type="date"
+            value={statementDateTo}
+            onChange={(e) => onDateToChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            data-ui="statement-date-to"
+          />
+        </div>
+
+        <div className="flex items-end" data-ui="load-customers-btn-wrapper">
+          <button
+            onClick={onLoadCustomers}
+            disabled={customersLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+            data-ui="load-customers-btn"
+          >
+            {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
+            Cargar Clientes
+          </button>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mt-4" data-ui="actions">
+        <button
+          onClick={onGenerate}
+          disabled={customerLoading || !selectedCustomer}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          data-ui="generate-btn"
+        >
+          {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
+          Generar Estado de Cuenta
+        </button>
+
+        {customerStatement && (
+          <>
+            <button
+              onClick={onExportPDF}
+              disabled={exporting}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              data-ui="export-pdf-btn"
+            >
+              <FileText className="w-4 h-4" />
+              Exportar PDF
+            </button>
+            <button
+              onClick={onExportCSV}
+              disabled={exporting}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              data-ui="export-csv-btn"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Exportar Excel
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
