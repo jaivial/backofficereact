@@ -202,7 +202,7 @@ export function Tabs({
               <span className="bo-tabIcon" aria-hidden="true">
                 {t.icon}
               </span>
-              <span className="bo-tabLabel">{t.label}</span>
+              <span className="bo-tabLabel hidden sm:inline">{t.label}</span>
             </span>
           </motion.a>
         );

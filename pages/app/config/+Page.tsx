@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, OpeningMode, RestaurantInfo, WeekdayOpen } from "../../../api/types";
@@ -12,6 +12,9 @@ import { Select } from "../../../ui/inputs/Select";
 import { Switch } from "../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../ui/widgets/PlusMinusCounter";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
+import EmailProviderConfigInner from "./functionalComponents/EmailProviderConfig/EmailProviderConfig";
+import { useEmailProviderConfig } from "./functionalComponents/EmailProviderConfig/hooks/useEmailProviderConfig";
+import { BookingManager } from "./booking/BookingManager";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -20,7 +23,7 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto";
+type ContentTab = "restaurante" | "contacto" | "booking";
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -680,6 +683,7 @@ function ConfigContactoContent({ initialInfo, busy, setBusy, setError, api, push
   const [info, setInfo] = useState<RestaurantInfo>(initialInfo);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
+  const emailProv = useEmailProviderConfig();
 
   // Sync when initialInfo changes (e.g. after page reload)
   useEffect(() => {
@@ -793,6 +797,15 @@ function ConfigContactoContent({ initialInfo, busy, setBusy, setError, api, push
               aria-label="Email de contacto"
             />
           </div>
+
+          <EmailProviderConfigInner
+            config={emailProv.config}
+            setField={emailProv.setField as (key: string, value: unknown) => void}
+            save={emailProv.save}
+            load={emailProv.load}
+            saving={emailProv.saving}
+            pushToast={pushToast as (t: { kind: "success" | "error" | "info" | "warning"; title: string; message?: string }) => void}
+          />
         </div>
       </div>
 
@@ -894,6 +907,12 @@ export default function Page() {
         href: "#contacto",
         icon: <Phone className="bo-ico" />,
       },
+      {
+        id: "booking",
+        label: "Booking",
+        href: "#booking",
+        icon: <CalendarDays className="bo-ico" />,
+      },
     ],
     [],
   );
@@ -985,7 +1004,7 @@ export default function Page() {
               api={api}
               pushToast={pushToast}
             />
-          ) : (
+          ) : contentTab === "contacto" ? (
             <ConfigContactoContent
               initialInfo={
                 restaurantInfo ?? {
@@ -1003,6 +1022,8 @@ export default function Page() {
               api={api}
               pushToast={pushToast}
             />
+          ) : (
+            <BookingManager />
           )}
         </motion.div>
       </AnimatePresence>

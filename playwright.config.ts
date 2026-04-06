@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import path from "path";
 import url from "url";
 
-const __dirname = path.dirname(url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 // https://playwright.dev/docs/test-configuration
 export default defineConfig({
@@ -15,7 +15,7 @@ export default defineConfig({
   // Use 1 worker in CI to avoid conflicts
   workers: process.env.CI ? 1 : undefined,
   // Reporter
-  reporter: [["html", { outputFolder: "test-results/report" }],
+  reporter: [["html", { outputFolder: "test-results/playwright-report" }]],
   // Default timeout
   timeout: 30_000,
   expect: { timeout: 5_000 },
@@ -36,6 +36,10 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "chromium-mobile",
+      use: { ...devices["iPhone 12"] },
+    },
   ],
   // Dev server
   webServer: [
@@ -54,8 +58,6 @@ export default defineConfig({
       timeout: 60_000,
       stdout: "pipe",
       stderr: "pipe",
-      // Wait for backend to be ready
-      waitForSocket: "http://127.0.0.1:8080/healthz",
     },
   ],
 });
