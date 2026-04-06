@@ -1,22 +1,8 @@
 import React, { useCallback } from "react";
-import { Coffee, GlassWater, Plus, UtensilsCrossed, Wine } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Plus } from "lucide-react";
 
-type FoodType = "platos" | "bebidas" | "cafes" | "vinos";
-
-type FoodEntry = {
-  type: FoodType;
-  label: string;
-  hint: string;
-  icon: LucideIcon;
-};
-
-const FOOD_ENTRIES: FoodEntry[] = [
-  { type: "platos", label: "Platos", hint: "Carta principal", icon: UtensilsCrossed },
-  { type: "bebidas", label: "Bebidas", hint: "Refrescos y cocteles", icon: GlassWater },
-  { type: "cafes", label: "Cafes", hint: "Cafe e infusiones", icon: Coffee },
-  { type: "vinos", label: "Vinos", hint: "Bodega y anadas", icon: Wine },
-];
+import type { FoodEntry, FoodType } from "./@foodType/constants/index";
+import { FOOD_ENTRIES } from "./@foodType/constants/index";
 
 export default function Page() {
   const openCategory = useCallback((type: FoodType) => {

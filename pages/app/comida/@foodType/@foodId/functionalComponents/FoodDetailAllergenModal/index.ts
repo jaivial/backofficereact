@@ -1,0 +1,1 @@
+export { FoodDetailAllergenModal } from "./FoodDetailAllergenModal";
