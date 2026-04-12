@@ -16,6 +16,7 @@ type DatePickerProps = {
   maxDate?: string;
   id?: string;
   className?: string;
+  "data-testid"?: string;
 };
 
 function portalEl(): HTMLElement | null {
@@ -45,7 +46,7 @@ function buildMonthGrid(year: number, month0: number) {
   return cells;
 }
 
-export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = false, minDate, maxDate, id, className }: DatePickerProps) {
+export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = false, minDate, maxDate, id, className, "data-testid": dataTestId }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -215,6 +216,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
         aria-disabled={disabled}
         disabled={disabled}
         data-ui="date-picker-btn"
+        data-testid={dataTestId}
       >
         <CalendarDays size={18} strokeWidth={1.8} />
         <span className="bo-dateBtnLabel">{value}</span>

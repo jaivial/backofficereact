@@ -59,7 +59,7 @@ export default function Page() {
               </div>
               <div className="bo-title">Enlace no válido</div>
               <div className="bo-authSub">{error}</div>
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/login")}>
+              <button className="bo-btn bo-btn--ghost" type="button" data-testid="reset-password-login-link" onClick={() => (window.location.href = "/login")}>
                 Ir a login
               </button>
             </>
@@ -70,7 +70,7 @@ export default function Page() {
               </div>
               <div className="bo-title">Password actualizada</div>
               <div className="bo-authSub">Ya puedes iniciar sesión con tu nueva password.</div>
-              <button className="bo-btn bo-btn--primary" type="button" onClick={() => (window.location.href = "/login")}>
+              <button className="bo-btn bo-btn--primary" type="button" data-testid="reset-password-done-login-link" onClick={() => (window.location.href = "/login")}>
                 Ir a login
               </button>
             </>
@@ -88,6 +88,7 @@ export default function Page() {
                   type="password"
                   autoComplete="new-password"
                   value={password}
+                  data-testid="reset-password-new-password"
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={busy}
                 />
@@ -99,6 +100,7 @@ export default function Page() {
                   type="password"
                   autoComplete="new-password"
                   value={confirmPassword}
+                  data-testid="reset-password-confirm-password"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={busy}
                 />
@@ -106,7 +108,7 @@ export default function Page() {
 
               {error ? <div className="bo-inlineError">{error}</div> : null}
 
-              <button className="bo-btn bo-btn--primary" type="button" onClick={onSubmit} disabled={busy}>
+              <button className="bo-btn bo-btn--primary" type="button" data-testid="reset-password-submit" onClick={onSubmit} disabled={busy}>
                 {busy ? "Guardando..." : "Confirmar"}
               </button>
             </>

@@ -321,11 +321,11 @@ export function MemberShiftModal({
                   />
                 </div>
                 <div className="bo-shiftModalActions">
-                  <button className="bo-btn bo-btn--primary bo-btn--glass" type="button" onClick={startFichaje} disabled={loading}>
+                  <button className="bo-btn bo-btn--primary bo-btn--glass" type="button" onClick={startFichaje} disabled={loading} data-testid="member-shift-start-btn">
                     <Play size={14} strokeWidth={1.8} />
                     Iniciar fichaje
                   </button>
-                  <button className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--glass" type="button" onClick={removeShift} disabled={loading}>
+                  <button className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--glass" type="button" onClick={removeShift} disabled={loading} data-testid="member-shift-delete-btn">
                     <Trash2 size={14} strokeWidth={1.8} />
                     Quitar turno
                   </button>
@@ -343,7 +343,7 @@ export function MemberShiftModal({
                   </div>
                 </div>
                 <div className="bo-shiftModalActions">
-                  <button className="bo-btn bo-btn--danger bo-btn--glass" type="button" onClick={stopFichaje} disabled={loading}>
+                  <button className="bo-btn bo-btn--danger bo-btn--glass" type="button" onClick={stopFichaje} disabled={loading} data-testid="member-shift-stop-btn">
                     <Square size={14} strokeWidth={1.8} />
                     Fichar salida
                   </button>
@@ -359,6 +359,7 @@ export function MemberShiftModal({
                   type="button"
                   onClick={() => setShowAssignForm(true)}
                   disabled={loading}
+                  data-testid="member-shift-assign-btn"
                 >
                   <Plus size={14} strokeWidth={1.8} />
                   Asignar turno
@@ -421,6 +422,7 @@ export function MemberShiftModal({
                     type="button"
                     onClick={assignShift}
                     disabled={loading}
+                    data-testid="member-shift-submit-btn"
                   >
                     <Plus size={14} strokeWidth={1.8} />
                     Asignar turno
@@ -440,6 +442,7 @@ export function MemberShiftModal({
                   type="button"
                   onClick={() => setShowAssignForm(!showAssignForm)}
                   disabled={loading}
+                  data-testid="member-shift-toggle-add-btn"
                 >
                   <Plus size={14} strokeWidth={1.8} />
                   {showAssignForm ? "Cancelar" : "Añadir otro turno"}
@@ -458,6 +461,7 @@ export function MemberShiftModal({
                   type="button"
                   onClick={() => setShowAssignForm(!showAssignForm)}
                   disabled={loading}
+                  data-testid="member-shift-toggle-add-btn"
                 >
                   <Plus size={14} strokeWidth={1.8} />
                   {showAssignForm ? "Cancelar" : "Añadir otro turno"}
@@ -516,6 +520,7 @@ export function MemberShiftModal({
                       type="button"
                       onClick={assignShift}
                       disabled={loading}
+                      data-testid="member-shift-submit-btn"
                     >
                       <Plus size={14} strokeWidth={1.8} />
                       Asignar turno

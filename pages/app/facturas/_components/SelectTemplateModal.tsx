@@ -113,9 +113,10 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                   placeholder="Buscar plantillas..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
+                  data-testid="select-template-search-input"
                 />
               </div>
-              <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew}>
+              <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew} data-testid="select-template-create-btn">
                 <Plus size={16} />
                 Nueva plantilla
               </button>
@@ -132,7 +133,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 <div className="bo-templateEmpty">
                   <FileText size={48} strokeWidth={1} />
                   <p>{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
-                  <button className="bo-btn bo-btn--secondary" onClick={handleCreateNew}>
+                  <button className="bo-btn bo-btn--secondary" onClick={handleCreateNew} data-testid="select-template-create-first-btn">
                     <Plus size={16} />
                     Crear primera plantilla
                   </button>
@@ -170,6 +171,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                         className="bo-btn bo-btn--ghost bo-btn--sm"
                         onClick={(e) => handleEdit(template, e)}
                         title="Editar"
+                        data-testid="select-template-edit-btn"
                       >
                         <Edit size={16} />
                       </button>
@@ -177,6 +179,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                         className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
                         onClick={(e) => handleDelete(template, e)}
                         title="Eliminar"
+                        data-testid="select-template-delete-btn"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -319,10 +322,10 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
   );
 
   return (
-    <form className="bo-templateForm" onSubmit={handleSubmit}>
+    <form className="bo-templateForm" onSubmit={handleSubmit} data-testid="select-template-form">
       <div className="bo-templateFormHeader">
         <h3>{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
-        <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onCancel}>
+        <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onCancel} data-testid="select-template-close-btn">
           <X size={18} />
         </button>
       </div>
@@ -338,6 +341,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: Cliente habitual - Juan"
             required
+            data-testid="select-template-name-input"
           />
         </div>
 
@@ -353,57 +357,58 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 required
+                data-testid="select-template-customerName-input"
               />
             </label>
             <label className="bo-field">
               <span className="bo-label">Apellidos</span>
-              <input className="bo-input" type="text" value={customerSurname} onChange={(e) => setCustomerSurname(e.target.value)} />
+              <input className="bo-input" type="text" value={customerSurname} onChange={(e) => setCustomerSurname(e.target.value)} data-testid="select-template-customerSurname-input" />
             </label>
           </div>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Email *</span>
-              <input className="bo-input" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required />
+              <input className="bo-input" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required data-testid="select-template-customerEmail-input" />
             </label>
             <label className="bo-field">
               <span className="bo-label">Telefono</span>
-              <input className="bo-input" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+              <input className="bo-input" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} data-testid="select-template-customerPhone-input" />
             </label>
           </div>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">DNI/CIF</span>
-              <input className="bo-input" type="text" value={customerDniCif} onChange={(e) => setCustomerDniCif(e.target.value)} />
+              <input className="bo-input" type="text" value={customerDniCif} onChange={(e) => setCustomerDniCif(e.target.value)} data-testid="select-template-customerDniCif-input" />
             </label>
           </div>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Calle</span>
-              <input className="bo-input" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} />
+              <input className="bo-input" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} data-testid="select-template-customerAddressStreet-input" />
             </label>
             <label className="bo-field bo-field--number">
               <span className="bo-label">Numero</span>
-              <input className="bo-input" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} />
+              <input className="bo-input" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} data-testid="select-template-customerAddressNumber-input" />
             </label>
           </div>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Codigo Postal</span>
-              <input className="bo-input" type="text" value={customerAddressPostalCode} onChange={(e) => setCustomerAddressPostalCode(e.target.value)} />
+              <input className="bo-input" type="text" value={customerAddressPostalCode} onChange={(e) => setCustomerAddressPostalCode(e.target.value)} data-testid="select-template-customerAddressPostalCode-input" />
             </label>
             <label className="bo-field">
               <span className="bo-label">Localidad</span>
-              <input className="bo-input" type="text" value={customerAddressCity} onChange={(e) => setCustomerAddressCity(e.target.value)} />
+              <input className="bo-input" type="text" value={customerAddressCity} onChange={(e) => setCustomerAddressCity(e.target.value)} data-testid="select-template-customerAddressCity-input" />
             </label>
           </div>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Provincia</span>
-              <input className="bo-input" type="text" value={customerAddressProvince} onChange={(e) => setCustomerAddressProvince(e.target.value)} />
+              <input className="bo-input" type="text" value={customerAddressProvince} onChange={(e) => setCustomerAddressProvince(e.target.value)} data-testid="select-template-customerAddressProvince-input" />
             </label>
             <label className="bo-field">
               <span className="bo-label">Pais</span>
-              <input className="bo-input" type="text" value={customerAddressCountry} onChange={(e) => setCustomerAddressCountry(e.target.value)} />
+              <input className="bo-input" type="text" value={customerAddressCountry} onChange={(e) => setCustomerAddressCountry(e.target.value)} data-testid="select-template-customerAddressCountry-input" />
             </label>
           </div>
         </div>
@@ -422,17 +427,18 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
                 value={defaultAmount}
                 onChange={(e) => setDefaultAmount(e.target.value)}
                 placeholder="0.00"
+                data-testid="select-template-defaultAmount-input"
               />
             </label>
             <label className="bo-field">
               <span className="bo-label">IVA (%)</span>
-              <input className="bo-input" type="number" step="0.1" min="0" max="100" value={defaultIvaRate} onChange={(e) => setDefaultIvaRate(e.target.value)} />
+              <input className="bo-input" type="number" step="0.1" min="0" max="100" value={defaultIvaRate} onChange={(e) => setDefaultIvaRate(e.target.value)} data-testid="select-template-defaultIvaRate-input" />
             </label>
           </div>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Metodo de pago</span>
-              <select className="bo-select" value={defaultPaymentMethod} onChange={(e) => setDefaultPaymentMethod(e.target.value as PaymentMethod | "")}>
+              <select className="bo-select" value={defaultPaymentMethod} onChange={(e) => setDefaultPaymentMethod(e.target.value as PaymentMethod | "")} data-testid="select-template-defaultPaymentMethod-select">
                 <option value="">Seleccionar...</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
@@ -444,22 +450,22 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
           </div>
           <div className="bo-field">
             <label className="bo-label">Notas</label>
-            <textarea className="bo-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." />
+            <textarea className="bo-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." data-testid="select-template-notes-textarea" />
           </div>
         </div>
 
         {/* Active toggle */}
         <div className="bo-field bo-field--switch">
-          <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="isActive" />
+          <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="isActive" data-testid="select-template-isActive-input" />
           <label htmlFor="isActive">Plantilla activa</label>
         </div>
       </div>
 
       <div className="bo-templateFormActions">
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={saving}>
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={saving} data-testid="select-template-cancel-btn">
           Cancelar
         </button>
-        <button type="submit" className="bo-btn bo-btn--primary" disabled={saving}>
+        <button type="submit" className="bo-btn bo-btn--primary" disabled={saving} data-testid="select-template-submit-btn">
           {saving ? (
             <>
               <Loader2 size={16} className="bo-spin bo-spin--sm" />

@@ -52,7 +52,7 @@ export default function Page() {
               </div>
               <div className="bo-title">No se pudo validar la invitación</div>
               <div className="bo-authSub">{error}</div>
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/login")}>
+              <button className="bo-btn bo-btn--ghost" type="button" data-testid="invitacion-login-link" onClick={() => (window.location.href = "/login")}>
                 Ir a login
               </button>
             </>
@@ -64,7 +64,7 @@ export default function Page() {
               <div className="bo-title">Bienvenido{invitation?.firstName ? `, ${invitation.firstName}` : ""}</div>
               <div className="bo-authSub">Tu invitación está activa. Pulsa empezar para completar tu onboarding.</div>
 
-              <button className="bo-btn bo-btn--primary" type="button" disabled={starting} onClick={onStart}>
+              <button className="bo-btn bo-btn--primary" type="button" data-testid="invitacion-empezar" disabled={starting} onClick={onStart}>
                 {starting ? "Abriendo..." : "Empezar"}
               </button>
             </>

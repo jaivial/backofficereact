@@ -44,6 +44,7 @@ export function Slider({
         disabled={disabled}
         onChange={(ev) => onChange(clamp(Number(ev.target.value), min, max))}
         aria-label={ariaLabel}
+        data-testid="slider-input"
         style={{ ["--bo-slider-progress" as any]: `${progress}%` } as React.CSSProperties}
       />
       <div className="bo-sliderMeta" aria-hidden="true">

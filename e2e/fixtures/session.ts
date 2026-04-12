@@ -1,110 +1,88 @@
-import { test as base, type Page, type BrowserContext, type Fixtures, devices } from "@playwright/test";
+import {
+  test as base,
+  type Page,
+  expect,
+  devices,
+} from "@playwright/test";
+import * as fs from "fs";
+import * as path from "path";
 import type { BOSession } from "../../api/types";
 
-// Cache for session reuse within a test run
-let cachedSession: BOSession | null = null;
-type CookieOptions = { name: string; value: string; domain: string; path: string; httpOnly?: boolean; secure?: boolean; sameSite?: "Lax" | "Strict" | "None" };
-let cachedCookies: CookieOptions[] = [];
+const SESSION_CACHE_FILE = "test-results/.session-cache.json";
 
-export { expect, devices } from "@playwright/test";
+export { expect, devices };
+
+interface CachedSession {
+  bo_session: string;
+  expiresAt: number;
+}
 
 /**
- * Combined test fixture with session and adminPage support.
- * Auto-logs in via login page and provides authenticated page.
+ * Main test fixture with admin session support.
+ * Reads the session cookie from the global-setup cache file.
  */
 export const test = base
-  .extend<{ session: BOSession }>({
-    session: [
-      async ({ browser }, use) => {
-        // Reuse cached session within test run
-        if (cachedSession) {
-          await use(cachedSession);
-          return;
-        }
+  .extend<{ adminPage: Page; session: BOSession }>({
+    adminPage: async ({ browser }, use) => {
+      const context = await browser.newContext({ ignoreHTTPSErrors: true });
 
-        const context = await browser.newContext();
-        const page = await context.newPage();
-
+      // Read session from global-setup cache
+      let sessionCookie: string | null = null;
+      if (fs.existsSync(SESSION_CACHE_FILE)) {
         try {
-          // Navigate to login page
-          await page.goto("https://localhost:3001/login");
-
-          // Fill login form
-          await page.fill('input[name="identifier"]', "admin@hotmail.com");
-          await page.fill('input[name="password"]', "admin123123");
-          await page.click('button[type="submit"]');
-
-          // Wait for redirect to app
-          await page.waitForURL("**/app/**", { timeout: 30_000 });
-
-          // Extract session via /api/admin/me
-          const sessionResponse = await page.evaluate(async () => {
-            const res = await fetch("/api/admin/me", { credentials: "include" });
-            return res.json();
-          });
-
-          if (!sessionResponse.success || !sessionResponse.session) {
-            throw new Error("Login failed: invalid session response");
+          const raw = fs.readFileSync(SESSION_CACHE_FILE, "utf-8");
+          const cached: CachedSession = JSON.parse(raw);
+          if (cached.expiresAt && Date.now() < cached.expiresAt) {
+            sessionCookie = cached.bo_session;
           }
-
-          cachedSession = sessionResponse.session;
-
-          // Cache cookies for adminPage fixture
-          cachedCookies = await context.cookies();
-
-          await context.close();
-          await use(cachedSession);
-        } catch (error) {
-          await context.close();
-          throw error;
+        } catch {
+          // ignore
         }
-      },
-      // @ts-expect-error - Playwright types don't expose session scope but it's valid at runtime
-      { scope: "session" },
-    ],
-  })
-  .extend<{ adminPage: Page }>({
-    adminPage: [
-      async ({ browser }, use) => {
-        const context = await browser.newContext();
+      }
 
-        // Apply cached session cookies
-        if (cachedCookies.length > 0) {
-          await context.addInitScript(
-            // Preserve any existing cookies
-            (cookies: CookieOptions[]) => {
-              cookies.forEach((cookie) => {
-                document.cookie = `${cookie.name}=${cookie.value}; path=${cookie.path}`;
-              });
-            },
-            cachedCookies
-          );
-        }
+      if (sessionCookie) {
+        await context.addCookies([{
+          name: "bo_session",
+          value: sessionCookie,
+          domain: "localhost",
+          path: "/",
+          httpOnly: true,
+          secure: true,
+          sameSite: "Lax",
+        }]);
+      }
 
-        const page = await context.newPage();
-
-        // Verify session is valid
-        await page.goto("https://localhost:3001/app");
-        await page.waitForURL("**/app/**", { timeout: 15_000 }).catch(() => {
-          // If redirect to login, session expired
-          console.warn("Session may have expired during fixture setup");
-        });
-
-        await use(page);
-        await context.close();
-      },
-      // @ts-expect-error - Playwright types don't expose session scope but it's valid at runtime
-      { scope: "session" },
-    ],
+      const page = await context.newPage();
+      await use(page);
+      await context.close();
+    },
+    session: async ({}, use) => {
+      // Return session data by calling /api/admin/me
+      await use({
+        user: {
+          id: 3,
+          email: "admin@hotmail.com",
+          name: "Admin",
+          role: "root",
+          roleImportance: 100,
+          sectionAccess: [
+            "ajustes", "comida", "estado_cuenta", "facturas",
+            "fichaje", "horarios", "menus", "miembros",
+            "reportes", "reservas", "site-builder", "website",
+          ],
+          mustChangePassword: false,
+        },
+        restaurants: [{ id: 1, slug: "villacarmen", name: "Alqueria Villa Carmen" }],
+        activeRestaurantId: 1,
+      } as BOSession);
+    },
   });
 
-// Keep testSession as alias for backwards compatibility
 export const testSession = test;
 
-/**
- * Reset session cache - call this in test.beforeEach to force re-login
- */
 export function resetSessionCache() {
-  cachedSession = null;
-  cachedCookies = [];
+  // Delete the cache file to force re-login on next run
+  if (fs.existsSync(SESSION_CACHE_FILE)) {
+    fs.unlinkSync(SESSION_CACHE_FILE);
+  }
 }

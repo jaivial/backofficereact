@@ -42,15 +42,15 @@ export default function Page() {
   );
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window bo-window--auth">
-        <div className="bo-authCard" role="main" aria-label="Login">
-          <div className="bo-title">Backoffice</div>
-          <div className="bo-authSub">Accede con tu cuenta</div>
+    <div className="bo-stage" data-testid="login-stage" data-ui="login-stage">
+      <div className="bo-window bo-window--auth" data-testid="login-window" data-ui="login-window">
+        <div className="bo-authCard" role="main" aria-label="Login" data-testid="login-card" data-ui="login-card">
+          <div className="bo-title" data-testid="login-title" data-ui="login-title">Backoffice</div>
+          <div className="bo-authSub" data-testid="login-subtitle" data-ui="login-subtitle">Accede con tu cuenta</div>
 
-          <form onSubmit={onSubmit} className="bo-form">
-            <label className="bo-field">
-              <div className="bo-label">Email o usuario</div>
+          <form onSubmit={onSubmit} className="bo-form" data-testid="login-form" data-ui="login-form">
+            <label className="bo-field" data-testid="login-field-identifier" data-ui="login-field-identifier">
+              <div className="bo-label" data-testid="login-label-identifier" data-ui="login-label-identifier">Email o usuario</div>
               <input
                 className="bo-input"
                 type="text"
@@ -58,11 +58,13 @@ export default function Page() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
+                data-testid="login-identifier-input"
+                data-ui="login-input-identifier"
               />
             </label>
 
-            <label className="bo-field">
-              <div className="bo-label">Password</div>
+            <label className="bo-field" data-testid="login-field-password" data-ui="login-field-password">
+              <div className="bo-label" data-testid="login-label-password" data-ui="login-label-password">Password</div>
               <input
                 className="bo-input"
                 type="password"
@@ -70,10 +72,18 @@ export default function Page() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                data-testid="login-password-input"
+                data-ui="login-input-password"
               />
             </label>
 
-            <button className="bo-btn bo-btn--primary" type="submit" disabled={busy}>
+            <button
+              className="bo-btn bo-btn--primary"
+              type="submit"
+              disabled={busy}
+              data-testid="login-submit-btn"
+              data-ui="login-submit"
+            >
               {busy ? "Entrando..." : "Entrar"}
             </button>
           </form>

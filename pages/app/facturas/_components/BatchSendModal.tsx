@@ -288,6 +288,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                   className="bo-btn bo-btn--primary"
                   onClick={retryFailed}
                   disabled={isProcessing}
+                  data-testid="batch-send-retry"
                 >
                   {isProcessing ? (
                     <>
@@ -306,7 +307,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
 
             {/* Close Button */}
             <div className="bo-batchSendActions">
-              <button type="button" className="bo-btn bo-btn--secondary" onClick={onClose}>
+              <button type="button" className="bo-btn bo-btn--secondary" onClick={onClose} data-testid="batch-send-close">
                 Cerrar
               </button>
             </div>
@@ -362,6 +363,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       placeholder="Asunto del email"
+                      data-testid="batch-send-subject-input"
                     />
                     <span className="bo-fieldHint">
                       Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"},{" "}
@@ -376,6 +378,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                         type="button"
                         className="bo-btn bo-btn--ghost bo-btn--sm"
                         onClick={() => setShowPreview(!showPreview)}
+                        data-testid="batch-send-toggle-preview"
                       >
                         {showPreview ? "Editar" : "Vista previa"}
                       </button>
@@ -389,6 +392,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                         onChange={(e) => setMessage(e.target.value)}
                         rows={8}
                         placeholder="Cuerpo del mensaje..."
+                        data-testid="batch-send-message-textarea"
                       />
                     )}
                   </div>
@@ -403,6 +407,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                 className="bo-btn bo-btn--secondary"
                 onClick={handleClose}
                 disabled={isProcessing}
+                data-testid="batch-send-cancel"
               >
                 Cancelar
               </button>
@@ -412,6 +417,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                   className="bo-btn bo-btn--primary"
                   onClick={processQueue}
                   disabled={validInvoices.length === 0}
+                  data-testid="batch-send-submit"
                 >
                   <Send size={16} />
                   Enviar {validInvoices.length} factura{validInvoices.length !== 1 ? "s" : ""}

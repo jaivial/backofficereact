@@ -298,6 +298,7 @@ export function BlockEditor({
       <main
         className="bo-siteBuilderCanvas"
         data-ui="canvas"
+        data-testid="block-editor-canvas"
         onClick={(event) => {
           if (event.target === event.currentTarget) {
             onSelectNode("");
@@ -363,6 +364,7 @@ export function BlockEditor({
             type="button"
             role="menuitem"
             onClick={() => onDuplicateNode(contextMenu.nodeId)}
+            data-testid="block-editor-context-menu-duplicate"
           >
             <Square size={14} />
             <span>Duplicar</span>
@@ -373,6 +375,7 @@ export function BlockEditor({
             type="button"
             role="menuitem"
             onClick={() => onCopyNode(contextMenu.nodeId)}
+            data-testid="block-editor-context-menu-copy"
           >
             <Square size={14} />
             <span>Copiar</span>
@@ -384,6 +387,7 @@ export function BlockEditor({
               type="button"
               role="menuitem"
               onClick={() => onPasteNode(contextMenu.nodeId)}
+              data-testid="block-editor-context-menu-paste"
             >
               <Square size={14} />
               <span>Pegar despues</span>
@@ -396,6 +400,7 @@ export function BlockEditor({
             type="button"
             role="menuitem"
             onClick={() => onDeleteNode(contextMenu.nodeId)}
+            data-testid="block-editor-context-menu-delete"
           >
             <Trash2 size={14} />
             <span>Eliminar</span>

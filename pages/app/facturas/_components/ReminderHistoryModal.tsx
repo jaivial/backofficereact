@@ -117,6 +117,7 @@ export function ReminderHistoryModal({
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onClose}
             aria-label="Cerrar"
+            data-testid="reminder-history-close-btn"
           >
             <X size={18} />
           </button>
@@ -198,7 +199,7 @@ export function ReminderHistoryModal({
         </div>
 
         <div className="bo-modalFooter">
-          <button className="bo-btn bo-btn--ghost" onClick={onClose}>
+          <button className="bo-btn bo-btn--ghost" onClick={onClose} data-testid="reminder-history-close-footer-btn">
             Cerrar
           </button>
         </div>

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { BookingManager } from './BookingManager'
-import * as client from '../../../../api/client'
 
 const DEFAULT_SETTINGS = {
   primary_color: '#7c3aed',
@@ -69,36 +68,48 @@ describe('BookingManager', () => {
     expect(screen.getByText(/Personalización de colores/i)).toBeInTheDocument()
   })
 
-  it('shows loading state initially', () => {
+  it('shows loading state initially', async () => {
     mockGetSettings.mockImplementation(() => new Promise(() => {})) // never resolves
     render(<BookingManager />)
-    expect(screen.getByText(/Cargando/i)).toBeInTheDocument()
+    // The InlineAlert shows "Cargando" title and "Cargando ajustes del widget..." message
+    expect(screen.getByText(/Cargando ajustes del widget/i)).toBeInTheDocument()
   })
 
   it('shows error state when API fails', async () => {
     mockGetSettings.mockResolvedValue({ success: false, message: 'API Error' })
     render(<BookingManager />)
     await tick()
-    // Error is handled by useErrorToast (mocked), so no visible error element expected.
-    expect(screen.getByText(/Cargando ajustes/i)).toBeInTheDocument()
+    // After error, loading finishes and the main panel renders with default settings
+    expect(screen.getByText(/Personalización de colores/i)).toBeInTheDocument()
   })
 
   it('renders all 6 color pickers', async () => {
     render(<BookingManager />)
     await tick()
-    const pickers = screen.getAllByRole('textbox')
-    expect(pickers.length).toBeGreaterThanOrEqual(6)
+    // Each ColorPicker has an <input type="color"> with a specific aria-label
+    const colorLabels = [
+      'Color primario',
+      'Color de éxito',
+      'Color de borde',
+      'Color de fondo',
+      'Color de texto',
+      'Color secundario',
+    ]
+    for (const label of colorLabels) {
+      const input = screen.getByLabelText(label)
+      expect(input).toBeInTheDocument()
+      expect(input).toHaveAttribute('type', 'color')
+    }
   })
 
   it('triggers save when a color changes', async () => {
     render(<BookingManager />)
     await tick()
 
-    const colorInput = screen.getByRole('textbox') as HTMLInputElement
-    fireEvent.change(colorInput, { target: { value: '#ff0000' } })
+    const primaryInput = screen.getByLabelText('Color primario')
+    fireEvent.change(primaryInput, { target: { value: '#ff0000' } })
 
-    await tick()
-    // Debounce is 600ms — check after debounce.
+    // Wait for the 600ms debounce + API call
     await waitFor(() => {
       expect(mockUpdateSettings).toHaveBeenCalledWith({ primary_color: '#ff0000' })
     }, { timeout: 2000 })

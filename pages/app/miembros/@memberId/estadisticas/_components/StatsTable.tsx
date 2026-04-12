@@ -103,7 +103,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
 
 
   return (
-    <div className="bo-statsTable">
+    <div className="bo-statsTable" data-slot="stats-table-container">
       <div className="bo-statsTableControls">
         <div className="bo-statsTableFilters">
           <div className="bo-field">
@@ -157,6 +157,7 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
                 setCustomTo("");
                 setCustomRows([]);
               }}
+              data-testid="stats-table-clear-range-btn"
             >
               Quitar rango
             </button>

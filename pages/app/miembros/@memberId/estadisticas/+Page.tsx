@@ -106,7 +106,7 @@ export default function Page() {
   const points = statsLive?.points ?? [];
 
   return (
-    <section aria-label="Estadisticas del miembro" className="bo-content-grid bo-memberDetailPage">
+    <section aria-label="Estadisticas del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-estadisticas-section">
       <div className="bo-panel bo-memberStatsPanel">
         <div className="bo-panelHead bo-memberStatsHead">
           <div>
@@ -151,7 +151,7 @@ export default function Page() {
                 }}
               />
             </label>
-            <button className="bo-actionBtn bo-memberRefreshBtn" type="button" onClick={onRefreshStats} disabled={loadingStats} aria-label="Recargar estadisticas">
+            <button className="bo-actionBtn bo-memberRefreshBtn" type="button" data-testid="miembro-estadisticas-refresh-button" onClick={onRefreshStats} disabled={loadingStats} aria-label="Recargar estadisticas">
               <RefreshCcw size={14} className={`bo-memberRefreshIcon${loadingStats ? " is-spinning" : ""}`} />
             </button>
           </div>

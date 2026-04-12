@@ -31,14 +31,14 @@ export async function apiPost(
   session?: BOSession
 ): Promise<Record<string, unknown>> {
   return page.evaluate(
-    async ([path, body]) => {
-      const res = await fetch(path, {
+    async ([p, b]: [string, Record<string, unknown>]) => {
+      const res = await fetch(p, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(b),
       });
       return res.json();
     },
-    [path, body]
+    [path, body] as [string, Record<string, unknown>]
   );
 }

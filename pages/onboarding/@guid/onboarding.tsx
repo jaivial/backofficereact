@@ -143,15 +143,15 @@ export default function Page() {
       <div className="bo-window bo-window--auth bo-onboardingWindow bo-onboardingWindow--lg">
         <div className="bo-authCard bo-onboardingCard" role="main" aria-label="Onboarding">
           {loading ? (
-            <div className="bo-onboardingLoading">
+            <div className="bo-onboardingLoading" data-testid="onboarding-loading">
               <Loader2 size={20} className="is-spinning" />
               Cargando onboarding...
             </div>
           ) : error && !member ? (
             <>
-              <div className="bo-title">No pudimos abrir tu onboarding</div>
-              <div className="bo-authSub">{error}</div>
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/login")}>
+              <div className="bo-title" data-testid="onboarding-error-title">No pudimos abrir tu onboarding</div>
+              <div className="bo-authSub" data-testid="onboarding-error-message">{error}</div>
+              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/login")} data-testid="onboarding-go-to-login">
                 Ir a login
               </button>
             </>
@@ -165,9 +165,10 @@ export default function Page() {
                   exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
                   transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: "easeOut" }}
                   className="bo-onboardingStep"
+                  data-testid="onboarding-profile-step"
                 >
-                  <div className="bo-title">Completa tu perfil</div>
-                  <div className="bo-authSub">Puedes editar nombre, apellidos y avatar antes de continuar.</div>
+                  <div className="bo-title" data-testid="onboarding-profile-title">Completa tu perfil</div>
+                  <div className="bo-authSub" data-testid="onboarding-profile-subtitle">Puedes editar nombre, apellidos y avatar antes de continuar.</div>
 
                   <div className="bo-onboardingAvatarRow">
                     <ImageDropInput className={`bo-memberCreateAvatarDrop${avatarBusy ? " is-busy" : ""}`} ariaLabel="Subir avatar" onSelectFile={onAvatarSelect}>
@@ -184,34 +185,34 @@ export default function Page() {
                   <div className="bo-memberCreateGrid">
                     <label className="bo-field">
                       <span className="bo-label">Nombre</span>
-                      <input className="bo-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={busy || avatarBusy} />
+                      <input className="bo-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={busy || avatarBusy} data-testid="onboarding-first-name-input" />
                     </label>
                     <label className="bo-field">
                       <span className="bo-label">Apellidos</span>
-                      <input className="bo-input" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={busy || avatarBusy} />
+                      <input className="bo-input" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={busy || avatarBusy} data-testid="onboarding-last-name-input" />
                     </label>
                     <label className="bo-field">
                       <span className="bo-label">Email</span>
-                      <input className="bo-input" value={member?.email || ""} disabled />
+                      <input className="bo-input" value={member?.email || ""} disabled data-testid="onboarding-email-input" />
                     </label>
                     <label className="bo-field">
                       <span className="bo-label">DNI</span>
-                      <input className="bo-input" value={member?.dni || ""} disabled />
+                      <input className="bo-input" value={member?.dni || ""} disabled data-testid="onboarding-dni-input" />
                     </label>
                     <label className="bo-field bo-field--wide">
                       <span className="bo-label">Teléfono</span>
-                      <input className="bo-input" value={member?.phone || ""} disabled />
+                      <input className="bo-input" value={member?.phone || ""} disabled data-testid="onboarding-phone-input" />
                     </label>
                     <label className="bo-field bo-field--wide">
                       <span className="bo-label">Rol</span>
-                      <input className="bo-input" value={member?.roleLabel || ""} disabled />
+                      <input className="bo-input" value={member?.roleLabel || ""} disabled data-testid="onboarding-role-input" />
                     </label>
                   </div>
 
                   {error ? <div className="bo-inlineError">{error}</div> : null}
 
                   <div className="bo-onboardingActions">
-                    <button className="bo-btn bo-btn--primary" type="button" onClick={onConfirmProfile} disabled={busy || avatarBusy}>
+                    <button className="bo-btn bo-btn--primary" type="button" onClick={onConfirmProfile} disabled={busy || avatarBusy} data-testid="onboarding-confirm-button">
                       {busy ? "Guardando..." : "Confirmar"}
                     </button>
                   </div>
@@ -226,9 +227,10 @@ export default function Page() {
                   exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
                   transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: "easeOut" }}
                   className="bo-onboardingStep"
+                  data-testid="onboarding-password-step"
                 >
-                  <div className="bo-title">Establece tu password</div>
-                  <div className="bo-authSub">Introduce la misma password dos veces para confirmar.</div>
+                  <div className="bo-title" data-testid="onboarding-password-title">Establece tu password</div>
+                  <div className="bo-authSub" data-testid="onboarding-password-subtitle">Introduce la misma password dos veces para confirmar.</div>
 
                   <div className="bo-memberCreateGrid">
                     <label className="bo-field bo-field--wide">
@@ -240,6 +242,7 @@ export default function Page() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={busy}
+                        data-testid="onboarding-password-input"
                       />
                     </label>
                     <label className="bo-field bo-field--wide">
@@ -251,6 +254,7 @@ export default function Page() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         disabled={busy}
+                        data-testid="onboarding-confirm-password-input"
                       />
                     </label>
                   </div>
@@ -258,10 +262,10 @@ export default function Page() {
                   {error ? <div className="bo-inlineError">{error}</div> : null}
 
                   <div className="bo-onboardingActions">
-                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} disabled={busy}>
+                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} disabled={busy} data-testid="onboarding-back-button">
                       Volver
                     </button>
-                    <button className="bo-btn bo-btn--primary" type="button" onClick={onSetPassword} disabled={busy}>
+                    <button className="bo-btn bo-btn--primary" type="button" onClick={onSetPassword} disabled={busy} data-testid="onboarding-next-button">
                       {busy ? "Guardando..." : "Siguiente"}
                     </button>
                   </div>
@@ -276,12 +280,13 @@ export default function Page() {
                   animate={{ opacity: 1 }}
                   exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
                   transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
+                  data-testid="onboarding-done-step"
                 >
                   <div className="bo-onboardingDoneIcon" aria-hidden="true">
                     <CheckCircle2 size={34} />
                   </div>
-                  <div className="bo-title">¡Todo listo!</div>
-                  <div className="bo-authSub">Tu cuenta está preparada. Ya puedes acceder al login.</div>
+                  <div className="bo-title" data-testid="onboarding-done-title">¡Todo listo!</div>
+                  <div className="bo-authSub" data-testid="onboarding-done-subtitle">Tu cuenta está preparada. Ya puedes acceder al login.</div>
 
                   <motion.button
                     className="bo-btn bo-btn--glass bo-onboardingStartBtn"
@@ -290,6 +295,7 @@ export default function Page() {
                     initial={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.96 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={reduceMotion ? { duration: 0 } : { delay: 0.15, duration: 0.35, ease: "easeOut" }}
+                    data-testid="onboarding-start-button"
                   >
                     Empezar <ArrowRight size={16} />
                   </motion.button>

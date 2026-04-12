@@ -193,18 +193,18 @@ export default function WebsiteBuilderPage() {
     <div className="bo-websitePage" data-ui="website-builder">
       <div className="bo-websiteHeader">
         <div className="bo-websiteHeaderMain">
-          <div className="bo-websiteTitle">
+          <div className="bo-websiteTitle" data-testid="website-page-title">
             <Globe size={24} />
             <h1>Website Builder</h1>
           </div>
-          <p className="bo-websiteSubtitle">Crea y publica la web de tu restaurante</p>
+          <p className="bo-websiteSubtitle" data-testid="website-page-subtitle">Crea y publica la web de tu restaurante</p>
         </div>
         <div className="bo-websiteHeaderActions">
-          <button className={`bo-btn bo-btn--${config?.is_published ? "success" : "secondary"}`} type="button" onClick={handleTogglePublished} disabled={saving}>
+          <button className={`bo-btn bo-btn--${config?.is_published ? "success" : "secondary"}`} type="button" onClick={handleTogglePublished} disabled={saving} data-testid="website-page-publish-toggle">
             {config?.is_published ? "Publicado" : "Borrador"}
           </button>
           {previewUrl && (
-            <a className="bo-btn bo-btn--secondary" href={previewUrl} target="_blank" rel="noopener noreferrer">
+            <a className="bo-btn bo-btn--secondary" href={previewUrl} target="_blank" rel="noopener noreferrer" data-testid="website-page-preview-link">
               <ExternalLink size={16} />
               <span>Vista previa</span>
             </a>
@@ -212,7 +212,7 @@ export default function WebsiteBuilderPage() {
         </div>
       </div>
 
-      <div className="bo-websiteTabs" role="tablist">
+      <div className="bo-websiteTabs" role="tablist" data-testid="website-page-tabs">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -221,6 +221,7 @@ export default function WebsiteBuilderPage() {
             aria-selected={activeTab === tab.key}
             className={`bo-websiteTab${activeTab === tab.key ? " is-active" : ""}`}
             onClick={() => setActiveTab(tab.key)}
+            data-testid={`website-page-tab-${tab.key}`}
           >
             {tab.icon}
             <span>{tab.label}</span>
@@ -229,7 +230,7 @@ export default function WebsiteBuilderPage() {
       </div>
 
       {activeTab === "templates" && (
-        <section className="bo-websiteSection" aria-label="Plantillas premium">
+        <section className="bo-websiteSection" aria-label="Plantillas premium" data-testid="website-page-templates-section">
           <div className="bo-websiteTemplateGrid">
             {WEBSITE_THEMES.map((theme) => {
               const isSelected = config?.template_id === theme.id;
@@ -240,6 +241,7 @@ export default function WebsiteBuilderPage() {
                   className={`bo-websiteTemplateCard${isSelected ? " is-selected" : ""}`}
                   onClick={() => handleSave({ template_id: theme.id, custom_html: null })}
                   disabled={saving}
+                  data-testid={`website-page-theme-${theme.id}`}
                 >
                   <div className="bo-websiteTemplatePreview">
                     <div className="bo-websiteTemplatePreviewInner" data-theme-id={theme.id} />
@@ -261,7 +263,7 @@ export default function WebsiteBuilderPage() {
       )}
 
       {activeTab === "ai" && (
-        <section className="bo-websiteSection" aria-label="Constructor con IA">
+        <section className="bo-websiteSection" aria-label="Constructor con IA" data-testid="website-page-ai-section">
           <div className="bo-websiteAIGrid">
             <div className="bo-panel">
               <div className="bo-panelHead">
@@ -278,10 +280,11 @@ export default function WebsiteBuilderPage() {
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       rows={6}
+                      data-testid="website-page-ai-prompt-input"
                     />
                   </label>
                   <div className="bo-row bo-row--right">
-                    <button className="bo-btn bo-btn--primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating}>
+                    <button className="bo-btn bo-btn--primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating} data-testid="website-page-ai-generate-button">
                       {generating ? (
                         <>
                           <Loader2 size={16} className="bo-spinnerIcon" />
@@ -321,7 +324,7 @@ export default function WebsiteBuilderPage() {
       )}
 
       {activeTab === "domain" && (
-        <section className="bo-websiteSection" aria-label="Dominio personalizado">
+        <section className="bo-websiteSection" aria-label="Dominio personalizado" data-testid="website-page-domain-section">
           <div className="bo-panel bo-panel--lg">
             <div className="bo-panelHead">
               <div className="bo-panelTitle">Dominio personalizado</div>
@@ -346,8 +349,9 @@ export default function WebsiteBuilderPage() {
                     value={domainQuery}
                     onChange={(e) => setDomainQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearchDomain()}
+                    data-testid="website-page-domain-search-input"
                   />
-                  <button className="bo-btn bo-btn--primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()}>
+                  <button className="bo-btn bo-btn--primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()} data-testid="website-page-domain-search-button">
                     {searchingDomain ? (
                       <>
                         <Loader2 size={16} className="bo-spinnerIcon" />
@@ -378,7 +382,7 @@ export default function WebsiteBuilderPage() {
                           {domainResult.marked_price.toFixed(2)} {domainResult.currency}
                           <span className="bo-mutedText"> / ano</span>
                         </div>
-                        <button className="bo-btn bo-btn--primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain}>
+                        <button className="bo-btn bo-btn--primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain} data-testid="website-page-domain-register-button">
                           {registeringDomain ? (
                             <>
                               <Loader2 size={16} className="bo-spinnerIcon" />

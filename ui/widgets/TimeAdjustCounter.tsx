@@ -28,6 +28,7 @@ export function TimeAdjustCounter({
           onClick={onMinus}
           disabled={disabled}
           aria-label={`${label} menos 15 minutos`}
+          data-testid="time-adjust-counter-minus"
         >
           <Minus size={14} strokeWidth={2.2} />
         </button>
@@ -38,6 +39,7 @@ export function TimeAdjustCounter({
           onClick={onPlus}
           disabled={disabled}
           aria-label={`${label} más 15 minutos`}
+          data-testid="time-adjust-counter-plus"
         >
           <Plus size={14} strokeWidth={2.2} />
         </button>

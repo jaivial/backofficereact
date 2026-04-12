@@ -42,6 +42,7 @@ export function PlusMinusCounter({
           onClick={onDecrease}
           disabled={disabled || !canDecrease}
           aria-label={decrementAriaLabel || `Reducir ${label}`}
+          data-testid="plus-minus-counter-minus"
         >
           <Minus size={14} strokeWidth={2.2} />
         </button>
@@ -54,6 +55,7 @@ export function PlusMinusCounter({
           onClick={onIncrease}
           disabled={disabled || !canIncrease}
           aria-label={incrementAriaLabel || `Aumentar ${label}`}
+          data-testid="plus-minus-counter-plus"
         >
           <Plus size={14} strokeWidth={2.2} />
         </button>

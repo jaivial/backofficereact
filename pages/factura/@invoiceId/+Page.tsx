@@ -127,7 +127,7 @@ export default function Page() {
             {getStatusBadge(invoice.status)}
           </div>
           {pdfUrl && (
-            <a href={pdfUrl} className="bo-btn bo-btn--primary" target="_blank" rel="noopener noreferrer">
+            <a href={pdfUrl} className="bo-btn bo-btn--primary" target="_blank" rel="noopener noreferrer" data-testid="factura-page-download-pdf-link">
               <Download size={16} />
               Descargar PDF
             </a>

@@ -89,7 +89,7 @@ export default function Page() {
   ];
 
   return (
-    <section aria-label="Mi Horario" className="bo-content-grid bo-miHorarioPage">
+    <section aria-label="Mi Horario" className="bo-content-grid bo-miHorarioPage" data-slot="mi-horario-section">
       <div className="bo-panel bo-miHorarioPanel">
         <div className="bo-panelHead">
           <div>
@@ -101,6 +101,7 @@ export default function Page() {
           </div>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
+            data-testid="mi-horario-refresh-button"
             onClick={() => void loadSchedules()}
             disabled={loading}
           >

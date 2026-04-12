@@ -10,6 +10,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
   menu,
   switchDisabled,
   actionsDisabled,
+  className,
   onToggleActive,
   onOpenEditor,
   onRequestChangeType,
@@ -18,6 +19,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
   menu: GroupMenuV2Summary;
   switchDisabled: boolean;
   actionsDisabled: boolean;
+  className?: string;
   onToggleActive: (menuId: number) => Promise<void>;
   onOpenEditor: (menuId: number) => void;
   onRequestChangeType: (menu: GroupMenuV2Summary) => void;
@@ -79,13 +81,14 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
 
   return (
     <article
-      className={cn("bo-menuV2Card", "bo-menuGlassPanel", menu.active ? "is-active" : "is-inactive", menu.is_draft && "is-draft")}
+      className={cn("bo-menuV2Card", "bo-menuGlassPanel", menu.active ? "is-active" : "is-inactive", menu.is_draft && "is-draft", className)}
       role="listitem"
       tabIndex={0}
       onClick={openMenuEditor}
       onKeyDown={handleCardKeyDown}
       data-active={menu.active ? "true" : "false"}
       data-draft={menu.is_draft ? "true" : "false"}
+      data-testid={`menu-summary-${menu.id}`}
       aria-label={`Abrir menu ${title}`}
     >
       <div className="bo-menuV2Main">
@@ -122,6 +125,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             disabled={actionsDisabled}
             onClick={handleChangeType}
             onKeyDown={stopPropagation}
+            data-testid={`menu-summary-change-type-${menu.id}`}
             aria-label={`Cambiar tipo de menu ${title}`}
             title="Cambiar tipo"
           >
@@ -133,6 +137,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             disabled={actionsDisabled}
             onClick={handleEdit}
             onKeyDown={stopPropagation}
+            data-testid={`menu-summary-edit-${menu.id}`}
             aria-label={`Editar menu ${title}`}
             title="Editar"
           >
@@ -144,6 +149,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             disabled={actionsDisabled}
             onClick={handleDelete}
             onKeyDown={stopPropagation}
+            data-testid={`menu-summary-delete-${menu.id}`}
             aria-label={`Eliminar menu ${title}`}
             title="Eliminar"
           >

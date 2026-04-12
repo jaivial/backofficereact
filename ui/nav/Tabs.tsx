@@ -164,7 +164,7 @@ export function Tabs({
   }, [activeId, mounted, reduceMotion, tabs]);
 
   return (
-    <nav ref={navRef} className={["bo-tabs", "bo-tabs--glass", className].filter(Boolean).join(" ")} aria-label={ariaLabel}>
+    <nav ref={navRef} className={["bo-tabs", "bo-tabs--glass", className].filter(Boolean).join(" ")} aria-label={ariaLabel} data-testid="tabs" data-role="tabs-nav">
       {tabs.map((t) => {
         const active = t.id === activeId;
         const href = (() => {
@@ -186,6 +186,8 @@ export function Tabs({
             className={`bo-tab${active ? " is-active" : ""}`}
             href={href}
             aria-current={active ? "page" : undefined}
+            data-testid={`tab-${t.id}`}
+            data-role="tab-link"
             transition={motionTransition}
             onClick={(ev) => {
               if (!onNavigate) return;

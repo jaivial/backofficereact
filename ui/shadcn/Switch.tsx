@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Switch as HeadlessSwitch } from "@headlessui/react";
 import { motion } from "motion/react";
+import { cn } from "./utils";
 
 type HeadlessSwitchProps = React.ComponentProps<typeof HeadlessSwitch>;
 
@@ -46,7 +47,7 @@ export function Switch({
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
       onPointerCancel={() => setPressed(false)}
-      className={({ checked: isChecked }: { checked: boolean }) => ["bo-sc-switch", isChecked ? "is-checked" : "", className].filter(Boolean).join(" ")}
+      className={({ checked: isChecked }: { checked: boolean }) => cn("bo-sc-switch", isChecked && "is-checked", className)}
       {...rest}
     >
       {({ checked: isChecked }) => (

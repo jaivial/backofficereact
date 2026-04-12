@@ -209,16 +209,16 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
   if (!isOpen) return null;
 
   return (
-    <div className="bo-modalOverlay" onClick={onClose}>
-      <div className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="split-modal-title">
+    <div className="bo-modalOverlay" onClick={onClose} data-testid="split-invoice-overlay">
+      <div className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="split-modal-title" data-testid="split-invoice-modal">
         <div className="bo-modalHeader">
           <h2 id="split-modal-title" className="bo-modalTitle">Dividir factura</h2>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="split-invoice-close-btn">
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} data-testid="split-invoice-form">
           <div className="bo-modalBody">
             {/* Original Invoice Info */}
             <div className="bo-formSection">
@@ -247,6 +247,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     checked={method === "percentage"}
                     onChange={() => setMethod("percentage")}
                     className="bo-radioInput"
+                    data-testid="split-invoice-method-percentage-input"
                   />
                   <span className="bo-radioLabel">
                     <strong>Porcentaje personalizado</strong>
@@ -261,6 +262,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     checked={method === "equal"}
                     onChange={() => setMethod("equal")}
                     className="bo-radioInput"
+                    data-testid="split-invoice-method-equal-input"
                   />
                   <span className="bo-radioLabel">
                     <strong>Division igualitaria</strong>
@@ -283,6 +285,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     value={splitCount}
                     onChange={(e) => setSplitCount(parseInt(e.target.value) || 2)}
                     className="bo-input"
+                    data-testid="split-invoice-split-count-input"
                   />
                   <p className="bo-formHelp">
                     Cada parte sera de: <strong>{formatPrice(originalAmount / splitCount, currency)}</strong>
@@ -296,6 +299,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                       type="button"
                       className="bo-btn bo-btn--secondary bo-btn--sm"
                       onClick={handleAddItem}
+                      data-testid="split-invoice-add-line-btn"
                     >
                       <Plus size={14} />
                       Añadir
@@ -331,6 +335,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                               className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
                               onClick={() => handleRemoveItem(index)}
                               aria-label={`Eliminar factura ${index + 1}`}
+                              data-testid={`split-invoice-remove-line-${index}-btn`}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -348,6 +353,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 className="bo-input"
                                 placeholder="Nombre"
                                 required
+                                data-testid={`split-invoice-customer-name-${index}-input`}
                               />
                             </div>
                             <div className="bo-formGroup">
@@ -358,6 +364,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 onChange={(e) => handleUpdateItem(index, "customer_surname", e.target.value)}
                                 className="bo-input"
                                 placeholder="Apellidos"
+                                data-testid={`split-invoice-customer-surname-${index}-input`}
                               />
                             </div>
                           </div>
@@ -372,6 +379,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 className="bo-input"
                                 placeholder="email@ejemplo.com"
                                 required
+                                data-testid={`split-invoice-customer-email-${index}-input`}
                               />
                             </div>
                             <div className="bo-formGroup">
@@ -382,6 +390,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 onChange={(e) => handleUpdateItem(index, "customer_dni_cif", e.target.value)}
                                 className="bo-input"
                                 placeholder="12345678A"
+                                data-testid={`split-invoice-customer-dni-${index}-input`}
                               />
                             </div>
                           </div>
@@ -395,6 +404,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 onChange={(e) => handleUpdateItem(index, "customer_phone", e.target.value)}
                                 className="bo-input"
                                 placeholder="600 000 000"
+                                data-testid={`split-invoice-customer-phone-${index}-input`}
                               />
                             </div>
                             <div className="bo-formGroup">
@@ -409,6 +419,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                   onChange={(e) => handleUpdateItem(index, "percentage", parseFloat(e.target.value) || 0)}
                                   className="bo-input"
                                   required
+                                  data-testid={`split-invoice-percentage-${index}-input`}
                                 />
                                 <span className="bo-inputGroupAddon">%</span>
                               </div>
@@ -481,6 +492,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
               className="bo-btn bo-btn--secondary"
               onClick={onClose}
               disabled={isSubmitting}
+              data-testid="split-invoice-cancel-btn"
             >
               Cancelar
             </button>
@@ -488,6 +500,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
               type="submit"
               className="bo-btn bo-btn--primary"
               disabled={isSubmitting || validationErrors.length > 0}
+              data-testid="split-invoice-split-btn"
             >
               {isSubmitting ? (
                 <>

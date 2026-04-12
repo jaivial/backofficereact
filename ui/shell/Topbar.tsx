@@ -11,6 +11,7 @@ import { Select } from "../inputs/Select";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { useToasts } from "../feedback/useToasts";
 import { Breadcrumbs, type BreadcrumbItem } from "../nav/Breadcrumbs";
+import { cn } from "../shadcn/utils";
 
 function isBOSection(value: string): value is BOSection {
   return value === "reservas" || value === "menus" || value === "ajustes" || value === "miembros" || value === "fichaje" || value === "horarios";
@@ -27,9 +28,11 @@ function formatElapsed(totalSeconds: number): string {
 export function Topbar({
   title,
   breadcrumbs,
+  className,
 }: {
   title: string;
   breadcrumbs?: BreadcrumbItem[];
+  className?: string;
 }) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
@@ -132,7 +135,7 @@ export function Topbar({
   );
 
   return (
-    <header className="bo-topbar" aria-label="Topbar">
+    <header className={cn("bo-topbar", className)} aria-label="Topbar" data-testid="topbar" data-ui="topbar">
       <div className="bo-topbarHeading bo-topbarHeading--actionsInline">
         <div className="bo-title">{title}</div>
         {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}

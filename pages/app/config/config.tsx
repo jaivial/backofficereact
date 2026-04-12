@@ -220,10 +220,10 @@ export default function Page() {
   }
 
   return (
-    <section aria-label="Configuración" className="max-w-3xl mx-auto">
+    <section aria-label="Configuración" className="max-w-3xl mx-auto" data-testid="config-section">
       <div className="bo-toolbar">
         <div className="bo-toolbarLeft">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy}>
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy} data-testid="config-reload-button">
             Recargar
           </button>
         </div>

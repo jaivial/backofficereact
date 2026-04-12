@@ -742,7 +742,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
             <FileSpreadsheet size={20} />
             <span>Importar facturas desde CSV</span>
           </div>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={handleClose} aria-label="Cerrar">
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={handleClose} aria-label="Cerrar" data-testid="import-wizard-close-btn">
             <X size={18} />
           </button>
         </div>
@@ -787,6 +787,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                   type="file"
                   accept=".csv,.txt"
                   onChange={handleInputChange}
+                  data-testid="import-wizard-file-input"
                   style={{ display: "none" }}
                 />
                 {isProcessing ? (
@@ -807,7 +808,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
               </div>
 
               <div className="bo-importWizardActions">
-                <button className="bo-btn bo-btn--outline" onClick={handleDownloadSample}>
+                <button className="bo-btn bo-btn--outline" onClick={handleDownloadSample} data-testid="import-wizard-download-sample-btn">
                   <Download size={16} />
                   Descargar ejemplo CSV
                 </button>
@@ -825,6 +826,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                     <select
                       value={localSettings.defaultStatus}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultStatus: e.target.value as InvoiceStatus }))}
+                      data-testid="import-wizard-default-status-select"
                     >
                       <option value="borrador">Borrador</option>
                       <option value="solicitada">Solicitada</option>
@@ -838,6 +840,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                     <select
                       value={localSettings.defaultCategory}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultCategory: e.target.value as InvoiceCategory }))}
+                      data-testid="import-wizard-default-category-select"
                     >
                       <option value="reserva">Reserva</option>
                       <option value="productos">Productos</option>
@@ -851,16 +854,18 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                       type="number"
                       value={localSettings.defaultIvaRate}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultIvaRate: parseFloat(e.target.value) || 21 }))}
+                      data-testid="import-wizard-default-iva-rate-input"
                       min="0"
                       max="100"
                     />
                   </div>
                   <div className="bo-importWizardSetting">
-                    <label>
+                    <label data-testid="import-wizard-skip-header-label">
                       <input
                         type="checkbox"
                         checked={localSettings.skipHeaderRow}
                         onChange={(e) => setLocalSettings((s) => ({ ...s, skipHeaderRow: e.target.checked }))}
+                        data-testid="import-wizard-skip-header-checkbox"
                       />
                       Omitir primera fila (encabezados)
                     </label>
@@ -900,6 +905,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                             <select
                               value={columnMapping[header] || "ignore"}
                               onChange={(e) => handleMappingChange(header, e.target.value as ImportFieldType)}
+                              data-testid={`import-wizard-column-select-${header}`}
                             >
                               <option value="ignore">Ignorar</option>
                               {IMPORT_FIELD_OPTIONS.map((opt) => (
@@ -1062,18 +1068,18 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
         {/* Footer */}
         <div className="bo-modal-footer bo-importWizardFooter">
           {currentStep === "upload" && (
-            <button className="bo-btn bo-btn--ghost" onClick={handleClose}>
+            <button className="bo-btn bo-btn--ghost" onClick={handleClose} data-testid="import-wizard-cancel-btn">
               Cancelar
             </button>
           )}
 
           {currentStep === "mapping" && (
             <>
-              <button className="bo-btn bo-btn--ghost" onClick={() => setCurrentStep("upload")}>
+              <button className="bo-btn bo-btn--ghost" onClick={() => setCurrentStep("upload")} data-testid="import-wizard-back-btn">
                 <ArrowLeft size={16} />
                 Volver
               </button>
-              <button className="bo-btn bo-btn--primary" onClick={handleGoToPreview} disabled={isProcessing}>
+              <button className="bo-btn bo-btn--primary" onClick={handleGoToPreview} disabled={isProcessing} data-testid="import-wizard-validate-preview-btn">
                 Validar y previsualizar
                 <ArrowRight size={16} />
               </button>
@@ -1082,11 +1088,11 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
 
           {currentStep === "preview" && (
             <>
-              <button className="bo-btn bo-btn--ghost" onClick={handleBackToMapping}>
+              <button className="bo-btn bo-btn--ghost" onClick={handleBackToMapping} data-testid="import-wizard-back-mapping-btn">
                 <ArrowLeft size={16} />
                 Volver
               </button>
-              <button className="bo-btn bo-btn--primary" onClick={handleImport} disabled={stats.valid === 0 || isProcessing}>
+              <button className="bo-btn bo-btn--primary" onClick={handleImport} disabled={stats.valid === 0 || isProcessing} data-testid="import-wizard-import-btn">
                 Importar {stats.valid} facturas
                 <Check size={16} />
               </button>
@@ -1094,7 +1100,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
           )}
 
           {currentStep === "complete" && (
-            <button className="bo-btn bo-btn--primary" onClick={handleClose}>
+            <button className="bo-btn bo-btn--primary" onClick={handleClose} data-testid="import-wizard-close-final-btn">
               Cerrar
             </button>
           )}

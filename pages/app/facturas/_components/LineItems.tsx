@@ -137,6 +137,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           className="bo-btn bo-btn--ghost bo-btn--sm"
           onClick={handleAddItem}
           disabled={disabled}
+          data-testid="line-item-add-button"
         >
           <Plus size={16} />
           Añadir linea
@@ -151,6 +152,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
             className="bo-btn bo-btn--secondary bo-btn--sm"
             onClick={handleAddItem}
             disabled={disabled}
+            data-testid="line-item-add-first-button"
           >
             <Plus size={16} />
             Añadir primera linea
@@ -197,6 +199,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     onChange={(e) => handleUpdateItem(index, "description", e.target.value)}
                     placeholder="Descripcion del producto/servicio"
                     disabled={disabled}
+                    data-testid={`line-item-description-${index}`}
                   />
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--quantity">
@@ -210,6 +213,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     step="1"
                     disabled={disabled}
                     aria-label="Cantidad"
+                    data-testid={`line-item-quantity-${index}`}
                   />
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--price">
@@ -223,6 +227,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     step="0.01"
                     disabled={disabled}
                     aria-label="Precio unitario"
+                    data-testid={`line-item-unit-price-${index}`}
                   />
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--iva">
@@ -237,6 +242,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     step="0.1"
                     disabled={disabled}
                     aria-label="IVA"
+                    data-testid={`line-item-iva-rate-${index}`}
                   />
                 </div>
                 <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
@@ -296,6 +302,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
               className="bo-btn bo-btn--ghost bo-btn--sm"
               onClick={closeLineItemDetails}
               aria-label="Cerrar detalle de línea"
+              data-testid="line-item-close-details"
             >
               <X size={16} />
             </button>
