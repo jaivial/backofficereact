@@ -4,60 +4,115 @@ import url from "url";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
+const isCI = !!process.env.CI;
+const isHeaded = process.env.HEADED === "1" || process.env.HEADED === "true";
+const screenshotMode = process.env.SCREENSHOT_MODE || "only-on-failure";
+
 // https://playwright.dev/docs/test-configuration
 export default defineConfig({
-  // Run tests in files
   testDir: "./e2e",
-  fullyParallel: true,
-  // Retry failed tests on CI
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  // Use 1 worker in CI to avoid conflicts
-  workers: process.env.CI ? 1 : undefined,
-  // Reporter
-  reporter: [["html", { outputFolder: "test-results/playwright-report" }]],
-  // Default timeout
-  timeout: 30_000,
-  expect: { timeout: 5_000 },
-  // Base URL for navigation
+  fullyParallel: !isCI,
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 1 : undefined,
+  reporter: [
+    ["html", { outputFolder: "test-results/playwright-report" }],
+    ["list"],
+  ],
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
+  outputDir: "test-results/artifacts",
+
+  globalSetup: "./e2e/global-setup.ts",
+
   use: {
-    // Base URL for all tests
     baseURL: "https://localhost:3001",
-    // Screenshots
-    screenshot: "only-on-failure",
-    // Video on first retry
+    ignoreHTTPSErrors: true,
+    screenshot: screenshotMode as "on" | "only-on-failure" | "off",
     video: "on-first-retry",
-    // Trace on first retry
     trace: "on-first-retry",
+    headless: !isHeaded,
   },
-  // Projects
+
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1920, height: 1080 },
+      },
     },
     {
-      name: "chromium-mobile",
-      use: { ...devices["iPhone 12"] },
+      name: "chromium-1440",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: "chromium-1280",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1280, height: 800 },
+      },
+    },
+    {
+      name: "chromium-1024",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1024, height: 768 },
+      },
+    },
+    {
+      name: "tablet-portrait",
+      use: {
+        ...devices["iPad Pro 11"],
+      },
+    },
+    {
+      name: "mobile-large",
+      use: {
+        ...devices["iPhone 14 Pro Max"],
+      },
+    },
+    {
+      name: "mobile-standard",
+      use: {
+        ...devices["iPhone 12"],
+      },
+    },
+    {
+      name: "mobile-small",
+      use: {
+        userAgent:
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1",
+        viewport: { width: 320, height: 568 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+      },
     },
   ],
-  // Dev server
-  webServer: [
-    {
-      command: "npm run dev",
-      url: "https://localhost:3001",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-      stdout: "pipe",
-      stderr: "pipe",
-    },
-    {
-      command: "cd ../backend && go run ./cmd/server/main.go",
-      url: "http://127.0.0.1:8080",
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-      stdout: "pipe",
-      stderr: "pipe",
-    },
-  ],
+
+  webServer: isCI
+    ? [
+        {
+          command: "bun --env-file .env.local server/index.ts",
+          url: "https://localhost:3001",
+          reuseExistingServer: false,
+          timeout: 120_000,
+          stdout: "pipe",
+          stderr: "pipe",
+          ignoreHTTPSErrors: true,
+        },
+        {
+          command: "cd ../backend && go run ./cmd/server/main.go",
+          url: "http://127.0.0.1:8080",
+          reuseExistingServer: false,
+          timeout: 60_000,
+          stdout: "pipe",
+          stderr: "pipe",
+        },
+      ]
+    : undefined,
 });
