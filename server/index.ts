@@ -4,6 +4,13 @@ import https from "node:https";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+const MOBILE_UA_REGEX = /(android|iphone|ipad|ipod|mobile|webos|blackberry|windows phone)/i;
+
+function isMobileUA(userAgent: string | undefined): boolean {
+  if (!userAgent) return false;
+  return MOBILE_UA_REGEX.test(userAgent);
+}
+
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import { renderPage } from "vike/server";
@@ -38,6 +45,7 @@ type BOPageContext = {
   theme: "dark" | "light";
   session: BOSession | null;
   movingExpirationDate?: string | null;
+  isMobile?: boolean;
 };
 
 const LOCAL_BACKEND_START_CMD = "cd ../backend && go run ./cmd/server";
@@ -769,8 +777,10 @@ async function start() {
 
       const cookies = parseCookies(typeof req.headers.cookie === "string" ? req.headers.cookie : undefined);
       const theme = cookies.bo_theme === "light" ? "light" : "dark";
+      const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
+      const isMobile = isMobileUA(userAgent);
       const cookieHeader = typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
-      console.log(`[SSR] ${req.path} cookieHeader=${cookieHeader ? "present" : "null"}`);
+      console.log(`[SSR] ${req.path} cookieHeader=${cookieHeader ? "present" : "null"} mobile=${isMobile}`);
       const sessionFetch = await fetchSession(backendOrigin, cookieHeader, req.path);
       const session = sessionFetch.session;
       const movingExpirationDate = sessionFetch.movingExpirationDate;
@@ -789,7 +799,7 @@ async function start() {
         const pageContextInit: any = {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
-          bo: { theme, session: null, movingExpirationDate: null } satisfies BOPageContext,
+          bo: { theme, session: null, movingExpirationDate: null, isMobile } satisfies BOPageContext & { isMobile: boolean },
           boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
         };
 
@@ -815,7 +825,7 @@ async function start() {
         const pageContextInit: any = {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
-          bo: { theme, session: null, movingExpirationDate: null } satisfies BOPageContext,
+          bo: { theme, session: null, movingExpirationDate: null, isMobile } satisfies BOPageContext & { isMobile: boolean },
           boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
         };
 
@@ -831,10 +841,10 @@ async function start() {
         return;
       }
 
-      const isAppRoot = req.path === "/app" || req.path === "/app/";
-      const isApp = isAppRoot || req.path.startsWith("/app/");
+      const isAppRoot = req.path === "/app" || req.path === "/app/" || req.path === "/m" || req.path === "/m/";
+      const isApp = isAppRoot || req.path.startsWith("/app/") || req.path.startsWith("/m/app/");
       if (isApp && !session && !pageContextRequest) {
-        res.redirect(302, "/login");
+        res.redirect(302, "/m/login");
         return;
       }
       if (req.path === "/change-password" && !session && !pageContextRequest) {
@@ -853,6 +863,15 @@ async function start() {
           return;
         }
         res.redirect(302, "/app/backoffice");
+        return;
+      }
+
+      if (req.path === "/m/login" && session) {
+        if (session.user.mustChangePassword) {
+          res.redirect(302, "/change-password");
+          return;
+        }
+        res.redirect(302, "/m/app/backoffice");
         return;
       }
       if (req.path === "/") {
@@ -884,7 +903,12 @@ async function start() {
 
       // Normalize reservas routes: always keep `?date=YYYY-MM-DD` present.
       // This avoids "no date selected" UI states on first load and keeps the URL stable.
-      if (req.path.startsWith("/app/reservas")) {
+      const reservasPath = req.path.startsWith("/m/app/reservas")
+        ? req.path.replace("/m/app/reservas", "/app/reservas")
+        : req.path.startsWith("/app/reservas")
+        ? req.path
+        : null;
+      if (reservasPath) {
         const url = new URL(req.originalUrl, "https://local");
         const cur = url.searchParams.get("date");
         if (!isValidISODate(cur)) {
@@ -894,10 +918,20 @@ async function start() {
         }
       }
 
+      // RBAC check for /m/app/* paths: map to /app/* for permission checks
+      const rbacPath = req.path.startsWith("/m/app/")
+        ? req.path.replace("/m/app/", "/app/")
+        : req.path;
+
+      if (session && req.path.startsWith("/m/app/") && !pageContextRequest && !isPathAllowed(rbacPath, session.user.role, session.user.sectionAccess, session.user.roleImportance)) {
+        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
+        return;
+      }
+
       const pageContextInit: any = {
         urlOriginal: req.originalUrl,
         headersOriginal: req.headers,
-        bo: { theme, session, movingExpirationDate } satisfies BOPageContext,
+        bo: { theme, session, movingExpirationDate, isMobile } satisfies BOPageContext & { isMobile: boolean },
         boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
       };
 
