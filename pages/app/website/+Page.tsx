@@ -177,11 +177,11 @@ export default function WebsiteBuilderPage() {
   if (loading) {
     return (
       <div className="bo-websitePage" data-ui="website-loading">
-        <div className="bo-panel">
-          <div className="bo-panelBody">
-            <div className="bo-loadingState">
+        <div className="bo-panel" data-slot="website-panel">
+          <div className="bo-panelBody" data-slot="website-panelBody">
+            <div className="bo-loadingState" data-slot="website-loadingState">
               <Loader2 className="bo-spinnerIcon" size={24} />
-              <span className="bo-mutedText">Cargando configuracion...</span>
+              <span className="bo-mutedText" data-slot="website-mutedText">Cargando configuracion...</span>
             </div>
           </div>
         </div>
@@ -191,22 +191,22 @@ export default function WebsiteBuilderPage() {
 
   return (
     <div className="bo-websitePage" data-ui="website-builder">
-      <div className="bo-websiteHeader">
-        <div className="bo-websiteHeaderMain">
+      <div className="bo-websiteHeader" data-slot="website-websiteHeader">
+        <div className="bo-websiteHeaderMain" data-slot="website-websiteHeaderMain">
           <div className="bo-websiteTitle" data-testid="website-page-title">
             <Globe size={24} />
-            <h1>Website Builder</h1>
+            <h1 data-slot="website-der">Website Builder</h1>
           </div>
           <p className="bo-websiteSubtitle" data-testid="website-page-subtitle">Crea y publica la web de tu restaurante</p>
         </div>
-        <div className="bo-websiteHeaderActions">
+        <div className="bo-websiteHeaderActions" data-slot="website-websiteHeaderActions">
           <button className={`bo-btn bo-btn--${config?.is_published ? "success" : "secondary"}`} type="button" onClick={handleTogglePublished} disabled={saving} data-testid="website-page-publish-toggle">
             {config?.is_published ? "Publicado" : "Borrador"}
           </button>
           {previewUrl && (
             <a className="bo-btn bo-btn--secondary" href={previewUrl} target="_blank" rel="noopener noreferrer" data-testid="website-page-preview-link">
               <ExternalLink size={16} />
-              <span>Vista previa</span>
+              <span data-slot="website-via">Vista previa</span>
             </a>
           )}
         </div>
@@ -224,14 +224,14 @@ export default function WebsiteBuilderPage() {
             data-testid={`website-page-tab-${tab.key}`}
           >
             {tab.icon}
-            <span>{tab.label}</span>
+            <span data-slot="website-bel">{tab.label}</span>
           </button>
         ))}
       </div>
 
       {activeTab === "templates" && (
         <section className="bo-websiteSection" aria-label="Plantillas premium" data-testid="website-page-templates-section">
-          <div className="bo-websiteTemplateGrid">
+          <div className="bo-websiteTemplateGrid" data-slot="website-websiteTemplateGrid">
             {WEBSITE_THEMES.map((theme) => {
               const isSelected = config?.template_id === theme.id;
               return (
@@ -243,15 +243,15 @@ export default function WebsiteBuilderPage() {
                   disabled={saving}
                   data-testid={`website-page-theme-${theme.id}`}
                 >
-                  <div className="bo-websiteTemplatePreview">
-                    <div className="bo-websiteTemplatePreviewInner" data-theme-id={theme.id} />
+                  <div className="bo-websiteTemplatePreview" data-slot="website-websiteTemplatePreview">
+                    <div className="bo-websiteTemplatePreviewInner" data-theme-id={theme.id} / data-slot="website-websiteTemplatePreviewInner">
                   </div>
-                  <div className="bo-websiteTemplateInfo">
-                    <div className="bo-websiteTemplateName">{theme.name}</div>
-                    <div className="bo-websiteTemplateDesc">{theme.description}</div>
+                  <div className="bo-websiteTemplateInfo" data-slot="website-websiteTemplateInfo">
+                    <div className="bo-websiteTemplateName" data-slot="website-websiteTemplateName">{theme.name}</div>
+                    <div className="bo-websiteTemplateDesc" data-slot="website-websiteTemplateDesc">{theme.description}</div>
                   </div>
                   {isSelected && (
-                    <div className="bo-websiteTemplateBadge">
+                    <div className="bo-websiteTemplateBadge" data-slot="website-websiteTemplateBadge">
                       <Check size={14} />
                     </div>
                   )}
@@ -264,16 +264,16 @@ export default function WebsiteBuilderPage() {
 
       {activeTab === "ai" && (
         <section className="bo-websiteSection" aria-label="Constructor con IA" data-testid="website-page-ai-section">
-          <div className="bo-websiteAIGrid">
-            <div className="bo-panel">
-              <div className="bo-panelHead">
-                <div className="bo-panelTitle">Generar con IA</div>
-                <div className="bo-panelMeta">Describe tu sitio ideal</div>
+          <div className="bo-websiteAIGrid" data-slot="website-websiteAIGrid">
+            <div className="bo-panel" data-slot="website-panel">
+              <div className="bo-panelHead" data-slot="website-panelHead">
+                <div className="bo-panelTitle" data-slot="website-panelTitle">Generar con IA</div>
+                <div className="bo-panelMeta" data-slot="website-panelMeta">Describe tu sitio ideal</div>
               </div>
-              <div className="bo-panelBody">
-                <div className="bo-stack">
-                  <p className="bo-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
-                  <label className="bo-field">
+              <div className="bo-panelBody" data-slot="website-panelBody">
+                <div className="bo-stack" data-slot="website-stack">
+                  <p className="bo-mutedText" data-slot="website-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
+                  <label className="bo-field" data-slot="website-field">
                     <textarea
                       className="bo-textarea bo-textarea--lg"
                       placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
@@ -283,17 +283,17 @@ export default function WebsiteBuilderPage() {
                       data-testid="website-page-ai-prompt-input"
                     />
                   </label>
-                  <div className="bo-row bo-row--right">
+                  <div className="bo-row bo-row--right" data-slot="website-row--right">
                     <button className="bo-btn bo-btn--primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating} data-testid="website-page-ai-generate-button">
                       {generating ? (
                         <>
                           <Loader2 size={16} className="bo-spinnerIcon" />
-                          <span>Generando...</span>
+                          <span data-slot="website-ndo">Generando...</span>
                         </>
                       ) : (
                         <>
                           <Sparkles size={16} />
-                          <span>Generar Web</span>
+                          <span data-slot="website-web">Generar Web</span>
                         </>
                       )}
                     </button>
@@ -302,18 +302,18 @@ export default function WebsiteBuilderPage() {
               </div>
             </div>
 
-            <div className="bo-panel">
-              <div className="bo-panelHead">
-                <div className="bo-panelTitle">Vista previa</div>
-                <div className="bo-panelMeta">HTML personalizado</div>
+            <div className="bo-panel" data-slot="website-panel">
+              <div className="bo-panelHead" data-slot="website-panelHead">
+                <div className="bo-panelTitle" data-slot="website-panelTitle">Vista previa</div>
+                <div className="bo-panelMeta" data-slot="website-panelMeta">HTML personalizado</div>
               </div>
-              <div className="bo-panelBody">
-                <div className="bo-websitePreviewFrame">
+              <div className="bo-panelBody" data-slot="website-panelBody">
+                <div className="bo-websitePreviewFrame" data-slot="website-websitePreviewFrame">
                   {config?.custom_html ? (
-                    <div dangerouslySetInnerHTML={{ __html: config.custom_html }} />
+                    <div dangerouslySetInnerHTML={{ __html: config.custom_html }} / data-slot="website-div">
                   ) : (
-                    <div className="bo-emptyState">
-                      <p className="bo-mutedText">No hay HTML generado aun</p>
+                    <div className="bo-emptyState" data-slot="website-emptyState">
+                      <p className="bo-mutedText" data-slot="website-mutedText">No hay HTML generado aun</p>
                     </div>
                   )}
                 </div>
@@ -325,23 +325,23 @@ export default function WebsiteBuilderPage() {
 
       {activeTab === "domain" && (
         <section className="bo-websiteSection" aria-label="Dominio personalizado" data-testid="website-page-domain-section">
-          <div className="bo-panel bo-panel--lg">
-            <div className="bo-panelHead">
-              <div className="bo-panelTitle">Dominio personalizado</div>
-              <div className="bo-panelMeta">Registra un dominio para tu sitio</div>
+          <div className="bo-panel bo-panel--lg" data-slot="website-panel--lg">
+            <div className="bo-panelHead" data-slot="website-panelHead">
+              <div className="bo-panelTitle" data-slot="website-panelTitle">Dominio personalizado</div>
+              <div className="bo-panelMeta" data-slot="website-panelMeta">Registra un dominio para tu sitio</div>
             </div>
-            <div className="bo-panelBody">
-              <div className="bo-stack">
+            <div className="bo-panelBody" data-slot="website-panelBody">
+              <div className="bo-stack" data-slot="website-stack">
                 {config?.domain ? (
-                  <div className="bo-websiteDomainActive">
-                    <p className="bo-websiteDomainLabel">Dominio activo</p>
-                    <div className="bo-websiteDomainName">{config.domain}</div>
+                  <div className="bo-websiteDomainActive" data-slot="website-websiteDomainActive">
+                    <p className="bo-websiteDomainLabel" data-slot="website-websiteDomainLabel">Dominio activo</p>
+                    <div className="bo-websiteDomainName" data-slot="website-websiteDomainName">{config.domain}</div>
                   </div>
                 ) : (
-                  <p className="bo-mutedText">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
+                  <p className="bo-mutedText" data-slot="website-mutedText">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
                 )}
 
-                <div className="bo-websiteDomainSearch">
+                <div className="bo-websiteDomainSearch" data-slot="website-websiteDomainSearch">
                   <input
                     type="text"
                     className="bo-input"
@@ -355,41 +355,41 @@ export default function WebsiteBuilderPage() {
                     {searchingDomain ? (
                       <>
                         <Loader2 size={16} className="bo-spinnerIcon" />
-                        <span>Buscando...</span>
+                        <span data-slot="website-ndo">Buscando...</span>
                       </>
                     ) : (
                       <>
                         <Search size={16} />
-                        <span>Buscar</span>
+                        <span data-slot="website-car">Buscar</span>
                       </>
                     )}
                   </button>
                 </div>
 
                 {domainResult && (
-                  <div className="bo-websiteDomainResult">
-                    <div className="bo-websiteDomainResultMain">
-                      <div className="bo-websiteDomainResultName">{domainResult.domain}</div>
+                  <div className="bo-websiteDomainResult" data-slot="website-websiteDomainResult">
+                    <div className="bo-websiteDomainResultMain" data-slot="website-websiteDomainResultMain">
+                      <div className="bo-websiteDomainResultName" data-slot="website-websiteDomainResultName">{domainResult.domain}</div>
                       {domainResult.available ? (
-                        <span className="bo-badge bo-badge--success">Disponible</span>
+                        <span className="bo-badge bo-badge--success" data-slot="website-badge--success">Disponible</span>
                       ) : (
-                        <span className="bo-badge bo-badge--danger">No disponible</span>
+                        <span className="bo-badge bo-badge--danger" data-slot="website-badge--danger">No disponible</span>
                       )}
                     </div>
                     {domainResult.available && (
-                      <div className="bo-websiteDomainResultActions">
-                        <div className="bo-websiteDomainPrice">
+                      <div className="bo-websiteDomainResultActions" data-slot="website-websiteDomainResultActions">
+                        <div className="bo-websiteDomainPrice" data-slot="website-websiteDomainPrice">
                           {domainResult.marked_price.toFixed(2)} {domainResult.currency}
-                          <span className="bo-mutedText"> / ano</span>
+                          <span className="bo-mutedText" data-slot="website-mutedText"> / ano</span>
                         </div>
                         <button className="bo-btn bo-btn--primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain} data-testid="website-page-domain-register-button">
                           {registeringDomain ? (
                             <>
                               <Loader2 size={16} className="bo-spinnerIcon" />
-                              <span>Registrando...</span>
+                              <span data-slot="website-ndo">Registrando...</span>
                             </>
                           ) : (
-                            <span>Registrar ahora</span>
+                            <span data-slot="website-ora">Registrar ahora</span>
                           )}
                         </button>
                       </div>

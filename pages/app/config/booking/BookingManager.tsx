@@ -96,32 +96,32 @@ export function BookingManager() {
 
   return (
     <div className="bo-stack" data-ui="booking-manager">
-      <div className="bo-panel">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">Booking Manager</div>
-          <div className="bo-panelMeta">Widget de reservas embebible para webs de clientes</div>
+      <div className="bo-panel" data-slot="bookingManager-panel">
+        <div className="bo-panelHead" data-slot="bookingManager-panelHead">
+          <div className="bo-panelTitle" data-slot="bookingManager-panelTitle">Booking Manager</div>
+          <div className="bo-panelMeta" data-slot="bookingManager-panelMeta">Widget de reservas embebible para webs de clientes</div>
         </div>
-        <div className="bo-panelBody">
+        <div className="bo-panelBody" data-slot="bookingManager-panelBody">
           <InstallGuide restaurantId="1" />
         </div>
       </div>
 
-      <div className="bo-panel">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">Vista previa</div>
-          <div className="bo-panelMeta">Así se verá el widget en la web del cliente</div>
+      <div className="bo-panel" data-slot="bookingManager-panel">
+        <div className="bo-panelHead" data-slot="bookingManager-panelHead">
+          <div className="bo-panelTitle" data-slot="bookingManager-panelTitle">Vista previa</div>
+          <div className="bo-panelMeta" data-slot="bookingManager-panelMeta">Así se verá el widget en la web del cliente</div>
         </div>
-        <div className="bo-panelBody">
+        <div className="bo-panelBody" data-slot="bookingManager-panelBody">
           <WidgetPreview settings={settings} />
         </div>
       </div>
 
-      <div className="bo-panel">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">Personalización de colores</div>
-          <div className="bo-panelMeta">Guardado automático al cambiar</div>
+      <div className="bo-panel" data-slot="bookingManager-panel">
+        <div className="bo-panelHead" data-slot="bookingManager-panelHead">
+          <div className="bo-panelTitle" data-slot="bookingManager-panelTitle">Personalización de colores</div>
+          <div className="bo-panelMeta" data-slot="bookingManager-panelMeta">Guardado automático al cambiar</div>
         </div>
-        <div className="bo-panelBody">
+        <div className="bo-panelBody" data-slot="bookingManager-panelBody">
           <div className="bo-widget-colors-grid" data-ui="colors-grid">
             <ColorPicker
               label="Color primario"

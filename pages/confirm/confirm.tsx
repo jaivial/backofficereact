@@ -38,10 +38,10 @@ export default function Page() {
   if (error || !booking) {
     return (
       <div className="bo-publicPage" data-ui="confirm-reservation">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageAlert bo-publicPageAlert--danger">
+        <div className="bo-publicPageCard" data-slot="confirm-publicPageCard">
+          <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="confirm-publicPageAlert--danger">
             <AlertCircle size={20} />
-            <span>{error || "Reserva no encontrada."}</span>
+            <span data-slot="confirm-ada">{error || "Reserva no encontrada."}</span>
           </div>
           <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="confirm-back-home-error">
             <ArrowLeft size={18} />
@@ -55,34 +55,34 @@ export default function Page() {
   if (actionSuccess) {
     return (
       <div className="bo-publicPage" data-ui="confirm-reservation">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageIcon bo-publicPageIcon--success">
+        <div className="bo-publicPageCard" data-slot="confirm-publicPageCard">
+          <div className="bo-publicPageIcon bo-publicPageIcon--success" data-slot="confirm-publicPageIcon--success">
             <CheckCircle size={24} />
           </div>
-          <h1 className="bo-publicPageTitle">Reserva Confirmada</h1>
-          <p className="bo-publicPageSub">{actionSuccess}</p>
-          <div className="bo-publicPageBooking">
-            <div className="bo-publicPageBookingHeader">
+          <h1 className="bo-publicPageTitle" data-slot="confirm-publicPageTitle">Reserva Confirmada</h1>
+          <p className="bo-publicPageSub" data-slot="confirm-publicPageSub">{actionSuccess}</p>
+          <div className="bo-publicPageBooking" data-slot="confirm-publicPageBooking">
+            <div className="bo-publicPageBookingHeader" data-slot="confirm-publicPageBookingHeader">
               <div className="bo-publicPageBookingName" data-role="customer-name">{displayBooking!.customerName}</div>
-              <div className="bo-publicPageBookingId">Reserva #{displayBooking!.id}</div>
+              <div className="bo-publicPageBookingId" data-slot="confirm-publicPageBookingId">Reserva #{displayBooking!.id}</div>
             </div>
-            <div className="bo-publicPageDetailGrid">
-              <div className="bo-publicPageDetailItem">
+            <div className="bo-publicPageDetailGrid" data-slot="confirm-publicPageDetailGrid">
+              <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
                 <Calendar size={16} />
-                <div><span className="bo-publicPageDetailLabel">Fecha</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationDate}</span></div>
+                <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Fecha</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationDate}</span></div>
               </div>
-              <div className="bo-publicPageDetailItem">
+              <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
                 <Clock size={16} />
-                <div><span className="bo-publicPageDetailLabel">Hora</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationTime}</span></div>
+                <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Hora</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationTime}</span></div>
               </div>
-              <div className="bo-publicPageDetailItem">
+              <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
                 <Users size={16} />
-                <div><span className="bo-publicPageDetailLabel">Personas</span><span className="bo-publicPageDetailValue">{displayBooking!.partySize}</span></div>
+                <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Personas</span><span className="bo-publicPageDetailValue">{displayBooking!.partySize}</span></div>
               </div>
               {displayBooking!.arrozDisplay && (
-                <div className="bo-publicPageDetailItem">
+                <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
                   <Utensils size={16} />
-                  <div><span className="bo-publicPageDetailLabel">Arroz</span><span className="bo-publicPageDetailValue">{displayBooking!.arrozDisplay}</span></div>
+                  <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Arroz</span><span className="bo-publicPageDetailValue">{displayBooking!.arrozDisplay}</span></div>
                 </div>
               )}
             </div>
@@ -95,48 +95,48 @@ export default function Page() {
 
   return (
     <div className="bo-publicPage" data-ui="confirm-reservation">
-      <div className="bo-publicPageCard">
+      <div className="bo-publicPageCard" data-slot="confirm-publicPageCard">
         <h1 className="bo-publicPageTitle" data-slot="title">Confirmar Reserva</h1>
-        <p className="bo-publicPageSub">Revise los datos y confirme su asistencia</p>
+        <p className="bo-publicPageSub" data-slot="confirm-publicPageSub">Revise los datos y confirme su asistencia</p>
 
         {actionError && (
-          <div className="bo-publicPageAlert bo-publicPageAlert--danger">
+          <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="confirm-publicPageAlert--danger">
             <AlertCircle size={20} />
-            <span>{actionError}</span>
+            <span data-slot="confirm-ror">{actionError}</span>
           </div>
         )}
 
         <div className="bo-publicPageBooking" data-slot="details">
-          <div className="bo-publicPageBookingHeader">
+          <div className="bo-publicPageBookingHeader" data-slot="confirm-publicPageBookingHeader">
             <div className="bo-publicPageBookingName" data-role="customer-name">{displayBooking!.customerName}</div>
-            <div className="bo-publicPageBookingId">Reserva #{displayBooking!.id}</div>
+            <div className="bo-publicPageBookingId" data-slot="confirm-publicPageBookingId">Reserva #{displayBooking!.id}</div>
           </div>
-          <div className="bo-publicPageDetailGrid">
-            <div className="bo-publicPageDetailItem">
+          <div className="bo-publicPageDetailGrid" data-slot="confirm-publicPageDetailGrid">
+            <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
               <Calendar size={16} />
-              <div><span className="bo-publicPageDetailLabel">Fecha</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationDate}</span></div>
+              <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Fecha</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationDate}</span></div>
             </div>
-            <div className="bo-publicPageDetailItem">
+            <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
               <Clock size={16} />
-              <div><span className="bo-publicPageDetailLabel">Hora</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationTime}</span></div>
+              <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Hora</span><span className="bo-publicPageDetailValue">{displayBooking!.reservationTime}</span></div>
             </div>
-            <div className="bo-publicPageDetailItem">
+            <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
               <Users size={16} />
-              <div><span className="bo-publicPageDetailLabel">Personas</span><span className="bo-publicPageDetailValue">{displayBooking!.partySize}</span></div>
+              <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Personas</span><span className="bo-publicPageDetailValue">{displayBooking!.partySize}</span></div>
             </div>
             {displayBooking!.arrozDisplay && (
-              <div className="bo-publicPageDetailItem">
+              <div className="bo-publicPageDetailItem" data-slot="confirm-publicPageDetailItem">
                 <Utensils size={16} />
-                <div><span className="bo-publicPageDetailLabel">Arroz</span><span className="bo-publicPageDetailValue">{displayBooking!.arrozDisplay}</span></div>
+                <div data-slot="confirm-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Arroz</span><span className="bo-publicPageDetailValue">{displayBooking!.arrozDisplay}</span></div>
               </div>
             )}
           </div>
         </div>
 
         {booking.isConfirmed ? (
-          <div className="bo-publicPageAlert bo-publicPageAlert--success">
+          <div className="bo-publicPageAlert bo-publicPageAlert--success" data-slot="confirm-publicPageAlert--success">
             <CheckCircle size={20} />
-            <span>Esta reserva ya está confirmada.</span>
+            <span data-slot="confirm-ada">Esta reserva ya está confirmada.</span>
           </div>
         ) : (
           <button

@@ -19,24 +19,24 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
         <h3 className="text-lg font-semibold text-gray-900 mb-4" data-ui="info-title">Informacion del Cliente</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-ui="info-grid">
           <div data-ui="name-info">
-            <span className="text-sm text-gray-500">Nombre</span>
-            <p className="text-lg font-medium text-gray-900">{customerStatement.customer_name}</p>
+            <span className="text-sm text-gray-500" data-slot="customerStatementContent-text-gray-500">Nombre</span>
+            <p className="text-lg font-medium text-gray-900" data-slot="customerStatementContent-text-gray-900">{customerStatement.customer_name}</p>
           </div>
           {customerStatement.customer_dni_cif && (
             <div data-ui="dni-info">
-              <span className="text-sm text-gray-500">DNI/CIF</span>
-              <p className="text-lg font-medium text-gray-900">{customerStatement.customer_dni_cif}</p>
+              <span className="text-sm text-gray-500" data-slot="customerStatementContent-text-gray-500">DNI/CIF</span>
+              <p className="text-lg font-medium text-gray-900" data-slot="customerStatementContent-text-gray-900">{customerStatement.customer_dni_cif}</p>
             </div>
           )}
           {customerStatement.customer_email && (
             <div data-ui="email-info">
-              <span className="text-sm text-gray-500">Email</span>
-              <p className="text-lg font-medium text-gray-900">{customerStatement.customer_email}</p>
+              <span className="text-sm text-gray-500" data-slot="customerStatementContent-text-gray-500">Email</span>
+              <p className="text-lg font-medium text-gray-900" data-slot="customerStatementContent-text-gray-900">{customerStatement.customer_email}</p>
             </div>
           )}
           <div data-ui="period-info">
-            <span className="text-sm text-gray-500">Periodo</span>
-            <p className="text-lg font-medium text-gray-900">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
+            <span className="text-sm text-gray-500" data-slot="customerStatementContent-text-gray-500">Periodo</span>
+            <p className="text-lg font-medium text-gray-900" data-slot="customerStatementContent-text-gray-900">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
           </div>
         </div>
       </div>
@@ -52,20 +52,20 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-ui="tables-grid">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="invoices-table">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-ui="table-header">
-            <h3 className="text-lg font-semibold text-gray-900">Facturas ({customerStatement.invoices.length})</h3>
+            <h3 className="text-lg font-semibold text-gray-900" data-slot="customerStatementContent-text-gray-900">Facturas ({customerStatement.invoices.length})</h3>
           </div>
           {customerStatement.invoices.length > 0 ? (
             <div className="overflow-x-auto" data-ui="table-scroll">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Importe</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
+              <table className="min-w-full divide-y divide-gray-200" data-slot="customerStatementContent-divide-gray-200">
+                <thead className="bg-gray-50" data-slot="customerStatementContent-bg-gray-50">
+                  <tr data-slot="customerStatementContent-tr">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Factura</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Fecha</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Importe</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Estado</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200" data-slot="customerStatementContent-divide-gray-200">
                   {customerStatement.invoices.map((inv, idx) => (
                     <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-ui="invoice-row">
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900" data-ui="invoice-number">
@@ -96,20 +96,20 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="payments-table">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-ui="table-header">
-            <h3 className="text-lg font-semibold text-gray-900">Pagos ({customerStatement.payments.length})</h3>
+            <h3 className="text-lg font-semibold text-gray-900" data-slot="customerStatementContent-text-gray-900">Pagos ({customerStatement.payments.length})</h3>
           </div>
           {customerStatement.payments.length > 0 ? (
             <div className="overflow-x-auto" data-ui="table-scroll">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Metodo</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Importe</th>
+              <table className="min-w-full divide-y divide-gray-200" data-slot="customerStatementContent-divide-gray-200">
+                <thead className="bg-gray-50" data-slot="customerStatementContent-bg-gray-50">
+                  <tr data-slot="customerStatementContent-tr">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Factura</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Fecha</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Metodo</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="customerStatementContent-uppercase">Importe</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200" data-slot="customerStatementContent-divide-gray-200">
                   {customerStatement.payments.map((pay, idx) => (
                     <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-ui="payment-row">
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900" data-ui="payment-invoice">{pay.invoice_number || `#${pay.invoice_id}`}</td>

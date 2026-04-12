@@ -30,8 +30,8 @@ function StatCard({ label, value, icon: Icon, accent = "primary" }: {
       className={`bo-stat-card flex flex-col gap-2 p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] bg-gradient-to-br from-[hsl(var(--card))] to-[hsl(var(--card))]/80`}
       data-ui="mobile-stat-card"
     >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{label}</span>
+      <div className="flex items-center justify-between" data-slot="backoffice-justify-between">
+        <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide" data-slot="backoffice-tracking-wide">{label}</span>
         <Icon size={18} className="text-[hsl(var(--primary))]" strokeWidth={1.8} aria-hidden="true" />
       </div>
       <div className="text-3xl font-bold text-[hsl(var(--foreground))]" data-ui="mobile-stat-value">{value}</div>

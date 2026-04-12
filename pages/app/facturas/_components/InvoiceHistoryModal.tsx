@@ -115,9 +115,9 @@ export function InvoiceHistoryModal({
     <div className="bo-modal-overlay" onClick={onClose} data-slot="invoice-history-overlay">
       <div className="bo-modal-content bo-historyModal" onClick={(e) => e.stopPropagation()} data-slot="invoice-history-modal">
         <div className="bo-modal-header" data-slot="invoice-history-header">
-          <div className="bo-modal-title">
+          <div className="bo-modal-title" data-slot="invoiceHistoryModal-modal-title">
             <History size={20} />
-            <span>Historial de cambios</span>
+            <span data-slot="invoiceHistoryModal-ios">Historial de cambios</span>
           </div>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -139,22 +139,22 @@ export function InvoiceHistoryModal({
 
           {loading && (
             <div className="bo-historyLoading" data-slot="invoice-history-loading">
-              <div className="bo-spinner" />
-              <span>Cargando historial...</span>
+              <div className="bo-spinner" / data-slot="invoiceHistoryModal-spinner">
+              <span data-slot="invoiceHistoryModal-ial">Cargando historial...</span>
             </div>
           )}
 
           {error && (
             <div className="bo-historyError" data-slot="invoice-history-error">
-              <span>{error}</span>
+              <span data-slot="invoiceHistoryModal-ror">{error}</span>
             </div>
           )}
 
           {!loading && !error && history.length === 0 && (
             <div className="bo-historyEmpty" data-slot="invoice-history-empty">
               <Clock size={32} />
-              <span>No hay historial disponible</span>
-              <p>Los cambios realizados en esta factura se mostraran aqui.</p>
+              <span data-slot="invoiceHistoryModal-ble">No hay historial disponible</span>
+              <p data-slot="invoiceHistoryModal-qui">Los cambios realizados en esta factura se mostraran aqui.</p>
             </div>
           )}
 
@@ -179,11 +179,11 @@ export function InvoiceHistoryModal({
                       {actionConfig.icon}
                     </div>
                     <div className="bo-historyEntryContent" data-slot="invoice-history-entry-content">
-                      <div className="bo-historyEntryHeader">
-                        <span className={`bo-historyAction ${actionConfig.className}`}>
+                      <div className="bo-historyEntryHeader" data-slot="invoiceHistoryModal-historyEntryHeader">
+                        <span className={`bo-historyAction ${actionConfig.className}`} data-slot="invoiceHistoryModal-span">
                           {actionConfig.label}
                         </span>
-                        <span className="bo-historyEntryDate">
+                        <span className="bo-historyEntryDate" data-slot="invoiceHistoryModal-historyEntryDate">
                           <Clock size={12} />
                           {formatDateTime(entry.created_at)}
                         </span>
@@ -192,20 +192,20 @@ export function InvoiceHistoryModal({
                       {entry.user_name && (
                         <div className="bo-historyEntryUser" data-slot="invoice-history-entry-user">
                           <User size={12} />
-                          <span>{entry.user_name}</span>
+                          <span data-slot="invoiceHistoryModal-ame">{entry.user_name}</span>
                           {entry.user_email && <span className="bo-historyUserEmail">({entry.user_email})</span>}
                         </div>
                       )}
 
                       {hasChanges && entry.field_name && (
                         <div className="bo-historyChanges" data-slot="invoice-history-entry-changes">
-                          <span className="bo-historyFieldName">{formatFieldName(entry.field_name)}:</span>
+                          <span className="bo-historyFieldName" data-slot="invoiceHistoryModal-historyFieldName">{formatFieldName(entry.field_name)}:</span>
                           <div className="bo-historyValues" data-slot="invoice-history-values">
-                            <span className="bo-historyOldValue" title="Valor anterior">
+                            <span className="bo-historyOldValue" title="Valor anterior" data-slot="invoiceHistoryModal-historyOldValue">
                               {formatValue(entry.old_value)}
                             </span>
-                            <span className="bo-historyArrow">→</span>
-                            <span className="bo-historyNewValue" title="Nuevo valor">
+                            <span className="bo-historyArrow" data-slot="invoiceHistoryModal-historyArrow">→</span>
+                            <span className="bo-historyNewValue" title="Nuevo valor" data-slot="invoiceHistoryModal-historyNewValue">
                               {formatValue(entry.new_value)}
                             </span>
                           </div>

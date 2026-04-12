@@ -22,13 +22,13 @@ export default function Page() {
   if (error) {
     return (
       <div className="bo-publicInvoice" data-ui="invoice-error">
-        <div className="bo-publicInvoiceError">
-          <div className="bo-publicInvoiceErrorIcon">
+        <div className="bo-publicInvoiceError" data-slot="factura-publicInvoiceError">
+          <div className="bo-publicInvoiceErrorIcon" data-slot="factura-publicInvoiceErrorIcon">
             <AlertCircle size={48} />
           </div>
           <h1 data-ui="error-title">Error</h1>
           <p data-ui="error-message">{error}</p>
-          <p className="bo-publicInvoiceErrorHint">
+          <p className="bo-publicInvoiceErrorHint" data-slot="factura-publicInvoiceErrorHint">
             Por favor, contacte con nosotros si cree que esto es un error.
           </p>
         </div>
@@ -39,9 +39,9 @@ export default function Page() {
   if (!invoice) {
     return (
       <div className="bo-publicInvoice" data-ui="invoice-loading">
-        <div className="bo-publicInvoiceLoading">
-          <div className="bo-spinner" />
-          <p>Cargando factura...</p>
+        <div className="bo-publicInvoiceLoading" data-slot="factura-publicInvoiceLoading">
+          <div className="bo-spinner" / data-slot="factura-spinner">
+          <p data-slot="factura-ura">Cargando factura...</p>
         </div>
       </div>
     );
@@ -52,15 +52,15 @@ export default function Page() {
   const currency = invoice.currency || "EUR";
 
   return (
-    <div className="bo-publicInvoice">
-      <div className="bo-publicInvoiceContainer">
+    <div className="bo-publicInvoice" data-slot="factura-publicInvoice">
+      <div className="bo-publicInvoiceContainer" data-slot="factura-publicInvoiceContainer">
         {/* Header */}
         <div className="bo-publicInvoiceHeader" data-slot="invoice-header">
-          <div className="bo-publicInvoiceBrand">
+          <div className="bo-publicInvoiceBrand" data-slot="factura-publicInvoiceBrand">
             <h1 data-ui="brand-name">Villa Carmen</h1>
             <p data-ui="brand-subtitle">Restaurante</p>
           </div>
-          <div className="bo-publicInvoiceTitle">
+          <div className="bo-publicInvoiceTitle" data-slot="factura-publicInvoiceTitle">
             <h2 data-ui="invoice-title">Factura</h2>
             <p className="bo-publicInvoiceNumber" data-ui="invoice-number">{invoice.invoice_number || `#${invoice.id}`}</p>
           </div>
@@ -81,7 +81,7 @@ export default function Page() {
 
         {/* Payment Status */}
         <div className={`bo-paymentStatus ${paymentInfo.className}`} data-ui="payment-status">
-          <div className="bo-paymentStatusInfo">
+          <div className="bo-paymentStatusInfo" data-slot="factura-paymentStatusInfo">
             <strong data-slot="payment-label">{paymentInfo.label}</strong>
             <span data-slot="payment-description">{paymentInfo.description}</span>
           </div>
@@ -90,12 +90,12 @@ export default function Page() {
         {/* Customer Info */}
         <div className="bo-publicInvoiceSection" data-slot="customer-section">
           <h3 data-ui="section-title-customer">Cliente</h3>
-          <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2">
+          <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2" data-slot="factura-publicInvoiceGrid--2">
             <div className="bo-publicInvoiceField" data-slot="field-name">
               <User size={16} />
-              <div>
-                <label>Nombre</label>
-                <p>
+              <div data-slot="factura-div">
+                <label data-slot="factura-bre">Nombre</label>
+                <p data-slot="factura-p">
                   {invoice.customer_name}
                   {invoice.customer_surname && ` ${invoice.customer_surname}`}
                 </p>
@@ -104,27 +104,27 @@ export default function Page() {
             {invoice.customer_dni_cif && (
               <div className="bo-publicInvoiceField" data-slot="field-dni">
                 <FileText size={16} />
-                <div>
-                  <label>DNI/CIF</label>
-                  <p>{invoice.customer_dni_cif}</p>
+                <div data-slot="factura-div">
+                  <label data-slot="factura-cif">DNI/CIF</label>
+                  <p data-slot="factura-cif">{invoice.customer_dni_cif}</p>
                 </div>
               </div>
             )}
             {invoice.customer_email && (
               <div className="bo-publicInvoiceField" data-slot="field-email">
                 <Mail size={16} />
-                <div>
-                  <label>Email</label>
-                  <p>{invoice.customer_email}</p>
+                <div data-slot="factura-div">
+                  <label data-slot="factura-ail">Email</label>
+                  <p data-slot="factura-ail">{invoice.customer_email}</p>
                 </div>
               </div>
             )}
             {invoice.customer_phone && (
               <div className="bo-publicInvoiceField" data-slot="field-phone">
                 <Phone size={16} />
-                <div>
-                  <label>Teléfono</label>
-                  <p>{invoice.customer_phone}</p>
+                <div data-slot="factura-div">
+                  <label data-slot="factura-ono">Teléfono</label>
+                  <p data-slot="factura-one">{invoice.customer_phone}</p>
                 </div>
               </div>
             )}
@@ -132,9 +132,9 @@ export default function Page() {
           {(invoice.customer_address_street || invoice.customer_address_city) && (
             <div className="bo-publicInvoiceField bo-publicInvoiceField--full" data-slot="field-address">
               <MapPin size={16} />
-              <div>
-                <label>Dirección</label>
-                <p>
+              <div data-slot="factura-div">
+                <label data-slot="factura-cci">Dirección</label>
+                <p data-slot="factura-p">
                   {[invoice.customer_address_street, invoice.customer_address_number]
                     .filter(Boolean)
                     .join(", ")}
@@ -150,38 +150,38 @@ export default function Page() {
         {/* Invoice Details */}
         <div className="bo-publicInvoiceSection" data-slot="invoice-details-section">
           <h3 data-ui="section-title-details">Detalles de la Factura</h3>
-          <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2">
+          <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2" data-slot="factura-publicInvoiceGrid--2">
             <div className="bo-publicInvoiceField" data-slot="field-invoice-date">
               <Calendar size={16} />
-              <div>
-                <label>Fecha de Factura</label>
-                <p>{formatDate(invoice.invoice_date)}</p>
+              <div data-slot="factura-div">
+                <label data-slot="factura-ura">Fecha de Factura</label>
+                <p data-slot="factura-ate">{formatDate(invoice.invoice_date)}</p>
               </div>
             </div>
             {invoice.payment_date && (
               <div className="bo-publicInvoiceField" data-slot="field-payment-date">
                 <Calendar size={16} />
-                <div>
-                  <label>Fecha de Pago</label>
-                  <p>{formatDate(invoice.payment_date)}</p>
+                <div data-slot="factura-div">
+                  <label data-slot="factura-ago">Fecha de Pago</label>
+                  <p data-slot="factura-ate">{formatDate(invoice.payment_date)}</p>
                 </div>
               </div>
             )}
             {invoice.payment_method && (
               <div className="bo-publicInvoiceField" data-slot="field-payment-method">
                 <CreditCard size={16} />
-                <div>
-                  <label>Método de Pago</label>
-                  <p style={{ textTransform: "capitalize" }}>{invoice.payment_method}</p>
+                <div data-slot="factura-div">
+                  <label data-slot="factura-ago">Método de Pago</label>
+                  <p style={{ textTransform: "capitalize" }} data-slot="factura-hod">{invoice.payment_method}</p>
                 </div>
               </div>
             )}
             {invoice.reservation_date && (
               <div className="bo-publicInvoiceField" data-slot="field-reservation-date">
                 <Calendar size={16} />
-                <div>
-                  <label>Fecha de Reserva</label>
-                  <p>
+                <div data-slot="factura-div">
+                  <label data-slot="factura-rva">Fecha de Reserva</label>
+                  <p data-slot="factura-p">
                     {formatDate(invoice.reservation_date)}
                     {invoice.reservation_party_size && ` - ${invoice.reservation_party_size} personas`}
                   </p>
@@ -194,18 +194,18 @@ export default function Page() {
         {/* Amount Summary */}
         <div className="bo-publicInvoiceSummary" data-slot="amount-summary">
           <div className="bo-publicInvoiceSummaryRow" data-slot="row-base">
-            <span>Base Imponible</span>
-            <span>{formatPrice(invoice.amount, currency)}</span>
+            <span data-slot="factura-ble">Base Imponible</span>
+            <span data-slot="factura-ncy">{formatPrice(invoice.amount, currency)}</span>
           </div>
           {invoice.iva_rate && invoice.iva_rate > 0 && (
             <div className="bo-publicInvoiceSummaryRow" data-slot="row-iva">
-              <span>IVA ({invoice.iva_rate}%)</span>
-              <span>{formatPrice(invoice.iva_amount || 0, currency)}</span>
+              <span data-slot="factura-ate">IVA ({invoice.iva_rate}%)</span>
+              <span data-slot="factura-ncy">{formatPrice(invoice.iva_amount || 0, currency)}</span>
             </div>
           )}
           <div className="bo-publicInvoiceSummaryRow bo-publicInvoiceSummaryTotal" data-slot="row-total">
-            <span>Total</span>
-            <span>{formatPrice(total, currency)}</span>
+            <span data-slot="factura-tal">Total</span>
+            <span data-slot="factura-ncy">{formatPrice(total, currency)}</span>
           </div>
         </div>
 
@@ -214,14 +214,14 @@ export default function Page() {
           <div className="bo-publicInvoiceSection" data-slot="payment-history-section">
             <h3 data-ui="section-title-history">Historial de Pagos</h3>
             <table className="bo-table bo-table--sm" data-ui="payments-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Método</th>
-                  <th>Importe</th>
+              <thead data-slot="factura-thead">
+                <tr data-slot="factura-tr">
+                  <th data-slot="factura-cha">Fecha</th>
+                  <th data-slot="factura-odo">Método</th>
+                  <th data-slot="factura-rte">Importe</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody data-slot="factura-tbody">
                 {invoice.payments.map((payment) => (
                   <tr key={payment.id} data-slot="payment-row">
                     <td data-slot="payment-date">{formatDateShort(payment.payment_date)}</td>
@@ -236,7 +236,7 @@ export default function Page() {
 
         {/* Footer */}
         <div className="bo-publicInvoiceFooter" data-slot="footer">
-          <p>
+          <p data-slot="factura-p">
             Si tiene alguna pregunta sobre esta factura, por favor contacte con nosotros.
           </p>
           <p className="bo-publicInvoiceFooterContact" data-ui="footer-contact">

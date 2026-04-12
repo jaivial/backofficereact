@@ -17,7 +17,7 @@ export function PdfTemplatePanel({ invoiceSettings, busy, onSettingsChange, onSa
         <div className="bo-panelMeta" data-ui="panelMeta">Selecciona el diseno predeterminado para las facturas</div>
       </div>
       <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack">
+        <div className="bo-stack" data-slot="pdfTemplatePanel-stack">
           <div className="bo-mutedText" style={{ marginBottom: 16 }} data-ui="description">
             Elige el diseno que se utilizara por defecto al generar los PDFs de las facturas. Los usuarios podran elegir una plantilla diferente al crear cada factura.
           </div>

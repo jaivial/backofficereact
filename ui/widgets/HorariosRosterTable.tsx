@@ -35,9 +35,9 @@ export function HorariosRosterTable({
       <table data-ui="horariosRosterTable" className="bo-horariosRosterTable">
         <thead data-slot="tableHead">
           <tr data-role="header-row">
-            <th data-col="member" className="bo-horariosRosterCol--member">Miembro</th>
-            <th data-col="shift" className="bo-horariosRosterCol--shift">Horario Asignado</th>
-            <th data-col="status" className="bo-horariosRosterCol--status">Estado / Fichaje</th>
+            <th data-col="member" className="bo-horariosRosterCol--member" data-slot="horariosRosterTable-horariosRosterCol--member">Miembro</th>
+            <th data-col="shift" className="bo-horariosRosterCol--shift" data-slot="horariosRosterTable-horariosRosterCol--shift">Horario Asignado</th>
+            <th data-col="status" className="bo-horariosRosterCol--status" data-slot="horariosRosterTable-horariosRosterCol--status">Estado / Fichaje</th>
           </tr>
         </thead>
         <tbody data-slot="tableBody">
@@ -58,7 +58,7 @@ export function HorariosRosterTable({
                   }
                 }}
               >
-                <td data-col="member" className="bo-horariosRosterCol--member">
+                <td data-col="member" className="bo-horariosRosterCol--member" data-slot="horariosRosterTable-horariosRosterCol--member">
                   <div data-ui="rosterMember" className="bo-horariosRosterMember">
                     <div data-slot="memberText" className="bo-horariosRosterMemberText">
                       <div data-slot="memberName" className="bo-horariosRosterMemberName">
@@ -67,12 +67,12 @@ export function HorariosRosterTable({
                     </div>
                   </div>
                 </td>
-                <td data-col="shift" className="bo-horariosRosterCol--shift">
+                <td data-col="shift" className="bo-horariosRosterCol--shift" data-slot="horariosRosterTable-horariosRosterCol--shift">
                   <span data-slot="shiftLabel" className={`bo-horariosRosterShift${row.schedule ? "" : " is-empty"}`}>
                     {row.schedule ? `${row.schedule.startTime} - ${row.schedule.endTime}` : "Sin asignar"}
                   </span>
                 </td>
-                <td data-col="status" className="bo-horariosRosterCol--status">
+                <td data-col="status" className="bo-horariosRosterCol--status" data-slot="horariosRosterTable-horariosRosterCol--status">
                   <span data-ui="statusBadge" className="bo-horariosRosterStatus">
                     {isLive ? (
                       <>

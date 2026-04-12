@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [session.activeRestaurantId]);
 
   return (
-    <div className="bo-app bo-app--page">
+    <div className="bo-app bo-app--page" data-slot="Layout-app--page">
       <Sidebar
         pathname={pathname}
         role={session.user.role}

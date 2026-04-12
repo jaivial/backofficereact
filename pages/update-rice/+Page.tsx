@@ -45,10 +45,10 @@ export default function Page() {
   if (error || !booking) {
     return (
       <div className="bo-publicPage" data-ui="book-rice">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageAlert bo-publicPageAlert--danger">
+        <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
+          <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="update-rice-publicPageAlert--danger">
             <AlertCircle size={20} />
-            <span>{error || "Reserva no encontrada."}</span>
+            <span data-slot="update-rice-ada">{error || "Reserva no encontrada."}</span>
           </div>
           <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-page-back-home-link">
             <ArrowLeft size={18} />
@@ -62,15 +62,15 @@ export default function Page() {
   if (booking.isSameDay && !actionSuccess) {
     return (
       <div className="bo-publicPage" data-ui="book-rice">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageIcon bo-publicPageIcon--warning">
+        <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
+          <div className="bo-publicPageIcon bo-publicPageIcon--warning" data-slot="update-rice-publicPageIcon--warning">
             <AlertTriangle size={24} />
           </div>
-          <h1 className="bo-publicPageTitle">No Disponible</h1>
-          <p className="bo-publicPageSub">Reserva para hoy</p>
-          <div className="bo-publicPageAlert bo-publicPageAlert--warning">
+          <h1 className="bo-publicPageTitle" data-slot="update-rice-publicPageTitle">No Disponible</h1>
+          <p className="bo-publicPageSub" data-slot="update-rice-publicPageSub">Reserva para hoy</p>
+          <div className="bo-publicPageAlert bo-publicPageAlert--warning" data-slot="update-rice-publicPageAlert--warning">
             <AlertTriangle size={20} />
-            <span>Las reservas de arroz para el mismo día deben hacerse por teléfono.</span>
+            <span data-slot="update-rice-ono">Las reservas de arroz para el mismo día deben hacerse por teléfono.</span>
           </div>
           <a href="tel:+34638857294" className="bo-publicPageBtn bo-publicPageBtn--success" data-testid="update-rice-page-call-link">
             <Phone size={18} />
@@ -85,16 +85,16 @@ export default function Page() {
   if (actionSuccess) {
     return (
       <div className="bo-publicPage" data-ui="book-rice">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageIcon bo-publicPageIcon--success">
+        <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
+          <div className="bo-publicPageIcon bo-publicPageIcon--success" data-slot="update-rice-publicPageIcon--success">
             <CheckCircle size={24} />
           </div>
-          <h1 className="bo-publicPageTitle">Arroz Reservado</h1>
-          <p className="bo-publicPageSub">{actionSuccess}</p>
-          <div className="bo-publicPageBooking">
-            <div className="bo-publicPageBookingHeader">
+          <h1 className="bo-publicPageTitle" data-slot="update-rice-publicPageTitle">Arroz Reservado</h1>
+          <p className="bo-publicPageSub" data-slot="update-rice-publicPageSub">{actionSuccess}</p>
+          <div className="bo-publicPageBooking" data-slot="update-rice-publicPageBooking">
+            <div className="bo-publicPageBookingHeader" data-slot="update-rice-publicPageBookingHeader">
               <div className="bo-publicPageBookingName" data-role="customer-name">{booking.customerName}</div>
-              <div className="bo-publicPageBookingId">{booking.reservationDate} · {booking.reservationTime} · {booking.partySize} personas</div>
+              <div className="bo-publicPageBookingId" data-slot="update-rice-publicPageBookingId">{booking.reservationDate} · {booking.reservationTime} · {booking.partySize} personas</div>
             </div>
           </div>
           <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-page-success-back-link">Volver al inicio</a>
@@ -106,18 +106,18 @@ export default function Page() {
   if (!showForm) {
     return (
       <div className="bo-publicPage" data-ui="book-rice">
-        <div className="bo-publicPageCard">
-          <h1 className="bo-publicPageTitle">Tu Arroz</h1>
-          <p className="bo-publicPageSub">Arroz actual de tu reserva</p>
-          <div className="bo-publicPageBooking">
-            <div className="bo-publicPageBookingHeader">
+        <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
+          <h1 className="bo-publicPageTitle" data-slot="update-rice-publicPageTitle">Tu Arroz</h1>
+          <p className="bo-publicPageSub" data-slot="update-rice-publicPageSub">Arroz actual de tu reserva</p>
+          <div className="bo-publicPageBooking" data-slot="update-rice-publicPageBooking">
+            <div className="bo-publicPageBookingHeader" data-slot="update-rice-publicPageBookingHeader">
               <div className="bo-publicPageBookingName" data-role="customer-name">{booking.customerName}</div>
-              <div className="bo-publicPageBookingId">{booking.reservationDate} · {booking.reservationTime}</div>
+              <div className="bo-publicPageBookingId" data-slot="update-rice-publicPageBookingId">{booking.reservationDate} · {booking.reservationTime}</div>
             </div>
-            <div className="bo-publicPageDetailGrid">
-              <div className="bo-publicPageDetailItem">
+            <div className="bo-publicPageDetailGrid" data-slot="update-rice-publicPageDetailGrid">
+              <div className="bo-publicPageDetailItem" data-slot="update-rice-publicPageDetailItem">
                 <Utensils size={16} />
-                <div><span className="bo-publicPageDetailLabel">Arroz</span><span className="bo-publicPageDetailValue">{booking.arrozDisplay || "No Arroz"}</span></div>
+                <div data-slot="update-rice-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Arroz</span><span className="bo-publicPageDetailValue">{booking.arrozDisplay || "No Arroz"}</span></div>
               </div>
             </div>
           </div>
@@ -129,27 +129,27 @@ export default function Page() {
 
   return (
     <div className="bo-publicPage" data-ui="book-rice">
-      <div className="bo-publicPageCard">
+      <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
         <h1 className="bo-publicPageTitle" data-slot="title">Reservar Arroz</h1>
-        <p className="bo-publicPageSub">Seleccione el tipo de arroz para su reserva</p>
+        <p className="bo-publicPageSub" data-slot="update-rice-publicPageSub">Seleccione el tipo de arroz para su reserva</p>
 
         {actionError && (
-          <div className="bo-publicPageAlert bo-publicPageAlert--danger">
+          <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="update-rice-publicPageAlert--danger">
             <AlertCircle size={20} />
-            <span>{actionError}</span>
+            <span data-slot="update-rice-ror">{actionError}</span>
           </div>
         )}
 
-        <div className="bo-publicPageBooking">
-          <div className="bo-publicPageBookingHeader">
+        <div className="bo-publicPageBooking" data-slot="update-rice-publicPageBooking">
+          <div className="bo-publicPageBookingHeader" data-slot="update-rice-publicPageBookingHeader">
             <div className="bo-publicPageBookingName" data-role="customer-name">{booking.customerName}</div>
-            <div className="bo-publicPageBookingId">{booking.reservationDate} · {booking.reservationTime} · {booking.partySize} personas</div>
+            <div className="bo-publicPageBookingId" data-slot="update-rice-publicPageBookingId">{booking.reservationDate} · {booking.reservationTime} · {booking.partySize} personas</div>
           </div>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="bo-publicPageForm" data-testid="update-rice-page-form">
-          <div className="bo-publicPageFormGroup">
-            <label className="bo-publicPageFormLabel" htmlFor="rice_type">Tipo de arroz</label>
+          <div className="bo-publicPageFormGroup" data-slot="update-rice-publicPageFormGroup">
+            <label className="bo-publicPageFormLabel" htmlFor="rice_type" data-slot="update-rice-publicPageFormLabel">Tipo de arroz</label>
             <select
               className="bo-publicPageFormControl"
               id="rice_type"
@@ -164,8 +164,8 @@ export default function Page() {
               ))}
             </select>
           </div>
-          <div className="bo-publicPageFormGroup">
-            <label className="bo-publicPageFormLabel" htmlFor="rice_servings">Raciones (máximo {booking.partySize})</label>
+          <div className="bo-publicPageFormGroup" data-slot="update-rice-publicPageFormGroup">
+            <label className="bo-publicPageFormLabel" htmlFor="rice_servings" data-slot="update-rice-publicPageFormLabel">Raciones (máximo {booking.partySize})</label>
             <input
               className="bo-publicPageFormControl"
               id="rice_servings"

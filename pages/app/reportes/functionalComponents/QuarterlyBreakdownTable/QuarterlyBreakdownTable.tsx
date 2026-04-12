@@ -24,19 +24,19 @@ function formatDate(dateStr: string): string {
 export function QuarterlyBreakdownTable({ quarterlyBreakdown }: QuarterlyBreakdownTableProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="quarterly-table">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trimestre</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periodo</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Base</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Facturas</th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Notas Cred.</th>
+      <table className="min-w-full divide-y divide-gray-200" data-slot="quarterlyBreakdownTable-divide-gray-200">
+        <thead className="bg-gray-50" data-slot="quarterlyBreakdownTable-bg-gray-50">
+          <tr data-slot="quarterlyBreakdownTable-tr">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="quarterlyBreakdownTable-tracking-wider">Trimestre</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="quarterlyBreakdownTable-tracking-wider">Periodo</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="quarterlyBreakdownTable-tracking-wider">Base</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="quarterlyBreakdownTable-tracking-wider">IVA</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="quarterlyBreakdownTable-tracking-wider">Total</th>
+            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="quarterlyBreakdownTable-tracking-wider">Facturas</th>
+            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="quarterlyBreakdownTable-tracking-wider">Notas Cred.</th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-200" data-slot="quarterlyBreakdownTable-divide-gray-200">
           {quarterlyBreakdown.length > 0 ? (
             quarterlyBreakdown.map((item, idx) => (
               <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-ui="quarterly-row">
@@ -50,7 +50,7 @@ export function QuarterlyBreakdownTable({ quarterlyBreakdown }: QuarterlyBreakdo
               </tr>
             ))
           ) : (
-            <tr>
+            <tr data-slot="quarterlyBreakdownTable-tr">
               <td colSpan={7} className="px-6 py-8 text-center text-gray-500" data-ui="no-data">
                 No hay datos trimestrales disponibles. Genera un reporte para ver el desglose.
               </td>

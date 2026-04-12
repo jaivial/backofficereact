@@ -90,7 +90,7 @@ function FoodTypePage() {
 
   return (
     <section aria-label={`Carta ${listLabel}`} className="bo-foodPage" data-role="food-type-page">
-      <div className="bo-container">
+      <div className="bo-container" data-slot="@foodType-container">
         <Breadcrumbs items={breadcrumbs} />
 
         <div className="bo-foodPage-hero" data-ui="food-type-hero">
@@ -104,7 +104,7 @@ function FoodTypePage() {
           <div className="bo-foodPageVisibility" data-ui="food-page-visibility">
             <div className="bo-foodPageVisibilityRow flex flex-row justify-center align-center gap-4 py-4" data-ui="food-page-visibility-row">
               <div className="bo-foodPageVisibilityLabel" data-ui="food-page-visibility-label">
-                <span className="bo-foodPageVisibilityTitle">Pagina publica activa</span>
+                <span className="bo-foodPageVisibilityTitle" data-slot="@foodType-foodPageVisibilityTitle">Pagina publica activa</span>
               </div>
               <Switch
                 checked={pageActive}

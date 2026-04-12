@@ -142,7 +142,7 @@ export function Sidebar({
         </div>
       </nav>
 
-      <div className="bo-sidebarSpacer" aria-hidden="true" />
+      <div className="bo-sidebarSpacer" aria-hidden="true" / data-slot="sidebar-sidebarSpacer">
     </aside>
   );
 }

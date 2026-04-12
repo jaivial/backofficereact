@@ -107,15 +107,15 @@ export default function Page() {
 
   return (
     <section aria-label="Estadisticas del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-estadisticas-section">
-      <div className="bo-panel bo-memberStatsPanel">
-        <div className="bo-panelHead bo-memberStatsHead">
-          <div>
-            <div className="bo-panelTitle">Estadisticas</div>
-            <div className="bo-panelMeta">Horas trabajadas y progreso respecto al contrato semanal.</div>
+      <div className="bo-panel bo-memberStatsPanel" data-slot="estadisticas-memberStatsPanel">
+        <div className="bo-panelHead bo-memberStatsHead" data-slot="estadisticas-memberStatsHead">
+          <div data-slot="estadisticas-div">
+            <div className="bo-panelTitle" data-slot="estadisticas-panelTitle">Estadisticas</div>
+            <div className="bo-panelMeta" data-slot="estadisticas-panelMeta">Horas trabajadas y progreso respecto al contrato semanal.</div>
           </div>
-          <div className="bo-memberStatsControls">
-            <label className="bo-field bo-memberControl">
-              <span className="bo-label">Vista</span>
+          <div className="bo-memberStatsControls" data-slot="estadisticas-memberStatsControls">
+            <label className="bo-field bo-memberControl" data-slot="estadisticas-memberControl">
+              <span className="bo-label" data-slot="estadisticas-label">Vista</span>
               <Select
                 className="bo-memberControlSelect"
                 value={view}
@@ -129,8 +129,8 @@ export default function Page() {
                 ariaLabel="Vista"
               />
             </label>
-            <label className="bo-field bo-memberControl">
-              <span className="bo-label">Grafico</span>
+            <label className="bo-field bo-memberControl" data-slot="estadisticas-memberControl">
+              <span className="bo-label" data-slot="estadisticas-label">Grafico</span>
               <Select
                 className="bo-memberControlSelect"
                 value={chartType}
@@ -140,8 +140,8 @@ export default function Page() {
                 ariaLabel="Tipo de grafico"
               />
             </label>
-            <label className="bo-field bo-memberControl">
-              <span className="bo-label">Fecha</span>
+            <label className="bo-field bo-memberControl" data-slot="estadisticas-memberControl">
+              <span className="bo-label" data-slot="estadisticas-label">Fecha</span>
               <DatePicker
                 value={date}
                 popoverOffsetX={-40}
@@ -157,26 +157,28 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bo-panelBody bo-memberStatsBody">
-          <div className="bo-memberProgress">
-            <div className="bo-memberProgressTop">
-              <span className="bo-mutedText">Cumplimiento semanal</span>
+        <div className="bo-panelBody bo-memberStatsBody" data-slot="estadisticas-memberStatsBody">
+          <div className="bo-memberProgress" data-slot="estadisticas-memberProgress">
+            <div className="bo-memberProgressTop" data-slot="estadisticas-memberProgressTop">
+              <span className="bo-mutedText" data-slot="estadisticas-mutedText">Cumplimiento semanal</span>
               <strong>{weeklyPercent.toFixed(2)}%</strong>
             </div>
-            <div className="bo-memberProgressTrack">
-              <span className="bo-memberProgressFill" style={{ width: `${weeklyProgress}%` }} />
+            <div className="bo-memberProgressTrack" data-slot="estadisticas-memberProgressTrack">
+              <span className="bo-memberProgressFill" style={{ width: `${weeklyProgress}%` }} / data-slot="estadisticas-memberProgressFill">
             </div>
           </div>
 
-          <div className="bo-memberBarsSection">
-            <div className="bo-mutedText">
+          <div className="bo-memberBarsSection" data-slot="estadisticas-memberBarsSection">
+            <div className="bo-mutedText" data-slot="estadisticas-mutedText">
               Periodo {statsLive?.startDate ?? "-"} {"->"} {statsLive?.endDate ?? "-"}
             </div>
             {chartType === "bar" ? (
-              <div className="bo-memberBarsScroll">
+              <div className="bo-memberBarsScroll" data-slot="estadisticas-memberBarsScroll">
                 <div
                   className="bo-memberBarsGrid"
-                  style={{
+                  style={
+                  data-slot="estadisticas-memberBarsGrid",
+                  {
                     gridTemplateColumns: `repeat(${Math.max(points.length, 1)}, minmax(42px, 1fr))`,
                   }}
                 >
@@ -184,12 +186,12 @@ export default function Page() {
                     const pointHours = toFiniteNumber(point.hours);
                     const h = (pointHours / chartMax) * 100;
                     return (
-                      <div key={point.date} className="bo-memberBarCol">
-                        <div className="bo-memberBarValue">{pointHours.toFixed(1)}</div>
-                        <div className="bo-memberBarTrack">
-                          <div className="bo-memberBarFill" style={{ height: `${Math.max(h, 3)}%` }} />
+                      <div key={point.date} className="bo-memberBarCol" data-slot="estadisticas-memberBarCol">
+                        <div className="bo-memberBarValue" data-slot="estadisticas-memberBarValue">{pointHours.toFixed(1)}</div>
+                        <div className="bo-memberBarTrack" data-slot="estadisticas-memberBarTrack">
+                          <div className="bo-memberBarFill" style={{ height: `${Math.max(h, 3)}%` }} / data-slot="estadisticas-memberBarFill">
                         </div>
-                        <div className="bo-memberBarLabel">{point.label}</div>
+                        <div className="bo-memberBarLabel" data-slot="estadisticas-memberBarLabel">{point.label}</div>
                       </div>
                     );
                   })}
@@ -201,46 +203,46 @@ export default function Page() {
             {points.length ? null : <div className="bo-mutedText">Sin datos de horas para el periodo seleccionado.</div>}
           </div>
 
-          <div className="bo-memberSummaryGrid">
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Horas trabajadas</div>
-              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
+          <div className="bo-memberSummaryGrid" data-slot="estadisticas-memberSummaryGrid">
+            <div className="bo-kv" data-slot="estadisticas-kv">
+              <div className="bo-kvLabel" data-slot="estadisticas-kvLabel">Horas trabajadas</div>
+              <div className="bo-kvValue" data-slot="estadisticas-kvValue">{toFiniteNumber(statsLive?.summary.workedHours).toFixed(2)} h</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Horas esperadas</div>
-              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
+            <div className="bo-kv" data-slot="estadisticas-kv">
+              <div className="bo-kvLabel" data-slot="estadisticas-kvLabel">Horas esperadas</div>
+              <div className="bo-kvValue" data-slot="estadisticas-kvValue">{toFiniteNumber(statsLive?.summary.expectedHours).toFixed(2)} h</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Progreso periodo</div>
-              <div className="bo-kvValue">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
+            <div className="bo-kv" data-slot="estadisticas-kv">
+              <div className="bo-kvLabel" data-slot="estadisticas-kvLabel">Progreso periodo</div>
+              <div className="bo-kvValue" data-slot="estadisticas-kvValue">{toFiniteNumber(statsLive?.summary.progressPercent).toFixed(2)}%</div>
             </div>
-            <div className="bo-kv">
-              <div className="bo-kvLabel">Bolsa trimestral</div>
-              <div className={`bo-kvValue bo-memberBalance${balanceHours >= 0 ? " is-positive" : " is-negative"}`}>
+            <div className="bo-kv" data-slot="estadisticas-kv">
+              <div className="bo-kvLabel" data-slot="estadisticas-kvLabel">Bolsa trimestral</div>
+              <div className={`bo-kvValue bo-memberBalance${balanceHours >= 0 ? " is-positive" : " is-negative"}`} data-slot="estadisticas-div">
                 {balanceHours >= 0 ? "+" : ""}
                 {balanceHours.toFixed(2)} h
               </div>
             </div>
           </div>
-          <div className="bo-memberQuarterNote">
+          <div className="bo-memberQuarterNote" data-slot="estadisticas-memberQuarterNote">
             Bolsa trimestral: {balanceLive?.quarter.startDate ?? "-"} {"->"} {balanceLive?.quarter.cutoffDate ?? "-"} (trimestre natural).
           </div>
         </div>
       </div>
 
       {/* Stats Table Section */}
-      <div className="bo-panel bo-statsTablePanel">
-        <div className="bo-panelHead">
-          <div>
-            <div className="bo-panelTitle">Tabla de Estadisticas</div>
-            <div className="bo-panelMeta">Datos detallados por período completo del año.</div>
+      <div className="bo-panel bo-statsTablePanel" data-slot="estadisticas-statsTablePanel">
+        <div className="bo-panelHead" data-slot="estadisticas-panelHead">
+          <div data-slot="estadisticas-div">
+            <div className="bo-panelTitle" data-slot="estadisticas-panelTitle">Tabla de Estadisticas</div>
+            <div className="bo-panelMeta" data-slot="estadisticas-panelMeta">Datos detallados por período completo del año.</div>
           </div>
         </div>
-        <div className="bo-panelBody">
+        <div className="bo-panelBody" data-slot="estadisticas-panelBody">
           {data.memberId > 0 ? (
             <StatsTable memberId={data.memberId} />
           ) : (
-            <div className="bo-mutedText">Selecciona un miembro para ver las estadísticas.</div>
+            <div className="bo-mutedText" data-slot="estadisticas-mutedText">Selecciona un miembro para ver las estadísticas.</div>
           )}
         </div>
       </div>
@@ -309,8 +311,8 @@ function MemberLinearChart({
 
   if (!isClient || !components) {
     return (
-      <div className="bo-memberLinearChart">
-        <div className="bo-memberLinearLoading">{loadError ? "No se pudo cargar el grafico." : "Cargando grafico…"}</div>
+      <div className="bo-memberLinearChart" data-slot="estadisticas-memberLinearChart">
+        <div className="bo-memberLinearLoading" data-slot="estadisticas-memberLinearLoading">{loadError ? "No se pudo cargar el grafico." : "Cargando grafico…"}</div>
       </div>
     );
   }
@@ -319,8 +321,8 @@ function MemberLinearChart({
   const chartWidth = Math.max(points.length, 1) * 60;
 
   return (
-    <div className="bo-memberLinearChart">
-      <div className="bo-memberLinearScroll" style={{ minWidth: `${chartWidth}px` }}>
+    <div className="bo-memberLinearChart" data-slot="estadisticas-memberLinearChart">
+      <div className="bo-memberLinearScroll" style={{ minWidth: `${chartWidth}px` }} data-slot="estadisticas-memberLinearScroll">
         <ResponsiveContainer width={chartWidth} height={220}>
           <AreaChart data={points} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>

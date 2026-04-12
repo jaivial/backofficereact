@@ -248,7 +248,7 @@ export function DropdownMenu({
               data-item-id={it.id}
             >
               {it.icon ? <span className="bo-menuIcon" aria-hidden="true">{it.icon}</span> : null}
-              <span className="bo-menuLabel">{it.label}</span>
+              <span className="bo-menuLabel" data-slot="dropdownMenu-menuLabel">{it.label}</span>
             </button>
           ))}
         </motion.div>,

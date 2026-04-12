@@ -143,7 +143,7 @@ export function ReservationTable({
       <div className="bo-tableScroll" data-ui="table-scroll">
         <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-ui="reservations-table">
           <thead data-ui="table-header">
-            <tr>
+            <tr data-slot="reservationTable-tr">
               <th className="col-added" data-ui="th-added">Añadida</th>
               <th className="col-mesa" data-ui="th-mesa">Mesa</th>
               <th className="col-time" data-ui="th-time">Hora</th>

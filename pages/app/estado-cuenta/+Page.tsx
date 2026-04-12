@@ -277,8 +277,8 @@ export default function Page() {
     <div className="p-6 max-w-7xl mx-auto" data-slot="estado-cuenta-page">
       <div className="flex items-center justify-between mb-6" data-slot="estado-cuenta-page-header">
         <div data-slot="estado-cuenta-title-group">
-          <h1 className="text-2xl font-bold text-gray-900">Estado de Cuenta</h1>
-          <p className="text-gray-600">Genera estados de cuenta para clientes</p>
+          <h1 className="text-2xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">Estado de Cuenta</h1>
+          <p className="text-gray-600" data-slot="estado-cuenta-text-gray-600">Genera estados de cuenta para clientes</p>
         </div>
       </div>
 
@@ -287,7 +287,7 @@ export default function Page() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-slot="estado-cuenta-filters-grid">
           {/* Customer Select */}
           <div data-slot="estado-cuenta-customer-field">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="estado-cuenta-mb-1">Cliente</label>
             <select
               value={selectedCustomer}
               onChange={(e) => {
@@ -310,7 +310,7 @@ export default function Page() {
 
           {/* Date from */}
           <div data-slot="estado-cuenta-date-from-field">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="estado-cuenta-mb-1">Desde</label>
             <input
               type="date"
               value={statementDateFrom}
@@ -322,7 +322,7 @@ export default function Page() {
 
           {/* Date to */}
           <div data-slot="estado-cuenta-date-to-field">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="estado-cuenta-mb-1">Hasta</label>
             <input
               type="date"
               value={statementDateTo}
@@ -391,24 +391,24 @@ export default function Page() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4" data-slot="estado-cuenta-customer-info-title">Informacion del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-slot="estado-cuenta-customer-info-grid">
               <div data-slot="estado-cuenta-customer-name-field">
-                <span className="text-sm text-gray-500">Nombre</span>
-                <p className="text-lg font-medium text-gray-900">{customerStatement.customer_name}</p>
+                <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Nombre</span>
+                <p className="text-lg font-medium text-gray-900" data-slot="estado-cuenta-text-gray-900">{customerStatement.customer_name}</p>
               </div>
               {customerStatement.customer_dni_cif && (
                 <div data-slot="estado-cuenta-customer-dni-field">
-                  <span className="text-sm text-gray-500">DNI/CIF</span>
-                  <p className="text-lg font-medium text-gray-900">{customerStatement.customer_dni_cif}</p>
+                  <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">DNI/CIF</span>
+                  <p className="text-lg font-medium text-gray-900" data-slot="estado-cuenta-text-gray-900">{customerStatement.customer_dni_cif}</p>
                 </div>
               )}
               {customerStatement.customer_email && (
                 <div data-slot="estado-cuenta-customer-email-field">
-                  <span className="text-sm text-gray-500">Email</span>
-                  <p className="text-lg font-medium text-gray-900">{customerStatement.customer_email}</p>
+                  <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Email</span>
+                  <p className="text-lg font-medium text-gray-900" data-slot="estado-cuenta-text-gray-900">{customerStatement.customer_email}</p>
                 </div>
               )}
               <div data-slot="estado-cuenta-customer-period-field">
-                <span className="text-sm text-gray-500">Periodo</span>
-                <p className="text-lg font-medium text-gray-900">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
+                <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Periodo</span>
+                <p className="text-lg font-medium text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
               </div>
             </div>
           </div>
@@ -418,37 +418,37 @@ export default function Page() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-opening-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-opening-header">
                 <DollarSign className="w-5 h-5 text-gray-600" />
-                <span className="text-sm text-gray-500">Saldo Inicial</span>
+                <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Saldo Inicial</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.opening_balance, "EUR")}</p>
+              <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.opening_balance, "EUR")}</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-invoiced-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-invoiced-header">
                 <Receipt className="w-5 h-5 text-blue-600" />
-                <span className="text-sm text-gray-500">Total Facturado</span>
+                <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Total Facturado</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.summary.total_invoiced, "EUR")}</p>
+              <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.summary.total_invoiced, "EUR")}</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-paid-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-paid-header">
                 <CreditCard className="w-5 h-5 text-green-600" />
-                <span className="text-sm text-gray-500">Total Pagado</span>
+                <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Total Pagado</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.summary.total_paid, "EUR")}</p>
+              <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.summary.total_paid, "EUR")}</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-pending-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-pending-header">
                 <Calendar className="w-5 h-5 text-yellow-600" />
-                <span className="text-sm text-gray-500">Pendiente</span>
+                <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Pendiente</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.summary.total_pending, "EUR")}</p>
+              <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.summary.total_pending, "EUR")}</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-final-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-final-header">
                 <DollarSign className="w-5 h-5 text-red-600" />
-                <span className="text-sm text-gray-500">Saldo Final</span>
+                <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Saldo Final</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.closing_balance, "EUR")}</p>
+              <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.closing_balance, "EUR")}</p>
             </div>
           </div>
 
@@ -457,29 +457,29 @@ export default function Page() {
             {/* Invoices */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="estado-cuenta-invoices-card">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="estado-cuenta-invoices-header">
-                <h3 className="text-lg font-semibold text-gray-900">Facturas ({customerStatement.invoices.length})</h3>
+                <h3 className="text-lg font-semibold text-gray-900" data-slot="estado-cuenta-text-gray-900">Facturas ({customerStatement.invoices.length})</h3>
               </div>
               {customerStatement.invoices.length > 0 ? (
                 <div className="overflow-x-auto" data-slot="estado-cuenta-invoices-table-wrapper">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Importe</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
+                  <table className="min-w-full divide-y divide-gray-200" data-slot="estado-cuenta-divide-gray-200">
+                    <thead className="bg-gray-50" data-slot="estado-cuenta-bg-gray-50">
+                      <tr data-slot="estado-cuenta-tr">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Factura</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Fecha</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Importe</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Estado</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-200" data-slot="estado-cuenta-divide-gray-200">
                       {customerStatement.invoices.map((inv, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-slot="estado-cuenta-tr">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900" data-slot="estado-cuenta-text-gray-900">
                             {inv.invoice_number || `#${inv.id}`}
                             {inv.is_credit_note && <span className="ml-2 px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">NC</span>}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{formatDate(inv.invoice_date)}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(inv.total, "EUR")}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-center">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600" data-slot="estado-cuenta-text-gray-600">{formatDate(inv.invoice_date)}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(inv.total, "EUR")}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-center" data-slot="estado-cuenta-text-center">
                             <span className={`px-2 py-1 text-xs rounded-full ${
                               inv.status === "pagada" ? "bg-green-100 text-green-800" :
                               inv.status === "pendiente" ? "bg-yellow-100 text-yellow-800" :
@@ -504,26 +504,26 @@ export default function Page() {
             {/* Payments */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="estado-cuenta-payments-card">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="estado-cuenta-payments-header">
-                <h3 className="text-lg font-semibold text-gray-900">Pagos ({customerStatement.payments.length})</h3>
+                <h3 className="text-lg font-semibold text-gray-900" data-slot="estado-cuenta-text-gray-900">Pagos ({customerStatement.payments.length})</h3>
               </div>
               {customerStatement.payments.length > 0 ? (
                 <div className="overflow-x-auto" data-slot="estado-cuenta-payments-table-wrapper">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Metodo</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Importe</th>
+                  <table className="min-w-full divide-y divide-gray-200" data-slot="estado-cuenta-divide-gray-200">
+                    <thead className="bg-gray-50" data-slot="estado-cuenta-bg-gray-50">
+                      <tr data-slot="estado-cuenta-tr">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Factura</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Fecha</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Metodo</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="estado-cuenta-uppercase">Importe</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-200" data-slot="estado-cuenta-divide-gray-200">
                       {customerStatement.payments.map((pay, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{pay.invoice_number || `#${pay.invoice_id}`}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{formatDate(pay.payment_date)}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{pay.payment_method}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">{formatCurrency(pay.amount, "EUR")}</td>
+                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-slot="estado-cuenta-tr">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900" data-slot="estado-cuenta-text-gray-900">{pay.invoice_number || `#${pay.invoice_id}`}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600" data-slot="estado-cuenta-text-gray-600">{formatDate(pay.payment_date)}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600" data-slot="estado-cuenta-text-gray-600">{pay.payment_method}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(pay.amount, "EUR")}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -540,8 +540,8 @@ export default function Page() {
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" data-slot="estado-cuenta-empty-state">
           <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Sin estado de cuenta</h3>
-          <p className="text-gray-500 mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="estado-cuenta-mb-2">Sin estado de cuenta</h3>
+          <p className="text-gray-500 mb-4" data-slot="estado-cuenta-mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
         </div>
       )}
     </div>

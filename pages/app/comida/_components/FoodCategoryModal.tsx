@@ -50,7 +50,7 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
           <button type="submit" className="bo-btn bo-btn--primary" disabled={busy || !name.trim()} data-testid="food-category-submit-btn" data-ui="food-cat-modal-submit">
             {busy ? (
               <>
-                <div className="bo-spinner bo-spinner--sm" />
+                <div className="bo-spinner bo-spinner--sm" / data-slot="foodCategoryModal-spinner--sm">
                 Guardando...
               </>
             ) : (

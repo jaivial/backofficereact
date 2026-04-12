@@ -71,7 +71,7 @@ export function MobileBottomSheet({
           >
             {/* Drag handle */}
             <div className="flex justify-center pt-3 pb-2" aria-hidden="true" data-ui="mobile-sheet-handle">
-              <div className="w-10 h-1 rounded-full bg-[hsl(var(--muted-foreground))]/30" />
+              <div className="w-10 h-1 rounded-full bg-[hsl(var(--muted-foreground))]/30" / data-slot="mobileBottomSheet-bg-[hsl(var(-">
             </div>
 
             {/* Header */}

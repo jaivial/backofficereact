@@ -289,7 +289,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 data-testid="send-email-method-email"
               >
                 <Mail size={16} />
-                <span>Email</span>
+                <span data-slot="sendEmailModal-ail">Email</span>
               </button>
               <button
                 type="button"
@@ -299,7 +299,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 data-testid="send-email-method-whatsapp"
               >
                 <MessageCircle size={16} />
-                <span>WhatsApp</span>
+                <span data-slot="sendEmailModal-app">WhatsApp</span>
               </button>
             </div>
 
@@ -341,7 +341,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
             {/* Email form */}
             <div className="bo-sendEmailForm" data-slot="send-email-form">
               <div className="bo-field" data-slot="send-email-field-subject">
-                <label className="bo-label">Asunto</label>
+                <label className="bo-label" data-slot="sendEmailModal-label">Asunto</label>
                 <input
                   className="bo-input"
                   type="text"
@@ -351,14 +351,14 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                   disabled={sending}
                   data-testid="send-email-subject-input"
                 />
-                <span className="bo-fieldHint">
+                <span className="bo-fieldHint" data-slot="sendEmailModal-fieldHint">
                   Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"}, {"{invoice_link}"}
                 </span>
               </div>
 
               <div className="bo-field" data-slot="send-email-field-message">
                 <div className="bo-fieldHeader" data-slot="send-email-message-header">
-                  <label className="bo-label">Mensaje</label>
+                  <label className="bo-label" data-slot="sendEmailModal-label">Mensaje</label>
                   <button
                     type="button"
                     className="bo-btn bo-btn--ghost bo-btn--sm"

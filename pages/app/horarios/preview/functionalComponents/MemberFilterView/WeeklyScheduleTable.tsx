@@ -56,28 +56,28 @@ export function WeeklyScheduleTable({
           <div data-slot="separator" className="week-separator h-px mb-3" aria-hidden="true" />
 
           <table data-slot="table" className="w-full text-sm">
-            <thead>
-              <tr>
-                <th data-col="day" className="text-left font-normal pb-2 pr-4 w-32 text-purple-500 text-xs font-medium uppercase tracking-wide">
+            <thead data-slot="weeklyScheduleTable-thead">
+              <tr data-slot="weeklyScheduleTable-tr">
+                <th data-col="day" className="text-left font-normal pb-2 pr-4 w-32 text-purple-500 text-xs font-medium uppercase tracking-wide" data-slot="weeklyScheduleTable-tracking-wide">
                   Día
                 </th>
-                <th data-col="schedule" className="text-left font-normal pb-2 text-purple-500 text-xs font-medium uppercase tracking-wide">
+                <th data-col="schedule" className="text-left font-normal pb-2 text-purple-500 text-xs font-medium uppercase tracking-wide" data-slot="weeklyScheduleTable-tracking-wide">
                   Horario
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="weeklyScheduleTable-tbody">
               {week.dates.map((date) => {
                 const schedule = schedulesByDate.get(date);
                 const dayName = getDayName(date);
                 const dayNum = new Date(date).getDate();
 
                 return (
-                  <tr key={date} data-row="scheduleRow" className="border-t border-purple-50 first:border-t-0">
-                    <td data-col="dayCell" className="py-2 pr-4 capitalize day-name text-purple-900 font-medium">
+                  <tr key={date} data-row="scheduleRow" className="border-t border-purple-50 first:border-t-0" data-slot="weeklyScheduleTable-first:border-t-0">
+                    <td data-col="dayCell" className="py-2 pr-4 capitalize day-name text-purple-900 font-medium" data-slot="weeklyScheduleTable-font-medium">
                       {dayName} {dayNum}
                     </td>
-                    <td data-col="scheduleCell" className="py-2">
+                    <td data-col="scheduleCell" className="py-2" data-slot="weeklyScheduleTable-py-2">
                       {schedule ? (
                         <span data-slot="scheduleInfo" className="schedule-time text-zinc-700 font-medium">
                           {schedule.startTime} - {schedule.endTime}

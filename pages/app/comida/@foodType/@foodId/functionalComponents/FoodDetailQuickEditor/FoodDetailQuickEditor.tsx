@@ -127,7 +127,7 @@ export function FoodDetailQuickEditor({
             />
           </label>
           <label className="bo-field" data-slot="food-detail-quick-categoria-field">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2" data-slot="foodDetailQuickEditor-mb-2">
               <span className="bo-label" data-role="food-detail-quick-categoria-label">Categoria</span>
               {isBebida ? (
                 <button

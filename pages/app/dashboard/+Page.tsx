@@ -70,15 +70,15 @@ export default function Page() {
         <StatCard label="Confirmadas" value={String(m.confirmed)} icon="check" />
         <StatCard label="Pendientes" value={String(m.pending)} icon="clock" />
         <StatCard label="Comensales" value={String(m.totalPeople)} icon="users" />
-        <div className="bo-card bo-cardOb" aria-label="Resumen">
-          <div className="bo-cardObHead">
-            <div className="bo-statLabel">Dia seleccionado</div>
-            <div className="bo-cardObIcon" aria-hidden="true">
-              <div className="bo-pill" />
+        <div className="bo-card bo-cardOb" aria-label="Resumen" data-slot="dashboard-resumen">
+          <div className="bo-cardObHead" data-slot="dashboard-cardObHead">
+            <div className="bo-statLabel" data-slot="dashboard-statLabel">Dia seleccionado</div>
+            <div className="bo-cardObIcon" aria-hidden="true" data-slot="dashboard-cardObIcon">
+              <div className="bo-pill" / data-slot="dashboard-pill">
             </div>
           </div>
-          <div className="bo-cardObTitle">{data.date}</div>
-          <div className="bo-cardObBody">Panel inicial del backoffice. Mas modulos se agregan aqui.</div>
+          <div className="bo-cardObTitle" data-slot="dashboard-cardObTitle">{data.date}</div>
+          <div className="bo-cardObBody" data-slot="dashboard-cardObBody">Panel inicial del backoffice. Mas modulos se agregan aqui.</div>
         </div>
       </section>
 

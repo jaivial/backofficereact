@@ -111,6 +111,7 @@ export const TouchNodeWrapper: React.FC<TouchNodeWrapperProps> = ({
     <div
       data-touch-draggable={isDraggable ? "true" : "false"}
       data-node-id={nodeId}
+      data-slot="reservas-table-node"
       data-node-type={nodeType}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}

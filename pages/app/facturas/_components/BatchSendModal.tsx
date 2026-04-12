@@ -322,12 +322,13 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                   <span data-slot="batch-send-progress-text">
                     Enviando factura {currentIndex + 1} de {validInvoices.length}...
                   </span>
-                  <span className="bo-batchSendProgressPercent">{Math.round(progress)}%</span>
+                  <span className="bo-batchSendProgressPercent" data-slot="batchSendModal-batchSendProgressPercent">{Math.round(progress)}%</span>
                 </div>
                 <div className="bo-batchSendProgressBar" data-slot="batch-send-progress-bar">
                   <div
                     className="bo-batchSendProgressFill"
                     style={{ width: `${progress}%` }}
+                    data-slot="batch-send-progress-fill"
                   />
                 </div>
                 {results.length > 0 && (
@@ -357,7 +358,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
 
                 <div className="bo-batchSendForm" data-slot="batch-send-form">
                   <div className="bo-field" data-slot="batch-send-field-subject">
-                    <label className="bo-label">Asunto</label>
+                    <label className="bo-label" data-slot="batchSendModal-label">Asunto</label>
                     <input
                       className="bo-input"
                       type="text"
@@ -366,7 +367,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                       placeholder="Asunto del email"
                       data-testid="batch-send-subject-input"
                     />
-                    <span className="bo-fieldHint">
+                    <span className="bo-fieldHint" data-slot="batchSendModal-fieldHint">
                       Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"},{" "}
                       {"{invoice_link}"}
                     </span>
@@ -374,7 +375,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
 
                   <div className="bo-field" data-slot="batch-send-field-message">
                     <div className="bo-fieldHeader" data-slot="batch-send-message-header">
-                      <label className="bo-label">Mensaje</label>
+                      <label className="bo-label" data-slot="batchSendModal-label">Mensaje</label>
                       <button
                         type="button"
                         className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -402,7 +403,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
             )}
 
             {/* Actions */}
-            <div className="bo-batchSendActions">
+            <div className="bo-batchSendActions" data-slot="batchSendModal-batchSendActions">
               <button
                 type="button"
                 className="bo-btn bo-btn--secondary"

@@ -82,11 +82,11 @@ export function SimpleTabs({
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
-                <span className="bo-tabIndicator" />
+                <span className="bo-tabIndicator" / data-slot="simpleTabs-tabIndicator">
               )
             ) : null}
-            <span className="bo-tabInner">
-              <span className="bo-tabLabel">{item.label}</span>
+            <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
+              <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
             </span>
           </button>
         );
@@ -145,11 +145,11 @@ export function SimpleTabsList({
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
-                <span className="bo-tabIndicator" />
+                <span className="bo-tabIndicator" / data-slot="simpleTabs-tabIndicator">
               )
             ) : null}
-            <span className="bo-tabInner">
-              <span className="bo-tabLabel">{item.label}</span>
+            <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
+              <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
             </span>
           </button>
         );

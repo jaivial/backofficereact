@@ -42,10 +42,10 @@ export default function Page() {
   if (error || !booking) {
     return (
       <div className="bo-publicPage" data-ui="cancel-reservation">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageAlert bo-publicPageAlert--danger">
+        <div className="bo-publicPageCard" data-slot="cancel-publicPageCard">
+          <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="cancel-publicPageAlert--danger">
             <AlertCircle size={20} />
-            <span>{error || "Reserva no encontrada."}</span>
+            <span data-slot="cancel-ada">{error || "Reserva no encontrada."}</span>
           </div>
           <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="cancel-page-back-home-error">
             <ArrowLeft size={18} />
@@ -59,15 +59,15 @@ export default function Page() {
   if (booking.isSameDay && !actionSuccess) {
     return (
       <div className="bo-publicPage" data-ui="cancel-reservation">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageIcon bo-publicPageIcon--warning">
+        <div className="bo-publicPageCard" data-slot="cancel-publicPageCard">
+          <div className="bo-publicPageIcon bo-publicPageIcon--warning" data-slot="cancel-publicPageIcon--warning">
             <AlertTriangle size={24} />
           </div>
-          <h1 className="bo-publicPageTitle">Cancelación No Disponible</h1>
-          <p className="bo-publicPageSub">Reserva para hoy</p>
-          <div className="bo-publicPageAlert bo-publicPageAlert--warning">
+          <h1 className="bo-publicPageTitle" data-slot="cancel-publicPageTitle">Cancelación No Disponible</h1>
+          <p className="bo-publicPageSub" data-slot="cancel-publicPageSub">Reserva para hoy</p>
+          <div className="bo-publicPageAlert bo-publicPageAlert--warning" data-slot="cancel-publicPageAlert--warning">
             <AlertTriangle size={20} />
-            <span>Las reservas para el mismo día no se pueden cancelar online. Por favor, llame al restaurante.</span>
+            <span data-slot="cancel-nte">Las reservas para el mismo día no se pueden cancelar online. Por favor, llame al restaurante.</span>
           </div>
           <BookingDetails booking={displayBooking!} />
           <a href="tel:+34638857294" className="bo-publicPageBtn bo-publicPageBtn--success" data-testid="cancel-page-call-restaurant">
@@ -83,14 +83,14 @@ export default function Page() {
   if (actionSuccess) {
     return (
       <div className="bo-publicPage" data-ui="cancel-reservation">
-        <div className="bo-publicPageCard">
-          <div className="bo-publicPageIcon bo-publicPageIcon--success">
+        <div className="bo-publicPageCard" data-slot="cancel-publicPageCard">
+          <div className="bo-publicPageIcon bo-publicPageIcon--success" data-slot="cancel-publicPageIcon--success">
             <XCircle size={24} />
           </div>
-          <h1 className="bo-publicPageTitle">Reserva Cancelada</h1>
-          <p className="bo-publicPageSub">Su reserva ha sido cancelada correctamente</p>
-          <div className="bo-publicPageAlert bo-publicPageAlert--success">
-            <span>{actionSuccess}</span>
+          <h1 className="bo-publicPageTitle" data-slot="cancel-publicPageTitle">Reserva Cancelada</h1>
+          <p className="bo-publicPageSub" data-slot="cancel-publicPageSub">Su reserva ha sido cancelada correctamente</p>
+          <div className="bo-publicPageAlert bo-publicPageAlert--success" data-slot="cancel-publicPageAlert--success">
+            <span data-slot="cancel-ess">{actionSuccess}</span>
           </div>
           <BookingDetails booking={displayBooking!} />
           <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="cancel-page-back-home-cancelled">Volver al inicio</a>
@@ -101,14 +101,14 @@ export default function Page() {
 
   return (
     <div className="bo-publicPage" data-ui="cancel-reservation">
-      <div className="bo-publicPageCard">
+      <div className="bo-publicPageCard" data-slot="cancel-publicPageCard">
         <h1 className="bo-publicPageTitle" data-slot="title">Cancelar Reserva</h1>
-        <p className="bo-publicPageSub">Revise los detalles antes de confirmar</p>
+        <p className="bo-publicPageSub" data-slot="cancel-publicPageSub">Revise los detalles antes de confirmar</p>
 
         {actionError && (
-          <div className="bo-publicPageAlert bo-publicPageAlert--danger">
+          <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="cancel-publicPageAlert--danger">
             <AlertCircle size={20} />
-            <span>{actionError}</span>
+            <span data-slot="cancel-ror">{actionError}</span>
           </div>
         )}
 
@@ -124,7 +124,7 @@ export default function Page() {
           Cancelar Reserva
         </button>
         <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="cancel-page-back-home">Volver sin cancelar</a>
-        <p className="bo-publicPageNote">Esta acción no se puede deshacer. Se notificará al restaurante de la cancelación.</p>
+        <p className="bo-publicPageNote" data-slot="cancel-publicPageNote">Esta acción no se puede deshacer. Se notificará al restaurante de la cancelación.</p>
       </div>
     </div>
   );
@@ -133,22 +133,22 @@ export default function Page() {
 function BookingDetails({ booking }: { booking: PublicBooking }) {
   return (
     <div className="bo-publicPageBooking" data-slot="details">
-      <div className="bo-publicPageBookingHeader">
+      <div className="bo-publicPageBookingHeader" data-slot="cancel-publicPageBookingHeader">
         <div className="bo-publicPageBookingName" data-role="customer-name">{booking.customerName}</div>
-        <div className="bo-publicPageBookingId">Reserva #{booking.id}</div>
+        <div className="bo-publicPageBookingId" data-slot="cancel-publicPageBookingId">Reserva #{booking.id}</div>
       </div>
-      <div className="bo-publicPageDetailGrid">
-        <div className="bo-publicPageDetailItem">
+      <div className="bo-publicPageDetailGrid" data-slot="cancel-publicPageDetailGrid">
+        <div className="bo-publicPageDetailItem" data-slot="cancel-publicPageDetailItem">
           <Calendar size={16} />
-          <div><span className="bo-publicPageDetailLabel">Fecha</span><span className="bo-publicPageDetailValue">{booking.reservationDate}</span></div>
+          <div data-slot="cancel-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Fecha</span><span className="bo-publicPageDetailValue">{booking.reservationDate}</span></div>
         </div>
-        <div className="bo-publicPageDetailItem">
+        <div className="bo-publicPageDetailItem" data-slot="cancel-publicPageDetailItem">
           <Clock size={16} />
-          <div><span className="bo-publicPageDetailLabel">Hora</span><span className="bo-publicPageDetailValue">{booking.reservationTime}</span></div>
+          <div data-slot="cancel-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Hora</span><span className="bo-publicPageDetailValue">{booking.reservationTime}</span></div>
         </div>
-        <div className="bo-publicPageDetailItem">
+        <div className="bo-publicPageDetailItem" data-slot="cancel-publicPageDetailItem">
           <Users size={16} />
-          <div><span className="bo-publicPageDetailLabel">Personas</span><span className="bo-publicPageDetailValue">{booking.partySize}</span></div>
+          <div data-slot="cancel-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Personas</span><span className="bo-publicPageDetailValue">{booking.partySize}</span></div>
         </div>
       </div>
     </div>

@@ -30,15 +30,15 @@ export function MandatoryMenuConfig({
       exit={{ opacity: 0 }}
     >
       <div data-slot="panel-head" className="bo-panelHead px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4 mx-auto justify-center">
-        <div className="flex flex-col sm:items-center sm:justify-between gap-2 mx-auto">
-          <div>
+        <div className="flex flex-col sm:items-center sm:justify-between gap-2 mx-auto" data-slot="mandatoryMenuConfig-mx-auto">
+          <div data-slot="mandatoryMenuConfig-div">
             <div data-role="title" className="bo-panelTitle text-base sm:text-lg text-center">Reserva de menús</div>
             <div data-slot="meta" className="bo-panelMeta text-xs sm:text-sm mt-0.5 text-center">
               Los clientes eligen menú antes de confirmar la reserva
             </div>
           </div>
           <div className="flex items-center gap-3 mx-auto" data-ui="mandatory-toggle">
-            <span className={`text-sm font-medium ${mandatoryMenuStatus ? "text-(--bo-accent)" : "text-(--bo-muted)"} transition-colors duration-150`}>
+            <span className={`text-sm font-medium ${mandatoryMenuStatus ? "text-(--bo-accent)" : "text-(--bo-muted)"} transition-colors duration-150`} data-slot="mandatoryMenuConfig-span">
               {mandatoryMenuStatus ? "Activado" : "Desactivado"}
             </span>
             <Switch
@@ -64,7 +64,7 @@ export function MandatoryMenuConfig({
           >
             {/* Info notice */}
             <div data-ui="info-notice" className="mb-4 p-3 rounded-lg bg-(--bo-surface-2) border border-(--bo-border)">
-              <div className="flex gap-4 items-center mx-auto !content-center">
+              <div className="flex gap-4 items-center mx-auto !content-center" data-slot="mandatoryMenuConfig-!content-center">
                 <Info size={16} strokeWidth={1.8} className="text-(--bo-accent) mt-0.5 flex-shrink-0" aria-hidden="true" data-ui="info-icon" />
                 <p className="text-xs text-(--bo-muted) leading-relaxed" data-role="info-text">
                   Los menús seleccionados aparecerán durante el proceso de reserva. <br data-ui="br" /> Los clientes deberán elegir uno antes de confirmar.

@@ -84,8 +84,8 @@ export default function WebsiteBuilder() {
   if (loading && !website) {
     return (
       <div className="flex items-center justify-center h-64" data-ui="loading-state">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
-        <span className="ml-2 text-slate-400">Loading...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" / data-slot="website-builder-border-purple-500">
+        <span className="ml-2 text-slate-400" data-slot="website-builder-text-slate-400">Loading...</span>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function WebsiteBuilder() {
   if (error) {
     return (
       <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 m-6" data-ui="error-state">
-        <p className="text-red-400">{error}</p>
+        <p className="text-red-400" data-slot="website-builder-text-red-400">{error}</p>
         <button onClick={loadWebsite} className="mt-2 text-red-300 underline hover:text-red-200" data-testid="website-builder-retry">
           Retry
         </button>
@@ -106,9 +106,9 @@ export default function WebsiteBuilder() {
       <div className="min-h-screen bg-slate-900" data-ui="website-builder">
         {/* Header */}
         <header className="bg-slate-800 border-b border-slate-700" data-ui="header">
-          <div className="max-w-full px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold text-slate-100">
+          <div className="max-w-full px-4 py-3 flex items-center justify-between" data-slot="website-builder-justify-between">
+            <div className="flex items-center gap-4" data-slot="website-builder-gap-4">
+              <h1 className="text-xl font-semibold text-slate-100" data-slot="website-builder-text-slate-100">
                 Website Builder
               </h1>
               {website && (
@@ -121,7 +121,7 @@ export default function WebsiteBuilder() {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-slot="website-builder-gap-2">
               <button
                 onClick={() => setPreviewMode(!previewMode)}
                 className="px-3 py-1.5 text-sm border border-slate-600 rounded hover:bg-slate-700 text-slate-300"
@@ -148,12 +148,12 @@ export default function WebsiteBuilder() {
           </div>
         </header>
 
-        <div className="flex h-[calc(100vh-60px)]">
+        <div className="flex h-[calc(100vh-60px)]" data-slot="website-builder-h-[calc(100vh-60px)]">
           {/* Sidebar - Component Library */}
           {!previewMode && (
             <aside className="w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto" data-ui="sidebar">
-              <div className="p-4">
-                <h2 className="text-sm font-semibold text-slate-300 mb-3">
+              <div className="p-4" data-slot="website-builder-p-4">
+                <h2 className="text-sm font-semibold text-slate-300 mb-3" data-slot="website-builder-mb-3">
                   Components
                 </h2>
                 <ComponentLibrary />
@@ -181,8 +181,8 @@ export default function WebsiteBuilder() {
           {/* Right Sidebar - Properties Panel */}
           {!previewMode && selectedComponent && (
             <aside className="w-80 bg-slate-800 border-l border-slate-700 overflow-y-auto" data-ui="properties-panel">
-              <div className="p-4">
-                <h2 className="text-sm font-semibold text-slate-300 mb-3">
+              <div className="p-4" data-slot="website-builder-p-4">
+                <h2 className="text-sm font-semibold text-slate-300 mb-3" data-slot="website-builder-mb-3">
                   Properties
                 </h2>
                 <PropertiesPanel componentId={selectedComponent} onUpdate={loadWebsite} />
@@ -244,9 +244,9 @@ function DraggableComponent({ component }: { component: UIComponent }) {
       data-ui="draggable-component"
       data-component-type={component.type}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-lg">{component.icon}</span>
-        <span className="text-sm text-slate-200">{component.name}</span>
+      <div className="flex items-center gap-2" data-slot="website-builder-gap-2">
+        <span className="text-lg" data-slot="website-builder-text-lg">{component.icon}</span>
+        <span className="text-sm text-slate-200" data-slot="website-builder-text-slate-200">{component.name}</span>
       </div>
     </div>
   );
@@ -319,8 +319,8 @@ function WebsiteCanvas({
   if (!website) {
     return (
       <div className="flex items-center justify-center h-full" data-ui="no-website">
-        <div className="text-center">
-          <p className="text-slate-400 mb-4">No website created yet</p>
+        <div className="text-center" data-slot="website-builder-text-center">
+          <p className="text-slate-400 mb-4" data-slot="website-builder-mb-4">No website created yet</p>
           <button
             onClick={async () => {
               try {
@@ -388,14 +388,14 @@ function WebsiteCanvas({
       {/* Canvas Area */}
       <div className="bg-slate-800 rounded-lg border border-slate-700 p-6 min-h-[500px]" data-ui="canvas-area">
         {loadingSections ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" />
+          <div className="flex items-center justify-center h-32" data-slot="website-builder-h-32">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" / data-slot="website-builder-border-indigo-500">
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4" data-slot="website-builder-space-y-4">
             {sections.length === 0 ? (
               <div className="text-center py-12 text-slate-400" data-ui="empty-canvas">
-                <p>No sections yet. Add a section to start building.</p>
+                <p data-slot="website-builder-ing">No sections yet. Add a section to start building.</p>
               </div>
             ) : (
               sections.map((section) => (
@@ -490,12 +490,12 @@ function SectionDropZone({
       data-section-id={section.id}
       data-section-type={section.section_type}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-slate-300 capitalize">
+      <div className="flex items-center justify-between mb-3" data-slot="website-builder-mb-3">
+        <h3 className="text-sm font-medium text-slate-300 capitalize" data-slot="website-builder-capitalize">
           {section.section_type}
         </h3>
-        <div className="flex gap-2">
-          <span className="text-xs text-slate-500">
+        <div className="flex gap-2" data-slot="website-builder-gap-2">
+          <span className="text-xs text-slate-500" data-slot="website-builder-text-slate-500">
             {section.is_visible ? 'Visible' : 'Hidden'}
           </span>
           <button
@@ -509,9 +509,9 @@ function SectionDropZone({
         </div>
       </div>
       
-      <div className="space-y-2">
+      <div className="space-y-2" data-slot="website-builder-space-y-2">
         {components.length === 0 ? (
-          <p className="text-sm text-slate-500 text-center py-4">
+          <p className="text-sm text-slate-500 text-center py-4" data-slot="website-builder-py-4">
             Drag components here
           </p>
         ) : (
@@ -523,16 +523,16 @@ function SectionDropZone({
               data-ui="section-component"
               data-component-id={comp.id}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400">
+              <div className="flex items-center justify-between" data-slot="website-builder-justify-between">
+                <div className="flex items-center gap-2" data-slot="website-builder-gap-2">
+                  <span className="text-slate-400" data-slot="website-builder-text-slate-400">
                     {comp.dynamic_source ? '🔗' : '📦'}
                   </span>
-                  <span className="text-sm text-slate-200">
+                  <span className="text-sm text-slate-200" data-slot="website-builder-text-slate-200">
                     {comp.component?.name || `Component ${comp.id}`}
                   </span>
                   {comp.dynamic_source && (
-                    <span className="text-xs text-indigo-400">
+                    <span className="text-xs text-indigo-400" data-slot="website-builder-text-indigo-400">
                       ({comp.dynamic_source})
                     </span>
                   )}
@@ -643,8 +643,8 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
 
   return (
     <div className="space-y-4" data-ui="properties-form">
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+      <div data-slot="website-builder-div">
+        <label className="block text-sm font-medium text-slate-300 mb-1" data-slot="website-builder-mb-1">
           Component ID
         </label>
         <input
@@ -656,8 +656,8 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+      <div data-slot="website-builder-div">
+        <label className="block text-sm font-medium text-slate-300 mb-1" data-slot="website-builder-mb-1">
           Title
         </label>
         <input
@@ -669,8 +669,8 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+      <div data-slot="website-builder-div">
+        <label className="block text-sm font-medium text-slate-300 mb-1" data-slot="website-builder-mb-1">
           Background Color
         </label>
         <input
@@ -682,8 +682,8 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
         />
       </div>
 
-      <div>
-        <label className="flex items-center gap-2 cursor-pointer">
+      <div data-slot="website-builder-div">
+        <label className="flex items-center gap-2 cursor-pointer" data-slot="website-builder-cursor-pointer">
           <input
             type="checkbox"
             checked={settings.visible !== false}
@@ -691,7 +691,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
             className="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500"
             data-testid="website-builder-visible-checkbox"
           />
-          <span className="text-sm text-slate-300">Visible</span>
+          <span className="text-sm text-slate-300" data-slot="website-builder-text-slate-300">Visible</span>
         </label>
       </div>
 
@@ -733,7 +733,7 @@ function WebsitePreview({ website, currentPage }: { website: Website | null; cur
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full" data-ui="preview-loading">
-        <p className="text-slate-400">Loading preview...</p>
+        <p className="text-slate-400" data-slot="website-builder-text-slate-400">Loading preview...</p>
       </div>
     );
   }
@@ -741,7 +741,7 @@ function WebsitePreview({ website, currentPage }: { website: Website | null; cur
   if (!previewUrl) {
     return (
       <div className="flex items-center justify-center h-full" data-ui="preview-error">
-        <p className="text-slate-400">Failed to load preview</p>
+        <p className="text-slate-400" data-slot="website-builder-text-slate-400">Failed to load preview</p>
       </div>
     );
   }

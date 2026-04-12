@@ -37,7 +37,7 @@ function MenuTypeCard({ type, href }: { type: MenuType; href: string }) {
       >
         <UtensilsCrossed size={22} className="text-white" strokeWidth={1.8} aria-hidden="true" />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0" data-slot="menus-min-w-0">
         <h3 className="text-base font-bold text-[hsl(var(--foreground))]" data-ui="mobile-menu-type-label">{label}</h3>
         <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5" data-ui="mobile-menu-type-desc">Ver menus y precios</p>
       </div>

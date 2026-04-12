@@ -98,11 +98,11 @@ const MenuFilters = React.memo(function MenuFilters({
   }, []);
 
   return (
-    <div className="bo-menuV2Filters" aria-label="Filtros de menus">
+    <div className="bo-menuV2Filters" aria-label="Filtros de menus" data-slot="menus-filtros-de-menus">
       <div className="bo-menuV2FiltersHead" data-slot="menus-filters-header">
         <div className="bo-menuV2FiltersTitle" data-slot="menus-filters-title">
           <Filter size={15} />
-          <span>Filtros</span>
+          <span data-slot="menus-ros">Filtros</span>
         </div>
         <button
           className="bo-btn bo-btn--ghost bo-btn--sm bo-menuV2FiltersToggle"
@@ -128,7 +128,7 @@ const MenuFilters = React.memo(function MenuFilters({
           >
             <div className="bo-menuV2FiltersGrid" data-slot="menus-filters-grid">
               <label className="bo-field bo-menuV2Filter bo-menuV2Filter--search" data-testid="menus-page-search-label">
-                <span className="bo-label">Buscar por titulo</span>
+                <span className="bo-label" data-slot="menus-label">Buscar por titulo</span>
                 <input
                   className="bo-input"
                   type="search"
@@ -139,8 +139,8 @@ const MenuFilters = React.memo(function MenuFilters({
                 />
               </label>
 
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--status">
-                <span className="bo-label">Estado</span>
+              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--status" data-slot="menus-menuV2Filter--status">
+                <span className="bo-label" data-slot="menus-label">Estado</span>
                 <Select
                   value={statusFilter}
                   onChange={(value) => onStatusFilterChange(value as MenuStatusFilter)}
@@ -149,13 +149,13 @@ const MenuFilters = React.memo(function MenuFilters({
                 />
               </label>
 
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--type">
-                <span className="bo-label">Tipo de menu</span>
+              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--type" data-slot="menus-menuV2Filter--type">
+                <span className="bo-label" data-slot="menus-label">Tipo de menu</span>
                 <Select value={menuTypeFilter} onChange={onMenuTypeFilterChange} options={menuTypeFilterOptions} ariaLabel="Tipo de menu" />
               </label>
 
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--sort">
-                <span className="bo-label">Ordenar</span>
+              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--sort" data-slot="menus-menuV2Filter--sort">
+                <span className="bo-label" data-slot="menus-label">Ordenar</span>
                 <Select value={sortBy} onChange={(value) => onSortByChange(value as MenuSortOption)} options={MENU_SORT_OPTIONS} ariaLabel="Ordenar" />
               </label>
             </div>

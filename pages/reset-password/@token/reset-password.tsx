@@ -44,45 +44,45 @@ export default function Page() {
   };
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window bo-window--auth bo-onboardingWindow">
-        <div className="bo-authCard" role="main" aria-label="Reset password">
+    <div className="bo-stage" data-slot="reset-password-stage">
+      <div className="bo-window bo-window--auth bo-onboardingWindow" data-slot="reset-password-onboardingWindow">
+        <div className="bo-authCard" role="main" aria-label="Reset password" data-slot="reset-password-reset-password">
           {loading ? (
-            <div className="bo-onboardingLoading">
+            <div className="bo-onboardingLoading" data-slot="reset-password-onboardingLoading">
               <Loader2 size={20} className="is-spinning" />
               Validando enlace...
             </div>
           ) : error && !preview ? (
             <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--error">
+              <div className="bo-onboardingIcon bo-onboardingIcon--error" data-slot="reset-password-onboardingIcon--error">
                 <CircleAlert size={30} />
               </div>
-              <div className="bo-title">Enlace no válido</div>
-              <div className="bo-authSub">{error}</div>
+              <div className="bo-title" data-slot="reset-password-title">Enlace no válido</div>
+              <div className="bo-authSub" data-slot="reset-password-authSub">{error}</div>
               <button className="bo-btn bo-btn--ghost" type="button" data-testid="reset-password-login-link" onClick={() => (window.location.href = "/login")}>
                 Ir a login
               </button>
             </>
           ) : done ? (
             <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--ok">
+              <div className="bo-onboardingIcon bo-onboardingIcon--ok" data-slot="reset-password-onboardingIcon--ok">
                 <CheckCircle2 size={30} />
               </div>
-              <div className="bo-title">Password actualizada</div>
-              <div className="bo-authSub">Ya puedes iniciar sesión con tu nueva password.</div>
+              <div className="bo-title" data-slot="reset-password-title">Password actualizada</div>
+              <div className="bo-authSub" data-slot="reset-password-authSub">Ya puedes iniciar sesión con tu nueva password.</div>
               <button className="bo-btn bo-btn--primary" type="button" data-testid="reset-password-done-login-link" onClick={() => (window.location.href = "/login")}>
                 Ir a login
               </button>
             </>
           ) : (
             <>
-              <div className="bo-title">Restablecer password</div>
-              <div className="bo-authSub">
+              <div className="bo-title" data-slot="reset-password-title">Restablecer password</div>
+              <div className="bo-authSub" data-slot="reset-password-authSub">
                 {preview?.firstName ? `${preview.firstName}, ` : ""}introduce tu nueva password dos veces para confirmar.
               </div>
 
-              <label className="bo-field bo-field--wide">
-                <span className="bo-label">Nueva password</span>
+              <label className="bo-field bo-field--wide" data-slot="reset-password-field--wide">
+                <span className="bo-label" data-slot="reset-password-label">Nueva password</span>
                 <input
                   className="bo-input"
                   type="password"
@@ -93,8 +93,8 @@ export default function Page() {
                   disabled={busy}
                 />
               </label>
-              <label className="bo-field bo-field--wide">
-                <span className="bo-label">Repetir password</span>
+              <label className="bo-field bo-field--wide" data-slot="reset-password-field--wide">
+                <span className="bo-label" data-slot="reset-password-label">Repetir password</span>
                 <input
                   className="bo-input"
                   type="password"

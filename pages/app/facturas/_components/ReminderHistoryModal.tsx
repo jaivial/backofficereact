@@ -44,7 +44,7 @@ function ReminderStatusBadge({ status }: { status: InvoiceReminder["status"] }) 
   const { label, icon, className } = config[status] || config.pending;
 
   return (
-    <span className={`bo-badge ${className}`}>
+    <span className={`bo-badge ${className}`} data-slot="reminderHistoryModal-span">
       {icon}
       {label}
     </span>
@@ -54,7 +54,7 @@ function ReminderStatusBadge({ status }: { status: InvoiceReminder["status"] }) 
 function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   if (via === "email") {
     return (
-      <span className="bo-badge bo-badge--info">
+      <span className="bo-badge bo-badge--info" data-slot="reminderHistoryModal-badge--info">
         <Mail size={12} />
         Email
       </span>
@@ -62,7 +62,7 @@ function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   }
   if (via === "whatsapp") {
     return (
-      <span className="bo-badge bo-badge--info">
+      <span className="bo-badge bo-badge--info" data-slot="reminderHistoryModal-badge--info">
         <MessageSquare size={12} />
         WhatsApp
       </span>
@@ -112,7 +112,7 @@ export function ReminderHistoryModal({
     <div className="bo-modal-overlay" onClick={onClose} data-slot="reminder-history-overlay">
       <div className="bo-modal bo-modal--md" onClick={(e) => e.stopPropagation()} data-slot="reminder-history-modal">
         <div className="bo-modalHeader" data-slot="reminder-history-header">
-          <h2 className="bo-modalTitle">Historial de recordatorios</h2>
+          <h2 className="bo-modalTitle" data-slot="reminderHistoryModal-modalTitle">Historial de recordatorios</h2>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onClose}
@@ -126,10 +126,10 @@ export function ReminderHistoryModal({
         <div className="bo-modalBody" data-slot="reminder-history-body">
           {/* Invoice Info */}
           <div className="bo-reminderHistoryInfo" data-slot="reminder-history-info">
-            <span>
+            <span data-slot="reminderHistoryModal-span">
               <strong>{customerName}</strong>
             </span>
-            <span className="bo-mutedText">
+            <span className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">
               Factura {invoiceNumber || `#${invoiceId}`}
             </span>
           </div>
@@ -137,8 +137,8 @@ export function ReminderHistoryModal({
           {/* Loading State */}
           {loading && (
             <div className="bo-loadingState" data-slot="reminder-history-loading">
-              <div className="bo-spinner" />
-              <span>Cargando historial...</span>
+              <div className="bo-spinner" / data-slot="reminderHistoryModal-spinner">
+              <span data-slot="reminderHistoryModal-ial">Cargando historial...</span>
             </div>
           )}
 
@@ -154,8 +154,8 @@ export function ReminderHistoryModal({
           {!loading && !error && reminders.length === 0 && (
             <div className="bo-emptyState" data-slot="reminder-history-empty">
               <Clock size={32} />
-              <p>No hay recordatorios enviados</p>
-              <span className="bo-mutedText">
+              <p data-slot="reminderHistoryModal-dos">No hay recordatorios enviados</p>
+              <span className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">
                 Los recordatorios de pago apareceran aqui
               </span>
             </div>
@@ -171,11 +171,11 @@ export function ReminderHistoryModal({
                       <ReminderStatusBadge status={reminder.status} />
                       {reminder.sent_via && <SentViaBadge via={reminder.sent_via} />}
                     </div>
-                    <div className="bo-reminderHistoryItemDate">
+                    <div className="bo-reminderHistoryItemDate" data-slot="reminderHistoryModal-reminderHistoryItemDate">
                       {reminder.sent_at ? (
                         formatDate(reminder.sent_at)
                       ) : (
-                        <span className="bo-mutedText">Pendiente</span>
+                        <span className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">Pendiente</span>
                       )}
                     </div>
                   </div>
@@ -198,7 +198,7 @@ export function ReminderHistoryModal({
           )}
         </div>
 
-        <div className="bo-modalFooter">
+        <div className="bo-modalFooter" data-slot="reminderHistoryModal-modalFooter">
           <button className="bo-btn bo-btn--ghost" onClick={onClose} data-testid="reminder-history-close-footer-btn">
             Cerrar
           </button>

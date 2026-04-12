@@ -126,15 +126,16 @@ function DishImageCropModalComponent({
 
   return (
     <Modal open={open} title="Recortar imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">Recorte 1:1</div>
+      <div className="bo-modalHead" data-slot="crear-modalHead">
+        <div className="bo-modalTitle" data-slot="crear-modalTitle">Recorte 1:1</div>
         <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy} data-testid="menu-crear-close-crop-modal">×</button>
       </div>
-      <div className="bo-modalBody bo-dishCropBody">
-        <div className="bo-dishCropViewportWrap">
+      <div className="bo-modalBody bo-dishCropBody" data-slot="crear-dishCropBody">
+        <div className="bo-dishCropViewportWrap" data-slot="crear-dishCropViewportWrap">
           <div
             ref={viewportRef}
             className="bo-dishCropViewport"
+            data-slot="crear-dishCropViewport"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -152,17 +153,17 @@ function DishImageCropModalComponent({
                 setNaturalSize({ width: Math.max(1, img.naturalWidth || img.width || 1), height: Math.max(1, img.naturalHeight || img.height || 1) });
               }}
             />
-            <div className="bo-dishCropFrame" aria-hidden="true" />
+            <div className="bo-dishCropFrame" aria-hidden="true" / data-slot="crear-dishCropFrame">
           </div>
         </div>
-        <div className="bo-dishCropControls">
+        <div className="bo-dishCropControls" data-slot="crear-dishCropControls">
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy} data-testid="menu-crear-zoom-out">-</button>
           <input className="bo-dishCropRange" type="range" min={1} max={4} step={0.01} value={zoom} onChange={(event) => applyZoom(Number(event.target.value))} disabled={busy} aria-label="Control de zoom" data-testid="menu-crear-zoom-slider" />
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy} data-testid="menu-crear-zoom-in">+</button>
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => { setOffset({ x: 0, y: 0 }); setZoom(1); }} disabled={busy} data-testid="menu-crear-zoom-reset">Reset</button>
         </div>
       </div>
-      <div className="bo-modalActions">
+      <div className="bo-modalActions" data-slot="crear-modalActions">
         <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} disabled={busy} data-testid="menu-crear-cancel-crop">Cancelar</button>
         <button className="bo-btn bo-btn--primary" type="button" onClick={() => onConfirm({ zoom, offsetX: offset.x, offsetY: offset.y, viewportSize })} disabled={busy || viewportSize <= 0} data-testid="menu-crear-save-crop">
           {busy ? "Procesando..." : "Guardar imagen"}
@@ -268,11 +269,11 @@ export function CrearPage() {
 
   return (
     <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
-      <div className="bo-menuWizardTop">
+      <div className="bo-menuWizardTop" data-slot="crear-menuWizardTop">
         <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/app/menus")} data-testid="menu-crear-back-to-menus">
           <ArrowLeft size={16} /> Volver a menus
         </button>
-        <div className={`bo-saveTag is-${saveState}`}>
+        <div className={`bo-saveTag is-${saveState}`} data-slot="crear-div">
           {saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}
         </div>
       </div>
@@ -285,10 +286,10 @@ export function CrearPage() {
 
       {/* Step 0: Menu Type Selection */}
       {step === 0 ? (
-        <div className="bo-menuWizardPanel">
+        <div className="bo-menuWizardPanel" data-slot="crear-menuWizardPanel">
           <h2 className="bo-sectionTitle" data-slot="menu-crear-tipo-menu">Tipo de menu</h2>
-          <p className="bo-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
-          <div className="bo-typeGrid">
+          <p className="bo-typeIntro" data-slot="crear-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
+          <div className="bo-typeGrid" data-slot="crear-typeGrid">
             {H.isSpecial !== undefined && menuTypeOptions.map((opt) => {
               const MENU_TYPES = require("./constants/menuEditor.constants").MENU_TYPES;
               const optData = MENU_TYPES.find((p: any) => p.value === opt.value) || { icon: Settings2, description: "" };
@@ -304,21 +305,21 @@ export function CrearPage() {
                   aria-pressed={isSelected}
                   data-testid={`menu-crear-type-card-${opt.value}`}
                 >
-                  <div className="bo-typeCardTop">
-                    <div className="bo-typeIconWrap" aria-hidden="true"><Icon size={18} /></div>
-                    <div className={`bo-typeState ${isSelected ? "is-selected" : ""}`}>
+                  <div className="bo-typeCardTop" data-slot="crear-typeCardTop">
+                    <div className="bo-typeIconWrap" aria-hidden="true" data-slot="crear-typeIconWrap"><Icon size={18} /></div>
+                    <div className={`bo-typeState ${isSelected ? "is-selected" : ""}`} data-slot="crear-div">
                       {isSelected ? <Check size={13} /> : null}
                       {isSelected ? "Seleccionado" : "Plantilla"}
                     </div>
                   </div>
-                  <div className="bo-typeTitle">{opt.label}</div>
-                  <div className="bo-typeDesc">{optData.description}</div>
-                  <div className="bo-typeHint">{optData.hint}</div>
+                  <div className="bo-typeTitle" data-slot="crear-typeTitle">{opt.label}</div>
+                  <div className="bo-typeDesc" data-slot="crear-typeDesc">{optData.description}</div>
+                  <div className="bo-typeHint" data-slot="crear-typeHint">{optData.hint}</div>
                 </button>
               );
             })}
           </div>
-          <div className="bo-menuWizardActions bo-menuWizardActions--right">
+          <div className="bo-menuWizardActions bo-menuWizardActions--right" data-slot="crear-menuWizardActions--right">
             <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void createDraftAndContinue()} data-testid="menu-crear-continue-type">
               Continuar
             </button>
@@ -328,28 +329,28 @@ export function CrearPage() {
 
       {/* Step 1: Basic Data */}
       {step === 1 ? (
-        <div className="bo-menuWizardPanel">
+        <div className="bo-menuWizardPanel" data-slot="crear-menuWizardPanel">
           <h2 className="bo-sectionTitle" data-slot="menu-crear-datos-basicos">Datos basicos</h2>
-          <div className="bo-form bo-form--menuWizard bo-form--menuWizardBasics">
-            <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
-              <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
-                <div className="bo-label">Titulo</div>
+          <div className="bo-form bo-form--menuWizard bo-form--menuWizardBasics" data-slot="crear-form--menuWizardBasics">
+            <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`} data-slot="crear-div">
+              <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title" data-slot="crear-menuBasicsField--title">
+                <div className="bo-label" data-slot="crear-label">Titulo</div>
                 <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-title-input" />
               </div>
               {!isALaCarte && !isSpecial ? (
-                <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
-                  <div className="bo-label">Precio</div>
+                <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price" data-slot="crear-menuBasicsField--price">
+                  <div className="bo-label" data-slot="crear-label">Precio</div>
                   <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-price-input" />
                 </div>
               ) : null}
             </div>
 
             {!isSpecial ? (
-              <div className="bo-field bo-field--full">
-                <div className="bo-label">Subtitulos</div>
-                <div className="bo-stackFields">
+              <div className="bo-field bo-field--full" data-slot="crear-field--full">
+                <div className="bo-label" data-slot="crear-label">Subtitulos</div>
+                <div className="bo-stackFields" data-slot="crear-stackFields">
                   {subtitles.map((line, idx) => (
-                    <div key={`subtitle-${idx}`} className="bo-inlineField">
+                    <div key={`subtitle-${idx}`} className="bo-inlineField" data-slot="crear-inlineField">
                       <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-subtitle-input-${idx}`} />
                       <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-subtitle-delete-${idx}`}>
                         <Trash2 size={14} />
@@ -364,31 +365,31 @@ export function CrearPage() {
             ) : null}
 
             {!isSpecial ? (
-              <div className="bo-field">
-                <div className="bo-label">Cambiar tipo de menu</div>
+              <div className="bo-field" data-slot="crear-field">
+                <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
                 <Select className="bo-menuSettingSelect" value={menuType} onChange={setMenuType} options={menuTypeOptions} size="sm" ariaLabel="Seleccionar tipo de menu" />
               </div>
             ) : null}
 
-            <div className="bo-menuBasicsSwitchRow">
-              <div className="bo-field">
-                <div className="bo-label">Añadir foto preview</div>
+            <div className="bo-menuBasicsSwitchRow" data-slot="crear-menuBasicsSwitchRow">
+              <div className="bo-field" data-slot="crear-field">
+                <div className="bo-label" data-slot="crear-label">Añadir foto preview</div>
                 <Select className="bo-menuSettingSelect" value={showMenuPreviewImage ? "with_preview" : "without_preview"} onChange={(value) => setShowMenuPreviewImage(value === "with_preview")} options={menuPreviewVisibilityOptions} size="sm" ariaLabel="Visibilidad de foto preview" />
               </div>
             </div>
 
-            <div className="bo-menuBasicsSwitchRow">
+            <div className="bo-menuBasicsSwitchRow" data-slot="crear-menuBasicsSwitchRow">
               <label className="bo-menuBasicsActiveToggle" data-slot="menu-crear-activo-label">
-                <span className="bo-label">Activo</span>
+                <span className="bo-label" data-slot="crear-label">Activo</span>
                 <Switch checked={active} onCheckedChange={setActive} />
-                <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
+                <span className="bo-mutedText" data-slot="crear-mutedText">{active ? "Activo" : "No activo"}</span>
               </label>
             </div>
 
             {renderMenuPreviewUploadArea()}
           </div>
 
-          <div className="bo-menuWizardActions">
+          <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(0)} data-testid="menu-crear-step1-back">Volver</button>
             <button
               className="bo-btn bo-btn--primary" type="button"
@@ -407,15 +408,15 @@ export function CrearPage() {
 
       {/* Step 2: Sections */}
       {step === 2 ? (
-        <div className="bo-menuWizardPanel">
+        <div className="bo-menuWizardPanel" data-slot="crear-menuWizardPanel">
           <h2 className="bo-sectionTitle" data-slot="menu-crear-secciones-menu">Secciones del menu</h2>
           <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsBoard bo-reorderGroup">
             {sections.map((sec, idx) => (
               <ReorderSectionDragWrapper key={sec.clientId} value={sec.clientId} className="bo-sectionCard bo-reorderItem">
                 {(startDrag) => (
-                  <div className="bo-sectionCardHead">
-                    <div className="bo-sectionReorder">
-                      <div className="bo-sectionMoveControls">
+                  <div className="bo-sectionCardHead" data-slot="crear-sectionCardHead">
+                    <div className="bo-sectionReorder" data-slot="crear-sectionReorder">
+                      <div className="bo-sectionMoveControls" data-slot="crear-sectionMoveControls">
                         <motion.button className="bo-sectionMoveBtn" type="button" aria-label={`Subir seccion ${sec.title || idx + 1}`} disabled={idx === 0} whileHover={chevronHover} whileTap={chevronTapUp} onPointerDown={(event) => event.stopPropagation()} onClick={() => moveSection(idx, idx - 1)} data-testid={`menu-crear-section-move-up-${idx}`}>
                           <ChevronUp size={14} />
                         </motion.button>
@@ -437,11 +438,11 @@ export function CrearPage() {
             ))}
           </Reorder.Group>
 
-          <div className="bo-menuWizardActions">
+          <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={addSection} data-testid="menu-crear-add-section">
               <Plus size={14} /> Añadir seccion
             </button>
-            <div className="bo-menuWizardActionsRight">
+            <div className="bo-menuWizardActionsRight" data-slot="crear-menuWizardActionsRight">
               <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step2-back">Volver</button>
               <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)} data-testid="menu-crear-step2-continue">Continuar</button>
             </div>
@@ -457,39 +458,40 @@ export function CrearPage() {
             desktopPreviewOpen ? "is-previewOpen" : "is-previewHidden",
             desktopPreviewDocked ? "" : "is-previewUndocked",
           ].filter(Boolean).join(" ")}
+          data-slot="menu-crear-final-editor-wrapper"
         >
           <div className="bo-previewDesktopSwitch" data-testid="menu-crear-preview-toggle">
-            <span className="bo-previewDesktopSwitchLabel"><Eye size={14} aria-hidden="true" /> Preview web</span>
+            <span className="bo-previewDesktopSwitchLabel" data-slot="crear-previewDesktopSwitchLabel"><Eye size={14} aria-hidden="true" /> Preview web</span>
             <Switch checked={desktopPreviewOpen} onCheckedChange={setDesktopPreviewOpen} aria-label={desktopPreviewOpen ? "Ocultar preview web" : "Mostrar preview web"} data-testid="menu-crear-preview-switch" />
           </div>
 
           <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane ${mobileTab === "editor" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane">
             <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead" data-testid="menu-crear-editor-panel">
-              <div className="bo-panelHead">
-                <div>
-                  <div className="bo-panelTitle">Editor de menu</div>
-                  <div className="bo-panelMeta">Titulo, subtitulos, precio y estado siguen editables</div>
+              <div className="bo-panelHead" data-slot="crear-panelHead">
+                <div data-slot="crear-div">
+                  <div className="bo-panelTitle" data-slot="crear-panelTitle">Editor de menu</div>
+                  <div className="bo-panelMeta" data-slot="crear-panelMeta">Titulo, subtitulos, precio y estado siguen editables</div>
                 </div>
               </div>
-              <div className="bo-panelBody bo-form bo-form--menuWizard bo-form--menuWizardBasics">
-                <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
-                  <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
-                    <div className="bo-label">Titulo</div>
+              <div className="bo-panelBody bo-form bo-form--menuWizard bo-form--menuWizardBasics" data-slot="crear-form--menuWizardBasics">
+                <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`} data-slot="crear-div">
+                  <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title" data-slot="crear-menuBasicsField--title">
+                    <div className="bo-label" data-slot="crear-label">Titulo</div>
                     <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-final-title-input" />
                   </div>
                   {!isALaCarte && !isSpecial ? (
-                    <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
-                      <div className="bo-label">Precio</div>
+                    <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price" data-slot="crear-menuBasicsField--price">
+                      <div className="bo-label" data-slot="crear-label">Precio</div>
                       <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-final-price-input" />
                     </div>
                   ) : null}
                 </div>
                 {!isSpecial ? (
-                  <div className="bo-field bo-field--full">
-                    <div className="bo-label">Subtitulos</div>
-                    <div className="bo-stackFields">
+                  <div className="bo-field bo-field--full" data-slot="crear-field--full">
+                    <div className="bo-label" data-slot="crear-label">Subtitulos</div>
+                    <div className="bo-stackFields" data-slot="crear-stackFields">
                       {subtitles.map((line, idx) => (
-                        <div key={`subtitle-final-${idx}`} className="bo-inlineField">
+                        <div key={`subtitle-final-${idx}`} className="bo-inlineField" data-slot="crear-inlineField">
                           <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-final-subtitle-input-${idx}`} />
                           <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-final-subtitle-delete-${idx}`}>
                             <Trash2 size={14} />
@@ -503,26 +505,26 @@ export function CrearPage() {
                   </div>
                 ) : null}
                 {!isSpecial ? (
-                  <div className="bo-field">
-                    <div className="bo-label">Visibilidad de platos</div>
+                  <div className="bo-field" data-slot="crear-field">
+                    <div className="bo-label" data-slot="crear-label">Visibilidad de platos</div>
                     <Select className="bo-menuSettingSelect" value={showDishImages ? "with_image" : "without_image"} onChange={(value) => setShowDishImages(value === "with_image")} options={dishVisibilityOptions} size="sm" ariaLabel="Visibilidad de platos en preview" />
                   </div>
                 ) : null}
-                <div className="bo-field">
-                  <div className="bo-label">Añadir foto preview</div>
+                <div className="bo-field" data-slot="crear-field">
+                  <div className="bo-label" data-slot="crear-label">Añadir foto preview</div>
                   <Select className="bo-menuSettingSelect" value={showMenuPreviewImage ? "with_preview" : "without_preview"} onChange={(value) => setShowMenuPreviewImage(value === "with_preview")} options={menuPreviewVisibilityOptions} size="sm" ariaLabel="Visibilidad de foto preview en editor final" />
                 </div>
                 {!isSpecial ? (
-                  <div className="bo-field">
-                    <div className="bo-label">Cambiar tipo de menu</div>
+                  <div className="bo-field" data-slot="crear-field">
+                    <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
                     <Select className="bo-menuSettingSelect" value={menuType} onChange={setMenuType} options={menuTypeOptions} size="sm" ariaLabel="Seleccionar tipo de menu en editor final" />
                   </div>
                 ) : null}
-                <div className="bo-menuBasicsSwitchRow">
+                <div className="bo-menuBasicsSwitchRow" data-slot="crear-menuBasicsSwitchRow">
                   <label className="bo-menuBasicsActiveToggle" data-slot="menu-crear-activo-label">
-                    <span className="bo-label">Activo</span>
+                    <span className="bo-label" data-slot="crear-label">Activo</span>
                     <Switch checked={active} onCheckedChange={setActive} />
-                    <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
+                    <span className="bo-mutedText" data-slot="crear-mutedText">{active ? "Activo" : "No activo"}</span>
                   </label>
                 </div>
                 {renderMenuPreviewUploadArea()}
@@ -530,22 +532,22 @@ export function CrearPage() {
             </motion.div>
 
             {isSpecial ? (
-              <div className="bo-panel bo-accordionSection bo-sectionsEditor">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle">Contenido del menu especial</div>
+              <div className="bo-panel bo-accordionSection bo-sectionsEditor" data-slot="crear-sectionsEditor">
+                <div className="bo-panelHead" data-slot="crear-panelHead">
+                  <div className="bo-panelTitle" data-slot="crear-panelTitle">Contenido del menu especial</div>
                 </div>
-                <div className="bo-panelBody">
+                <div className="bo-panelBody" data-slot="crear-panelBody">
                   {renderSpecialMenuImageUploadArea()}
                 </div>
               </div>
             ) : !hydrated ? (
-              <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true">
+              <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true" data-slot="crear-sectionsEditor">
                 {loadingSectionTitles.map((sectionTitle, idx) => (
-                  <div key={`section-loading-${idx}`} className="bo-panel bo-accordionSection">
-                    <div className="bo-panelHead">
-                      <div className="bo-panelTitle">{sectionTitle}</div>
+                  <div key={`section-loading-${idx}`} className="bo-panel bo-accordionSection" data-slot="crear-accordionSection">
+                    <div className="bo-panelHead" data-slot="crear-panelHead">
+                      <div className="bo-panelTitle" data-slot="crear-panelTitle">{sectionTitle}</div>
                     </div>
-                    <div className="bo-panelBody">
+                    <div className="bo-panelBody" data-slot="crear-panelBody">
                       <LoadingSpinner centered size="sm" label="Cargando platos..." />
                     </div>
                   </div>
@@ -590,48 +592,48 @@ export function CrearPage() {
 
             {!isSpecial ? (
               <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
-                <div className="bo-panelHead">
-                  <div className="bo-panelTitle"><Settings2 size={15} /> Configuracion</div>
+                <div className="bo-panelHead" data-slot="crear-panelHead">
+                  <div className="bo-panelTitle" data-slot="crear-panelTitle"><Settings2 size={15} /> Configuracion</div>
                 </div>
-                <div className="bo-panelBody bo-form bo-form--menuWizard">
-                  <div className="bo-field">
-                    <div className="bo-label">Bebida</div>
+                <div className="bo-panelBody bo-form bo-form--menuWizard" data-slot="crear-form--menuWizard">
+                  <div className="bo-field" data-slot="crear-field">
+                    <div className="bo-label" data-slot="crear-label">Bebida</div>
                     <Select className="bo-menuSettingSelect" value={beverageType} onChange={setBeverageType} options={beverageTypeOptions} size="sm" ariaLabel="Tipo de bebida" />
                   </div>
                   {beverageType !== "no_incluida" ? (
-                    <div className="bo-field">
-                      <div className="bo-label">Precio por persona</div>
+                    <div className="bo-field" data-slot="crear-field">
+                      <div className="bo-label" data-slot="crear-label">Precio por persona</div>
                       <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-price-input" />
                     </div>
                   ) : null}
                   {beverageType === "ilimitada" ? (
                     <>
-                      <div className="bo-field">
-                        <div className="bo-label">Tiene suplemento</div>
+                      <div className="bo-field" data-slot="crear-field">
+                        <div className="bo-label" data-slot="crear-label">Tiene suplemento</div>
                         <Switch checked={beverageHasSupplement} onCheckedChange={setBeverageHasSupplement} />
                       </div>
                       {beverageHasSupplement ? (
-                        <div className="bo-field">
-                          <div className="bo-label">Valor suplemento</div>
+                        <div className="bo-field" data-slot="crear-field">
+                          <div className="bo-label" data-slot="crear-label">Valor suplemento</div>
                           <input className="bo-input" value={beverageSupplementPrice} onChange={(e) => setBeverageSupplementPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-supplement-price-input" />
                         </div>
                       ) : null}
                     </>
                   ) : null}
-                  <div className="bo-field">
-                    <div className="bo-label">Minimo personas para reservar</div>
+                  <div className="bo-field" data-slot="crear-field">
+                    <div className="bo-label" data-slot="crear-label">Minimo personas para reservar</div>
                     <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" data-testid="menu-crear-min-party-size-input" />
                   </div>
-                  <div className="bo-field bo-field--inline">
-                    <div className="bo-label" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
+                  <div className="bo-field bo-field--inline" data-slot="crear-field--inline">
+                    <div className="bo-label" style={{ marginRight: "auto" }} data-slot="crear-label">Limite maximo de principales por mesa</div>
                     <Switch checked={mainLimit} onCheckedChange={setMainLimit} data-testid="menu-crear-main-limit-switch" />
                   </div>
-                  <div className="bo-field">
-                    <div className="bo-label">Cafe incluido</div>
+                  <div className="bo-field" data-slot="crear-field">
+                    <div className="bo-label" data-slot="crear-label">Cafe incluido</div>
                     <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} data-testid="menu-crear-coffee-switch" />
                   </div>
-                  <div className="bo-field bo-field--full">
-                    <div className="bo-label">Comentarios</div>
+                  <div className="bo-field bo-field--full" data-slot="crear-field--full">
+                    <div className="bo-label" data-slot="crear-label">Comentarios</div>
                     <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n").filter((line) => line.trim() !== ""))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
                   </div>
                 </div>
@@ -664,13 +666,13 @@ export function CrearPage() {
 
       {/* Step 4: Special Menu Image */}
       {step === 4 && isSpecial ? (
-        <div className="bo-menuWizardPanel">
+        <div className="bo-menuWizardPanel" data-slot="crear-menuWizardPanel">
           <h2 className="bo-sectionTitle" data-slot="menu-crear-imagen-menu">Imagen del menu</h2>
-          <p className="bo-mutedText" style={{ marginBottom: 16 }}>
+          <p className="bo-mutedText" style={{ marginBottom: 16 }} data-slot="crear-mutedText">
             Sube una imagen del menu especial para mostrarla en la plantilla web.
           </p>
           {renderSpecialMenuImageUploadArea()}
-          <div className="bo-menuWizardActions">
+          <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step4-back">Volver</button>
             <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)} data-testid="menu-crear-step4-continue">Continuar al editor</button>
           </div>
@@ -726,11 +728,11 @@ export function CrearPage() {
 
       {/* Allergen modal */}
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620}>
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Selecciona alergenos</div>
+        <div className="bo-modalHead" data-slot="crear-modalHead">
+          <div className="bo-modalTitle" data-slot="crear-modalTitle">Selecciona alergenos</div>
           <button className="bo-modalX" type="button" onClick={() => setAllergenModal(null)} aria-label="Cerrar" data-testid="menu-crear-close-allergen-modal">×</button>
         </div>
-        <div className="bo-modalBody">
+        <div className="bo-modalBody" data-slot="crear-modalBody">
           <div className="bo-allergenGrid" data-testid="menu-crear-allergen-grid">
             {ALLERGENS.map((item) => {
               const open = allergenModal;
@@ -753,8 +755,8 @@ export function CrearPage() {
                   }}
                   data-testid={`menu-crear-allergen-${item.key}`}
                 >
-                  <span className="bo-allergenCircleIcon"><Icon size={16} /></span>
-                  <span className="bo-allergenCircleLabel">{item.key}</span>
+                  <span className="bo-allergenCircleIcon" data-slot="crear-allergenCircleIcon"><Icon size={16} /></span>
+                  <span className="bo-allergenCircleLabel" data-slot="crear-allergenCircleLabel">{item.key}</span>
                 </button>
               );
             })}
