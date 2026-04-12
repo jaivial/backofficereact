@@ -17,7 +17,7 @@ export function RoleBadge({
   const label = roleName || roleLabel(roleSlug);
   const suffix = typeof importance === "number" ? ` · ${importance}` : "";
   return (
-    <span className={cn("bo-badge bo-roleBadge", className)}>
+    <span className={cn("bo-badge bo-roleBadge", className)} data-slot="roleBadge-span">
       {label}
       {suffix}
     </span>

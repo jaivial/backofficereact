@@ -144,7 +144,7 @@ export default function MobileFichajePage() {
           ) : (
             <CheckCircle2 size={32} strokeWidth={1.8} aria-hidden="true" />
           )}
-          <span className="text-base font-semibold">
+          <span className="text-base font-semibold" data-slot="fichaje-font-semibold">
             {busy ? "Procesando..." : isClockedIn ? "Salir" : "Entrar"}
           </span>
         </button>
@@ -159,18 +159,18 @@ export default function MobileFichajePage() {
 
         <div className="grid grid-cols-2 gap-3" data-ui="mobile-fichaje-summary-grid">
           <div className="flex flex-col gap-1 p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" data-ui="mobile-fichaje-entry">
-            <span className="text-xs text-[hsl(var(--muted-foreground))]">Entrada</span>
+            <span className="text-xs text-[hsl(var(--muted-foreground))]" data-slot="fichaje-text-[hsl(var(-">Entrada</span>
             <span className="text-lg font-bold text-[hsl(var(--foreground))]" data-ui="mobile-fichaje-entry-time">{formatHHMM(todayEntry?.entry_time ?? null)}</span>
           </div>
           <div className="flex flex-col gap-1 p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]" data-ui="mobile-fichaje-exit">
-            <span className="text-xs text-[hsl(var(--muted-foreground))]">Salida</span>
+            <span className="text-xs text-[hsl(var(--muted-foreground))]" data-slot="fichaje-text-[hsl(var(-">Salida</span>
             <span className="text-lg font-bold text-[hsl(var(--foreground))]" data-ui="mobile-fichaje-exit-time">{formatHHMM(todayEntry?.exit_time ?? null)}</span>
           </div>
         </div>
 
         {totalHours != null && (
           <div className="flex items-center justify-between p-4 rounded-2xl border border-[hsl(var(--primary))]/30 bg-[hsl(var(--primary))]/5" data-ui="mobile-fichaje-hours">
-            <span className="text-sm text-[hsl(var(--foreground))]">Horas hoy</span>
+            <span className="text-sm text-[hsl(var(--foreground))]" data-slot="fichaje-text-[hsl(var(-">Horas hoy</span>
             <span className="text-xl font-bold text-[hsl(var(--primary))]" data-ui="mobile-fichaje-hours-value">{totalHours.toFixed(1)}h</span>
           </div>
         )}

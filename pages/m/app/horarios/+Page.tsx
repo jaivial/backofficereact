@@ -43,7 +43,7 @@ export default function MobileHorariosPage() {
       {data.entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center" data-ui="mobile-horarios-empty">
           <ClipboardList size={40} strokeWidth={1.5} className="text-[hsl(var(--muted-foreground))] mb-3" aria-hidden="true" />
-          <p className="text-[hsl(var(--muted-foreground))] text-sm">No hay personal asignado hoy</p>
+          <p className="text-[hsl(var(--muted-foreground))] text-sm" data-slot="horarios-text-sm">No hay personal asignado hoy</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3" data-ui="mobile-horarios-list" role="list">
@@ -54,16 +54,16 @@ export default function MobileHorariosPage() {
               data-ui="mobile-horario-entry"
               data-role="horario-entry"
             >
-              <div className="w-10 h-10 rounded-full bg-[hsl(var(--primary))]/10 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+              <div className="w-10 h-10 rounded-full bg-[hsl(var(--primary))]/10 flex items-center justify-center flex-shrink-0" aria-hidden="true" data-slot="horarios-flex-shrink-0">
                 <Users size={18} className="text-[hsl(var(--primary))]" strokeWidth={1.8} aria-hidden="true" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0" data-slot="horarios-min-w-0">
                 <p className="text-sm font-bold text-[hsl(var(--foreground))] truncate" data-ui="mobile-horario-name">{entry.member_name}</p>
                 <p className="text-xs text-[hsl(var(--muted-foreground))]" data-ui="mobile-horario-role">{entry.role}</p>
               </div>
               <div className="flex items-center gap-2 text-sm font-medium text-[hsl(var(--foreground))] flex-shrink-0" data-ui="mobile-horario-times">
                 <span data-ui="mobile-horario-entry-time">{formatHHMM(entry.entry_time)}</span>
-                <span className="text-[hsl(var(--muted-foreground))]" aria-hidden="true">-</span>
+                <span className="text-[hsl(var(--muted-foreground))]" aria-hidden="true" data-slot="horarios-text-[hsl(var(-">-</span>
                 <span data-ui="mobile-horario-exit-time">{formatHHMM(entry.exit_time)}</span>
               </div>
             </div>

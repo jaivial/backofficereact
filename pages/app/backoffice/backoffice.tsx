@@ -45,7 +45,7 @@ export default function Page() {
       </header>
 
       <section className="bo-homeNav" data-ui="backoffice-nav-orbit" aria-label="Accesos rapidos">
-        <div className="bo-homeOrbit" role="navigation" aria-label="Secciones del backoffice">
+        <div className="bo-homeOrbit" role="navigation" aria-label="Secciones del backoffice" data-slot="backoffice-secciones-del-backof">
           <div className="bo-homeRing bo-homeRing--outer" aria-hidden="true" data-ui="ring-outer" />
           <div className="bo-homeRing bo-homeRing--inner" aria-hidden="true" data-ui="ring-inner" />
 

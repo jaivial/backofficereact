@@ -214,7 +214,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
           <MessageSquare size={18} />
           Comentarios
           {comments.length > 0 && (
-            <span className="bo-commentsPanelCount">({comments.length})</span>
+            <span className="bo-commentsPanelCount" data-slot="commentsPanel-commentsPanelCount">({comments.length})</span>
           )}
         </h3>
         <p className="bo-commentsPanelSubtitle" data-slot="comments-panel-subtitle">
@@ -260,8 +260,8 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
         ) : comments.length === 0 ? (
           <div className="bo-commentsPanelEmpty" data-slot="comments-panel-empty">
             <MessageSquare size={24} className="bo-commentsPanelEmptyIcon" />
-            <p>No hay comentarios todavía</p>
-            <p className="bo-mutedText">Sé el primero en añadir un comentario</p>
+            <p data-slot="commentsPanel-dav">No hay comentarios todavía</p>
+            <p className="bo-mutedText" data-slot="commentsPanel-mutedText">Sé el primero en añadir un comentario</p>
           </div>
         ) : (
           <>

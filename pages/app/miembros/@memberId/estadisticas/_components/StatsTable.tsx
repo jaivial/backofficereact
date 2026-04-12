@@ -104,10 +104,10 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
 
   return (
     <div className="bo-statsTable" data-slot="stats-table-container">
-      <div className="bo-statsTableControls">
-        <div className="bo-statsTableFilters">
-          <div className="bo-field">
-            <label className="bo-label">Vista</label>
+      <div className="bo-statsTableControls" data-slot="statsTable-statsTableControls">
+        <div className="bo-statsTableFilters" data-slot="statsTable-statsTableFilters">
+          <div className="bo-field" data-slot="statsTable-field">
+            <label className="bo-label" data-slot="statsTable-label">Vista</label>
             <Select
               className="bo-statsTableSelect"
               value={view}
@@ -119,8 +119,8 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             />
           </div>
 
-          <div className="bo-field">
-            <label className="bo-label">Año</label>
+          <div className="bo-field" data-slot="statsTable-field">
+            <label className="bo-label" data-slot="statsTable-label">Año</label>
             <Select
               className="bo-statsTableSelect"
               value={String(year)}
@@ -132,8 +132,8 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             />
           </div>
 
-          <div className="bo-field bo-statsTableRangeField">
-            <label className="bo-label">Rango personalizado</label>
+          <div className="bo-field bo-statsTableRangeField" data-slot="statsTable-statsTableRangeField">
+            <label className="bo-label" data-slot="statsTable-label">Rango personalizado</label>
             <DateRangePicker
               from={customFrom}
               to={customTo}
@@ -168,37 +168,37 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
 
       {error && <div className="bo-alert bo-alert--error">{error}</div>}
 
-      <div className=" overflow-x-auto">
-        <div className=" mt-0">
-          <table className="bo-table bo-table--stats overflow-x-scroll" aria-label="Tabla de estadisticas">
-            <thead>
-              <tr>
-                <th>Periodo</th>
-                <th>Horas trabajadas</th>
-                <th>Horas esperadas</th>
-                <th>Diferencia</th>
+      <div className=" overflow-x-auto" data-slot="statsTable-overflow-x-auto">
+        <div className=" mt-0" data-slot="statsTable-mt-0">
+          <table className="bo-table bo-table--stats overflow-x-scroll" aria-label="Tabla de estadisticas" data-slot="statsTable-tabla-de-estadistica">
+            <thead data-slot="statsTable-thead">
+              <tr data-slot="statsTable-tr">
+                <th data-slot="statsTable-odo">Periodo</th>
+                <th data-slot="statsTable-das">Horas trabajadas</th>
+                <th data-slot="statsTable-das">Horas esperadas</th>
+                <th data-slot="statsTable-cia">Diferencia</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="statsTable-tbody">
               {isBusy ? (
-                <tr>
-                  <td colSpan={4} className="bo-loading">
+                <tr data-slot="statsTable-tr">
+                  <td colSpan={4} className="bo-loading" data-slot="statsTable-loading">
                     Cargando...
                   </td>
                 </tr>
               ) : displayRows.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="bo-mutedText bo-statsTableEmpty">
+                <tr data-slot="statsTable-tr">
+                  <td colSpan={4} className="bo-mutedText bo-statsTableEmpty" data-slot="statsTable-statsTableEmpty">
                     No hay datos para el período seleccionado.
                   </td>
                 </tr>
               ) : (
                 displayRows.map((row, idx) => (
-                  <tr key={row.date + idx}>
-                    <td>{row.label}</td>
-                    <td>{formatHours(row.workedHours)} h</td>
-                    <td>{formatHours(row.expectedHours)} h</td>
-                    <td className={row.difference >= 0 ? "bo-positive" : "bo-negative"}>
+                  <tr key={row.date + idx} data-slot="statsTable-tr">
+                    <td data-slot="statsTable-bel">{row.label}</td>
+                    <td data-slot="statsTable-urs">{formatHours(row.workedHours)} h</td>
+                    <td data-slot="statsTable-urs">{formatHours(row.expectedHours)} h</td>
+                    <td className={row.difference >= 0 ? "bo-positive" : "bo-negative"} data-slot="statsTable-td">
                       {row.difference >= 0 ? "+" : ""}
                       {formatHours(row.difference)} h
                     </td>
@@ -208,17 +208,17 @@ export function StatsTable({ memberId, initialYear }: StatsTableProps) {
             </tbody>
             {!isBusy && displayRows.length > 0 ? (
               <tfoot className="bo-table--statsFooter">
-                <tr>
-                  <td className="p-4">
+                <tr data-slot="statsTable-tr">
+                  <td className="p-4" data-slot="statsTable-p-4">
                     <strong>Total</strong>
                   </td>
-                  <td className="p-4">
+                  <td className="p-4" data-slot="statsTable-p-4">
                     <strong>{formatHours(totalWorked)} h</strong>
                   </td>
-                  <td className="p-4">
+                  <td className="p-4" data-slot="statsTable-p-4">
                     <strong>{formatHours(totalExpected)} h</strong>
                   </td>
-                  <td className={`p-4 ${totalDifference >= 0 ? "bo-positive" : "bo-negative"}`}>
+                  <td className={`p-4 ${totalDifference >= 0 ? "bo-positive" : "bo-negative"}`} data-slot="statsTable-td">
                     <strong>
                       {totalDifference >= 0 ? "+" : ""}
                       {formatHours(totalDifference)} h

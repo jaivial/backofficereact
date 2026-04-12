@@ -221,14 +221,14 @@ export default function Page() {
 
   return (
     <section aria-label="Configuración" className="max-w-3xl mx-auto" data-testid="config-section">
-      <div className="bo-toolbar">
-        <div className="bo-toolbarLeft">
+      <div className="bo-toolbar" data-slot="config-toolbar">
+        <div className="bo-toolbarLeft" data-slot="config-toolbarLeft">
           <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy} data-testid="config-reload-button">
             Recargar
           </button>
         </div>
-        <div className="bo-toolbarRight">
-          <div className="bo-mutedText">{busy ? "Actualizando..." : "Valores por defecto"}</div>
+        <div className="bo-toolbarRight" data-slot="config-toolbarRight">
+          <div className="bo-mutedText" data-slot="config-mutedText">{busy ? "Actualizando..." : "Valores por defecto"}</div>
         </div>
       </div>
 

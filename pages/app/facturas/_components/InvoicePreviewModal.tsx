@@ -98,13 +98,13 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
         {/* Invoice Header */}
         <div className="bo-invoicePreviewHeader" data-slot="invoice-preview-header">
           <div className="bo-invoicePreviewTitle" data-slot="invoice-preview-title">
-            <h2>Factura</h2>
-            <span className="bo-invoiceNumber">{invoice.invoice_number || `N. ${invoice.id}`}</span>
+            <h2 data-slot="invoicePreviewModal-ura">Factura</h2>
+            <span className="bo-invoiceNumber" data-slot="invoicePreviewModal-invoiceNumber">{invoice.invoice_number || `N. ${invoice.id}`}</span>
           </div>
           <div className="bo-invoicePreviewStatus" data-slot="invoice-preview-status">
-            <span className={`bo-badge ${statusConfig.className}`}>{statusConfig.label}</span>
+            <span className={`bo-badge ${statusConfig.className}`} data-slot="invoicePreviewModal-bel">{statusConfig.label}</span>
             {invoice.is_reservation && (
-              <span className="bo-badge bo-badge--info">Reserva</span>
+              <span className="bo-badge bo-badge--info" data-slot="invoicePreviewModal-badge--info">Reserva</span>
             )}
           </div>
         </div>
@@ -113,91 +113,91 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
         <div className="bo-invoicePreviewGrid" data-slot="invoice-preview-grid">
           {/* Dates Column */}
           <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-dates">
-            <h3 className="bo-invoicePreviewSectionTitle">
+            <h3 className="bo-invoicePreviewSectionTitle" data-slot="invoicePreviewModal-invoicePreviewSectionTitle">
               <Calendar size={14} />
               Fechas
             </h3>
-            <div className="bo-invoicePreviewField">
-              <span className="bo-invoicePreviewLabel">Fecha de factura</span>
-              <span className="bo-invoicePreviewValue">{formatDate(invoice.invoice_date)}</span>
+            <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+              <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">Fecha de factura</span>
+              <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{formatDate(invoice.invoice_date)}</span>
             </div>
             {invoice.payment_date && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Fecha de pago</span>
-                <span className="bo-invoicePreviewValue">{formatDate(invoice.payment_date)}</span>
+              <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+                <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">Fecha de pago</span>
+                <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{formatDate(invoice.payment_date)}</span>
               </div>
             )}
             {invoice.is_reservation && invoice.reservation_date && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Fecha de reserva</span>
-                <span className="bo-invoicePreviewValue">{formatDate(invoice.reservation_date)}</span>
+              <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+                <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">Fecha de reserva</span>
+                <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{formatDate(invoice.reservation_date)}</span>
               </div>
             )}
           </div>
 
           {/* Customer Column */}
           <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-customer">
-            <h3 className="bo-invoicePreviewSectionTitle">
+            <h3 className="bo-invoicePreviewSectionTitle" data-slot="invoicePreviewModal-invoicePreviewSectionTitle">
               <User size={14} />
               Cliente
             </h3>
-            <div className="bo-invoicePreviewField">
-              <span className="bo-invoicePreviewLabel">Nombre</span>
-              <span className="bo-invoicePreviewValue">
+            <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+              <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">Nombre</span>
+              <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">
                 {invoice.customer_name} {invoice.customer_surname}
               </span>
             </div>
             {invoice.customer_dni_cif && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">DNI/CIF</span>
-                <span className="bo-invoicePreviewValue">{invoice.customer_dni_cif}</span>
+              <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+                <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">DNI/CIF</span>
+                <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{invoice.customer_dni_cif}</span>
               </div>
             )}
-            <div className="bo-invoicePreviewField">
-              <span className="bo-invoicePreviewLabel">
+            <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+              <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">
                 <Mail size={12} />
                 Email
               </span>
-              <span className="bo-invoicePreviewValue">{invoice.customer_email}</span>
+              <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{invoice.customer_email}</span>
             </div>
             {invoice.customer_phone && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">
+              <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+                <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">
                   <Phone size={12} />
                   Teléfono
                 </span>
-                <span className="bo-invoicePreviewValue">{invoice.customer_phone}</span>
+                <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{invoice.customer_phone}</span>
               </div>
             )}
             {fullAddress && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">
+              <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+                <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">
                   <MapPin size={12} />
                   Dirección
                 </span>
-                <span className="bo-invoicePreviewValue">{fullAddress}</span>
+                <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{fullAddress}</span>
               </div>
             )}
           </div>
 
           {/* Payment Column */}
           <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-payment">
-            <h3 className="bo-invoicePreviewSectionTitle">
+            <h3 className="bo-invoicePreviewSectionTitle" data-slot="invoicePreviewModal-invoicePreviewSectionTitle">
               <CreditCard size={14} />
               Pago
             </h3>
             {invoice.payment_method && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Método de pago</span>
-                <span className="bo-invoicePreviewValue">
+              <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+                <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">Método de pago</span>
+                <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">
                   {PAYMENT_METHOD_LABELS[invoice.payment_method] || invoice.payment_method}
                 </span>
               </div>
             )}
             {invoice.is_reservation && invoice.reservation_party_size && (
-              <div className="bo-invoicePreviewField">
-                <span className="bo-invoicePreviewLabel">Comensales</span>
-                <span className="bo-invoicePreviewValue">{invoice.reservation_party_size}</span>
+              <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
+                <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">Comensales</span>
+                <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{invoice.reservation_party_size}</span>
               </div>
             )}
           </div>
@@ -205,26 +205,26 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
 
         {/* Amount Summary */}
         <div className="bo-invoicePreviewTotals" data-slot="invoice-preview-totals">
-          <div className="bo-invoicePreviewTotalRow">
-            <span className="bo-invoicePreviewTotalLabel">Base imponible</span>
-            <span className="bo-invoicePreviewTotalValue">{formatPrice(invoice.amount)}</span>
+          <div className="bo-invoicePreviewTotalRow" data-slot="invoicePreviewModal-invoicePreviewTotalRow">
+            <span className="bo-invoicePreviewTotalLabel" data-slot="invoicePreviewModal-invoicePreviewTotalLabel">Base imponible</span>
+            <span className="bo-invoicePreviewTotalValue" data-slot="invoicePreviewModal-invoicePreviewTotalValue">{formatPrice(invoice.amount)}</span>
           </div>
           {invoice.iva_rate && invoice.iva_rate > 0 && (
-            <div className="bo-invoicePreviewTotalRow">
-              <span className="bo-invoicePreviewTotalLabel">IVA ({invoice.iva_rate}%)</span>
-              <span className="bo-invoicePreviewTotalValue">{formatPrice(invoice.iva_amount || 0)}</span>
+            <div className="bo-invoicePreviewTotalRow" data-slot="invoicePreviewModal-invoicePreviewTotalRow">
+              <span className="bo-invoicePreviewTotalLabel" data-slot="invoicePreviewModal-invoicePreviewTotalLabel">IVA ({invoice.iva_rate}%)</span>
+              <span className="bo-invoicePreviewTotalValue" data-slot="invoicePreviewModal-invoicePreviewTotalValue">{formatPrice(invoice.iva_amount || 0)}</span>
             </div>
           )}
-          <div className="bo-invoicePreviewTotalRow bo-invoicePreviewTotalRow--final">
-            <span className="bo-invoicePreviewTotalLabel">Total</span>
-            <span className="bo-invoicePreviewTotalValue">{formatPrice(invoice.total || invoice.amount)}</span>
+          <div className="bo-invoicePreviewTotalRow bo-invoicePreviewTotalRow--final" data-slot="invoicePreviewModal-invoicePreviewTotalRow--final">
+            <span className="bo-invoicePreviewTotalLabel" data-slot="invoicePreviewModal-invoicePreviewTotalLabel">Total</span>
+            <span className="bo-invoicePreviewTotalValue" data-slot="invoicePreviewModal-invoicePreviewTotalValue">{formatPrice(invoice.total || invoice.amount)}</span>
           </div>
         </div>
 
         {/* Footer */}
         <div className="bo-invoicePreviewFooter" data-slot="invoice-preview-footer">
-          <span className="bo-invoicePreviewId">ID: {invoice.id}</span>
-          <span className="bo-invoicePreviewCreated">
+          <span className="bo-invoicePreviewId" data-slot="invoicePreviewModal-invoicePreviewId">ID: {invoice.id}</span>
+          <span className="bo-invoicePreviewCreated" data-slot="invoicePreviewModal-invoicePreviewCreated">
             Creada: {formatDate(invoice.created_at)}
           </span>
         </div>

@@ -48,7 +48,7 @@ export function IVAFilters({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-ui="iva-filters">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-ui="filters-grid">
         <div data-ui="date-preset-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="date-preset">Periodo</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="date-preset" data-slot="iVAFilters-mb-1">Periodo</label>
           <select
             id="date-preset"
             value={datePreset}
@@ -63,7 +63,7 @@ export function IVAFilters({
         </div>
 
         <div data-ui="date-from-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="iva-date-from">Desde</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="iva-date-from" data-slot="iVAFilters-mb-1">Desde</label>
           <input
             id="iva-date-from"
             type="date"
@@ -78,7 +78,7 @@ export function IVAFilters({
         </div>
 
         <div data-ui="date-to-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="iva-date-to">Hasta</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="iva-date-to" data-slot="iVAFilters-mb-1">Hasta</label>
           <input
             id="iva-date-to"
             type="date"
@@ -93,7 +93,7 @@ export function IVAFilters({
         </div>
 
         <div className="flex items-end" data-ui="credit-notes-wrapper">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-2 cursor-pointer" data-slot="iVAFilters-cursor-pointer">
             <input
               type="checkbox"
               checked={includeCreditNotes}
@@ -101,7 +101,7 @@ export function IVAFilters({
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               data-ui="credit-notes-checkbox"
             />
-            <span className="text-sm text-gray-700">Incluir notas de credito</span>
+            <span className="text-sm text-gray-700" data-slot="iVAFilters-text-gray-700">Incluir notas de credito</span>
           </label>
         </div>
       </div>

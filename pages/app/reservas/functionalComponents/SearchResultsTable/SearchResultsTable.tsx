@@ -78,7 +78,7 @@ export function SearchResultsTable({
       <div className="bo-tableScroll" data-ui="table-scroll">
         <table className="bo-table bo-table--reservas" aria-label="Tabla de búsqueda" data-ui="search-results-table">
           <thead data-ui="table-header">
-            <tr>
+            <tr data-slot="searchResultsTable-tr">
               <th className="col-added" data-ui="th-added">Añadida</th>
               <th className="col-date" data-ui="th-date">Fecha</th>
               <th className="col-time" data-ui="th-time">Hora</th>

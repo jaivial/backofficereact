@@ -316,7 +316,7 @@ export function DateRangePicker({
         data-testid="date-range-picker-btn"
       >
         <Calendar size={16} strokeWidth={1.8} />
-        <span className="bo-dateBtnLabel">{label || buttonLabel}</span>
+        <span className="bo-dateBtnLabel" data-slot="dateRangePicker-dateBtnLabel">{label || buttonLabel}</span>
       </button>
       {pop}
     </>

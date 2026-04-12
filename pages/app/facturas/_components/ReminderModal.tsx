@@ -153,8 +153,8 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
   ];
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
-      <div className="bo-modal bo-modal--sm" onClick={(e) => e.stopPropagation()}>
+    <div className="bo-modal-overlay" onClick={onClose} data-slot="reminderModal-modal-overlay">
+      <div className="bo-modal bo-modal--sm" onClick={(e) => e.stopPropagation()} data-slot="reminderModal-modal--sm">
         <div className="bo-modalHeader" data-slot="reminder-modal-header">
           <h2 className="bo-modalTitle" data-slot="reminder-modal-title">Enviar recordatorio de pago</h2>
           <button
@@ -170,23 +170,23 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
         <div className="bo-modalBody" data-slot="reminder-modal-body">
           {/* Invoice Info */}
           <div className="bo-reminderInvoiceInfo" data-slot="reminder-invoice-info">
-            <div className="bo-field">
-              <div className="bo-label">Cliente</div>
-              <div className="bo-value">{invoice.customer_name}</div>
+            <div className="bo-field" data-slot="reminderModal-field">
+              <div className="bo-label" data-slot="reminderModal-label">Cliente</div>
+              <div className="bo-value" data-slot="reminderModal-value">{invoice.customer_name}</div>
             </div>
-            <div className="bo-field">
-              <div className="bo-label">Factura</div>
-              <div className="bo-value">{invoice.invoice_number || `#${invoice.id}`}</div>
+            <div className="bo-field" data-slot="reminderModal-field">
+              <div className="bo-label" data-slot="reminderModal-label">Factura</div>
+              <div className="bo-value" data-slot="reminderModal-value">{invoice.invoice_number || `#${invoice.id}`}</div>
             </div>
-            <div className="bo-field">
-              <div className="bo-label">Importe</div>
-              <div className="bo-value">{invoice.total?.toFixed(2) || invoice.amount.toFixed(2)} EUR</div>
+            <div className="bo-field" data-slot="reminderModal-field">
+              <div className="bo-label" data-slot="reminderModal-label">Importe</div>
+              <div className="bo-value" data-slot="reminderModal-value">{invoice.total?.toFixed(2) || invoice.amount.toFixed(2)} EUR</div>
             </div>
           </div>
 
           {/* Template Selection */}
-          <div className="bo-field">
-            <label className="bo-label" htmlFor="template-select">
+          <div className="bo-field" data-slot="reminderModal-field">
+            <label className="bo-label" htmlFor="template-select" data-slot="reminderModal-label">
               Plantilla
             </label>
             <Select
@@ -200,10 +200,10 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </div>
 
           {/* Send Via */}
-          <div className="bo-field">
-            <label className="bo-label">Enviar via</label>
-            <div className="bo-radioGroup">
-              <label className="bo-radio">
+          <div className="bo-field" data-slot="reminderModal-field">
+            <label className="bo-label" data-slot="reminderModal-label">Enviar via</label>
+            <div className="bo-radioGroup" data-slot="reminderModal-radioGroup">
+              <label className="bo-radio" data-slot="reminderModal-radio">
                 <input
                   type="radio"
                   name="send_via"
@@ -213,9 +213,9 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
                   data-testid="reminder-send-email-radio"
                 />
                 <Mail size={14} />
-                <span>Email</span>
+                <span data-slot="reminderModal-ail">Email</span>
               </label>
-              <label className="bo-radio">
+              <label className="bo-radio" data-slot="reminderModal-radio">
                 <input
                   type="radio"
                   name="send_via"
@@ -225,14 +225,14 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
                   data-testid="reminder-send-whatsapp-radio"
                 />
                 <MessageSquare size={14} />
-                <span>WhatsApp</span>
+                <span data-slot="reminderModal-app">WhatsApp</span>
               </label>
             </div>
           </div>
 
           {/* Custom Message */}
           <div className="bo-field" data-slot="reminder-field-message">
-            <label className="bo-label" htmlFor="custom-message">
+            <label className="bo-label" htmlFor="custom-message" data-slot="reminderModal-label">
               Mensaje personalizado (opcional)
             </label>
             <textarea
@@ -266,7 +266,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </div>
         </div>
 
-        <div className="bo-modalFooter">
+        <div className="bo-modalFooter" data-slot="reminderModal-modalFooter">
           <button className="bo-btn bo-btn--ghost" onClick={onClose} data-testid="reminder-cancel-btn">
             Cancelar
           </button>

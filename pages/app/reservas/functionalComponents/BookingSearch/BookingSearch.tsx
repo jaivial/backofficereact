@@ -105,8 +105,8 @@ export function BookingSearch({ onSearch, onClear, busy, reduceMotion }: Booking
 
   return (
     <div className={`bo-bookingSearch${busy ? " is-busy" : ""}`} data-ui="booking-search">
-      <div className="bo-bookingSearchFields">
-        <div className="bo-bookingSearchInput">
+      <div className="bo-bookingSearchFields" data-slot="bookingSearch-bookingSearchFields">
+        <div className="bo-bookingSearchInput" data-slot="bookingSearch-bookingSearchInput">
           <Search className="bo-ico bo-ico--sm" aria-hidden="true" />
           <input
             className="bo-input bo-input--sm"
@@ -118,7 +118,7 @@ export function BookingSearch({ onSearch, onClear, busy, reduceMotion }: Booking
           />
           {busy ? <span className="bo-bookingSearchSpinner" aria-hidden="true" /> : null}
         </div>
-        <div className="bo-bookingSearchInput">
+        <div className="bo-bookingSearchInput" data-slot="bookingSearch-bookingSearchInput">
           <Phone className="bo-ico bo-ico--sm" aria-hidden="true" />
           <input
             className="bo-input bo-input--sm"

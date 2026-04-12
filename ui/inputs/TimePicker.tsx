@@ -130,7 +130,7 @@ export function TimePicker({
         data-ui="time-picker-btn"
       >
         <Clock3 size={18} strokeWidth={1.8} aria-hidden="true" />
-        <span className="bo-dateBtnLabel">{selected || "—:—"}</span>
+        <span className="bo-dateBtnLabel" data-slot="timePicker-dateBtnLabel">{selected || "—:—"}</span>
       </button>
       <AnimatePresence>
         {open && (

@@ -219,7 +219,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
         data-testid={dataTestId}
       >
         <CalendarDays size={18} strokeWidth={1.8} />
-        <span className="bo-dateBtnLabel">{value}</span>
+        <span className="bo-dateBtnLabel" data-slot="datePicker-dateBtnLabel">{value}</span>
       </button>
       {pop}
     </>

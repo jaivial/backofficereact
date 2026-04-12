@@ -28,9 +28,9 @@ export function getStatusBadge(status: string) {
   const config = statusConfig[status] || { label: status, className: "bo-badge--gray", icon: <FileText size={14} /> };
 
   return (
-    <span className={`bo-badge ${config.className}`}>
+    <span className={`bo-badge ${config.className}`} data-slot="factura.helpers-span">
       {config.icon}
-      <span>{config.label}</span>
+      <span data-slot="factura.helpers-bel">{config.label}</span>
     </span>
   );
 }

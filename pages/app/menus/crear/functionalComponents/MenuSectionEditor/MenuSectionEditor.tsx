@@ -129,9 +129,9 @@ export function MenuSectionEditor({
 
   return (
     <div className="bo-panel bo-accordionSection bo-reorderItem" data-section-editor={sec.clientId} data-testid={`menu-section-editor-${sec.clientId}`}>
-      <div className="bo-accordionHeadRow">
-        <div className="bo-sectionReorder bo-sectionReorder--accordion">
-          <div className="bo-sectionMoveControls">
+      <div className="bo-accordionHeadRow" data-slot="menuSectionEditor-accordionHeadRow">
+        <div className="bo-sectionReorder bo-sectionReorder--accordion" data-slot="menuSectionEditor-sectionReorder--accordion">
+          <div className="bo-sectionMoveControls" data-slot="menuSectionEditor-sectionMoveControls">
             <motion.button
               className="bo-sectionMoveBtn"
               type="button"
@@ -179,7 +179,7 @@ export function MenuSectionEditor({
           aria-expanded={sec.expanded}
           data-testid={`menu-section-editor-toggle-${secIdx}`}
         >
-          <span className="bo-accordionHeadLeft">
+          <span className="bo-accordionHeadLeft" data-slot="menuSectionEditor-accordionHeadLeft">
             <input
               className="bo-input"
               value={sec.title}
@@ -188,15 +188,15 @@ export function MenuSectionEditor({
               data-testid={`menu-section-editor-title-${secIdx}`}
             />
           </span>
-          <span className="bo-accordionHeadRight">
-            <span className="bo-accordionBadge">{sec.dishes.length} platos</span>
+          <span className="bo-accordionHeadRight" data-slot="menuSectionEditor-accordionHeadRight">
+            <span className="bo-accordionBadge" data-slot="menuSectionEditor-accordionBadge">{sec.dishes.length} platos</span>
             <ChevronDown size={14} />
           </span>
         </button>
       </div>
 
       {sec.expanded ? (
-        <div className="bo-accordionBody">
+        <div className="bo-accordionBody" data-slot="menuSectionEditor-accordionBody">
           <div className="bo-sectionDishTabs" role="tablist" aria-label="Filtro de platos" data-testid={`menu-section-editor-tabs-${sec.clientId}`}>
             <button
               id={activeTabId}
@@ -210,8 +210,8 @@ export function MenuSectionEditor({
               onClick={() => handleDishTabChange("active")}
               data-testid={`menu-section-editor-tab-active-${sec.clientId}`}
             >
-              <span className="bo-sectionDishTabLabel">Activos</span>
-              <span className="bo-sectionDishTabCount">{activeDishCount}</span>
+              <span className="bo-sectionDishTabLabel" data-slot="menuSectionEditor-sectionDishTabLabel">Activos</span>
+              <span className="bo-sectionDishTabCount" data-slot="menuSectionEditor-sectionDishTabCount">{activeDishCount}</span>
             </button>
             <button
               id={inactiveTabId}
@@ -225,8 +225,8 @@ export function MenuSectionEditor({
               onClick={() => handleDishTabChange("inactive")}
               data-testid={`menu-section-editor-tab-inactive-${sec.clientId}`}
             >
-              <span className="bo-sectionDishTabLabel">Inactivos</span>
-              <span className="bo-sectionDishTabCount">{inactiveDishCount}</span>
+              <span className="bo-sectionDishTabLabel" data-slot="menuSectionEditor-sectionDishTabLabel">Inactivos</span>
+              <span className="bo-sectionDishTabCount" data-slot="menuSectionEditor-sectionDishTabCount">{inactiveDishCount}</span>
             </button>
             <button
               id={annotationsTabId}
@@ -240,25 +240,26 @@ export function MenuSectionEditor({
               onClick={() => handleDishTabChange("annotations")}
               data-testid={`menu-section-editor-tab-annotations-${sec.clientId}`}
             >
-              <span className="bo-sectionDishTabLabel">Anotaciones</span>
-              <span className="bo-sectionDishTabIcon"><MessageSquareText size={14} /></span>
-              <span className="bo-sectionDishTabCount">{annotationCount}</span>
+              <span className="bo-sectionDishTabLabel" data-slot="menuSectionEditor-sectionDishTabLabel">Anotaciones</span>
+              <span className="bo-sectionDishTabIcon" data-slot="menuSectionEditor-sectionDishTabIcon"><MessageSquareText size={14} /></span>
+              <span className="bo-sectionDishTabCount" data-slot="menuSectionEditor-sectionDishTabCount">{annotationCount}</span>
             </button>
           </div>
 
           <div
             id={dishPanelId}
             className="bo-sectionDishTabPanel"
+            data-slot="menu-section-dish-panel"
             role="tabpanel"
             aria-labelledby={
               dishTab === "active" ? activeTabId : dishTab === "inactive" ? inactiveTabId : annotationsTabId
             }
           >
             {dishTab === "annotations" ? (
-              <div className="bo-field bo-field--full">
-                <div className="bo-stackFields">
+              <div className="bo-field bo-field--full" data-slot="menuSectionEditor-field--full">
+                <div className="bo-stackFields" data-slot="menuSectionEditor-stackFields">
                   {sec.annotations.map((line, idx) => (
-                    <div key={`${sec.clientId}-annotation-${idx}`} className="bo-inlineField">
+                    <div key={`${sec.clientId}-annotation-${idx}`} className="bo-inlineField" data-slot="menuSectionEditor-inlineField">
                       <input
                         className="bo-input"
                         value={line}
@@ -317,7 +318,7 @@ export function MenuSectionEditor({
             ) : sectionLoadingState === "loading" ? (
               <LoadingSpinner centered size="sm" label="Cargando platos..." />
             ) : (
-              <div className="bo-dishesEmpty" role="status" aria-live="polite">
+              <div className="bo-dishesEmpty" role="status" aria-live="polite" data-slot="menuSectionEditor-dishesEmpty">
                 {dishTab === "active"
                   ? "No hay platos activos en esta seccion."
                   : "No hay platos inactivos en esta seccion."}
@@ -327,8 +328,8 @@ export function MenuSectionEditor({
 
           {dishTab !== "annotations" ? (
             <>
-              <div className="bo-dishAddRow">
-                <div className="bo-dishSearchWrap">
+              <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
+                <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">
                   <Search size={14} aria-hidden="true" />
                   <input
                     className="bo-input bo-dishSearch"
@@ -351,9 +352,9 @@ export function MenuSectionEditor({
                         aria-selected={false}
                         data-testid={`menu-section-editor-search-result-${item.id}`}
                       >
-                        <span className="bo-dishSearchResultTitle">{item.title}</span>
+                        <span className="bo-dishSearchResultTitle" data-slot="menuSectionEditor-dishSearchResultTitle">{item.title}</span>
                         {item.allergens && item.allergens.length > 0 ? (
-                          <span className="bo-dishSearchResultAllergens">{item.allergens.join(", ")}</span>
+                          <span className="bo-dishSearchResultAllergens" data-slot="menuSectionEditor-dishSearchResultAllergens">{item.allergens.join(", ")}</span>
                         ) : null}
                       </button>
                     ))}

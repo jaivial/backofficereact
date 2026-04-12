@@ -281,7 +281,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
               <div className="bo-sendWhatsAppForm" data-slot="send-whatsapp-form">
                 <div className="bo-field" data-slot="send-whatsapp-field-message">
                   <div className="bo-fieldHeader" data-slot="send-whatsapp-message-header">
-                    <label className="bo-label">Mensaje</label>
+                    <label className="bo-label" data-slot="sendWhatsAppModal-label">Mensaje</label>
                     <button
                       type="button"
                       className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -305,7 +305,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                       data-testid="whatsapp-message-textarea"
                     />
                   )}
-                  <span className="bo-fieldHint">
+                  <span className="bo-fieldHint" data-slot="sendWhatsAppModal-fieldHint">
                     Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"}, {"{invoice_link}"}
                   </span>
                 </div>

@@ -50,15 +50,15 @@ export function MenuPricing({
 }: MenuPricingProps) {
   if (isSpecial) return null;
   return (
-    <div className="bo-panel bo-settingsPanel" data-pricing-panel="true">
-      <div className="bo-panelHead">
-        <div className="bo-panelTitle">
+    <div className="bo-panel bo-settingsPanel" data-pricing-panel="true" data-slot="menuPricing-settingsPanel">
+      <div className="bo-panelHead" data-slot="menuPricing-panelHead">
+        <div className="bo-panelTitle" data-slot="menuPricing-panelTitle">
           <Settings2 size={15} /> Configuracion
         </div>
       </div>
-      <div className="bo-panelBody bo-form bo-form--menuWizard">
-        <div className="bo-field">
-          <div className="bo-label">Bebida</div>
+      <div className="bo-panelBody bo-form bo-form--menuWizard" data-slot="menuPricing-form--menuWizard">
+        <div className="bo-field" data-slot="menuPricing-field">
+          <div className="bo-label" data-slot="menuPricing-label">Bebida</div>
           <Select
             className="bo-menuSettingSelect"
             value={beverageType}
@@ -70,21 +70,21 @@ export function MenuPricing({
         </div>
 
         {beverageType !== "no_incluida" ? (
-          <div className="bo-field">
-            <div className="bo-label">Precio por persona</div>
+          <div className="bo-field" data-slot="menuPricing-field">
+            <div className="bo-label" data-slot="menuPricing-label">Precio por persona</div>
             <input className="bo-input" value={beveragePrice} onChange={(e) => onBeveragePriceChange(e.target.value)} inputMode="decimal" data-testid="menu-pricing-beverage-price-input" />
           </div>
         ) : null}
 
         {beverageType === "ilimitada" ? (
           <>
-            <div className="bo-field">
-              <div className="bo-label">Tiene suplemento</div>
+            <div className="bo-field" data-slot="menuPricing-field">
+              <div className="bo-label" data-slot="menuPricing-label">Tiene suplemento</div>
               <Switch checked={beverageHasSupplement} onCheckedChange={onBeverageHasSupplementChange} data-testid="menu-pricing-beverage-supplement-switch" />
             </div>
             {beverageHasSupplement ? (
-              <div className="bo-field">
-                <div className="bo-label">Valor suplemento</div>
+              <div className="bo-field" data-slot="menuPricing-field">
+                <div className="bo-label" data-slot="menuPricing-label">Valor suplemento</div>
                 <input
                   className="bo-input"
                   value={beverageSupplementPrice}
@@ -97,13 +97,13 @@ export function MenuPricing({
           </>
         ) : null}
 
-        <div className="bo-field">
-          <div className="bo-label">Minimo personas para reservar</div>
+        <div className="bo-field" data-slot="menuPricing-field">
+          <div className="bo-label" data-slot="menuPricing-label">Minimo personas para reservar</div>
           <input className="bo-input" value={minPartySize} onChange={(e) => onMinPartySizeChange(e.target.value)} inputMode="numeric" data-testid="menu-pricing-min-party-size-input" />
         </div>
 
-        <div className="bo-field bo-field--inline">
-          <div className="bo-label" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
+        <div className="bo-field bo-field--inline" data-slot="menuPricing-field--inline">
+          <div className="bo-label" style={{ marginRight: "auto" }} data-slot="menuPricing-label">Limite maximo de principales por mesa</div>
           <Switch checked={mainLimit} onCheckedChange={onMainLimitChange} data-testid="menu-pricing-main-limit-switch" />
           {mainLimit ? (
             <PlusMinusCounter
@@ -117,13 +117,13 @@ export function MenuPricing({
           ) : null}
         </div>
 
-        <div className="bo-field">
-          <div className="bo-label">Cafe incluido</div>
+        <div className="bo-field" data-slot="menuPricing-field">
+          <div className="bo-label" data-slot="menuPricing-label">Cafe incluido</div>
           <Switch checked={includedCoffee} onCheckedChange={onIncludedCoffeeChange} data-testid="menu-pricing-coffee-switch" />
         </div>
 
-        <div className="bo-field bo-field--full">
-          <div className="bo-label">Comentarios</div>
+        <div className="bo-field bo-field--full" data-slot="menuPricing-field--full">
+          <div className="bo-label" data-slot="menuPricing-label">Comentarios</div>
           <textarea
             className="bo-input bo-textarea"
             value={comments.join("\n")}

@@ -44,23 +44,23 @@ function BookingCard({ booking }: { booking: Booking }) {
       data-booking-id={booking.id}
     >
       {/* Top row: time + status */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" data-slot="reservas-justify-between">
         <div className="flex items-center gap-1.5 text-[hsl(var(--foreground))] font-semibold" data-ui="mobile-booking-time">
           <Clock size={16} strokeWidth={1.8} aria-hidden="true" className="text-[hsl(var(--muted-foreground))]" />
-          <span>{formatHHMM(time)}</span>
+          <span data-slot="reservas-ime">{formatHHMM(time)}</span>
         </div>
         <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${statusStyle.bg} ${statusStyle.text}`} data-ui="mobile-booking-status">
-          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} aria-hidden="true" />
+          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} aria-hidden="true" / data-slot="reservas-span">
           {statusStyle.label}
         </span>
       </div>
 
       {/* Name + covers */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" data-slot="reservas-justify-between">
         <h3 className="text-base font-bold text-[hsl(var(--foreground))]" data-ui="mobile-booking-name">{name}</h3>
         <div className="flex items-center gap-1 text-[hsl(var(--muted-foreground))]" data-ui="mobile-booking-covers">
           <Users size={14} strokeWidth={1.8} aria-hidden="true" />
-          <span className="text-sm font-medium">{covers}</span>
+          <span className="text-sm font-medium" data-slot="reservas-font-medium">{covers}</span>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ function BookingCard({ booking }: { booking: Booking }) {
       {phone && (
         <div className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))]" data-ui="mobile-booking-phone">
           <Phone size={12} strokeWidth={1.8} aria-hidden="true" />
-          <span>{phone}</span>
+          <span data-slot="reservas-one">{phone}</span>
         </div>
       )}
     </a>
@@ -131,7 +131,7 @@ export default function MobileReservasPage() {
     <div className="flex flex-col gap-4 p-4" data-ui="mobile-reservas">
       {/* Header */}
       <header className="flex items-center justify-between pt-2" data-ui="mobile-reservas-header">
-        <div>
+        <div data-slot="reservas-div">
           <h1 className="text-xl font-bold text-[hsl(var(--foreground))]" data-ui="mobile-reservas-title">Reservas</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))] capitalize" data-ui="mobile-reservas-date">{dateLabel}</p>
         </div>
@@ -158,7 +158,7 @@ export default function MobileReservasPage() {
         {filteredBookings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center" data-ui="mobile-reservas-empty">
             <CalendarDays size={40} strokeWidth={1.5} className="text-[hsl(var(--muted-foreground))] mb-3" aria-hidden="true" />
-            <p className="text-[hsl(var(--muted-foreground))] text-sm">No hay reservas{statusFilter !== "all" ? ` (${STATUS_STYLES[statusFilter]?.label ?? statusFilter})` : ""}</p>
+            <p className="text-[hsl(var(--muted-foreground))] text-sm" data-slot="reservas-text-sm">No hay reservas{statusFilter !== "all" ? ` (${STATUS_STYLES[statusFilter]?.label ?? statusFilter})` : ""}</p>
           </div>
         ) : (
           filteredBookings.map((booking) => (

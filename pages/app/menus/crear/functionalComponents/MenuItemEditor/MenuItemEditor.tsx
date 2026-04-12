@@ -117,7 +117,7 @@ export function MenuItemEditor({
           inactive={!dish.active}
           priceLabel={isALaCarte ? formatEuro(dish.price ?? 0) : undefined}
           footerActions={(
-            <div className="bo-dishRowActionsInline bo-dishRowActionsInline--split">
+            <div className="bo-dishRowActionsInline bo-dishRowActionsInline--split" data-slot="menuItemEditor-dishRowActionsInline--split">
               <button
                 className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishAllergenIconBtn"
                 type="button"
@@ -139,8 +139,8 @@ export function MenuItemEditor({
             </div>
           )}
         >
-          <div className="bo-dishEditorContent">
-            <div className="bo-dishCardHead">
+          <div className="bo-dishEditorContent" data-slot="menuItemEditor-dishEditorContent">
+            <div className="bo-dishCardHead" data-slot="menuItemEditor-dishCardHead">
               <button
                 className="bo-dishDrag"
                 type="button"
@@ -153,7 +153,7 @@ export function MenuItemEditor({
               >
                 <GripVertical size={14} />
               </button>
-              <label className="bo-checkRow">
+              <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
                 <Switch
                   checked={dish.active}
                   onCheckedChange={(checked) => {
@@ -161,10 +161,10 @@ export function MenuItemEditor({
                   }}
                   data-testid={`menu-item-editor-active-switch-${dish.clientId}`}
                 />
-                <span>Activo</span>
+                <span data-slot="menuItemEditor-ivo">Activo</span>
               </label>
             </div>
-            <div className="bo-dishFields">
+            <div className="bo-dishFields" data-slot="menuItemEditor-dishFields">
               <textarea
                 className="bo-input bo-textarea bo-dishTitleTextarea"
                 rows={1}
@@ -179,7 +179,7 @@ export function MenuItemEditor({
                 placeholder="Titulo plato"
                 data-testid={`menu-item-editor-title-input-${dish.clientId}`}
               />
-              <label className="bo-checkRow">
+              <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
                 <Switch
                   checked={dish.description_enabled}
                   onCheckedChange={(checked) => {
@@ -190,7 +190,7 @@ export function MenuItemEditor({
                   }}
                   data-testid={`menu-item-editor-description-switch-${dish.clientId}`}
                 />
-                <span>Descripcion</span>
+                <span data-slot="menuItemEditor-ion">Descripcion</span>
               </label>
               {dish.description_enabled ? (
                 <textarea
@@ -203,8 +203,8 @@ export function MenuItemEditor({
               ) : null}
 
               {isALaCarte ? (
-                <div className="bo-dishPriceRow">
-                  <label className="bo-label">Precio</label>
+                <div className="bo-dishPriceRow" data-slot="menuItemEditor-dishPriceRow">
+                  <label className="bo-label" data-slot="menuItemEditor-label">Precio</label>
                   <input
                     className="bo-input bo-priceInput"
                     inputMode="decimal"
@@ -217,17 +217,17 @@ export function MenuItemEditor({
                   />
                 </div>
               ) : null}
-              <div className="bo-dishFieldsSide">
+              <div className="bo-dishFieldsSide" data-slot="menuItemEditor-dishFieldsSide">
                 {dish.allergens.length > 0 ? (
-                  <div className="bo-allergenRow">
+                  <div className="bo-allergenRow" data-slot="menuItemEditor-allergenRow">
                     {dish.allergens.map((name) => (
-                      <span key={`${dish.clientId}-${name}`} className="bo-allergenPill">{name}</span>
+                      <span key={`${dish.clientId}-${name}`} className="bo-allergenPill" data-slot="menuItemEditor-allergenPill">{name}</span>
                     ))}
                   </div>
                 ) : null}
-                <div className="bo-dishRow">
-                  <div className="bo-dishRowInlineControls">
-                    <label className="bo-checkRow">
+                <div className="bo-dishRow" data-slot="menuItemEditor-dishRow">
+                  <div className="bo-dishRowInlineControls" data-slot="menuItemEditor-dishRowInlineControls">
+                    <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
                       <Switch
                         checked={dish.supplement_enabled}
                         onCheckedChange={(checked) => {
@@ -238,7 +238,7 @@ export function MenuItemEditor({
                         }}
                         data-testid={`menu-item-editor-supplement-switch-${dish.clientId}`}
                       />
-                      <span>Suplemento</span>
+                      <span data-slot="menuItemEditor-nto">Suplemento</span>
                     </label>
                     {dish.supplement_enabled ? (
                       <input

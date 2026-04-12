@@ -90,36 +90,36 @@ export function RoleCreateModal({
 
   return (
     <Modal open={open} title="Crear rol" onClose={onClose} widthPx={680}>
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">Crear rol</div>
+      <div className="bo-modalHead" data-slot="roleCreateModal-modalHead">
+        <div className="bo-modalTitle" data-slot="roleCreateModal-modalTitle">Crear rol</div>
         <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close" data-testid="role-create-close">
           ×
         </button>
       </div>
 
-      <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-        <div className="bo-panel bo-roleCreatePanel">
-          <div className="bo-panelHead">
-            <div>
-              <div className="bo-panelTitle">Datos del rol</div>
-              <div className="bo-panelMeta">Importancia máxima permitida para tu sesión: {maxAllowed}</div>
+      <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="roleCreateModal-modalOutline">
+        <div className="bo-panel bo-roleCreatePanel" data-slot="roleCreateModal-roleCreatePanel">
+          <div className="bo-panelHead" data-slot="roleCreateModal-panelHead">
+            <div data-slot="roleCreateModal-div">
+              <div className="bo-panelTitle" data-slot="roleCreateModal-panelTitle">Datos del rol</div>
+              <div className="bo-panelMeta" data-slot="roleCreateModal-panelMeta">Importancia máxima permitida para tu sesión: {maxAllowed}</div>
             </div>
           </div>
-          <div className="bo-panelBody bo-roleCreateBody">
+          <div className="bo-panelBody bo-roleCreateBody" data-slot="roleCreateModal-roleCreateBody">
             <label className="bo-field bo-field--wide" data-slot="role-create-name-label">
-              <div className="bo-label">Nombre</div>
+              <div className="bo-label" data-slot="roleCreateModal-label">Nombre</div>
               <input className="bo-input" value={label} onChange={(ev) => setLabel(ev.target.value)} placeholder="Ej. Encargado de eventos" data-testid="role-create-name-input" />
             </label>
 
             <label className="bo-field bo-field--wide" data-slot="role-create-importance-label">
-              <div className="bo-label">Importancia (0-100)</div>
+              <div className="bo-label" data-slot="roleCreateModal-label">Importancia (0-100)</div>
               <Slider value={importance} min={0} max={maxAllowed} onChange={setImportance} ariaLabel="Importancia del rol" />
             </label>
 
             <label className="bo-field bo-field--wide" data-slot="role-create-icon-label">
-              <div className="bo-label">Icono</div>
-              <div className="bo-roleCreateIconRow">
-                <span className="bo-roleCreateIconPreview" aria-hidden="true">
+              <div className="bo-label" data-slot="roleCreateModal-label">Icono</div>
+              <div className="bo-roleCreateIconRow" data-slot="roleCreateModal-roleCreateIconRow">
+                <span className="bo-roleCreateIconPreview" aria-hidden="true" data-slot="roleCreateModal-roleCreateIconPreview">
                   <RoleIcon roleSlug="custom" iconKey={iconKey} size={20} strokeWidth={1.8} />
                 </span>
                 <Select
@@ -133,9 +133,9 @@ export function RoleCreateModal({
               </div>
             </label>
 
-            <div className="bo-field bo-field--wide">
-              <div className="bo-label">Permisos</div>
-              <div className="bo-chips">
+            <div className="bo-field bo-field--wide" data-slot="roleCreateModal-field--wide">
+              <div className="bo-label" data-slot="roleCreateModal-label">Permisos</div>
+              <div className="bo-chips" data-slot="roleCreateModal-chips">
                 {ALL_SECTIONS.map((section) => {
                   const on = permissions.includes(section.key);
                   return (
@@ -160,7 +160,7 @@ export function RoleCreateModal({
         </div>
       </div>
 
-      <div className="bo-modalActions">
+      <div className="bo-modalActions" data-slot="roleCreateModal-modalActions">
         <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} data-testid="role-create-cancel">
           Cancelar
         </button>

@@ -336,11 +336,11 @@ export default function Page() {
   
 
   return (
-    <div className="bo-facturasPage">
+    <div className="bo-facturasPage" data-slot="facturas-facturasPage">
       <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab} />
       {activeTab === "resumen" ? (
-        <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen">
-        <div className="bo-facturasSummary">
+        <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen" data-slot="facturas-div">
+        <div className="bo-facturasSummary" data-slot="facturas-facturasSummary">
           <InvoiceFilters
             searchText={searchText}
             statusFilter={statusFilter}
@@ -404,11 +404,11 @@ export default function Page() {
       ) : null}
 
       {activeTab === "añadir" ? (
-        <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir">
-        <div className="bo-formContainer">
-          <div className="bo-container bo-facturasFormContainer">
-            <div className="bo-panel bo-facturasFormPanel">
-              <div className="bo-panelBody bo-facturasFormPanelBody">
+        <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir" data-slot="facturas-div">
+        <div className="bo-formContainer" data-slot="facturas-formContainer">
+          <div className="bo-container bo-facturasFormContainer" data-slot="facturas-facturasFormContainer">
+            <div className="bo-panel bo-facturasFormPanel" data-slot="facturas-facturasFormPanel">
+              <div className="bo-panelBody bo-facturasFormPanelBody" data-slot="facturas-facturasFormPanelBody">
                 <InvoiceForm
                   invoice={editingInvoice}
                   onSave={handleSaveInvoice}

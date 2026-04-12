@@ -235,8 +235,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
     <>
       <div className="bo-panel" data-ui="config-restaurante-opening-panel">
         <div className="bo-panelHead" data-ui="config-restaurante-opening-header">
-          <div className="bo-panelTitle">Modo de apertura</div>
-          <div className="bo-panelMeta">{openingModeLabel}</div>
+          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Modo de apertura</div>
+          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">{openingModeLabel}</div>
         </div>
         <div className="bo-panelBody bo-row" data-ui="config-restaurante-opening-body">
           <Select
@@ -251,12 +251,12 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
 
       <div className="bo-panel" data-ui="config-restaurante-hours-panel">
         <div className="bo-panelHead" data-ui="config-restaurante-hours-header">
-          <div className="bo-panelTitle">Horarios por defecto</div>
-          <div className="bo-panelMeta">Slots de media hora con guardado inmediato</div>
+          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Horarios por defecto</div>
+          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">Slots de media hora con guardado inmediato</div>
         </div>
         <div className="bo-panelBody bo-hourCardsContainer" data-ui="config-restaurante-hours-body">
           <div className="bo-field" data-ui="config-restaurante-morning-field">
-            <div className="bo-label">Mañana (08:00 - 17:00)</div>
+            <div className="bo-label" data-slot="configRestaurante-label">Mañana (08:00 - 17:00)</div>
             <div className="bo-hourCards bo-hourCards--slots" data-ui="config-restaurante-morning-slots">
               {morningHourCards.map((slot) => (
                 <button
@@ -275,7 +275,7 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
           </div>
 
           <div className="bo-field" data-ui="config-restaurante-night-field">
-            <div className="bo-label">Noche (17:30 - 01:00)</div>
+            <div className="bo-label" data-slot="configRestaurante-label">Noche (17:30 - 01:00)</div>
             <div className="bo-hourCards bo-hourCards--slots" data-ui="config-restaurante-night-slots">
               {nightHourCards.map((slot) => (
                 <button
@@ -297,8 +297,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
 
       <div className="bo-panel" data-ui="config-restaurante-weekday-panel">
         <div className="bo-panelHead" data-ui="config-restaurante-weekday-header">
-          <div className="bo-panelTitle">Calendario semanal</div>
-          <div className="bo-panelMeta">Semana genérica (lunes a domingo)</div>
+          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Calendario semanal</div>
+          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">Semana genérica (lunes a domingo)</div>
         </div>
         <div className="bo-panelBody bo-configWeekdayGrid" data-ui="config-restaurante-weekday-body">
           {weekdayCardsWithState.map((weekday: WeekdayCard & { isOpen: boolean }) => (
@@ -312,9 +312,9 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
               onClick={() => void toggleWeekdayOpen(weekday.key)}
               data-slot="weekday-button"
             >
-              <div className="bo-configDayCardLabel">
-                <span className="bo-configDayCardLabelFull">{weekday.label}</span>
-                <span className="bo-configDayCardLabelShort" aria-hidden="true">
+              <div className="bo-configDayCardLabel" data-slot="configRestaurante-configDayCardLabel">
+                <span className="bo-configDayCardLabelFull" data-slot="configRestaurante-configDayCardLabelFull">{weekday.label}</span>
+                <span className="bo-configDayCardLabelShort" aria-hidden="true" data-slot="configRestaurante-configDayCardLabelShort">
                   {weekday.shortLabel}
                 </span>
               </div>
@@ -325,8 +325,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
 
       <div className="bo-panel" data-ui="config-restaurante-limits-panel">
         <div className="bo-panelHead" data-ui="config-restaurante-limits-header">
-          <div className="bo-panelTitle">Límites por defecto</div>
-          <div className="bo-panelMeta">Autosave inmediato</div>
+          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Límites por defecto</div>
+          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">Autosave inmediato</div>
         </div>
         <div className="bo-panelBody bo-configLimitGrid" data-ui="config-restaurante-limits-body">
           <PlusMinusCounter
@@ -375,8 +375,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
 
       <div className="bo-panel" data-ui="config-restaurante-floors-panel">
         <div className="bo-panelHead" data-ui="config-restaurante-floors-header">
-          <div className="bo-panelTitle">Plantas del restaurante</div>
-          <div className="bo-panelMeta">{floorCount} plantas</div>
+          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Plantas del restaurante</div>
+          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">{floorCount} plantas</div>
         </div>
         <div className="bo-panelBody bo-configFloorsPanel" data-ui="config-restaurante-floors-body">
           <Tabs
@@ -417,12 +417,12 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
                     {floorCards.map((floor) => (
                       <div key={`planta-${floor.keyPrefix}`} className="bo-floorSalonCard" data-slot="floor-card">
                         <div data-ui="floor-card-info">
-                          <div className="bo-floorCardName">{floor.plantaLabel}</div>
-                          <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                          <div className="bo-floorCardName" data-slot="configRestaurante-floorCardName">{floor.plantaLabel}</div>
+                          <div className="bo-floorCardHint" data-slot="configRestaurante-floorCardHint">{floor.defaultLabel}</div>
                         </div>
 
                         <div className="bo-floorSalonCardState" data-ui="floor-card-state">
-                          <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                          <span className="bo-floorSalonCardStatus" data-slot="configRestaurante-floorSalonCardStatus">{floor.statusLabel}</span>
                           <Switch
                             checked={floor.floor.active}
                             disabled={busy}
@@ -441,12 +441,12 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
                   {floorCards.map((floor) => (
                     <div key={`salon-${floor.keyPrefix}`} className="bo-floorSalonCard" data-slot="salon-card">
                       <div data-ui="salon-card-info">
-                        <div className="bo-floorCardName">{floor.salonLabel}</div>
-                        <div className="bo-floorCardHint">{floor.defaultLabel}</div>
+                        <div className="bo-floorCardName" data-slot="configRestaurante-floorCardName">{floor.salonLabel}</div>
+                        <div className="bo-floorCardHint" data-slot="configRestaurante-floorCardHint">{floor.defaultLabel}</div>
                       </div>
 
                       <div className="bo-floorSalonCardState" data-ui="salon-card-state">
-                        <span className="bo-floorSalonCardStatus">{floor.statusLabel}</span>
+                        <span className="bo-floorSalonCardStatus" data-slot="configRestaurante-floorSalonCardStatus">{floor.statusLabel}</span>
                         <Switch
                           checked={floor.floor.active}
                           disabled={busy}

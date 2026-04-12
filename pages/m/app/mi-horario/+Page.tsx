@@ -49,15 +49,15 @@ export default function MobileMiHorarioPage() {
             data-ui="mobile-mi-horario-day"
             data-role={`day-${entry.day_of_week}`}
           >
-            <div>
+            <div data-slot="mi-horario-div">
               <p className="text-sm font-bold text-[hsl(var(--foreground))]" data-ui="mobile-mi-horario-day-name">
                 {DAYS_ES[entry.day_of_week]}
               </p>
               <p className="text-xs text-[hsl(var(--muted-foreground))]" data-ui="mobile-mi-horario-role">{entry.role}</p>
             </div>
-            <div className="flex items-center gap-2 text-sm font-medium text-[hsl(var(--foreground))]">
+            <div className="flex items-center gap-2 text-sm font-medium text-[hsl(var(--foreground))]" data-slot="mi-horario-text-[hsl(var(-">
               <span data-ui="mobile-mi-horario-entry">{formatHHMM(entry.entry_time)}</span>
-              <span className="text-[hsl(var(--muted-foreground))]" aria-hidden="true">-</span>
+              <span className="text-[hsl(var(--muted-foreground))]" aria-hidden="true" data-slot="mi-horario-text-[hsl(var(-">-</span>
               <span data-ui="mobile-mi-horario-exit">{formatHHMM(entry.exit_time)}</span>
             </div>
           </div>

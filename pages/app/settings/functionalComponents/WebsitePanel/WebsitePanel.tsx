@@ -39,7 +39,7 @@ export function WebsitePanel({
         <div className="bo-panelMeta" data-ui="panelMeta">Plantillas premium para menus por tipo</div>
       </div>
       <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack">
+        <div className="bo-stack" data-slot="websitePanel-stack">
           <label className="bo-field" data-ui="defaultThemeField">
             <div className="bo-label" data-slot="fieldLabel">Plantilla por defecto</div>
             <Select

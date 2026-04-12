@@ -130,9 +130,9 @@ export function CustomerHistoryModal({
             {customerName.charAt(0).toUpperCase()}
           </div>
           <div className="bo-customerHistoryInfo" data-slot="customer-history-info">
-            <h3 className="bo-customerHistoryName">{customerName}</h3>
+            <h3 className="bo-customerHistoryName" data-slot="customerHistoryModal-customerHistoryName">{customerName}</h3>
             <div className="bo-customerHistoryContact" data-slot="customer-history-contact">
-              <span className="bo-customerHistoryEmail">
+              <span className="bo-customerHistoryEmail" data-slot="customerHistoryModal-customerHistoryEmail">
                 <Mail size={14} />
                 {customerEmail}
               </span>
@@ -143,42 +143,42 @@ export function CustomerHistoryModal({
         {/* Statistics Cards */}
         <div className="bo-customerHistoryStats" data-slot="customer-history-stats">
           <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-total">
-            <div className="bo-customerHistoryStatIcon">
+            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <TrendingUp size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel">Total gastado</div>
-              <div className="bo-customerHistoryStatValue">{formatPrice(stats.totalSpend)}</div>
+            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Total gastado</div>
+              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{formatPrice(stats.totalSpend)}</div>
             </div>
           </div>
 
           <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-average">
-            <div className="bo-customerHistoryStatIcon">
+            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <FileText size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel">Media por factura</div>
-              <div className="bo-customerHistoryStatValue">{formatPrice(stats.averageInvoice)}</div>
+            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Media por factura</div>
+              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{formatPrice(stats.averageInvoice)}</div>
             </div>
           </div>
 
           <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-invoices">
-            <div className="bo-customerHistoryStatIcon">
+            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <Calendar size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel">Facturas</div>
-              <div className="bo-customerHistoryStatValue">{stats.invoiceCount}</div>
+            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Facturas</div>
+              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{stats.invoiceCount}</div>
             </div>
           </div>
 
           <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-pending">
-            <div className="bo-customerHistoryStatIcon">
+            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <CreditCard size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel">Pendientes</div>
-              <div className="bo-customerHistoryStatValue">{stats.pendingCount}</div>
+            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Pendientes</div>
+              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{stats.pendingCount}</div>
             </div>
           </div>
         </div>
@@ -186,8 +186,8 @@ export function CustomerHistoryModal({
         {/* Date Range */}
         {stats.firstInvoiceDate && stats.lastInvoiceDate && (
           <div className="bo-customerHistoryDateRange" data-slot="customer-history-date-range">
-            <span className="bo-customerHistoryDateLabel">Cliente desde:</span>
-            <span className="bo-customerHistoryDateValue">
+            <span className="bo-customerHistoryDateLabel" data-slot="customerHistoryModal-customerHistoryDateLabel">Cliente desde:</span>
+            <span className="bo-customerHistoryDateValue" data-slot="customerHistoryModal-customerHistoryDateValue">
               {formatDate(stats.firstInvoiceDate)} - {formatDate(stats.lastInvoiceDate)}
             </span>
           </div>
@@ -197,21 +197,21 @@ export function CustomerHistoryModal({
         {loading && (
           <div className="bo-customerHistoryLoading" data-slot="customer-history-loading">
             <Loader2 size={24} className="bo-spinner" />
-            <span>Cargando historial...</span>
+            <span data-slot="customerHistoryModal-ial">Cargando historial...</span>
           </div>
         )}
 
         {/* Error State */}
         {error && (
           <div className="bo-customerHistoryError" data-slot="customer-history-error">
-            <p>{error}</p>
+            <p data-slot="customerHistoryModal-ror">{error}</p>
           </div>
         )}
 
         {/* Invoices List */}
         {!loading && !error && invoices.length > 0 && (
           <div className="bo-customerHistoryInvoices" data-slot="customer-history-invoices">
-            <h4 className="bo-customerHistoryInvoicesTitle">Historial de facturas</h4>
+            <h4 className="bo-customerHistoryInvoicesTitle" data-slot="customerHistoryModal-customerHistoryInvoicesTitle">Historial de facturas</h4>
             <div className="bo-customerHistoryInvoicesList" data-slot="customer-history-invoices-list">
               {invoices
                 .sort((a, b) => new Date(b.invoice_date).getTime() - new Date(a.invoice_date).getTime())
@@ -226,10 +226,10 @@ export function CustomerHistoryModal({
                     data-slot="customer-history-invoice-row"
                   >
                     <div className="bo-customerHistoryInvoiceMain" data-slot="customer-history-invoice-main">
-                      <div className="bo-customerHistoryInvoiceNumber">
+                      <div className="bo-customerHistoryInvoiceNumber" data-slot="customerHistoryModal-customerHistoryInvoiceNumber">
                         {invoice.invoice_number || `Factura #${invoice.id}`}
                       </div>
-                      <div className="bo-customerHistoryInvoiceDate">{formatDate(invoice.invoice_date)}</div>
+                      <div className="bo-customerHistoryInvoiceDate" data-slot="customerHistoryModal-customerHistoryInvoiceDate">{formatDate(invoice.invoice_date)}</div>
                     </div>
                     <div className="bo-customerHistoryInvoiceDetails" data-slot="customer-history-invoice-details">
                       <StatusBadge status={invoice.status} />
@@ -248,7 +248,7 @@ export function CustomerHistoryModal({
         {!loading && !error && invoices.length === 0 && (
           <div className="bo-customerHistoryEmpty" data-slot="customer-history-empty">
             <FileText size={48} />
-            <p>No se encontraron facturas para este cliente</p>
+            <p data-slot="customerHistoryModal-nte">No se encontraron facturas para este cliente</p>
           </div>
         )}
 

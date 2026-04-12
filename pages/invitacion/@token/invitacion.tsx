@@ -37,32 +37,32 @@ export default function Page() {
   };
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window bo-window--auth bo-onboardingWindow">
-        <div className="bo-authCard" role="main" aria-label="Invitación">
+    <div className="bo-stage" data-slot="invitacion-stage">
+      <div className="bo-window bo-window--auth bo-onboardingWindow" data-slot="invitacion-onboardingWindow">
+        <div className="bo-authCard" role="main" aria-label="Invitación" data-slot="invitacion-invitaci-n">
           {loading ? (
-            <div className="bo-onboardingLoading">
+            <div className="bo-onboardingLoading" data-slot="invitacion-onboardingLoading">
               <Loader2 size={20} className="is-spinning" />
               Validando invitación...
             </div>
           ) : error ? (
             <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--error">
+              <div className="bo-onboardingIcon bo-onboardingIcon--error" data-slot="invitacion-onboardingIcon--error">
                 <CircleAlert size={30} />
               </div>
-              <div className="bo-title">No se pudo validar la invitación</div>
-              <div className="bo-authSub">{error}</div>
+              <div className="bo-title" data-slot="invitacion-title">No se pudo validar la invitación</div>
+              <div className="bo-authSub" data-slot="invitacion-authSub">{error}</div>
               <button className="bo-btn bo-btn--ghost" type="button" data-testid="invitacion-login-link" onClick={() => (window.location.href = "/login")}>
                 Ir a login
               </button>
             </>
           ) : (
             <>
-              <div className="bo-onboardingIcon bo-onboardingIcon--ok">
+              <div className="bo-onboardingIcon bo-onboardingIcon--ok" data-slot="invitacion-onboardingIcon--ok">
                 <CheckCircle2 size={30} />
               </div>
-              <div className="bo-title">Bienvenido{invitation?.firstName ? `, ${invitation.firstName}` : ""}</div>
-              <div className="bo-authSub">Tu invitación está activa. Pulsa empezar para completar tu onboarding.</div>
+              <div className="bo-title" data-slot="invitacion-title">Bienvenido{invitation?.firstName ? `, ${invitation.firstName}` : ""}</div>
+              <div className="bo-authSub" data-slot="invitacion-authSub">Tu invitación está activa. Pulsa empezar para completar tu onboarding.</div>
 
               <button className="bo-btn bo-btn--primary" type="button" data-testid="invitacion-empezar" disabled={starting} onClick={onStart}>
                 {starting ? "Abriendo..." : "Empezar"}

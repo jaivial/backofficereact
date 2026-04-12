@@ -376,7 +376,7 @@ export default function Page() {
     <section aria-label="Edicion de turnos" className="bo-turnosPage" data-testid="horarios-turnos-section">
       <div className="bo-panel" data-testid="horarios-turnos-panel">
         <div className="bo-panelHead" data-testid="horarios-turnos-head">
-          <div>
+          <div data-slot="turnos-div">
             <div className="bo-panelTitle bo-horariosTitle" data-testid="horarios-turnos-title">
               <CalendarClock size={16} strokeWidth={1.8} />
               Turnos
@@ -395,8 +395,8 @@ export default function Page() {
                 data-testid="horarios-turnos-view-grid"
               >
                 {view === "grid" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner">
-                  <span className="bo-tabLabel">Grid</span>
+                <span className="bo-tabInner" data-slot="turnos-tabInner">
+                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Grid</span>
                 </span>
               </button>
               <button
@@ -408,8 +408,8 @@ export default function Page() {
                 data-testid="horarios-turnos-view-table"
               >
                 {view === "table" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner">
-                  <span className="bo-tabLabel">Tabla</span>
+                <span className="bo-tabInner" data-slot="turnos-tabInner">
+                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Tabla</span>
                 </span>
               </button>
             </div>
@@ -480,7 +480,7 @@ export default function Page() {
             {selectedMember && isMemberActive && (
               <div className="bo-turnosFichajeSection bo-turnosFichajeSection--active" data-testid="horarios-turnos-fichaje-active">
                 <div className="bo-turnosFichajeActive" data-testid="horarios-turnos-fichaje-status">
-                  <span className="bo-badge bo-badge--success">En curso</span>
+                  <span className="bo-badge bo-badge--success" data-slot="turnos-badge--success">En curso</span>
                 </div>
                 <button
                   className="bo-btn bo-btn--danger bo-btn--fit"

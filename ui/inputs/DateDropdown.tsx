@@ -302,7 +302,7 @@ export function DateDropdown({
           data-ui="date-dropdown-btn"
         >
           <Calendar size={18} strokeWidth={1.8} />
-          <span className="bo-dateBtnLabel">{label}</span>
+          <span className="bo-dateBtnLabel" data-slot="dateDropdown-dateBtnLabel">{label}</span>
           <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
         </button>
       </div>

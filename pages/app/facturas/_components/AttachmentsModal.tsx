@@ -71,8 +71,8 @@ export function AttachmentsModal({
 
   return (
     <>
-      <div className="bo-modalOverlay" onClick={onClose}>
-        <div className="bo-modal bo-attachmentsModal" role="dialog" aria-label="Adjuntos de factura" onClick={(e) => e.stopPropagation()}>
+      <div className="bo-modalOverlay" onClick={onClose} data-slot="attachmentsModal-modalOverlay">
+        <div className="bo-modal bo-attachmentsModal" role="dialog" aria-label="Adjuntos de factura" onClick={(e) => e.stopPropagation()} data-slot="attachmentsModal-adjuntos-de-factura">
           <div className="bo-attachmentsModalHeader" data-slot="attachments-modal-header">
             <h2 className="bo-attachmentsModalTitle" data-slot="attachments-modal-title">
               Adjuntos
@@ -90,7 +90,7 @@ export function AttachmentsModal({
                 <p data-slot="attachments-empty-text">No hay adjuntos</p>
               </div>
             ) : (
-              <ul className="bo-attachmentsList">
+              <ul className="bo-attachmentsList" data-slot="attachmentsModal-attachmentsList">
                 {attachments.map((attachment) => {
                   const FileIcon = getFileIcon(attachment.mime_type);
                   const iconColor = getFileIconColor(attachment.mime_type);
@@ -179,8 +179,8 @@ export function AttachmentsModal({
 
       {/* Preview Modal */}
       {previewingAttachment && (
-        <div className="bo-modalOverlay" onClick={() => setPreviewingAttachment(null)}>
-          <div className="bo-modal bo-previewModal" role="dialog" aria-label="Vista previa" onClick={(e) => e.stopPropagation()}>
+        <div className="bo-modalOverlay" onClick={() => setPreviewingAttachment(null)} data-slot="attachmentsModal-modalOverlay">
+          <div className="bo-modal bo-previewModal" role="dialog" aria-label="Vista previa" onClick={(e) => e.stopPropagation()} data-slot="attachmentsModal-vista-previa">
             <div className="bo-previewModalHeader" data-slot="preview-modal-header">
               <h3 data-slot="preview-modal-title">{previewingAttachment.original_name}</h3>
               <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => setPreviewingAttachment(null)} aria-label="Cerrar" data-testid="attachments-preview-close-button">
