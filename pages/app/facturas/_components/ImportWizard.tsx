@@ -822,7 +822,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                 </h4>
                 <div className="bo-importWizardSettingsGrid">
                   <div className="bo-importWizardSetting">
-                    <label>Estado por defecto</label>
+                    <label data-slot="import-wizard-default-status-label">Estado por defecto</label>
                     <select
                       value={localSettings.defaultStatus}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultStatus: e.target.value as InvoiceStatus }))}
@@ -836,7 +836,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                     </select>
                   </div>
                   <div className="bo-importWizardSetting">
-                    <label>Categoria por defecto</label>
+                    <label data-slot="import-wizard-default-category-label">Categoria por defecto</label>
                     <select
                       value={localSettings.defaultCategory}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultCategory: e.target.value as InvoiceCategory }))}
@@ -849,7 +849,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                     </select>
                   </div>
                   <div className="bo-importWizardSetting">
-                    <label>IVA por defecto (%)</label>
+                    <label data-slot="import-wizard-default-iva-rate-label">IVA por defecto (%)</label>
                     <input
                       type="number"
                       value={localSettings.defaultIvaRate}
@@ -860,7 +860,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                     />
                   </div>
                   <div className="bo-importWizardSetting">
-                    <label data-testid="import-wizard-skip-header-label">
+                    <label data-slot="import-wizard-skip-header-label" data-testid="import-wizard-skip-header-label">
                       <input
                         type="checkbox"
                         checked={localSettings.skipHeaderRow}

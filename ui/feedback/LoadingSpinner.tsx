@@ -35,9 +35,10 @@ export function LoadingSpinner({
       aria-label={label || "Cargando..."}
       data-component="loading-spinner"
       data-size={size}
+      data-slot="loading-spinner"
     >
-      <span className={spinnerClass} aria-hidden="true" />
-      {label ? <span className="bo-spinnerLabel">{label}</span> : null}
+      <span className={spinnerClass} aria-hidden="true" data-slot="loading-spinner-icon" />
+      {label ? <span className="bo-spinnerLabel" data-slot="loading-spinner-label">{label}</span> : null}
     </div>
   );
 }

@@ -82,23 +82,23 @@ export const MenuDishPreviewCard = React.memo(function MenuDishPreviewCard({
   }, [price]);
 
   return (
-    <article className={cn("bo-menuDishPreviewCard", className)} data-testid="menu-dish-preview-card">
-      <div className="bo-menuDishPreviewMedia">
+    <article className={cn("bo-menuDishPreviewCard", className)} data-testid="menu-dish-preview-card" data-slot="menu-dish-preview-card">
+      <div className="bo-menuDishPreviewMedia" data-slot="menu-dish-preview-media">
         {imageUrl ? (
-          <img src={imageUrl} alt="" loading="lazy" decoding="async" />
+          <img src={imageUrl} alt="" loading="lazy" decoding="async" data-slot="menu-dish-preview-image" />
         ) : (
-          <div className="bo-menuDishPreviewMediaPlaceholder" aria-hidden="true">
+          <div className="bo-menuDishPreviewMediaPlaceholder" aria-hidden="true" data-slot="menu-dish-preview-media-placeholder">
             <ImageOff size={26} />
           </div>
         )}
       </div>
 
-      <div className="bo-menuDishPreviewBody">
-        <h3 className="bo-menuDishPreviewTitle">{title}</h3>
-        {description ? <p className="bo-menuDishPreviewDescription">{description}</p> : null}
+      <div className="bo-menuDishPreviewBody" data-slot="menu-dish-preview-body">
+        <h3 className="bo-menuDishPreviewTitle" data-slot="menu-dish-preview-title">{title}</h3>
+        {description ? <p className="bo-menuDishPreviewDescription" data-slot="menu-dish-preview-description">{description}</p> : null}
 
         {allergenKeys.length > 0 ? (
-          <div className="bo-menuDishPreviewAllergens" aria-label="Alergenos">
+          <div className="bo-menuDishPreviewAllergens" aria-label="Alergenos" data-slot="menu-dish-preview-allergens">
             {allergenKeys.map((key) => (
               <img
                 key={key}
@@ -108,15 +108,16 @@ export const MenuDishPreviewCard = React.memo(function MenuDishPreviewCard({
                 title={ALLERGEN_LABELS[key] || key}
                 loading="lazy"
                 decoding="async"
+                data-slot="menu-dish-preview-allergen"
               />
             ))}
           </div>
         ) : null}
 
         {supplementLabel || priceLabel ? (
-          <div className="bo-menuDishPreviewMeta">
-            {supplementLabel ? <span className="bo-menuDishPreviewTag">{supplementLabel}</span> : null}
-            {priceLabel ? <span className="bo-menuDishPreviewTag">{priceLabel}</span> : null}
+          <div className="bo-menuDishPreviewMeta" data-slot="menu-dish-preview-meta">
+            {supplementLabel ? <span className="bo-menuDishPreviewTag" data-slot="menu-dish-preview-tag">{supplementLabel}</span> : null}
+            {priceLabel ? <span className="bo-menuDishPreviewTag" data-slot="menu-dish-preview-tag">{priceLabel}</span> : null}
           </div>
         ) : null}
       </div>

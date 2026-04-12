@@ -129,9 +129,9 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
   }));
 
   return (
-    <div className="bo-lineItems">
-      <div className="bo-lineItemsHeader">
-        <h4 className="bo-lineItemsTitle">Lineas de factura</h4>
+    <div className="bo-lineItems" data-slot="line-items">
+      <div className="bo-lineItemsHeader" data-slot="line-items-header">
+        <h4 className="bo-lineItemsTitle" data-slot="line-items-title">Lineas de factura</h4>
         <button
           type="button"
           className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -145,8 +145,8 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
       </div>
 
       {items.length === 0 ? (
-        <div className="bo-lineItemsEmpty">
-          <p>No hay lineas de factura. Añade una linea para continuar.</p>
+        <div className="bo-lineItemsEmpty" data-slot="line-items-empty">
+          <p data-slot="line-items-empty-text">No hay lineas de factura. Añade una linea para continuar.</p>
           <button
             type="button"
             className="bo-btn bo-btn--secondary bo-btn--sm"
@@ -160,38 +160,38 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
         </div>
       ) : (
         <>
-          <div className="bo-lineItemsTable">
-            <div className="bo-lineItemsTableHeader">
-              <div className="bo-lineItemCell bo-lineItemCell--description">
+          <div className="bo-lineItemsTable" data-slot="line-items-table">
+            <div className="bo-lineItemsTableHeader" data-slot="line-items-table-header">
+              <div className="bo-lineItemCell bo-lineItemCell--description" data-slot="line-items-cell-description">
                 <List size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="bo-srOnly">Descripcion</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--quantity">
+              <div className="bo-lineItemCell bo-lineItemCell--quantity" data-slot="line-items-cell-quantity">
                 <Hash size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="bo-srOnly">Cantidad</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--price">
+              <div className="bo-lineItemCell bo-lineItemCell--price" data-slot="line-items-cell-price">
                 <CircleDollarSign size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="bo-srOnly">Precio unit.</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--iva">
+              <div className="bo-lineItemCell bo-lineItemCell--iva" data-slot="line-items-cell-iva">
                 <Percent size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="bo-srOnly">IVA</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
+              <div className="bo-lineItemCell bo-lineItemCell--ivaAmount" data-slot="line-items-cell-ivaAmount">
                 <Receipt size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="bo-srOnly">Importe IVA</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--total">
+              <div className="bo-lineItemCell bo-lineItemCell--total" data-slot="line-items-cell-total">
                 <Calculator size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
                 <span className="bo-srOnly">Total</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--actions"></div>
+              <div className="bo-lineItemCell bo-lineItemCell--actions" data-slot="line-items-cell-actions"></div>
             </div>
 
             {items.map((item, index) => (
-              <div key={index} className="bo-lineItemsTableRow">
-                <div className="bo-lineItemCell bo-lineItemCell--description">
+              <div key={index} className="bo-lineItemsTableRow" data-slot="line-items-row">
+                <div className="bo-lineItemCell bo-lineItemCell--description" data-slot="line-items-row-description">
                   <input
                     type="text"
                     className="bo-input"
@@ -202,7 +202,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     data-testid={`line-item-description-${index}`}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--quantity">
+                <div className="bo-lineItemCell bo-lineItemCell--quantity" data-slot="line-items-row-quantity">
                   <input
                     type="number"
                     className="bo-input bo-lineItemInputNumber"
@@ -216,7 +216,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     data-testid={`line-item-quantity-${index}`}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--price">
+                <div className="bo-lineItemCell bo-lineItemCell--price" data-slot="line-items-row-price">
                   <input
                     type="number"
                     className="bo-input bo-lineItemInputNumber"
@@ -230,7 +230,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     data-testid={`line-item-unit-price-${index}`}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--iva">
+                <div className="bo-lineItemCell bo-lineItemCell--iva" data-slot="line-items-row-iva">
                   <input
                     type="number"
                     className="bo-input bo-lineItemInputNumber"
@@ -245,17 +245,17 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     data-testid={`line-item-iva-rate-${index}`}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--ivaAmount">
-                  <span className="bo-lineItemValue">
+                <div className="bo-lineItemCell bo-lineItemCell--ivaAmount" data-slot="line-items-row-ivaAmount">
+                  <span className="bo-lineItemValue" data-slot="line-items-iva-value">
                     {item.iva_amount.toFixed(2)} {currencySymbol}
                   </span>
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--total">
-                  <span className="bo-lineItemValue bo-lineItemValue--total">
+                <div className="bo-lineItemCell bo-lineItemCell--total" data-slot="line-items-row-total">
+                  <span className="bo-lineItemValue bo-lineItemValue--total" data-slot="line-items-total-value">
                     {item.total.toFixed(2)} {currencySymbol}
                   </span>
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--actions">
+                <div className="bo-lineItemCell bo-lineItemCell--actions" data-slot="line-items-row-actions">
                   <DropdownMenu
                     label={`Acciones linea ${index + 1}`}
                     items={[
@@ -271,18 +271,18 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           </div>
 
           {/* Summary */}
-          <div className="bo-lineItemsSummary">
-            <div className="bo-lineItemsSummaryRow">
-              <span className="bo-lineItemsSummaryLabel">Subtotal:</span>
-              <span className="bo-lineItemsSummaryValue">{summary.subtotal.toFixed(2)} {currencySymbol}</span>
+          <div className="bo-lineItemsSummary" data-slot="line-items-summary">
+            <div className="bo-lineItemsSummaryRow" data-slot="line-items-summary-row-subtotal">
+              <span className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-subtotal">Subtotal:</span>
+              <span className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-subtotal">{summary.subtotal.toFixed(2)} {currencySymbol}</span>
             </div>
-            <div className="bo-lineItemsSummaryRow">
-              <span className="bo-lineItemsSummaryLabel">Total IVA:</span>
-              <span className="bo-lineItemsSummaryValue">{summary.totalIva.toFixed(2)} {currencySymbol}</span>
+            <div className="bo-lineItemsSummaryRow" data-slot="line-items-summary-row-iva">
+              <span className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-iva">Total IVA:</span>
+              <span className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-iva">{summary.totalIva.toFixed(2)} {currencySymbol}</span>
             </div>
-            <div className="bo-lineItemsSummaryRow bo-lineItemsSummaryRow--total">
-              <span className="bo-lineItemsSummaryLabel">Total:</span>
-              <span className="bo-lineItemsSummaryValue">{summary.total.toFixed(2)} {currencySymbol}</span>
+            <div className="bo-lineItemsSummaryRow bo-lineItemsSummaryRow--total" data-slot="line-items-summary-row-total">
+              <span className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-total">Total:</span>
+              <span className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-total">{summary.total.toFixed(2)} {currencySymbol}</span>
             </div>
           </div>
         </>

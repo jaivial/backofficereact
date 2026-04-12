@@ -78,12 +78,12 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
 
   return (
     <>
-      <div className="bo-panel" data-ui="config-contacto-main-panel">
-        <div className="bo-panelHead" data-ui="config-contacto-main-header">
-          <div className="bo-panelTitle">Contacto</div>
+      <div className="bo-panel" data-ui="config-contacto-main-panel" data-slot="config-contacto-panel">
+        <div className="bo-panelHead" data-ui="config-contacto-main-header" data-slot="config-contacto-header">
+          <div className="bo-panelTitle" data-slot="config-contacto-title">Contacto</div>
         </div>
-        <div className="bo-panelBody bo-stack" data-ui="config-contacto-main-body">
-          <div className="bo-field" data-ui="config-contacto-address-field">
+        <div className="bo-panelBody bo-stack" data-ui="config-contacto-main-body" data-slot="config-contacto-body">
+          <div className="bo-field" data-ui="config-contacto-address-field" data-slot="config-contacto-address-field">
             <label className="bo-label" htmlFor="config-contacto-direccion">
               Dirección
             </label>
@@ -100,7 +100,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             />
           </div>
 
-          <div className="bo-field" data-ui="config-contacto-phone-field">
+          <div className="bo-field" data-ui="config-contacto-phone-field" data-slot="config-contacto-phone-field">
             <label className="bo-label" htmlFor="config-contacto-telefono">
               Teléfono
             </label>
@@ -117,7 +117,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             />
           </div>
 
-          <div className="bo-field" data-ui="config-contacto-email-field">
+          <div className="bo-field" data-ui="config-contacto-email-field" data-slot="config-contacto-email-field">
             <label className="bo-label" htmlFor="config-contacto-email">
               Email
             </label>
@@ -145,13 +145,13 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
         </div>
       </div>
 
-      <div className="bo-panel" data-ui="config-contacto-fiscal-panel">
-        <div className="bo-panelHead" data-ui="config-contacto-fiscal-header">
-          <div className="bo-panelTitle">Información fiscal</div>
-          <div className="bo-panelMeta">Datos para facturación</div>
+      <div className="bo-panel" data-ui="config-contacto-fiscal-panel" data-slot="config-contacto-fiscal-panel">
+        <div className="bo-panelHead" data-ui="config-contacto-fiscal-header" data-slot="config-contacto-fiscal-header">
+          <div className="bo-panelTitle" data-slot="config-contacto-fiscal-title">Información fiscal</div>
+          <div className="bo-panelMeta" data-slot="config-contacto-fiscal-meta">Datos para facturación</div>
         </div>
-        <div className="bo-panelBody bo-stack" data-ui="config-contacto-fiscal-body">
-          <div className="bo-field" data-ui="config-contacto-cif-field">
+        <div className="bo-panelBody bo-stack" data-ui="config-contacto-fiscal-body" data-slot="config-contacto-fiscal-body">
+          <div className="bo-field" data-ui="config-contacto-cif-field" data-slot="config-contacto-cif-field">
             <label className="bo-label" htmlFor="config-contacto-cif">
               CIF / NIF
             </label>
@@ -168,7 +168,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             />
           </div>
 
-          <div className="bo-field" data-ui="config-contacto-billing-address-field">
+          <div className="bo-field" data-ui="config-contacto-billing-address-field" data-slot="config-contacto-billing-address-field">
             <label className="bo-label" htmlFor="config-contacto-dir-fact">
               Dirección de facturación
             </label>
@@ -185,7 +185,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             />
           </div>
 
-          <div className="bo-field" data-ui="config-contacto-clasificacion-field">
+          <div className="bo-field" data-ui="config-contacto-clasificacion-field" data-slot="config-contacto-clasificacion-field">
             <div className="bo-label">Clasificación</div>
             <Select
               value={info.clasificacion}

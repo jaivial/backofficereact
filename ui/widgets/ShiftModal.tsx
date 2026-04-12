@@ -290,15 +290,15 @@ export function ShiftModal({
 
   return (
     <Modal open={open} title={fullName(member)} onClose={onClose} widthPx={420} className={cn(className)}>
-      <div className="bo-shiftModal">
-        {error && <div className="bo-shiftModalError">{error}</div>}
+      <div className="bo-shiftModal" data-slot="shift-modal-root">
+        {error && <div className="bo-shiftModalError" data-slot="shift-modal-error">{error}</div>}
 
         {hasSchedule && !isActive && (
           <>
-            <div className="bo-shiftModalSection">
-              <div className="bo-shiftModalLabel">Turno actual</div>
-              <div className="bo-shiftModalTimeRow">
-                <div className="bo-shiftModalTimeBlock">
+            <div className="bo-shiftModalSection" data-slot="shift-modal-current-shift">
+              <div className="bo-shiftModalLabel" data-slot="shift-modal-section-label">Turno actual</div>
+              <div className="bo-shiftModalTimeRow" data-slot="shift-modal-time-row">
+                <div className="bo-shiftModalTimeBlock" data-slot="shift-modal-start-block">
                   <button
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
@@ -308,7 +308,7 @@ export function ShiftModal({
                   >
                     <Minus size={14} strokeWidth={1.8} />
                   </button>
-                  <div className="bo-shiftModalTime">{startTime}</div>
+                  <div className="bo-shiftModalTime" data-slot="shift-modal-start-time">{startTime}</div>
                   <button
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
@@ -319,8 +319,8 @@ export function ShiftModal({
                     <Plus size={14} strokeWidth={1.8} />
                   </button>
                 </div>
-                <span className="bo-shiftModalSeparator">-</span>
-                <div className="bo-shiftModalTimeBlock">
+                <span className="bo-shiftModalSeparator" data-slot="shift-modal-time-separator">-</span>
+                <div className="bo-shiftModalTimeBlock" data-slot="shift-modal-end-block">
                   <button
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
@@ -330,7 +330,7 @@ export function ShiftModal({
                   >
                     <Minus size={14} strokeWidth={1.8} />
                   </button>
-                  <div className="bo-shiftModalTime">{endTime}</div>
+                  <div className="bo-shiftModalTime" data-slot="shift-modal-end-time">{endTime}</div>
                   <button
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
@@ -342,7 +342,7 @@ export function ShiftModal({
                   </button>
                 </div>
               </div>
-              <div className="bo-shiftModalActions">
+              <div className="bo-shiftModalActions" data-slot="shift-modal-actions">
                 <button
                   type="button"
                   className="bo-btn bo-btn--secondary"
@@ -399,10 +399,11 @@ export function ShiftModal({
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
+                  data-slot="shift-modal-assign-form"
                 >
-                  <div className="bo-shiftModalLabel">Nuevo turno</div>
-                  <div className="bo-shiftModalSpinWheels">
-                    <div className="bo-shiftModalSpinWheelCol">
+                  <div className="bo-shiftModalLabel" data-slot="shift-modal-assign-label">Nuevo turno</div>
+                  <div className="bo-shiftModalSpinWheels" data-slot="shift-modal-spin-wheels">
+                    <div className="bo-shiftModalSpinWheelCol" data-slot="shift-modal-start-wheels">
                       <SpinWheel
                         values={HOUR_VALUES}
                         value={newStartParsed.hours}
@@ -410,7 +411,7 @@ export function ShiftModal({
                         ariaLabel="Hora de entrada"
                         className="bo-shiftModalSpinWheel"
                       />
-                      <span className="bo-shiftModalSpinWheelColon">:</span>
+                      <span className="bo-shiftModalSpinWheelColon" data-slot="shift-modal-wheel-colon">:</span>
                       <SpinWheel
                         values={MINUTE_VALUES}
                         value={newStartParsed.minutes}
@@ -419,8 +420,8 @@ export function ShiftModal({
                         className="bo-shiftModalSpinWheel"
                       />
                     </div>
-                    <span className="bo-shiftModalSeparator">-</span>
-                    <div className="bo-shiftModalSpinWheelCol">
+                    <span className="bo-shiftModalSeparator" data-slot="shift-modal-time-separator">-</span>
+                    <div className="bo-shiftModalSpinWheelCol" data-slot="shift-modal-end-wheels">
                       <SpinWheel
                         values={HOUR_VALUES}
                         value={newEndParsed.hours}
@@ -428,7 +429,7 @@ export function ShiftModal({
                         ariaLabel="Hora de salida"
                         className="bo-shiftModalSpinWheel"
                       />
-                      <span className="bo-shiftModalSpinWheelColon">:</span>
+                      <span className="bo-shiftModalSpinWheelColon" data-slot="shift-modal-wheel-colon">:</span>
                       <SpinWheel
                         values={MINUTE_VALUES}
                         value={newEndParsed.minutes}
@@ -439,7 +440,7 @@ export function ShiftModal({
                     </div>
                   </div>
                   {overlapWarning && (
-                    <div className="bo-shiftModalWarning">
+                    <div className="bo-shiftModalWarning" data-slot="shift-modal-warning">
                       El nuevo turno no puede coincidir con el turno actual
                     </div>
                   )}
@@ -465,6 +466,7 @@ export function ShiftModal({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               transition={{ duration: 0.2 }}
+              data-slot="shift-modal-success-state"
             >
               <button
                 type="button"
@@ -482,11 +484,11 @@ export function ShiftModal({
 
         {isActive && (
           <>
-            <div className="bo-shiftModalSection">
-              <div className="bo-shiftModalLabel">Fichaje activo</div>
-              <div className="bo-shiftModalActiveBadge">
-                <span className="bo-badge bo-badge--success">En vivo</span>
-                <span className="bo-shiftModalActiveTime">
+            <div className="bo-shiftModalSection" data-slot="shift-modal-active-section">
+              <div className="bo-shiftModalLabel" data-slot="shift-modal-active-label">Fichaje activo</div>
+              <div className="bo-shiftModalActiveBadge" data-slot="shift-modal-active-badge">
+                <span className="bo-badge bo-badge--success" data-slot="shift-modal-live-badge">En vivo</span>
+                <span className="bo-shiftModalActiveTime" data-slot="shift-modal-active-time">
                   Entrada: {activeEntry?.startTime || "--:--"}
                 </span>
               </div>
@@ -506,10 +508,10 @@ export function ShiftModal({
         )}
 
         {hasSchedule && isActive && (
-          <div className="bo-shiftModalAddShift">
-            <div className="bo-shiftModalLabel">Añadir otro turno</div>
-            <div className="bo-shiftModalSpinWheels">
-              <div className="bo-shiftModalSpinWheelCol">
+          <div className="bo-shiftModalAddShift" data-slot="shift-modal-add-shift">
+            <div className="bo-shiftModalLabel" data-slot="shift-modal-add-shift-label">Añadir otro turno</div>
+            <div className="bo-shiftModalSpinWheels" data-slot="shift-modal-spin-wheels">
+              <div className="bo-shiftModalSpinWheelCol" data-slot="shift-modal-start-wheels">
                 <SpinWheel
                   values={HOUR_VALUES}
                   value={newStartParsed.hours}
@@ -517,7 +519,7 @@ export function ShiftModal({
                   ariaLabel="Hora de entrada"
                   className="bo-shiftModalSpinWheel"
                 />
-                <span className="bo-shiftModalSpinWheelColon">:</span>
+                <span className="bo-shiftModalSpinWheelColon" data-slot="shift-modal-wheel-colon">:</span>
                 <SpinWheel
                   values={MINUTE_VALUES}
                   value={newStartParsed.minutes}
@@ -526,8 +528,8 @@ export function ShiftModal({
                   className="bo-shiftModalSpinWheel"
                 />
               </div>
-              <span className="bo-shiftModalSeparator">-</span>
-              <div className="bo-shiftModalSpinWheelCol">
+              <span className="bo-shiftModalSeparator" data-slot="shift-modal-time-separator">-</span>
+              <div className="bo-shiftModalSpinWheelCol" data-slot="shift-modal-end-wheels">
                 <SpinWheel
                   values={HOUR_VALUES}
                   value={newEndParsed.hours}
@@ -535,7 +537,7 @@ export function ShiftModal({
                   ariaLabel="Hora de salida"
                   className="bo-shiftModalSpinWheel"
                 />
-                <span className="bo-shiftModalSpinWheelColon">:</span>
+                <span className="bo-shiftModalSpinWheelColon" data-slot="shift-modal-wheel-colon">:</span>
                 <SpinWheel
                   values={MINUTE_VALUES}
                   value={newEndParsed.minutes}
@@ -546,7 +548,7 @@ export function ShiftModal({
               </div>
             </div>
             {overlapWarning && (
-              <div className="bo-shiftModalWarning">
+              <div className="bo-shiftModalWarning" data-slot="shift-modal-warning">
                 El nuevo turno no puede coincidir con el turno actual
               </div>
             )}

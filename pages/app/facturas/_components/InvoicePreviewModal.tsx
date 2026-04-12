@@ -60,9 +60,9 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
 
   return (
     <Modal open={true} title={`Vista previa de factura ${invoice.invoice_number || invoice.id}`} onClose={onClose} widthPx={700}>
-      <div className="bo-invoicePreview">
+      <div className="bo-invoicePreview" data-slot="invoice-preview-container">
         {/* Header Actions */}
-        <div className="bo-invoicePreviewActions">
+        <div className="bo-invoicePreviewActions" data-slot="invoice-preview-actions">
           <button
             className="bo-btn bo-btn--primary"
             type="button"
@@ -96,12 +96,12 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
         </div>
 
         {/* Invoice Header */}
-        <div className="bo-invoicePreviewHeader">
-          <div className="bo-invoicePreviewTitle">
+        <div className="bo-invoicePreviewHeader" data-slot="invoice-preview-header">
+          <div className="bo-invoicePreviewTitle" data-slot="invoice-preview-title">
             <h2>Factura</h2>
             <span className="bo-invoiceNumber">{invoice.invoice_number || `N. ${invoice.id}`}</span>
           </div>
-          <div className="bo-invoicePreviewStatus">
+          <div className="bo-invoicePreviewStatus" data-slot="invoice-preview-status">
             <span className={`bo-badge ${statusConfig.className}`}>{statusConfig.label}</span>
             {invoice.is_reservation && (
               <span className="bo-badge bo-badge--info">Reserva</span>
@@ -110,9 +110,9 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
         </div>
 
         {/* Invoice Details Grid */}
-        <div className="bo-invoicePreviewGrid">
+        <div className="bo-invoicePreviewGrid" data-slot="invoice-preview-grid">
           {/* Dates Column */}
-          <div className="bo-invoicePreviewSection">
+          <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-dates">
             <h3 className="bo-invoicePreviewSectionTitle">
               <Calendar size={14} />
               Fechas
@@ -136,7 +136,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
           </div>
 
           {/* Customer Column */}
-          <div className="bo-invoicePreviewSection">
+          <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-customer">
             <h3 className="bo-invoicePreviewSectionTitle">
               <User size={14} />
               Cliente
@@ -181,7 +181,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
           </div>
 
           {/* Payment Column */}
-          <div className="bo-invoicePreviewSection">
+          <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-payment">
             <h3 className="bo-invoicePreviewSectionTitle">
               <CreditCard size={14} />
               Pago
@@ -204,7 +204,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
         </div>
 
         {/* Amount Summary */}
-        <div className="bo-invoicePreviewTotals">
+        <div className="bo-invoicePreviewTotals" data-slot="invoice-preview-totals">
           <div className="bo-invoicePreviewTotalRow">
             <span className="bo-invoicePreviewTotalLabel">Base imponible</span>
             <span className="bo-invoicePreviewTotalValue">{formatPrice(invoice.amount)}</span>
@@ -222,7 +222,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
         </div>
 
         {/* Footer */}
-        <div className="bo-invoicePreviewFooter">
+        <div className="bo-invoicePreviewFooter" data-slot="invoice-preview-footer">
           <span className="bo-invoicePreviewId">ID: {invoice.id}</span>
           <span className="bo-invoicePreviewCreated">
             Creada: {formatDate(invoice.created_at)}

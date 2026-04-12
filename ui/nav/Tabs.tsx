@@ -200,11 +200,11 @@ export function Tabs({
             {active || !mounted ? (
               <motion.span layoutId={layoutId} className="bo-tabIndicator" />
             ) : null}
-            <span className="bo-tabInner">
-              <span className="bo-tabIcon" aria-hidden="true">
+            <span className="bo-tabInner" data-slot="tab-inner">
+              <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
                 {t.icon}
               </span>
-              <span className="bo-tabLabel hidden sm:inline">{t.label}</span>
+              <span className="bo-tabLabel hidden sm:inline" data-slot="tab-label">{t.label}</span>
             </span>
           </motion.a>
         );

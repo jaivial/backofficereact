@@ -47,7 +47,7 @@ export function SimpleTabs({
   if (!items || !activeId || !onChange) {
     return (
       <legacyTabsContext.Provider value={{ activeId: legacyActiveId, setActiveId: setLegacyActiveId }}>
-        <div className={["bo-tabsWrap", className].filter(Boolean).join(" ")} data-testid="simple-tabs-wrapper" data-role="tabs-wrapper">
+        <div className={["bo-tabsWrap", className].filter(Boolean).join(" ")} data-testid="simple-tabs-wrapper" data-role="tabs-wrapper" data-slot="tabs-legacy-wrapper">
           {children}
         </div>
       </legacyTabsContext.Provider>

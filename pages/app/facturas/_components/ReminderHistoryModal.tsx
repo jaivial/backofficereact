@@ -109,9 +109,9 @@ export function ReminderHistoryModal({
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
-      <div className="bo-modal bo-modal--md" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modalHeader">
+    <div className="bo-modal-overlay" onClick={onClose} data-slot="reminder-history-overlay">
+      <div className="bo-modal bo-modal--md" onClick={(e) => e.stopPropagation()} data-slot="reminder-history-modal">
+        <div className="bo-modalHeader" data-slot="reminder-history-header">
           <h2 className="bo-modalTitle">Historial de recordatorios</h2>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -123,9 +123,9 @@ export function ReminderHistoryModal({
           </button>
         </div>
 
-        <div className="bo-modalBody">
+        <div className="bo-modalBody" data-slot="reminder-history-body">
           {/* Invoice Info */}
-          <div className="bo-reminderHistoryInfo">
+          <div className="bo-reminderHistoryInfo" data-slot="reminder-history-info">
             <span>
               <strong>{customerName}</strong>
             </span>
@@ -136,7 +136,7 @@ export function ReminderHistoryModal({
 
           {/* Loading State */}
           {loading && (
-            <div className="bo-loadingState">
+            <div className="bo-loadingState" data-slot="reminder-history-loading">
               <div className="bo-spinner" />
               <span>Cargando historial...</span>
             </div>
@@ -144,7 +144,7 @@ export function ReminderHistoryModal({
 
           {/* Error State */}
           {error && (
-            <div className="bo-alert bo-alert--error">
+            <div className="bo-alert bo-alert--error" data-slot="reminder-history-error">
               <AlertCircle size={16} />
               {error}
             </div>
@@ -152,7 +152,7 @@ export function ReminderHistoryModal({
 
           {/* Empty State */}
           {!loading && !error && reminders.length === 0 && (
-            <div className="bo-emptyState">
+            <div className="bo-emptyState" data-slot="reminder-history-empty">
               <Clock size={32} />
               <p>No hay recordatorios enviados</p>
               <span className="bo-mutedText">
@@ -163,11 +163,11 @@ export function ReminderHistoryModal({
 
           {/* Reminder List */}
           {!loading && !error && reminders.length > 0 && (
-            <div className="bo-reminderHistoryList">
+            <div className="bo-reminderHistoryList" data-slot="reminder-history-list">
               {reminders.map((reminder) => (
-                <div key={reminder.id} className="bo-reminderHistoryItem">
-                  <div className="bo-reminderHistoryItemHeader">
-                    <div className="bo-reminderHistoryItemStatus">
+                <div key={reminder.id} className="bo-reminderHistoryItem" data-slot="reminder-history-item">
+                  <div className="bo-reminderHistoryItemHeader" data-slot="reminder-history-item-header">
+                    <div className="bo-reminderHistoryItemStatus" data-slot="reminder-history-item-status">
                       <ReminderStatusBadge status={reminder.status} />
                       {reminder.sent_via && <SentViaBadge via={reminder.sent_via} />}
                     </div>
@@ -181,13 +181,13 @@ export function ReminderHistoryModal({
                   </div>
 
                   {reminder.template_name && (
-                    <div className="bo-reminderHistoryItemTemplate">
+                    <div className="bo-reminderHistoryItemTemplate" data-slot="reminder-history-item-template">
                       Plantilla: {reminder.template_name}
                     </div>
                   )}
 
                   {reminder.error_message && (
-                    <div className="bo-reminderHistoryItemError">
+                    <div className="bo-reminderHistoryItemError" data-slot="reminder-history-item-error">
                       <AlertCircle size={14} />
                       {reminder.error_message}
                     </div>

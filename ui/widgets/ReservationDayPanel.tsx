@@ -48,13 +48,13 @@ export function ReservationDayStateBlock({
   const buttonLabel = actionLabel ?? (actionMode === "openOnly" ? "Abrir día" : day.isOpen ? "Cerrar día" : "Abrir día");
 
   return (
-    <div className={["bo-configDayState flex flex-col !justify-center !items-center !gap-4 pt-4", className].filter(Boolean).join(" ")}>
-      <div className="bo-label !text-center">{label}</div>
-      <div className="bo-configStatus !text-center flex flex-row justify-center">
+    <div className={["bo-configDayState flex flex-col !justify-center !items-center !gap-4 pt-4", className].filter(Boolean).join(" ")} data-slot="reservation-day-state-block">
+      <div className="bo-label !text-center" data-slot="reservation-day-state-label">{label}</div>
+      <div className="bo-configStatus !text-center flex flex-row justify-center" data-slot="reservation-day-status">
         {day.isOpen ? <LockOpen size={16} strokeWidth={1.8} /> : <Lock size={16} strokeWidth={1.8} />}
-        <span>{day.isOpen ? "Abierto" : "Cerrado"}</span>
+        <span data-slot="reservation-day-status-text">{day.isOpen ? "Abierto" : "Cerrado"}</span>
       </div>
-      {description ? <div className="bo-mutedText">{description}</div> : null}
+      {description ? <div className="bo-mutedText" data-slot="reservation-day-description">{description}</div> : null}
       {!hideAction && onToggleDay ? (
         <button className="bo-btn bo-btn--primary bo-btn--fit" type="button" onClick={onToggleDay} disabled={busy} data-testid="reservation-day-toggle-btn">
           {buttonLabel}
@@ -80,12 +80,12 @@ export function ReservationDayPanel({
   bodyClassName,
 }: ReservationDayPanelProps) {
   return (
-    <div className={["bo-panel", "bo-dayStatePanel", "!w-fit py-4 px-14 !mx-auto", panelClassName].filter(Boolean).join(" ")}>
-      <div className="bo-panelHead flex flex-col gap-2 justify-center !items-center">
-        <div className="bo-panelTitle !text-center">{title}</div>
-        {meta ? <div className="bo-panelMeta !text-center">{meta}</div> : null}
+    <div className={["bo-panel", "bo-dayStatePanel", "!w-fit py-4 px-14 !mx-auto", panelClassName].filter(Boolean).join(" ")} data-slot="reservation-day-panel">
+      <div className="bo-panelHead flex flex-col gap-2 justify-center !items-center" data-slot="reservation-day-panel-header">
+        <div className="bo-panelTitle !text-center" data-slot="reservation-day-panel-title">{title}</div>
+        {meta ? <div className="bo-panelMeta !text-center" data-slot="reservation-day-panel-meta">{meta}</div> : null}
       </div>
-      <div className={["bo-panelBody", "bo-configDayLimitRow", "!flex !flex-col gap-2 !justify-center !items-center", bodyClassName].filter(Boolean).join(" ")}>
+      <div className={["bo-panelBody", "bo-configDayLimitRow", "!flex !flex-col gap-2 !justify-center !items-center", bodyClassName].filter(Boolean).join(" ")} data-slot="reservation-day-panel-body">
         <ReservationDayStateBlock
           day={day}
           busy={busy}

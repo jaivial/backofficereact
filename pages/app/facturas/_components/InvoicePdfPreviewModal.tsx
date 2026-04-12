@@ -91,18 +91,18 @@ export function InvoicePdfPreviewModal({
 
   return (
     <Modal open={true} title="Vista previa de factura" onClose={onClose} widthPx={800} className="bo-pdf-preview-modal">
-      <div className="bo-pdf-preview">
+      <div className="bo-pdf-preview" data-slot="pdf-preview">
         {/* Header Actions */}
-        <div className="bo-pdf-preview-header">
-          <div className="bo-pdf-preview-info">
-            <span className="bo-pdf-preview-number">
+        <div className="bo-pdf-preview-header" data-slot="pdf-preview-header">
+          <div className="bo-pdf-preview-info" data-slot="pdf-preview-info">
+            <span className="bo-pdf-preview-number" data-slot="pdf-preview-number">
               {invoiceData.invoice_number || `Nueva Factura`}
             </span>
-            <span className="bo-pdf-preview-customer">
+            <span className="bo-pdf-preview-customer" data-slot="pdf-preview-customer">
               {invoiceData.customer_name}
             </span>
           </div>
-          <div className="bo-pdf-preview-actions">
+          <div className="bo-pdf-preview-actions" data-slot="pdf-preview-actions">
             {pdfReady && pdfUrl && (
               <a
                 href={pdfUrl}
@@ -130,13 +130,13 @@ export function InvoicePdfPreviewModal({
         </div>
 
         {/* PDF Viewer */}
-        <div className="bo-pdf-preview-viewer">
+        <div className="bo-pdf-preview-viewer" data-slot="pdf-preview-viewer">
           {loading && (
-            <div className="bo-pdf-preview-loading">
+            <div className="bo-pdf-preview-loading" data-slot="pdf-preview-loading">
               <Loader2 size={32} className="bo-spinner" />
-              <p>Cargando vista previa...</p>
+              <p data-slot="pdf-preview-loading-text">Cargando vista previa...</p>
               {!hasInvoiceId && (
-                <p className="bo-pdf-preview-hint">
+                <p className="bo-pdf-preview-hint" data-slot="pdf-preview-loading-hint">
                   Guardando la factura primero...
                 </p>
               )}
@@ -144,9 +144,9 @@ export function InvoicePdfPreviewModal({
           )}
 
           {error && (
-            <div className="bo-pdf-preview-error">
+            <div className="bo-pdf-preview-error" data-slot="pdf-preview-error">
               <FileText size={48} />
-              <p>{error}</p>
+              <p data-slot="pdf-preview-error-text">{error}</p>
               {hasInvoiceId && (
                 <button
                   type="button"
@@ -180,18 +180,18 @@ export function InvoicePdfPreviewModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="bo-pdf-preview-footer">
-          <div className="bo-pdf-preview-summary">
-            <span className="bo-pdf-preview-total">
+        <div className="bo-pdf-preview-footer" data-slot="pdf-preview-footer">
+          <div className="bo-pdf-preview-summary" data-slot="pdf-preview-summary">
+            <span className="bo-pdf-preview-total" data-slot="pdf-preview-total">
               Total: {formatPrice(invoiceData.total || invoiceData.amount, invoiceData.currency)}
             </span>
             {!hasInvoiceId && (
-              <span className="bo-pdf-preview-hint-text">
+              <span className="bo-pdf-preview-hint-text" data-slot="pdf-preview-hint-text">
                 La factura se guardara al hacer clic en &quot;Vista previa&quot;
               </span>
             )}
           </div>
-          <div className="bo-pdf-preview-footer-actions">
+          <div className="bo-pdf-preview-footer-actions" data-slot="pdf-preview-footer-actions">
             <button
               type="button"
               className="bo-btn bo-btn--secondary"

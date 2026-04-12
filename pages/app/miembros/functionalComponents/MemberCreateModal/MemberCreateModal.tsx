@@ -140,27 +140,27 @@ export function MemberCreateModal({
             </div>
 
             <div className="bo-memberCreateGrid">
-              <label className="bo-field">
+              <label className="bo-field" data-slot="member-create-firstname-label">
                 <span className="bo-label">Nombre</span>
                 <input className="bo-input" data-testid="member-create-firstname-input" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="member-create-lastname-label">
                 <span className="bo-label">Apellidos</span>
                 <input className="bo-input" data-testid="member-create-lastname-input" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="member-create-email-label">
                 <span className="bo-label">Email</span>
                 <input className="bo-input" data-testid="member-create-email-input" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="member-create-dni-label">
                 <span className="bo-label">DNI (opcional)</span>
                 <input className="bo-input" data-testid="member-create-dni-input" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
               </label>
 
-              <label className="bo-field bo-field--wide">
+              <label className="bo-field bo-field--wide" data-slot="member-create-phone-label">
                 <span className="bo-label">Telefono (opcional)</span>
                 <PhoneInput
                   countryCode={phoneCountryCode}
@@ -171,7 +171,7 @@ export function MemberCreateModal({
                 />
               </label>
 
-              <label className="bo-field bo-field--wide">
+              <label className="bo-field bo-field--wide" data-slot="member-create-role-label">
                 <span className="bo-label">Rol</span>
                 <Select
                   value={roleSlug}
@@ -185,7 +185,7 @@ export function MemberCreateModal({
 
               {!hasContact ? (
                 <>
-                  <label className="bo-field bo-field--wide">
+                  <label className="bo-field bo-field--wide" data-slot="member-create-username-label">
                     <span className="bo-label">Username</span>
                     <input
                       className="bo-input"
@@ -197,7 +197,7 @@ export function MemberCreateModal({
                     />
                   </label>
 
-                  <label className="bo-field bo-field--wide">
+                  <label className="bo-field bo-field--wide" data-slot="member-create-password-label">
                     <span className="bo-label">Password temporal</span>
                     <input
                       className="bo-input"

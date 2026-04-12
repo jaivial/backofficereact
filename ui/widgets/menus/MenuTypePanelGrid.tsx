@@ -13,8 +13,8 @@ export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
   const panelIdPrefix = React.useId();
 
   return (
-    <div className="bo-menuTypePanels">
-      <div className="bo-menuTypePanelsGrid" role="group" aria-label="Tipos de menu">
+    <div className="bo-menuTypePanels" data-slot="menu-type-panels">
+      <div className="bo-menuTypePanelsGrid" role="group" aria-label="Tipos de menu" data-slot="menu-type-panels-grid">
         {MENU_TYPE_PANELS.map((panel) => {
           const Icon = panel.icon;
           const count = countsByType[panel.value] || 0;
@@ -34,17 +34,18 @@ export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
               data-testid={`menu-type-panel-${panel.value}`}
               data-menu-type={panel.value}
               data-surface="minimal-glass"
+              data-slot="menu-type-panel"
             >
-              <div className="bo-menuTypePanelIcon" aria-hidden="true">
+              <div className="bo-menuTypePanelIcon" aria-hidden="true" data-slot="menu-type-panel-icon">
                 <Icon size={28} aria-hidden="true" focusable="false" />
               </div>
-              <div className="bo-menuTypePanelLabel" id={labelId}>
+              <div className="bo-menuTypePanelLabel" id={labelId} data-slot="menu-type-panel-label">
                 {panel.label}
               </div>
-              <div className="bo-menuTypePanelDesc" id={descId}>
+              <div className="bo-menuTypePanelDesc" id={descId} data-slot="menu-type-panel-description">
                 {panel.description}
               </div>
-              <div className="bo-menuTypePanelCount" id={countId}>
+              <div className="bo-menuTypePanelCount" id={countId} data-slot="menu-type-panel-count">
                 {count} menu{count !== 1 ? "s" : ""}
               </div>
             </button>

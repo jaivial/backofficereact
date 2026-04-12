@@ -194,54 +194,54 @@ export default function RecurringInvoicesPage() {
             </button>
           </div>
         ) : (
-          <div className="bo-tableContainer" data-testid="facturas-recurrentes-table-container">
-            <table className="bo-table" data-testid="facturas-recurrentes-table">
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Importe</th>
-                  <th>Frecuencia</th>
-                  <th>Próxima facturación</th>
-                  <th>Facturas</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
+          <div className="bo-tableContainer" data-testid="facturas-recurrentes-table-container" data-slot="recurring-table-wrap">
+            <table className="bo-table" data-testid="facturas-recurrentes-table" data-slot="recurring-table">
+              <thead data-slot="recurring-thead">
+                <tr data-slot="recurring-table-row">
+                  <th data-slot="recurring-table-header">Cliente</th>
+                  <th data-slot="recurring-table-header">Importe</th>
+                  <th data-slot="recurring-table-header">Frecuencia</th>
+                  <th data-slot="recurring-table-header">Próxima facturación</th>
+                  <th data-slot="recurring-table-header">Facturas</th>
+                  <th data-slot="recurring-table-header">Estado</th>
+                  <th data-slot="recurring-table-header">Acciones</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody data-slot="recurring-tbody">
                 {data.recurringInvoices.map((item) => (
-                  <tr key={item.id} data-testid={`facturas-recurrentes-row-${item.id}`}>
-                    <td>
+                  <tr key={item.id} data-testid={`facturas-recurrentes-row-${item.id}`} data-slot={`recurring-table-row-${item.id}`}>
+                    <td data-slot="recurring-table-cell">
                       <div className="bo-recurringCustomer" data-testid="facturas-recurrentes-customer">
                         <div className="bo-recurringCustomerName">{item.customer_name}</div>
                         <div className="bo-recurringCustomerEmail">{item.customer_email}</div>
                       </div>
                     </td>
-                    <td>
+                    <td data-slot="recurring-table-cell">
                       <div className="bo-recurringAmount" data-testid="facturas-recurrentes-amount">
                         {CURRENCY_SYMBOLS[item.currency] || "€"}{item.amount.toFixed(2)}
                       </div>
                     </td>
-                    <td>
+                    <td data-slot="recurring-table-cell">
                       <span className="bo-recurringFrequency" data-testid="facturas-recurrentes-frequency">
                         {getFrequencyLabel(item.frequency)}
                       </span>
                     </td>
-                    <td>
+                    <td data-slot="recurring-table-cell">
                       <div className="bo-recurringNextDate" data-testid="facturas-recurrentes-next-date">
                         <Calendar size={14} />
                         {item.next_billing_date}
                       </div>
                     </td>
-                    <td>
+                    <td data-slot="recurring-table-cell">
                       <div className="bo-recurringCount" data-testid="facturas-recurrentes-count">
                         <span className="bo-recurringCountValue">{item.invoice_count}</span>
                         <span className="bo-recurringCountLabel">facturas</span>
                       </div>
                     </td>
-                    <td>
+                    <td data-slot="recurring-table-cell">
                       {getStatusBadge(item.is_active)}
                     </td>
-                    <td>
+                    <td data-slot="recurring-table-cell">
                       <div className="bo-recurringActions" data-testid="facturas-recurrentes-actions">
                         <button
                           className="bo-btn bo-btn--ghost bo-btn--sm"

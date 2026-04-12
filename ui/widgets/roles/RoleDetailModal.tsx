@@ -194,7 +194,7 @@ export function RoleDetailModal({
                   const isBusy = member.userId !== null && busyUserId === member.userId;
                   const disabledSelect = !member.hasUser || blockedByImportance || isBusy;
                   return (
-                    <label key={member.memberId} className="bo-roleUserRow">
+                    <label key={member.memberId} className="bo-roleUserRow" data-slot={`role-detail-user-row-${member.memberId}`}>
                       <div className="bo-roleUserMain">
                         <div className="bo-roleUserName">{member.name}</div>
                         <div className="bo-roleUserEmail">{member.email}</div>
@@ -251,7 +251,7 @@ export function RoleDetailModal({
                   else if (!member.hasUser) reason = "Se creará usuario backoffice al asignar";
 
                   return (
-                    <label key={member.memberId} className={`bo-roleUserRow bo-roleUserRow--check${disabled ? " is-disabled" : ""}`}>
+                    <label key={member.memberId} className={`bo-roleUserRow bo-roleUserRow--check${disabled ? " is-disabled" : ""}`} data-slot={`role-detail-member-check-row-${member.memberId}`}>
                       <input
                         type="checkbox"
                         checked={checked}

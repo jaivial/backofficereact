@@ -73,6 +73,7 @@ export function ImageDropInput({
         const file = ev.dataTransfer?.files?.[0] ?? null;
         pushFile(file);
       }}
+      data-slot="image-drop-zone"
     >
       {children}
       <input
@@ -82,6 +83,7 @@ export function ImageDropInput({
         tabIndex={-1}
         style={{ display: "none" }}
         data-testid="image-drop-file-input"
+        data-slot="image-file-input"
         onChange={(ev) => {
           const file = ev.target.files?.[0] ?? null;
           pushFile(file);

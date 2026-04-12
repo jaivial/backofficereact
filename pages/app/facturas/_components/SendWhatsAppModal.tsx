@@ -227,34 +227,34 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
       title={isResend ? "Reenviar factura por WhatsApp" : "Enviar factura por WhatsApp"}
       widthPx={550}
     >
-      <div className="bo-sendWhatsAppModal">
+      <div className="bo-sendWhatsAppModal" data-slot="send-whatsapp-modal">
         {/* Success state */}
         {sent ? (
-          <div className="bo-sendWhatsAppSuccess">
-            <div className="bo-sendWhatsAppSuccessIcon">
+          <div className="bo-sendWhatsAppSuccess" data-slot="send-whatsapp-success">
+            <div className="bo-sendWhatsAppSuccessIcon" data-slot="send-whatsapp-success-icon">
               <CheckCircle size={48} />
             </div>
-            <h3>WhatsApp preparado</h3>
-            <p>El mensaje ha sido preparado para enviarse a:</p>
-            <p className="bo-sendWhatsAppTo">{invoice.customer_phone}</p>
+            <h3 data-slot="send-whatsapp-success-title">WhatsApp preparado</h3>
+            <p data-slot="send-whatsapp-success-description">El mensaje ha sido preparado para enviarse a:</p>
+            <p className="bo-sendWhatsAppTo" data-slot="send-whatsapp-success-recipient">{invoice.customer_phone}</p>
           </div>
         ) : (
           <>
             {/* Invoice summary */}
-            <div className="bo-sendWhatsAppSummary">
-              <div className="bo-sendWhatsAppSummaryRow">
+            <div className="bo-sendWhatsAppSummary" data-slot="send-whatsapp-summary">
+              <div className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-customer">
                 <User size={16} />
-                <span>
+                <span data-slot="send-whatsapp-customer-name">
                   {invoice.customer_name} {invoice.customer_surname}
                 </span>
               </div>
-              <div className="bo-sendWhatsAppSummaryRow">
+              <div className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-phone">
                 <Phone size={16} />
-                <span>{invoice.customer_phone || "Sin telefono"}</span>
+                <span data-slot="send-whatsapp-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
               </div>
-              <div className="bo-sendWhatsAppSummaryRow">
+              <div className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-invoice">
                 <FileText size={16} />
-                <span>
+                <span data-slot="send-whatsapp-invoice-detail">
                   Factura {invoice.invoice_number || `#${invoice.id}`} - {formatPrice(invoice.total || invoice.amount)}
                 </span>
               </div>
@@ -262,25 +262,25 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
 
             {/* No phone warning */}
             {!hasPhone && (
-              <div className="bo-sendWhatsAppWarning">
+              <div className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-no-phone-warning">
                 <AlertCircle size={16} />
-                <span>El cliente no tiene un numero de telefono registrado. No se puede enviar WhatsApp.</span>
+                <span data-slot="send-whatsapp-no-phone-text">El cliente no tiene un numero de telefono registrado. No se puede enviar WhatsApp.</span>
               </div>
             )}
 
             {/* Resend warning */}
             {isResend && hasPhone && (
-              <div className="bo-sendWhatsAppWarning">
+              <div className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-resend-warning">
                 <AlertCircle size={16} />
-                <span>Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo numero.</span>
+                <span data-slot="send-whatsapp-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo numero.</span>
               </div>
             )}
 
             {/* WhatsApp form */}
             {hasPhone && (
-              <div className="bo-sendWhatsAppForm">
-                <div className="bo-field">
-                  <div className="bo-fieldHeader">
+              <div className="bo-sendWhatsAppForm" data-slot="send-whatsapp-form">
+                <div className="bo-field" data-slot="send-whatsapp-field-message">
+                  <div className="bo-fieldHeader" data-slot="send-whatsapp-message-header">
                     <label className="bo-label">Mensaje</label>
                     <button
                       type="button"
@@ -293,7 +293,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                     </button>
                   </div>
                   {showPreview ? (
-                    <div className="bo-sendWhatsAppPreview">{previewContent.message}</div>
+                    <div className="bo-sendWhatsAppPreview" data-slot="send-whatsapp-message-preview">{previewContent.message}</div>
                   ) : (
                     <textarea
                       className="bo-textarea"
@@ -313,7 +313,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
             )}
 
             {/* Actions */}
-            <div className="bo-sendWhatsAppActions">
+            <div className="bo-sendWhatsAppActions" data-slot="send-whatsapp-actions">
               <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending} data-testid="whatsapp-cancel-button">
                 Cancelar
               </button>

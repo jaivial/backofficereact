@@ -112,9 +112,9 @@ export function InvoiceHistoryModal({
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
-      <div className="bo-modal-content bo-historyModal" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modal-header">
+    <div className="bo-modal-overlay" onClick={onClose} data-slot="invoice-history-overlay">
+      <div className="bo-modal-content bo-historyModal" onClick={(e) => e.stopPropagation()} data-slot="invoice-history-modal">
+        <div className="bo-modal-header" data-slot="invoice-history-header">
           <div className="bo-modal-title">
             <History size={20} />
             <span>Historial de cambios</span>
@@ -129,29 +129,29 @@ export function InvoiceHistoryModal({
           </button>
         </div>
 
-        <div className="bo-modal-body">
+        <div className="bo-modal-body" data-slot="invoice-history-body">
           {invoiceNumber && (
-            <div className="bo-historyInvoiceInfo">
+            <div className="bo-historyInvoiceInfo" data-slot="invoice-history-info">
               <strong>Factura:</strong> {invoiceNumber}
               {customerName && <span className="bo-historyCustomer"> - {customerName}</span>}
             </div>
           )}
 
           {loading && (
-            <div className="bo-historyLoading">
+            <div className="bo-historyLoading" data-slot="invoice-history-loading">
               <div className="bo-spinner" />
               <span>Cargando historial...</span>
             </div>
           )}
 
           {error && (
-            <div className="bo-historyError">
+            <div className="bo-historyError" data-slot="invoice-history-error">
               <span>{error}</span>
             </div>
           )}
 
           {!loading && !error && history.length === 0 && (
-            <div className="bo-historyEmpty">
+            <div className="bo-historyEmpty" data-slot="invoice-history-empty">
               <Clock size={32} />
               <span>No hay historial disponible</span>
               <p>Los cambios realizados en esta factura se mostraran aqui.</p>
@@ -159,7 +159,7 @@ export function InvoiceHistoryModal({
           )}
 
           {!loading && !error && history.length > 0 && (
-            <div className="bo-historyTimeline">
+            <div className="bo-historyTimeline" data-slot="invoice-history-timeline">
               {history.map((entry, index) => {
                 const actionConfig = ACTION_CONFIG[entry.action] || {
                   label: entry.action,
@@ -173,11 +173,12 @@ export function InvoiceHistoryModal({
                   <div
                     key={entry.id}
                     className={`bo-historyEntry ${index === history.length - 1 ? "bo-historyEntry--latest" : ""}`}
+                    data-slot="invoice-history-entry"
                   >
-                    <div className="bo-historyEntryIcon">
+                    <div className="bo-historyEntryIcon" data-slot="invoice-history-entry-icon">
                       {actionConfig.icon}
                     </div>
-                    <div className="bo-historyEntryContent">
+                    <div className="bo-historyEntryContent" data-slot="invoice-history-entry-content">
                       <div className="bo-historyEntryHeader">
                         <span className={`bo-historyAction ${actionConfig.className}`}>
                           {actionConfig.label}
@@ -189,7 +190,7 @@ export function InvoiceHistoryModal({
                       </div>
 
                       {entry.user_name && (
-                        <div className="bo-historyEntryUser">
+                        <div className="bo-historyEntryUser" data-slot="invoice-history-entry-user">
                           <User size={12} />
                           <span>{entry.user_name}</span>
                           {entry.user_email && <span className="bo-historyUserEmail">({entry.user_email})</span>}
@@ -197,9 +198,9 @@ export function InvoiceHistoryModal({
                       )}
 
                       {hasChanges && entry.field_name && (
-                        <div className="bo-historyChanges">
+                        <div className="bo-historyChanges" data-slot="invoice-history-entry-changes">
                           <span className="bo-historyFieldName">{formatFieldName(entry.field_name)}:</span>
-                          <div className="bo-historyValues">
+                          <div className="bo-historyValues" data-slot="invoice-history-values">
                             <span className="bo-historyOldValue" title="Valor anterior">
                               {formatValue(entry.old_value)}
                             </span>

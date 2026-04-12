@@ -99,8 +99,8 @@ const MenuFilters = React.memo(function MenuFilters({
 
   return (
     <div className="bo-menuV2Filters" aria-label="Filtros de menus">
-      <div className="bo-menuV2FiltersHead">
-        <div className="bo-menuV2FiltersTitle">
+      <div className="bo-menuV2FiltersHead" data-slot="menus-filters-header">
+        <div className="bo-menuV2FiltersTitle" data-slot="menus-filters-title">
           <Filter size={15} />
           <span>Filtros</span>
         </div>
@@ -126,7 +126,7 @@ const MenuFilters = React.memo(function MenuFilters({
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="bo-menuV2FiltersGrid">
+            <div className="bo-menuV2FiltersGrid" data-slot="menus-filters-grid">
               <label className="bo-field bo-menuV2Filter bo-menuV2Filter--search" data-testid="menus-page-search-label">
                 <span className="bo-label">Buscar por titulo</span>
                 <input
@@ -160,9 +160,9 @@ const MenuFilters = React.memo(function MenuFilters({
               </label>
             </div>
 
-            <div className="bo-menuV2FiltersFoot">
-              <div className="bo-mutedText bo-menuV2FiltersCount">{summaryText}</div>
-              <div className="bo-menuV2FiltersActions">
+            <div className="bo-menuV2FiltersFoot" data-slot="menus-filters-footer">
+              <div className="bo-mutedText bo-menuV2FiltersCount" data-slot="menus-filters-count">{summaryText}</div>
+              <div className="bo-menuV2FiltersActions" data-slot="menus-filters-actions">
                 <button
                   className={cn("bo-btn bo-btn--ghost bo-btn--sm bo-menuV2ClearBtn", !hasFilters && "is-hidden")}
                   type="button"
@@ -427,7 +427,7 @@ export default function Page() {
             onResetFilters={resetFilters}
           />
 
-          <div className="bo-menuV2Grid" role="list" aria-label="Lista de menus">
+          <div className="bo-menuV2Grid" role="list" aria-label="Lista de menus" data-slot="menus-grid">
             {filteredMenus.map((menu) => (
               <MenuSummaryCard
                 key={menu.id}
@@ -442,7 +442,7 @@ export default function Page() {
             ))}
 
             {!filteredMenus.length ? (
-              <div className="bo-menuV2Empty">{menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}</div>
+              <div className="bo-menuV2Empty" data-slot="menus-empty-state">{menus.length ? "No hay menus que coincidan con los filtros." : "No hay menus creados todavia."}</div>
             ) : null}
           </div>
         </>

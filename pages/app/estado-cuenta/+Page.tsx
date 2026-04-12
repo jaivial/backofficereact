@@ -274,19 +274,19 @@ export default function Page() {
   }, [customerStatement, statementDateFrom, statementDateTo, errorToast, pushToast]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
+    <div className="p-6 max-w-7xl mx-auto" data-slot="estado-cuenta-page">
+      <div className="flex items-center justify-between mb-6" data-slot="estado-cuenta-page-header">
+        <div data-slot="estado-cuenta-title-group">
           <h1 className="text-2xl font-bold text-gray-900">Estado de Cuenta</h1>
           <p className="text-gray-600">Genera estados de cuenta para clientes</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="estado-cuenta-filters-card">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-slot="estado-cuenta-filters-grid">
           {/* Customer Select */}
-          <div>
+          <div data-slot="estado-cuenta-customer-field">
             <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
             <select
               value={selectedCustomer}
@@ -309,7 +309,7 @@ export default function Page() {
           </div>
 
           {/* Date from */}
-          <div>
+          <div data-slot="estado-cuenta-date-from-field">
             <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
             <input
               type="date"
@@ -321,7 +321,7 @@ export default function Page() {
           </div>
 
           {/* Date to */}
-          <div>
+          <div data-slot="estado-cuenta-date-to-field">
             <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
             <input
               type="date"
@@ -333,7 +333,7 @@ export default function Page() {
           </div>
 
           {/* Load Customers */}
-          <div className="flex items-end">
+          <div className="flex items-end" data-slot="estado-cuenta-load-customers-action">
             <button
               onClick={loadCustomers}
               disabled={customersLoading}
@@ -347,7 +347,7 @@ export default function Page() {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 mt-4" data-slot="estado-cuenta-actions-bar">
           <button
             onClick={handleGenerateCustomerStatement}
             disabled={customerLoading || !selectedCustomer}
@@ -387,26 +387,26 @@ export default function Page() {
       {customerStatement ? (
         <>
           {/* Customer Info */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Informacion del Cliente</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="estado-cuenta-customer-info-card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4" data-slot="estado-cuenta-customer-info-title">Informacion del Cliente</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-slot="estado-cuenta-customer-info-grid">
+              <div data-slot="estado-cuenta-customer-name-field">
                 <span className="text-sm text-gray-500">Nombre</span>
                 <p className="text-lg font-medium text-gray-900">{customerStatement.customer_name}</p>
               </div>
               {customerStatement.customer_dni_cif && (
-                <div>
+                <div data-slot="estado-cuenta-customer-dni-field">
                   <span className="text-sm text-gray-500">DNI/CIF</span>
                   <p className="text-lg font-medium text-gray-900">{customerStatement.customer_dni_cif}</p>
                 </div>
               )}
               {customerStatement.customer_email && (
-                <div>
+                <div data-slot="estado-cuenta-customer-email-field">
                   <span className="text-sm text-gray-500">Email</span>
                   <p className="text-lg font-medium text-gray-900">{customerStatement.customer_email}</p>
                 </div>
               )}
-              <div>
+              <div data-slot="estado-cuenta-customer-period-field">
                 <span className="text-sm text-gray-500">Periodo</span>
                 <p className="text-lg font-medium text-gray-900">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
               </div>
@@ -414,37 +414,37 @@ export default function Page() {
           </div>
 
           {/* Balance Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" data-slot="estado-cuenta-balance-summary-grid">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-opening-card">
+              <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-opening-header">
                 <DollarSign className="w-5 h-5 text-gray-600" />
                 <span className="text-sm text-gray-500">Saldo Inicial</span>
               </div>
               <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.opening_balance, "EUR")}</p>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-invoiced-card">
+              <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-invoiced-header">
                 <Receipt className="w-5 h-5 text-blue-600" />
                 <span className="text-sm text-gray-500">Total Facturado</span>
               </div>
               <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.summary.total_invoiced, "EUR")}</p>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-paid-card">
+              <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-paid-header">
                 <CreditCard className="w-5 h-5 text-green-600" />
                 <span className="text-sm text-gray-500">Total Pagado</span>
               </div>
               <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.summary.total_paid, "EUR")}</p>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-pending-card">
+              <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-pending-header">
                 <Calendar className="w-5 h-5 text-yellow-600" />
                 <span className="text-sm text-gray-500">Pendiente</span>
               </div>
               <p className="text-xl font-bold text-gray-900">{formatCurrency(customerStatement.summary.total_pending, "EUR")}</p>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-final-card">
+              <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-final-header">
                 <DollarSign className="w-5 h-5 text-red-600" />
                 <span className="text-sm text-gray-500">Saldo Final</span>
               </div>
@@ -453,14 +453,14 @@ export default function Page() {
           </div>
 
           {/* Invoices and Payments Tables */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-slot="estado-cuenta-tables-grid">
             {/* Invoices */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="estado-cuenta-invoices-card">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="estado-cuenta-invoices-header">
                 <h3 className="text-lg font-semibold text-gray-900">Facturas ({customerStatement.invoices.length})</h3>
               </div>
               {customerStatement.invoices.length > 0 ? (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto" data-slot="estado-cuenta-invoices-table-wrapper">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -495,19 +495,19 @@ export default function Page() {
                   </table>
                 </div>
               ) : (
-                <div className="p-6 text-center text-gray-500">
+                <div className="p-6 text-center text-gray-500" data-slot="estado-cuenta-invoices-empty">
                   No hay facturas en este periodo
                 </div>
               )}
             </div>
 
             {/* Payments */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="estado-cuenta-payments-card">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="estado-cuenta-payments-header">
                 <h3 className="text-lg font-semibold text-gray-900">Pagos ({customerStatement.payments.length})</h3>
               </div>
               {customerStatement.payments.length > 0 ? (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto" data-slot="estado-cuenta-payments-table-wrapper">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -530,7 +530,7 @@ export default function Page() {
                   </table>
                 </div>
               ) : (
-                <div className="p-6 text-center text-gray-500">
+                <div className="p-6 text-center text-gray-500" data-slot="estado-cuenta-payments-empty">
                   No hay pagos en este periodo
                 </div>
               )}
@@ -538,7 +538,7 @@ export default function Page() {
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" data-slot="estado-cuenta-empty-state">
           <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Sin estado de cuenta</h3>
           <p className="text-gray-500 mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>

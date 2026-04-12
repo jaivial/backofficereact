@@ -100,12 +100,12 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
 
   return (
     <Modal open={open} onClose={onClose} title="Seleccionar Plantilla" widthPx={700}>
-      <div className="bo-templateModal">
+      <div className="bo-templateModal" data-slot="select-template-modal">
         {!showCreateForm ? (
           <>
             {/* Search and actions bar */}
-            <div className="bo-templateModalHeader">
-              <div className="bo-templateSearch">
+            <div className="bo-templateModalHeader" data-slot="select-template-header">
+              <div className="bo-templateSearch" data-slot="select-template-search-wrapper">
                 <Search size={16} className="bo-templateSearchIcon" />
                 <input
                   type="text"
@@ -123,16 +123,16 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
             </div>
 
             {/* Templates list */}
-            <div className="bo-templateList">
+            <div className="bo-templateList" data-slot="select-template-list">
               {loading ? (
-                <div className="bo-templateLoading">
+                <div className="bo-templateLoading" data-slot="select-template-loading">
                   <Loader2 size={24} className="bo-spin bo-spin--sm" />
-                  <span>Cargando plantillas...</span>
+                  <span data-slot="select-template-loading-text">Cargando plantillas...</span>
                 </div>
               ) : filteredTemplates.length === 0 ? (
-                <div className="bo-templateEmpty">
+                <div className="bo-templateEmpty" data-slot="select-template-empty">
                   <FileText size={48} strokeWidth={1} />
-                  <p>{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
+                  <p data-slot="select-template-empty-text">{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
                   <button className="bo-btn bo-btn--secondary" onClick={handleCreateNew} data-testid="select-template-create-first-btn">
                     <Plus size={16} />
                     Crear primera plantilla
@@ -147,13 +147,14 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => e.key === "Enter" && handleSelect(template)}
+                    data-slot="select-template-item"
                   >
-                    <div className="bo-templateItemIcon">
+                    <div className="bo-templateItemIcon" data-slot="select-template-item-icon">
                       <FileText size={20} />
                     </div>
-                    <div className="bo-templateItemContent">
-                      <div className="bo-templateItemName">{template.name}</div>
-                      <div className="bo-templateItemDetails">
+                    <div className="bo-templateItemContent" data-slot="select-template-item-content">
+                      <div className="bo-templateItemName" data-slot="select-template-item-name">{template.name}</div>
+                      <div className="bo-templateItemDetails" data-slot="select-template-item-details">
                         <span>{template.customer_name}</span>
                         {template.customer_email && <span>{template.customer_email}</span>}
                         {template.default_amount > 0 && (
@@ -166,7 +167,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                         )}
                       </div>
                     </div>
-                    <div className="bo-templateItemActions">
+                    <div className="bo-templateItemActions" data-slot="select-template-item-actions">
                       <button
                         className="bo-btn bo-btn--ghost bo-btn--sm"
                         onClick={(e) => handleEdit(template, e)}
@@ -322,17 +323,17 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
   );
 
   return (
-    <form className="bo-templateForm" onSubmit={handleSubmit} data-testid="select-template-form">
-      <div className="bo-templateFormHeader">
-        <h3>{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
+    <form className="bo-templateForm" onSubmit={handleSubmit} data-slot="select-template-form" data-testid="select-template-form">
+      <div className="bo-templateFormHeader" data-slot="select-template-form-header">
+        <h3 data-slot="select-template-form-title">{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
         <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onCancel} data-testid="select-template-close-btn">
           <X size={18} />
         </button>
       </div>
 
-      <div className="bo-templateFormBody">
+      <div className="bo-templateFormBody" data-slot="select-template-form-body">
         {/* Template name */}
-        <div className="bo-field">
+        <div className="bo-field" data-slot="select-template-field-name">
           <label className="bo-label">Nombre de la plantilla *</label>
           <input
             className="bo-input"
@@ -346,8 +347,8 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
         </div>
 
         {/* Customer info */}
-        <div className="bo-templateFormSection">
-          <h4>Datos del cliente</h4>
+        <div className="bo-templateFormSection" data-slot="select-template-section-customer">
+          <h4 data-slot="select-template-section-customer-title">Datos del cliente</h4>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Nombre *</span>
@@ -414,8 +415,8 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
         </div>
 
         {/* Default values */}
-        <div className="bo-templateFormSection">
-          <h4>Valores por defecto</h4>
+        <div className="bo-templateFormSection" data-slot="select-template-section-defaults">
+          <h4 data-slot="select-template-section-defaults-title">Valores por defecto</h4>
           <div className="bo-invoiceFormRow">
             <label className="bo-field">
               <span className="bo-label">Importe</span>
@@ -448,20 +449,20 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
               </select>
             </label>
           </div>
-          <div className="bo-field">
+          <div className="bo-field" data-slot="select-template-field-notes">
             <label className="bo-label">Notas</label>
             <textarea className="bo-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." data-testid="select-template-notes-textarea" />
           </div>
         </div>
 
         {/* Active toggle */}
-        <div className="bo-field bo-field--switch">
+        <div className="bo-field bo-field--switch" data-slot="select-template-field-active-toggle">
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="isActive" data-testid="select-template-isActive-input" />
           <label htmlFor="isActive">Plantilla activa</label>
         </div>
       </div>
 
-      <div className="bo-templateFormActions">
+      <div className="bo-templateFormActions" data-slot="select-template-form-actions">
         <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={saving} data-testid="select-template-cancel-btn">
           Cancelar
         </button>
