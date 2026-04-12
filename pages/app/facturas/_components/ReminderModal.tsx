@@ -155,8 +155,8 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
   return (
     <div className="bo-modal-overlay" onClick={onClose}>
       <div className="bo-modal bo-modal--sm" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modalHeader">
-          <h2 className="bo-modalTitle">Enviar recordatorio de pago</h2>
+        <div className="bo-modalHeader" data-slot="reminder-modal-header">
+          <h2 className="bo-modalTitle" data-slot="reminder-modal-title">Enviar recordatorio de pago</h2>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onClose}
@@ -167,9 +167,9 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </button>
         </div>
 
-        <div className="bo-modalBody">
+        <div className="bo-modalBody" data-slot="reminder-modal-body">
           {/* Invoice Info */}
-          <div className="bo-reminderInvoiceInfo">
+          <div className="bo-reminderInvoiceInfo" data-slot="reminder-invoice-info">
             <div className="bo-field">
               <div className="bo-label">Cliente</div>
               <div className="bo-value">{invoice.customer_name}</div>
@@ -231,7 +231,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
           </div>
 
           {/* Custom Message */}
-          <div className="bo-field">
+          <div className="bo-field" data-slot="reminder-field-message">
             <label className="bo-label" htmlFor="custom-message">
               Mensaje personalizado (opcional)
             </label>
@@ -244,23 +244,23 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
               rows={4}
               data-testid="reminder-custom-message-textarea"
             />
-            <div className="bo-fieldHelp">
+            <div className="bo-fieldHelp" data-slot="reminder-field-help">
               Usa {"{customer_name}"}, {"{invoice_number}"}, {"{amount}"}, {"{due_date}"} como variables
             </div>
           </div>
 
           {/* Preview */}
-          <div className="bo-reminderPreview">
-            <div className="bo-reminderPreviewHeader">
+          <div className="bo-reminderPreview" data-slot="reminder-preview">
+            <div className="bo-reminderPreviewHeader" data-slot="reminder-preview-header">
               <Clock size={14} />
-              <span>Vista previa</span>
+              <span data-slot="reminder-preview-label">Vista previa</span>
             </div>
             {previewSubject && (
-              <div className="bo-reminderPreviewSubject">
-                <strong>Asunto:</strong> {previewSubject}
+              <div className="bo-reminderPreviewSubject" data-slot="reminder-preview-subject">
+                <strong data-slot="reminder-preview-subject-label">Asunto:</strong> {previewSubject}
               </div>
             )}
-            <div className="bo-reminderPreviewBody">
+            <div className="bo-reminderPreviewBody" data-slot="reminder-preview-body">
               {previewMessage}
             </div>
           </div>

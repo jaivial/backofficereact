@@ -48,7 +48,7 @@ export function DonutOccupancy({
       aria-label="Ocupación"
       data-testid="donut-occupancy"
     >
-      <div className="bo-donutSvg" aria-hidden="true">
+      <div className="bo-donutSvg" aria-hidden="true" data-slot="donut-chart">
         <svg viewBox="0 0 120 120" width="120" height="120">
           <circle className="bo-donutTrack" cx="60" cy="60" r="44" fill="none" strokeWidth="10" />
           <circle
@@ -64,34 +64,34 @@ export function DonutOccupancy({
             transform="rotate(-90 60 60)"
           />
         </svg>
-        <div className="bo-donutCenter">
-          <div className="bo-donutPct">{pctLabel}%</div>
-          <div className="bo-donutMeta">
+        <div className="bo-donutCenter" data-slot="donut-center">
+          <div className="bo-donutPct" data-slot="donut-percentage">{pctLabel}%</div>
+          <div className="bo-donutMeta" data-slot="donut-meta">
             {totalPeople}/{limit} pax
           </div>
         </div>
       </div>
 
-      <div className="bo-donutLegend">
-        <div className="bo-donutRow">
-          <span className="bo-pill bo-pill--used" aria-hidden="true" />
-          <span className="bo-mutedText">Ocupación</span>
-          <span className="bo-donutVal">{totalPeople}</span>
+      <div className="bo-donutLegend" data-slot="donut-legend">
+        <div className="bo-donutRow" data-slot="donut-legend-row">
+          <span className="bo-pill bo-pill--used" aria-hidden="true" data-slot="donut-legend-dot" />
+          <span className="bo-mutedText" data-slot="donut-legend-label">Ocupación</span>
+          <span className="bo-donutVal" data-slot="donut-legend-value">{totalPeople}</span>
         </div>
-        <div className="bo-donutRow">
-          <span className="bo-pill bo-pill--free" aria-hidden="true" />
-          <span className="bo-mutedText">Límite</span>
-          <span className="bo-donutVal">{limit}</span>
+        <div className="bo-donutRow" data-slot="donut-legend-row">
+          <span className="bo-pill bo-pill--free" aria-hidden="true" data-slot="donut-legend-dot" />
+          <span className="bo-mutedText" data-slot="donut-legend-label">Límite</span>
+          <span className="bo-donutVal" data-slot="donut-legend-value">{limit}</span>
         </div>
         {typeof totalBookings === "number" ? (
-          <div className="bo-donutRow">
-            <span className="bo-pill" aria-hidden="true" />
-            <span className="bo-mutedText">Reservas</span>
-            <span className="bo-donutVal">{totalBookings}</span>
+          <div className="bo-donutRow" data-slot="donut-legend-row">
+            <span className="bo-pill" aria-hidden="true" data-slot="donut-legend-dot" />
+            <span className="bo-mutedText" data-slot="donut-legend-label">Reservas</span>
+            <span className="bo-donutVal" data-slot="donut-legend-value">{totalBookings}</span>
           </div>
         ) : null}
         {typeof pending === "number" && typeof confirmed === "number" ? (
-          <div className="bo-donutHint">{pending} pendientes · {confirmed} confirmadas</div>
+          <div className="bo-donutHint" data-slot="donut-hint">{pending} pendientes · {confirmed} confirmadas</div>
         ) : null}
       </div>
     </section>

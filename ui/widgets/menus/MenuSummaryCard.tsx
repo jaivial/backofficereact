@@ -91,24 +91,24 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
       data-testid={`menu-summary-${menu.id}`}
       aria-label={`Abrir menu ${title}`}
     >
-      <div className="bo-menuV2Main">
-        <div className="bo-menuV2TitleRow">
-          <h3 className="bo-menuV2Title">{title}</h3>
+      <div className="bo-menuV2Main" data-slot="menu-summary-main">
+        <div className="bo-menuV2TitleRow" data-slot="menu-summary-title-row">
+          <h3 className="bo-menuV2Title" data-slot="menu-summary-title">{title}</h3>
         </div>
 
-        <div className="bo-menuV2Row bo-menuV2Row--meta">
-          <div className="bo-menuV2Meta">
-            <span className="bo-menuTag">{typeLabel}</span>
-            {menu.is_draft ? <span className="bo-menuTag bo-menuTag--warn">Borrador</span> : null}
+        <div className="bo-menuV2Row bo-menuV2Row--meta" data-slot="menu-summary-meta-row">
+          <div className="bo-menuV2Meta" data-slot="menu-summary-tags">
+            <span className="bo-menuTag" data-slot="menu-summary-type-tag">{typeLabel}</span>
+            {menu.is_draft ? <span className="bo-menuTag bo-menuTag--warn" data-slot="menu-summary-draft-tag">Borrador</span> : null}
           </div>
-          <div className="bo-menuV2Price">{priceLabel}</div>
+          <div className="bo-menuV2Price" data-slot="menu-summary-price">{priceLabel}</div>
         </div>
       </div>
 
-      <div className="bo-menuV2Aside">
-        <div className="bo-menuV2StatusCtrl">
-          <span className={cn("bo-menuTag", "bo-menuTag--state", menu.active && "is-on")}>{statusLabel}</span>
-          <div onClick={stopPropagation} onPointerDown={stopPropagation} onKeyDown={stopPropagation}>
+      <div className="bo-menuV2Aside" data-slot="menu-summary-aside">
+        <div className="bo-menuV2StatusCtrl" data-slot="menu-summary-status-controls">
+          <span className={cn("bo-menuTag", "bo-menuTag--state", menu.active && "is-on")} data-slot="menu-summary-status-tag">{statusLabel}</span>
+          <div onClick={stopPropagation} onPointerDown={stopPropagation} onKeyDown={stopPropagation} data-slot="menu-summary-switch-wrapper">
             <Switch
               checked={!!menu.active}
               disabled={switchDisabled}
@@ -118,7 +118,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
           </div>
         </div>
 
-        <div className="bo-menuV2Actions">
+        <div className="bo-menuV2Actions" data-slot="menu-summary-actions">
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-menuV2IconBtn"
             type="button"
@@ -128,6 +128,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             data-testid={`menu-summary-change-type-${menu.id}`}
             aria-label={`Cambiar tipo de menu ${title}`}
             title="Cambiar tipo"
+            data-slot="menu-summary-change-type-btn"
           >
             <Repeat2 size={14} aria-hidden="true" focusable={false} />
           </button>
@@ -140,6 +141,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             data-testid={`menu-summary-edit-${menu.id}`}
             aria-label={`Editar menu ${title}`}
             title="Editar"
+            data-slot="menu-summary-edit-btn"
           >
             <PencilLine size={14} aria-hidden="true" focusable={false} />
           </button>
@@ -152,6 +154,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
             data-testid={`menu-summary-delete-${menu.id}`}
             aria-label={`Eliminar menu ${title}`}
             title="Eliminar"
+            data-slot="menu-summary-delete-btn"
           >
             <Trash2 size={14} aria-hidden="true" focusable={false} />
           </button>

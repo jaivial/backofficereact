@@ -88,11 +88,12 @@ export function MandatoryMenuSelector({
   // Empty state - show prompt to add first menu
   if (selectedMenuIds.length === 0) {
     return (
-      <div 
+      <div
         className={cn("flex flex-col items-center justify-center py-8 px-4 rounded-xl border-2 border-dashed border-(--bo-border) bg-(--bo-surface-2)", className)}
         data-ui="mandatory-menu-selector-empty"
+        data-slot="mandatory-menu-selector-empty"
       >
-        <div className="text-(--bo-muted) text-sm text-center mb-4">
+        <div className="text-(--bo-muted) text-sm text-center mb-4" data-slot="mandatory-menu-selector-prompt">
           Selecciona un menú para continuar
         </div>
         <button
@@ -106,7 +107,7 @@ export function MandatoryMenuSelector({
           <span>Añadir menú</span>
         </button>
         {menus.length === 0 && (
-          <div className="text-(--bo-faint) text-xs mt-3">
+          <div className="text-(--bo-faint) text-xs mt-3" data-slot="mandatory-menu-selector-no-menus">
             No hay menus disponibles
           </div>
         )}
@@ -115,12 +116,12 @@ export function MandatoryMenuSelector({
   }
 
   return (
-    <div className={cn("flex flex-col gap-3", className)} data-ui="mandatory-menu-selector">
+    <div className={cn("flex flex-col gap-3", className)} data-ui="mandatory-menu-selector" data-slot="mandatory-menu-selector">
       {/* Header row - hidden on mobile */}
-      <div className="hidden sm:flex flex-row items-center gap-3 px-3 py-1 text-xs text-(--bo-muted) uppercase tracking-wide">
-        <div className="flex-1">Menú</div>
-        <div className="w-36 text-center">Principales</div>
-        <div className="w-10"></div>
+      <div className="hidden sm:flex flex-row items-center gap-3 px-3 py-1 text-xs text-(--bo-muted) uppercase tracking-wide" data-slot="mandatory-menu-selector-header">
+        <div className="flex-1" data-slot="mandatory-menu-selector-header-menu">Menú</div>
+        <div className="w-36 text-center" data-slot="mandatory-menu-selector-header-main">Principales</div>
+        <div className="w-10" data-slot="mandatory-menu-selector-header-actions"></div>
       </div>
 
       {selectedMenus.map((menu, idx) => (
@@ -131,7 +132,7 @@ export function MandatoryMenuSelector({
           data-row-index={idx}
         >
           {/* Menu selector - centered on mobile */}
-          <div className="flex flex-col items-center sm:items-start flex-1 min-w-0 w-full">
+          <div className="flex flex-col items-center sm:items-start flex-1 min-w-0 w-full" data-slot="mandatory-menu-selector-menu-field">
             <Select
               value={String(menu.id)}
               onChange={(v) => handleMenuSelect(idx, v)}
@@ -141,14 +142,14 @@ export function MandatoryMenuSelector({
               className="w-full sm:w-auto sm:min-w-[200px]"
             />
             {/* Show menu type label on mobile */}
-            <div className="sm:hidden text-xs text-(--bo-muted) mt-1">
+            <div className="sm:hidden text-xs text-(--bo-muted) mt-1" data-slot="mandatory-menu-selector-menu-type">
               {getMenuTypeLabel(menu.menu_type)}
             </div>
           </div>
 
           {/* Checkbox - centered on mobile and desktop */}
-          <div className="flex items-center justify-center gap-2 sm:w-36">
-            <label 
+          <div className="flex items-center justify-center gap-2 sm:w-36" data-slot="mandatory-menu-selector-checkbox-field">
+            <label
               className="flex items-center gap-2 cursor-pointer"
               data-ui="choose-main-label"
             >
@@ -159,12 +160,12 @@ export function MandatoryMenuSelector({
                 className="bo-checkbox"
                 data-ui="choose-main-checkbox"
               />
-              <span className="text-sm text-(--bo-text) sm:hidden">Principales</span>
+              <span className="text-sm text-(--bo-text) sm:hidden" data-slot="mandatory-menu-selector-checkbox-label">Principales</span>
             </label>
           </div>
 
           {/* Delete button - centered on mobile */}
-          <div className="flex justify-center sm:w-10">
+          <div className="flex justify-center sm:w-10" data-slot="mandatory-menu-selector-delete-field">
             {selectedMenuIds.length > 1 && (
               <button
                 type="button"
@@ -195,7 +196,7 @@ export function MandatoryMenuSelector({
 
       {/* No menus available */}
       {menus.length === 0 && selectedMenuIds.length === 0 && (
-        <div className="text-center py-6 text-(--bo-muted) text-sm" data-ui="no-menus-message">
+        <div className="text-center py-6 text-(--bo-muted) text-sm" data-ui="no-menus-message" data-slot="mandatory-menu-selector-no-menus">
           No hay menús disponibles
         </div>
       )}

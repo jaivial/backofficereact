@@ -34,26 +34,26 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
 
   return (
     <Modal open={open} title={title} onClose={onClose} widthPx={520} className={className}>
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">{title}</div>
+      <div className="bo-modalHead" data-slot="menu-type-change-modal-header">
+        <div className="bo-modalTitle" data-slot="menu-type-change-modal-title">{title}</div>
         <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" data-testid="menu-type-change-modal-close">
           <X size={16} aria-hidden="true" focusable={false} />
         </button>
       </div>
 
-      <div className="bo-modalBody">
-        <div className="bo-field bo-field--full">
-          <div className="bo-label">Tipo actual</div>
-          <div className="bo-mutedText">{menuTypeLabel(currentType || "closed_conventional")}</div>
+      <div className="bo-modalBody" data-slot="menu-type-change-modal-body">
+        <div className="bo-field bo-field--full" data-slot="menu-type-change-modal-current-field">
+          <div className="bo-label" data-slot="menu-type-change-modal-current-label">Tipo actual</div>
+          <div className="bo-mutedText" data-slot="menu-type-change-modal-current-value">{menuTypeLabel(currentType || "closed_conventional")}</div>
         </div>
 
-        <label className="bo-field bo-field--full">
-          <span className="bo-label">Nuevo tipo</span>
+        <label className="bo-field bo-field--full" data-slot="menu-type-change-modal-new-field">
+          <span className="bo-label" data-slot="menu-type-change-modal-new-label">Nuevo tipo</span>
           <Select value={nextType} onChange={onNextTypeChange} options={MENU_TYPE_OPTIONS} ariaLabel="Nuevo tipo de menu" />
         </label>
       </div>
 
-      <div className="bo-modalActions">
+      <div className="bo-modalActions" data-slot="menu-type-change-modal-actions">
         <button className="bo-btn bo-btn--ghost" type="button" disabled={saving} onClick={onClose} data-testid="menu-type-change-modal-cancel">
           Cancelar
         </button>

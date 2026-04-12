@@ -106,9 +106,9 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
 
   return (
     <Modal open={true} title="Buscar reserva" onClose={onClose} widthPx={640}>
-      <div className="bo-reservationModalContent">
-        <div className="bo-reservationFilters">
-            <div className="bo-reservationFiltersRow">
+      <div className="bo-reservationModalContent" data-slot="reservation-modal-content">
+        <div className="bo-reservationFilters" data-slot="reservation-filters">
+            <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-dates">
               <label className="bo-field">
                 <span className="bo-label">
                   <Calendar size={14} />
@@ -126,7 +126,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
               </label>
             </div>
 
-            <div className="bo-reservationFiltersRow">
+            <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-search">
               <label className="bo-field">
                 <span className="bo-label">
                   <Search size={14} />
@@ -158,7 +158,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
               </label>
             </div>
 
-            <div className="bo-reservationFiltersRow">
+            <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-party-time">
               <label className="bo-field">
                 <span className="bo-label">
                   <Users size={14} />
@@ -189,18 +189,18 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
           </div>
 
-          <div className="bo-reservationResults">
+          <div className="bo-reservationResults" data-slot="reservation-results">
             {loading ? (
-              <div className="bo-reservationLoading">
+              <div className="bo-reservationLoading" data-slot="reservation-loading">
                 <div className="bo-spinner" />
                 <span>Buscando reservas...</span>
               </div>
             ) : searched && results.length === 0 ? (
-              <div className="bo-reservationEmpty">
+              <div className="bo-reservationEmpty" data-slot="reservation-empty">
                 <span>No se encontraron reservas con esos criterios.</span>
               </div>
             ) : results.length > 0 ? (
-              <div className="bo-reservationList">
+              <div className="bo-reservationList" data-slot="reservation-list">
                 {results.map((reservation) => (
                   <button
                     key={reservation.id}
@@ -209,11 +209,11 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                     onClick={() => handleSelect(reservation)}
                     data-testid={`fill-reservation-item-${reservation.id}`}
                   >
-                    <div className="bo-reservationItemMain">
+                    <div className="bo-reservationItemMain" data-slot="reservation-item-main">
                       <span className="bo-reservationItemName">{reservation.customer_name}</span>
                       <span className="bo-reservationItemEmail">{reservation.contact_email}</span>
                     </div>
-                    <div className="bo-reservationItemMeta">
+                    <div className="bo-reservationItemMeta" data-slot="reservation-item-meta">
                       <span className="bo-reservationItemDate">
                         <Calendar size={12} />
                         {formatDate(reservation.reservation_date)}
@@ -231,7 +231,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 ))}
               </div>
             ) : (
-              <div className="bo-reservationEmpty">
+              <div className="bo-reservationEmpty" data-slot="reservation-empty-initial">
                 <span>Introduce criterios de búsqueda para encontrar reservas.</span>
               </div>
             )}

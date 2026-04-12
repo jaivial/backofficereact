@@ -19,9 +19,9 @@ export function TimeAdjustCounter({
   className?: string;
 }) {
   return (
-    <div className={cn("bo-timeAdjustCounter bo-timeAdjustCounter--glass", className)} aria-label={label}>
-      <div className="bo-timeAdjustCounterLabel">{label}</div>
-      <div className="bo-timeAdjustCounterCtrls">
+    <div className={cn("bo-timeAdjustCounter bo-timeAdjustCounter--glass", className)} aria-label={label} data-slot="time-adjust-counter">
+      <div className="bo-timeAdjustCounterLabel" data-slot="time-adjust-counter-label">{label}</div>
+      <div className="bo-timeAdjustCounterCtrls" data-slot="time-adjust-counter-controls">
         <button
           className="bo-counterBtn bo-counterBtn--glass"
           type="button"
@@ -32,7 +32,7 @@ export function TimeAdjustCounter({
         >
           <Minus size={14} strokeWidth={2.2} />
         </button>
-        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass">{value}</div>
+        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass" data-slot="time-adjust-counter-value">{value}</div>
         <button
           className="bo-counterBtn bo-counterBtn--glass"
           type="button"

@@ -211,39 +211,39 @@ function SortableHeader({ field, label, currentField, sortDirection, onSort }: {
 // Skeleton components for table loading with shimmer effect
 function TableSkeletonRow() {
   return (
-    <tr className="bo-tableRow">
-      <td data-label="">
+    <tr className="bo-tableRow" data-slot="invoice-table-row">
+      <td data-label="" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--sm" style={{ width: "20px" }} />
       </td>
-      <td data-label="N. Factura">
+      <td data-label="N. Factura" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px" }} />
       </td>
-      <td data-label="Cliente">
+      <td data-label="Cliente" data-slot="invoice-table-cell">
         <div className="bo-tableCustomer">
           <div className="bo-skeleton bo-skeleton--md" style={{ width: "120px" }} />
           <div className="bo-skeleton bo-skeleton--sm" style={{ width: "80px", marginTop: "4px" }} />
         </div>
       </td>
-      <td data-label="Email">
+      <td data-label="Email" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--sm" style={{ width: "140px" }} />
       </td>
-      <td data-label="Importe">
+      <td data-label="Importe" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--md" style={{ width: "80px" }} />
       </td>
-      <td data-label="Moneda">
+      <td data-label="Moneda" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--sm" style={{ width: "50px" }} />
       </td>
-      <td data-label="Fecha">
+      <td data-label="Fecha" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px" }} />
       </td>
-      <td data-label="Estado">
+      <td data-label="Estado" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px", height: "22px" }} />
       </td>
-      <td data-label="Tipo">
+      <td data-label="Tipo" data-slot="invoice-table-cell">
         <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px", height: "22px" }} />
       </td>
-      <td data-label=""></td>
-      <td data-label="">
+      <td data-label="" data-slot="invoice-table-cell"></td>
+      <td data-label="" data-slot="invoice-table-cell">
         <div className="bo-tableActions">
           <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
           <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
@@ -256,33 +256,33 @@ function TableSkeletonRow() {
 
 function TableSkeleton() {
   return (
-    <div className="bo-tableWrap">
-      <div className="bo-tableScroll">
-        <table className="bo-table bo-table--facturas" aria-label="Cargando facturas...">
-          <thead>
-            <tr>
-              <th className="col-selection"></th>
-              <th className="col-invoice_number">N. Factura</th>
-              <th className="col-customer_name">Cliente</th>
-              <th className="col-customer_email">Email</th>
-              <th className="col-amount">Importe</th>
-              <th className="col-currency">Moneda</th>
-              <th className="col-payment_progress">Pagado</th>
-              <th className="col-invoice_date">Fecha</th>
-              <th className="col-status">Estado</th>
-              <th className="col-is_reservation">Tipo</th>
-              <th className="col-attachment"></th>
-              <th className="col-actions"></th>
+    <div className="bo-tableWrap" data-slot="invoice-table-wrap">
+      <div className="bo-tableScroll" data-slot="invoice-table-scroll">
+        <table className="bo-table bo-table--facturas" aria-label="Cargando facturas..." data-slot="invoice-table">
+          <thead data-slot="invoice-thead">
+            <tr data-slot="invoice-table-row">
+              <th className="col-selection" data-slot="invoice-table-header"></th>
+              <th className="col-invoice_number" data-slot="invoice-table-header">N. Factura</th>
+              <th className="col-customer_name" data-slot="invoice-table-header">Cliente</th>
+              <th className="col-customer_email" data-slot="invoice-table-header">Email</th>
+              <th className="col-amount" data-slot="invoice-table-header">Importe</th>
+              <th className="col-currency" data-slot="invoice-table-header">Moneda</th>
+              <th className="col-payment_progress" data-slot="invoice-table-header">Pagado</th>
+              <th className="col-invoice_date" data-slot="invoice-table-header">Fecha</th>
+              <th className="col-status" data-slot="invoice-table-header">Estado</th>
+              <th className="col-is_reservation" data-slot="invoice-table-header">Tipo</th>
+              <th className="col-attachment" data-slot="invoice-table-header"></th>
+              <th className="col-actions" data-slot="invoice-table-header"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-slot="invoice-tbody">
             {Array.from({ length: 5 }).map((_, index) => (
               <TableSkeletonRow key={index} />
             ))}
           </tbody>
         </table>
       </div>
-      <div className="bo-pager is-solo">
+      <div className="bo-pager is-solo" data-slot="invoice-pager">
         <div className="bo-pagerText" aria-live="polite">
           <span className="bo-skeleton bo-skeleton--sm" style={{ width: "100px", display: "inline-block" }} />
           <span className="bo-srOnly">Cargando...</span>
@@ -654,12 +654,12 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
           </div>
         </div>
       )}
-      <div className="bo-tableScroll">
-        <table className="bo-table bo-table--facturas" aria-label="Tabla de facturas" data-testid="invoice-table">
-          <thead>
-            <tr>
+      <div className="bo-tableScroll" data-slot="invoice-table-scroll">
+        <table className="bo-table bo-table--facturas" aria-label="Tabla de facturas" data-testid="invoice-table" data-slot="invoice-table">
+          <thead data-slot="invoice-thead">
+            <tr data-slot="invoice-table-row">
               {columns.map((col) => (
-                <th key={col.key} className={`col-${col.key}`}>
+                <th key={col.key} className={`col-${col.key}`} data-slot="invoice-table-header">
                   {col.key === "selection" ? (
                     <label className="bo-checkboxContainer bo-checkboxContainer--header">
                       <input
@@ -686,16 +686,16 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               ))}
             </tr>
           </thead>
-          <tbody>
-            {invoices.map((invoice) => {
+          <tbody data-slot="invoice-tbody">
+            {invoices.map((invoice, idx) => {
               // Calculate overdue status - based on due_date if available, otherwise invoice_date
               const effectiveDueDate = invoice.due_date || invoice.invoice_date;
               const isOverdue = (invoice.status === "pendiente" || invoice.status === "enviada") && !invoice.payment_date && new Date(effectiveDueDate) < new Date(new Date().toDateString());
               const daysOverdue = isOverdue ? getDaysOverdue(effectiveDueDate) : 0;
 
               return (
-              <tr key={invoice.id} className={`bo-tableRow${selectedIds.has(invoice.id) ? " is-selected" : ""}${isOverdue ? " bo-tableRow--overdue" : ""}`}>
-                <td className={`col-selection`} data-label="">
+              <tr key={invoice.id} className={`bo-tableRow${selectedIds.has(invoice.id) ? " is-selected" : ""}${isOverdue ? " bo-tableRow--overdue" : ""}`} data-slot={`invoice-table-row-${invoice.id}`}>
+                <td className={`col-selection`} data-label="" data-slot="invoice-table-cell">
                   <label className="bo-checkboxContainer">
                     <input
                       type="checkbox"
@@ -707,10 +707,10 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span className="bo-checkboxMark"></span>
                   </label>
                 </td>
-                <td className={`col-invoice_number`} data-label="N. Factura">
+                <td className={`col-invoice_number`} data-label="N. Factura" data-slot="invoice-table-cell">
                   {invoice.invoice_number || "-"}
                 </td>
-                <td className={`col-customer_name`} data-label="Cliente">
+                <td className={`col-customer_name`} data-label="Cliente" data-slot="invoice-table-cell">
                   <div className="bo-tableCustomer">
                     <button
                       type="button"
@@ -726,16 +726,16 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     )}
                   </div>
                 </td>
-                <td className={`col-customer_email`} data-label="Email">{invoice.customer_email}</td>
-                <td className={`col-amount`} data-label="Importe">{formatPrice(invoice.amount, invoice.currency)}</td>
-                <td className={`col-currency`} data-label="Moneda">
+                <td className={`col-customer_email`} data-label="Email" data-slot="invoice-table-cell">{invoice.customer_email}</td>
+                <td className={`col-amount`} data-label="Importe" data-slot="invoice-table-cell">{formatPrice(invoice.amount, invoice.currency)}</td>
+                <td className={`col-currency`} data-label="Moneda" data-slot="invoice-table-cell">
                   <span className="bo-badge bo-badge--muted">{invoice.currency || "EUR"}</span>
                 </td>
-                <td className={`col-payment_progress`} data-label="Pagado">
+                <td className={`col-payment_progress`} data-label="Pagado" data-slot="invoice-table-cell">
                   <PaymentProgressCell invoice={invoice} />
                 </td>
-                <td className={`col-invoice_date`} data-label="Fecha">{formatDate(invoice.invoice_date)}</td>
-                <td className={`col-due_date`} data-label="Vencimiento">
+                <td className={`col-invoice_date`} data-label="Fecha" data-slot="invoice-table-cell">{formatDate(invoice.invoice_date)}</td>
+                <td className={`col-due_date`} data-label="Vencimiento" data-slot="invoice-table-cell">
                   {invoice.due_date ? (
                     <span
                       className={`bo-dueDate ${new Date(invoice.due_date) < new Date(new Date().toDateString()) && (invoice.status === "pendiente" || invoice.status === "enviada") && !invoice.payment_date ? "bo-dueDate--overdue" : ""}`}
@@ -747,7 +747,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span className="bo-mutedText">-</span>
                   )}
                 </td>
-                <td className={`col-payment_date`} data-label="F. Pago">
+                <td className={`col-payment_date`} data-label="F. Pago" data-slot="invoice-table-cell">
                   {invoice.payment_date ? (
                     <span className="bo-paymentDate" title="Fecha de pago">
                       <Calendar size={12} />
@@ -762,7 +762,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span className="bo-mutedText">-</span>
                   )}
                 </td>
-                <td className={`col-payment_method`} data-label="Metodo">
+                <td className={`col-payment_method`} data-label="Metodo" data-slot="invoice-table-cell">
                   {invoice.payment_method ? (
                     <span className="bo-paymentMethod" title={PAYMENT_METHOD_LABELS[invoice.payment_method]}>
                       <CreditCard size={12} />
@@ -772,26 +772,26 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span className="bo-mutedText">-</span>
                   )}
                 </td>
-                <td className={`col-status`} data-label="Estado">
+                <td className={`col-status`} data-label="Estado" data-slot="invoice-table-cell">
                   <StatusCell
                     invoice={invoice}
                     onStatusChange={onStatusChange}
                     onStatusChangeConfirm={handleStatusChangeConfirm}
                   />
                 </td>
-                <td className={`col-is_reservation`} data-label="Tipo">
+                <td className={`col-is_reservation`} data-label="Tipo" data-slot="invoice-table-cell">
                   <ReservationBadge isReservation={Boolean(invoice.is_reservation)} />
                   <SplitBadge isSplitChild={invoice.is_split_child} isSplitParent={invoice.is_split_parent} percentage={invoice.split_percentage} />
                 </td>
-                <td className={`col-deposit`} data-label="Deposito">
+                <td className={`col-deposit`} data-label="Deposito" data-slot="invoice-table-cell">
                   <DepositBadge invoice={invoice} />
                 </td>
-                <td className={`col-category`} data-label="Categoria">
+                <td className={`col-category`} data-label="Categoria" data-slot="invoice-table-cell">
                   <CreditNoteBadge invoice={invoice} />
                   <CategoryBadge category={invoice.category} />
                   <TagsList tags={invoice.tags} />
                 </td>
-                <td className={`col-attachment`} data-label="">
+                <td className={`col-attachment`} data-label="" data-slot="invoice-table-cell">
                   {(invoice.attachments && invoice.attachments.length > 0) || invoice.account_image_url || invoice.internal_notes ? (
                     <div className="bo-tableAttachmentCell">
                       {invoice.attachments && invoice.attachments.length > 0 && (
@@ -822,7 +822,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     </div>
                   ) : null}
                 </td>
-                <td className={`col-actions`}>
+                <td className={`col-actions`} data-slot="invoice-table-cell">
                   <div className="bo-tableActions">
                     <button
                       className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -1002,30 +1002,31 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               );
             })}
           </tbody>
-          <tfoot className="bo-tableFooter">
-            <tr>
-              <td className="col-selection" data-label=""></td>
-              <td className="col-invoice_number" data-label="N. Factura">
+          <tfoot className="bo-tableFooter" data-slot="invoice-tfoot">
+            <tr data-slot="invoice-table-row">
+              <td className="col-selection" data-label="" data-slot="invoice-table-cell">
+              </td>
+              <td className="col-invoice_number" data-label="N. Factura" data-slot="invoice-table-cell">
                 <strong>Total</strong>
               </td>
-              <td className="col-customer_name" data-label="Cliente">
+              <td className="col-customer_name" data-label="Cliente" data-slot="invoice-table-cell">
                 {totals.displayedCount} de {total} facturas
               </td>
-              <td className="col-customer_email" data-label="Email"></td>
-              <td className="col-amount" data-label="Importe">
+              <td className="col-customer_email" data-label="Email" data-slot="invoice-table-cell"></td>
+              <td className="col-amount" data-label="Importe" data-slot="invoice-table-cell">
                 <strong>{formatPrice(totals.totalAmount)}</strong>
               </td>
-              <td className="col-currency" data-label="Moneda"></td>
-              <td className="col-payment_progress" data-label="Pagado"></td>
-              <td className="col-invoice_date" data-label="Fecha"></td>
-              <td className="col-due_date" data-label="Vencimiento"></td>
-              <td className="col-payment_date" data-label="F. Pago"></td>
-              <td className="col-payment_method" data-label="Metodo"></td>
-              <td className="col-status" data-label="Estado"></td>
-              <td className="col-is_reservation" data-label="Tipo"></td>
-              <td className="col-deposit" data-label="Deposito"></td>
-              <td className="col-attachment" data-label=""></td>
-              <td className="col-actions" data-label=""></td>
+              <td className="col-currency" data-label="Moneda" data-slot="invoice-table-cell"></td>
+              <td className="col-payment_progress" data-label="Pagado" data-slot="invoice-table-cell"></td>
+              <td className="col-invoice_date" data-label="Fecha" data-slot="invoice-table-cell"></td>
+              <td className="col-due_date" data-label="Vencimiento" data-slot="invoice-table-cell"></td>
+              <td className="col-payment_date" data-label="F. Pago" data-slot="invoice-table-cell"></td>
+              <td className="col-payment_method" data-label="Metodo" data-slot="invoice-table-cell"></td>
+              <td className="col-status" data-label="Estado" data-slot="invoice-table-cell"></td>
+              <td className="col-is_reservation" data-label="Tipo" data-slot="invoice-table-cell"></td>
+              <td className="col-deposit" data-label="Deposito" data-slot="invoice-table-cell"></td>
+              <td className="col-attachment" data-label="" data-slot="invoice-table-cell"></td>
+              <td className="col-actions" data-label="" data-slot="invoice-table-cell"></td>
             </tr>
           </tfoot>
         </table>

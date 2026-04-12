@@ -83,10 +83,10 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
   );
 
   return (
-    <div className="bo-mcalGrid" role="grid">
+    <div className="bo-mcalGrid" role="grid" data-slot="month-calendar-grid">
       {cells.map((cell) => {
         if (cell.kind === "empty") {
-          return <div key={cell.key} className="bo-mcalCell is-empty" aria-hidden="true" />;
+          return <div key={cell.key} className="bo-mcalCell is-empty" aria-hidden="true" data-slot="month-calendar-cell-empty" />;
         }
 
         return (
@@ -100,10 +100,11 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
             data-date={cell.dateISO}
             data-testid={`month-calendar-day-${cell.day}`}
             onClick={handleSelectDate}
+            data-slot="month-calendar-day-cell"
           >
-            <div className="bo-mcalNum">{cell.day}</div>
-            <div className="bo-mcalSub">
-              {!cell.isOpen ? <Lock className="bo-ico" /> : <span className="bo-mcalRatio">{cell.ratioLabel}</span>}
+            <div className="bo-mcalNum" data-slot="month-calendar-day-number">{cell.day}</div>
+            <div className="bo-mcalSub" data-slot="month-calendar-day-sub">
+              {!cell.isOpen ? <Lock className="bo-ico" /> : <span className="bo-mcalRatio" data-slot="month-calendar-day-ratio">{cell.ratioLabel}</span>}
             </div>
           </button>
         );
@@ -181,9 +182,9 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
 
   return (
     <section className={cn("bo-mcal bo-mcal--glass", className)} aria-label="Calendario mensual" aria-busy={loading} data-testid="month-calendar">
-      <header className="bo-mcalHead" data-testid="month-calendar-header">
-        <div className="bo-mcalTitle">{monthLabel}</div>
-        <div className="bo-mcalNav">
+      <header className="bo-mcalHead" data-testid="month-calendar-header" data-slot="month-calendar-header">
+        <div className="bo-mcalTitle" data-slot="month-calendar-title">{monthLabel}</div>
+        <div className="bo-mcalNav" data-slot="month-calendar-nav">
           <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={handlePrevMonth} aria-label="Mes anterior" data-testid="month-calendar-prev">
             <ChevronLeft className="bo-ico" />
           </button>
@@ -193,9 +194,9 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
         </div>
       </header>
 
-      <div className="bo-mcalDows" aria-hidden="true">
+      <div className="bo-mcalDows" aria-hidden="true" data-slot="month-calendar-weekdays">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="bo-mcalDow">
+          <div key={label} className="bo-mcalDow" data-slot="month-calendar-weekday">
             {label}
           </div>
         ))}

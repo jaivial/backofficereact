@@ -211,7 +211,7 @@ function CustomerStatementSection({
       {customerStatement ? (
         <>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4" data-slot="reportes-info-cliente">Información del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div><span className="text-sm text-gray-500">Nombre</span><p className="text-lg font-medium">{customerStatement.customer_name}</p></div>
               {customerStatement.customer_dni_cif && <div><span className="text-sm text-gray-500">DNI/CIF</span><p className="text-lg font-medium">{customerStatement.customer_dni_cif}</p></div>}
@@ -231,7 +231,7 @@ function CustomerStatementSection({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h3 className="text-lg font-semibold">Facturas ({customerStatement.invoices.length})</h3>
+                <h3 className="text-lg font-semibold" data-slot="reportes-facturas-list">Facturas ({customerStatement.invoices.length})</h3>
               </div>
               {customerStatement.invoices.length > 0 ? (
                 <table className="min-w-full divide-y divide-gray-200">
@@ -257,7 +257,7 @@ function CustomerStatementSection({
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h3 className="text-lg font-semibold">Pagos ({customerStatement.payments.length})</h3>
+                <h3 className="text-lg font-semibold" data-slot="reportes-pagos-list">Pagos ({customerStatement.payments.length})</h3>
               </div>
               {customerStatement.payments.length > 0 ? (
                 <table className="min-w-full divide-y divide-gray-200">
@@ -285,7 +285,7 @@ function CustomerStatementSection({
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Sin estado de cuenta</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="reportes-sin-estado-cuenta">Sin estado de cuenta</h3>
           <p className="text-gray-500">Selecciona un cliente y un periodo para generar</p>
         </div>
       )}
@@ -432,7 +432,7 @@ function IVAReportSection({
           {includeCreditNotes && report.summary.credit_note_count > 0 && (
             <>
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h3 className="text-lg font-semibold text-yellow-800 mb-3">Notas de Crédito</h3>
+                <h3 className="text-lg font-semibold text-yellow-800 mb-3" data-slot="reportes-notas-credito">Notas de Crédito</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div><span className="text-sm text-yellow-700">Cantidad</span><p className="text-xl font-bold">{report.summary.credit_note_count}</p></div>
                   <div><span className="text-sm text-yellow-700">Base</span><p className="text-xl font-bold">{formatCurrency(report.summary.credit_note_base, "EUR")}</p></div>
@@ -441,7 +441,7 @@ function IVAReportSection({
                 </div>
               </div>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h3 className="text-lg font-semibold text-green-800 mb-3">Total Neto (después de NC)</h3>
+                <h3 className="text-lg font-semibold text-green-800 mb-3" data-slot="reportes-total-neto">Total Neto (después de NC)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div><span className="text-sm text-green-700">Base neta</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_base, "EUR")}</p></div>
                   <div><span className="text-sm text-green-700">IVA neto</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_iva, "EUR")}</p></div>
@@ -568,7 +568,7 @@ function IVAReportSection({
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay reporte generado</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="reportes-sin-reporte-generado">No hay reporte generado</h3>
           <p className="text-gray-500 mb-4">Selecciona un periodo y genera el reporte</p>
           <button onClick={handleGenerate} disabled={loading} data-testid="reportes-generate-btn"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
@@ -592,7 +592,7 @@ export default function Page() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reportes</h1>
+          <h1 className="text-2xl font-bold text-gray-900" data-slot="reportes-page-title">Reportes</h1>
           <p className="text-gray-600">Reportes de IVA y estados de cuenta de clientes</p>
         </div>
       </div>

@@ -73,8 +73,8 @@ export function AttachmentsModal({
     <>
       <div className="bo-modalOverlay" onClick={onClose}>
         <div className="bo-modal bo-attachmentsModal" role="dialog" aria-label="Adjuntos de factura" onClick={(e) => e.stopPropagation()}>
-          <div className="bo-attachmentsModalHeader">
-            <h2 className="bo-attachmentsModalTitle">
+          <div className="bo-attachmentsModalHeader" data-slot="attachments-modal-header">
+            <h2 className="bo-attachmentsModalTitle" data-slot="attachments-modal-title">
               Adjuntos
               {invoiceNumber && <span className="bo-attachmentsModalSubtitle">Factura {invoiceNumber}</span>}
             </h2>
@@ -83,11 +83,11 @@ export function AttachmentsModal({
             </button>
           </div>
 
-          <div className="bo-attachmentsModalBody">
+          <div className="bo-attachmentsModalBody" data-slot="attachments-modal-body">
             {attachments.length === 0 ? (
-              <div className="bo-attachmentsEmpty">
+              <div className="bo-attachmentsEmpty" data-slot="attachments-empty">
                 <File size={48} className="bo-attachmentsEmptyIcon" />
-                <p>No hay adjuntos</p>
+                <p data-slot="attachments-empty-text">No hay adjuntos</p>
               </div>
             ) : (
               <ul className="bo-attachmentsList">
@@ -96,19 +96,19 @@ export function AttachmentsModal({
                   const iconColor = getFileIconColor(attachment.mime_type);
 
                   return (
-                    <li key={attachment.id} className="bo-attachmentItem">
-                      <div className="bo-attachmentIcon" style={{ color: iconColor }}>
+                    <li key={attachment.id} className="bo-attachmentItem" data-slot="attachment-item">
+                      <div className="bo-attachmentIcon" style={{ color: iconColor }} data-slot="attachment-icon">
                         <FileIcon size={24} />
                       </div>
-                      <div className="bo-attachmentInfo">
-                        <span className="bo-attachmentName" title={attachment.original_name}>
+                      <div className="bo-attachmentInfo" data-slot="attachment-info">
+                        <span className="bo-attachmentName" data-slot="attachment-name" title={attachment.original_name}>
                           {attachment.original_name}
                         </span>
-                        <span className="bo-attachmentMeta">
+                        <span className="bo-attachmentMeta" data-slot="attachment-meta">
                           {formatFileSize(attachment.size)} • {attachment.mime_type}
                         </span>
                       </div>
-                      <div className="bo-attachmentActions">
+                      <div className="bo-attachmentActions" data-slot="attachment-actions">
                         {isPreviewable(attachment.mime_type) && (
                           <button
                             className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -150,8 +150,8 @@ export function AttachmentsModal({
           </div>
 
           {attachments.length > 0 && (
-            <div className="bo-attachmentsModalFooter">
-              <span className="bo-attachmentsCount">
+            <div className="bo-attachmentsModalFooter" data-slot="attachments-modal-footer">
+              <span className="bo-attachmentsCount" data-slot="attachments-count">
                 {attachments.length} archivo{attachments.length !== 1 ? "s" : ""} adjunto{attachments.length !== 1 ? "s" : ""}
               </span>
               <button
@@ -181,20 +181,20 @@ export function AttachmentsModal({
       {previewingAttachment && (
         <div className="bo-modalOverlay" onClick={() => setPreviewingAttachment(null)}>
           <div className="bo-modal bo-previewModal" role="dialog" aria-label="Vista previa" onClick={(e) => e.stopPropagation()}>
-            <div className="bo-previewModalHeader">
-              <h3>{previewingAttachment.original_name}</h3>
+            <div className="bo-previewModalHeader" data-slot="preview-modal-header">
+              <h3 data-slot="preview-modal-title">{previewingAttachment.original_name}</h3>
               <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => setPreviewingAttachment(null)} aria-label="Cerrar" data-testid="attachments-preview-close-button">
                 <X size={18} />
               </button>
             </div>
-            <div className="bo-previewModalBody">
+            <div className="bo-previewModalBody" data-slot="preview-modal-body">
               {previewingAttachment.mime_type.startsWith("image/") ? (
                 <img src={previewingAttachment.url} alt={previewingAttachment.original_name} className="bo-previewImage" />
               ) : previewingAttachment.mime_type === "application/pdf" ? (
                 <iframe src={previewingAttachment.url} title={previewingAttachment.original_name} className="bo-previewPdf" />
               ) : null}
             </div>
-            <div className="bo-previewModalFooter">
+            <div className="bo-previewModalFooter" data-slot="preview-modal-footer">
               <button className="bo-btn bo-btn--primary" onClick={() => handleDownloadSingle(previewingAttachment)} data-testid="attachments-preview-download-button">
                 <Download size={16} />
                 Descargar

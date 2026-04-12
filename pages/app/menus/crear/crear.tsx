@@ -286,7 +286,7 @@ export function CrearPage() {
       {/* Step 0: Menu Type Selection */}
       {step === 0 ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Tipo de menu</h2>
+          <h2 className="bo-sectionTitle" data-slot="menu-crear-tipo-menu">Tipo de menu</h2>
           <p className="bo-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
           <div className="bo-typeGrid">
             {H.isSpecial !== undefined && menuTypeOptions.map((opt) => {
@@ -329,7 +329,7 @@ export function CrearPage() {
       {/* Step 1: Basic Data */}
       {step === 1 ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Datos basicos</h2>
+          <h2 className="bo-sectionTitle" data-slot="menu-crear-datos-basicos">Datos basicos</h2>
           <div className="bo-form bo-form--menuWizard bo-form--menuWizardBasics">
             <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
               <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
@@ -378,7 +378,7 @@ export function CrearPage() {
             </div>
 
             <div className="bo-menuBasicsSwitchRow">
-              <label className="bo-menuBasicsActiveToggle">
+              <label className="bo-menuBasicsActiveToggle" data-slot="menu-crear-activo-label">
                 <span className="bo-label">Activo</span>
                 <Switch checked={active} onCheckedChange={setActive} />
                 <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
@@ -408,7 +408,7 @@ export function CrearPage() {
       {/* Step 2: Sections */}
       {step === 2 ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Secciones del menu</h2>
+          <h2 className="bo-sectionTitle" data-slot="menu-crear-secciones-menu">Secciones del menu</h2>
           <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsBoard bo-reorderGroup">
             {sections.map((sec, idx) => (
               <ReorderSectionDragWrapper key={sec.clientId} value={sec.clientId} className="bo-sectionCard bo-reorderItem">
@@ -519,7 +519,7 @@ export function CrearPage() {
                   </div>
                 ) : null}
                 <div className="bo-menuBasicsSwitchRow">
-                  <label className="bo-menuBasicsActiveToggle">
+                  <label className="bo-menuBasicsActiveToggle" data-slot="menu-crear-activo-label">
                     <span className="bo-label">Activo</span>
                     <Switch checked={active} onCheckedChange={setActive} />
                     <span className="bo-mutedText">{active ? "Activo" : "No activo"}</span>
@@ -665,7 +665,7 @@ export function CrearPage() {
       {/* Step 4: Special Menu Image */}
       {step === 4 && isSpecial ? (
         <div className="bo-menuWizardPanel">
-          <h2 className="bo-sectionTitle">Imagen del menu</h2>
+          <h2 className="bo-sectionTitle" data-slot="menu-crear-imagen-menu">Imagen del menu</h2>
           <p className="bo-mutedText" style={{ marginBottom: 16 }}>
             Sube una imagen del menu especial para mostrarla en la plantilla web.
           </p>

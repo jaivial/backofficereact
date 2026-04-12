@@ -33,7 +33,7 @@ export function Slider({
   }, [max, min, normalized]);
 
   return (
-    <div className={["bo-slider", className].filter(Boolean).join(" ")}>
+    <div className={["bo-slider", className].filter(Boolean).join(" ")} data-slot="slider-container">
       <input
         className="bo-sliderInput"
         type="range"
@@ -45,12 +45,13 @@ export function Slider({
         onChange={(ev) => onChange(clamp(Number(ev.target.value), min, max))}
         aria-label={ariaLabel}
         data-testid="slider-input"
+        data-slot="slider-track"
         style={{ ["--bo-slider-progress" as any]: `${progress}%` } as React.CSSProperties}
       />
-      <div className="bo-sliderMeta" aria-hidden="true">
-        <span>{min}</span>
-        <strong className="bo-sliderValue">{normalized}</strong>
-        <span>{max}</span>
+      <div className="bo-sliderMeta" aria-hidden="true" data-slot="slider-meta">
+        <span data-slot="slider-min-label">{min}</span>
+        <strong className="bo-sliderValue" data-slot="slider-value">{normalized}</strong>
+        <span data-slot="slider-max-label">{max}</span>
       </div>
     </div>
   );

@@ -110,7 +110,7 @@ export default function Page() {
               <div className="bo-panelMeta">Ajusta horas semanales y seguimiento del periodo.</div>
             </div>
             <div className="bo-memberStatsControls">
-              <label className="bo-field bo-memberControl">
+              <label className="bo-field bo-memberControl" data-slot="miembro-contrato-fecha-label">
                 <span className="bo-label">Fecha</span>
                 <DatePicker
                   value={date}
@@ -127,7 +127,7 @@ export default function Page() {
           </div>
 
           <div className="bo-panelBody bo-memberContractBody">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="miembro-contrato-hours-label">
               <span className="bo-label">Horas de contrato semanales</span>
               <input
                 id="weeklyContractHours"

@@ -263,23 +263,23 @@ export function InvoiceAnalyticsWidget({
           <h3 className="bo-analyticsChartTitle">Top Clientes por Ingresos</h3>
           <div className="bo-analyticsChartContainer bo-analyticsTableContainer">
             {analytics.topCustomers.length > 0 ? (
-              <table className="bo-analyticsTable">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>Facturas</th>
-                    <th>Ingresos</th>
+              <table className="bo-analyticsTable" data-slot="analytics-table">
+                <thead data-slot="analytics-thead">
+                  <tr data-slot="analytics-table-row">
+                    <th data-slot="analytics-table-header">Cliente</th>
+                    <th data-slot="analytics-table-header">Facturas</th>
+                    <th data-slot="analytics-table-header">Ingresos</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody data-slot="analytics-tbody">
                   {analytics.topCustomers.slice(0, 10).map((customer, index) => (
-                    <tr key={index}>
-                      <td>
+                    <tr key={index} data-slot={`analytics-table-row-${index}`}>
+                      <td data-slot="analytics-table-cell">
                         <div className="bo-analyticsCustomerName">{customer.customerName}</div>
                         <div className="bo-analyticsCustomerEmail">{customer.customerEmail}</div>
                       </td>
-                      <td>{customer.invoiceCount}</td>
-                      <td className="bo-analyticsRevenue">{formatCurrency(customer.totalRevenue)}</td>
+                      <td data-slot="analytics-table-cell">{customer.invoiceCount}</td>
+                      <td className="bo-analyticsRevenue" data-slot="analytics-table-cell">{formatCurrency(customer.totalRevenue)}</td>
                     </tr>
                   ))}
                 </tbody>

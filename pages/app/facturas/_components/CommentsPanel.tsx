@@ -208,23 +208,23 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
   const hasMoreComments = comments.length > 5;
 
   return (
-    <div className="bo-commentsPanel">
-      <div className="bo-commentsPanelHeader">
-        <h3 className="bo-commentsPanelTitle">
+    <div className="bo-commentsPanel" data-slot="comments-panel">
+      <div className="bo-commentsPanelHeader" data-slot="comments-panel-header">
+        <h3 className="bo-commentsPanelTitle" data-slot="comments-panel-title">
           <MessageSquare size={18} />
           Comentarios
           {comments.length > 0 && (
             <span className="bo-commentsPanelCount">({comments.length})</span>
           )}
         </h3>
-        <p className="bo-commentsPanelSubtitle">
+        <p className="bo-commentsPanelSubtitle" data-slot="comments-panel-subtitle">
           Los comentarios son internos y no se incluyen en el PDF
         </p>
       </div>
 
       {/* Add new comment form */}
-      <div className="bo-commentsPanelAdd">
-        <div className="bo-commentsPanelAddForm">
+      <div className="bo-commentsPanelAdd" data-slot="comments-panel-add">
+        <div className="bo-commentsPanelAddForm" data-slot="comments-panel-add-form">
           <textarea
             className="bo-textarea bo-commentsPanelTextarea"
             value={newComment}
@@ -252,13 +252,13 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
       </div>
 
       {/* Comments list */}
-      <div className="bo-commentsPanelList">
+      <div className="bo-commentsPanelList" data-slot="comments-panel-list">
         {loading ? (
-          <div className="bo-commentsPanelEmpty">
-            <p>Cargando comentarios...</p>
+          <div className="bo-commentsPanelEmpty" data-slot="comments-panel-loading">
+            <p data-slot="comments-panel-loading-text">Cargando comentarios...</p>
           </div>
         ) : comments.length === 0 ? (
-          <div className="bo-commentsPanelEmpty">
+          <div className="bo-commentsPanelEmpty" data-slot="comments-panel-empty">
             <MessageSquare size={24} className="bo-commentsPanelEmptyIcon" />
             <p>No hay comentarios todavía</p>
             <p className="bo-mutedText">Sé el primero en añadir un comentario</p>
@@ -266,10 +266,10 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
         ) : (
           <>
             {displayedComments.map((comment) => (
-              <div key={comment.id} className="bo-commentItem">
+              <div key={comment.id} className="bo-commentItem" data-slot="comments-panel-item">
                 {editingCommentId === comment.id ? (
                   // Editing mode
-                  <div className="bo-commentEdit">
+                  <div className="bo-commentEdit" data-slot="comments-panel-item-edit">
                     <textarea
                       className="bo-textarea bo-commentEditTextarea"
                       value={editContent}
@@ -277,7 +277,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                       rows={2}
                       data-testid={`comments-edit-textarea-${comment.id}`}
                     />
-                    <div className="bo-commentEditActions">
+                    <div className="bo-commentEditActions" data-slot="comments-panel-item-edit-actions">
                       <button
                         type="button"
                         className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -302,22 +302,22 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                 ) : (
                   // Display mode
                   <>
-                    <div className="bo-commentHeader">
-                      <div className="bo-commentAuthor">
+                    <div className="bo-commentHeader" data-slot="comments-panel-item-header">
+                      <div className="bo-commentAuthor" data-slot="comments-panel-item-author">
                         <User size={14} />
-                        <span className="bo-commentAuthorName">{comment.user_name}</span>
+                        <span className="bo-commentAuthorName" data-slot="comments-panel-author-name">{comment.user_name}</span>
                       </div>
-                      <div className="bo-commentDate">
+                      <div className="bo-commentDate" data-slot="comments-panel-item-date">
                         <Clock size={12} />
-                        <span>{formatDate(comment.created_at)}</span>
+                        <span data-slot="comments-panel-date-text">{formatDate(comment.created_at)}</span>
                         {comment.updated_at && (
-                          <span className="bo-commentEdited">(editado)</span>
+                          <span className="bo-commentEdited" data-slot="comments-panel-edited-badge">(editado)</span>
                         )}
                       </div>
                     </div>
-                    <div className="bo-commentContent">{comment.content}</div>
+                    <div className="bo-commentContent" data-slot="comments-panel-item-content">{comment.content}</div>
                     {canModify(comment) && (
-                      <div className="bo-commentActions">
+                      <div className="bo-commentActions" data-slot="comments-panel-item-actions">
                         <button
                           type="button"
                           className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -351,6 +351,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                 className="bo-btn bo-btn--ghost bo-btn--sm bo-commentsPanelShowMore"
                 onClick={() => setShowAllComments(true)}
                 data-testid="comments-show-more"
+                data-slot="comments-panel-show-more"
               >
                 Ver {comments.length - 5} comentarios más
               </button>

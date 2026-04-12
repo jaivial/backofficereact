@@ -266,21 +266,21 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
   return (
     <Modal open={open} onClose={handleClose} title={modalTitle} widthPx={550}>
-      <div className="bo-sendEmailModal">
+      <div className="bo-sendEmailModal" data-slot="send-email-modal">
         {/* Success state */}
         {sent ? (
-          <div className="bo-sendEmailSuccess">
-            <div className="bo-sendEmailSuccessIcon">
+          <div className="bo-sendEmailSuccess" data-slot="send-email-success">
+            <div className="bo-sendEmailSuccessIcon" data-slot="send-email-success-icon">
               <CheckCircle size={48} />
             </div>
-            <h3>{successTitle}</h3>
-            <p>La factura ha sido enviada correctamente a:</p>
-            <p className="bo-sendEmailTo">{successDestination}</p>
+            <h3 data-slot="send-email-success-title">{successTitle}</h3>
+            <p data-slot="send-email-success-description">La factura ha sido enviada correctamente a:</p>
+            <p className="bo-sendEmailTo" data-slot="send-email-success-recipient">{successDestination}</p>
           </div>
         ) : (
           <>
             {/* Notification method toggle */}
-            <div className="bo-sendNotificationToggle">
+            <div className="bo-sendNotificationToggle" data-slot="send-email-notification-toggle">
               <button
                 type="button"
                 className={`bo-sendNotificationTab ${notificationMethod === "email" ? "is-active" : ""}`}
@@ -304,27 +304,27 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
             </div>
 
             {/* Invoice summary */}
-            <div className="bo-sendEmailSummary">
-              <div className="bo-sendEmailSummaryRow">
+            <div className="bo-sendEmailSummary" data-slot="send-email-invoice-summary">
+              <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-customer">
                 <User size={16} />
-                <span>
+                <span data-slot="send-email-customer-name">
                   {invoice.customer_name} {invoice.customer_surname}
                 </span>
               </div>
               {notificationMethod === "email" ? (
-                <div className="bo-sendEmailSummaryRow">
+                <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-email">
                   <Mail size={16} />
-                  <span>{invoice.customer_email || "Sin email"}</span>
+                  <span data-slot="send-email-customer-email">{invoice.customer_email || "Sin email"}</span>
                 </div>
               ) : (
-                <div className="bo-sendEmailSummaryRow">
+                <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-phone">
                   <Phone size={16} />
-                  <span>{invoice.customer_phone || "Sin telefono"}</span>
+                  <span data-slot="send-email-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
                 </div>
               )}
-              <div className="bo-sendEmailSummaryRow">
+              <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-invoice">
                 <FileText size={16} />
-                <span>
+                <span data-slot="send-email-invoice-detail">
                   Factura {invoice.invoice_number || `#${invoice.id}`} - {formatPrice(invoice.total || invoice.amount)}
                 </span>
               </div>
@@ -332,15 +332,15 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
             {/* Resend warning */}
             {isResend && (
-              <div className="bo-sendEmailWarning">
+              <div className="bo-sendEmailWarning" data-slot="send-email-resend-warning">
                 <AlertCircle size={16} />
-                <span>Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo email.</span>
+                <span data-slot="send-email-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo email.</span>
               </div>
             )}
 
             {/* Email form */}
-            <div className="bo-sendEmailForm">
-              <div className="bo-field">
+            <div className="bo-sendEmailForm" data-slot="send-email-form">
+              <div className="bo-field" data-slot="send-email-field-subject">
                 <label className="bo-label">Asunto</label>
                 <input
                   className="bo-input"
@@ -356,8 +356,8 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 </span>
               </div>
 
-              <div className="bo-field">
-                <div className="bo-fieldHeader">
+              <div className="bo-field" data-slot="send-email-field-message">
+                <div className="bo-fieldHeader" data-slot="send-email-message-header">
                   <label className="bo-label">Mensaje</label>
                   <button
                     type="button"
@@ -370,7 +370,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                   </button>
                 </div>
                 {showPreview ? (
-                  <div className="bo-sendEmailPreview">{previewContent.message}</div>
+                  <div className="bo-sendEmailPreview" data-slot="send-email-message-preview">{previewContent.message}</div>
                 ) : (
                   <textarea
                     className="bo-textarea"
@@ -386,7 +386,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
             </div>
 
             {/* Actions */}
-            <div className="bo-sendEmailActions">
+            <div className="bo-sendEmailActions" data-slot="send-email-actions">
               <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending} data-testid="send-email-cancel">
                 Cancelar
               </button>
