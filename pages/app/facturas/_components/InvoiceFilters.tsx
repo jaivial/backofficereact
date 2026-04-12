@@ -371,6 +371,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
           aria-label={isExpanded ? "Colapsar filtros" : "Expandir filtros"}
+          data-testid="invoice-filters-toggle-btn"
         >
           {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </button>
@@ -402,6 +403,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     }
                     title="Buscar (Ctrl+F)"
                     onChange={(e) => onSearchChange(e.target.value)}
+                    data-testid="invoice-filter-search-input"
                   />
                   <Select
                     value={searchBy}
@@ -413,6 +415,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     ]}
                     ariaLabel="Buscar por"
                     className="bo-searchBySelect"
+                    data-testid="invoice-filter-searchby-select"
                   />
                 </div>
               </label>
@@ -424,6 +427,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   onChange={(value) => onStatusFilterChange(value as InvoiceStatus | "")}
                   options={statusOptions}
                   ariaLabel="Estado"
+                  data-testid="invoice-filter-status-select"
                 />
               </label>
 
@@ -434,6 +438,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   onChange={(value) => onCategoryFilterChange(value as InvoiceCategory | "")}
                   options={categoryOptions}
                   ariaLabel="Categoria"
+                  data-testid="invoice-filter-category-select"
                 />
               </label>
 
@@ -445,6 +450,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   value={tagFilter}
                   onChange={(e) => onTagFilterChange(e.target.value)}
                   placeholder="Filtrar por etiqueta..."
+                  data-testid="invoice-filter-tag-input"
                 />
               </label>
 
@@ -455,6 +461,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   onChange={onSortByChange}
                   options={sortOptions}
                   ariaLabel="Ordenar"
+                  data-testid="invoice-filter-sort-select"
                 />
               </label>
 
@@ -468,6 +475,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     { value: "reservation_date", label: "Fecha reserva" },
                   ]}
                   ariaLabel="Tipo de fecha"
+                  data-testid="invoice-filter-datetype-select"
                 />
               </div>
 
@@ -479,6 +487,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     type="button"
                     className={`bo-datePresetBtn ${datePreset === "today" ? "is-active" : ""}`}
                     onClick={() => handlePresetClick("today")}
+                    data-testid="invoice-filter-datepreset-today-btn"
                   >
                     Hoy
                   </button>
@@ -486,6 +495,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     type="button"
                     className={`bo-datePresetBtn ${datePreset === "this_week" ? "is-active" : ""}`}
                     onClick={() => handlePresetClick("this_week")}
+                    data-testid="invoice-filter-datepreset-this-week-btn"
                   >
                     Esta semana
                   </button>
@@ -493,6 +503,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     type="button"
                     className={`bo-datePresetBtn ${datePreset === "this_month" ? "is-active" : ""}`}
                     onClick={() => handlePresetClick("this_month")}
+                    data-testid="invoice-filter-datepreset-this-month-btn"
                   >
                     Este mes
                   </button>
@@ -500,6 +511,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     type="button"
                     className={`bo-datePresetBtn ${datePreset === "last_month" ? "is-active" : ""}`}
                     onClick={() => handlePresetClick("last_month")}
+                    data-testid="invoice-filter-datepreset-last-month-btn"
                   >
                     Ultimo mes
                   </button>
@@ -507,6 +519,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     type="button"
                     className={`bo-datePresetBtn ${datePreset === "this_year" ? "is-active" : ""}`}
                     onClick={() => handlePresetClick("this_year")}
+                    data-testid="invoice-filter-datepreset-this-year-btn"
                   >
                     Este año
                   </button>
@@ -514,6 +527,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     type="button"
                     className={`bo-datePresetBtn ${datePreset === "custom" || showCustomDatePicker ? "is-active" : ""}`}
                     onClick={() => handlePresetClick("custom")}
+                    data-testid="invoice-filter-datepreset-custom-btn"
                   >
                     Personalizado
                   </button>
@@ -525,12 +539,12 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 <>
                   <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateFrom">
                     <span className="bo-label">Desde</span>
-                    <DatePicker value={dateFrom || ""} onChange={handleDateFromChangeInternal} />
+                    <DatePicker value={dateFrom || ""} onChange={handleDateFromChangeInternal} data-testid="invoice-filter-datefrom-picker" />
                   </label>
 
                   <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateTo">
                     <span className="bo-label">Hasta</span>
-                    <DatePicker value={dateTo || ""} onChange={handleDateToChangeInternal} />
+                    <DatePicker value={dateTo || ""} onChange={handleDateToChangeInternal} data-testid="invoice-filter-dateto-picker" />
                   </label>
                 </>
               )}
@@ -549,6 +563,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     { value: "false", label: "Sin reserva" },
                   ]}
                   ariaLabel="Reserva"
+                  data-testid="invoice-filter-reservation-select"
                 />
               </div>
 
@@ -566,6 +581,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     { value: "false", label: "Solo facturas" },
                   ]}
                   ariaLabel="Nota de credito"
+                  data-testid="invoice-filter-creditnote-select"
                 />
               </div>
 
@@ -584,17 +600,18 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     { value: "not_overdue", label: "Pendientes" },
                   ]}
                   ariaLabel="Vencimiento"
+                  data-testid="invoice-filter-overdue-select"
                 />
               </div>
 
               <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateFrom">
                 <span className="bo-label">Desde vencimiento</span>
-                <DatePicker value={dueDateFrom || ""} onChange={onDueDateFromChange} />
+                <DatePicker value={dueDateFrom || ""} onChange={onDueDateFromChange} data-testid="invoice-filter-duedatefrom-picker" />
               </label>
 
               <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateTo">
                 <span className="bo-label">Hasta vencimiento</span>
-                <DatePicker value={dueDateTo || ""} onChange={onDueDateToChange} />
+                <DatePicker value={dueDateTo || ""} onChange={onDueDateToChange} data-testid="invoice-filter-duedateto-picker" />
               </label>
             </div>
 
@@ -614,6 +631,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     className="bo-btn bo-btn--ghost bo-btn--sm"
                     type="button"
                     onClick={onImport}
+                    data-testid="invoice-filters-import-btn"
                   >
                     <Upload size={15} />
                     Importar
@@ -624,6 +642,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     className="bo-btn bo-btn--ghost bo-btn--sm"
                     type="button"
                     onClick={onImportHistory}
+                    data-testid="invoice-filters-history-btn"
                   >
                     <History size={15} />
                     Historial
@@ -633,6 +652,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   className="bo-btn bo-btn--ghost bo-btn--sm"
                   type="button"
                   onClick={onExportCSV}
+                  data-testid="invoice-filters-export-btn"
                 >
                   <Download size={15} />
                   Exportar CSV
@@ -644,6 +664,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   onClick={onResetFilters}
                   tabIndex={hasFilters ? 0 : -1}
                   aria-hidden={!hasFilters}
+                  data-testid="invoice-filters-clear-btn"
                 >
                   <FilterX size={15} />
                   Limpiar filtros
@@ -655,6 +676,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   onClick={() => setShowSaveDialog(true)}
                   tabIndex={hasFilters ? 0 : -1}
                   aria-hidden={!hasFilters}
+                  data-testid="invoice-filters-save-btn"
                 >
                   <Save size={15} />
                   Guardar filtro
@@ -683,6 +705,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         onKeyDown={handleKeyDown}
                         placeholder="Ej: Facturas pendientes"
                         autoFocus
+                        data-testid="invoice-filter-save-dialog-name-input"
                       />
                     </label>
                     <div className="bo-filterSaveDialogActions">
@@ -693,6 +716,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                           setShowSaveDialog(false);
                           setFilterName("");
                         }}
+                        data-testid="invoice-filter-save-dialog-cancel-btn"
                       >
                         Cancelar
                       </button>
@@ -701,6 +725,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         type="button"
                         onClick={handleSaveFilter}
                         disabled={!filterName.trim()}
+                        data-testid="invoice-filter-save-dialog-save-btn"
                       >
                         <Save size={15} />
                         Guardar
@@ -731,6 +756,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         type="button"
                         onClick={() => handleLoadFilter(preset)}
                         title={`Aplicar: ${preset.name}`}
+                        data-testid={`invoice-filter-saved-apply-${preset.id}-btn`}
                       >
                         <span className="bo-savedFilterName">{preset.name}</span>
                       </button>
@@ -740,6 +766,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         onClick={(e) => handleDeleteFilter(e, preset.id)}
                         title="Eliminar filtro"
                         aria-label={`Eliminar filtro ${preset.name}`}
+                        data-testid={`invoice-filter-saved-delete-${preset.id}-btn`}
                       >
                         <Trash2 size={12} />
                       </button>

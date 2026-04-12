@@ -111,7 +111,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
             <History size={20} />
             <span>Historial de importaciones</span>
           </div>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="import-history-close-btn">
             <X size={18} />
           </button>
         </div>
@@ -183,7 +183,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
 
         {history.length > 0 && (
           <div className="bo-modal-footer">
-            <button className="bo-btn bo-btn--ghost" onClick={clearHistory}>
+            <button className="bo-btn bo-btn--ghost" onClick={clearHistory} data-testid="import-history-clear-btn">
               <Trash2 size={16} />
               Limpiar historial
             </button>

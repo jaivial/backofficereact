@@ -110,6 +110,7 @@ export function InvoicePdfPreviewModal({
                 rel="noopener noreferrer"
                 className="bo-btn bo-btn--secondary bo-btn--sm"
                 download
+                data-testid="pdf-preview-download-btn"
               >
                 <Download size={14} />
                 Descargar
@@ -120,6 +121,7 @@ export function InvoicePdfPreviewModal({
               className="bo-btn bo-btn--secondary bo-btn--sm"
               onClick={onEdit}
               disabled={isSending}
+              data-testid="pdf-preview-edit-btn"
             >
               <Edit3 size={14} />
               Editar
@@ -150,6 +152,7 @@ export function InvoicePdfPreviewModal({
                   type="button"
                   className="bo-btn bo-btn--primary"
                   onClick={retryLoadPdf}
+                  data-testid="pdf-preview-retry-btn"
                 >
                   Reintentar
                 </button>
@@ -158,6 +161,7 @@ export function InvoicePdfPreviewModal({
                 type="button"
                 className="bo-btn bo-btn--secondary"
                 onClick={onEdit}
+                data-testid="pdf-preview-back-to-edit-btn"
               >
                 Volver a editar
               </button>
@@ -193,6 +197,7 @@ export function InvoicePdfPreviewModal({
               className="bo-btn bo-btn--secondary"
               onClick={onEdit}
               disabled={isSending}
+              data-testid="pdf-preview-footer-edit-btn"
             >
               <Edit3 size={16} />
               Volver a editar
@@ -203,6 +208,7 @@ export function InvoicePdfPreviewModal({
               onClick={onConfirmSend}
               disabled={isSending || !hasInvoiceId}
               title={!hasInvoiceId ? "Guarde la factura primero" : "Enviar factura"}
+              data-testid="pdf-preview-confirm-send-btn"
             >
               {isSending ? (
                 <>

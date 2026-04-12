@@ -140,7 +140,7 @@ export function RoleDetailModal({
               </span>
               {role.label}
             </div>
-            <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close">
+            <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close" data-testid="role-detail-close">
               ×
             </button>
           </div>
@@ -203,6 +203,7 @@ export function RoleDetailModal({
                         className="bo-input bo-input--sm bo-selectNative bo-roleUserSelect"
                         value={member.role}
                         disabled={disabledSelect}
+                        data-testid={`role-detail-user-select-${member.memberId}`}
                         onChange={(ev) => {
                           if (!member.userId) return;
                           void onChangeUserRole(member.userId, ev.target.value);
@@ -255,6 +256,7 @@ export function RoleDetailModal({
                         type="checkbox"
                         checked={checked}
                         disabled={disabled}
+                        data-testid={`role-detail-member-check-${member.memberId}`}
                         onChange={(ev) => {
                           const memberId = member.memberId;
                           setSelectedMemberIds((prev) =>
@@ -283,6 +285,7 @@ export function RoleDetailModal({
                 <button
                   className="bo-btn bo-btn--primary bo-btn--sm"
                   type="button"
+                  data-testid="role-detail-assign-submit"
                   disabled={busyAssign || selectedCount === 0 || !canAssignRole(actorImportance, role.importance)}
                   onClick={() => {
                     void onAssignSelected();

@@ -42,6 +42,7 @@ export default function LoginPage() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
+                data-testid="login-identifier-input"
                 data-ui="login-input-identifier"
               />
             </label>

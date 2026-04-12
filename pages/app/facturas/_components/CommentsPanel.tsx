@@ -236,12 +236,14 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                 handleAddComment();
               }
             }}
+            data-testid="comments-new-textarea"
           />
           <button
             type="button"
             className="bo-btn bo-btn--primary bo-btn--sm bo-commentsPanelSubmit"
             onClick={handleAddComment}
             disabled={!newComment.trim() || submitting}
+            data-testid="comments-submit"
           >
             <Send size={14} />
             Comentar
@@ -273,6 +275,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       rows={2}
+                      data-testid={`comments-edit-textarea-${comment.id}`}
                     />
                     <div className="bo-commentEditActions">
                       <button
@@ -280,6 +283,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                         className="bo-btn bo-btn--ghost bo-btn--sm"
                         onClick={handleCancelEdit}
                         disabled={submitting}
+                        data-testid={`comments-edit-cancel-${comment.id}`}
                       >
                         <X size={14} />
                         Cancelar
@@ -289,6 +293,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                         className="bo-btn bo-btn--primary bo-btn--sm"
                         onClick={() => handleSaveEdit(comment.id)}
                         disabled={!editContent.trim() || submitting}
+                        data-testid={`comments-edit-save-${comment.id}`}
                       >
                         Guardar
                       </button>
@@ -318,6 +323,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                           className="bo-btn bo-btn--ghost bo-btn--sm"
                           onClick={() => handleStartEdit(comment)}
                           title="Editar comentario"
+                          data-testid={`comments-edit-${comment.id}`}
                         >
                           <Edit2 size={14} />
                           Editar
@@ -327,6 +333,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                           className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
                           onClick={() => handleDeleteComment(comment.id)}
                           title="Eliminar comentario"
+                          data-testid={`comments-delete-${comment.id}`}
                         >
                           <Trash2 size={14} />
                           Eliminar
@@ -343,6 +350,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                 type="button"
                 className="bo-btn bo-btn--ghost bo-btn--sm bo-commentsPanelShowMore"
                 onClick={() => setShowAllComments(true)}
+                data-testid="comments-show-more"
               >
                 Ver {comments.length - 5} comentarios más
               </button>

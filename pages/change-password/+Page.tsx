@@ -65,7 +65,7 @@ export default function Page() {
           <div className="bo-title">Actualizar password</div>
           <div className="bo-authSub">Debes establecer una nueva password para continuar.</div>
 
-          <form onSubmit={onSubmit} className="bo-form">
+          <form onSubmit={onSubmit} className="bo-form" data-testid="change-password-form">
             <label className="bo-field">
               <div className="bo-label">Nueva password</div>
               <input
@@ -73,6 +73,7 @@ export default function Page() {
                 type="password"
                 autoComplete="new-password"
                 value={password}
+                data-testid="change-password-new-password"
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
@@ -85,12 +86,13 @@ export default function Page() {
                 type="password"
                 autoComplete="new-password"
                 value={confirmPassword}
+                data-testid="change-password-confirm-password"
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </label>
 
-            <button className="bo-btn bo-btn--primary" type="submit" disabled={busy}>
+            <button className="bo-btn bo-btn--primary" type="submit" data-testid="change-password-submit" disabled={busy}>
               {busy ? "Guardando..." : "Confirmar"}
             </button>
           </form>

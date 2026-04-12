@@ -98,6 +98,7 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
             aria-label={cell.label}
             aria-selected={cell.isSelected}
             data-date={cell.dateISO}
+            data-testid={`month-calendar-day-${cell.day}`}
             onClick={handleSelectDate}
           >
             <div className="bo-mcalNum">{cell.day}</div>
@@ -179,14 +180,14 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
   }, [days, month, selectedDateISO, today, year]);
 
   return (
-    <section className={cn("bo-mcal bo-mcal--glass", className)} aria-label="Calendario mensual" aria-busy={loading}>
-      <header className="bo-mcalHead">
+    <section className={cn("bo-mcal bo-mcal--glass", className)} aria-label="Calendario mensual" aria-busy={loading} data-testid="month-calendar">
+      <header className="bo-mcalHead" data-testid="month-calendar-header">
         <div className="bo-mcalTitle">{monthLabel}</div>
         <div className="bo-mcalNav">
-          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={handlePrevMonth} aria-label="Mes anterior">
+          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={handlePrevMonth} aria-label="Mes anterior" data-testid="month-calendar-prev">
             <ChevronLeft className="bo-ico" />
           </button>
-          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={handleNextMonth} aria-label="Mes siguiente">
+          <button className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={handleNextMonth} aria-label="Mes siguiente" data-testid="month-calendar-next">
             <ChevronRight className="bo-ico" />
           </button>
         </div>

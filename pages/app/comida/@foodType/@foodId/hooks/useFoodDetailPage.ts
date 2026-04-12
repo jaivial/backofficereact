@@ -9,7 +9,7 @@ import { useToasts } from "../../../../../../ui/feedback/useToasts";
 import { FOOD_TYPE_LABELS, FOOD_TYPE_SINGULAR } from "../../../_components/foodTypes";
 import type { FoodType } from "../../../_components/foodTypes";
 import { normalizeToCardAllergens, parseDecimalInput, toMoneyInput } from "../helpers";
-import { useComidaAIWebSocket, type ComidaAIWSMessage } from "../functionalComponents/FoodDetailImageEditor/hooks/useComidaAIWebSocket";
+import { useComidaAIUnified, type ComidaAIWSMessage } from "../../../_components/hooks/useComidaAIUnified";
 import { compressImageToWebP, isValidImageFile } from "../../../../../../lib/imageCompressor";
 
 export interface QuickFormState {
@@ -74,22 +74,18 @@ export function useFoodDetailPage() {
   const itemNum = item ? (item as FoodItem).num : null;
   const showAdvisorForType = isBebida || isCafe;
 
-  useComidaAIWebSocket({
+  useComidaAIUnified({
+    scope: "detail",
     itemNum,
     onEvent: useCallback((msg: ComidaAIWSMessage) => {
-      if (msg.type === "comida_ai_started" && msg.item_id === itemNum) {
-        setAiGenerating(true);
-      } else if (msg.type === "comida_ai_completed" && msg.item_id === itemNum) {
+      if (msg.type === "comida_ai_completed") {
+        // AI generation done - update image and stop skeleton
         setAiGenerating(false);
         if (msg.foto_url) {
           setItemState((prev) => prev ? { ...prev, foto_url: msg.foto_url } : prev);
         }
-        pushToast({ kind: "success", title: "IA aplicada", message: "Imagen mejorada con IA" });
-      } else if (msg.type === "comida_ai_failed" && msg.item_id === itemNum) {
-        setAiGenerating(false);
-        pushToast({ kind: "error", title: "Error IA", message: msg.message || "Error al mejorar la imagen" });
       }
-    }, [itemNum, pushToast]),
+    }, []),
   });
 
   const onWineSave = useCallback((saved: Vino) => {
@@ -98,6 +94,10 @@ export function useFoodDetailPage() {
 
   useEffect(() => {
     setItemState(data.item);
+    // Sync AI generating state from item data (for page refresh after AI job started)
+    if (data.item && (data.item as any).ai_generating) {
+      setAiGenerating(true);
+    }
   }, [data.item]);
 
   const syncQuickFromItem = useCallback((nextItem: FoodItem | null) => {
@@ -204,6 +204,8 @@ export function useFoodDetailPage() {
     [quickCategoryOptions],
   );
   const quickDirty = useMemo(() => {
+    // New items are always "dirty" since form starts empty and user fills it
+    if (data.isNew) return quickName.trim().length > 0 || quickDescripcion.trim().length > 0 || quickCategoria.trim().length > 0;
     if (!currentFoodItem) return false;
     const epsilon = 0.001;
     const categoryCheck = (isPlate || isBebida) ? quickCategoria.trim() !== currentCategoryValue.trim() : false;
@@ -236,16 +238,25 @@ export function useFoodDetailPage() {
     quickTipo,
   ]);
   const quickCanSave = useMemo(() => {
-    if (!currentFoodItem || savingQuick) return false;
+    if (savingQuick) return false;
+    if (data.isNew) {
+      // For new items, can save if name and price are valid
+      if (quickName.trim().length === 0) return false;
+      if (quickPriceNumber === null || quickPriceNumber < 0) return false;
+      return true;
+    }
+    if (!currentFoodItem) return false;
     if (!quickDirty) return false;
     if (quickName.trim().length === 0) return false;
     if (quickPriceNumber === null || quickPriceNumber < 0) return false;
     if (quickSuppEffectiveNumber === null || quickSuppEffectiveNumber < 0) return false;
     return true;
-  }, [currentFoodItem, quickDirty, quickName, quickPriceNumber, quickSuppEffectiveNumber, savingQuick]);
+  }, [currentFoodItem, data.isNew, quickDirty, quickName, quickPriceNumber, quickSuppEffectiveNumber, savingQuick]);
 
   const onQuickSave = useCallback(async () => {
-    if (!currentFoodItem || !quickCanSave) return;
+    if (!quickCanSave) return;
+    if (!data.isNew && !currentFoodItem) return;
+
     const precioNumber = parseDecimalInput(quickPrecio);
     const suplementoNumber = quickHasSuplemento ? parseDecimalInput(quickSuplemento) : 0;
     if (precioNumber === null || precioNumber < 0) {
@@ -256,10 +267,11 @@ export function useFoodDetailPage() {
       pushToast({ kind: "error", title: "Error", message: "Suplemento invalido" });
       return;
     }
-    const patch: Record<string, unknown> = {
-      nombre: quickName.trim(),
+
+    const basePayload: Record<string, unknown> = {
+      nombre: quickName.trim() || (isPlate ? "Nuevo plato" : isBebida ? "Nueva bebida" : "Nuevo cafe"),
       titulo: quickTitulo.trim(),
-      tipo: isPlate ? (quickTipo.trim() || currentFoodItem.tipo || "PRINCIPAL") : currentFoodItem.tipo || (isCafe ? "CAFE" : isBebida ? "REFRESCO" : ""),
+      tipo: isPlate ? (quickTipo.trim() || "PRINCIPAL") : (isCafe ? "CAFE" : isBebida ? "REFRESCO" : ""),
       precio: precioNumber,
       suplemento: suplementoNumber ?? 0,
       descripcion: quickDescripcion.trim(),
@@ -269,29 +281,61 @@ export function useFoodDetailPage() {
     if (isPlate || isBebida) {
       const categoryValue = quickCategoria.trim();
       if (!categoryValue) {
-        patch.category_id = null;
-        patch.categoria = "";
+        basePayload.category_id = null;
+        basePayload.categoria = "";
       } else {
         const parsedCategoryId = Number(categoryValue);
-        if (Number.isFinite(parsedCategoryId) && parsedCategoryId > 0) patch.category_id = parsedCategoryId;
-        else patch.categoria = categoryValue;
+        if (Number.isFinite(parsedCategoryId) && parsedCategoryId > 0) basePayload.category_id = parsedCategoryId;
+        else basePayload.categoria = categoryValue;
       }
     }
 
     setSavingQuick(true);
     try {
-      const itemNum = currentFoodItem.num;
+      // CREATE flow for new items
+      if (data.isNew) {
+        let createRes: { success: boolean; message?: string; item?: { num: number } };
+        if (isPlate) {
+          createRes = await api.comida.platos.create(basePayload as any);
+        } else if (isCafe) {
+          createRes = await api.comida.cafes.create(basePayload as any);
+        } else if (isBebida) {
+          createRes = await api.comida.bebidas.create(basePayload as any);
+        } else {
+          return;
+        }
+
+        if (!createRes.success) {
+          pushToast({ kind: "error", title: "Error", message: createRes.message || "No se pudo crear" });
+          return;
+        }
+
+        const newNum = (createRes as any).num ?? createRes.item?.num;
+        const toastTitle = isPlate ? "Plato creado" : isCafe ? "Cafe creado" : "Bebida creada";
+        pushToast({ kind: "success", title: toastTitle });
+
+        // Navigate to the detail page for the new item
+        if (newNum) {
+          window.location.assign(`/app/comida/${foodType}/${newNum}`);
+        } else {
+          window.location.assign(`/app/comida/${foodType}`);
+        }
+        return;
+      }
+
+      // EDIT flow for existing items
+      const itemNum = currentFoodItem!.num;
       let res: { success: boolean; message?: string };
       let fresh: { success: boolean; item?: FoodItem | null };
 
       if (isPlate) {
-        res = await api.comida.platos.patch(itemNum, patch as any);
+        res = await api.comida.platos.patch(itemNum, basePayload as any);
         fresh = res.success ? await api.comida.platos.get(itemNum) : { success: false };
       } else if (isCafe) {
-        res = await api.comida.cafes.patch(itemNum, patch as any);
+        res = await api.comida.cafes.patch(itemNum, basePayload as any);
         fresh = res.success ? await api.comida.cafes.get(itemNum) : { success: false };
       } else if (isBebida) {
-        res = await api.comida.bebidas.patch(itemNum, patch as any);
+        res = await api.comida.bebidas.patch(itemNum, basePayload as any);
         fresh = res.success ? await api.comida.bebidas.get(itemNum) : { success: false };
       } else {
         return;
@@ -306,17 +350,17 @@ export function useFoodDetailPage() {
         syncQuickFromItem(fresh.item);
       } else {
         const fallbackItem: FoodItem = {
-          ...currentFoodItem,
-          nombre: String((patch.nombre as string | undefined) ?? currentFoodItem.nombre),
-          titulo: String((patch.titulo as string | undefined) ?? currentFoodItem.titulo ?? ""),
-          tipo: String((patch.tipo as string | undefined) ?? currentFoodItem.tipo),
-          precio: Number((patch.precio as number | undefined) ?? currentFoodItem.precio ?? 0),
-          suplemento: Number((patch.suplemento as number | undefined) ?? currentFoodItem.suplemento ?? 0),
-          descripcion: String((patch.descripcion as string | undefined) ?? currentFoodItem.descripcion ?? ""),
-          active: Boolean(patch.active),
-          category_id: typeof patch.category_id === "number" ? patch.category_id as number : null,
-          categoria: (isPlate || isBebida) ? quickCategoryLabel || "" : currentFoodItem.categoria || "",
-          alergenos: Array.isArray(patch.alergenos) ? patch.alergenos as string[] : currentFoodItem.alergenos,
+          ...currentFoodItem!,
+          nombre: String((basePayload.nombre as string | undefined) ?? currentFoodItem!.nombre),
+          titulo: String((basePayload.titulo as string | undefined) ?? currentFoodItem!.titulo ?? ""),
+          tipo: String((basePayload.tipo as string | undefined) ?? currentFoodItem!.tipo),
+          precio: Number((basePayload.precio as number | undefined) ?? currentFoodItem!.precio ?? 0),
+          suplemento: Number((basePayload.suplemento as number | undefined) ?? currentFoodItem!.suplemento ?? 0),
+          descripcion: String((basePayload.descripcion as string | undefined) ?? currentFoodItem!.descripcion ?? ""),
+          active: Boolean(basePayload.active),
+          category_id: typeof basePayload.category_id === "number" ? basePayload.category_id as number : null,
+          categoria: (isPlate || isBebida) ? quickCategoryLabel || "" : currentFoodItem!.categoria || "",
+          alergenos: Array.isArray(basePayload.alergenos) ? basePayload.alergenos as string[] : currentFoodItem!.alergenos,
         };
         setItemState(fallbackItem);
         syncQuickFromItem(fallbackItem);
@@ -557,6 +601,8 @@ export function useFoodDetailPage() {
     quickCategorySelectOptions,
     quickDirty,
     quickCanSave,
+    // Metadata
+    isNew: data.isNew,
     // Handlers
     onWineSave,
     syncQuickFromItem,

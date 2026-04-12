@@ -15,7 +15,7 @@ export default function Page() {
             <AlertCircle size={20} />
             <span>{error || "Error al cargar las políticas."}</span>
           </div>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="booking-policies-back-home-error">
             <ArrowLeft size={18} />
             Volver al inicio
           </a>
@@ -42,7 +42,7 @@ export default function Page() {
         {updatedDate && (
           <p className="bo-publicPageNote">Fecha de última actualización: {updatedDate}</p>
         )}
-        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">
+        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="booking-policies-back-home">
           <ArrowLeft size={18} />
           Volver al inicio
         </a>

@@ -43,7 +43,7 @@ export default function Page() {
             <AlertCircle size={20} />
             <span>{error || "Reserva no encontrada."}</span>
           </div>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="confirm-back-home-error">
             <ArrowLeft size={18} />
             Volver al inicio
           </a>
@@ -87,7 +87,7 @@ export default function Page() {
               )}
             </div>
           </div>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver al inicio</a>
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="confirm-back-home-success">Volver al inicio</a>
         </div>
       </div>
     );
@@ -141,6 +141,7 @@ export default function Page() {
         ) : (
           <button
             className="bo-publicPageBtn bo-publicPageBtn--success"
+            data-testid="confirm-submit"
             onClick={handleConfirm}
             disabled={loading}
           >
@@ -148,7 +149,7 @@ export default function Page() {
             Confirmar Reserva
           </button>
         )}
-        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver al inicio</a>
+        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="confirm-back-home">Volver al inicio</a>
       </div>
     </div>
   );

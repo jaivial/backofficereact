@@ -82,7 +82,7 @@ export const MenuDishPreviewCard = React.memo(function MenuDishPreviewCard({
   }, [price]);
 
   return (
-    <article className={cn("bo-menuDishPreviewCard", className)}>
+    <article className={cn("bo-menuDishPreviewCard", className)} data-testid="menu-dish-preview-card">
       <div className="bo-menuDishPreviewMedia">
         {imageUrl ? (
           <img src={imageUrl} alt="" loading="lazy" decoding="async" />

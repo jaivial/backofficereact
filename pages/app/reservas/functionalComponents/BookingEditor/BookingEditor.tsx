@@ -334,12 +334,12 @@ export function BookingEditor({
           <div className="bo-panelMeta">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
         <div className="bo-panelBody bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }}>
-          <div className="bo-row bo-bookingRow bo-bookingRow--schedule">
-            <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--date">
+          <div className="bo-row bo-bookingRow bo-bookingRow--schedule" data-slot="booking-editor-schedule">
+            <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--date" data-slot="booking-editor-date">
               <div className="bo-label">Fecha</div>
               <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
             </div>
-            <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time">
+            <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time" data-slot="booking-editor-time">
               <div className="bo-label">Hora</div>
               <TimePicker value={draft.reservation_time} onChange={(v) => setField("reservation_time", v)} ariaLabel="Hora" />
             </div>
@@ -353,14 +353,14 @@ export function BookingEditor({
             />
           </div>
 
-          <div className="bo-row bo-bookingRow bo-bookingRow--contact">
-            <div className="bo-field bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }}>
+          <div className="bo-row bo-bookingRow bo-bookingRow--contact" data-slot="booking-editor-contact">
+            <div className="bo-field bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }} data-slot="booking-editor-client">
               <div className="bo-label">Cliente</div>
-              <input className="bo-input bo-input--sm" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} />
+              <input className="bo-input bo-input--sm" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} data-slot="booking-editor-client-input" />
             </div>
-            <div className="bo-field bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }}>
+            <div className="bo-field bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }} data-slot="booking-editor-phone">
               <div className="bo-label">Teléfono</div>
-              <div className="bo-phone">
+              <div className="bo-phone" data-slot="booking-editor-phone-group">
                 <Select
                   className="bo-selectBtn--sm bo-phoneCC"
                   size="sm"
@@ -375,23 +375,25 @@ export function BookingEditor({
                   value={draft.contact_phone}
                   onChange={(e) => setField("contact_phone", e.target.value)}
                   aria-label="Teléfono"
+                  data-slot="booking-editor-phone-input"
                 />
               </div>
             </div>
-            <div className="bo-field bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }}>
+            <div className="bo-field bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }} data-slot="booking-editor-email">
               <div className="bo-label">Email (opcional)</div>
-              <input className="bo-input bo-input--sm" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} />
+              <input className="bo-input bo-input--sm" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} data-slot="booking-editor-email-input" />
             </div>
           </div>
 
-          <div className="bo-row bo-bookingRow bo-bookingRow--extras">
-            <div className="bo-field bo-bookingField bo-bookingField--table">
+          <div className="bo-row bo-bookingRow bo-bookingRow--extras" data-slot="booking-editor-extras">
+            <div className="bo-field bo-bookingField bo-bookingField--table" data-slot="booking-editor-table">
               <div className="bo-label">Mesa</div>
               <input
                 className="bo-input bo-input--sm"
                 style={{ width: 110 }}
                 value={draft.table_number}
                 onChange={(e) => setField("table_number", e.target.value)}
+                data-slot="booking-editor-table-input"
               />
             </div>
             <CounterField
@@ -410,7 +412,7 @@ export function BookingEditor({
               max={100}
               onChange={(v) => setField("highChairs", v)}
             />
-            <div className="bo-field bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }}>
+            <div className="bo-field bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }} data-slot="booking-editor-salon">
               <div className="bo-label">Salón</div>
               <Select
                 className="bo-selectBtn--sm"
@@ -431,18 +433,18 @@ export function BookingEditor({
           <div className="bo-panelMeta">{draft.special_menu ? "Sí" : "No"}</div>
         </div>
         <div className="bo-panelBody">
-          <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo">
-            <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy}>
+          <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo" data-slot="booking-editor-menu-toggle">
+            <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy} data-slot="booking-editor-menu-no">
               No
             </button>
-            <button type="button" className={`bo-chip${draft.special_menu ? " is-on" : ""}`} onClick={() => toggleSpecialMenu(true)} disabled={busy}>
+            <button type="button" className={`bo-chip${draft.special_menu ? " is-on" : ""}`} onClick={() => toggleSpecialMenu(true)} disabled={busy} data-slot="booking-editor-menu-yes">
               Sí
             </button>
           </div>
 
           {draft.special_menu ? (
             <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-              <div className="bo-field">
+              <div className="bo-field" data-slot="booking-editor-menu-select-field">
                 <div className="bo-label">Seleccionar menú</div>
                 <Select
                   className="bo-selectBtn--sm"
@@ -478,13 +480,13 @@ export function BookingEditor({
                         disabled={busy}
                         className="bo-bookingChoiceServings"
                       />
-                      <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy}>
+                      <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy} data-slot={`booking-editor-remove-principal-${idx}`}>
                         <Trash2 size={18} strokeWidth={1.8} />
                       </button>
                     </div>
                   </div>
                 ))}
-                <button type="button" className="bo-btn bo-btn--ghost" onClick={addPrincipalRow} disabled={busy || !principalesItems.length}>
+                <button type="button" className="bo-btn bo-btn--ghost" onClick={addPrincipalRow} disabled={busy || !principalesItems.length} data-slot="booking-editor-add-principal">
                   <Plus size={18} strokeWidth={1.8} /> Añadir principal
                 </button>
                 {!principalesItems.length ? <div className="bo-mutedText">Este menú no tiene lista de principales.</div> : null}
@@ -501,11 +503,11 @@ export function BookingEditor({
             <div className="bo-panelMeta">{draft.arroz_enabled ? "Sí" : "No"}</div>
           </div>
           <div className="bo-panelBody">
-            <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?">
-              <button type="button" className={`bo-chip${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy}>
+            <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?" data-slot="booking-editor-arroz-toggle">
+              <button type="button" className={`bo-chip${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy} data-slot="booking-editor-arroz-no">
                 No
               </button>
-              <button type="button" className={`bo-chip${draft.arroz_enabled ? " is-on" : ""}`} onClick={() => toggleArroz(true)} disabled={busy}>
+              <button type="button" className={`bo-chip${draft.arroz_enabled ? " is-on" : ""}`} onClick={() => toggleArroz(true)} disabled={busy} data-slot="booking-editor-arroz-yes">
                 Sí
               </button>
             </div>
@@ -534,13 +536,13 @@ export function BookingEditor({
                         disabled={busy}
                         className="bo-bookingChoiceServings"
                       />
-                      <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy}>
+                      <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy} data-slot={`booking-editor-remove-arroz-${idx}`}>
                         <Trash2 size={18} strokeWidth={1.8} />
                       </button>
                     </div>
                   </div>
                 ))}
-                <button type="button" className="bo-btn bo-btn--ghost" onClick={addRiceRow} disabled={busy || !riceTypes.length}>
+                <button type="button" className="bo-btn bo-btn--ghost" onClick={addRiceRow} disabled={busy || !riceTypes.length} data-slot="booking-editor-add-arroz">
                   <Plus size={18} strokeWidth={1.8} /> Añadir arroz
                 </button>
                 {!riceTypes.length ? <div className="bo-mutedText">Cargando tipos de arroz…</div> : null}
@@ -557,7 +559,7 @@ export function BookingEditor({
             <div className="bo-panelMeta">Opcional</div>
           </div>
           <div className="bo-panelBody">
-            <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} />
+            <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} data-slot="booking-editor-commentary" />
           </div>
         </div>
       ) : null}
@@ -566,13 +568,14 @@ export function BookingEditor({
       <div
         className={stickyFooter ? "bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" : "bo-row"}
         style={stickyFooter ? undefined : { justifyContent: "flex-end" }}
+        data-slot="booking-editor-actions"
       >
         {onCancel ? (
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={onCancel} disabled={busy}>
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={onCancel} disabled={busy} data-slot="booking-editor-cancel">
             Cerrar
           </button>
         ) : null}
-        <button className="bo-btn bo-btn--primary" type="button" onClick={() => void submit()} disabled={busy}>
+        <button className="bo-btn bo-btn--primary" type="button" onClick={() => void submit()} disabled={busy} data-slot="booking-editor-submit">
           {submitLabel}
         </button>
       </div>
@@ -599,13 +602,14 @@ function CounterField({
   return (
     <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")}>
       <div className="bo-label">{label}</div>
-      <div className="bo-counter">
+      <div className="bo-counter" data-slot={`booking-editor-counter-${label.toLowerCase()}`}>
         <button
           type="button"
           className="bo-counterBtn"
           onClick={() => onChange(Math.max(min, safeValue - 1))}
           disabled={safeValue <= min}
           aria-label={`Disminuir ${label}`}
+          data-testid={`booking-editor-counter-${label.toLowerCase()}-decrease`}
         >
           <Minus size={16} strokeWidth={2} />
         </button>
@@ -615,6 +619,7 @@ function CounterField({
           inputMode="numeric"
           onChange={(e) => onChange(clampInt(Number(e.target.value), min, max))}
           aria-label={label}
+          data-testid={`booking-editor-counter-${label.toLowerCase()}-input`}
         />
         <button
           type="button"
@@ -622,6 +627,7 @@ function CounterField({
           onClick={() => onChange(Math.min(max, safeValue + 1))}
           disabled={safeValue >= max}
           aria-label={`Aumentar ${label}`}
+          data-testid={`booking-editor-counter-${label.toLowerCase()}-increase`}
         >
           <Plus size={16} strokeWidth={2} />
         </button>

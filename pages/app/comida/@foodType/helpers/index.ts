@@ -41,8 +41,8 @@ export function buildToggleApiCall(
   api: ReturnType<typeof import("../../../../../api/client").createClient>,
   item: ListItem,
 ) {
-  if (foodType === "vinos") return api.comida.vinos.patch(item.num, { active: !item.active });
-  if (foodType === "postres") return api.comida.postres.patch(item.num, { active: !item.active });
+  if (foodType === "vinos") return api.comida.vinos.toggle(item.num, !item.active);
+  if (foodType === "postres") return api.comida.postres.toggle(item.num, !item.active);
   if (foodType === "platos") return api.comida.platos.toggle(item.num);
   if (foodType === "bebidas") return api.comida.bebidas.toggle(item.num);
   return api.comida.cafes.toggle(item.num);

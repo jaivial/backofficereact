@@ -50,7 +50,7 @@ export default function Page() {
             <AlertCircle size={20} />
             <span>{error || "Reserva no encontrada."}</span>
           </div>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-back-home-link">
             <ArrowLeft size={18} />
             Volver al inicio
           </a>
@@ -72,11 +72,11 @@ export default function Page() {
             <AlertTriangle size={20} />
             <span>Las reservas de arroz para el mismo día deben hacerse por teléfono.</span>
           </div>
-          <a href="tel:+34638857294" className="bo-publicPageBtn bo-publicPageBtn--success">
+          <a href="tel:+34638857294" className="bo-publicPageBtn bo-publicPageBtn--success" data-testid="update-rice-call-link">
             <Phone size={18} />
             Llamar ahora
           </a>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver al inicio</a>
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-back-home-link-2">Volver al inicio</a>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ export default function Page() {
               <div className="bo-publicPageBookingId">{booking.reservationDate} · {booking.reservationTime} · {booking.partySize} personas</div>
             </div>
           </div>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver al inicio</a>
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-success-back-link">Volver al inicio</a>
         </div>
       </div>
     );
@@ -121,7 +121,7 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver al inicio</a>
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-no-form-back-link">Volver al inicio</a>
         </div>
       </div>
     );
@@ -147,7 +147,7 @@ export default function Page() {
           </div>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="bo-publicPageForm">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="bo-publicPageForm" data-testid="update-rice-form">
           <div className="bo-publicPageFormGroup">
             <label className="bo-publicPageFormLabel" htmlFor="rice_type">Tipo de arroz</label>
             <select
@@ -156,6 +156,7 @@ export default function Page() {
               value={selectedRice}
               onChange={(e) => setSelectedRice(e.target.value)}
               required
+              data-testid="update-rice-select"
             >
               <option value="">Seleccione una opción</option>
               {riceOptions.map((opt) => (
@@ -174,18 +175,20 @@ export default function Page() {
               value={servings}
               onChange={(e) => setServings(parseInt(e.target.value, 10) || 1)}
               required
+              data-testid="update-rice-servings-input"
             />
           </div>
           <button
             className="bo-publicPageBtn bo-publicPageBtn--primary"
             type="submit"
             disabled={loading || !selectedRice}
+            data-testid="update-rice-submit-button"
           >
             {loading ? <Loader2 size={18} className="bo-spin" /> : <Utensils size={18} />}
             Reservar Arroz
           </button>
         </form>
-        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver sin reservar</a>
+        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-back-link">Volver sin reservar</a>
       </div>
     </div>
   );

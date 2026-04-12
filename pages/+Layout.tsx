@@ -1,6 +1,17 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { Provider as JotaiProvider, createStore } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
+
+function registerServiceWorker() {
+  if (typeof window === "undefined") return;
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => console.log("[SW] registered:", reg.scope))
+      .catch((err) => console.warn("[SW] registration failed:", err));
+  });
+}
 
 import "../ui/styles/shadcn.css";
 import "../components/bo.css";
@@ -22,6 +33,10 @@ function initStore(theme: ThemeMode, session: BOSession | null, movingExpiration
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pageContext = usePageContext();
   const initialTheme: ThemeMode = pageContext.bo?.theme === "light" ? "light" : "dark";
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
   const initialSession = pageContext.bo?.session ?? null;
   const initialMovingExpirationDate = pageContext.bo?.movingExpirationDate ?? null;
 

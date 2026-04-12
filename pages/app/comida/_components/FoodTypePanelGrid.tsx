@@ -53,7 +53,9 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
               aria-labelledby={labelId}
               aria-describedby={`${descId} ${countId}`}
               data-menu-type={panel.value}
+              data-testid={`food-type-panel-${panel.value}`}
               data-surface="minimal-glass"
+              data-ui="food-hub-card"
             >
               <div className="bo-menuTypePanelIcon" aria-hidden="true" data-ui="panel-grid-icon">
                 <Icon size={28} />

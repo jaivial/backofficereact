@@ -253,12 +253,13 @@ export function CustomerHistoryModal({
 
         {/* Actions */}
         <div className="bo-modalActions">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose}>
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} data-testid="customer-history-close-btn">
             Cerrar
           </button>
           <a
             href={`/app/facturas?search=${encodeURIComponent(customerEmail)}`}
             className="bo-btn bo-btn--primary"
+            data-testid="customer-history-view-all-link"
           >
             Ver todas las facturas
           </a>

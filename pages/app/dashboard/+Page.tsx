@@ -65,7 +65,7 @@ export default function Page() {
 
   return (
     <>
-      <section className="bo-cardsRow" aria-label="KPIs de reservas">
+      <section className="bo-cardsRow" aria-label="KPIs de reservas" data-testid="dashboard-reservas-section">
         <StatCard label="Reservas" value={String(m.total)} icon="calendar" />
         <StatCard label="Confirmadas" value={String(m.confirmed)} icon="check" />
         <StatCard label="Pendientes" value={String(m.pending)} icon="clock" />
@@ -83,7 +83,7 @@ export default function Page() {
       </section>
 
       {im && (
-        <section className="bo-cardsRow" aria-label="KPIs de facturas" style={{ marginTop: "14px" }}>
+        <section className="bo-cardsRow" aria-label="KPIs de facturas" style={{ marginTop: "14px" }} data-testid="dashboard-facturas-section">
           <StatCard
             label="Facturas pendientes de pago"
             value={String(im.pendingCount)}

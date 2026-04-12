@@ -951,6 +951,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             type="button"
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={handleOpenReservationFromTemplate}
+            data-testid="invoice-fill-from-reservation-btn"
           >
             <Search size={16} />
             Rellenar desde reserva
@@ -959,6 +960,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             type="button"
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={() => setShowTemplateModal(true)}
+            data-testid="invoice-fill-from-template-btn"
           >
             <FileText size={16} />
             Crear desde plantilla
@@ -984,6 +986,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   required
                   aria-describedby={hasError("customerName") ? "customerName-error" : undefined}
                   aria-invalid={hasError("customerName")}
+                  data-testid="invoice-client-input"
                 />
                 {hasError("customerName") && (
                   <span className="bo-fieldError" id="customerName-error" role="alert">
@@ -999,6 +1002,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   type="text"
                   value={customerSurname}
                   onChange={(e) => setCustomerSurname(e.target.value)}
+                  data-testid="invoice-surname-input"
                 />
               </label>
             </div>
@@ -1015,6 +1019,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   required
                   aria-describedby={hasError("customerEmail") ? "customerEmail-error" : undefined}
                   aria-invalid={hasError("customerEmail")}
+                  data-testid="invoice-email-input"
                 />
                 {hasError("customerEmail") && (
                   <span className="bo-fieldError" id="customerEmail-error" role="alert">
@@ -1033,6 +1038,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   onBlur={() => handleBlur("customerPhone")}
                   aria-describedby={hasError("customerPhone") ? "customerPhone-error" : undefined}
                   aria-invalid={hasError("customerPhone")}
+                  data-testid="invoice-phone-input"
                 />
                 {hasError("customerPhone") && (
                   <span className="bo-fieldError" id="customerPhone-error" role="alert">
@@ -1045,7 +1051,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <div className="bo-invoiceFormRow bo-invoiceFormRow--dni">
               <div className="bo-field bo-field--switch">
                 <span className="bo-label">CIF</span>
-                <Switch checked={useDni} onCheckedChange={setUseDni} />
+                <Switch checked={useDni} onCheckedChange={setUseDni} data-testid="invoice-dni-toggle" />
                 <span className="bo-label">DNI</span>
               </div>
 
@@ -1059,6 +1065,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   onBlur={() => handleBlur("customerDniCif")}
                   aria-describedby={hasError("customerDniCif") ? "customerDniCif-error" : undefined}
                   aria-invalid={hasError("customerDniCif")}
+                  data-testid="invoice-dni-cif-input"
                 />
                 {hasError("customerDniCif") && (
                   <span className="bo-fieldError" id="customerDniCif-error" role="alert">
@@ -1076,6 +1083,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   type="text"
                   value={customerAddressStreet}
                   onChange={(e) => setCustomerAddressStreet(e.target.value)}
+                  data-testid="invoice-street-input"
                 />
               </label>
 
@@ -1086,6 +1094,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   type="text"
                   value={customerAddressNumber}
                   onChange={(e) => setCustomerAddressNumber(e.target.value)}
+                  data-testid="invoice-number-input"
                 />
               </label>
             </div>
@@ -1101,6 +1110,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   onBlur={() => handleBlur("customerAddressPostalCode")}
                   aria-describedby={hasError("customerAddressPostalCode") ? "customerAddressPostalCode-error" : undefined}
                   aria-invalid={hasError("customerAddressPostalCode")}
+                  data-testid="invoice-postal-code-input"
                 />
                 {hasError("customerAddressPostalCode") && (
                   <span className="bo-fieldError" id="customerAddressPostalCode-error" role="alert">
@@ -1116,6 +1126,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   type="text"
                   value={customerAddressCity}
                   onChange={(e) => setCustomerAddressCity(e.target.value)}
+                  data-testid="invoice-city-input"
                 />
               </label>
             </div>
@@ -1128,6 +1139,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   type="text"
                   value={customerAddressProvince}
                   onChange={(e) => setCustomerAddressProvince(e.target.value)}
+                  data-testid="invoice-province-input"
                 />
               </label>
 
@@ -1138,6 +1150,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   type="text"
                   value={customerAddressCountry}
                   onChange={(e) => setCustomerAddressCountry(e.target.value)}
+                  data-testid="invoice-country-input"
                 />
               </label>
             </div>
@@ -1150,7 +1163,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             {/* Invoice Number Override */}
             <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceNumber">
               <div className="bo-field bo-field--switch">
-                <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} />
+                <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} data-testid="invoice-override-number-toggle" />
                 <span className="bo-label">Personalizar numero de factura</span>
               </div>
 
@@ -1163,6 +1176,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     value={invoiceNumber}
                     onChange={(e) => setInvoiceNumber(e.target.value)}
                     placeholder="F-2024-0001"
+                    data-testid="invoice-number-input"
                   />
                   <div className="bo-mutedText">Deja este campo vacio para usar el numero automatico</div>
                 </label>
@@ -1180,7 +1194,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             <div className="bo-invoiceFormRow">
               <div className="bo-field bo-field--switch">
-                <Switch checked={useLineItems} onCheckedChange={setUseLineItems} />
+                <Switch checked={useLineItems} onCheckedChange={setUseLineItems} data-testid="invoice-line-items-toggle" />
                 <span className="bo-label"><List size={16} style={{ marginRight: 4, verticalAlign: 'middle' }} />Usar lineas de factura</span>
               </div>
             </div>
@@ -1216,6 +1230,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     required
                     aria-describedby={`iva-help${hasError("amount") ? " amount-error" : ""}`}
                     aria-invalid={hasError("amount")}
+                    data-testid="invoice-amount-input"
                   />
                   {hasError("amount") && (
                     <span className="bo-fieldError" id="amount-error" role="alert">
@@ -1231,6 +1246,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     onChange={(value) => setCurrency(value as CurrencyCode)}
                     options={CURRENCY_OPTIONS}
                     ariaLabel="Moneda"
+                    data-testid="invoice-currency-select"
                   />
                 </label>
 
@@ -1245,6 +1261,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     value={ivaRate}
                     onChange={(e) => setIvaRate(e.target.value)}
                     aria-describedby="iva-help"
+                    data-testid="invoice-iva-rate-input"
                   />
                 </label>
 
@@ -1255,6 +1272,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     onChange={(value) => setPaymentMethod(value as PaymentMethod | "")}
                     options={PAYMENT_METHOD_OPTIONS}
                     ariaLabel="Método de pago"
+                    data-testid="invoice-payment-method-select"
                   />
                 </label>
               </div>
@@ -1273,6 +1291,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     { value: "fixed", label: "Importe fijo" },
                   ]}
                   ariaLabel="Tipo de descuento"
+                  data-testid="invoice-discount-type-select"
                 />
               </label>
 
@@ -1288,6 +1307,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                       value={discountValue}
                       onChange={(e) => setDiscountValue(e.target.value)}
                       placeholder={discountType === "percentage" ? "10" : "50.00"}
+                      data-testid="invoice-discount-value-input"
                     />
                   </label>
 
@@ -1299,6 +1319,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                       value={discountReason}
                       onChange={(e) => setDiscountReason(e.target.value)}
                       placeholder="Descuento por..."
+                      data-testid="invoice-discount-reason-input"
                     />
                   </label>
                 </>
@@ -1354,7 +1375,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceDates">
               <label className="bo-field">
                 <span className="bo-label">Fecha de factura *</span>
-                <DatePicker value={invoiceDate} onChange={setInvoiceDate} />
+                <DatePicker value={invoiceDate} onChange={setInvoiceDate} data-testid="invoice-date-input" />
               </label>
 
               <label className="bo-field">
@@ -1364,17 +1385,18 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   onChange={(value) => setPaymentTerms(value)}
                   options={PAYMENT_TERMS_OPTIONS}
                   ariaLabel="Plazo de pago"
+                  data-testid="invoice-payment-terms-select"
                 />
               </label>
 
               <label className="bo-field">
                 <span className="bo-label">Fecha de vencimiento</span>
-                <DatePicker value={dueDate} onChange={setDueDate} />
+                <DatePicker value={dueDate} onChange={setDueDate} data-testid="invoice-due-date-input" />
               </label>
 
               <label className="bo-field">
                 <span className="bo-label">Fecha de pago</span>
-                <DatePicker value={paymentDate} onChange={setPaymentDate} />
+                <DatePicker value={paymentDate} onChange={setPaymentDate} data-testid="invoice-payment-date-input" />
               </label>
             </div>
 
@@ -1394,13 +1416,14 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 onChange={(value) => setStatus(value as InvoiceStatus)}
                 options={STATUS_OPTIONS}
                 ariaLabel="Estado"
+                data-testid="invoice-status-select"
               />
             </label>
           </div>
 
           <div className="bo-invoiceFormRow">
             <label className="bo-field bo-field--switch">
-              <Switch checked={isReservation} onCheckedChange={handleReservationToggle} />
+              <Switch checked={isReservation} onCheckedChange={handleReservationToggle} data-testid="invoice-is-reservation-toggle" />
               <span className="bo-label">Es reserva</span>
             </label>
           </div>
@@ -1409,12 +1432,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <div className="bo-invoiceFormRow bo-invoiceFormRow--reservation">
               <label className="bo-field">
                 <span className="bo-label">Nombre reserva</span>
-                <input className="bo-input" type="text" value={reservationCustomerName || ""} readOnly />
+                <input className="bo-input" type="text" value={reservationCustomerName || ""} readOnly data-testid="invoice-reservation-customer-name-input" />
               </label>
 
               <label className="bo-field">
                 <span className="bo-label">Fecha reserva</span>
-                <DatePicker value={reservationDate} onChange={setReservationDate} />
+                <DatePicker value={reservationDate} onChange={setReservationDate} data-testid="invoice-reservation-date-input" />
               </label>
 
               <label className="bo-field">
@@ -1425,6 +1448,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   min="1"
                   value={reservationPartySize || ""}
                   onChange={(e) => setReservationPartySize(parseInt(e.target.value) || undefined)}
+                  data-testid="invoice-reservation-party-size-input"
                 />
               </label>
             </div>
@@ -1443,6 +1467,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                       className="bo-invoiceImageRemove"
                       onClick={handleRemoveImage}
                       aria-label="Eliminar imagen"
+                      data-testid="invoice-image-remove-btn"
                     >
                       <X size={16} />
                     </button>
@@ -1451,7 +1476,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   <label className="bo-invoiceImageDrop">
                     <Upload size={24} />
                     <span>Subir imagen (se comprime a 30KB)</span>
-                    <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} hidden data-testid="invoice-image-upload-input" />
                   </label>
                 )}
               </div>
@@ -1471,6 +1496,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 onChange={(e) => setInternalNotes(e.target.value)}
                 placeholder="Añade notas internas sobre esta factura..."
                 rows={3}
+                data-testid="invoice-internal-notes-textarea"
               />
             </label>
           </div>
@@ -1484,6 +1510,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   <label
                     key={template.value}
                     className={`bo-pdfTemplateCard bo-pdfTemplateCard--inline ${pdfTemplate === template.value ? "bo-pdfTemplateCard--selected" : ""}`}
+                    data-ui={`pdf-template-option-${template.value}`}
                   >
                     <input
                       type="radio"
@@ -1492,6 +1519,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                       checked={pdfTemplate === template.value}
                       onChange={(e) => setPdfTemplate(e.target.value as PdfTemplateType)}
                       className="bo-pdfTemplateRadio"
+                      data-testid={`invoice-pdf-template-${template.value}-radio`}
                     />
                     <div className="bo-pdfTemplateCardContent">
                       <div className="bo-pdfTemplateCardTitle">{template.label}</div>
@@ -1517,6 +1545,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   ...INVOICE_CATEGORY_OPTIONS,
                 ]}
                 ariaLabel="Categoría"
+                data-testid="invoice-category-select"
               />
             </label>
           </div>
@@ -1535,6 +1564,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                         className="bo-tagRemove"
                         onClick={() => setTags(tags.filter((_, i) => i !== index))}
                         aria-label={`Eliminar etiqueta ${tag}`}
+                        data-testid={`invoice-tag-remove-${tag}-btn`}
                       >
                         <XCircle size={14} />
                       </button>
@@ -1559,6 +1589,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                       }
                     }}
                     placeholder="Añadir etiqueta..."
+                    data-testid="invoice-new-tag-input"
                   />
                   <button
                     type="button"
@@ -1571,6 +1602,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     }}
                     disabled={!newTag.trim()}
                     title="Añadir etiqueta"
+                    data-testid="invoice-add-tag-btn"
                   >
                     <Plus size={14} />
                   </button>
@@ -1591,6 +1623,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   ...INVOICE_DEPOSIT_TYPE_OPTIONS,
                 ]}
                 ariaLabel="Tipo de anticipo/seña"
+                data-testid="invoice-deposit-type-select"
               />
             </label>
           </div>
@@ -1608,6 +1641,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(e.target.value)}
                     placeholder="0.00"
+                    data-testid="invoice-deposit-amount-input"
                   />
                 </label>
 
@@ -1669,22 +1703,22 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
       {/* Form actions */}
       <div className="bo-invoiceFormActions">
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)">
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)" data-testid="invoice-cancel-btn">
           Cancelar
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)">
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)" data-testid="invoice-save-draft-btn">
           <Save size={16} />
           Guardar borrador
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)">
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)" data-testid="invoice-save-pending-btn">
           <Save size={16} />
           Guardar como pendiente
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF">
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF" data-testid="invoice-preview-btn">
           <Eye size={16} />
           Vista previa
         </button>
-        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!isValid || isSubmitting} title="Enviar factura (Ctrl+S)">
+        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!isValid || isSubmitting} title="Enviar factura (Ctrl+S)" data-testid="invoice-submit-btn">
           <Send size={16} />
           Enviar
         </button>

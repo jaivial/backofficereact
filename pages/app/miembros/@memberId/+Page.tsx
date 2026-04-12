@@ -186,7 +186,7 @@ export default function Page() {
   const isSelfMember = !!member && (member.isCurrentUser || (currentEmail !== "" && normalizeEmail(member.email) === currentEmail));
 
   return (
-    <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage">
+    <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-detail-section">
       {!member ? (
         <div className="bo-panel">
           <div className="bo-panelHead">
@@ -225,6 +225,7 @@ export default function Page() {
                 <button
                   className="bo-btn bo-btn--ghost flex-wrap !text-wrap !h-fit !py-4"
                   type="button"
+                  data-testid="miembro-detail-resend-invitation-button"
                   onClick={() => setConfirmResendOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
                 >
@@ -234,18 +235,19 @@ export default function Page() {
                 <button
                   className="bo-btn bo-btn--ghost flex-wrap !text-wrap !h-fit !py-4"
                   type="button"
+                  data-testid="miembro-detail-reset-password-button"
                   onClick={() => setConfirmResetOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
                 >
                   <Mail size={14} strokeWidth={1.8} />
                   Recuperar contraseña
                 </button>
-                <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
+                <button className="bo-btn bo-btn--ghost" type="button" data-testid="miembro-detail-edit-button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
                   <Pencil size={14} strokeWidth={1.8} />
                   {editing ? "Cancelar" : "Editar"}
                 </button>
                 {editing ? (
-                  <button className="bo-btn bo-btn--primary flex-wrap !text-wrap !h-fit !py-4" type="button" onClick={onSave} disabled={saving || avatarBusy}>
+                  <button className="bo-btn bo-btn--primary flex-wrap !text-wrap !h-fit !py-4" type="button" data-testid="miembro-detail-save-button" onClick={onSave} disabled={saving || avatarBusy}>
                     <Check size={14} strokeWidth={1.8} />
                     {saving ? "Guardando..." : "Guardar cambios"}
                   </button>
@@ -284,23 +286,23 @@ export default function Page() {
               <div className="bo-memberFormGrid">
                 <label className="bo-field">
                   <span className="bo-label">Nombre</span>
-                  <input id="firstName" className="bo-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
+                  <input id="firstName" className="bo-input" data-testid="miembro-detail-firstname-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
                 </label>
                 <label className="bo-field">
                   <span className="bo-label">Apellidos</span>
-                  <input id="lastName" className="bo-input" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)} />
+                  <input id="lastName" className="bo-input" data-testid="miembro-detail-lastname-input" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)} />
                 </label>
                 <label className="bo-field">
                   <span className="bo-label">Email</span>
-                  <input id="email" className="bo-input" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)} />
+                  <input id="email" className="bo-input" data-testid="miembro-detail-email-input" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)} />
                 </label>
                 <label className="bo-field">
                   <span className="bo-label">DNI (opcional)</span>
-                  <input id="dni" className="bo-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
+                  <input id="dni" className="bo-input" data-testid="miembro-detail-dni-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
                 </label>
                 <label className="bo-field bo-field--wide">
                   <span className="bo-label">Numero de cuenta (opcional)</span>
-                  <input id="bankAccount" className="bo-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
+                  <input id="bankAccount" className="bo-input" data-testid="miembro-detail-bankaccount-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
                 </label>
                 <label className="bo-field bo-field--wide">
                   <span className="bo-label">Telefono (opcional)</span>

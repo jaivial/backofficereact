@@ -18,7 +18,7 @@ export const NavLink = memo(function NavLink({
   const classes = ["bo-navBtn", "bo-navBtn--glass", active ? "is-active" : "", className ?? ""].filter(Boolean).join(" ");
 
   return (
-    <a className={classes} href={href} aria-label={label} onClick={onClick}>
+    <a className={classes} href={href} aria-label={label} onClick={onClick} data-testid={`nav-link-${label.toLowerCase().replace(/\s+/g, "-")}`} data-ui="nav-link">
       {children}
     </a>
   );

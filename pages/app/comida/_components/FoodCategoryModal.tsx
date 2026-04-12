@@ -47,7 +47,7 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
         <div className="bo-foodModal-actions" data-ui="food-cat-modal-actions">
           <button type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={busy} data-ui="food-cat-modal-cancel">            Cancelar
           </button>
-          <button type="submit" className="bo-btn bo-btn--primary" disabled={busy || !name.trim()}>
+          <button type="submit" className="bo-btn bo-btn--primary" disabled={busy || !name.trim()} data-testid="food-category-submit-btn" data-ui="food-cat-modal-submit">
             {busy ? (
               <>
                 <div className="bo-spinner bo-spinner--sm" />

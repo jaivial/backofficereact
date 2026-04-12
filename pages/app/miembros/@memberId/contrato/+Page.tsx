@@ -94,7 +94,7 @@ export default function Page() {
   }, [api.members, date, member, pushToast, reloadStats, weeklyContractHours]);
 
   return (
-    <section aria-label="Contrato del miembro" className="bo-content-grid bo-memberDetailPage">
+    <section aria-label="Contrato del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-contrato-section">
       {!member ? (
         <div className="bo-panel">
           <div className="bo-panelHead">
@@ -120,7 +120,7 @@ export default function Page() {
                   }}
                 />
               </label>
-              <button className="bo-actionBtn bo-memberRefreshBtn" type="button" onClick={() => void reloadStats(date)} disabled={loading} aria-label="Recargar contrato">
+              <button className="bo-actionBtn bo-memberRefreshBtn" type="button" data-testid="miembro-contrato-refresh-button" onClick={() => void reloadStats(date)} disabled={loading} aria-label="Recargar contrato">
                 <RefreshCcw size={14} className={`bo-memberRefreshIcon${loading ? " is-spinning" : ""}`} />
               </button>
             </div>
@@ -135,6 +135,7 @@ export default function Page() {
                 type="number"
                 min={0}
                 step={0.25}
+                data-testid="miembro-contrato-hours-input"
                 value={weeklyContractHours}
                 disabled={saving}
                 onChange={(e) => setWeeklyContractHours(e.target.value)}
@@ -164,7 +165,7 @@ export default function Page() {
             </div>
 
             <div className="bo-memberSaveInline">
-              <button className="bo-btn bo-btn--primary" type="button" onClick={onSave} disabled={saving}>
+              <button className="bo-btn bo-btn--primary" type="button" data-testid="miembro-contrato-save-button" onClick={onSave} disabled={saving}>
                 <Check size={14} strokeWidth={1.8} />
                 {saving ? "Guardando..." : "Guardar contrato"}
               </button>

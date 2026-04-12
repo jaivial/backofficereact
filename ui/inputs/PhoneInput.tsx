@@ -40,6 +40,7 @@ export function PhoneInput({
         onChange={(e) => onNumberChange(e.target.value)}
         aria-label={numberAriaLabel}
         disabled={disabled}
+        data-testid="phone-input"
       />
     </div>
   );

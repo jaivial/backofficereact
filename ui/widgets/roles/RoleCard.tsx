@@ -17,7 +17,7 @@ export function RoleCard({
   className?: string;
 }) {
   return (
-    <button type="button" className={cn("bo-roleCard", className)} onClick={onOpen} aria-label={`Abrir rol ${role.label}`}>
+    <button type="button" className={cn("bo-roleCard", className)} onClick={onOpen} aria-label={`Abrir rol ${role.label}`} data-testid="role-card-btn">
       <div className="bo-roleCardHead">
         <div className="bo-roleCardIcon" aria-hidden="true">
           <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={20} strokeWidth={1.8} />

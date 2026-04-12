@@ -163,6 +163,7 @@ const BookingRow = React.memo(function BookingRow({
           onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
           disabled={busy || saving}
           aria-label={`Mesa reserva #${booking.id}`}
+          data-testid={`reservas-page-mesa-${booking.id}`}
         />
       </td>
       <td className="col-time">{formatHHMM(booking.reservation_time)}</td>
@@ -539,7 +540,7 @@ export default function Page() {
   const occLimit = dailyLimit?.limit ?? 45;
 
   return (
-    <section aria-label="Reservas">
+    <section aria-label="Reservas" data-testid="reservas-section">
       <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} />
 
       <AnimatePresence initial={false}>
@@ -555,26 +556,26 @@ export default function Page() {
 
                     <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas">
                       <div className="bo-filtersTop">
-                        <button className="bo-btn bo-btn--ghost bo-filtersToggle" type="button" onClick={() => setFiltersOpen((v) => !v)} aria-expanded={filtersOpen} aria-controls="bo-reservas-filters-body">
+                        <button className="bo-btn bo-btn--ghost bo-filtersToggle" type="button" onClick={() => setFiltersOpen((v) => !v)} aria-expanded={filtersOpen} aria-controls="bo-reservas-filters-body" data-testid="reservas-page-filters-toggle">
                           <Filter className="bo-ico" /> Filtros
                         </button>
-                        <button className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadTop" type="button" onClick={onDownloadPDF} disabled={pdfBusy || busy}>
+                        <button className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadTop" type="button" onClick={onDownloadPDF} disabled={pdfBusy || busy} data-testid="reservas-page-download-top">
                           <Download className="bo-ico" /> Descargar
                         </button>
                       </div>
                       <div id="bo-reservas-filters-body" className="bo-filtersBody">
-                        <div className="bo-filterRow bo-filterRow--selects">
+                        <div className="bo-filterRow bo-filterRow--selects" data-slot="reservas-page-filter-selects">
                           <Select value={status} onChange={onStatusChange} options={statusOptions} size="sm" ariaLabel="Estado" />
                           <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" />
                           <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Dirección" />
                           <Select value={String(count)} onChange={onCountChange} options={pageSizeOptions} size="sm" ariaLabel="Tamaño página" className="bo-reservasCountSelect" style={{ width: 60 }} menuMinWidthPx={60} listClassName="bo-bookingSearchCountList" />
                         </div>
-                        <div className="bo-filterRow bo-filterRow--actions">
-                          <div className="bo-search">
-                            <input className="bo-input bo-input--sm" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre" onKeyDown={(e) => { if (e.key === "Enter") applyFilters(); }} />
-                            <button className="bo-btn bo-btn--ghost" type="button" onClick={applyFilters} disabled={busy}>Buscar</button>
+                        <div className="bo-filterRow bo-filterRow--actions" data-slot="reservas-page-filter-actions">
+                          <div className="bo-search" data-slot="reservas-page-search">
+                            <input className="bo-input bo-input--sm" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre" onKeyDown={(e) => { if (e.key === "Enter") applyFilters(); }} data-testid="reservas-page-search-input" />
+                            <button className="bo-btn bo-btn--ghost" type="button" onClick={applyFilters} disabled={busy} data-testid="reservas-page-search-button">Buscar</button>
                           </div>
-                          <button className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadInline" type="button" onClick={onDownloadPDF} disabled={pdfBusy || busy}>
+                          <button className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadInline" type="button" onClick={onDownloadPDF} disabled={pdfBusy || busy} data-testid="reservas-page-download-inline">
                             <Download className="bo-ico" /> Descargar
                           </button>
                         </div>
@@ -616,12 +617,12 @@ export default function Page() {
                         </tbody>
                       </table>
                     </div>
-                    <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación">
+                    <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
                       <div className="bo-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
                       {showPagerBtns ? (
-                        <div className="bo-pagerBtns">
-                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1}>Anterior</button>
-                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages}>Siguiente</button>
+                        <div className="bo-pagerBtns" data-slot="reservas-page-pagination-btns">
+                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1} data-testid="reservas-page-pagination-prev">Anterior</button>
+                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages} data-testid="reservas-page-pagination-next">Siguiente</button>
                         </div>
                       ) : null}
                     </div>
@@ -658,15 +659,15 @@ export default function Page() {
       <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details">
         <div className="bo-modalHead">
           <div className="bo-modalTitle">Reserva completa</div>
-          <button className="bo-modalX" type="button" onClick={closeDetails} aria-label="Close">×</button>
+          <button className="bo-modalX" type="button" onClick={closeDetails} aria-label="Close" data-testid="reservas-page-details-close">×</button>
         </div>
         <div className="bo-modalOutline" style={{ marginTop: 10 }}>
           {details.booking && <BookingDetailsPanel booking={details.booking} floors={floors} />}
         </div>
-        <div className="bo-modalActions bo-modalActions--reservas">
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={closeDetails}>Cerrar</button>
+        <div className="bo-modalActions bo-modalActions--reservas" data-slot="reservas-page-details-actions">
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={closeDetails} data-testid="reservas-page-details-close-btn">Cerrar</button>
           {details.booking && (
-            <button className="bo-btn bo-btn--primary" type="button" onClick={() => { closeDetails(); openEdit(details.booking!); }}>Editar</button>
+            <button className="bo-btn bo-btn--primary" type="button" onClick={() => { closeDetails(); openEdit(details.booking!); }} data-testid="reservas-page-details-edit-btn">Editar</button>
           )}
         </div>
       </Modal>
@@ -674,7 +675,7 @@ export default function Page() {
       <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit">
         <div className="bo-modalHead">
           <div className="bo-modalTitle">Editar reserva</div>
-          <button className="bo-modalX" type="button" onClick={closeEdit} aria-label="Close">×</button>
+          <button className="bo-modalX" type="button" onClick={closeEdit} aria-label="Close" data-testid="reservas-page-edit-close">×</button>
         </div>
         <div className="bo-modalOutline" style={{ marginTop: 10 }}>
           {edit.booking && editInitial ? (

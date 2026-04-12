@@ -151,6 +151,7 @@ export function RecurringBillingSection({
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onPause}
             title="Pausar facturación recurrente"
+            data-testid="recurring-billing-pause-btn"
           >
             <Pause size={14} />
             Pausar
@@ -163,6 +164,7 @@ export function RecurringBillingSection({
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onResume}
             title="Reanudar facturación recurrente"
+            data-testid="recurring-billing-resume-btn"
           >
             <Play size={14} />
             Reanudar
@@ -177,6 +179,7 @@ export function RecurringBillingSection({
             checked={data.is_recurring ?? false}
             onCheckedChange={handleToggle}
             disabled={disabled}
+            data-testid="recurring-billing-toggle"
           />
           <span className="bo-label">Activar facturación recurrente</span>
         </div>
@@ -198,6 +201,7 @@ export function RecurringBillingSection({
                 options={frequencyOptions}
                 disabled={disabled}
                 ariaLabel="Frecuencia de facturación"
+                data-testid="recurring-billing-frequency-select"
               />
             </div>
           </div>
@@ -213,6 +217,7 @@ export function RecurringBillingSection({
                 value={data.start_date || ""}
                 onChange={handleStartDateChange}
                 disabled={disabled}
+                data-testid="recurring-billing-start-date"
               />
             </div>
 
@@ -226,6 +231,7 @@ export function RecurringBillingSection({
                 onChange={handleEndDateChange}
                 disabled={disabled}
                 minDate={data.start_date}
+                data-testid="recurring-billing-end-date"
               />
             </div>
           </div>
@@ -250,6 +256,7 @@ export function RecurringBillingSection({
                 checked={data.auto_send ?? false}
                 onCheckedChange={(checked) => onChange({ ...data, auto_send: checked })}
                 disabled={disabled}
+                data-testid="recurring-billing-auto-send-toggle"
               />
               <span className="bo-label">
                 <Send size={14} />

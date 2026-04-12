@@ -303,6 +303,7 @@ export function ShiftModal({
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
                     aria-label="Restar 15 minutos a hora de entrada"
+                    data-testid="shift-modal-decrement-start-btn"
                     onClick={() => handleStartTimeAdjust(-15)}
                   >
                     <Minus size={14} strokeWidth={1.8} />
@@ -312,6 +313,7 @@ export function ShiftModal({
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
                     aria-label="Sumar 15 minutos a hora de entrada"
+                    data-testid="shift-modal-increment-start-btn"
                     onClick={() => handleStartTimeAdjust(15)}
                   >
                     <Plus size={14} strokeWidth={1.8} />
@@ -323,6 +325,7 @@ export function ShiftModal({
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
                     aria-label="Restar 15 minutos a hora de salida"
+                    data-testid="shift-modal-decrement-end-btn"
                     onClick={() => handleEndTimeAdjust(-15)}
                   >
                     <Minus size={14} strokeWidth={1.8} />
@@ -332,6 +335,7 @@ export function ShiftModal({
                     type="button"
                     className="bo-btnIcon bo-btnIcon--sm"
                     aria-label="Sumar 15 minutos a hora de salida"
+                    data-testid="shift-modal-increment-end-btn"
                     onClick={() => handleEndTimeAdjust(15)}
                   >
                     <Plus size={14} strokeWidth={1.8} />
@@ -342,6 +346,7 @@ export function ShiftModal({
                 <button
                   type="button"
                   className="bo-btn bo-btn--secondary"
+                  data-testid="shift-modal-update-btn"
                   onClick={handleUpdateSchedule}
                   disabled={busy}
                 >
@@ -351,6 +356,7 @@ export function ShiftModal({
                 <button
                   type="button"
                   className="bo-btn bo-btn--danger"
+                  data-testid="shift-modal-delete-btn"
                   onClick={handleDeleteSchedule}
                   disabled={busy}
                 >
@@ -363,6 +369,7 @@ export function ShiftModal({
             <button
               type="button"
               className="bo-btn bo-btn--primary bo-btn--full"
+              data-testid="shift-modal-clock-in-btn"
               onClick={handleClockIn}
               disabled={busy}
             >
@@ -378,6 +385,7 @@ export function ShiftModal({
               <button
                 type="button"
                 className="bo-btn bo-btn--primary bo-btn--full"
+                data-testid="shift-modal-show-assign-form-btn"
                 onClick={() => setShowAssignForm(true)}
               >
                 <Plus size={16} strokeWidth={1.8} />
@@ -438,6 +446,7 @@ export function ShiftModal({
                   <button
                     type="button"
                     className="bo-btn bo-btn--primary bo-btn--full"
+                    data-testid="shift-modal-assign-btn"
                     onClick={handleAssignShift}
                     disabled={busy || !!overlapWarning}
                   >
@@ -460,6 +469,7 @@ export function ShiftModal({
               <button
                 type="button"
                 className="bo-btn bo-btn--primary bo-btn--full"
+                data-testid="shift-modal-clock-in-btn"
                 onClick={handleClockIn}
                 disabled={busy}
               >
@@ -485,6 +495,7 @@ export function ShiftModal({
             <button
               type="button"
               className="bo-btn bo-btn--danger bo-btn--full"
+              data-testid="shift-modal-clock-out-btn"
               onClick={handleClockOut}
               disabled={busy}
             >
@@ -542,6 +553,7 @@ export function ShiftModal({
             <button
               type="button"
               className="bo-btn bo-btn--secondary bo-btn--full"
+              data-testid="shift-modal-add-shift-btn"
               onClick={handleAddNewShift}
               disabled={busy || !!overlapWarning}
             >

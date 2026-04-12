@@ -200,6 +200,7 @@ function SortableHeader({ field, label, currentField, sortDirection, onSort }: {
       onClick={() => onSort(field)}
       aria-label={`Ordenar por ${label}`}
       aria-sort={currentField === field ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+      data-testid={`invoice-sort-${field}`}
     >
       {label}
       <SortIcon field={field} currentField={currentField} direction={sortDirection} />
@@ -530,6 +531,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               className="bo-btn bo-btn--primary bo-btn--sm"
               type="button"
               onClick={onCreateNew}
+              data-testid="invoice-create-btn"
             >
               <Plus size={16} />
               Crear primera factura
@@ -570,6 +572,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                   const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
                   onBulkPrint(selectedInvoices);
                 }}
+                data-testid="invoice-bulk-print-btn"
               >
                 <Printer size={16} />
                 Imprimir
@@ -581,6 +584,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                   const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
                   onBulkSendEmail(selectedInvoices);
                 }}
+                data-testid="invoice-bulk-email-btn"
               >
                 <Mail size={16} />
                 Enviar todas
@@ -589,7 +593,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 label="Cambiar estado"
                 items={bulkStatusOptions}
                 triggerContent={
-                  <button className="bo-btn bo-btn--secondary bo-btn--sm" type="button">
+                  <button className="bo-btn bo-btn--secondary bo-btn--sm" type="button" data-testid="invoice-bulk-status-btn">
                     Cambiar estado
                   </button>
                 }
@@ -602,6 +606,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                   const selectedInvoices = invoices.filter((inv) => selectedIds.has(inv.id));
                   handleBulkMergeRequest(selectedInvoices);
                 }}
+                data-testid="invoice-bulk-merge-btn"
               >
                 <Combine size={16} />
                 Fusionar
@@ -610,6 +615,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 className="bo-btn bo-btn--danger bo-btn--sm"
                 type="button"
                 onClick={handleBulkDeleteRequest}
+                data-testid="invoice-bulk-delete-btn"
               >
                 Eliminar
               </button>
@@ -618,6 +624,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 type="button"
                 onClick={handleClearSelection}
                 aria-label="Limpiar selección"
+                data-testid="invoice-clear-selection-btn"
               >
                 <X size={16} />
                 Limpiar
@@ -638,6 +645,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 className="bo-btn bo-btn--primary bo-btn--sm"
                 type="button"
                 onClick={onPrintAllVisible}
+                data-testid="invoice-print-all-visible-btn"
               >
                 <Printer size={16} />
                 Imprimir todas las visibles
@@ -647,7 +655,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
         </div>
       )}
       <div className="bo-tableScroll">
-        <table className="bo-table bo-table--facturas" aria-label="Tabla de facturas">
+        <table className="bo-table bo-table--facturas" aria-label="Tabla de facturas" data-testid="invoice-table">
           <thead>
             <tr>
               {columns.map((col) => (
@@ -659,6 +667,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         checked={allSelected}
                         onChange={handleSelectAll}
                         aria-label={allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
+                        data-testid="invoice-select-all-checkbox"
                       />
                       <span className="bo-checkboxMark"></span>
                     </label>
@@ -693,6 +702,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       checked={selectedIds.has(invoice.id)}
                       onChange={() => handleToggleSelect(invoice.id)}
                       aria-label={`Seleccionar factura ${invoice.invoice_number || invoice.id}`}
+                      data-testid={`invoice-select-checkbox-${invoice.id}`}
                     />
                     <span className="bo-checkboxMark"></span>
                   </label>
@@ -707,6 +717,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       className="bo-tableCustomerName bo-tableCustomerName--link"
                       onClick={() => onViewCustomerHistory(invoice.customer_name + (invoice.customer_surname ? ` ${invoice.customer_surname}` : ""), invoice.customer_email)}
                       title="Ver historial del cliente"
+                      data-testid={`invoice-view-customer-btn-${invoice.id}`}
                     >
                       {invoice.customer_name}
                     </button>
@@ -790,6 +801,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                           onClick={() => handleOpenAttachments(invoice)}
                           title={`Ver adjuntos (${invoice.attachments.length})`}
                           aria-label={`Ver ${invoice.attachments.length} adjuntos`}
+                          data-testid={`invoice-view-attachments-btn-${invoice.id}`}
                         >
                           <FolderOpen size={14} />
                           {invoice.attachments.length > 1 && (
@@ -818,6 +830,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onClick={() => onPreview(invoice)}
                       aria-label={`Ver detalles de factura ${invoice.id}`}
                       title="Ver detalles"
+                      data-testid={`invoice-view-btn-${invoice.id}`}
                     >
                       <Eye size={14} />
                     </button>
@@ -827,6 +840,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onClick={() => onEdit(invoice)}
                       aria-label={`Editar factura ${invoice.id}`}
                       title="Editar"
+                      data-testid={`invoice-edit-btn-${invoice.id}`}
                     >
                       <PencilLine size={14} />
                     </button>
@@ -836,6 +850,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onClick={() => onShowHistory(invoice)}
                       aria-label={`Ver historial de factura ${invoice.id}`}
                       title="Historial"
+                      data-testid={`invoice-history-btn-${invoice.id}`}
                     >
                       <History size={14} />
                     </button>
@@ -845,6 +860,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onClick={() => onViewNotes(invoice)}
                       aria-label={`Ver notas internas de factura ${invoice.id}`}
                       title="Ver notas"
+                      data-testid={`invoice-notes-btn-${invoice.id}`}
                     >
                       <MessageSquare size={14} />
                     </button>
@@ -857,6 +873,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                           onClick={() => onSendReminder(invoice)}
                           aria-label={`Enviar recordatorio de pago a ${invoice.customer_name}`}
                           title={invoice.has_reminder_sent ? "Enviar otro recordatorio" : "Enviar recordatorio de pago"}
+                          data-testid={`invoice-reminder-btn-${invoice.id}`}
                         >
                           {invoice.has_reminder_sent ? <BellOff size={14} /> : <Bell size={14} />}
                         </button>
@@ -867,6 +884,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                             onClick={() => onShowReminderHistory(invoice)}
                             aria-label={`Ver historial de recordatorios de factura ${invoice.id}`}
                             title="Historial de recordatorios"
+                            data-testid={`invoice-reminder-history-btn-${invoice.id}`}
                           >
                             <Bell size={14} />
                           </button>
@@ -881,6 +899,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onClick={() => onStatusChange(invoice, "pagada")}
                         aria-label={`Marcar como pagada la factura ${invoice.id}`}
                         title="Marcar como pagada"
+                        data-testid={`invoice-mark-paid-btn-${invoice.id}`}
                       >
                         <Check size={14} />
                       </button>
@@ -891,6 +910,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onClick={() => onRegisterPayment(invoice)}
                       aria-label={`Registrar pago de factura ${invoice.id}`}
                       title="Registrar pago"
+                      data-testid={`invoice-register-payment-btn-${invoice.id}`}
                     >
                       <CreditCard size={14} />
                     </button>
@@ -900,6 +920,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onClick={() => onDuplicate(invoice)}
                       aria-label={`Duplicar factura ${invoice.id}`}
                       title="Duplicar"
+                      data-testid={`invoice-duplicate-btn-${invoice.id}`}
                     >
                       <Copy size={14} />
                     </button>
@@ -911,6 +932,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onClick={() => onCreateCreditNote(invoice)}
                         aria-label={`Crear nota de credito para factura ${invoice.id}`}
                         title="Crear nota de credito"
+                        data-testid={`invoice-credit-note-btn-${invoice.id}`}
                       >
                         <Receipt size={14} />
                       </button>
@@ -923,6 +945,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onClick={() => onSplit(invoice)}
                         aria-label={`Dividir factura ${invoice.id}`}
                         title="Dividir factura"
+                        data-testid={`invoice-split-btn-${invoice.id}`}
                       >
                         <Scissors size={14} />
                       </button>
@@ -934,6 +957,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onClick={() => onDownloadPdf(invoice)}
                         aria-label={`Descargar PDF de factura ${invoice.id}`}
                         title="Descargar PDF"
+                        data-testid={`invoice-download-btn-${invoice.id}`}
                       >
                         <FileDown size={14} />
                       </button>
@@ -945,6 +969,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onClick={() => onSendEmail(invoice)}
                         aria-label={`Enviar email de factura ${invoice.id}`}
                         title={invoice.status === "enviada" ? "Reenviar email" : "Enviar email"}
+                        data-testid={`invoice-email-btn-${invoice.id}`}
                       >
                         <Mail size={14} />
                       </button>
@@ -956,6 +981,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         onClick={() => onSendWhatsApp(invoice)}
                         aria-label={`Enviar WhatsApp de factura ${invoice.id}`}
                         title={invoice.status === "enviada" ? "Reenviar WhatsApp" : "Enviar WhatsApp"}
+                        data-testid={`invoice-whatsapp-btn-${invoice.id}`}
                       >
                         <MessageCircle size={14} />
                       </button>
@@ -966,6 +992,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       onClick={() => onDelete(invoice)}
                       aria-label={`Eliminar factura ${invoice.id}`}
                       title="Eliminar"
+                      data-testid={`invoice-delete-btn-${invoice.id}`}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -1009,10 +1036,10 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
         </div>
         {showPagerBtns ? (
           <div className="bo-pagerBtns">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={loading || page <= 1}>
+            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={loading || page <= 1} data-testid="invoice-pagination-prev">
               Anterior
             </button>
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={loading || page >= totalPages}>
+            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={loading || page >= totalPages} data-testid="invoice-pagination-next">
               Siguiente
             </button>
           </div>

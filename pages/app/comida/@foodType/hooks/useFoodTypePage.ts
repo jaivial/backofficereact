@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAtomValue } from "jotai";
 
 import { createClient } from "../../../../../api/client";
 import type { FoodCategory, FoodItem, Vino } from "../../../../../api/types";
 import type { ActiveFilter, ListItem, SuplementoFilter } from "../types";
 import type { FoodType } from "../../_components/foodTypes";
 import { normalizePostres, buildDeleteApiCall, buildToggleApiCall, buildTargetApi } from "../helpers";
-import { useComidaAI, type ComidaAIEvent } from "../../_components/hooks/useComidaAI";
+import { useComidaAIUnified, type ComidaAIWSMessage } from "../../_components/hooks/useComidaAIUnified";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
-import { sessionAtom } from "../../../../../state/atoms";
 import type { Data } from "../+data";
 
 interface UseFoodTypePageOptions {
@@ -49,7 +47,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
 
   // Wire WebSocket for real-time AI image generation status
   const handleAIWSEvent = useCallback(
-    (event: ComidaAIEvent) => {
+    (event: ComidaAIWSMessage) => {
       if (!event.item_id) return;
       if (event.type === "comida_ai_started") {
         setItems((prev) =>
@@ -78,9 +76,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     [],
   );
 
-  const session = useAtomValue(sessionAtom);
-
-  useComidaAI(session?.activeRestaurantId, { onEvent: handleAIWSEvent });
+  useComidaAIUnified({ scope: "list", onEvent: handleAIWSEvent });
 
   useEffect(() => {
     if (!showPageVisibilityToggle) return;
@@ -225,8 +221,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
       window.location.assign(`/app/comida/vinos/new`);
       return;
     }
-    setEditingItem(null);
-    setModalOpen(true);
+    window.location.assign(`/app/comida/${foodType}/new`);
   }, [foodType]);
 
   const onOpenEdit = useCallback((item: ListItem) => {
@@ -234,8 +229,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
       window.location.assign(`/app/comida/vinos/${item.num}`);
       return;
     }
-    setEditingItem(item);
-    setModalOpen(true);
+    window.location.assign(`/app/comida/${foodType}/${item.num}`);
   }, [foodType]);
 
   const onOpenDetail = useCallback((item: ListItem) => {

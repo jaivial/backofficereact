@@ -3,6 +3,7 @@ import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, 
 
 import type { SidebarItemKey } from "../../lib/rbac";
 import { sidebarItemsForRole } from "../../lib/rbac";
+import { cn } from "../shadcn/utils";
 import { NavLink } from "../nav/NavLink";
 
 const MOBILE_PRIMARY_ORDER: SidebarItemKey[] = ["reservas", "menus", "comida"];
@@ -41,11 +42,13 @@ export function Sidebar({
   role,
   sectionAccess,
   roleImportance,
+  className,
 }: {
   pathname: string;
   role: string;
   sectionAccess?: string[];
   roleImportance?: number;
+  className?: string;
 }) {
   const iconProps = { size: 18, strokeWidth: 1.8 } as const;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -82,12 +85,12 @@ export function Sidebar({
   }, [mobileMenuOpen]);
 
   return (
-    <aside className="bo-sidebar" aria-label="Sidebar">
-      <div className="bo-brand" aria-label="Backoffice">
+    <aside className={cn("bo-sidebar", className)} aria-label="Sidebar" data-testid="sidebar" data-ui="sidebar">
+      <div className="bo-brand" aria-label="Backoffice" data-testid="sidebar-brand">
         <Settings {...iconProps} />
       </div>
 
-      <nav className="bo-nav bo-navDesktop" aria-label="Navigation">
+      <nav className="bo-nav bo-navDesktop" aria-label="Navigation" data-testid="sidebar-nav-desktop">
         {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -98,7 +101,7 @@ export function Sidebar({
         })}
       </nav>
 
-      <nav className="bo-nav bo-navMobile" aria-label="Navigation mobile">
+      <nav className="bo-nav bo-navMobile" aria-label="Navigation mobile" data-testid="sidebar-nav-mobile">
         <div className="bo-navMobileMain">
           <NavLink href="/app/backoffice" active={homeActive} label="Home">
             <Home size={iconProps.size} strokeWidth={iconProps.strokeWidth} />
@@ -119,6 +122,7 @@ export function Sidebar({
               aria-expanded={mobileMenuOpen}
               aria-controls="bo-nav-mobile-overflow"
               onClick={() => setMobileMenuOpen((open) => !open)}
+              data-testid="sidebar-more-btn"
             >
               <Ellipsis size={iconProps.size} strokeWidth={iconProps.strokeWidth} />
             </button>

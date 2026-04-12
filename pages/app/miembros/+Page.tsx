@@ -142,7 +142,7 @@ export default function Page() {
   };
 
   return (
-    <section aria-label="Miembros y roles" className="bo-content-grid bo-membersPage">
+    <section aria-label="Miembros y roles" className="bo-content-grid bo-membersPage" data-slot="miembros-page-section">
       <div className="bo-panel !w-fit mx-auto">
         <div className="!w-fit bo-panelHead bo-membersIntroHead">
           <div>
@@ -164,6 +164,7 @@ export default function Page() {
               key={member.id}
               type="button"
               className="bo-memberCard"
+              data-testid={`miembros-page-member-card-${member.id}`}
               onClick={() => window.location.assign(`/app/miembros/${member.id}`)}
             >
               <div className="bo-memberCardTop">
@@ -237,7 +238,7 @@ export default function Page() {
                   <li>✓ Sin necesidad de escanear QR</li>
                 </ul>
               </div>
-              <button type="button" className="bo-btn bo-btn--primary w-full" onClick={handleSubscribe} disabled={subscribing}>
+              <button type="button" className="bo-btn bo-btn--primary w-full" data-testid="miembros-page-subscribe-button" onClick={handleSubscribe} disabled={subscribing}>
                 {subscribing ? "Activando..." : "Suscribirse y Continuar"}
               </button>
             </div>
@@ -254,13 +255,14 @@ export default function Page() {
                     <label className="block text-xs text-slate-400 mb-1">Mensaje</label>
                     <textarea
                       className="w-full h-32 bg-slate-900 border border-slate-700 rounded-lg p-3 text-slate-200 text-sm focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
+                      data-testid="miembros-page-whatsapp-message"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
                   <div className="flex justify-end gap-3 pt-2">
-                    <button type="button" className="bo-btn bo-btn--secondary" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
-                    <button type="button" className="bo-btn bo-btn--primary" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
+                    <button type="button" className="bo-btn bo-btn--secondary" data-testid="miembros-page-cancel-button" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
+                    <button type="button" className="bo-btn bo-btn--primary" data-testid="miembros-page-send-button" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
                       {sending ? "Enviando..." : "Enviar por WhatsApp"}
                     </button>
                   </div>

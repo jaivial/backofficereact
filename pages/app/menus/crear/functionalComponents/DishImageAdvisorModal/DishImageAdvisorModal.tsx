@@ -26,7 +26,7 @@ export function DishImageAdvisorModalComponent({
     <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
       <div className="bo-modalHead">
         <div className="bo-modalTitle">Asesor IA de imagen</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>×</button>
+        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy} data-testid="dish-advisor-close-modal">×</button>
       </div>
       <div className="bo-modalBody bo-dishAIAdvisorBody">
         <div className="bo-dishAIAdvisorCopy">
@@ -40,10 +40,10 @@ export function DishImageAdvisorModalComponent({
         </div>
       </div>
       <div className="bo-modalActions bo-dishAIAdvisorActions">
-        <button className="bo-btn bo-btn--advisorSecondary" type="button" onClick={onContinueWithoutAI} disabled={busy}>
+        <button className="bo-btn bo-btn--advisorSecondary" type="button" onClick={onContinueWithoutAI} disabled={busy} data-testid="dish-advisor-continue-without-ai">
           Continuar sin mejorar
         </button>
-        <button className="bo-btn bo-btn--advisorPrimary" type="button" onClick={onImproveWithAI} disabled={busy} aria-label={busy ? "Mejorando con IA" : "Mejorar con IA"}>
+        <button className="bo-btn bo-btn--advisorPrimary" type="button" onClick={onImproveWithAI} disabled={busy} aria-label={busy ? "Mejorando con IA" : "Mejorar con IA"} data-testid="dish-advisor-improve-with-ai">
           <Sparkles size={15} />
           <span>{busy ? "Mejorando con IA..." : "Mejorar con IA"}</span>
         </button>

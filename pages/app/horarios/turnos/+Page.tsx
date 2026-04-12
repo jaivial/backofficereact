@@ -373,25 +373,26 @@ export default function Page() {
   }, []);
 
   return (
-    <section aria-label="Edicion de turnos" className="bo-turnosPage">
-      <div className="bo-panel">
-        <div className="bo-panelHead">
+    <section aria-label="Edicion de turnos" className="bo-turnosPage" data-testid="horarios-turnos-section">
+      <div className="bo-panel" data-testid="horarios-turnos-panel">
+        <div className="bo-panelHead" data-testid="horarios-turnos-head">
           <div>
-            <div className="bo-panelTitle bo-horariosTitle">
+            <div className="bo-panelTitle bo-horariosTitle" data-testid="horarios-turnos-title">
               <CalendarClock size={16} strokeWidth={1.8} />
               Turnos
             </div>
-            <div className="bo-panelMeta">Editar tiempo registrado por miembro y fecha.</div>
+            <div className="bo-panelMeta" data-testid="horarios-turnos-description">Editar tiempo registrado por miembro y fecha.</div>
           </div>
-          <div className="bo-horariosPreviewActions">
+          <div className="bo-horariosPreviewActions" data-testid="horarios-turnos-actions">
             <DatePicker value={date} onChange={(nextDate) => void selectDate(nextDate)} />
-            <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Cambiar vista">
+            <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Cambiar vista" data-testid="horarios-turnos-view-tabs">
               <button
                 type="button"
                 className={`bo-tab${view === "grid" ? " is-active" : ""}`}
                 role="tab"
                 aria-selected={view === "grid"}
                 onClick={() => setView("grid")}
+                data-testid="horarios-turnos-view-grid"
               >
                 {view === "grid" ? <span className="bo-tabIndicator" /> : null}
                 <span className="bo-tabInner">
@@ -404,6 +405,7 @@ export default function Page() {
                 role="tab"
                 aria-selected={view === "table"}
                 onClick={() => setView("table")}
+                data-testid="horarios-turnos-view-table"
               >
                 {view === "table" ? <span className="bo-tabIndicator" /> : null}
                 <span className="bo-tabInner">
@@ -414,7 +416,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className={`bo-panelBody bo-turnosBody${view === "table" ? " bo-turnosBody--table" : ""}`}>
+        <div className={`bo-panelBody bo-turnosBody${view === "table" ? " bo-turnosBody--table" : ""}`} data-testid="horarios-turnos-body">
           {view === "grid" ? (
             <MemberPicker
               title="Miembros"
@@ -426,12 +428,12 @@ export default function Page() {
               emptyLabel="Sin miembros para mostrar."
             />
           ) : (
-            <section className="bo-turnosRoster" aria-label="Tabla de miembros">
-              <div className="bo-turnosRosterHead">
-                <div className="bo-panelTitle">Miembros</div>
-                <div className="bo-memberPickerCount">{tableMembers.length}</div>
+            <section className="bo-turnosRoster" aria-label="Tabla de miembros" data-testid="horarios-turnos-roster">
+              <div className="bo-turnosRosterHead" data-testid="horarios-turnos-roster-head">
+                <div className="bo-panelTitle" data-testid="horarios-turnos-roster-title">Miembros</div>
+                <div className="bo-memberPickerCount" data-testid="horarios-turnos-roster-count">{tableMembers.length}</div>
               </div>
-              <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro">
+              <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro" data-testid="horarios-turnos-search-label">
                 <Search size={14} strokeWidth={1.8} />
                 <input
                   type="text"
@@ -439,6 +441,7 @@ export default function Page() {
                   value={memberSearch}
                   onChange={(ev) => setMemberSearch(ev.target.value)}
                   placeholder="Buscar..."
+                  data-testid="horarios-turnos-search-input"
                 />
               </label>
               <HorariosRosterTable
@@ -451,21 +454,22 @@ export default function Page() {
             </section>
           )}
 
-          <section className="bo-turnosEditor" aria-label="Editor de turnos">
-            <div className="bo-turnosEditorHead">
-              <div className="bo-panelTitle">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
-              <div className="bo-turnosEditorMeta">
+          <section className="bo-turnosEditor" aria-label="Editor de turnos" data-testid="horarios-turnos-editor">
+            <div className="bo-turnosEditorHead" data-testid="horarios-turnos-editor-head">
+              <div className="bo-panelTitle" data-testid="horarios-turnos-editor-member">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
+              <div className="bo-turnosEditorMeta" data-testid="horarios-turnos-editor-schedule">
                 {selectedSchedule ? `Horario asignado: ${selectedSchedule.startTime} - ${selectedSchedule.endTime}` : "Sin horario asignado para este dia"}
               </div>
             </div>
 
             {selectedMember && selectedSchedule && !isMemberActive && (
-              <div className="bo-turnosFichajeSection">
+              <div className="bo-turnosFichajeSection" data-testid="horarios-turnos-fichaje-section">
                 <button
                   className="bo-btn bo-btn--primary bo-btn--fit"
                   type="button"
                   onClick={startFichaje}
                   disabled={busyFichaje || !selectedSchedule}
+                  data-testid="horarios-turnos-fichaje-start"
                 >
                   <Play size={14} strokeWidth={1.8} />
                   Iniciar turno
@@ -474,8 +478,8 @@ export default function Page() {
             )}
 
             {selectedMember && isMemberActive && (
-              <div className="bo-turnosFichajeSection bo-turnosFichajeSection--active">
-                <div className="bo-turnosFichajeActive">
+              <div className="bo-turnosFichajeSection bo-turnosFichajeSection--active" data-testid="horarios-turnos-fichaje-active">
+                <div className="bo-turnosFichajeActive" data-testid="horarios-turnos-fichaje-status">
                   <span className="bo-badge bo-badge--success">En curso</span>
                 </div>
                 <button
@@ -483,6 +487,7 @@ export default function Page() {
                   type="button"
                   onClick={stopFichaje}
                   disabled={busyFichaje}
+                  data-testid="horarios-turnos-fichaje-stop"
                 >
                   <Square size={14} strokeWidth={1.8} />
                   Terminar turno
@@ -497,7 +502,7 @@ export default function Page() {
               onShiftEnd={onShiftEnd}
               onCloseLive={onCloseLive}
             />
-            <div className="bo-turnosTotal">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
+            <div className="bo-turnosTotal" data-testid="horarios-turnos-total">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
           </section>
         </div>
       </div>

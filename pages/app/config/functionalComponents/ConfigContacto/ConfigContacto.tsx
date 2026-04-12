@@ -96,6 +96,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               disabled={busy}
               placeholder="Calle, número, CP, ciudad..."
               aria-label="Dirección del restaurante"
+              data-testid="config-contacto-direccion-input"
             />
           </div>
 
@@ -112,6 +113,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               disabled={busy}
               placeholder="+34 600 000 000"
               aria-label="Teléfono de contacto"
+              data-testid="config-contacto-telefono-input"
             />
           </div>
 
@@ -128,6 +130,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               disabled={busy}
               placeholder="info@restaurante.com"
               aria-label="Email de contacto"
+              data-testid="config-contacto-email-input"
             />
           </div>
 
@@ -161,6 +164,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               disabled={busy}
               placeholder="B12345678"
               aria-label="CIF o NIF del restaurante"
+              data-testid="config-contacto-cif-input"
             />
           </div>
 
@@ -177,6 +181,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               disabled={busy}
               placeholder="Calle de facturación, número, CP, ciudad..."
               aria-label="Dirección de facturación"
+              data-testid="config-contacto-dir-fact-input"
             />
           </div>
 
