@@ -95,7 +95,7 @@ export function IntegrationsPanel({ integrations, busy, onIntegrationsChange, on
         <div className="bo-panelMeta" data-ui="panelMeta">n8n, eventos y WhatsApp</div>
       </div>
       <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack">
+        <div className="bo-stack" data-slot="integrationsPanel-stack">
           <label className="bo-field" data-ui="n8nField">
             <div className="bo-label" data-slot="fieldLabel">n8n Webhook URL</div>
             <input

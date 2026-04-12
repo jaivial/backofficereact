@@ -109,16 +109,16 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
       <div className="bo-reservationModalContent" data-slot="reservation-modal-content">
         <div className="bo-reservationFilters" data-slot="reservation-filters">
             <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-dates">
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="bo-field" data-slot="fillFromReservationModal-field">
+                <span className="bo-label" data-slot="fillFromReservationModal-label">
                   <Calendar size={14} />
                   Desde
                 </span>
                 <DatePicker value={dateFrom} onChange={setDateFrom} data-testid="fill-reservation-date-from" />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="bo-field" data-slot="fillFromReservationModal-field">
+                <span className="bo-label" data-slot="fillFromReservationModal-label">
                   <Calendar size={14} />
                   Hasta
                 </span>
@@ -127,8 +127,8 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
 
             <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-search">
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="bo-field" data-slot="fillFromReservationModal-field">
+                <span className="bo-label" data-slot="fillFromReservationModal-label">
                   <Search size={14} />
                   Nombre
                 </span>
@@ -142,8 +142,8 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="bo-field" data-slot="fillFromReservationModal-field">
+                <span className="bo-label" data-slot="fillFromReservationModal-label">
                   <Search size={14} />
                   Teléfono
                 </span>
@@ -159,8 +159,8 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
 
             <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-party-time">
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="bo-field" data-slot="fillFromReservationModal-field">
+                <span className="bo-label" data-slot="fillFromReservationModal-label">
                   <Users size={14} />
                   Personas
                 </span>
@@ -173,8 +173,8 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                 />
               </label>
 
-              <label className="bo-field">
-                <span className="bo-label">
+              <label className="bo-field" data-slot="fillFromReservationModal-field">
+                <span className="bo-label" data-slot="fillFromReservationModal-label">
                   <Clock size={14} />
                   Hora
                 </span>
@@ -192,12 +192,12 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
           <div className="bo-reservationResults" data-slot="reservation-results">
             {loading ? (
               <div className="bo-reservationLoading" data-slot="reservation-loading">
-                <div className="bo-spinner" />
-                <span>Buscando reservas...</span>
+                <div className="bo-spinner" / data-slot="fillFromReservationModal-spinner">
+                <span data-slot="fillFromReservationModal-vas">Buscando reservas...</span>
               </div>
             ) : searched && results.length === 0 ? (
               <div className="bo-reservationEmpty" data-slot="reservation-empty">
-                <span>No se encontraron reservas con esos criterios.</span>
+                <span data-slot="fillFromReservationModal-ios">No se encontraron reservas con esos criterios.</span>
               </div>
             ) : results.length > 0 ? (
               <div className="bo-reservationList" data-slot="reservation-list">
@@ -210,19 +210,19 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                     data-testid={`fill-reservation-item-${reservation.id}`}
                   >
                     <div className="bo-reservationItemMain" data-slot="reservation-item-main">
-                      <span className="bo-reservationItemName">{reservation.customer_name}</span>
-                      <span className="bo-reservationItemEmail">{reservation.contact_email}</span>
+                      <span className="bo-reservationItemName" data-slot="fillFromReservationModal-reservationItemName">{reservation.customer_name}</span>
+                      <span className="bo-reservationItemEmail" data-slot="fillFromReservationModal-reservationItemEmail">{reservation.contact_email}</span>
                     </div>
                     <div className="bo-reservationItemMeta" data-slot="reservation-item-meta">
-                      <span className="bo-reservationItemDate">
+                      <span className="bo-reservationItemDate" data-slot="fillFromReservationModal-reservationItemDate">
                         <Calendar size={12} />
                         {formatDate(reservation.reservation_date)}
                       </span>
-                      <span className="bo-reservationItemTime">
+                      <span className="bo-reservationItemTime" data-slot="fillFromReservationModal-reservationItemTime">
                         <Clock size={12} />
                         {formatTime(reservation.reservation_time)}
                       </span>
-                      <span className="bo-reservationItemSize">
+                      <span className="bo-reservationItemSize" data-slot="fillFromReservationModal-reservationItemSize">
                         <Users size={12} />
                         {reservation.party_size}
                       </span>
@@ -232,7 +232,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
               </div>
             ) : (
               <div className="bo-reservationEmpty" data-slot="reservation-empty-initial">
-                <span>Introduce criterios de búsqueda para encontrar reservas.</span>
+                <span data-slot="fillFromReservationModal-vas">Introduce criterios de búsqueda para encontrar reservas.</span>
               </div>
             )}
           </div>

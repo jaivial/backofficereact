@@ -84,7 +84,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
         </div>
         <div className="bo-panelBody bo-stack" data-ui="config-contacto-main-body" data-slot="config-contacto-body">
           <div className="bo-field" data-ui="config-contacto-address-field" data-slot="config-contacto-address-field">
-            <label className="bo-label" htmlFor="config-contacto-direccion">
+            <label className="bo-label" htmlFor="config-contacto-direccion" data-slot="configContacto-label">
               Dirección
             </label>
             <input
@@ -101,7 +101,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
           </div>
 
           <div className="bo-field" data-ui="config-contacto-phone-field" data-slot="config-contacto-phone-field">
-            <label className="bo-label" htmlFor="config-contacto-telefono">
+            <label className="bo-label" htmlFor="config-contacto-telefono" data-slot="configContacto-label">
               Teléfono
             </label>
             <input
@@ -118,7 +118,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
           </div>
 
           <div className="bo-field" data-ui="config-contacto-email-field" data-slot="config-contacto-email-field">
-            <label className="bo-label" htmlFor="config-contacto-email">
+            <label className="bo-label" htmlFor="config-contacto-email" data-slot="configContacto-label">
               Email
             </label>
             <input
@@ -152,7 +152,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
         </div>
         <div className="bo-panelBody bo-stack" data-ui="config-contacto-fiscal-body" data-slot="config-contacto-fiscal-body">
           <div className="bo-field" data-ui="config-contacto-cif-field" data-slot="config-contacto-cif-field">
-            <label className="bo-label" htmlFor="config-contacto-cif">
+            <label className="bo-label" htmlFor="config-contacto-cif" data-slot="configContacto-label">
               CIF / NIF
             </label>
             <input
@@ -169,7 +169,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
           </div>
 
           <div className="bo-field" data-ui="config-contacto-billing-address-field" data-slot="config-contacto-billing-address-field">
-            <label className="bo-label" htmlFor="config-contacto-dir-fact">
+            <label className="bo-label" htmlFor="config-contacto-dir-fact" data-slot="configContacto-label">
               Dirección de facturación
             </label>
             <input
@@ -186,7 +186,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
           </div>
 
           <div className="bo-field" data-ui="config-contacto-clasificacion-field" data-slot="config-contacto-clasificacion-field">
-            <div className="bo-label">Clasificación</div>
+            <div className="bo-label" data-slot="configContacto-label">Clasificación</div>
             <Select
               value={info.clasificacion}
               onChange={handleClasificacion}

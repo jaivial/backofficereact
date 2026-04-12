@@ -104,7 +104,7 @@ export function MandatoryMenuSelector({
           data-ui="add-first-menu-btn"
         >
           <Plus size={16} strokeWidth={1.8} aria-hidden="true" />
-          <span>Añadir menú</span>
+          <span data-slot="mandatoryMenuSelector-men">Añadir menú</span>
         </button>
         {menus.length === 0 && (
           <div className="text-(--bo-faint) text-xs mt-3" data-slot="mandatory-menu-selector-no-menus">
@@ -190,7 +190,7 @@ export function MandatoryMenuSelector({
           data-ui="add-menu-btn"
         >
           <Plus size={16} strokeWidth={1.8} aria-hidden="true" />
-          <span>Añadir otro menú</span>
+          <span data-slot="mandatoryMenuSelector-men">Añadir otro menú</span>
         </button>
       )}
 

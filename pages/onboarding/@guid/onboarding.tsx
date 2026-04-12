@@ -139,9 +139,9 @@ export default function Page() {
   }, [api.invitations.onboarding, confirmPassword, guid, password]);
 
   return (
-    <div className="bo-stage bo-stage--onboarding">
-      <div className="bo-window bo-window--auth bo-onboardingWindow bo-onboardingWindow--lg">
-        <div className="bo-authCard bo-onboardingCard" role="main" aria-label="Onboarding">
+    <div className="bo-stage bo-stage--onboarding" data-slot="onboarding-stage--onboarding">
+      <div className="bo-window bo-window--auth bo-onboardingWindow bo-onboardingWindow--lg" data-slot="onboarding-onboardingWindow--lg">
+        <div className="bo-authCard bo-onboardingCard" role="main" aria-label="Onboarding" data-slot="onboarding-onboarding">
           {loading ? (
             <div className="bo-onboardingLoading" data-testid="onboarding-loading">
               <Loader2 size={20} className="is-spinning" />
@@ -170,48 +170,48 @@ export default function Page() {
                   <div className="bo-title" data-testid="onboarding-profile-title">Completa tu perfil</div>
                   <div className="bo-authSub" data-testid="onboarding-profile-subtitle">Puedes editar nombre, apellidos y avatar antes de continuar.</div>
 
-                  <div className="bo-onboardingAvatarRow">
+                  <div className="bo-onboardingAvatarRow" data-slot="onboarding-onboardingAvatarRow">
                     <ImageDropInput className={`bo-memberCreateAvatarDrop${avatarBusy ? " is-busy" : ""}`} ariaLabel="Subir avatar" onSelectFile={onAvatarSelect}>
                       <Avatar className="bo-memberCreateAvatar">
                         {member?.photoUrl ? <AvatarImage src={member.photoUrl} alt="Avatar" /> : null}
                         <AvatarFallback className="bo-memberAvatarFallback">{initials(firstName, lastName)}</AvatarFallback>
                       </Avatar>
-                      <span className="bo-memberCreateAvatarHint" aria-hidden="true">
+                      <span className="bo-memberCreateAvatarHint" aria-hidden="true" data-slot="onboarding-memberCreateAvatarHint">
                         <Upload size={16} />
                       </span>
                     </ImageDropInput>
                   </div>
 
-                  <div className="bo-memberCreateGrid">
-                    <label className="bo-field">
-                      <span className="bo-label">Nombre</span>
+                  <div className="bo-memberCreateGrid" data-slot="onboarding-memberCreateGrid">
+                    <label className="bo-field" data-slot="onboarding-field">
+                      <span className="bo-label" data-slot="onboarding-label">Nombre</span>
                       <input className="bo-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={busy || avatarBusy} data-testid="onboarding-first-name-input" />
                     </label>
-                    <label className="bo-field">
-                      <span className="bo-label">Apellidos</span>
+                    <label className="bo-field" data-slot="onboarding-field">
+                      <span className="bo-label" data-slot="onboarding-label">Apellidos</span>
                       <input className="bo-input" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={busy || avatarBusy} data-testid="onboarding-last-name-input" />
                     </label>
-                    <label className="bo-field">
-                      <span className="bo-label">Email</span>
+                    <label className="bo-field" data-slot="onboarding-field">
+                      <span className="bo-label" data-slot="onboarding-label">Email</span>
                       <input className="bo-input" value={member?.email || ""} disabled data-testid="onboarding-email-input" />
                     </label>
-                    <label className="bo-field">
-                      <span className="bo-label">DNI</span>
+                    <label className="bo-field" data-slot="onboarding-field">
+                      <span className="bo-label" data-slot="onboarding-label">DNI</span>
                       <input className="bo-input" value={member?.dni || ""} disabled data-testid="onboarding-dni-input" />
                     </label>
-                    <label className="bo-field bo-field--wide">
-                      <span className="bo-label">Teléfono</span>
+                    <label className="bo-field bo-field--wide" data-slot="onboarding-field--wide">
+                      <span className="bo-label" data-slot="onboarding-label">Teléfono</span>
                       <input className="bo-input" value={member?.phone || ""} disabled data-testid="onboarding-phone-input" />
                     </label>
-                    <label className="bo-field bo-field--wide">
-                      <span className="bo-label">Rol</span>
+                    <label className="bo-field bo-field--wide" data-slot="onboarding-field--wide">
+                      <span className="bo-label" data-slot="onboarding-label">Rol</span>
                       <input className="bo-input" value={member?.roleLabel || ""} disabled data-testid="onboarding-role-input" />
                     </label>
                   </div>
 
                   {error ? <div className="bo-inlineError">{error}</div> : null}
 
-                  <div className="bo-onboardingActions">
+                  <div className="bo-onboardingActions" data-slot="onboarding-onboardingActions">
                     <button className="bo-btn bo-btn--primary" type="button" onClick={onConfirmProfile} disabled={busy || avatarBusy} data-testid="onboarding-confirm-button">
                       {busy ? "Guardando..." : "Confirmar"}
                     </button>
@@ -232,9 +232,9 @@ export default function Page() {
                   <div className="bo-title" data-testid="onboarding-password-title">Establece tu password</div>
                   <div className="bo-authSub" data-testid="onboarding-password-subtitle">Introduce la misma password dos veces para confirmar.</div>
 
-                  <div className="bo-memberCreateGrid">
-                    <label className="bo-field bo-field--wide">
-                      <span className="bo-label">Password</span>
+                  <div className="bo-memberCreateGrid" data-slot="onboarding-memberCreateGrid">
+                    <label className="bo-field bo-field--wide" data-slot="onboarding-field--wide">
+                      <span className="bo-label" data-slot="onboarding-label">Password</span>
                       <input
                         className="bo-input"
                         type="password"
@@ -245,8 +245,8 @@ export default function Page() {
                         data-testid="onboarding-password-input"
                       />
                     </label>
-                    <label className="bo-field bo-field--wide">
-                      <span className="bo-label">Repetir password</span>
+                    <label className="bo-field bo-field--wide" data-slot="onboarding-field--wide">
+                      <span className="bo-label" data-slot="onboarding-label">Repetir password</span>
                       <input
                         className="bo-input"
                         type="password"
@@ -261,7 +261,7 @@ export default function Page() {
 
                   {error ? <div className="bo-inlineError">{error}</div> : null}
 
-                  <div className="bo-onboardingActions">
+                  <div className="bo-onboardingActions" data-slot="onboarding-onboardingActions">
                     <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} disabled={busy} data-testid="onboarding-back-button">
                       Volver
                     </button>
@@ -282,7 +282,7 @@ export default function Page() {
                   transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
                   data-testid="onboarding-done-step"
                 >
-                  <div className="bo-onboardingDoneIcon" aria-hidden="true">
+                  <div className="bo-onboardingDoneIcon" aria-hidden="true" data-slot="onboarding-onboardingDoneIcon">
                     <CheckCircle2 size={34} />
                   </div>
                   <div className="bo-title" data-testid="onboarding-done-title">¡Todo listo!</div>

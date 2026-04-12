@@ -19,7 +19,7 @@ export function BrandingPanel({ branding, busy, onBrandingChange, onSave }: Bran
         <div className="bo-panelMeta" data-ui="panelMeta">Nombre, logo y emails</div>
       </div>
       <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack">
+        <div className="bo-stack" data-slot="brandingPanel-stack">
           <label className="bo-field" data-ui="brandNameField">
             <div className="bo-label" data-slot="fieldLabel">Nombre de marca</div>
             <input

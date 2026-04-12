@@ -38,7 +38,7 @@ export default function MobileLoginPage() {
           data-ui="mobile-login-logo"
           aria-hidden="true"
         >
-          <span className="text-3xl text-white font-bold" aria-hidden="true">VC</span>
+          <span className="text-3xl text-white font-bold" aria-hidden="true" data-slot="login-font-bold">VC</span>
         </div>
         <h1
           className="text-2xl font-bold text-[hsl(var(--foreground))]"
@@ -62,6 +62,7 @@ export default function MobileLoginPage() {
           <label
             htmlFor="m-identifier"
             className="block text-sm font-medium text-[hsl(var(--foreground))] mb-1.5"
+            data-slot="mobile-login-identifier-label"
           >
             Email o usuario
           </label>
@@ -83,6 +84,7 @@ export default function MobileLoginPage() {
           <label
             htmlFor="m-password"
             className="block text-sm font-medium text-[hsl(var(--foreground))] mb-1.5"
+            data-slot="mobile-login-password-label"
           >
             Contrasena
           </label>

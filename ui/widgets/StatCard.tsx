@@ -35,6 +35,7 @@ export const StatCard = memo(function StatCard({
     <div
       className={cn("bo-card bo-card--glass", onClick ? "bo-card--clickable" : "", className)}
       aria-label={displayLabel}
+      data-slot="stat-card"
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}

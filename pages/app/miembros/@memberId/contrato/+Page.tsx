@@ -96,22 +96,22 @@ export default function Page() {
   return (
     <section aria-label="Contrato del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-contrato-section">
       {!member ? (
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Miembro no disponible</div>
-            <div className="bo-panelMeta">No se pudo cargar el contrato del miembro solicitado.</div>
+        <div className="bo-panel" data-slot="contrato-panel">
+          <div className="bo-panelHead" data-slot="contrato-panelHead">
+            <div className="bo-panelTitle" data-slot="contrato-panelTitle">Miembro no disponible</div>
+            <div className="bo-panelMeta" data-slot="contrato-panelMeta">No se pudo cargar el contrato del miembro solicitado.</div>
           </div>
         </div>
       ) : (
-        <div className="bo-panel">
-          <div className="bo-panelHead bo-memberStatsHead">
-            <div>
-              <div className="bo-panelTitle">Configuracion de contrato</div>
-              <div className="bo-panelMeta">Ajusta horas semanales y seguimiento del periodo.</div>
+        <div className="bo-panel" data-slot="contrato-panel">
+          <div className="bo-panelHead bo-memberStatsHead" data-slot="contrato-memberStatsHead">
+            <div data-slot="contrato-div">
+              <div className="bo-panelTitle" data-slot="contrato-panelTitle">Configuracion de contrato</div>
+              <div className="bo-panelMeta" data-slot="contrato-panelMeta">Ajusta horas semanales y seguimiento del periodo.</div>
             </div>
-            <div className="bo-memberStatsControls">
+            <div className="bo-memberStatsControls" data-slot="contrato-memberStatsControls">
               <label className="bo-field bo-memberControl" data-slot="miembro-contrato-fecha-label">
-                <span className="bo-label">Fecha</span>
+                <span className="bo-label" data-slot="contrato-label">Fecha</span>
                 <DatePicker
                   value={date}
                   onChange={(nextDate) => {
@@ -126,9 +126,9 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="bo-panelBody bo-memberContractBody">
+          <div className="bo-panelBody bo-memberContractBody" data-slot="contrato-memberContractBody">
             <label className="bo-field" data-slot="miembro-contrato-hours-label">
-              <span className="bo-label">Horas de contrato semanales</span>
+              <span className="bo-label" data-slot="contrato-label">Horas de contrato semanales</span>
               <input
                 id="weeklyContractHours"
                 className="bo-input"
@@ -141,30 +141,30 @@ export default function Page() {
                 onChange={(e) => setWeeklyContractHours(e.target.value)}
               />
             </label>
-            <div className="bo-memberContractNote">Este valor se usa para calcular cumplimiento semanal y progreso del periodo.</div>
+            <div className="bo-memberContractNote" data-slot="contrato-memberContractNote">Este valor se usa para calcular cumplimiento semanal y progreso del periodo.</div>
 
-            <div className="bo-kvGrid">
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Esperadas en periodo</div>
-                <div className="bo-kvValue">{(statsLive?.summary.expectedHours ?? 0).toFixed(2)} h</div>
+            <div className="bo-kvGrid" data-slot="contrato-kvGrid">
+              <div className="bo-kv" data-slot="contrato-kv">
+                <div className="bo-kvLabel" data-slot="contrato-kvLabel">Esperadas en periodo</div>
+                <div className="bo-kvValue" data-slot="contrato-kvValue">{(statsLive?.summary.expectedHours ?? 0).toFixed(2)} h</div>
               </div>
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Trabajadas en periodo</div>
-                <div className="bo-kvValue">{(statsLive?.summary.workedHours ?? 0).toFixed(2)} h</div>
+              <div className="bo-kv" data-slot="contrato-kv">
+                <div className="bo-kvLabel" data-slot="contrato-kvLabel">Trabajadas en periodo</div>
+                <div className="bo-kvValue" data-slot="contrato-kvValue">{(statsLive?.summary.workedHours ?? 0).toFixed(2)} h</div>
               </div>
-              <div className="bo-kv">
-                <div className="bo-kvLabel">Cumplimiento semanal</div>
-                <div className="bo-kvValue">{(statsLive?.summary.weeklyProgressPercent ?? 0).toFixed(2)}%</div>
+              <div className="bo-kv" data-slot="contrato-kv">
+                <div className="bo-kvLabel" data-slot="contrato-kvLabel">Cumplimiento semanal</div>
+                <div className="bo-kvValue" data-slot="contrato-kvValue">{(statsLive?.summary.weeklyProgressPercent ?? 0).toFixed(2)}%</div>
               </div>
               {liveEntry ? (
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">Fichando ahora</div>
-                  <div className="bo-kvValue">{formatElapsedHHMMSS(liveEntry, tick)}</div>
+                <div className="bo-kv" data-slot="contrato-kv">
+                  <div className="bo-kvLabel" data-slot="contrato-kvLabel">Fichando ahora</div>
+                  <div className="bo-kvValue" data-slot="contrato-kvValue">{formatElapsedHHMMSS(liveEntry, tick)}</div>
                 </div>
               ) : null}
             </div>
 
-            <div className="bo-memberSaveInline">
+            <div className="bo-memberSaveInline" data-slot="contrato-memberSaveInline">
               <button className="bo-btn bo-btn--primary" type="button" data-testid="miembro-contrato-save-button" onClick={onSave} disabled={saving}>
                 <Check size={14} strokeWidth={1.8} />
                 {saving ? "Guardando..." : "Guardar contrato"}

@@ -54,12 +54,12 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
   }));
 
   return (
-    <div className="bo-tableStatusCell">
+    <div className="bo-tableStatusCell" data-slot="invoiceTable-tableStatusCell">
       <DropdownMenu
         label={`Cambiar estado de ${invoice.customer_name}`}
         items={statusOptions}
         triggerContent={
-          <span className={`bo-badge ${currentConfig.className} bo-statusBadge--clickable`}>
+          <span className={`bo-badge ${currentConfig.className} bo-statusBadge--clickable`} data-slot="invoiceTable-span">
             {currentConfig.label}
           </span>
         }
@@ -71,7 +71,7 @@ function StatusCell({ invoice, onStatusChange, onStatusChangeConfirm }: {
 
 function ReservationBadge({ isReservation }: { isReservation: boolean }) {
   return (
-    <span className={`bo-badge ${isReservation ? "bo-badge--info" : "bo-badge--muted"}`}>
+    <span className={`bo-badge ${isReservation ? "bo-badge--info" : "bo-badge--muted"}`} data-slot="invoiceTable-span">
       {isReservation ? "Reserva" : "Sin reserva"}
     </span>
   );
@@ -82,14 +82,14 @@ function SplitBadge({ isSplitChild, isSplitParent, percentage }: { isSplitChild?
 
   if (isSplitChild) {
     return (
-      <span className="bo-badge bo-badge--warning" title={`Factura分裂 - Porcentaje: ${percentage || 0}%`}>
+      <span className="bo-badge bo-badge--warning" title={`Factura分裂 - Porcentaje: ${percentage || 0}%`} data-slot="invoiceTable-badge--warning">
         Factura分裂
       </span>
     );
   }
 
   return (
-    <span className="bo-badge bo-badge--info" title="Factura dividida">
+    <span className="bo-badge bo-badge--info" title="Factura dividida" data-slot="invoiceTable-badge--info">
      分裂 padre
     </span>
   );
@@ -105,12 +105,12 @@ function CategoryBadge({ category }: { category?: InvoiceCategory }) {
 function CreditNoteBadge({ invoice }: { invoice: Invoice }) {
   if (!invoice.is_credit_note) return null;
   return (
-    <div className="bo-creditNoteBadge">
-      <span className="bo-badge bo-badge--warning" title="Nota de credito">
+    <div className="bo-creditNoteBadge" data-slot="invoiceTable-creditNoteBadge">
+      <span className="bo-badge bo-badge--warning" title="Nota de credito" data-slot="invoiceTable-badge--warning">
         Nota de credito
       </span>
       {invoice.original_invoice_number && (
-        <span className="bo-creditNoteRef" title={`Factura original: ${invoice.original_invoice_number}`}>
+        <span className="bo-creditNoteRef" title={`Factura original: ${invoice.original_invoice_number}`} data-slot="invoiceTable-creditNoteRef">
           de {invoice.original_invoice_number}
         </span>
       )}
@@ -125,17 +125,17 @@ function DepositBadge({ invoice }: { invoice: Invoice }) {
   const isPaidOff = remainingBalance <= 0;
 
   return (
-    <div className="bo-depositBadge">
-      <span className={`bo-badge ${config.className}`} title={invoice.deposit_type === "advance" ? "Anticipo" : "Seña"}>
+    <div className="bo-depositBadge" data-slot="invoiceTable-depositBadge">
+      <span className={`bo-badge ${config.className}`} title={invoice.deposit_type === "advance" ? "Anticipo" : "Seña"} data-slot="invoiceTable-span">
         {config.label}
       </span>
       {invoice.deposit_amount !== undefined && invoice.deposit_amount !== null && (
-        <span className="bo-depositAmount" title={`Pagado: ${formatPrice(invoice.deposit_amount, invoice.currency)}`}>
+        <span className="bo-depositAmount" title={`Pagado: ${formatPrice(invoice.deposit_amount, invoice.currency)}`} data-slot="invoiceTable-depositAmount">
           {formatPrice(invoice.deposit_amount, invoice.currency)}
         </span>
       )}
       {invoice.final_invoice_number && (
-        <span className="bo-depositRef" title={`Factura final: ${invoice.final_invoice_number}`}>
+        <span className="bo-depositRef" title={`Factura final: ${invoice.final_invoice_number}`} data-slot="invoiceTable-depositRef">
           Final: {invoice.final_invoice_number}
         </span>
       )}
@@ -146,15 +146,15 @@ function DepositBadge({ invoice }: { invoice: Invoice }) {
 function TagsList({ tags }: { tags?: string[] }) {
   if (!tags || tags.length === 0) return null;
   return (
-    <div className="bo-tagsList">
+    <div className="bo-tagsList" data-slot="invoiceTable-tagsList">
       {tags.slice(0, 3).map((tag, index) => (
-        <span key={index} className="bo-tagItem bo-tagItem--sm">
+        <span key={index} className="bo-tagItem bo-tagItem--sm" data-slot="invoiceTable-tagItem--sm">
           <Tag size={10} />
           {tag}
         </span>
       ))}
       {tags.length > 3 && (
-        <span className="bo-tagItem bo-tagItem--sm bo-tagItem--more">+{tags.length - 3}</span>
+        <span className="bo-tagItem bo-tagItem--sm bo-tagItem--more" data-slot="invoiceTable-tagItem--more">+{tags.length - 3}</span>
       )}
     </div>
   );
@@ -168,14 +168,15 @@ function PaymentProgressCell({ invoice }: { invoice: Invoice }) {
   const isFullyPaid = remaining <= 0;
 
   return (
-    <div className="bo-paymentProgressCell">
-      <span className={`bo-paymentProgressText ${isFullyPaid ? "is-paid" : ""}`}>
+    <div className="bo-paymentProgressCell" data-slot="invoiceTable-paymentProgressCell">
+      <span className={`bo-paymentProgressText ${isFullyPaid ? "is-paid" : ""}`} data-slot="invoiceTable-span">
         {formatPrice(paidAmount, invoice.currency)} / {formatPrice(totalAmount, invoice.currency)}
       </span>
-      <div className="bo-paymentProgressBar">
+      <div className="bo-paymentProgressBar" data-slot="invoiceTable-paymentProgressBar">
         <div
           className={`bo-paymentProgressFill ${isFullyPaid ? "is-complete" : ""}`}
           style={{ width: `${Math.min(percentPaid, 100)}%` }}
+          data-slot="invoice-table-payment-progress-fill"
         />
       </div>
     </div>
@@ -213,41 +214,41 @@ function TableSkeletonRow() {
   return (
     <tr className="bo-tableRow" data-slot="invoice-table-row">
       <td data-label="" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "20px" }} />
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "20px" }} / data-slot="invoiceTable-skeleton--sm">
       </td>
       <td data-label="N. Factura" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px" }} />
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px" }} / data-slot="invoiceTable-skeleton--sm">
       </td>
       <td data-label="Cliente" data-slot="invoice-table-cell">
-        <div className="bo-tableCustomer">
-          <div className="bo-skeleton bo-skeleton--md" style={{ width: "120px" }} />
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "80px", marginTop: "4px" }} />
+        <div className="bo-tableCustomer" data-slot="invoiceTable-tableCustomer">
+          <div className="bo-skeleton bo-skeleton--md" style={{ width: "120px" }} / data-slot="invoiceTable-skeleton--md">
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "80px", marginTop: "4px" }} / data-slot="invoiceTable-skeleton--sm">
         </div>
       </td>
       <td data-label="Email" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "140px" }} />
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "140px" }} / data-slot="invoiceTable-skeleton--sm">
       </td>
       <td data-label="Importe" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--md" style={{ width: "80px" }} />
+        <div className="bo-skeleton bo-skeleton--md" style={{ width: "80px" }} / data-slot="invoiceTable-skeleton--md">
       </td>
       <td data-label="Moneda" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "50px" }} />
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "50px" }} / data-slot="invoiceTable-skeleton--sm">
       </td>
       <td data-label="Fecha" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px" }} />
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px" }} / data-slot="invoiceTable-skeleton--sm">
       </td>
       <td data-label="Estado" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px", height: "22px" }} />
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px", height: "22px" }} / data-slot="invoiceTable-skeleton--sm">
       </td>
       <td data-label="Tipo" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px", height: "22px" }} />
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px", height: "22px" }} / data-slot="invoiceTable-skeleton--sm">
       </td>
       <td data-label="" data-slot="invoice-table-cell"></td>
       <td data-label="" data-slot="invoice-table-cell">
-        <div className="bo-tableActions">
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} />
+        <div className="bo-tableActions" data-slot="invoiceTable-tableActions">
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} / data-slot="invoiceTable-skeleton--sm">
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} / data-slot="invoiceTable-skeleton--sm">
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} / data-slot="invoiceTable-skeleton--sm">
         </div>
       </td>
     </tr>
@@ -283,9 +284,9 @@ function TableSkeleton() {
         </table>
       </div>
       <div className="bo-pager is-solo" data-slot="invoice-pager">
-        <div className="bo-pagerText" aria-live="polite">
-          <span className="bo-skeleton bo-skeleton--sm" style={{ width: "100px", display: "inline-block" }} />
-          <span className="bo-srOnly">Cargando...</span>
+        <div className="bo-pagerText" aria-live="polite" data-slot="invoiceTable-pagerText">
+          <span className="bo-skeleton bo-skeleton--sm" style={{ width: "100px", display: "inline-block" }} / data-slot="invoiceTable-skeleton--sm">
+          <span className="bo-srOnly" data-slot="invoiceTable-srOnly">Cargando...</span>
         </div>
       </div>
     </div>
@@ -518,15 +519,15 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
     if (isFirstTime) {
       // Empty state for no invoices at all
       return (
-        <div className="bo-emptyTable" role="status" aria-live="polite">
-          <div className="bo-emptyTableIcon">
+        <div className="bo-emptyTable" role="status" aria-live="polite" data-slot="invoiceTable-emptyTable">
+          <div className="bo-emptyTableIcon" data-slot="invoiceTable-emptyTableIcon">
             <FileText size={24} />
           </div>
-          <h3 className="bo-emptyTitle">No hay facturas todavia</h3>
-          <p className="bo-emptyDesc">
+          <h3 className="bo-emptyTitle" data-slot="invoiceTable-emptyTitle">No hay facturas todavia</h3>
+          <p className="bo-emptyDesc" data-slot="invoiceTable-emptyDesc">
             Crea tu primera factura para comenzar a gestionar tus ingresos.
           </p>
-          <div className="bo-emptyActions">
+          <div className="bo-emptyActions" data-slot="invoiceTable-emptyActions">
             <button
               className="bo-btn bo-btn--primary bo-btn--sm"
               type="button"
@@ -543,12 +544,12 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
 
     // Empty state for no search results
     return (
-      <div className="bo-emptySearch" role="status" aria-live="polite">
-        <div className="bo-emptySearchIcon">
+      <div className="bo-emptySearch" role="status" aria-live="polite" data-slot="invoiceTable-emptySearch">
+        <div className="bo-emptySearchIcon" data-slot="invoiceTable-emptySearchIcon">
           <SearchX size={28} />
         </div>
-        <h3 className="bo-emptyTitle">No se encontraron facturas</h3>
-        <p className="bo-emptyDesc">
+        <h3 className="bo-emptyTitle" data-slot="invoiceTable-emptyTitle">No se encontraron facturas</h3>
+        <p className="bo-emptyDesc" data-slot="invoiceTable-emptyDesc">
           No hay resultados para los filtros aplicados. Intenta ajustar los criterios de busqueda o limpiar los filtros.
         </p>
       </div>
@@ -556,15 +557,15 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
   }
 
   return (
-    <div className="bo-tableWrap">
+    <div className="bo-tableWrap" data-slot="invoiceTable-tableWrap">
       {/* Bulk Actions Bar */}
       {someSelected && (
-        <div className="bo-bulkBar" role="region" aria-live="polite">
-          <div className="bo-bulkBarContent">
-            <div className="bo-bulkBarInfo">
-              <span className="bo-bulkBarCount">{selectedIds.size} elemento{selectedIds.size !== 1 ? "s" : ""} seleccionado{selectedIds.size !== 1 ? "s" : ""}</span>
+        <div className="bo-bulkBar" role="region" aria-live="polite" data-slot="invoiceTable-bulkBar">
+          <div className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
+            <div className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
+              <span className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{selectedIds.size} elemento{selectedIds.size !== 1 ? "s" : ""} seleccionado{selectedIds.size !== 1 ? "s" : ""}</span>
             </div>
-            <div className="bo-bulkBarActions">
+            <div className="bo-bulkBarActions" data-slot="invoiceTable-bulkBarActions">
               <button
                 className="bo-btn bo-btn--primary bo-btn--sm"
                 type="button"
@@ -635,12 +636,12 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
       )}
       {/* Print All Visible Bar - shown when there are invoices but nothing is selected */}
       {!someSelected && invoices.length > 0 && (
-        <div className="bo-bulkBar" role="region" aria-live="polite">
-          <div className="bo-bulkBarContent">
-            <div className="bo-bulkBarInfo">
-              <span className="bo-bulkBarCount">{invoices.length} facturas en esta pagina</span>
+        <div className="bo-bulkBar" role="region" aria-live="polite" data-slot="invoiceTable-bulkBar">
+          <div className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
+            <div className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
+              <span className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{invoices.length} facturas en esta pagina</span>
             </div>
-            <div className="bo-bulkBarActions">
+            <div className="bo-bulkBarActions" data-slot="invoiceTable-bulkBarActions">
               <button
                 className="bo-btn bo-btn--primary bo-btn--sm"
                 type="button"
@@ -661,7 +662,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               {columns.map((col) => (
                 <th key={col.key} className={`col-${col.key}`} data-slot="invoice-table-header">
                   {col.key === "selection" ? (
-                    <label className="bo-checkboxContainer bo-checkboxContainer--header">
+                    <label className="bo-checkboxContainer bo-checkboxContainer--header" data-slot="invoiceTable-checkboxContainer--header">
                       <input
                         type="checkbox"
                         checked={allSelected}
@@ -669,7 +670,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         aria-label={allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
                         data-testid="invoice-select-all-checkbox"
                       />
-                      <span className="bo-checkboxMark"></span>
+                      <span className="bo-checkboxMark" data-slot="invoiceTable-checkboxMark"></span>
                     </label>
                   ) : "sortField" in col && col.sortable ? (
                     <SortableHeader
@@ -696,7 +697,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               return (
               <tr key={invoice.id} className={`bo-tableRow${selectedIds.has(invoice.id) ? " is-selected" : ""}${isOverdue ? " bo-tableRow--overdue" : ""}`} data-slot={`invoice-table-row-${invoice.id}`}>
                 <td className={`col-selection`} data-label="" data-slot="invoice-table-cell">
-                  <label className="bo-checkboxContainer">
+                  <label className="bo-checkboxContainer" data-slot="invoiceTable-checkboxContainer">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(invoice.id)}
@@ -704,14 +705,14 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       aria-label={`Seleccionar factura ${invoice.invoice_number || invoice.id}`}
                       data-testid={`invoice-select-checkbox-${invoice.id}`}
                     />
-                    <span className="bo-checkboxMark"></span>
+                    <span className="bo-checkboxMark" data-slot="invoiceTable-checkboxMark"></span>
                   </label>
                 </td>
                 <td className={`col-invoice_number`} data-label="N. Factura" data-slot="invoice-table-cell">
                   {invoice.invoice_number || "-"}
                 </td>
                 <td className={`col-customer_name`} data-label="Cliente" data-slot="invoice-table-cell">
-                  <div className="bo-tableCustomer">
+                  <div className="bo-tableCustomer" data-slot="invoiceTable-tableCustomer">
                     <button
                       type="button"
                       className="bo-tableCustomerName bo-tableCustomerName--link"
@@ -722,14 +723,14 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       {invoice.customer_name}
                     </button>
                     {invoice.customer_surname && (
-                      <span className="bo-tableCustomerSurname"> {invoice.customer_surname}</span>
+                      <span className="bo-tableCustomerSurname" data-slot="invoiceTable-tableCustomerSurname"> {invoice.customer_surname}</span>
                     )}
                   </div>
                 </td>
                 <td className={`col-customer_email`} data-label="Email" data-slot="invoice-table-cell">{invoice.customer_email}</td>
                 <td className={`col-amount`} data-label="Importe" data-slot="invoice-table-cell">{formatPrice(invoice.amount, invoice.currency)}</td>
                 <td className={`col-currency`} data-label="Moneda" data-slot="invoice-table-cell">
-                  <span className="bo-badge bo-badge--muted">{invoice.currency || "EUR"}</span>
+                  <span className="bo-badge bo-badge--muted" data-slot="invoiceTable-badge--muted">{invoice.currency || "EUR"}</span>
                 </td>
                 <td className={`col-payment_progress`} data-label="Pagado" data-slot="invoice-table-cell">
                   <PaymentProgressCell invoice={invoice} />
@@ -739,37 +740,37 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                   {invoice.due_date ? (
                     <span
                       className={`bo-dueDate ${new Date(invoice.due_date) < new Date(new Date().toDateString()) && (invoice.status === "pendiente" || invoice.status === "enviada") && !invoice.payment_date ? "bo-dueDate--overdue" : ""}`}
-                      title={isOverdue ? `Vencida hace ${daysOverdue} dias` : "Fecha de vencimiento"}
+                      data-slot="invoice-table-due-date"                      title={isOverdue ? `Vencida hace ${daysOverdue} dias` : "Fecha de vencimiento"}
                     >
                       {formatDate(invoice.due_date)}
                     </span>
                   ) : (
-                    <span className="bo-mutedText">-</span>
+                    <span className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>
                   )}
                 </td>
                 <td className={`col-payment_date`} data-label="F. Pago" data-slot="invoice-table-cell">
                   {invoice.payment_date ? (
-                    <span className="bo-paymentDate" title="Fecha de pago">
+                    <span className="bo-paymentDate" title="Fecha de pago" data-slot="invoiceTable-paymentDate">
                       <Calendar size={12} />
                       {formatDate(invoice.payment_date)}
                     </span>
                   ) : isOverdue ? (
-                    <span className="bo-daysOverdue" title={`${daysOverdue} dias de retraso`}>
+                    <span className="bo-daysOverdue" title={`${daysOverdue} dias de retraso`} data-slot="invoiceTable-daysOverdue">
                       <AlertTriangle size={12} />
                       {daysOverdue} dias
                     </span>
                   ) : (
-                    <span className="bo-mutedText">-</span>
+                    <span className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>
                   )}
                 </td>
                 <td className={`col-payment_method`} data-label="Metodo" data-slot="invoice-table-cell">
                   {invoice.payment_method ? (
-                    <span className="bo-paymentMethod" title={PAYMENT_METHOD_LABELS[invoice.payment_method]}>
+                    <span className="bo-paymentMethod" title={PAYMENT_METHOD_LABELS[invoice.payment_method]} data-slot="invoiceTable-paymentMethod">
                       <CreditCard size={12} />
                       {PAYMENT_METHOD_LABELS[invoice.payment_method]}
                     </span>
                   ) : (
-                    <span className="bo-mutedText">-</span>
+                    <span className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>
                   )}
                 </td>
                 <td className={`col-status`} data-label="Estado" data-slot="invoice-table-cell">
@@ -793,7 +794,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 </td>
                 <td className={`col-attachment`} data-label="" data-slot="invoice-table-cell">
                   {(invoice.attachments && invoice.attachments.length > 0) || invoice.account_image_url || invoice.internal_notes ? (
-                    <div className="bo-tableAttachmentCell">
+                    <div className="bo-tableAttachmentCell" data-slot="invoiceTable-tableAttachmentCell">
                       {invoice.attachments && invoice.attachments.length > 0 && (
                         <button
                           className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--attachment"
@@ -805,17 +806,17 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                         >
                           <FolderOpen size={14} />
                           {invoice.attachments.length > 1 && (
-                            <span className="bo-tableAttachmentCount">{invoice.attachments.length}</span>
+                            <span className="bo-tableAttachmentCount" data-slot="invoiceTable-tableAttachmentCount">{invoice.attachments.length}</span>
                           )}
                         </button>
                       )}
                       {invoice.account_image_url && (
-                        <span className="bo-tableAttachment" title="Imagen adjunta">
+                        <span className="bo-tableAttachment" title="Imagen adjunta" data-slot="invoiceTable-tableAttachment">
                           <Paperclip size={14} />
                         </span>
                       )}
                       {invoice.internal_notes && (
-                        <span className="bo-tableAttachment bo-tableNotesIndicator" title="Notas internas">
+                        <span className="bo-tableAttachment bo-tableNotesIndicator" title="Notas internas" data-slot="invoiceTable-tableNotesIndicator">
                           <MessageSquare size={14} />
                         </span>
                       )}
@@ -823,7 +824,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                   ) : null}
                 </td>
                 <td className={`col-actions`} data-slot="invoice-table-cell">
-                  <div className="bo-tableActions">
+                  <div className="bo-tableActions" data-slot="invoiceTable-tableActions">
                     <button
                       className="bo-btn bo-btn--ghost bo-btn--sm"
                       type="button"
@@ -1031,12 +1032,12 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
           </tfoot>
         </table>
       </div>
-      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación">
-        <div className="bo-pagerText">
+      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="invoiceTable-paginaci-n">
+        <div className="bo-pagerText" data-slot="invoiceTable-pagerText">
           Página {page} de {totalPages} · {total} resultados
         </div>
         {showPagerBtns ? (
-          <div className="bo-pagerBtns">
+          <div className="bo-pagerBtns" data-slot="invoiceTable-pagerBtns">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={loading || page <= 1} data-testid="invoice-pagination-prev">
               Anterior
             </button>

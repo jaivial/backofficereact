@@ -121,14 +121,14 @@ export default function RecurringInvoicesPage() {
   const getStatusBadge = (isActive: boolean) => {
     if (isActive) {
       return (
-        <span className="bo-recurringStatus bo-recurringStatus--active">
+        <span className="bo-recurringStatus bo-recurringStatus--active" data-slot="recurrentes-recurringStatus--active">
           <CheckCircle size={12} />
           Activa
         </span>
       );
     }
     return (
-      <span className="bo-recurringStatus bo-recurringStatus--paused">
+      <span className="bo-recurringStatus bo-recurringStatus--paused" data-slot="recurrentes-recurringStatus--paused">
         <Pause size={12} />
         Pausada
       </span>
@@ -140,7 +140,7 @@ export default function RecurringInvoicesPage() {
       <div className="bo-pageHeader" data-testid="facturas-recurrentes-header">
         <div className="bo-pageHeaderTitle" data-testid="facturas-recurrentes-title">
           <RefreshCw size={24} />
-          <h1>Facturación Recurrente</h1>
+          <h1 data-slot="recurrentes-nte">Facturación Recurrente</h1>
         </div>
         <div className="bo-pageHeaderActions" data-testid="facturas-recurrentes-header-actions">
           <button
@@ -157,16 +157,16 @@ export default function RecurringInvoicesPage() {
       {/* Stats Cards */}
       <div className="bo-recurringStats" data-testid="facturas-recurrentes-stats">
         <div className="bo-recurringStatCard" data-testid="facturas-recurrentes-total-stat">
-          <div className="bo-recurringStatCardValue">{data.total}</div>
-          <div className="bo-recurringStatCardLabel">Total</div>
+          <div className="bo-recurringStatCardValue" data-slot="recurrentes-recurringStatCardValue">{data.total}</div>
+          <div className="bo-recurringStatCardLabel" data-slot="recurrentes-recurringStatCardLabel">Total</div>
         </div>
         <div className="bo-recurringStatCard bo-recurringStatCard--active" data-testid="facturas-recurrentes-activas-stat">
-          <div className="bo-recurringStatCardValue">{data.activeCount}</div>
-          <div className="bo-recurringStatCardLabel">Activas</div>
+          <div className="bo-recurringStatCardValue" data-slot="recurrentes-recurringStatCardValue">{data.activeCount}</div>
+          <div className="bo-recurringStatCardLabel" data-slot="recurrentes-recurringStatCardLabel">Activas</div>
         </div>
         <div className="bo-recurringStatCard bo-recurringStatCard--paused" data-testid="facturas-recurrentes-pausadas-stat">
-          <div className="bo-recurringStatCardValue">{data.pausedCount}</div>
-          <div className="bo-recurringStatCardLabel">Pausadas</div>
+          <div className="bo-recurringStatCardValue" data-slot="recurrentes-recurringStatCardValue">{data.pausedCount}</div>
+          <div className="bo-recurringStatCardLabel" data-slot="recurrentes-recurringStatCardLabel">Pausadas</div>
         </div>
       </div>
 
@@ -182,8 +182,8 @@ export default function RecurringInvoicesPage() {
         {data.recurringInvoices.length === 0 ? (
           <div className="bo-emptyState" data-testid="facturas-recurrentes-empty-state">
             <RefreshCw size={48} />
-            <h3>No hay facturación recurrente</h3>
-            <p>Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
+            <h3 data-slot="recurrentes-nte">No hay facturación recurrente</h3>
+            <p data-slot="recurrentes-ras">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
             <button
               className="bo-btn bo-btn--primary"
               onClick={() => navigate("/app/facturas/crear?recurring=true")}
@@ -212,8 +212,8 @@ export default function RecurringInvoicesPage() {
                   <tr key={item.id} data-testid={`facturas-recurrentes-row-${item.id}`} data-slot={`recurring-table-row-${item.id}`}>
                     <td data-slot="recurring-table-cell">
                       <div className="bo-recurringCustomer" data-testid="facturas-recurrentes-customer">
-                        <div className="bo-recurringCustomerName">{item.customer_name}</div>
-                        <div className="bo-recurringCustomerEmail">{item.customer_email}</div>
+                        <div className="bo-recurringCustomerName" data-slot="recurrentes-recurringCustomerName">{item.customer_name}</div>
+                        <div className="bo-recurringCustomerEmail" data-slot="recurrentes-recurringCustomerEmail">{item.customer_email}</div>
                       </div>
                     </td>
                     <td data-slot="recurring-table-cell">
@@ -234,8 +234,8 @@ export default function RecurringInvoicesPage() {
                     </td>
                     <td data-slot="recurring-table-cell">
                       <div className="bo-recurringCount" data-testid="facturas-recurrentes-count">
-                        <span className="bo-recurringCountValue">{item.invoice_count}</span>
-                        <span className="bo-recurringCountLabel">facturas</span>
+                        <span className="bo-recurringCountValue" data-slot="recurrentes-recurringCountValue">{item.invoice_count}</span>
+                        <span className="bo-recurringCountLabel" data-slot="recurrentes-recurringCountLabel">facturas</span>
                       </div>
                     </td>
                     <td data-slot="recurring-table-cell">

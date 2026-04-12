@@ -90,14 +90,14 @@ export default function Page() {
 
   return (
     <section aria-label="Mi Horario" className="bo-content-grid bo-miHorarioPage" data-slot="mi-horario-section">
-      <div className="bo-panel bo-miHorarioPanel">
-        <div className="bo-panelHead">
-          <div>
-            <div className="bo-panelTitle">
+      <div className="bo-panel bo-miHorarioPanel" data-slot="mi-horario-miHorarioPanel">
+        <div className="bo-panelHead" data-slot="mi-horario-panelHead">
+          <div data-slot="mi-horario-div">
+            <div className="bo-panelTitle" data-slot="mi-horario-panelTitle">
               <Clock3 size={16} strokeWidth={1.8} />
               Mi Horario
             </div>
-            <div className="bo-panelMeta">Consulta tus horarios asignados.</div>
+            <div className="bo-panelMeta" data-slot="mi-horario-panelMeta">Consulta tus horarios asignados.</div>
           </div>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -109,36 +109,36 @@ export default function Page() {
           </button>
         </div>
 
-        <div className="bo-panelBody">
+        <div className="bo-panelBody" data-slot="mi-horario-panelBody">
           {error ? (
-            <div className="bo-alert bo-alert--error">{error}</div>
+            <div className="bo-alert bo-alert--error" data-slot="mi-horario-alert--error">{error}</div>
           ) : sortedSchedules.length === 0 ? (
-            <div className="bo-emptyState">
+            <div className="bo-emptyState" data-slot="mi-horario-emptyState">
               <User size={48} strokeWidth={1} />
-              <p>No tienes horarios asignados.</p>
-              <p className="bo-mutedText">Contacta con tu responsable para que asigne tus turnos.</p>
+              <p data-slot="mi-horario-dos">No tienes horarios asignados.</p>
+              <p className="bo-mutedText" data-slot="mi-horario-mutedText">Contacta con tu responsable para que asigne tus turnos.</p>
             </div>
           ) : (
-            <div className="bo-miHorarioList">
+            <div className="bo-miHorarioList" data-slot="mi-horario-miHorarioList">
               {Object.entries(groupedByMonth).map(([monthKey, monthSchedules]) => {
                 const [year, month] = monthKey.split("-").map(Number);
                 const monthName = monthNames[month - 1];
                 return (
-                  <div key={monthKey} className="bo-miHorarioMonth">
-                    <div className="bo-miHorarioMonthHeader">
+                  <div key={monthKey} className="bo-miHorarioMonth" data-slot="mi-horario-miHorarioMonth">
+                    <div className="bo-miHorarioMonthHeader" data-slot="mi-horario-miHorarioMonthHeader">
                       {monthName} {year}
                     </div>
-                    <div className="bo-miHorarioMonthGrid">
+                    <div className="bo-miHorarioMonthGrid" data-slot="mi-horario-miHorarioMonthGrid">
                       {monthSchedules.map((schedule) => (
-                        <div key={schedule.id} className="bo-miHorarioCard">
-                          <div className="bo-miHorarioCardDate">
+                        <div key={schedule.id} className="bo-miHorarioCard" data-slot="mi-horario-miHorarioCard">
+                          <div className="bo-miHorarioCardDate" data-slot="mi-horario-miHorarioCardDate">
                             <CalendarDays size={14} strokeWidth={1.8} />
                             {formatDate(schedule.date)}
                           </div>
-                          <div className="bo-miHorarioCardTime">
+                          <div className="bo-miHorarioCardTime" data-slot="mi-horario-miHorarioCardTime">
                             <Clock3 size={14} strokeWidth={1.8} />
                             {schedule.startTime} - {schedule.endTime}
-                            <span className="bo-miHorarioCardDuration">
+                            <span className="bo-miHorarioCardDuration" data-slot="mi-horario-miHorarioCardDuration">
                               ({diffHours(schedule.startTime, schedule.endTime)})
                             </span>
                           </div>

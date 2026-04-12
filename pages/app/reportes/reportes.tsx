@@ -147,10 +147,10 @@ function CustomerStatementSection({
 
   return (
     <div data-testid="reportes-customer-statement-section">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="reportes-mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-slot="reportes-gap-4">
+          <div data-slot="reportes-div">
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Cliente</label>
             <select
               value={selectedCustomer}
               onChange={(e) => { setSelectedCustomer(e.target.value); if (e.target.value && customers.length === 0) loadCustomers(); }}
@@ -163,19 +163,19 @@ function CustomerStatementSection({
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
+          <div data-slot="reportes-div">
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Desde</label>
             <input type="date" value={statementDateFrom} onChange={(e) => setStatementDateFrom(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               data-testid="reportes-customer-date-from" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
+          <div data-slot="reportes-div">
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Hasta</label>
             <input type="date" value={statementDateTo} onChange={(e) => setStatementDateTo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               data-testid="reportes-customer-date-to" />
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end" data-slot="reportes-items-end">
             <button onClick={loadCustomers} disabled={customersLoading}
               className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
               data-testid="reportes-load-customers-button">
@@ -184,7 +184,7 @@ function CustomerStatementSection({
             </button>
           </div>
         </div>
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 mt-4" data-slot="reportes-mt-4">
           <button onClick={handleGenerate} disabled={customerLoading || !selectedCustomer}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             data-testid="reportes-generate-statement-button">
@@ -210,17 +210,17 @@ function CustomerStatementSection({
 
       {customerStatement ? (
         <>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="reportes-mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4" data-slot="reportes-info-cliente">Información del Cliente</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><span className="text-sm text-gray-500">Nombre</span><p className="text-lg font-medium">{customerStatement.customer_name}</p></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-slot="reportes-gap-4">
+              <div data-slot="reportes-text-gray-500"><span className="text-sm text-gray-500">Nombre</span><p className="text-lg font-medium">{customerStatement.customer_name}</p></div>
               {customerStatement.customer_dni_cif && <div><span className="text-sm text-gray-500">DNI/CIF</span><p className="text-lg font-medium">{customerStatement.customer_dni_cif}</p></div>}
               {customerStatement.customer_email && <div><span className="text-sm text-gray-500">Email</span><p className="text-lg font-medium">{customerStatement.customer_email}</p></div>}
-              <div><span className="text-sm text-gray-500">Periodo</span><p className="text-lg font-medium">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p></div>
+              <div data-slot="reportes-text-gray-500"><span className="text-sm text-gray-500">Periodo</span><p className="text-lg font-medium">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p></div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" data-slot="reportes-mb-6">
             <StatCard title="Saldo Inicial" value={formatCurrency(customerStatement.opening_balance, "EUR")} icon="calendar" />
             <StatCard title="Total Facturado" value={formatCurrency(customerStatement.summary.total_invoiced, "EUR")} icon="file-text" />
             <StatCard title="Total Pagado" value={formatCurrency(customerStatement.summary.total_paid, "EUR")} icon="check" />
@@ -228,26 +228,26 @@ function CustomerStatementSection({
             <StatCard title="Saldo Final" value={formatCurrency(customerStatement.closing_balance, "EUR")} icon="trending-up" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-slot="reportes-gap-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="reportes-bg-gray-50">
                 <h3 className="text-lg font-semibold" data-slot="reportes-facturas-list">Facturas ({customerStatement.invoices.length})</h3>
               </div>
               {customerStatement.invoices.length > 0 ? (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50"><tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Importe</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
+                <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
+                  <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Factura</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Fecha</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Importe</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Estado</th>
                   </tr></thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                     {customerStatement.invoices.map((inv, idx) => (
-                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="px-4 py-3 text-sm text-gray-900">{inv.invoice_number || `#${inv.id}`}{inv.is_credit_note && <span className="ml-2 px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">NC</span>}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{formatDate(inv.invoice_date)}</td>
-                        <td className="px-4 py-3 text-sm text-right">{formatCurrency(inv.total, "EUR")}</td>
-                        <td className="px-4 py-3 text-center"><span className={`px-2 py-1 text-xs rounded-full ${inv.status === "pagada" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>{inv.status}</span></td>
+                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-slot="reportes-tr">
+                        <td className="px-4 py-3 text-sm text-gray-900" data-slot="reportes-text-gray-900">{inv.invoice_number || `#${inv.id}`}{inv.is_credit_note && <span className="ml-2 px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">NC</span>}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600" data-slot="reportes-text-gray-600">{formatDate(inv.invoice_date)}</td>
+                        <td className="px-4 py-3 text-sm text-right" data-slot="reportes-text-right">{formatCurrency(inv.total, "EUR")}</td>
+                        <td className="px-4 py-3 text-center" data-slot="reportes-text-center"><span className={`px-2 py-1 text-xs rounded-full ${inv.status === "pagada" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>{inv.status}</span></td>
                       </tr>
                     ))}
                   </tbody>
@@ -255,25 +255,25 @@ function CustomerStatementSection({
               ) : <div className="p-6 text-center text-gray-500">No hay facturas</div>}
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="reportes-bg-gray-50">
                 <h3 className="text-lg font-semibold" data-slot="reportes-pagos-list">Pagos ({customerStatement.payments.length})</h3>
               </div>
               {customerStatement.payments.length > 0 ? (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50"><tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Importe</th>
+                <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
+                  <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Factura</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Fecha</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Método</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Importe</th>
                   </tr></thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                     {customerStatement.payments.map((pay, idx) => (
-                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="px-4 py-3 text-sm">{pay.invoice_number || `#${pay.invoice_id}`}</td>
-                        <td className="px-4 py-3 text-sm">{formatDate(pay.payment_date)}</td>
-                        <td className="px-4 py-3 text-sm">{pay.payment_method}</td>
-                        <td className="px-4 py-3 text-sm text-right">{formatCurrency(pay.amount, "EUR")}</td>
+                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-slot="reportes-tr">
+                        <td className="px-4 py-3 text-sm" data-slot="reportes-text-sm">{pay.invoice_number || `#${pay.invoice_id}`}</td>
+                        <td className="px-4 py-3 text-sm" data-slot="reportes-text-sm">{formatDate(pay.payment_date)}</td>
+                        <td className="px-4 py-3 text-sm" data-slot="reportes-text-sm">{pay.payment_method}</td>
+                        <td className="px-4 py-3 text-sm text-right" data-slot="reportes-text-right">{formatCurrency(pay.amount, "EUR")}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -283,10 +283,10 @@ function CustomerStatementSection({
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" data-slot="reportes-text-center">
           <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="reportes-sin-estado-cuenta">Sin estado de cuenta</h3>
-          <p className="text-gray-500">Selecciona un cliente y un periodo para generar</p>
+          <p className="text-gray-500" data-slot="reportes-text-gray-500">Selecciona un cliente y un periodo para generar</p>
         </div>
       )}
     </div>
@@ -366,38 +366,38 @@ function IVAReportSection({
 
   return (
     <div data-testid="reportes-iva-section">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="reportes-mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-slot="reportes-gap-4">
+          <div data-slot="reportes-div">
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Periodo</label>
             <select value={datePreset} onChange={(e) => handleDatePresetChange(e.target.value as DatePreset)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               data-testid="reportes-iva-period-select">
               {DATE_PRESETS.map(preset => <option key={preset.value} value={preset.value}>{preset.label}</option>)}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
+          <div data-slot="reportes-div">
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Desde</label>
             <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setDatePreset("custom"); }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               data-testid="reportes-iva-date-from" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
+          <div data-slot="reportes-div">
+            <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Hasta</label>
             <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setDatePreset("custom"); }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               data-testid="reportes-iva-date-to" />
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end" data-slot="reportes-items-end">
             <label className="flex items-center gap-2 cursor-pointer" data-testid="reportes-include-credit-notes-label">
               <input type="checkbox" checked={includeCreditNotes} onChange={(e) => setIncludeCreditNotes(e.target.checked)}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 data-testid="reportes-include-credit-notes-checkbox" />
-              <span className="text-sm text-gray-700">Incluir notas de crédito</span>
+              <span className="text-sm text-gray-700" data-slot="reportes-text-gray-700">Incluir notas de crédito</span>
             </label>
           </div>
         </div>
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 mt-4" data-slot="reportes-mt-4">
           <button onClick={handleGenerate} disabled={loading}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             data-testid="reportes-generate-iva-button">
@@ -422,7 +422,7 @@ function IVAReportSection({
 
       {report ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" data-slot="reportes-mb-6">
             <StatCard title="Base Imponible" value={formatCurrency(report.summary.total_base, "EUR")} icon="file-text" />
             <StatCard title="IVA Acumulado" value={formatCurrency(report.summary.total_iva, "EUR")} icon="calendar" />
             <StatCard title="Total" value={formatCurrency(report.summary.total, "EUR")} icon="trending-up" />
@@ -431,21 +431,21 @@ function IVAReportSection({
 
           {includeCreditNotes && report.summary.credit_note_count > 0 && (
             <>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6" data-slot="reportes-mb-6">
                 <h3 className="text-lg font-semibold text-yellow-800 mb-3" data-slot="reportes-notas-credito">Notas de Crédito</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div><span className="text-sm text-yellow-700">Cantidad</span><p className="text-xl font-bold">{report.summary.credit_note_count}</p></div>
-                  <div><span className="text-sm text-yellow-700">Base</span><p className="text-xl font-bold">{formatCurrency(report.summary.credit_note_base, "EUR")}</p></div>
-                  <div><span className="text-sm text-yellow-700">IVA</span><p className="text-xl font-bold">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p></div>
-                  <div><span className="text-sm text-yellow-700">Total</span><p className="text-xl font-bold">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-slot="reportes-gap-4">
+                  <div data-slot="reportes-text-yellow-700"><span className="text-sm text-yellow-700">Cantidad</span><p className="text-xl font-bold">{report.summary.credit_note_count}</p></div>
+                  <div data-slot="reportes-text-yellow-700"><span className="text-sm text-yellow-700">Base</span><p className="text-xl font-bold">{formatCurrency(report.summary.credit_note_base, "EUR")}</p></div>
+                  <div data-slot="reportes-text-yellow-700"><span className="text-sm text-yellow-700">IVA</span><p className="text-xl font-bold">{formatCurrency(report.summary.credit_note_iva, "EUR")}</p></div>
+                  <div data-slot="reportes-text-yellow-700"><span className="text-sm text-yellow-700">Total</span><p className="text-xl font-bold">{formatCurrency(report.summary.credit_note_base + report.summary.credit_note_iva, "EUR")}</p></div>
                 </div>
               </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6" data-slot="reportes-mb-6">
                 <h3 className="text-lg font-semibold text-green-800 mb-3" data-slot="reportes-total-neto">Total Neto (después de NC)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div><span className="text-sm text-green-700">Base neta</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_base, "EUR")}</p></div>
-                  <div><span className="text-sm text-green-700">IVA neto</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_iva, "EUR")}</p></div>
-                  <div><span className="text-sm text-green-700">Total neto</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_total, "EUR")}</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-slot="reportes-gap-4">
+                  <div data-slot="reportes-text-green-700"><span className="text-sm text-green-700">Base neta</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_base, "EUR")}</p></div>
+                  <div data-slot="reportes-text-green-700"><span className="text-sm text-green-700">IVA neto</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_iva, "EUR")}</p></div>
+                  <div data-slot="reportes-text-green-700"><span className="text-sm text-green-700">Total neto</span><p className="text-2xl font-bold">{formatCurrency(report.summary.net_total, "EUR")}</p></div>
                 </div>
               </div>
             </>
@@ -459,34 +459,34 @@ function IVAReportSection({
             </SimpleTabsList>
 
             <SimpleTabsContent value="breakdown">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50"><tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo IVA</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">IVA</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Facturas</th>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
+                  <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Tipo IVA</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Base</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">IVA</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Total</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Facturas</th>
                     {includeCreditNotes && <><th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Notas Créd.</th><th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base NC</th><th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">IVA NC</th></>}
                   </tr></thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                     {report.breakdown_by_rate.map((item, idx) => (
-                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="px-6 py-4 font-medium">{item.iva_rate}%</td>
-                        <td className="px-6 py-4 text-right">{formatCurrency(item.base_amount, "EUR")}</td>
-                        <td className="px-6 py-4 text-right">{formatCurrency(item.iva_amount, "EUR")}</td>
-                        <td className="px-6 py-4 text-right font-semibold">{formatCurrency(item.base_amount + item.iva_amount, "EUR")}</td>
-                        <td className="px-6 py-4 text-center">{item.invoice_count}</td>
+                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-slot="reportes-tr">
+                        <td className="px-6 py-4 font-medium" data-slot="reportes-font-medium">{item.iva_rate}%</td>
+                        <td className="px-6 py-4 text-right" data-slot="reportes-text-right">{formatCurrency(item.base_amount, "EUR")}</td>
+                        <td className="px-6 py-4 text-right" data-slot="reportes-text-right">{formatCurrency(item.iva_amount, "EUR")}</td>
+                        <td className="px-6 py-4 text-right font-semibold" data-slot="reportes-font-semibold">{formatCurrency(item.base_amount + item.iva_amount, "EUR")}</td>
+                        <td className="px-6 py-4 text-center" data-slot="reportes-text-center">{item.invoice_count}</td>
                         {includeCreditNotes && <><td className="px-6 py-4 text-center">{item.credit_note_count}</td><td className="px-6 py-4 text-right">{formatCurrency(item.credit_note_base, "EUR")}</td><td className="px-6 py-4 text-right">{formatCurrency(item.credit_note_iva, "EUR")}</td></>}
                       </tr>
                     ))}
                   </tbody>
                   <tfoot className="bg-gray-100"><tr>
-                    <td className="px-6 py-4 font-bold">TOTAL</td>
-                    <td className="px-6 py-4 text-right font-bold">{formatCurrency(report.summary.total_base, "EUR")}</td>
-                    <td className="px-6 py-4 text-right font-bold">{formatCurrency(report.summary.total_iva, "EUR")}</td>
-                    <td className="px-6 py-4 text-right font-bold">{formatCurrency(report.summary.total, "EUR")}</td>
-                    <td className="px-6 py-4 text-center font-bold">{report.summary.invoice_count}</td>
+                    <td className="px-6 py-4 font-bold" data-slot="reportes-font-bold">TOTAL</td>
+                    <td className="px-6 py-4 text-right font-bold" data-slot="reportes-font-bold">{formatCurrency(report.summary.total_base, "EUR")}</td>
+                    <td className="px-6 py-4 text-right font-bold" data-slot="reportes-font-bold">{formatCurrency(report.summary.total_iva, "EUR")}</td>
+                    <td className="px-6 py-4 text-right font-bold" data-slot="reportes-font-bold">{formatCurrency(report.summary.total, "EUR")}</td>
+                    <td className="px-6 py-4 text-center font-bold" data-slot="reportes-font-bold">{report.summary.invoice_count}</td>
                     {includeCreditNotes && <><td className="px-6 py-4 text-center font-bold">{report.summary.credit_note_count}</td><td className="px-6 py-4 text-right font-bold">{formatCurrency(report.summary.credit_note_base, "EUR")}</td><td className="px-6 py-4 text-right font-bold">{formatCurrency(report.summary.credit_note_iva, "EUR")}</td></>}
                   </tr></tfoot>
                 </table>
@@ -494,30 +494,30 @@ function IVAReportSection({
             </SimpleTabsContent>
 
             <SimpleTabsContent value="quarterly">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50"><tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trimestre</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periodo</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">IVA</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Facturas</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Notas Créd.</th>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
+                  <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Trimestre</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Periodo</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Base</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">IVA</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Total</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Facturas</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Notas Créd.</th>
                   </tr></thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                     {quarterlyBreakdown.length > 0 ? quarterlyBreakdown.map((item, idx) => (
-                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="px-6 py-4 font-medium">{item.quarterLabel}</td>
-                        <td className="px-6 py-4">{formatDate(item.start_date)} - {formatDate(item.end_date)}</td>
-                        <td className="px-6 py-4 text-right">{formatCurrency(item.base_amount, "EUR")}</td>
-                        <td className="px-6 py-4 text-right">{formatCurrency(item.iva_amount, "EUR")}</td>
-                        <td className="px-6 py-4 text-right font-semibold">{formatCurrency(item.total, "EUR")}</td>
-                        <td className="px-6 py-4 text-center">{item.invoice_count}</td>
-                        <td className="px-6 py-4 text-center">{item.credit_note_count}</td>
+                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-slot="reportes-tr">
+                        <td className="px-6 py-4 font-medium" data-slot="reportes-font-medium">{item.quarterLabel}</td>
+                        <td className="px-6 py-4" data-slot="reportes-py-4">{formatDate(item.start_date)} - {formatDate(item.end_date)}</td>
+                        <td className="px-6 py-4 text-right" data-slot="reportes-text-right">{formatCurrency(item.base_amount, "EUR")}</td>
+                        <td className="px-6 py-4 text-right" data-slot="reportes-text-right">{formatCurrency(item.iva_amount, "EUR")}</td>
+                        <td className="px-6 py-4 text-right font-semibold" data-slot="reportes-font-semibold">{formatCurrency(item.total, "EUR")}</td>
+                        <td className="px-6 py-4 text-center" data-slot="reportes-text-center">{item.invoice_count}</td>
+                        <td className="px-6 py-4 text-center" data-slot="reportes-text-center">{item.credit_note_count}</td>
                       </tr>
                     )) : (
-                      <tr><td colSpan={7} className="px-6 py-8 text-center text-gray-500">No hay datos trimestrales disponibles.</td></tr>
+                      <tr data-slot="reportes-text-gray-500"><td colSpan={7} className="px-6 py-8 text-center text-gray-500">No hay datos trimestrales disponibles.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -525,35 +525,35 @@ function IVAReportSection({
             </SimpleTabsContent>
 
             <SimpleTabsContent value="invoices">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
                 <button onClick={() => setExpandedInvoices(!expandedInvoices)} className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
                   data-testid="reportes-toggle-invoices-button">
-                  <span className="text-sm font-medium">Lista de facturas ({report.invoices.length})</span>
+                  <span className="text-sm font-medium" data-slot="reportes-font-medium">Lista de facturas ({report.invoices.length})</span>
                   {expandedInvoices ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
                 {expandedInvoices && (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50"><tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">IVA</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">IVA Importe</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                  <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
+                    <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Factura</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Cliente</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Fecha</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Base</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">IVA</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">IVA Importe</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Total</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Tipo</th>
                     </tr></thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                       {report.invoices.map((inv, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                          <td className="px-6 py-4">{inv.invoice_number || `#${inv.id}`}</td>
-                          <td className="px-6 py-4">{inv.customer_name}</td>
-                          <td className="px-6 py-4">{formatDate(inv.invoice_date)}</td>
-                          <td className="px-6 py-4 text-right">{formatCurrency(inv.base_amount, "EUR")}</td>
-                          <td className="px-6 py-4 text-center">{inv.iva_rate}%</td>
-                          <td className="px-6 py-4 text-right">{formatCurrency(inv.iva_amount, "EUR")}</td>
-                          <td className="px-6 py-4 text-right font-semibold">{formatCurrency(inv.total, "EUR")}</td>
-                          <td className="px-6 py-4 text-center">
+                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-slot="reportes-tr">
+                          <td className="px-6 py-4" data-slot="reportes-py-4">{inv.invoice_number || `#${inv.id}`}</td>
+                          <td className="px-6 py-4" data-slot="reportes-py-4">{inv.customer_name}</td>
+                          <td className="px-6 py-4" data-slot="reportes-py-4">{formatDate(inv.invoice_date)}</td>
+                          <td className="px-6 py-4 text-right" data-slot="reportes-text-right">{formatCurrency(inv.base_amount, "EUR")}</td>
+                          <td className="px-6 py-4 text-center" data-slot="reportes-text-center">{inv.iva_rate}%</td>
+                          <td className="px-6 py-4 text-right" data-slot="reportes-text-right">{formatCurrency(inv.iva_amount, "EUR")}</td>
+                          <td className="px-6 py-4 text-right font-semibold" data-slot="reportes-font-semibold">{formatCurrency(inv.total, "EUR")}</td>
+                          <td className="px-6 py-4 text-center" data-slot="reportes-text-center">
                             {inv.is_credit_note ? <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">NC</span> : <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Factura</span>}
                           </td>
                         </tr>
@@ -566,10 +566,10 @@ function IVAReportSection({
           </SimpleTabs>
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" data-slot="reportes-text-center">
           <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="reportes-sin-reporte-generado">No hay reporte generado</h3>
-          <p className="text-gray-500 mb-4">Selecciona un periodo y genera el reporte</p>
+          <p className="text-gray-500 mb-4" data-slot="reportes-mb-4">Selecciona un periodo y genera el reporte</p>
           <button onClick={handleGenerate} disabled={loading} data-testid="reportes-generate-btn"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />} Generar Reporte
@@ -589,15 +589,15 @@ export default function Page() {
   const currentYear = data.currentYear || new Date().getFullYear();
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
+    <div className="p-6 max-w-7xl mx-auto" data-slot="reportes-mx-auto">
+      <div className="flex items-center justify-between mb-6" data-slot="reportes-mb-6">
+        <div data-slot="reportes-div">
           <h1 className="text-2xl font-bold text-gray-900" data-slot="reportes-page-title">Reportes</h1>
-          <p className="text-gray-600">Reportes de IVA y estados de cuenta de clientes</p>
+          <p className="text-gray-600" data-slot="reportes-text-gray-600">Reportes de IVA y estados de cuenta de clientes</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6" data-slot="reportes-mb-6">
         <SimpleTabs defaultValue="iva">
           <SimpleTabsList className="border-b">
             <SimpleTabsContent value="iva" trigger="Reportes de IVA" />

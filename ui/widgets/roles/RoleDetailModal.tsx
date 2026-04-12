@@ -133,9 +133,9 @@ export function RoleDetailModal({
     <Modal open={open} title={role?.label || "Rol"} onClose={onClose} widthPx={960} className={cn("bo-modal--roleDetail", className)}>
       {role ? (
         <>
-          <div className="bo-modalHead">
-            <div className="bo-modalTitle">
-              <span className="bo-roleModalTitleIcon" aria-hidden="true">
+          <div className="bo-modalHead" data-slot="roleDetailModal-modalHead">
+            <div className="bo-modalTitle" data-slot="roleDetailModal-modalTitle">
+              <span className="bo-roleModalTitleIcon" aria-hidden="true" data-slot="roleDetailModal-roleModalTitleIcon">
                 <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={18} strokeWidth={1.8} />
               </span>
               {role.label}
@@ -145,28 +145,28 @@ export function RoleDetailModal({
             </button>
           </div>
 
-          <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-            <div className="bo-panel bo-roleModalPanel">
-              <div className="bo-panelHead">
-                <div>
-                  <div className="bo-panelTitle bo-roleModalInfoTitle">
+          <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="roleDetailModal-modalOutline">
+            <div className="bo-panel bo-roleModalPanel" data-slot="roleDetailModal-roleModalPanel">
+              <div className="bo-panelHead" data-slot="roleDetailModal-panelHead">
+                <div data-slot="roleDetailModal-div">
+                  <div className="bo-panelTitle bo-roleModalInfoTitle" data-slot="roleDetailModal-roleModalInfoTitle">
                     <Info size={14} strokeWidth={1.8} />
                     Información del rol
                   </div>
-                  <div className="bo-panelMeta">Gestiona permisos y usuarios asignados a este rol.</div>
+                  <div className="bo-panelMeta" data-slot="roleDetailModal-panelMeta">Gestiona permisos y usuarios asignados a este rol.</div>
                 </div>
               </div>
 
-              <div className="bo-panelBody bo-roleModalInfoBody">
-                <div className="bo-roleMetaRow">
+              <div className="bo-panelBody bo-roleModalInfoBody" data-slot="roleDetailModal-roleModalInfoBody">
+                <div className="bo-roleMetaRow" data-slot="roleDetailModal-roleMetaRow">
                   <RoleBadge roleSlug={role.slug} roleName={role.label} importance={role.importance} />
                 </div>
 
-                <div className="bo-field bo-field--wide">
-                  <div className="bo-label">Permisos</div>
-                  <div className="bo-chips bo-chips--dense">
+                <div className="bo-field bo-field--wide" data-slot="roleDetailModal-field--wide">
+                  <div className="bo-label" data-slot="roleDetailModal-label">Permisos</div>
+                  <div className="bo-chips bo-chips--dense" data-slot="roleDetailModal-chips--dense">
                     {role.permissions.map((perm) => (
-                      <span key={perm} className="bo-chip bo-chip--static">
+                      <span key={perm} className="bo-chip bo-chip--static" data-slot="roleDetailModal-chip--static">
                         {perm}
                       </span>
                     ))}
@@ -177,27 +177,27 @@ export function RoleDetailModal({
             </div>
           </div>
 
-          <div className="bo-roleModalGrid">
-            <div className="bo-panel">
-              <div className="bo-panelHead">
-                <div>
-                  <div className="bo-panelTitle bo-roleModalUsersTitle">
+          <div className="bo-roleModalGrid" data-slot="roleDetailModal-roleModalGrid">
+            <div className="bo-panel" data-slot="roleDetailModal-panel">
+              <div className="bo-panelHead" data-slot="roleDetailModal-panelHead">
+                <div data-slot="roleDetailModal-div">
+                  <div className="bo-panelTitle bo-roleModalUsersTitle" data-slot="roleDetailModal-roleModalUsersTitle">
                     <Users size={14} strokeWidth={1.8} />
                     Miembros con este rol
                   </div>
-                  <div className="bo-panelMeta">{membersInRole.length} miembros</div>
+                  <div className="bo-panelMeta" data-slot="roleDetailModal-panelMeta">{membersInRole.length} miembros</div>
                 </div>
               </div>
-              <div className="bo-panelBody bo-roleModalUserList">
+              <div className="bo-panelBody bo-roleModalUserList" data-slot="roleDetailModal-roleModalUserList">
                 {membersInRole.map((member) => {
                   const blockedByImportance = !canManageUser(actorImportance, member.roleImportance);
                   const isBusy = member.userId !== null && busyUserId === member.userId;
                   const disabledSelect = !member.hasUser || blockedByImportance || isBusy;
                   return (
                     <label key={member.memberId} className="bo-roleUserRow" data-slot={`role-detail-user-row-${member.memberId}`}>
-                      <div className="bo-roleUserMain">
-                        <div className="bo-roleUserName">{member.name}</div>
-                        <div className="bo-roleUserEmail">{member.email}</div>
+                      <div className="bo-roleUserMain" data-slot="roleDetailModal-roleUserMain">
+                        <div className="bo-roleUserName" data-slot="roleDetailModal-roleUserName">{member.name}</div>
+                        <div className="bo-roleUserEmail" data-slot="roleDetailModal-roleUserEmail">{member.email}</div>
                       </div>
                       <select
                         className="bo-input bo-input--sm bo-selectNative bo-roleUserSelect"
@@ -227,16 +227,16 @@ export function RoleDetailModal({
               </div>
             </div>
 
-            <div className="bo-roleAssignBox">
-              <div className="bo-roleAssignHead">
-                <div>
-                  <div className="bo-panelTitle">Asignar este rol</div>
-                  <div className="bo-panelMeta">Lista completa de miembros del restaurante.</div>
+            <div className="bo-roleAssignBox" data-slot="roleDetailModal-roleAssignBox">
+              <div className="bo-roleAssignHead" data-slot="roleDetailModal-roleAssignHead">
+                <div data-slot="roleDetailModal-div">
+                  <div className="bo-panelTitle" data-slot="roleDetailModal-panelTitle">Asignar este rol</div>
+                  <div className="bo-panelMeta" data-slot="roleDetailModal-panelMeta">Lista completa de miembros del restaurante.</div>
                 </div>
-                <span className="bo-mutedText">{selectedCount} seleccionados</span>
+                <span className="bo-mutedText" data-slot="roleDetailModal-mutedText">{selectedCount} seleccionados</span>
               </div>
 
-              <div className="bo-roleModalUserList">
+              <div className="bo-roleModalUserList" data-slot="roleDetailModal-roleModalUserList">
                 {membersOutRole.map((member) => {
                   const checked = selectedMemberIds.includes(member.memberId);
                   const blockedByUser = !canManageUser(actorImportance, member.roleImportance);
@@ -268,12 +268,12 @@ export function RoleDetailModal({
                           );
                         }}
                       />
-                      <div className="bo-roleUserMain">
-                        <div className="bo-roleUserName">{member.name}</div>
-                        <div className="bo-roleUserEmail">{member.email}</div>
+                      <div className="bo-roleUserMain" data-slot="roleDetailModal-roleUserMain">
+                        <div className="bo-roleUserName" data-slot="roleDetailModal-roleUserName">{member.name}</div>
+                        <div className="bo-roleUserEmail" data-slot="roleDetailModal-roleUserEmail">{member.email}</div>
                         {reason ? <div className="bo-roleUserHint">{reason}</div> : null}
                       </div>
-                      <span className="bo-mutedText">{member.roleLabel}</span>
+                      <span className="bo-mutedText" data-slot="roleDetailModal-mutedText">{member.roleLabel}</span>
                     </label>
                   );
                 })}
@@ -281,7 +281,7 @@ export function RoleDetailModal({
                 {membersOutRole.length === 0 ? <div className="bo-mutedText">No hay más miembros disponibles.</div> : null}
               </div>
 
-              <div className="bo-roleModalAssignFoot">
+              <div className="bo-roleModalAssignFoot" data-slot="roleDetailModal-roleModalAssignFoot">
                 <button
                   className="bo-btn bo-btn--primary bo-btn--sm"
                   type="button"

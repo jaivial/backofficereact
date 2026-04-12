@@ -46,6 +46,7 @@ function SettingsRow({
           "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
           danger ? "bg-red-500/10" : "bg-[hsl(var(--primary))]/10",
         ].join(" ")}
+        data-slot="settings-icon-wrapper"
         aria-hidden="true"
       >
         <Icon
@@ -55,12 +56,12 @@ function SettingsRow({
           aria-hidden="true"
         />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className={["text-sm font-medium", danger ? "text-red-500" : "text-[hsl(var(--foreground))]"].join(" ")}>
+      <div className="flex-1 min-w-0" data-slot="settings-min-w-0">
+        <p className={["text-sm font-medium", danger ? "text-red-500" : "text-[hsl(var(--foreground))]"].join(" ")} data-slot="settings-p">
           {label}
         </p>
         {value && (
-          <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{value}</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] truncate" data-slot="settings-truncate">{value}</p>
         )}
       </div>
     </Tag>
@@ -91,7 +92,7 @@ export default function MobileSettingsPage() {
         <h2 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-2 px-1" data-ui="mobile-settings-section-title">
           Cuenta
         </h2>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2" data-slot="settings-gap-2">
           <SettingsRow
             icon={User}
             label={session.user.name}
@@ -114,7 +115,7 @@ export default function MobileSettingsPage() {
         <h2 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-2 px-1" data-ui="mobile-settings-section-title">
           Preferencias
         </h2>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2" data-slot="settings-gap-2">
           <SettingsRow
             icon={Moon}
             label="Tema oscuro"
@@ -137,7 +138,7 @@ export default function MobileSettingsPage() {
         <h2 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-2 px-1" data-ui="mobile-settings-section-title">
           App
         </h2>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2" data-slot="settings-gap-2">
           <SettingsRow
             icon={Smartphone}
             label="Version"

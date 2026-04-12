@@ -372,7 +372,7 @@ export default function Page() {
       <section aria-label="Fichaje" className="bo-content-grid bo-fichajePage" data-testid="fichaje-section">
         <div className="bo-panel bo-fichajePanel" data-testid="fichaje-panel">
           <div className="bo-panelHead" data-testid="fichaje-panel-head">
-            <div>
+            <div data-slot="fichaje-div">
               <div className="bo-panelTitle bo-fichajeTitle" data-testid="fichaje-title">
                 <Clock3 size={16} strokeWidth={1.8} />
                 Fichaje
@@ -477,7 +477,7 @@ export default function Page() {
     <section aria-label="Fichaje administrado" className="bo-fichajePage bo-fichajeAdminPage" data-testid="fichaje-admin-section">
       <div className="bo-panel bo-fichajeAdminPanel" data-testid="fichaje-admin-panel">
         <div className="bo-panelHead" data-testid="fichaje-admin-head">
-          <div>
+          <div data-slot="fichaje-div">
             <div className="bo-panelTitle bo-fichajeTitle" data-testid="fichaje-admin-title">
               <Clock3 size={16} strokeWidth={1.8} />
               Fichaje Admin

@@ -85,8 +85,8 @@ export function InlineCounter({
       className={cn("bo-field", "bo-field--counter", className)}
       data-ui="inline-counter"
     >
-      <div className="bo-label">{label}</div>
-      <div className="bo-counter">
+      <div className="bo-label" data-slot="inlineCounter-label">{label}</div>
+      <div className="bo-counter" data-slot="inlineCounter-counter">
         <button
           type="button"
           className="bo-counterBtn"

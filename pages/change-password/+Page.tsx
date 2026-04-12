@@ -59,15 +59,15 @@ export default function Page() {
   );
 
   return (
-    <div className="bo-stage">
-      <div className="bo-window bo-window--auth">
-        <div className="bo-authCard" role="main" aria-label="Cambiar password">
-          <div className="bo-title">Actualizar password</div>
-          <div className="bo-authSub">Debes establecer una nueva password para continuar.</div>
+    <div className="bo-stage" data-slot="change-password-stage">
+      <div className="bo-window bo-window--auth" data-slot="change-password-window--auth">
+        <div className="bo-authCard" role="main" aria-label="Cambiar password" data-slot="change-password-cambiar-password">
+          <div className="bo-title" data-slot="change-password-title">Actualizar password</div>
+          <div className="bo-authSub" data-slot="change-password-authSub">Debes establecer una nueva password para continuar.</div>
 
           <form onSubmit={onSubmit} className="bo-form" data-testid="change-password-form">
-            <label className="bo-field">
-              <div className="bo-label">Nueva password</div>
+            <label className="bo-field" data-slot="change-password-field">
+              <div className="bo-label" data-slot="change-password-label">Nueva password</div>
               <input
                 className="bo-input"
                 type="password"
@@ -79,8 +79,8 @@ export default function Page() {
               />
             </label>
 
-            <label className="bo-field">
-              <div className="bo-label">Repetir password</div>
+            <label className="bo-field" data-slot="change-password-field">
+              <div className="bo-label" data-slot="change-password-label">Repetir password</div>
               <input
                 className="bo-input"
                 type="password"

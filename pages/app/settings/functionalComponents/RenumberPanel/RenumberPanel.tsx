@@ -41,7 +41,7 @@ export function RenumberPanel({
         <div className="bo-panelMeta" data-ui="panelMeta">Reasigna numeros de factura de forma masiva</div>
       </div>
       <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack">
+        <div className="bo-stack" data-slot="renumberPanel-stack">
           <div className="bo-mutedText" style={{ marginBottom: 16 }} data-ui="description">
             Esta herramienta permite renumerar todas las facturas existentes. Se mantendra un registro de auditoria con los cambios realizados. Es recomendable previsualizar antes de aplicar.
           </div>

@@ -105,22 +105,22 @@ export function MemberCreateModal({
 
   return (
     <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate">
-      <div className="bo-modalHead">
-        <div className="bo-modalTitle">Añadir miembro</div>
+      <div className="bo-modalHead" data-slot="memberCreateModal-modalHead">
+        <div className="bo-modalTitle" data-slot="memberCreateModal-modalTitle">Añadir miembro</div>
         <button className="bo-modalX" type="button" data-testid="member-create-close-button" onClick={onClose} aria-label="Close">
           ×
         </button>
       </div>
 
-      <div className="bo-modalOutline" style={{ marginTop: 10 }}>
-        <div className="bo-panel bo-memberCreatePanel">
-          <div className="bo-panelHead">
-            <div>
-              <div className="bo-panelTitle">Datos de acceso y perfil</div>
+      <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="memberCreateModal-modalOutline">
+        <div className="bo-panel bo-memberCreatePanel" data-slot="memberCreateModal-memberCreatePanel">
+          <div className="bo-panelHead" data-slot="memberCreateModal-panelHead">
+            <div data-slot="memberCreateModal-div">
+              <div className="bo-panelTitle" data-slot="memberCreateModal-panelTitle">Datos de acceso y perfil</div>
             </div>
           </div>
-          <div className="bo-panelBody bo-memberCreateBody">
-            <div className="bo-memberCreateAvatarBlock">
+          <div className="bo-panelBody bo-memberCreateBody" data-slot="memberCreateModal-memberCreateBody">
+            <div className="bo-memberCreateAvatarBlock" data-slot="memberCreateModal-memberCreateAvatarBlock">
               <ImageDropInput
                 className="bo-memberCreateAvatarDrop"
                 ariaLabel="Subir avatar"
@@ -133,35 +133,35 @@ export function MemberCreateModal({
                   {avatarPreview ? <AvatarImage src={avatarPreview} alt="Preview" /> : null}
                   <AvatarFallback className="bo-memberAvatarFallback">{initials(firstName, lastName)}</AvatarFallback>
                 </Avatar>
-                <span className="bo-memberCreateAvatarOverlay" aria-hidden="true">
+                <span className="bo-memberCreateAvatarOverlay" aria-hidden="true" data-slot="memberCreateModal-memberCreateAvatarOverlay">
                   <Upload size={18} strokeWidth={1.8} />
                 </span>
               </ImageDropInput>
             </div>
 
-            <div className="bo-memberCreateGrid">
+            <div className="bo-memberCreateGrid" data-slot="memberCreateModal-memberCreateGrid">
               <label className="bo-field" data-slot="member-create-firstname-label">
-                <span className="bo-label">Nombre</span>
+                <span className="bo-label" data-slot="memberCreateModal-label">Nombre</span>
                 <input className="bo-input" data-testid="member-create-firstname-input" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
               </label>
 
               <label className="bo-field" data-slot="member-create-lastname-label">
-                <span className="bo-label">Apellidos</span>
+                <span className="bo-label" data-slot="memberCreateModal-label">Apellidos</span>
                 <input className="bo-input" data-testid="member-create-lastname-input" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
               </label>
 
               <label className="bo-field" data-slot="member-create-email-label">
-                <span className="bo-label">Email</span>
+                <span className="bo-label" data-slot="memberCreateModal-label">Email</span>
                 <input className="bo-input" data-testid="member-create-email-input" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
               </label>
 
               <label className="bo-field" data-slot="member-create-dni-label">
-                <span className="bo-label">DNI (opcional)</span>
+                <span className="bo-label" data-slot="memberCreateModal-label">DNI (opcional)</span>
                 <input className="bo-input" data-testid="member-create-dni-input" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
               </label>
 
               <label className="bo-field bo-field--wide" data-slot="member-create-phone-label">
-                <span className="bo-label">Telefono (opcional)</span>
+                <span className="bo-label" data-slot="memberCreateModal-label">Telefono (opcional)</span>
                 <PhoneInput
                   countryCode={phoneCountryCode}
                   number={phoneNumber}
@@ -172,7 +172,7 @@ export function MemberCreateModal({
               </label>
 
               <label className="bo-field bo-field--wide" data-slot="member-create-role-label">
-                <span className="bo-label">Rol</span>
+                <span className="bo-label" data-slot="memberCreateModal-label">Rol</span>
                 <Select
                   value={roleSlug}
                   onChange={setRoleSlug}
@@ -186,7 +186,7 @@ export function MemberCreateModal({
               {!hasContact ? (
                 <>
                   <label className="bo-field bo-field--wide" data-slot="member-create-username-label">
-                    <span className="bo-label">Username</span>
+                    <span className="bo-label" data-slot="memberCreateModal-label">Username</span>
                     <input
                       className="bo-input"
                       data-testid="member-create-username-input"
@@ -198,7 +198,7 @@ export function MemberCreateModal({
                   </label>
 
                   <label className="bo-field bo-field--wide" data-slot="member-create-password-label">
-                    <span className="bo-label">Password temporal</span>
+                    <span className="bo-label" data-slot="memberCreateModal-label">Password temporal</span>
                     <input
                       className="bo-input"
                       type="password"
@@ -217,7 +217,7 @@ export function MemberCreateModal({
         </div>
       </div>
 
-      <div className="bo-modalActions">
+      <div className="bo-modalActions" data-slot="memberCreateModal-modalActions">
         <button className="bo-btn bo-btn--ghost" type="button" data-testid="member-create-cancel-button" onClick={onClose} disabled={busy}>
           Cancelar
         </button>

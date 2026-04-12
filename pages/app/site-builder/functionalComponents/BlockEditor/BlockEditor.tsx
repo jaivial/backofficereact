@@ -194,7 +194,7 @@ export function BlockEditor({
           {isSelected && (
             <div className="bo-siteBuilderResizeHandles" data-ui="resize-handles">
               {(["nw", "n", "ne", "e", "se", "s", "sw", "w"] as const).map((handle) => (
-                <div key={handle} className="bo-siteBuilderResizeHandle" data-handle={handle} title="Resize" />
+                <div key={handle} className="bo-siteBuilderResizeHandle" data-handle={handle} title="Resize" / data-slot="blockEditor-siteBuilderResizeHandle">
               ))}
             </div>
           )}
@@ -367,8 +367,8 @@ export function BlockEditor({
             data-testid="block-editor-context-menu-duplicate"
           >
             <Square size={14} />
-            <span>Duplicar</span>
-            <span className="bo-siteBuilderContextMenuShortcut">D</span>
+            <span data-slot="blockEditor-car">Duplicar</span>
+            <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">D</span>
           </button>
           <button
             className="bo-siteBuilderContextMenuItem"
@@ -378,8 +378,8 @@ export function BlockEditor({
             data-testid="block-editor-context-menu-copy"
           >
             <Square size={14} />
-            <span>Copiar</span>
-            <span className="bo-siteBuilderContextMenuShortcut">C</span>
+            <span data-slot="blockEditor-iar">Copiar</span>
+            <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">C</span>
           </button>
           {clipboardNode ? (
             <button
@@ -390,11 +390,11 @@ export function BlockEditor({
               data-testid="block-editor-context-menu-paste"
             >
               <Square size={14} />
-              <span>Pegar despues</span>
-              <span className="bo-siteBuilderContextMenuShortcut">V</span>
+              <span data-slot="blockEditor-ues">Pegar despues</span>
+              <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">V</span>
             </button>
           ) : null}
-          <div className="bo-siteBuilderContextMenuDivider" />
+          <div className="bo-siteBuilderContextMenuDivider" / data-slot="blockEditor-siteBuilderContextMenuDivider">
           <button
             className="bo-siteBuilderContextMenuItem is-danger"
             type="button"
@@ -403,8 +403,8 @@ export function BlockEditor({
             data-testid="block-editor-context-menu-delete"
           >
             <Trash2 size={14} />
-            <span>Eliminar</span>
-            <span className="bo-siteBuilderContextMenuShortcut">Del</span>
+            <span data-slot="blockEditor-nar">Eliminar</span>
+            <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">Del</span>
           </button>
         </div>
       ) : null}

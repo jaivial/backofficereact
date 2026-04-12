@@ -30,7 +30,7 @@ export default function MobileFacturasPage() {
       {/* Placeholder empty state */}
       <div className="flex flex-col items-center justify-center py-12 text-center" data-ui="mobile-facturas-empty">
         <Receipt size={40} strokeWidth={1.5} className="text-[hsl(var(--muted-foreground))] mb-3" aria-hidden="true" />
-        <p className="text-[hsl(var(--muted-foreground))] text-sm">No hay facturas recientes</p>
+        <p className="text-[hsl(var(--muted-foreground))] text-sm" data-slot="facturas-text-sm">No hay facturas recientes</p>
         <a
           href="/m/app/facturas/all"
           className="mt-4 text-sm font-medium text-[hsl(var(--primary))] no-underline flex items-center gap-1"

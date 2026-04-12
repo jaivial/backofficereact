@@ -188,17 +188,17 @@ export default function Page() {
   return (
     <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-detail-section">
       {!member ? (
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Miembro no disponible</div>
-            <div className="bo-panelMeta">No se pudo cargar el detalle del miembro solicitado.</div>
+        <div className="bo-panel" data-slot="@memberId-panel">
+          <div className="bo-panelHead" data-slot="@memberId-panelHead">
+            <div className="bo-panelTitle" data-slot="@memberId-panelTitle">Miembro no disponible</div>
+            <div className="bo-panelMeta" data-slot="@memberId-panelMeta">No se pudo cargar el detalle del miembro solicitado.</div>
           </div>
         </div>
       ) : (
         <>
-          <div className="bo-panel bo-memberHero">
-            <div className="bo-panelHead bo-memberHeroHead">
-              <div className="bo-memberHeroIdentity">
+          <div className="bo-panel bo-memberHero" data-slot="@memberId-memberHero">
+            <div className="bo-panelHead bo-memberHeroHead" data-slot="@memberId-memberHeroHead">
+              <div className="bo-memberHeroIdentity" data-slot="@memberId-memberHeroIdentity">
                 <ImageDropInput
                   className={`bo-memberHeroAvatarDropzone${avatarBusy ? " is-busy" : ""}`}
                   disabled={avatarBusy}
@@ -209,19 +209,19 @@ export default function Page() {
                     {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={memberName || `Miembro #${member.id}`} /> : null}
                     <AvatarFallback className="bo-memberAvatarFallback">{initials(member)}</AvatarFallback>
                   </Avatar>
-                  <span className="bo-memberAvatarUploadOverlay" aria-hidden="true">
+                  <span className="bo-memberAvatarUploadOverlay" aria-hidden="true" data-slot="@memberId-memberAvatarUploadOverlay">
                     {avatarBusy ? <Loader2 size={18} className="bo-memberAvatarUploadIcon is-spinning" /> : <Upload size={18} className="bo-memberAvatarUploadIcon" />}
                   </span>
                 </ImageDropInput>
-                <div className="bo-memberHeroTexts">
-                  <div className="bo-memberHeroTitleRow">
-                    <div className="bo-panelTitle bo-memberHeroTitle">{memberName || `Miembro #${member.id}`}</div>
+                <div className="bo-memberHeroTexts" data-slot="@memberId-memberHeroTexts">
+                  <div className="bo-memberHeroTitleRow" data-slot="@memberId-memberHeroTitleRow">
+                    <div className="bo-panelTitle bo-memberHeroTitle" data-slot="@memberId-memberHeroTitle">{memberName || `Miembro #${member.id}`}</div>
                     {isSelfMember ? <span className="bo-badge bo-badge--self">Tu</span> : null}
                   </div>
-                  <div className="bo-panelMeta">Haz clic o arrastra una imagen sobre el avatar para actualizar la foto de perfil.</div>
+                  <div className="bo-panelMeta" data-slot="@memberId-panelMeta">Haz clic o arrastra una imagen sobre el avatar para actualizar la foto de perfil.</div>
                 </div>
               </div>
-              <div className="bo-memberHeroActions">
+              <div className="bo-memberHeroActions" data-slot="@memberId-memberHeroActions">
                 <button
                   className="bo-btn bo-btn--ghost flex-wrap !text-wrap !h-fit !py-4"
                   type="button"
@@ -254,58 +254,58 @@ export default function Page() {
                 ) : null}
               </div>
             </div>
-            <div className="bo-panelBody">
-              <div className="bo-memberHeroStats">
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">Contrato semanal</div>
-                  <div className="bo-kvValue">{member.weeklyContractHours.toFixed(2)} h</div>
+            <div className="bo-panelBody" data-slot="@memberId-panelBody">
+              <div className="bo-memberHeroStats" data-slot="@memberId-memberHeroStats">
+                <div className="bo-kv" data-slot="@memberId-kv">
+                  <div className="bo-kvLabel" data-slot="@memberId-kvLabel">Contrato semanal</div>
+                  <div className="bo-kvValue" data-slot="@memberId-kvValue">{member.weeklyContractHours.toFixed(2)} h</div>
                 </div>
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">DNI</div>
-                  <div className="bo-kvValue">{member.dni || "No definido"}</div>
+                <div className="bo-kv" data-slot="@memberId-kv">
+                  <div className="bo-kvLabel" data-slot="@memberId-kvLabel">DNI</div>
+                  <div className="bo-kvValue" data-slot="@memberId-kvValue">{member.dni || "No definido"}</div>
                 </div>
-                <div className="bo-kv">
-                  <div className="bo-kvLabel">Email</div>
-                  <div className="bo-kvValue">{member.email || "No definido"}</div>
+                <div className="bo-kv" data-slot="@memberId-kv">
+                  <div className="bo-kvLabel" data-slot="@memberId-kvLabel">Email</div>
+                  <div className="bo-kvValue" data-slot="@memberId-kvValue">{member.email || "No definido"}</div>
                 </div>
                 {liveEntry ? (
-                  <div className="bo-kv">
-                    <div className="bo-kvLabel">Fichando ahora</div>
-                    <div className="bo-kvValue">{formatElapsedHHMMSS(liveEntry, tick)}</div>
+                  <div className="bo-kv" data-slot="@memberId-kv">
+                    <div className="bo-kvLabel" data-slot="@memberId-kvLabel">Fichando ahora</div>
+                    <div className="bo-kvValue" data-slot="@memberId-kvValue">{formatElapsedHHMMSS(liveEntry, tick)}</div>
                   </div>
                 ) : null}
               </div>
             </div>
           </div>
 
-          <div className="bo-panel">
-            <div className="bo-panelHead">
-              <div className="bo-panelTitle">Informacion de usuario</div>
+          <div className="bo-panel" data-slot="@memberId-panel">
+            <div className="bo-panelHead" data-slot="@memberId-panelHead">
+              <div className="bo-panelTitle" data-slot="@memberId-panelTitle">Informacion de usuario</div>
             </div>
-            <div className="bo-panelBody">
-              <div className="bo-memberFormGrid">
-                <label className="bo-field">
-                  <span className="bo-label">Nombre</span>
+            <div className="bo-panelBody" data-slot="@memberId-panelBody">
+              <div className="bo-memberFormGrid" data-slot="@memberId-memberFormGrid">
+                <label className="bo-field" data-slot="@memberId-field">
+                  <span className="bo-label" data-slot="@memberId-label">Nombre</span>
                   <input id="firstName" className="bo-input" data-testid="miembro-detail-firstname-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
                 </label>
-                <label className="bo-field">
-                  <span className="bo-label">Apellidos</span>
+                <label className="bo-field" data-slot="@memberId-field">
+                  <span className="bo-label" data-slot="@memberId-label">Apellidos</span>
                   <input id="lastName" className="bo-input" data-testid="miembro-detail-lastname-input" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)} />
                 </label>
-                <label className="bo-field">
-                  <span className="bo-label">Email</span>
+                <label className="bo-field" data-slot="@memberId-field">
+                  <span className="bo-label" data-slot="@memberId-label">Email</span>
                   <input id="email" className="bo-input" data-testid="miembro-detail-email-input" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)} />
                 </label>
-                <label className="bo-field">
-                  <span className="bo-label">DNI (opcional)</span>
+                <label className="bo-field" data-slot="@memberId-field">
+                  <span className="bo-label" data-slot="@memberId-label">DNI (opcional)</span>
                   <input id="dni" className="bo-input" data-testid="miembro-detail-dni-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
                 </label>
-                <label className="bo-field bo-field--wide">
-                  <span className="bo-label">Numero de cuenta (opcional)</span>
+                <label className="bo-field bo-field--wide" data-slot="@memberId-field--wide">
+                  <span className="bo-label" data-slot="@memberId-label">Numero de cuenta (opcional)</span>
                   <input id="bankAccount" className="bo-input" data-testid="miembro-detail-bankaccount-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
                 </label>
-                <label className="bo-field bo-field--wide">
-                  <span className="bo-label">Telefono (opcional)</span>
+                <label className="bo-field bo-field--wide" data-slot="@memberId-field--wide">
+                  <span className="bo-label" data-slot="@memberId-label">Telefono (opcional)</span>
                   <PhoneInput
                     countryCode={phoneCountryCode}
                     number={phoneNumber}

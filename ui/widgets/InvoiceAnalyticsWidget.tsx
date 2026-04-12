@@ -85,10 +85,10 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bo-chartTooltip">
-        <p className="bo-chartTooltipLabel">{label}</p>
+      <div className="bo-chartTooltip" data-slot="invoiceAnalyticsWidget-chartTooltip">
+        <p className="bo-chartTooltipLabel" data-slot="invoiceAnalyticsWidget-chartTooltipLabel">{label}</p>
         {payload.map((entry, index) => (
-          <p key={index} style={{ color: entry.color }}>
+          <p key={index} style={{ color: entry.color }} data-slot="invoiceAnalyticsWidget-p">
             {entry.name}: {formatter ? formatter(entry.value) : entry.value.toLocaleString()}
           </p>
         ))}
@@ -143,8 +143,8 @@ export function InvoiceAnalyticsWidget({
 
   if (loading) {
     return (
-      <div className="bo-analyticsLoading">
-        <div className="bo-skeleton" style={{ height: "300px", width: "100%" }} />
+      <div className="bo-analyticsLoading" data-slot="invoiceAnalyticsWidget-analyticsLoading">
+        <div className="bo-skeleton" style={{ height: "300px", width: "100%" }} / data-slot="invoiceAnalyticsWidget-skeleton">
       </div>
     );
   }
@@ -152,47 +152,47 @@ export function InvoiceAnalyticsWidget({
   const formatCurrency = (value: number) => `${value.toLocaleString()} €`;
 
   return (
-    <div className={cn("bo-invoiceAnalytics", className)}>
+    <div className={cn("bo-invoiceAnalytics", className)} data-slot="invoiceAnalyticsWidget-div">
       {/* Summary Cards */}
-      <div className="bo-analyticsSummary">
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Ingresos Totales</div>
-          <div className="bo-analyticsSummaryValue">
+      <div className="bo-analyticsSummary" data-slot="invoiceAnalyticsWidget-analyticsSummary">
+        <div className="bo-analyticsSummaryCard" data-slot="invoiceAnalyticsWidget-analyticsSummaryCard">
+          <div className="bo-analyticsSummaryLabel" data-slot="invoiceAnalyticsWidget-analyticsSummaryLabel">Ingresos Totales</div>
+          <div className="bo-analyticsSummaryValue" data-slot="invoiceAnalyticsWidget-analyticsSummaryValue">
             {formatCurrency(analytics.summary.totalRevenue)}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Total Facturas</div>
-          <div className="bo-analyticsSummaryValue">
+        <div className="bo-analyticsSummaryCard" data-slot="invoiceAnalyticsWidget-analyticsSummaryCard">
+          <div className="bo-analyticsSummaryLabel" data-slot="invoiceAnalyticsWidget-analyticsSummaryLabel">Total Facturas</div>
+          <div className="bo-analyticsSummaryValue" data-slot="invoiceAnalyticsWidget-analyticsSummaryValue">
             {analytics.summary.totalInvoices.toLocaleString()}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Valor Medio</div>
-          <div className="bo-analyticsSummaryValue">
+        <div className="bo-analyticsSummaryCard" data-slot="invoiceAnalyticsWidget-analyticsSummaryCard">
+          <div className="bo-analyticsSummaryLabel" data-slot="invoiceAnalyticsWidget-analyticsSummaryLabel">Valor Medio</div>
+          <div className="bo-analyticsSummaryValue" data-slot="invoiceAnalyticsWidget-analyticsSummaryValue">
             {formatCurrency(analytics.summary.averageInvoiceValue)}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Pagadas</div>
-          <div className="bo-analyticsSummaryValue bo-analyticsSummaryValue--success">
+        <div className="bo-analyticsSummaryCard" data-slot="invoiceAnalyticsWidget-analyticsSummaryCard">
+          <div className="bo-analyticsSummaryLabel" data-slot="invoiceAnalyticsWidget-analyticsSummaryLabel">Pagadas</div>
+          <div className="bo-analyticsSummaryValue bo-analyticsSummaryValue--success" data-slot="invoiceAnalyticsWidget-analyticsSummaryValue--success">
             {analytics.summary.paidInvoices}
           </div>
         </div>
-        <div className="bo-analyticsSummaryCard">
-          <div className="bo-analyticsSummaryLabel">Pendientes</div>
-          <div className="bo-analyticsSummaryValue bo-analyticsSummaryValue--warning">
+        <div className="bo-analyticsSummaryCard" data-slot="invoiceAnalyticsWidget-analyticsSummaryCard">
+          <div className="bo-analyticsSummaryLabel" data-slot="invoiceAnalyticsWidget-analyticsSummaryLabel">Pendientes</div>
+          <div className="bo-analyticsSummaryValue bo-analyticsSummaryValue--warning" data-slot="invoiceAnalyticsWidget-analyticsSummaryValue--warning">
             {analytics.summary.pendingInvoices}
           </div>
         </div>
       </div>
 
       {/* Charts Grid */}
-      <div className="bo-analyticsCharts">
+      <div className="bo-analyticsCharts" data-slot="invoiceAnalyticsWidget-analyticsCharts">
         {/* Revenue by Month Chart */}
-        <div className="bo-analyticsChart bo-analyticsChart--wide">
-          <h3 className="bo-analyticsChartTitle">Ingresos por Mes</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="bo-analyticsChart bo-analyticsChart--wide" data-slot="invoiceAnalyticsWidget-analyticsChart--wide">
+          <h3 className="bo-analyticsChartTitle" data-slot="invoiceAnalyticsWidget-analyticsChartTitle">Ingresos por Mes</h3>
+          <div className="bo-analyticsChartContainer" data-slot="invoiceAnalyticsWidget-analyticsChartContainer">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--bo-border)" />
@@ -217,9 +217,9 @@ export function InvoiceAnalyticsWidget({
         </div>
 
         {/* Invoice Count by Status Pie Chart */}
-        <div className="bo-analyticsChart">
-          <h3 className="bo-analyticsChartTitle">Facturas por Estado</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="bo-analyticsChart" data-slot="invoiceAnalyticsWidget-analyticsChart">
+          <h3 className="bo-analyticsChartTitle" data-slot="invoiceAnalyticsWidget-analyticsChartTitle">Facturas por Estado</h3>
+          <div className="bo-analyticsChartContainer" data-slot="invoiceAnalyticsWidget-analyticsChartContainer">
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
@@ -243,10 +243,10 @@ export function InvoiceAnalyticsWidget({
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bo-chartTooltip">
-                          <p className="bo-chartTooltipLabel">{data.name}</p>
-                          <p>Cantidad: {data.value}</p>
-                          <p>Importe: {formatCurrency(data.amount)}</p>
+                        <div className="bo-chartTooltip" data-slot="invoiceAnalyticsWidget-chartTooltip">
+                          <p className="bo-chartTooltipLabel" data-slot="invoiceAnalyticsWidget-chartTooltipLabel">{data.name}</p>
+                          <p data-slot="invoiceAnalyticsWidget-lue">Cantidad: {data.value}</p>
+                          <p data-slot="invoiceAnalyticsWidget-unt">Importe: {formatCurrency(data.amount)}</p>
                         </div>
                       );
                     }
@@ -259,9 +259,9 @@ export function InvoiceAnalyticsWidget({
         </div>
 
         {/* Top Customers by Revenue */}
-        <div className="bo-analyticsChart">
-          <h3 className="bo-analyticsChartTitle">Top Clientes por Ingresos</h3>
-          <div className="bo-analyticsChartContainer bo-analyticsTableContainer">
+        <div className="bo-analyticsChart" data-slot="invoiceAnalyticsWidget-analyticsChart">
+          <h3 className="bo-analyticsChartTitle" data-slot="invoiceAnalyticsWidget-analyticsChartTitle">Top Clientes por Ingresos</h3>
+          <div className="bo-analyticsChartContainer bo-analyticsTableContainer" data-slot="invoiceAnalyticsWidget-analyticsTableContainer">
             {analytics.topCustomers.length > 0 ? (
               <table className="bo-analyticsTable" data-slot="analytics-table">
                 <thead data-slot="analytics-thead">
@@ -275,8 +275,8 @@ export function InvoiceAnalyticsWidget({
                   {analytics.topCustomers.slice(0, 10).map((customer, index) => (
                     <tr key={index} data-slot={`analytics-table-row-${index}`}>
                       <td data-slot="analytics-table-cell">
-                        <div className="bo-analyticsCustomerName">{customer.customerName}</div>
-                        <div className="bo-analyticsCustomerEmail">{customer.customerEmail}</div>
+                        <div className="bo-analyticsCustomerName" data-slot="invoiceAnalyticsWidget-analyticsCustomerName">{customer.customerName}</div>
+                        <div className="bo-analyticsCustomerEmail" data-slot="invoiceAnalyticsWidget-analyticsCustomerEmail">{customer.customerEmail}</div>
                       </td>
                       <td data-slot="analytics-table-cell">{customer.invoiceCount}</td>
                       <td className="bo-analyticsRevenue" data-slot="analytics-table-cell">{formatCurrency(customer.totalRevenue)}</td>
@@ -285,15 +285,15 @@ export function InvoiceAnalyticsWidget({
                 </tbody>
               </table>
             ) : (
-              <div className="bo-analyticsEmpty">No hay datos de clientes</div>
+              <div className="bo-analyticsEmpty" data-slot="invoiceAnalyticsWidget-analyticsEmpty">No hay datos de clientes</div>
             )}
           </div>
         </div>
 
         {/* Average Invoice Value Trend */}
-        <div className="bo-analyticsChart bo-analyticsChart--wide">
-          <h3 className="bo-analyticsChartTitle">Tendencia Valor Medio</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="bo-analyticsChart bo-analyticsChart--wide" data-slot="invoiceAnalyticsWidget-analyticsChart--wide">
+          <h3 className="bo-analyticsChartTitle" data-slot="invoiceAnalyticsWidget-analyticsChartTitle">Tendencia Valor Medio</h3>
+          <div className="bo-analyticsChartContainer" data-slot="invoiceAnalyticsWidget-analyticsChartContainer">
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={averageValueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--bo-border)" />
@@ -324,9 +324,9 @@ export function InvoiceAnalyticsWidget({
         </div>
 
         {/* Payment Method Distribution */}
-        <div className="bo-analyticsChart">
-          <h3 className="bo-analyticsChartTitle">Metodos de Pago</h3>
-          <div className="bo-analyticsChartContainer">
+        <div className="bo-analyticsChart" data-slot="invoiceAnalyticsWidget-analyticsChart">
+          <h3 className="bo-analyticsChartTitle" data-slot="invoiceAnalyticsWidget-analyticsChartTitle">Metodos de Pago</h3>
+          <div className="bo-analyticsChartContainer" data-slot="invoiceAnalyticsWidget-analyticsChartContainer">
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
@@ -350,10 +350,10 @@ export function InvoiceAnalyticsWidget({
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bo-chartTooltip">
-                          <p className="bo-chartTooltipLabel">{data.name}</p>
-                          <p>Cantidad: {data.value}</p>
-                          <p>Importe: {formatCurrency(data.amount)}</p>
+                        <div className="bo-chartTooltip" data-slot="invoiceAnalyticsWidget-chartTooltip">
+                          <p className="bo-chartTooltipLabel" data-slot="invoiceAnalyticsWidget-chartTooltipLabel">{data.name}</p>
+                          <p data-slot="invoiceAnalyticsWidget-lue">Cantidad: {data.value}</p>
+                          <p data-slot="invoiceAnalyticsWidget-unt">Importe: {formatCurrency(data.amount)}</p>
                         </div>
                       );
                     }

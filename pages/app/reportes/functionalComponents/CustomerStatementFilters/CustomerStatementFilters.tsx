@@ -46,7 +46,7 @@ export function CustomerStatementFilters({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-ui="customer-statement-filters">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-ui="filters-grid">
         <div data-ui="customer-select-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="customer-select">Cliente</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="customer-select" data-slot="customerStatementFilters-mb-1">Cliente</label>
           <select
             id="customer-select"
             value={selectedCustomer}
@@ -64,7 +64,7 @@ export function CustomerStatementFilters({
         </div>
 
         <div data-ui="date-from-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-from">Desde</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-from" data-slot="customerStatementFilters-mb-1">Desde</label>
           <input
             id="statement-date-from"
             type="date"
@@ -76,7 +76,7 @@ export function CustomerStatementFilters({
         </div>
 
         <div data-ui="date-to-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-to">Hasta</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-to" data-slot="customerStatementFilters-mb-1">Hasta</label>
           <input
             id="statement-date-to"
             type="date"

@@ -226,28 +226,28 @@ export default function Page() {
 
   return (
     <section aria-label="Roles" className="bo-content-grid bo-membersPage" data-slot="miembros-roles-section">
-      <div className="bo-panel">
-        <div className="bo-panelHead bo-membersIntroHead">
-          <div>
-            <div className="bo-panelTitle">Roles y jerarquía</div>
-            <div className="bo-panelMeta">Gestiona roles por importancia (0-100), permisos y asignación de usuarios.</div>
+      <div className="bo-panel" data-slot="roles-panel">
+        <div className="bo-panelHead bo-membersIntroHead" data-slot="roles-membersIntroHead">
+          <div data-slot="roles-div">
+            <div className="bo-panelTitle" data-slot="roles-panelTitle">Roles y jerarquía</div>
+            <div className="bo-panelMeta" data-slot="roles-panelMeta">Gestiona roles por importancia (0-100), permisos y asignación de usuarios.</div>
           </div>
-          <div className="bo-membersIntroBadge">
+          <div className="bo-membersIntroBadge" data-slot="roles-membersIntroBadge">
             <ShieldUser size={16} strokeWidth={1.8} />
             {roles.length} roles
           </div>
         </div>
       </div>
 
-      <div className="bo-roleToolbar">
-        <div className="bo-mutedText">Tu importancia actual: {actorImportance}</div>
+      <div className="bo-roleToolbar" data-slot="roles-roleToolbar">
+        <div className="bo-mutedText" data-slot="roles-mutedText">Tu importancia actual: {actorImportance}</div>
         <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" data-testid="miembros-roles-new-role-button" onClick={() => setCreateOpen(true)}>
           <Plus size={14} strokeWidth={1.8} />
           Nuevo rol
         </button>
       </div>
 
-      <div className="bo-roleGrid">
+      <div className="bo-roleGrid" data-slot="roles-roleGrid">
         {roles.map((role) => (
           <RoleCard
             key={role.slug}

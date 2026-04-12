@@ -324,23 +324,23 @@ export function BookingEditor({
   }, [draft, onSubmit]);
 
   return (
-    <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }}>
+    <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }} data-slot="bookingEditor-div">
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
-      <div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`}>
+      <div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`} data-slot="bookingEditor-div">
 
-      <div className="bo-panel bo-bookingPanel--customer">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">Datos</div>
-          <div className="bo-panelMeta">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
+      <div className="bo-panel bo-bookingPanel--customer" data-slot="bookingEditor-bookingPanel--customer">
+        <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
+          <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Datos</div>
+          <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
-        <div className="bo-panelBody bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }}>
+        <div className="bo-panelBody bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }} data-slot="bookingEditor-bookingPanelBody--customer">
           <div className="bo-row bo-bookingRow bo-bookingRow--schedule" data-slot="booking-editor-schedule">
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--date" data-slot="booking-editor-date">
-              <div className="bo-label">Fecha</div>
+              <div className="bo-label" data-slot="bookingEditor-label">Fecha</div>
               <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
             </div>
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time" data-slot="booking-editor-time">
-              <div className="bo-label">Hora</div>
+              <div className="bo-label" data-slot="bookingEditor-label">Hora</div>
               <TimePicker value={draft.reservation_time} onChange={(v) => setField("reservation_time", v)} ariaLabel="Hora" />
             </div>
             <CounterField
@@ -355,11 +355,11 @@ export function BookingEditor({
 
           <div className="bo-row bo-bookingRow bo-bookingRow--contact" data-slot="booking-editor-contact">
             <div className="bo-field bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }} data-slot="booking-editor-client">
-              <div className="bo-label">Cliente</div>
+              <div className="bo-label" data-slot="bookingEditor-label">Cliente</div>
               <input className="bo-input bo-input--sm" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} data-slot="booking-editor-client-input" />
             </div>
             <div className="bo-field bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }} data-slot="booking-editor-phone">
-              <div className="bo-label">Teléfono</div>
+              <div className="bo-label" data-slot="bookingEditor-label">Teléfono</div>
               <div className="bo-phone" data-slot="booking-editor-phone-group">
                 <Select
                   className="bo-selectBtn--sm bo-phoneCC"
@@ -380,14 +380,14 @@ export function BookingEditor({
               </div>
             </div>
             <div className="bo-field bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }} data-slot="booking-editor-email">
-              <div className="bo-label">Email (opcional)</div>
+              <div className="bo-label" data-slot="bookingEditor-label">Email (opcional)</div>
               <input className="bo-input bo-input--sm" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} data-slot="booking-editor-email-input" />
             </div>
           </div>
 
           <div className="bo-row bo-bookingRow bo-bookingRow--extras" data-slot="booking-editor-extras">
             <div className="bo-field bo-bookingField bo-bookingField--table" data-slot="booking-editor-table">
-              <div className="bo-label">Mesa</div>
+              <div className="bo-label" data-slot="bookingEditor-label">Mesa</div>
               <input
                 className="bo-input bo-input--sm"
                 style={{ width: 110 }}
@@ -413,7 +413,7 @@ export function BookingEditor({
               onChange={(v) => setField("highChairs", v)}
             />
             <div className="bo-field bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }} data-slot="booking-editor-salon">
-              <div className="bo-label">Salón</div>
+              <div className="bo-label" data-slot="bookingEditor-label">Salón</div>
               <Select
                 className="bo-selectBtn--sm"
                 size="sm"
@@ -427,12 +427,12 @@ export function BookingEditor({
         </div>
       </div>
 
-      <div className="bo-panel">
-        <div className="bo-panelHead">
-          <div className="bo-panelTitle">Menú de grupo</div>
-          <div className="bo-panelMeta">{draft.special_menu ? "Sí" : "No"}</div>
+      <div className="bo-panel" data-slot="bookingEditor-panel">
+        <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
+          <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Menú de grupo</div>
+          <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">{draft.special_menu ? "Sí" : "No"}</div>
         </div>
-        <div className="bo-panelBody">
+        <div className="bo-panelBody" data-slot="bookingEditor-panelBody">
           <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo" data-slot="booking-editor-menu-toggle">
             <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy} data-slot="booking-editor-menu-no">
               No
@@ -443,9 +443,9 @@ export function BookingEditor({
           </div>
 
           {draft.special_menu ? (
-            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            <div style={{ marginTop: 12, display: "grid", gap: 10 }} data-slot="bookingEditor-div">
               <div className="bo-field" data-slot="booking-editor-menu-select-field">
-                <div className="bo-label">Seleccionar menú</div>
+                <div className="bo-label" data-slot="bookingEditor-label">Seleccionar menú</div>
                 <Select
                   className="bo-selectBtn--sm"
                   size="sm"
@@ -457,10 +457,10 @@ export function BookingEditor({
                 />
               </div>
 
-              <div className="bo-mutedText">Principales (restantes: {remainingPrincipales})</div>
-              <div style={{ display: "grid", gap: 8 }}>
+              <div className="bo-mutedText" data-slot="bookingEditor-mutedText">Principales (restantes: {remainingPrincipales})</div>
+              <div style={{ display: "grid", gap: 8 }} data-slot="bookingEditor-div">
                 {draft.principales.map((row, idx) => (
-                  <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }}>
+                  <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
                     <Select
                       className="bo-selectBtn--sm bo-bookingChoiceSelect"
                       size="sm"
@@ -470,7 +470,7 @@ export function BookingEditor({
                       options={principalOptions}
                       ariaLabel="Principal"
                     />
-                    <div className="bo-bookingChoiceActions">
+                    <div className="bo-bookingChoiceActions" data-slot="bookingEditor-bookingChoiceActions">
                       <InlineCounter
                         label="Raciones"
                         value={row.servings || 0}
@@ -497,12 +497,12 @@ export function BookingEditor({
       </div>
 
       {!draft.special_menu ? (
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Arroz</div>
-            <div className="bo-panelMeta">{draft.arroz_enabled ? "Sí" : "No"}</div>
+        <div className="bo-panel" data-slot="bookingEditor-panel">
+          <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
+            <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Arroz</div>
+            <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">{draft.arroz_enabled ? "Sí" : "No"}</div>
           </div>
-          <div className="bo-panelBody">
+          <div className="bo-panelBody" data-slot="bookingEditor-panelBody">
             <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?" data-slot="booking-editor-arroz-toggle">
               <button type="button" className={`bo-chip${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy} data-slot="booking-editor-arroz-no">
                 No
@@ -514,9 +514,9 @@ export function BookingEditor({
             {draft.arroz_enabled ? <div className="bo-mutedText" style={{ marginTop: 10 }}>Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div> : null}
 
             {draft.arroz_enabled ? (
-              <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+              <div style={{ marginTop: 10, display: "grid", gap: 8 }} data-slot="bookingEditor-div">
                 {draft.arroz.map((row, idx) => (
-                  <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }}>
+                  <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
                     <Select
                       className="bo-selectBtn--sm bo-bookingChoiceSelect"
                       size="sm"
@@ -526,7 +526,7 @@ export function BookingEditor({
                       options={arrozOptions}
                       ariaLabel="Tipo de arroz"
                     />
-                    <div className="bo-bookingChoiceActions">
+                    <div className="bo-bookingChoiceActions" data-slot="bookingEditor-bookingChoiceActions">
                       <InlineCounter
                         label="Raciones"
                         value={row.servings || 0}
@@ -553,12 +553,12 @@ export function BookingEditor({
       ) : null}
 
       {!draft.special_menu ? (
-        <div className="bo-panel">
-          <div className="bo-panelHead">
-            <div className="bo-panelTitle">Comentario</div>
-            <div className="bo-panelMeta">Opcional</div>
+        <div className="bo-panel" data-slot="bookingEditor-panel">
+          <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
+            <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Comentario</div>
+            <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">Opcional</div>
           </div>
-          <div className="bo-panelBody">
+          <div className="bo-panelBody" data-slot="bookingEditor-panelBody">
             <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} data-slot="booking-editor-commentary" />
           </div>
         </div>
@@ -600,8 +600,8 @@ function CounterField({
 }) {
   const safeValue = clampInt(Number(value || 0), min, max);
   return (
-    <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")}>
-      <div className="bo-label">{label}</div>
+    <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")} data-slot="bookingEditor-div">
+      <div className="bo-label" data-slot="bookingEditor-label">{label}</div>
       <div className="bo-counter" data-slot={`booking-editor-counter-${label.toLowerCase()}`}>
         <button
           type="button"

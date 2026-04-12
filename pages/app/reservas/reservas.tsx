@@ -147,13 +147,15 @@ const BookingRow = React.memo(function BookingRow({
   return (
     <tr
       onClick={() => {
+      data-slot="reservas-table-row"
+
         if (typeof window === "undefined") return;
         if (!window.matchMedia("(max-width: 760px)").matches) return;
         onOpenDetails(booking);
       }}
     >
-      <td className="col-added">{added}</td>
-      <td className="col-mesa" onClick={(e) => e.stopPropagation()}>
+      <td className="col-added" data-slot="reservas-col-added">{added}</td>
+      <td className="col-mesa" onClick={(e) => e.stopPropagation()} data-slot="reservas-col-mesa">
         <input
           className="bo-input bo-input--xs bo-input--mesa"
           value={draftMesa}
@@ -166,15 +168,15 @@ const BookingRow = React.memo(function BookingRow({
           data-testid={`reservas-page-mesa-${booking.id}`}
         />
       </td>
-      <td className="col-time">{formatHHMM(booking.reservation_time)}</td>
-      <td className="col-client">{booking.customer_name}</td>
-      <td className="col-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
-      <td className="num">{booking.party_size}</td>
-      <td className="col-children num">{booking.children ?? 0}</td>
-      <td className="col-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
-      <td className="col-rice">{arroz}</td>
-      <td className="col-comment">{booking.commentary || ""}</td>
-      <td className="end" onClick={(e) => e.stopPropagation()}>
+      <td className="col-time" data-slot="reservas-col-time">{formatHHMM(booking.reservation_time)}</td>
+      <td className="col-client" data-slot="reservas-col-client">{booking.customer_name}</td>
+      <td className="col-status" data-slot="reservas-col-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td className="num" data-slot="reservas-num">{booking.party_size}</td>
+      <td className="col-children num" data-slot="reservas-num">{booking.children ?? 0}</td>
+      <td className="col-phone" data-slot="reservas-col-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
+      <td className="col-rice" data-slot="reservas-col-rice">{arroz}</td>
+      <td className="col-comment" data-slot="reservas-col-comment">{booking.commentary || ""}</td>
+      <td className="end" onClick={(e) => e.stopPropagation()} data-slot="reservas-end">
         <DropdownMenu
           label="Acciones"
           items={[
@@ -546,7 +548,7 @@ export default function Page() {
       <AnimatePresence initial={false}>
         {!searchMode ? (
           <motion.div key="reservas-grid" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={searchFadeTransition}>
-            <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`}>
+            <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`} data-slot="reservas-div">
               <MonthCalendar year={view.year} month={view.month} days={calendarDays} selectedDateISO={date} onSelectDate={onSelectDate} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} loading={monthBusy} />
 
               <AnimatePresence initial={false}>
@@ -554,8 +556,8 @@ export default function Page() {
                   <motion.div key="reservas-side" className="bo-reservasSide" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
                     <DonutOccupancy totalPeople={occPeople} limit={occLimit} totalBookings={metrics?.total} pending={metrics?.pending} confirmed={metrics?.confirmed} />
 
-                    <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas">
-                      <div className="bo-filtersTop">
+                    <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas" data-slot="reservas-filtros-reservas">
+                      <div className="bo-filtersTop" data-slot="reservas-filtersTop">
                         <button className="bo-btn bo-btn--ghost bo-filtersToggle" type="button" onClick={() => setFiltersOpen((v) => !v)} aria-expanded={filtersOpen} aria-controls="bo-reservas-filters-body" data-testid="reservas-page-filters-toggle">
                           <Filter className="bo-ico" /> Filtros
                         </button>
@@ -563,7 +565,7 @@ export default function Page() {
                           <Download className="bo-ico" /> Descargar
                         </button>
                       </div>
-                      <div id="bo-reservas-filters-body" className="bo-filtersBody">
+                      <div id="bo-reservas-filters-body" className="bo-filtersBody" data-slot="reservas-filtersBody">
                         <div className="bo-filterRow bo-filterRow--selects" data-slot="reservas-page-filter-selects">
                           <Select value={status} onChange={onStatusChange} options={statusOptions} size="sm" ariaLabel="Estado" />
                           <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" />
@@ -589,36 +591,36 @@ export default function Page() {
             <AnimatePresence mode="wait" initial={false}>
               {isDayOpen ? (
                 <motion.div key="reservas-open-content" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
-                  <div className="bo-tableWrap" style={{ marginTop: 14 }}>
-                    <div className="bo-tableScroll">
-                      <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas">
-                        <thead>
-                          <tr>
-                            <th className="col-added">Añadida</th>
-                            <th className="col-mesa">Mesa</th>
-                            <th className="col-time">Hora</th>
-                            <th className="col-client">Cliente</th>
-                            <th className="col-status">Estado</th>
-                            <th className="num">Pax</th>
-                            <th className="col-children num">Niños</th>
-                            <th className="col-phone">Teléfono</th>
-                            <th className="col-rice">Arroz</th>
-                            <th className="col-comment">Comentario</th>
-                            <th className="end" />
+                  <div className="bo-tableWrap" style={{ marginTop: 14 }} data-slot="reservas-tableWrap">
+                    <div className="bo-tableScroll" data-slot="reservas-tableScroll">
+                      <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
+                        <thead data-slot="reservas-thead">
+                          <tr data-slot="reservas-tr">
+                            <th className="col-added" data-slot="reservas-col-added">Añadida</th>
+                            <th className="col-mesa" data-slot="reservas-col-mesa">Mesa</th>
+                            <th className="col-time" data-slot="reservas-col-time">Hora</th>
+                            <th className="col-client" data-slot="reservas-col-client">Cliente</th>
+                            <th className="col-status" data-slot="reservas-col-status">Estado</th>
+                            <th className="num" data-slot="reservas-num">Pax</th>
+                            <th className="col-children num" data-slot="reservas-num">Niños</th>
+                            <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
+                            <th className="col-rice" data-slot="reservas-col-rice">Arroz</th>
+                            <th className="col-comment" data-slot="reservas-col-comment">Comentario</th>
+                            <th className="end" / data-slot="reservas-end">
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody data-slot="reservas-tbody">
                           {rows.map((b) => (
                             <BookingRow key={b.id} booking={b} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
                           ))}
                           {!rows.length ? (
-                            <tr><td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
+                            <tr data-slot="reservas-tro"><td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
                           ) : null}
                         </tbody>
                       </table>
                     </div>
                     <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
-                      <div className="bo-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
+                      <div className="bo-pagerText" data-slot="reservas-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
                       {showPagerBtns ? (
                         <div className="bo-pagerBtns" data-slot="reservas-page-pagination-btns">
                           <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1} data-testid="reservas-page-pagination-prev">Anterior</button>
@@ -657,11 +659,11 @@ export default function Page() {
       <ConfirmDialog open={confirm.open} title="Cancelar reserva" message={confirm.booking ? `Cancelar la reserva #${confirm.booking.id} de ${confirm.booking.customer_name}?` : ""} confirmText="Cancelar" danger onClose={() => setConfirm({ open: false, booking: null })} onConfirm={doCancel} />
 
       <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details">
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Reserva completa</div>
+        <div className="bo-modalHead" data-slot="reservas-modalHead">
+          <div className="bo-modalTitle" data-slot="reservas-modalTitle">Reserva completa</div>
           <button className="bo-modalX" type="button" onClick={closeDetails} aria-label="Close" data-testid="reservas-page-details-close">×</button>
         </div>
-        <div className="bo-modalOutline" style={{ marginTop: 10 }}>
+        <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {details.booking && <BookingDetailsPanel booking={details.booking} floors={floors} />}
         </div>
         <div className="bo-modalActions bo-modalActions--reservas" data-slot="reservas-page-details-actions">
@@ -673,11 +675,11 @@ export default function Page() {
       </Modal>
 
       <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit">
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">Editar reserva</div>
+        <div className="bo-modalHead" data-slot="reservas-modalHead">
+          <div className="bo-modalTitle" data-slot="reservas-modalTitle">Editar reserva</div>
           <button className="bo-modalX" type="button" onClick={closeEdit} aria-label="Close" data-testid="reservas-page-edit-close">×</button>
         </div>
-        <div className="bo-modalOutline" style={{ marginTop: 10 }}>
+        <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {edit.booking && editInitial ? (
             <BookingEditor api={api} initial={editInitial} busy={busy} submitLabel="Guardar" onSubmit={submitEdit} onCancel={closeEdit} stickyFooter floors={floors} />
           ) : <InlineAlert kind="info" title="Cargando" message="Preparando editor..." />}
