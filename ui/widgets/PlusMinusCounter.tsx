@@ -33,9 +33,9 @@ export function PlusMinusCounter({
   const valueText = String(value);
 
   return (
-    <div className={cn("bo-timeAdjustCounter bo-timeAdjustCounter--glass", className)} aria-label={label}>
-      <div className="bo-timeAdjustCounterLabel">{label}</div>
-      <div className="bo-timeAdjustCounterCtrls">
+    <div className={cn("bo-timeAdjustCounter bo-timeAdjustCounter--glass", className)} aria-label={label} data-slot="plus-minus-counter">
+      <div className="bo-timeAdjustCounterLabel" data-slot="plus-minus-counter-label">{label}</div>
+      <div className="bo-timeAdjustCounterCtrls" data-slot="plus-minus-counter-controls">
         <button
           className="bo-counterBtn bo-counterBtn--glass"
           type="button"
@@ -47,7 +47,7 @@ export function PlusMinusCounter({
           <Minus size={14} strokeWidth={2.2} />
         </button>
 
-        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass">{valueText}</div>
+        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass" data-slot="plus-minus-counter-value">{valueText}</div>
 
         <button
           className="bo-counterBtn bo-counterBtn--glass"
@@ -62,7 +62,7 @@ export function PlusMinusCounter({
       </div>
 
       {helperText ? (
-        <div className="bo-mutedText" style={{ marginTop: 8, fontSize: 12 }}>
+        <div className="bo-mutedText" style={{ marginTop: 8, fontSize: 12 }} data-slot="plus-minus-counter-helper">
           {helperText}
         </div>
       ) : null}

@@ -276,7 +276,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             <div className="bo-formSection">
               {method === "equal" ? (
                 <div className="bo-formGroup">
-                  <label htmlFor="splitCount" className="bo-label">Numero de partes</label>
+                  <label htmlFor="splitCount" className="bo-label" data-slot="split-invoice-split-count-label">Numero de partes</label>
                   <input
                     id="splitCount"
                     type="number"
@@ -345,7 +345,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                         <div className="bo-splitItemFields">
                           <div className="bo-formRow">
                             <div className="bo-formGroup">
-                              <label className="bo-label">Nombre del cliente *</label>
+                              <label className="bo-label" data-slot="split-invoice-customer-name-label">Nombre del cliente *</label>
                               <input
                                 type="text"
                                 value={item.customer_name}
@@ -357,7 +357,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                               />
                             </div>
                             <div className="bo-formGroup">
-                              <label className="bo-label">Apellidos</label>
+                              <label className="bo-label" data-slot="split-invoice-customer-surname-label">Apellidos</label>
                               <input
                                 type="text"
                                 value={item.customer_surname || ""}
@@ -371,7 +371,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
 
                           <div className="bo-formRow">
                             <div className="bo-formGroup">
-                              <label className="bo-label">Email *</label>
+                              <label className="bo-label" data-slot="split-invoice-customer-email-label">Email *</label>
                               <input
                                 type="email"
                                 value={item.customer_email}
@@ -383,7 +383,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                               />
                             </div>
                             <div className="bo-formGroup">
-                              <label className="bo-label">DNI/CIF</label>
+                              <label className="bo-label" data-slot="split-invoice-customer-dni-label">DNI/CIF</label>
                               <input
                                 type="text"
                                 value={item.customer_dni_cif || ""}
@@ -397,7 +397,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
 
                           <div className="bo-formRow">
                             <div className="bo-formGroup">
-                              <label className="bo-label">Telefono</label>
+                              <label className="bo-label" data-slot="split-invoice-customer-phone-label">Telefono</label>
                               <input
                                 type="tel"
                                 value={item.customer_phone || ""}
@@ -408,7 +408,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                               />
                             </div>
                             <div className="bo-formGroup">
-                              <label className="bo-label">Porcentaje (%)</label>
+                              <label className="bo-label" data-slot="split-invoice-percentage-label">Porcentaje (%)</label>
                               <div className="bo-inputGroup">
                                 <input
                                   type="number"

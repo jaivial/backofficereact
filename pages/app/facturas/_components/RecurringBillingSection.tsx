@@ -136,8 +136,8 @@ export function RecurringBillingSection({
   }, [data.start_date, data.frequency]);
 
   return (
-    <div className="bo-invoiceFormSection bo-recurringBilling">
-      <div className="bo-recurringBillingHeader">
+    <div className="bo-invoiceFormSection bo-recurringBilling" data-slot="recurring-billing-section">
+      <div className="bo-recurringBillingHeader" data-slot="recurring-billing-header">
         <div className="bo-recurringBillingTitle">
           <RefreshCw size={18} />
           <h3>Facturación recurrente</h3>
@@ -173,7 +173,7 @@ export function RecurringBillingSection({
       </div>
 
       {/* Enable/Disable Toggle */}
-      <div className="bo-recurringBillingToggle">
+      <div className="bo-recurringBillingToggle" data-slot="recurring-billing-toggle-section">
         <div className="bo-field bo-field--switch">
           <Switch
             checked={data.is_recurring ?? false}
@@ -187,9 +187,9 @@ export function RecurringBillingSection({
 
       {/* Recurring Configuration */}
       {data.is_recurring && (
-        <div className="bo-recurringBillingConfig">
+        <div className="bo-recurringBillingConfig" data-slot="recurring-billing-config">
           {/* Frequency Selection */}
-          <div className="bo-recurringBillingRow">
+          <div className="bo-recurringBillingRow" data-slot="recurring-billing-row-frequency">
             <div className="bo-field">
               <span className="bo-label">
                 <Clock size={14} />
@@ -207,7 +207,7 @@ export function RecurringBillingSection({
           </div>
 
           {/* Date Range */}
-          <div className="bo-recurringBillingRow">
+          <div className="bo-recurringBillingRow" data-slot="recurring-billing-row-dates">
             <div className="bo-field">
               <span className="bo-label">
                 <Calendar size={14} />
@@ -238,7 +238,7 @@ export function RecurringBillingSection({
 
           {/* Next Billing Date Preview */}
           {data.start_date && data.frequency && (
-            <div className="bo-recurringBillingNextPreview">
+            <div className="bo-recurringBillingNextPreview" data-slot="recurring-billing-next-preview">
               <div className="bo-recurringBillingNextPreviewLabel">Próxima factura:</div>
               <div className="bo-recurringBillingNextPreviewDate">
                 {getNextBillingDatePreview()}
@@ -250,7 +250,7 @@ export function RecurringBillingSection({
           )}
 
           {/* Auto-send Toggle */}
-          <div className="bo-recurringBillingRow bo-recurringBillingRow--autoSend">
+          <div className="bo-recurringBillingRow bo-recurringBillingRow--autoSend" data-slot="recurring-billing-row-auto-send">
             <div className="bo-field bo-field--switch">
               <Switch
                 checked={data.auto_send ?? false}
@@ -270,7 +270,7 @@ export function RecurringBillingSection({
 
           {/* Stats (when editing existing recurring invoice) */}
           {showStatus && (
-            <div className="bo-recurringBillingStats">
+            <div className="bo-recurringBillingStats" data-slot="recurring-billing-stats">
               <div className="bo-recurringBillingStat">
                 <span className="bo-recurringBillingStatLabel">Facturas generadas</span>
                 <span className="bo-recurringBillingStatValue">{data.invoice_count || 0}</span>
@@ -300,7 +300,7 @@ export function RecurringBadge({ isRecurring, nextBillingDate }: { isRecurring?:
   if (!isRecurring) return null;
 
   return (
-    <span className="bo-recurringBadge" title={nextBillingDate ? `Próxima: ${nextBillingDate}` : "Facturación recurrente"}>
+    <span className="bo-recurringBadge" title={nextBillingDate ? `Próxima: ${nextBillingDate}` : "Facturación recurrente"} data-slot="recurring-badge">
       <RefreshCw size={12} />
       <span>Recurrente</span>
     </span>

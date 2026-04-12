@@ -287,14 +287,14 @@ export function MemberShiftModal({
 
   return (
     <Modal open={open} onClose={onClose} title={fullName} widthPx={760} className={cn("bo-modal--memberShift", className)}>
-      <div className="bo-shiftModal">
-        <div className="bo-shiftModalDate">
+      <div className="bo-shiftModal" data-slot="shift-modal-root">
+        <div className="bo-shiftModalDate" data-slot="shift-modal-date">
           <Clock size={14} strokeWidth={1.8} />
           {selectedDate}
         </div>
 
         {loading && (
-          <div className="bo-shiftModalLoading">
+          <div className="bo-shiftModalLoading" data-slot="shift-modal-loading">
             <div className="bo-spinner" />
           </div>
         )}
@@ -302,9 +302,9 @@ export function MemberShiftModal({
         {!loading && (
           <>
             {hasSchedule && !isActive && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
-                <div className="bo-shiftModalLabel">Turno actual</div>
-                <div className="bo-shiftModalTimes">
+              <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-current-shift">
+                <div className="bo-shiftModalLabel" data-slot="shift-modal-section-label">Turno actual</div>
+                <div className="bo-shiftModalTimes" data-slot="shift-modal-times">
                   <TimeAdjustCounter
                     label="Entrada"
                     value={schedule.startTime}
@@ -320,7 +320,7 @@ export function MemberShiftModal({
                     disabled={loading}
                   />
                 </div>
-                <div className="bo-shiftModalActions">
+                <div className="bo-shiftModalActions" data-slot="shift-modal-actions">
                   <button className="bo-btn bo-btn--primary bo-btn--glass" type="button" onClick={startFichaje} disabled={loading} data-testid="member-shift-start-btn">
                     <Play size={14} strokeWidth={1.8} />
                     Iniciar fichaje
@@ -334,15 +334,15 @@ export function MemberShiftModal({
             )}
 
             {hasSchedule && isActive && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
-                <div className="bo-shiftModalLabel">Trabajando</div>
-                <div className="bo-shiftModalActive bo-shiftModalActive--glass">
-                  <div className="bo-shiftModalActiveInfo">
-                    <span className="bo-shiftModalActiveTime">Entrada: {activeEntry.startTime}</span>
-                    <span className="bo-badge bo-badge--success">En curso</span>
+              <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-active-section">
+                <div className="bo-shiftModalLabel" data-slot="shift-modal-active-label">Trabajando</div>
+                <div className="bo-shiftModalActive bo-shiftModalActive--glass" data-slot="shift-modal-active-badge">
+                  <div className="bo-shiftModalActiveInfo" data-slot="shift-modal-active-info">
+                    <span className="bo-shiftModalActiveTime" data-slot="shift-modal-active-time">Entrada: {activeEntry.startTime}</span>
+                    <span className="bo-badge bo-badge--success" data-slot="shift-modal-live-badge">En curso</span>
                   </div>
                 </div>
-                <div className="bo-shiftModalActions">
+                <div className="bo-shiftModalActions" data-slot="shift-modal-actions">
                   <button className="bo-btn bo-btn--danger bo-btn--glass" type="button" onClick={stopFichaje} disabled={loading} data-testid="member-shift-stop-btn">
                     <Square size={14} strokeWidth={1.8} />
                     Fichar salida
@@ -352,8 +352,8 @@ export function MemberShiftModal({
             )}
 
             {!hasSchedule && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass">
-                <div className="bo-shiftModalLabel">Sin turno asignado</div>
+              <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-no-schedule">
+                <div className="bo-shiftModalLabel" data-slot="shift-modal-no-schedule-label">Sin turno asignado</div>
                 <button
                   className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
                   type="button"
@@ -375,12 +375,13 @@ export function MemberShiftModal({
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
+                  data-slot="shift-modal-assign-form"
                 >
-                  <div className="bo-shiftModalLabel">Nuevo turno</div>
-                  <div className="bo-shiftModalWheels">
-                    <div className="bo-shiftModalWheelGroup">
-                      <div className="bo-shiftModalWheelLabel">Hora de entrada</div>
-                      <div className="bo-shiftModalWheelRow">
+                  <div className="bo-shiftModalLabel" data-slot="shift-modal-assign-label">Nuevo turno</div>
+                  <div className="bo-shiftModalWheels" data-slot="shift-modal-wheels">
+                    <div className="bo-shiftModalWheelGroup" data-slot="shift-modal-start-wheel-group">
+                      <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de entrada</div>
+                      <div className="bo-shiftModalWheelRow" data-slot="shift-modal-wheel-row">
                         <SpinWheel
                           values={HOUR_OPTIONS}
                           value={assignEntryHour}
@@ -397,9 +398,9 @@ export function MemberShiftModal({
                         />
                       </div>
                     </div>
-                    <div className="bo-shiftModalWheelGroup">
-                      <div className="bo-shiftModalWheelLabel">Hora de salida</div>
-                      <div className="bo-shiftModalWheelRow">
+                    <div className="bo-shiftModalWheelGroup" data-slot="shift-modal-end-wheel-group">
+                      <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de salida</div>
+                      <div className="bo-shiftModalWheelRow" data-slot="shift-modal-wheel-row">
                         <SpinWheel
                           values={exitHourOptions}
                           value={assignExitHour}
@@ -436,6 +437,7 @@ export function MemberShiftModal({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 transition={{ duration: 0.2, ease: "easeInOut" }}
+                data-slot="shift-modal-add-shift-toggle"
               >
                 <button
                   className="bo-btn bo-btn--ghost bo-btn--full bo-shiftModalAddBtn bo-btn--glass"
@@ -455,6 +457,7 @@ export function MemberShiftModal({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 transition={{ duration: 0.2, ease: "easeInOut" }}
+                data-slot="shift-modal-active-add-toggle"
               >
                 <button
                   className="bo-btn bo-btn--ghost bo-btn--full bo-btn--glass"
@@ -473,12 +476,13 @@ export function MemberShiftModal({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
+                    data-slot="shift-modal-assign-form"
                   >
-                    <div className="bo-shiftModalLabel">Nuevo turno</div>
-                    <div className="bo-shiftModalWheels">
-                      <div className="bo-shiftModalWheelGroup">
-                        <div className="bo-shiftModalWheelLabel">Hora de entrada</div>
-                        <div className="bo-shiftModalWheelRow">
+                    <div className="bo-shiftModalLabel" data-slot="shift-modal-assign-label">Nuevo turno</div>
+                    <div className="bo-shiftModalWheels" data-slot="shift-modal-wheels">
+                      <div className="bo-shiftModalWheelGroup" data-slot="shift-modal-start-wheel-group">
+                        <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de entrada</div>
+                        <div className="bo-shiftModalWheelRow" data-slot="shift-modal-wheel-row">
                           <SpinWheel
                             values={HOUR_OPTIONS}
                             value={assignEntryHour}
@@ -495,9 +499,9 @@ export function MemberShiftModal({
                           />
                         </div>
                       </div>
-                      <div className="bo-shiftModalWheelGroup">
-                        <div className="bo-shiftModalWheelLabel">Hora de salida</div>
-                        <div className="bo-shiftModalWheelRow">
+                      <div className="bo-shiftModalWheelGroup" data-slot="shift-modal-end-wheel-group">
+                        <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de salida</div>
+                        <div className="bo-shiftModalWheelRow" data-slot="shift-modal-wheel-row">
                           <SpinWheel
                             values={exitHourOptions}
                             value={assignExitHour}

@@ -123,15 +123,15 @@ export function CustomerHistoryModal({
 
   return (
     <Modal open={open} title={`Historial de ${customerName}`} onClose={onClose} widthPx={800}>
-      <div className="bo-customerHistoryModal">
+      <div className="bo-customerHistoryModal" data-slot="customer-history-modal">
         {/* Customer Info Header */}
-        <div className="bo-customerHistoryHeader">
-          <div className="bo-customerHistoryAvatar">
+        <div className="bo-customerHistoryHeader" data-slot="customer-history-header">
+          <div className="bo-customerHistoryAvatar" data-slot="customer-history-avatar">
             {customerName.charAt(0).toUpperCase()}
           </div>
-          <div className="bo-customerHistoryInfo">
+          <div className="bo-customerHistoryInfo" data-slot="customer-history-info">
             <h3 className="bo-customerHistoryName">{customerName}</h3>
-            <div className="bo-customerHistoryContact">
+            <div className="bo-customerHistoryContact" data-slot="customer-history-contact">
               <span className="bo-customerHistoryEmail">
                 <Mail size={14} />
                 {customerEmail}
@@ -141,8 +141,8 @@ export function CustomerHistoryModal({
         </div>
 
         {/* Statistics Cards */}
-        <div className="bo-customerHistoryStats">
-          <div className="bo-customerHistoryStatCard">
+        <div className="bo-customerHistoryStats" data-slot="customer-history-stats">
+          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-total">
             <div className="bo-customerHistoryStatIcon">
               <TrendingUp size={20} />
             </div>
@@ -152,7 +152,7 @@ export function CustomerHistoryModal({
             </div>
           </div>
 
-          <div className="bo-customerHistoryStatCard">
+          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-average">
             <div className="bo-customerHistoryStatIcon">
               <FileText size={20} />
             </div>
@@ -162,7 +162,7 @@ export function CustomerHistoryModal({
             </div>
           </div>
 
-          <div className="bo-customerHistoryStatCard">
+          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-invoices">
             <div className="bo-customerHistoryStatIcon">
               <Calendar size={20} />
             </div>
@@ -172,7 +172,7 @@ export function CustomerHistoryModal({
             </div>
           </div>
 
-          <div className="bo-customerHistoryStatCard">
+          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-pending">
             <div className="bo-customerHistoryStatIcon">
               <CreditCard size={20} />
             </div>
@@ -185,7 +185,7 @@ export function CustomerHistoryModal({
 
         {/* Date Range */}
         {stats.firstInvoiceDate && stats.lastInvoiceDate && (
-          <div className="bo-customerHistoryDateRange">
+          <div className="bo-customerHistoryDateRange" data-slot="customer-history-date-range">
             <span className="bo-customerHistoryDateLabel">Cliente desde:</span>
             <span className="bo-customerHistoryDateValue">
               {formatDate(stats.firstInvoiceDate)} - {formatDate(stats.lastInvoiceDate)}
@@ -195,7 +195,7 @@ export function CustomerHistoryModal({
 
         {/* Loading State */}
         {loading && (
-          <div className="bo-customerHistoryLoading">
+          <div className="bo-customerHistoryLoading" data-slot="customer-history-loading">
             <Loader2 size={24} className="bo-spinner" />
             <span>Cargando historial...</span>
           </div>
@@ -203,16 +203,16 @@ export function CustomerHistoryModal({
 
         {/* Error State */}
         {error && (
-          <div className="bo-customerHistoryError">
+          <div className="bo-customerHistoryError" data-slot="customer-history-error">
             <p>{error}</p>
           </div>
         )}
 
         {/* Invoices List */}
         {!loading && !error && invoices.length > 0 && (
-          <div className="bo-customerHistoryInvoices">
+          <div className="bo-customerHistoryInvoices" data-slot="customer-history-invoices">
             <h4 className="bo-customerHistoryInvoicesTitle">Historial de facturas</h4>
-            <div className="bo-customerHistoryInvoicesList">
+            <div className="bo-customerHistoryInvoicesList" data-slot="customer-history-invoices-list">
               {invoices
                 .sort((a, b) => new Date(b.invoice_date).getTime() - new Date(a.invoice_date).getTime())
                 .map((invoice) => (
@@ -223,18 +223,19 @@ export function CustomerHistoryModal({
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => e.key === "Enter" && handleInvoiceClick(invoice)}
+                    data-slot="customer-history-invoice-row"
                   >
-                    <div className="bo-customerHistoryInvoiceMain">
+                    <div className="bo-customerHistoryInvoiceMain" data-slot="customer-history-invoice-main">
                       <div className="bo-customerHistoryInvoiceNumber">
                         {invoice.invoice_number || `Factura #${invoice.id}`}
                       </div>
                       <div className="bo-customerHistoryInvoiceDate">{formatDate(invoice.invoice_date)}</div>
                     </div>
-                    <div className="bo-customerHistoryInvoiceDetails">
+                    <div className="bo-customerHistoryInvoiceDetails" data-slot="customer-history-invoice-details">
                       <StatusBadge status={invoice.status} />
                       <PaymentMethodBadge method={invoice.payment_method} />
                     </div>
-                    <div className="bo-customerHistoryInvoiceAmount">
+                    <div className="bo-customerHistoryInvoiceAmount" data-slot="customer-history-invoice-amount">
                       {formatPrice(invoice.amount)}
                     </div>
                   </div>
@@ -245,14 +246,14 @@ export function CustomerHistoryModal({
 
         {/* Empty State */}
         {!loading && !error && invoices.length === 0 && (
-          <div className="bo-customerHistoryEmpty">
+          <div className="bo-customerHistoryEmpty" data-slot="customer-history-empty">
             <FileText size={48} />
             <p>No se encontraron facturas para este cliente</p>
           </div>
         )}
 
         {/* Actions */}
-        <div className="bo-modalActions">
+        <div className="bo-modalActions" data-slot="customer-history-actions">
           <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} data-testid="customer-history-close-btn">
             Cerrar
           </button>

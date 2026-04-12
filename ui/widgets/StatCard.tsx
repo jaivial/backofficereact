@@ -45,13 +45,13 @@ export const StatCard = memo(function StatCard({
         }
       } : undefined}
     >
-      <div className="bo-statTop">
-        <div className="bo-statIcon" aria-hidden="true">
+      <div className="bo-statTop" data-slot="stat-card-header">
+        <div className="bo-statIcon" aria-hidden="true" data-slot="stat-card-icon">
           <Icon k={icon} />
         </div>
-        <div className="bo-statLabel">{displayLabel}</div>
+        <div className="bo-statLabel" data-slot="stat-card-label">{displayLabel}</div>
       </div>
-      <div className="bo-statValue">{value}</div>
+      <div className="bo-statValue" data-slot="stat-card-value">{value}</div>
     </div>
   );
 });

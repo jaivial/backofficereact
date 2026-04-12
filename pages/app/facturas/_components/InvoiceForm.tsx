@@ -914,7 +914,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       )}
       <div className="bo-invoiceFormHeader">
         <div className="bo-invoiceFormHeaderMain">
-          <h2 className="bo-invoiceFormTitle">{invoice ? "Editar Factura" : "Nueva Factura"}</h2>
+          <h2 className="bo-invoiceFormTitle" data-slot="invoice-form-title">{invoice ? "Editar Factura" : "Nueva Factura"}</h2>
 
           {/* Auto-save status indicator - only show for existing invoices */}
           {invoice && invoice.id && (
@@ -972,10 +972,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         <div className="bo-invoiceFormTopGrid">
           {/* Customer info section */}
           <div className="bo-invoiceFormSection">
-            <h3 className="bo-invoiceFormSectionTitle">Datos del cliente</h3>
+            <h3 className="bo-invoiceFormSectionTitle" data-slot="invoice-form-section-cliente">Datos del cliente</h3>
 
             <div className="bo-invoiceFormRow">
-              <label className={`bo-field ${hasError("customerName") ? "bo-field--error" : ""}`}>
+              <label className={`bo-field ${hasError("customerName") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-name-label">
                 <span className="bo-label">Nombre *</span>
                 <input
                   className={`bo-input ${hasError("customerName") ? "bo-input--error" : ""}`}
@@ -995,7 +995,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 )}
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-customer-surname-label">
                 <span className="bo-label">Apellidos</span>
                 <input
                   className="bo-input"
@@ -1008,7 +1008,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="bo-invoiceFormRow">
-              <label className={`bo-field ${hasError("customerEmail") ? "bo-field--error" : ""}`}>
+              <label className={`bo-field ${hasError("customerEmail") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-email-label">
                 <span className="bo-label">Email *</span>
                 <input
                   className={`bo-input ${hasError("customerEmail") ? "bo-input--error" : ""}`}
@@ -1028,7 +1028,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 )}
               </label>
 
-              <label className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`}>
+              <label className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-phone-label">
                 <span className="bo-label">Teléfono</span>
                 <input
                   className={`bo-input ${hasError("customerPhone") ? "bo-input--error" : ""}`}
@@ -1055,7 +1055,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 <span className="bo-label">DNI</span>
               </div>
 
-              <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`}>
+              <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-dni-cif-label">
                 <span className="bo-label">{useDni ? "DNI" : "CIF"}</span>
                 <input
                   className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
@@ -1076,7 +1076,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="bo-invoiceFormRow">
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-customer-address-street-label">
                 <span className="bo-label">Calle</span>
                 <input
                   className="bo-input"
@@ -1087,7 +1087,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 />
               </label>
 
-              <label className="bo-field bo-field--number">
+              <label className="bo-field bo-field--number" data-slot="invoice-form-customer-address-number-label">
                 <span className="bo-label">Número</span>
                 <input
                   className="bo-input"
@@ -1100,7 +1100,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="bo-invoiceFormRow">
-              <label className={`bo-field ${hasError("customerAddressPostalCode") ? "bo-field--error" : ""}`}>
+              <label className={`bo-field ${hasError("customerAddressPostalCode") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-postal-code-label">
                 <span className="bo-label">Código Postal</span>
                 <input
                   className={`bo-input ${hasError("customerAddressPostalCode") ? "bo-input--error" : ""}`}
@@ -1119,7 +1119,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 )}
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-customer-city-label">
                 <span className="bo-label">Localidad</span>
                 <input
                   className="bo-input"
@@ -1132,7 +1132,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div className="bo-invoiceFormRow">
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-customer-province-label">
                 <span className="bo-label">Provincia</span>
                 <input
                   className="bo-input"
@@ -1143,7 +1143,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-customer-country-label">
                 <span className="bo-label">País</span>
                 <input
                   className="bo-input"
@@ -1158,7 +1158,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* Invoice info section */}
           <div className="bo-invoiceFormSection">
-            <h3 className="bo-invoiceFormSectionTitle">Datos de la factura</h3>
+            <h3 className="bo-invoiceFormSectionTitle" data-slot="invoice-form-section-datos-factura">Datos de la factura</h3>
 
             {/* Invoice Number Override */}
             <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceNumber">
@@ -1168,7 +1168,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </div>
 
               {overrideInvoiceNumber && (
-                <label className="bo-field">
+                <label className="bo-field" data-slot="invoice-form-invoice-number-label">
                   <span className="bo-label">Numero de factura</span>
                   <input
                     className="bo-input"
@@ -1217,7 +1217,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </div>
             ) : (
               <div className="bo-invoiceFormRow">
-                <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`}>
+                <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`} data-slot="invoice-form-amount-label">
                   <span className="bo-label">Importe *</span>
                   <input
                     className={`bo-input ${hasError("amount") ? "bo-input--error" : ""}`}
@@ -1239,7 +1239,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   )}
                 </label>
 
-                <label className="bo-field">
+                <label className="bo-field" data-slot="invoice-form-currency-label">
                   <span className="bo-label">Moneda</span>
                   <Select
                     value={currency}
@@ -1250,7 +1250,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   />
                 </label>
 
-                <label className="bo-field">
+                <label className="bo-field" data-slot="invoice-form-iva-rate-label">
                   <span className="bo-label">IVA (%)</span>
                   <input
                     className="bo-input"
@@ -1265,7 +1265,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   />
                 </label>
 
-                <label className="bo-field">
+                <label className="bo-field" data-slot="invoice-form-payment-method-label">
                   <span className="bo-label">Método de pago</span>
                   <Select
                     value={paymentMethod}
@@ -1280,7 +1280,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             {/* Discount Section */}
             <div className="bo-invoiceFormRow">
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-discount-type-label">
                 <span className="bo-label">Tipo de descuento</span>
                 <Select
                   value={discountType}
@@ -1297,7 +1297,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
               {discountType && (
                 <>
-                  <label className="bo-field">
+                  <label className="bo-field" data-slot="invoice-form-discount-value-label">
                     <span className="bo-label">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
                     <input
                       className="bo-input"
@@ -1311,7 +1311,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     />
                   </label>
 
-                  <label className="bo-field">
+                  <label className="bo-field" data-slot="invoice-form-discount-reason-label">
                     <span className="bo-label">Razon del descuento</span>
                     <input
                       className="bo-input"
@@ -1373,12 +1373,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             )}
 
             <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceDates">
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-invoice-date-label">
                 <span className="bo-label">Fecha de factura *</span>
                 <DatePicker value={invoiceDate} onChange={setInvoiceDate} data-testid="invoice-date-input" />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-payment-terms-label">
                 <span className="bo-label">Plazo de pago</span>
                 <Select
                   value={paymentTerms}
@@ -1389,12 +1389,12 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-due-date-label">
                 <span className="bo-label">Fecha de vencimiento</span>
                 <DatePicker value={dueDate} onChange={setDueDate} data-testid="invoice-due-date-input" />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-payment-date-label">
                 <span className="bo-label">Fecha de pago</span>
                 <DatePicker value={paymentDate} onChange={setPaymentDate} data-testid="invoice-payment-date-input" />
               </label>
@@ -1406,10 +1406,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
         {/* Invoice state and settings */}
         <div className="bo-invoiceFormSection">
-          <h3 className="bo-invoiceFormSectionTitle">Estado y configuración</h3>
+          <h3 className="bo-invoiceFormSectionTitle" data-slot="invoice-form-section-estado-config">Estado y configuración</h3>
 
           <div className="bo-invoiceFormRow">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="invoice-form-status-label">
               <span className="bo-label">Estado</span>
               <Select
                 value={status}
@@ -1430,17 +1430,17 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {isReservation && (
             <div className="bo-invoiceFormRow bo-invoiceFormRow--reservation">
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-reservation-customer-name-label">
                 <span className="bo-label">Nombre reserva</span>
                 <input className="bo-input" type="text" value={reservationCustomerName || ""} readOnly data-testid="invoice-reservation-customer-name-input" />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-reservation-date-label">
                 <span className="bo-label">Fecha reserva</span>
                 <DatePicker value={reservationDate} onChange={setReservationDate} data-testid="invoice-reservation-date-input" />
               </label>
 
-              <label className="bo-field">
+              <label className="bo-field" data-slot="invoice-form-reservation-party-size-label">
                 <span className="bo-label">Personas</span>
                 <input
                   className="bo-input"
@@ -1456,7 +1456,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* Image upload */}
           <div className="bo-invoiceFormRow bo-invoiceFormRow--image">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="invoice-form-account-image-label">
               <span className="bo-label">Imagen de la cuenta</span>
               <div className="bo-invoiceImageUpload">
                 {accountImageUrl ? (
@@ -1485,7 +1485,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* Internal notes */}
           <div className="bo-invoiceFormRow bo-invoiceFormRow--notes">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="invoice-form-internal-notes-label">
               <span className="bo-label">Notas internas</span>
               <span className="bo-mutedText" style={{ marginBottom: "4px", display: "block" }}>
                 Estas notas solo son visibles en el backoffice y no se incluyen en el PDF
@@ -1503,7 +1503,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* PDF Template Selector */}
           <div className="bo-invoiceFormRow bo-invoiceFormRow--pdfTemplate">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="invoice-form-pdf-template-label">
               <span className="bo-label">Plantilla PDF</span>
               <div className="bo-pdfTemplateOptions bo-pdfTemplateOptions--inline">
                 {PDF_TEMPLATE_OPTIONS.map((template) => (
@@ -1535,7 +1535,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* Category and Tags */}
           <div className="bo-invoiceFormRow bo-invoiceFormRow--category">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="invoice-form-category-label">
               <span className="bo-label">Categoría</span>
               <Select
                 value={category}
@@ -1552,7 +1552,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* Tags */}
           <div className="bo-invoiceFormRow bo-invoiceFormRow--tags">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="invoice-form-tags-label">
               <span className="bo-label">Etiquetas</span>
               <div className="bo-tagsInput">
                 <div className="bo-tagsList">
@@ -1613,7 +1613,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
           {/* Deposit Tracking Section */}
           <div className="bo-invoiceFormRow bo-invoiceFormRow--deposit">
-            <label className="bo-field">
+            <label className="bo-field" data-slot="invoice-form-deposit-type-label">
               <span className="bo-label">Tipo de anticipo/seña</span>
               <Select
                 value={depositType}
@@ -1631,7 +1631,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           {depositType && (
             <>
               <div className="bo-invoiceFormRow bo-invoiceFormRow--deposit">
-                <label className="bo-field">
+                <label className="bo-field" data-slot="invoice-form-deposit-amount-label">
                   <span className="bo-label">Importe del anticipo/seña</span>
                   <input
                     className="bo-input"
@@ -1646,7 +1646,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 </label>
 
                 {depositAmount && totalAmount > 0 && (
-                  <label className="bo-field">
+                  <label className="bo-field" data-slot="invoice-form-deposit-remaining-label">
                     <span className="bo-label">Pendiente</span>
                     <div className="bo-input" style={{ backgroundColor: "var(--bo-bg-muted)", fontWeight: 600 }}>
                       {formatPrice(Math.max(0, totalAmount - parseFloat(depositAmount || "0")), currency)}
@@ -1688,7 +1688,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         {/* Comments section - only show for existing invoices */}
         {invoice && invoice.id && (
           <div className="bo-invoiceFormSection bo-invoiceFormSection--comments">
-            <h3 className="bo-invoiceFormSectionTitle">
+            <h3 className="bo-invoiceFormSectionTitle" data-slot="invoice-form-section-comentarios">
               <MessageSquare size={18} />
               Comentarios
             </h3>

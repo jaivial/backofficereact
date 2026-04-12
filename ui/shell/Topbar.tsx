@@ -136,11 +136,11 @@ export function Topbar({
 
   return (
     <header className={cn("bo-topbar", className)} aria-label="Topbar" data-testid="topbar" data-ui="topbar">
-      <div className="bo-topbarHeading bo-topbarHeading--actionsInline">
-        <div className="bo-title">{title}</div>
-        {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}
+      <div className="bo-topbarHeading bo-topbarHeading--actionsInline" data-slot="topbar-heading">
+        <div className="bo-title" data-slot="topbar-title">{title}</div>
+        {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} data-slot="topbar-breadcrumbs" /> : null}
       </div>
-      <div className="bo-actions bo-topbarActions">
+      <div className="bo-actions bo-topbarActions" data-slot="topbar-actions">
         {session?.restaurants?.length ? (
           <Select
             value={String(session.activeRestaurantId || session.restaurants[0]?.id || "")}
@@ -163,9 +163,9 @@ export function Topbar({
         />
 
         {fichaje.activeEntry ? (
-          <div className={`bo-fichajeTopbarChip${fichaje.wsConnected ? " is-live" : ""}`} aria-live="polite">
-            <span className="bo-fichajeTopbarDot" aria-hidden="true" />
-            <span className="bo-fichajeTopbarTime">{fichajeElapsed || "--:--:--"}</span>
+          <div className={`bo-fichajeTopbarChip${fichaje.wsConnected ? " is-live" : ""}`} aria-live="polite" data-slot="topbar-fichaje-chip">
+            <span className="bo-fichajeTopbarDot" aria-hidden="true" data-slot="topbar-fichaje-dot" />
+            <span className="bo-fichajeTopbarTime" data-slot="topbar-fichaje-time">{fichajeElapsed || "--:--:--"}</span>
           </div>
         ) : null}
       </div>

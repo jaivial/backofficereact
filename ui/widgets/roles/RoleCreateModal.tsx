@@ -106,17 +106,17 @@ export function RoleCreateModal({
             </div>
           </div>
           <div className="bo-panelBody bo-roleCreateBody">
-            <label className="bo-field bo-field--wide">
+            <label className="bo-field bo-field--wide" data-slot="role-create-name-label">
               <div className="bo-label">Nombre</div>
               <input className="bo-input" value={label} onChange={(ev) => setLabel(ev.target.value)} placeholder="Ej. Encargado de eventos" data-testid="role-create-name-input" />
             </label>
 
-            <label className="bo-field bo-field--wide">
+            <label className="bo-field bo-field--wide" data-slot="role-create-importance-label">
               <div className="bo-label">Importancia (0-100)</div>
               <Slider value={importance} min={0} max={maxAllowed} onChange={setImportance} ariaLabel="Importancia del rol" />
             </label>
 
-            <label className="bo-field bo-field--wide">
+            <label className="bo-field bo-field--wide" data-slot="role-create-icon-label">
               <div className="bo-label">Icono</div>
               <div className="bo-roleCreateIconRow">
                 <span className="bo-roleCreateIconPreview" aria-hidden="true">

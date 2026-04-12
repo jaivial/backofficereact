@@ -159,18 +159,18 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
               <ChevronRight size={18} strokeWidth={1.8} />
             </button>
           </div>
-          <div className="bo-calDows" aria-hidden="true" data-ui="date-picker-weekdays">
-            <div data-ui="date-picker-weekday">L</div>
-            <div data-ui="date-picker-weekday">M</div>
-            <div data-ui="date-picker-weekday">M</div>
-            <div data-ui="date-picker-weekday">J</div>
-            <div data-ui="date-picker-weekday">V</div>
-            <div data-ui="date-picker-weekday">S</div>
-            <div data-ui="date-picker-weekday">D</div>
+          <div className="bo-calDows" aria-hidden="true" data-ui="date-picker-weekdays" data-slot="date-picker-weekdays">
+            <div data-ui="date-picker-weekday" data-slot="date-picker-weekday">L</div>
+            <div data-ui="date-picker-weekday" data-slot="date-picker-weekday">M</div>
+            <div data-ui="date-picker-weekday" data-slot="date-picker-weekday">M</div>
+            <div data-ui="date-picker-weekday" data-slot="date-picker-weekday">J</div>
+            <div data-ui="date-picker-weekday" data-slot="date-picker-weekday">V</div>
+            <div data-ui="date-picker-weekday" data-slot="date-picker-weekday">S</div>
+            <div data-ui="date-picker-weekday" data-slot="date-picker-weekday">D</div>
           </div>
-          <div className="bo-calGrid" aria-label="Calendar grid" data-ui="date-picker-grid">
+          <div className="bo-calGrid" aria-label="Calendar grid" data-ui="date-picker-grid" data-slot="date-picker-calendar-grid">
             {grid.map((c, idx) => {
-              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-picker-empty-cell" />;
+              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-picker-empty-cell" data-slot="date-picker-empty-cell" />;
               const iso = c.iso;
               const isSelected = iso === selectedISO;
               const isBeforeMin = Boolean(minDate && iso < minDate);

@@ -241,19 +241,19 @@ export function DateDropdown({
             <ChevronRight size={18} strokeWidth={1.8} />
           </button>
         </div>
-        <div className="bo-calDows" aria-hidden="true" data-ui="date-dropdown-weekdays">
-          <div data-ui="date-dropdown-weekday">L</div>
-          <div data-ui="date-dropdown-weekday">M</div>
-          <div data-ui="date-dropdown-weekday">M</div>
-          <div data-ui="date-dropdown-weekday">J</div>
-          <div data-ui="date-dropdown-weekday">V</div>
-          <div data-ui="date-dropdown-weekday">S</div>
-          <div data-ui="date-dropdown-weekday">D</div>
+        <div className="bo-calDows" aria-hidden="true" data-ui="date-dropdown-weekdays" data-slot="date-dropdown-weekdays">
+          <div data-ui="date-dropdown-weekday" data-slot="date-dropdown-weekday">L</div>
+          <div data-ui="date-dropdown-weekday" data-slot="date-dropdown-weekday">M</div>
+          <div data-ui="date-dropdown-weekday" data-slot="date-dropdown-weekday">M</div>
+          <div data-ui="date-dropdown-weekday" data-slot="date-dropdown-weekday">J</div>
+          <div data-ui="date-dropdown-weekday" data-slot="date-dropdown-weekday">V</div>
+          <div data-ui="date-dropdown-weekday" data-slot="date-dropdown-weekday">S</div>
+          <div data-ui="date-dropdown-weekday" data-slot="date-dropdown-weekday">D</div>
         </div>
-        <div className="bo-calGrid" aria-label="Calendario" data-ui="date-dropdown-grid">
+        <div className="bo-calGrid" aria-label="Calendario" data-ui="date-dropdown-grid" data-slot="date-dropdown-calendar-grid">
           {grid.map((cell, index) => {
             if (!cell.day || !cell.iso) {
-              return <div key={index} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-dropdown-empty-cell" />;
+              return <div key={index} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-dropdown-empty-cell" data-slot="date-dropdown-empty-cell" />;
             }
 
             const iso = cell.iso;

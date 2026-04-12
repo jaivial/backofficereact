@@ -69,9 +69,9 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose}>
-      <div className="bo-modal-content bo-mergeModal" onClick={(e) => e.stopPropagation()}>
-        <div className="bo-modal-header">
+    <div className="bo-modal-overlay" onClick={onClose} data-slot="merge-invoice-overlay">
+      <div className="bo-modal-content bo-mergeModal" onClick={(e) => e.stopPropagation()} data-slot="merge-invoice-modal">
+        <div className="bo-modal-header" data-slot="merge-invoice-header">
           <div className="bo-modal-title">
             <AlertTriangle size={20} />
             <span>Fusionar facturas</span>
@@ -87,9 +87,9 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           </button>
         </div>
 
-        <div className="bo-modal-body">
+        <div className="bo-modal-body" data-slot="merge-invoice-body">
           {/* Warning */}
-          <div className="bo-mergeWarning">
+          <div className="bo-mergeWarning" data-slot="merge-invoice-warning">
             <AlertTriangle size={16} />
             <span>
               Se fusionaran {invoices.length} facturas en una sola factura
@@ -97,12 +97,12 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           </div>
 
           {/* Selected invoices list */}
-          <div className="bo-mergeList">
+          <div className="bo-mergeList" data-slot="merge-invoice-list">
             <h4>Facturas a fusionar</h4>
-            <div className="bo-mergeListItems">
+            <div className="bo-mergeListItems" data-slot="merge-invoice-list-items">
               {invoices.map((inv) => (
-                <div key={inv.id} className="bo-mergeListItem">
-                  <div className="bo-mergeListItemMain">
+                <div key={inv.id} className="bo-mergeListItem" data-slot="merge-invoice-list-item">
+                  <div className="bo-mergeListItemMain" data-slot="merge-invoice-list-item-main">
                     <span className="bo-mergeListItemNumber">
                       {inv.invoice_number || `#${inv.id}`}
                     </span>
@@ -120,7 +120,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
 
           {/* Different customers warning */}
           {totals.customerCount > 1 && (
-            <div className="bo-mergeCustomersWarning">
+            <div className="bo-mergeCustomersWarning" data-slot="merge-invoice-customers-warning">
               <User size={16} />
               <span>
                 <strong>Atencion:</strong> Las facturas son de {totals.customerCount} clientes diferentes.
@@ -130,7 +130,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           )}
 
           {/* Combined totals */}
-          <div className="bo-mergeTotals">
+          <div className="bo-mergeTotals" data-slot="merge-invoice-totals">
             <div className="bo-mergeTotalsRow">
               <span>Base imponible:</span>
               <span>{formatPrice(totals.combinedAmount)}</span>
@@ -146,7 +146,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           </div>
 
           {/* Delete originals option */}
-          <div className="bo-mergeOptions">
+          <div className="bo-mergeOptions" data-slot="merge-invoice-options">
             <label className="bo-checkboxContainer">
               <input
                 type="checkbox"
@@ -168,7 +168,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           </div>
         </div>
 
-        <div className="bo-modal-footer">
+        <div className="bo-modal-footer" data-slot="merge-invoice-footer">
           <button
             className="bo-btn bo-btn--ghost"
             onClick={onClose}

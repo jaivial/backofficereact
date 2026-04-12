@@ -86,11 +86,11 @@ export function Sidebar({
 
   return (
     <aside className={cn("bo-sidebar", className)} aria-label="Sidebar" data-testid="sidebar" data-ui="sidebar">
-      <div className="bo-brand" aria-label="Backoffice" data-testid="sidebar-brand">
+      <div className="bo-brand" aria-label="Backoffice" data-testid="sidebar-brand" data-slot="sidebar-brand">
         <Settings {...iconProps} />
       </div>
 
-      <nav className="bo-nav bo-navDesktop" aria-label="Navigation" data-testid="sidebar-nav-desktop">
+      <nav className="bo-nav bo-navDesktop" aria-label="Navigation" data-testid="sidebar-nav-desktop" data-slot="sidebar-nav-desktop">
         {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -101,8 +101,8 @@ export function Sidebar({
         })}
       </nav>
 
-      <nav className="bo-nav bo-navMobile" aria-label="Navigation mobile" data-testid="sidebar-nav-mobile">
-        <div className="bo-navMobileMain">
+      <nav className="bo-nav bo-navMobile" aria-label="Navigation mobile" data-testid="sidebar-nav-mobile" data-slot="sidebar-nav-mobile">
+        <div className="bo-navMobileMain" data-slot="sidebar-nav-main">
           <NavLink href="/app/backoffice" active={homeActive} label="Home">
             <Home size={iconProps.size} strokeWidth={iconProps.strokeWidth} />
           </NavLink>
@@ -114,7 +114,7 @@ export function Sidebar({
               </NavLink>
             );
           })}
-          <div className="bo-navMobileMoreWrap" ref={mobileMoreRef}>
+          <div className="bo-navMobileMoreWrap" ref={mobileMoreRef} data-slot="sidebar-nav-more-wrap">
             <button
               type="button"
               className={`bo-navBtn bo-navBtn--glass bo-navBtn--mobileMore${mobileMenuOpen ? " is-active" : ""}`}
@@ -126,8 +126,8 @@ export function Sidebar({
             >
               <Ellipsis size={iconProps.size} strokeWidth={iconProps.strokeWidth} />
             </button>
-            <div id="bo-nav-mobile-overflow" className={`bo-navMobileOverflow${mobileMenuOpen ? " is-open" : ""}`}>
-              <div className="bo-navMobileOverflowList">
+            <div id="bo-nav-mobile-overflow" className={`bo-navMobileOverflow${mobileMenuOpen ? " is-open" : ""}`} data-slot="sidebar-nav-more-dropdown">
+              <div className="bo-navMobileOverflowList" data-slot="sidebar-nav-more-list">
                 {mobileOverflow.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
                   return (
