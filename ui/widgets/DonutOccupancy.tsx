@@ -43,7 +43,11 @@ export function DonutOccupancy({
   }, [pctArc]);
 
   return (
-    <section className={cn(`bo-donut bo-donut--${tone}`, className)} aria-label="Ocupación">
+    <section
+      className={cn(`bo-donut bo-donut--${tone}`, className)}
+      aria-label="Ocupación"
+      data-testid="donut-occupancy"
+    >
       <div className="bo-donutSvg" aria-hidden="true">
         <svg viewBox="0 0 120 120" width="120" height="120">
           <circle className="bo-donutTrack" cx="60" cy="60" r="44" fill="none" strokeWidth="10" />

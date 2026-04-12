@@ -28,7 +28,14 @@ export function LoadingSpinner({
   const spinnerClass = `bo-spinner bo-spinner--${size}${toneClass(tone)}`;
 
   return (
-    <div className={rootClass} role="status" aria-live="polite">
+    <div
+      className={rootClass}
+      role="status"
+      aria-live="polite"
+      aria-label={label || "Cargando..."}
+      data-component="loading-spinner"
+      data-size={size}
+    >
       <span className={spinnerClass} aria-hidden="true" />
       {label ? <span className="bo-spinnerLabel">{label}</span> : null}
     </div>

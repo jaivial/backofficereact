@@ -369,15 +369,15 @@ export default function Page() {
 
   if (!data.isAdminView) {
     return (
-      <section aria-label="Fichaje" className="bo-content-grid bo-fichajePage">
-        <div className="bo-panel bo-fichajePanel">
-          <div className="bo-panelHead">
+      <section aria-label="Fichaje" className="bo-content-grid bo-fichajePage" data-testid="fichaje-section">
+        <div className="bo-panel bo-fichajePanel" data-testid="fichaje-panel">
+          <div className="bo-panelHead" data-testid="fichaje-panel-head">
             <div>
-              <div className="bo-panelTitle bo-fichajeTitle">
+              <div className="bo-panelTitle bo-fichajeTitle" data-testid="fichaje-title">
                 <Clock3 size={16} strokeWidth={1.8} />
                 Fichaje
               </div>
-              <div className="bo-panelMeta">
+              <div className="bo-panelMeta" data-testid="fichaje-status">
                 {realtime.wsConnected
                   ? "Conectado en tiempo real"
                   : realtime.wsConnecting
@@ -385,13 +385,13 @@ export default function Page() {
                     : "Sincronización por API"}
               </div>
             </div>
-            <div className={`bo-fichajeConn${realtime.wsConnected ? " is-live" : ""}`}>
+            <div className={`bo-fichajeConn${realtime.wsConnected ? " is-live" : ""}`} data-testid="fichaje-connection">
               {realtime.wsConnected ? <Wifi size={15} strokeWidth={1.8} /> : <WifiOff size={15} strokeWidth={1.8} />}
               {realtime.wsConnected ? "WS" : "OFF"}
             </div>
           </div>
 
-          <div className="bo-panelBody bo-fichajeBody">
+          <div className="bo-panelBody bo-fichajeBody" data-testid="fichaje-panel-body">
             <AnimatePresence mode="wait" initial={false}>
               {realtime.activeEntry ? (
                 <motion.div
@@ -401,18 +401,19 @@ export default function Page() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
                   transition={transition}
+                  data-testid="fichaje-running"
                 >
-                  <div className="bo-fichajeStartSmall">Fichaje inicial · {realtime.activeEntry.startTime}</div>
-                  <div className="bo-fichajeCounter" aria-live="polite">
+                  <div className="bo-fichajeStartSmall" data-testid="fichaje-start-time">Fichaje inicial · {realtime.activeEntry.startTime}</div>
+                  <div className="bo-fichajeCounter" aria-live="polite" data-testid="fichaje-counter">
                     {elapsedForEntry(realtime.activeEntry, tick)}
                   </div>
-                  <div className="bo-fichajeMemberName">{realtime.activeEntry.memberName}</div>
-                  <div className="bo-fichajeScheduleNote">
+                  <div className="bo-fichajeMemberName" data-testid="fichaje-member-name">{realtime.activeEntry.memberName}</div>
+                  <div className="bo-fichajeScheduleNote" data-testid="fichaje-schedule-note">
                     {realtime.scheduleToday
                       ? `Horario previsto: ${realtime.scheduleToday.startTime} - ${realtime.scheduleToday.endTime}`
                       : "Sin horario previsto para hoy"}
                   </div>
-                  <button className="bo-btn bo-btn--ghost bo-fichajeStopBtn" type="button" disabled={busyStop} onClick={onStop}>
+                  <button className="bo-btn bo-btn--ghost bo-fichajeStopBtn" type="button" disabled={busyStop} onClick={onStop} data-testid="fichaje-stop-button">
                     <Square size={16} strokeWidth={1.8} />
                     {busyStop ? "Cerrando..." : "Finalizar fichaje"}
                   </button>
@@ -426,9 +427,10 @@ export default function Page() {
                   exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
                   transition={transition}
                   onSubmit={onStart}
+                  data-testid="fichaje-form"
                 >
-                  <div className="bo-fichajeFormRow">
-                    <label className="bo-label" htmlFor="bo-fichaje-dni">
+                  <div className="bo-fichajeFormRow" data-testid="fichaje-dni-row">
+                    <label className="bo-label" htmlFor="bo-fichaje-dni" data-testid="fichaje-dni-label">
                       DNI
                     </label>
                     <input
@@ -438,11 +440,12 @@ export default function Page() {
                       onChange={(ev) => setDni(ev.target.value)}
                       placeholder="00000000X"
                       autoComplete="off"
+                      data-testid="fichaje-dni-input"
                     />
                   </div>
 
-                  <div className="bo-fichajeFormRow">
-                    <label className="bo-label" htmlFor="bo-fichaje-password">
+                  <div className="bo-fichajeFormRow" data-testid="fichaje-password-row">
+                    <label className="bo-label" htmlFor="bo-fichaje-password" data-testid="fichaje-password-label">
                       Contraseña
                     </label>
                     <input
@@ -453,10 +456,11 @@ export default function Page() {
                       onChange={(ev) => setPassword(ev.target.value)}
                       placeholder="••••••••"
                       autoComplete="current-password"
+                      data-testid="fichaje-password-input"
                     />
                   </div>
 
-                  <button className="bo-btn bo-btn--primary bo-fichajeStartBtn" type="submit" disabled={busyStart}>
+                  <button className="bo-btn bo-btn--primary bo-fichajeStartBtn" type="submit" disabled={busyStart} data-testid="fichaje-start-button">
                     <Play size={16} strokeWidth={1.8} />
                     {busyStart ? "Validando..." : "Fichar"}
                   </button>
@@ -470,27 +474,27 @@ export default function Page() {
   }
 
   return (
-    <section aria-label="Fichaje administrado" className="bo-fichajePage bo-fichajeAdminPage">
-      <div className="bo-panel bo-fichajeAdminPanel">
-        <div className="bo-panelHead">
+    <section aria-label="Fichaje administrado" className="bo-fichajePage bo-fichajeAdminPage" data-testid="fichaje-admin-section">
+      <div className="bo-panel bo-fichajeAdminPanel" data-testid="fichaje-admin-panel">
+        <div className="bo-panelHead" data-testid="fichaje-admin-head">
           <div>
-            <div className="bo-panelTitle bo-fichajeTitle">
+            <div className="bo-panelTitle bo-fichajeTitle" data-testid="fichaje-admin-title">
               <Clock3 size={16} strokeWidth={1.8} />
               Fichaje Admin
             </div>
-            <div className="bo-panelMeta">Inicia, finaliza y supervisa fichajes del equipo en tiempo real.</div>
+            <div className="bo-panelMeta" data-testid="fichaje-admin-description">Inicia, finaliza y supervisa fichajes del equipo en tiempo real.</div>
           </div>
-          <div className="bo-horariosPreviewActions">
+          <div className="bo-horariosPreviewActions" data-testid="fichaje-admin-actions">
             <DatePicker value={date} onChange={(nextDate) => void onDateChange(nextDate)} />
-            <div className="bo-horariosDateBadge">{date}</div>
-            <div className={`bo-fichajeConn${realtime.wsConnected ? " is-live" : ""}`}>
+            <div className="bo-horariosDateBadge" data-testid="fichaje-admin-date">{date}</div>
+            <div className={`bo-fichajeConn${realtime.wsConnected ? " is-live" : ""}`} data-testid="fichaje-admin-connection">
               {realtime.wsConnected ? <Wifi size={15} strokeWidth={1.8} /> : <WifiOff size={15} strokeWidth={1.8} />}
               {realtime.wsConnected ? "WS" : "OFF"}
             </div>
           </div>
         </div>
 
-        <div className="bo-panelBody bo-fichajeAdminBody">
+        <div className="bo-panelBody bo-fichajeAdminBody" data-testid="fichaje-admin-body">
           <MemberPicker
             title="Miembros"
             searchValue={memberSearch}
@@ -501,10 +505,10 @@ export default function Page() {
             emptyLabel="No hay miembros para mostrar."
           />
 
-          <section className="bo-fichajeAdminWork" aria-label="Panel de control de fichaje">
-            <div className="bo-fichajeAdminMember">
-              <div className="bo-panelTitle">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
-              <div className="bo-panelMeta">
+          <section className="bo-fichajeAdminWork" aria-label="Panel de control de fichaje" data-testid="fichaje-admin-work-panel">
+            <div className="bo-fichajeAdminMember" data-testid="fichaje-admin-member-info">
+              <div className="bo-panelTitle" data-testid="fichaje-admin-member-name">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
+              <div className="bo-panelMeta" data-testid="fichaje-admin-member-schedule">
                 {selectedSchedule
                   ? `Horario previsto: ${selectedSchedule.startTime} - ${selectedSchedule.endTime}`
                   : "Sin horario previsto para esta fecha"}
@@ -512,33 +516,33 @@ export default function Page() {
             </div>
 
             {selectedEntry ? (
-              <div className="bo-fichajeRunning">
-                <div className="bo-fichajeStartSmall">Fichaje inicial · {selectedEntry.startTime}</div>
-                <div className="bo-fichajeCounter" aria-live="polite">
+              <div className="bo-fichajeRunning" data-testid="fichaje-admin-running">
+                <div className="bo-fichajeStartSmall" data-testid="fichaje-admin-start-time">Fichaje inicial · {selectedEntry.startTime}</div>
+                <div className="bo-fichajeCounter" aria-live="polite" data-testid="fichaje-admin-counter">
                   {elapsedForEntry(selectedEntry, tick)}
                 </div>
-                <div className="bo-fichajeMemberName">{selectedEntry.memberName}</div>
-                <button className="bo-btn bo-btn--ghost bo-fichajeStopBtn" type="button" disabled={busyAdminAction} onClick={() => void onAdminStop()}>
+                <div className="bo-fichajeMemberName" data-testid="fichaje-admin-member-entry-name">{selectedEntry.memberName}</div>
+                <button className="bo-btn bo-btn--ghost bo-fichajeStopBtn" type="button" disabled={busyAdminAction} onClick={() => void onAdminStop()} data-testid="fichaje-admin-stop-button">
                   <Square size={16} strokeWidth={1.8} />
                   {busyAdminAction ? "Cerrando..." : "Finalizar fichaje"}
                 </button>
               </div>
             ) : (
-              <div className="bo-fichajeAdminIdle">
-                <button className="bo-btn bo-btn--primary bo-fichajeStartBtn" type="button" disabled={!selectedMemberId || busyAdminAction} onClick={() => void onAdminStart()}>
+              <div className="bo-fichajeAdminIdle" data-testid="fichaje-admin-idle">
+                <button className="bo-btn bo-btn--primary bo-fichajeStartBtn" type="button" disabled={!selectedMemberId || busyAdminAction} onClick={() => void onAdminStart()} data-testid="fichaje-admin-start-button">
                   <Play size={16} strokeWidth={1.8} />
                   {busyAdminAction ? "Iniciando..." : "Iniciar fichaje"}
                 </button>
               </div>
             )}
 
-            <div className="bo-fichajeAdminSchedule">
-              <div className="bo-panelTitle bo-fichajeAdminScheduleTitle">
+            <div className="bo-fichajeAdminSchedule" data-testid="fichaje-admin-schedule">
+              <div className="bo-panelTitle bo-fichajeAdminScheduleTitle" data-testid="fichaje-admin-schedule-title">
                 <CalendarClock size={15} strokeWidth={1.8} />
                 Turno asignado
               </div>
               {selectedSchedule ? (
-                <div className="bo-fichajeAdminScheduleGrid">
+                <div className="bo-fichajeAdminScheduleGrid" data-testid="fichaje-admin-schedule-grid">
                   <TimeAdjust
                     label="Entrada"
                     value={selectedSchedule.startTime}
@@ -555,7 +559,7 @@ export default function Page() {
                   />
                 </div>
               ) : (
-                <div className="bo-mutedText">Asigna el horario desde la sección Horarios para habilitar ajustes rápidos.</div>
+                <div className="bo-mutedText" data-testid="fichaje-admin-schedule-note">Asigna el horario desde la sección Horarios para habilitar ajustes rápidos.</div>
               )}
             </div>
           </section>

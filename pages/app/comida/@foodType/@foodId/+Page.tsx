@@ -35,6 +35,7 @@ function FoodDetailPage() {
     bebidaCatModalOpen,
     setBebidaCatModalOpen,
     imagePreview,
+    uploading,
     showAIAdvisor,
     aiBusy,
     aiGenerating,
@@ -62,6 +63,7 @@ function FoodDetailPage() {
     handleAIAdvisorClose,
     handleAIContinueWithout,
     handleAIEnhance,
+    isNew,
   } = useFoodDetailPage();
 
   if (isWine) {
@@ -75,9 +77,10 @@ function FoodDetailPage() {
   }
 
   const title = useMemo(() => {
-    if (!item) return "Detalle no disponible";
-    return item.nombre || `Elemento #${itemNum}`;
-  }, [item, itemNum]);
+    if (!item && !isNew) return "Detalle no disponible";
+    if (isNew) return "Nuevo elemento";
+    return item!.nombre || `Elemento #${itemNum}`;
+  }, [item, itemNum, isNew]);
 
   const breadcrumbs = useMemo<BreadcrumbItem[]>(() => {
     const items: BreadcrumbItem[] = [
@@ -134,7 +137,7 @@ function FoodDetailPage() {
         ) : null}
       </div>
 
-      {!item ? (
+      {!item && !isNew ? (
         <div className="bo-panel bo-foodDetailPanel" data-ui="food-detail-empty-panel">
           <div className="bo-panelHead" data-slot="food-detail-empty-head">
             <div className="bo-panelTitle" data-role="food-detail-empty-title">Elemento no disponible</div>
@@ -148,16 +151,16 @@ function FoodDetailPage() {
             foodType={foodType}
             title={title}
             aiGenerating={aiGenerating}
-            imageUrl={imageUrl}
-            uploading={false}
+            imageUrl={imagePreview || imageUrl}
+            uploading={uploading}
             aiBusy={aiBusy}
-            supportsQuickEditor={supportsQuickEditor}
-            heroBadges={heroBadges}
+            supportsQuickEditor={supportsQuickEditor || isNew}
+            heroBadges={isNew ? [] : heroBadges}
             fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>}
             onImageSelect={handleImageSelect}
           />
 
-          {supportsQuickEditor && currentFoodItem ? (
+          {supportsQuickEditor && (currentFoodItem || isNew) ? (
             <FoodDetailQuickEditor
               isPlate={isPlate}
               isBebida={isBebida}

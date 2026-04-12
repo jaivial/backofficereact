@@ -239,6 +239,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onClose}
             aria-label="Cerrar"
+            data-testid="reminder-template-close"
           >
             <X size={18} />
           </button>
@@ -258,6 +259,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="ej: Recordatorio primera semana"
+                  data-testid="reminder-template-name-input"
                 />
               </div>
 
@@ -271,6 +273,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                       value="email"
                       checked={formData.send_via === "email"}
                       onChange={() => handleTemplateTypeChange("email")}
+                      data-testid="reminder-template-type-email"
                     />
                     <Mail size={14} />
                     <span>Email</span>
@@ -282,6 +285,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                       value="whatsapp"
                       checked={formData.send_via === "whatsapp"}
                       onChange={() => handleTemplateTypeChange("whatsapp")}
+                      data-testid="reminder-template-type-whatsapp"
                     />
                     <MessageSquare size={14} />
                     <span>WhatsApp</span>
@@ -300,6 +304,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                     value={formData.subject || ""}
                     onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
                     placeholder="Recordatorio de pago - Factura {invoice_number}"
+                    data-testid="reminder-template-subject-input"
                   />
                   <div className="bo-fieldHelp">
                     Usa {"{customer_name}"}, {"{invoice_number}"}, {"{amount}"}, {"{due_date}"} como variables
@@ -317,6 +322,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                   value={formData.body}
                   onChange={(e) => setFormData((prev) => ({ ...prev, body: e.target.value }))}
                   rows={8}
+                  data-testid="reminder-template-body-textarea"
                 />
                 <div className="bo-fieldHelp">
                   Usa {"{customer_name}"}, {"{invoice_number}"}, {"{amount}"}, {"{due_date}"} como variables
@@ -324,13 +330,14 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               </div>
 
               <div className="bo-formActions">
-                <button className="bo-btn bo-btn--ghost" onClick={handleCancelEdit}>
+                <button className="bo-btn bo-btn--ghost" onClick={handleCancelEdit} data-testid="reminder-template-cancel-edit">
                   Cancelar
                 </button>
                 <button
                   className="bo-btn bo-btn--primary"
                   onClick={handleSave}
                   disabled={saving || !formData.name.trim()}
+                  data-testid="reminder-template-save"
                 >
                   {saving ? "Guardando..." : editingTemplate ? "Actualizar" : "Crear"}
                 </button>
@@ -340,7 +347,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
             // Templates List
             <>
               <div className="bo-templatesHeader">
-                <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew}>
+                <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew} data-testid="reminder-template-new">
                   <Plus size={16} />
                   Nueva plantilla
                 </button>
@@ -390,6 +397,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                               className="bo-btn bo-btn--ghost bo-btn--sm"
                               onClick={() => handleSetDefault(template)}
                               title="Establecer como predeterminada"
+                              data-testid={`reminder-template-set-default-${template.id}`}
                             >
                               <StarOff size={14} />
                             </button>
@@ -398,6 +406,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             className="bo-btn bo-btn--ghost bo-btn--sm"
                             onClick={() => handleEdit(template)}
                             title="Editar"
+                            data-testid={`reminder-template-edit-${template.id}`}
                           >
                             <Pencil size={14} />
                           </button>
@@ -405,6 +414,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
                             onClick={() => handleDelete(template)}
                             title="Eliminar"
+                            data-testid={`reminder-template-delete-${template.id}`}
                           >
                             <Trash2 size={14} />
                           </button>

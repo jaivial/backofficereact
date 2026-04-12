@@ -94,7 +94,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
       <div className="bo-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="payment-modal-title">
         <div className="bo-modalHeader">
           <h2 id="payment-modal-title" className="bo-modalTitle">Registrar pago</h2>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="register-payment-close-btn">
             <X size={18} />
           </button>
         </div>
@@ -159,6 +159,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                       disabled={deletingPaymentId === payment.id}
                       title="Eliminar pago"
                       aria-label="Eliminar pago"
+                      data-testid={`register-payment-delete-${payment.id}`}
                     >
                       {deletingPaymentId === payment.id ? <Loader2 size={14} className="bo-spin" /> : <Trash2 size={14} />}
                     </button>
@@ -170,7 +171,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
 
           {/* Add Payment Form */}
           {!isFullyPaid && (
-            <form onSubmit={handleSubmit} className="bo-paymentForm">
+            <form onSubmit={handleSubmit} className="bo-paymentForm" data-testid="register-payment-form">
               <h3 className="bo-paymentFormTitle">Nuevo pago</h3>
 
               <div className="bo-paymentFormRow">
@@ -186,6 +187,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder={`Max. ${formatPrice(remainingBalance)}`}
                     required
+                    data-testid="register-payment-amount-input"
                   />
                 </label>
               </div>
@@ -198,6 +200,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                     onChange={(value) => setPaymentMethod(value as PaymentMethod)}
                     options={PAYMENT_METHOD_OPTIONS}
                     ariaLabel="Método de pago"
+                    data-testid="register-payment-method-select"
                   />
                 </label>
               </div>
@@ -218,6 +221,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Notas opcionales..."
+                    data-testid="register-payment-notes-input"
                   />
                 </label>
               </div>
@@ -226,6 +230,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                 type="submit"
                 className="bo-btn bo-btn--primary"
                 disabled={isSubmitting || !amount || parseFloat(amount) <= 0}
+                data-testid="register-payment-submit-btn"
               >
                 {isSubmitting ? (
                   <>

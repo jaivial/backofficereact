@@ -1670,7 +1670,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
             <div className="bo-menuPreviewImageCard">
               <img className="bo-menuPreviewImage" src={menuPreviewImageUrl} alt="Preview image" />
               <div className="bo-menuPreviewActions">
-                <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={menuPreviewUploadDisabled} onClick={openMenuPreviewImagePicker}>
+                <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={menuPreviewUploadDisabled} onClick={openMenuPreviewImagePicker} data-testid="menu-editor-change-image-btn">
                   <Upload size={14} /> {actionLabel}
                 </button>
               </div>
@@ -1679,7 +1679,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
             <div className="bo-menuPreviewDropzone">
               <Upload size={18} aria-hidden="true" />
               <div className="bo-mutedText">Sube una imagen para mostrarla en la cabecera del menu.</div>
-              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={menuPreviewUploadDisabled} onClick={openMenuPreviewImagePicker}>
+              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={menuPreviewUploadDisabled} onClick={openMenuPreviewImagePicker} data-testid="menu-editor-upload-preview-image-btn">
                 <Upload size={14} /> {uploadLabel}
               </button>
             </div>
@@ -1699,10 +1699,10 @@ export function useMenuEditor(): UseMenuEditorReturn {
           <div className="bo-specialImagePreview">
             <img src={specialMenuImage} alt="Menu especial" />
             <div className="bo-menuPreviewActions">
-              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={specialMenuUploadDisabled} onClick={openSpecialMenuImagePicker}>
+              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={specialMenuUploadDisabled} onClick={openSpecialMenuImagePicker} data-testid="menu-editor-change-special-image-btn">
                 <Upload size={14} /> {specialMenuImageBusy ? "Procesando..." : "Cambiar imagen"}
               </button>
-              <button className="bo-btn bo-btn--ghost bo-btn--danger" type="button" disabled={specialMenuUploadDisabled} onClick={() => setSpecialMenuImage(null)}>
+              <button className="bo-btn bo-btn--ghost bo-btn--danger" type="button" disabled={specialMenuUploadDisabled} onClick={() => setSpecialMenuImage(null)} data-testid="menu-editor-delete-special-image-btn">
                 <Trash2 size={14} /> Eliminar
               </button>
             </div>
@@ -1712,7 +1712,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
             <Upload size={48} />
             <p>Sube la imagen del menu especial</p>
             <p className="bo-mutedText">PDF, Word, TXT, PNG, JPG, WEBP o GIF hasta 10MB</p>
-            <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={specialMenuUploadDisabled} onClick={openSpecialMenuImagePicker}>
+            <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={specialMenuUploadDisabled} onClick={openSpecialMenuImagePicker} data-testid="menu-editor-upload-special-image-btn">
               <Upload size={14} /> {specialMenuImageBusy ? "Procesando..." : "Subir imagen"}
             </button>
           </div>

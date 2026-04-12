@@ -85,17 +85,17 @@ export default function ErrorPage() {
         <p className="bo-errorPage__message">{content.message}</p>
         <div className="bo-errorPage__actions">
           {content.primaryAction === "reload" ? (
-            <button type="button" className="bo-btn bo-btn--primary" onClick={handleRetry}>
+            <button type="button" className="bo-btn bo-btn--primary" onClick={handleRetry} data-testid="error-page-primary-button">
               <RefreshCw size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </button>
           ) : (
-            <a href={content.primaryHref ?? "/app/backoffice"} className="bo-btn bo-btn--primary">
+            <a href={content.primaryHref ?? "/app/backoffice"} className="bo-btn bo-btn--primary" data-testid="error-page-primary-link">
               <LogIn size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </a>
           )}
-          <a href={content.secondaryHref} className="bo-btn bo-btn--ghost">
+          <a href={content.secondaryHref} className="bo-btn bo-btn--ghost" data-testid="error-page-secondary-link">
             <Home size={14} strokeWidth={1.8} />
             {content.secondaryLabel}
           </a>

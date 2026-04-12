@@ -30,7 +30,7 @@ export function MemberPicker({
   className?: string;
 }) {
   return (
-    <aside className={cn("bo-memberPicker bo-memberPicker--glass", className)} aria-label={title}>
+    <aside className={cn("bo-memberPicker bo-memberPicker--glass", className)} aria-label={title} data-testid="member-picker">
       <div className="bo-memberPickerHead">
         <div className="bo-panelTitle">{title}</div>
         <div className="bo-memberPickerCount">{items.length}</div>
@@ -44,6 +44,7 @@ export function MemberPicker({
           value={searchValue}
           onChange={(ev) => onSearchChange(ev.target.value)}
           placeholder="Buscar..."
+          data-testid="member-picker-input"
         />
       </label>
 
@@ -54,6 +55,7 @@ export function MemberPicker({
             type="button"
             className={`bo-memberPickerBtn bo-memberPickerBtn--glass${selectedId === item.id ? " is-active" : ""}`}
             onClick={() => onSelect(item.id)}
+            data-testid="member-picker-item"
           >
             <span className="bo-memberPickerName">
               {item.name}

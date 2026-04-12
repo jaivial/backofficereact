@@ -225,7 +225,7 @@ export default function Page() {
   );
 
   return (
-    <section aria-label="Roles" className="bo-content-grid bo-membersPage">
+    <section aria-label="Roles" className="bo-content-grid bo-membersPage" data-slot="miembros-roles-section">
       <div className="bo-panel">
         <div className="bo-panelHead bo-membersIntroHead">
           <div>
@@ -241,7 +241,7 @@ export default function Page() {
 
       <div className="bo-roleToolbar">
         <div className="bo-mutedText">Tu importancia actual: {actorImportance}</div>
-        <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={() => setCreateOpen(true)}>
+        <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" data-testid="miembros-roles-new-role-button" onClick={() => setCreateOpen(true)}>
           <Plus size={14} strokeWidth={1.8} />
           Nuevo rol
         </button>

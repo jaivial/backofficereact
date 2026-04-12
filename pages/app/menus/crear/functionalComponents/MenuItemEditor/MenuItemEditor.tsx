@@ -123,6 +123,7 @@ export function MenuItemEditor({
                 type="button"
                 aria-label={`Editar alergenos de ${dishLabel}`}
                 onClick={() => setAllergenModal({ open: true, sectionClientId, dishClientId: dish.clientId })}
+                data-testid={`menu-item-editor-allergen-btn-${dish.clientId}`}
               >
                 <WheatOffIcon size={14} />
               </button>
@@ -131,6 +132,7 @@ export function MenuItemEditor({
                 type="button"
                 aria-label={`Eliminar plato ${dishLabel}`}
                 onClick={() => removeDish(sectionClientId, dish.clientId)}
+                data-testid={`menu-item-editor-delete-btn-${dish.clientId}`}
               >
                 <Trash2 size={14} />
               </button>
@@ -147,6 +149,7 @@ export function MenuItemEditor({
                   event.preventDefault();
                   startDishDragLocal(event);
                 }}
+                data-testid={`menu-item-editor-drag-${dish.clientId}`}
               >
                 <GripVertical size={14} />
               </button>
@@ -156,6 +159,7 @@ export function MenuItemEditor({
                   onCheckedChange={(checked) => {
                     updateDish(sectionClientId, dish.clientId, { active: checked });
                   }}
+                  data-testid={`menu-item-editor-active-switch-${dish.clientId}`}
                 />
                 <span>Activo</span>
               </label>
@@ -173,6 +177,7 @@ export function MenuItemEditor({
                 }}
                 onChange={(e) => updateDish(sectionClientId, dish.clientId, { title: e.target.value })}
                 placeholder="Titulo plato"
+                data-testid={`menu-item-editor-title-input-${dish.clientId}`}
               />
               <label className="bo-checkRow">
                 <Switch
@@ -183,6 +188,7 @@ export function MenuItemEditor({
                       description: checked ? dish.description : "",
                     });
                   }}
+                  data-testid={`menu-item-editor-description-switch-${dish.clientId}`}
                 />
                 <span>Descripcion</span>
               </label>
@@ -192,6 +198,7 @@ export function MenuItemEditor({
                   value={dish.description}
                   onChange={(e) => updateDish(sectionClientId, dish.clientId, { description: e.target.value })}
                   placeholder="Descripcion"
+                  data-testid={`menu-item-editor-description-input-${dish.clientId}`}
                 />
               ) : null}
 
@@ -206,6 +213,7 @@ export function MenuItemEditor({
                       updateDish(sectionClientId, dish.clientId, { price: toNumOrNull(e.target.value) })
                     }
                     placeholder="0.00"
+                    data-testid={`menu-item-editor-price-input-${dish.clientId}`}
                   />
                 </div>
               ) : null}
@@ -228,6 +236,7 @@ export function MenuItemEditor({
                             supplement_price: checked ? dish.supplement_price : null,
                           });
                         }}
+                        data-testid={`menu-item-editor-supplement-switch-${dish.clientId}`}
                       />
                       <span>Suplemento</span>
                     </label>
@@ -240,6 +249,7 @@ export function MenuItemEditor({
                           updateDish(sectionClientId, dish.clientId, { supplement_price: toNumOrNull(e.target.value) })
                         }
                         placeholder="€"
+                        data-testid={`menu-item-editor-supplement-input-${dish.clientId}`}
                       />
                     ) : null}
                   </div>

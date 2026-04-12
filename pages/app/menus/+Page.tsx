@@ -110,6 +110,7 @@ const MenuFilters = React.memo(function MenuFilters({
           onClick={toggleExpanded}
           aria-expanded={isExpanded}
           aria-label={isExpanded ? "Colapsar filtros" : "Expandir filtros"}
+          data-testid="menus-page-toggle-filters-button"
         >
           {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </button>
@@ -126,7 +127,7 @@ const MenuFilters = React.memo(function MenuFilters({
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
             <div className="bo-menuV2FiltersGrid">
-              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--search">
+              <label className="bo-field bo-menuV2Filter bo-menuV2Filter--search" data-testid="menus-page-search-label">
                 <span className="bo-label">Buscar por titulo</span>
                 <input
                   className="bo-input"
@@ -134,6 +135,7 @@ const MenuFilters = React.memo(function MenuFilters({
                   value={searchText}
                   placeholder="Ejemplo: San Valentin"
                   onChange={(e) => onSearchChange(e.target.value)}
+                  data-testid="menus-page-search-input"
                 />
               </label>
 
@@ -168,6 +170,7 @@ const MenuFilters = React.memo(function MenuFilters({
                   onClick={onResetFilters}
                   tabIndex={hasFilters ? 0 : -1}
                   aria-hidden={!hasFilters}
+                  data-testid="menus-page-clear-filters-button"
                 >
                   <FilterX size={15} />
                   Limipiar filtros
@@ -399,12 +402,12 @@ export default function Page() {
   }, [resetFilters]);
 
   return (
-    <section aria-label="Menus" className={cn("bo-menuV2Page", showTypeSelector && "is-selector")}>
+    <section aria-label="Menus" className={cn("bo-menuV2Page", showTypeSelector && "is-selector")} data-testid="menus-page-section">
       {showTypeSelector ? (
         <MenuTypePanelGrid countsByType={menuTypeCounts} onSelect={handleTypePanelClick} />
       ) : (
         <>
-          <button className="bo-menuBackBtn" type="button" onClick={handleBackToPanels}>
+          <button className="bo-menuBackBtn" type="button" onClick={handleBackToPanels} data-testid="menus-page-back-button">
             <ChevronLeft size={16} /> Volver a tipos de menu
           </button>
 
@@ -445,7 +448,7 @@ export default function Page() {
         </>
       )}
 
-      <button className="bo-menuFab" type="button" aria-label="Crear menu" onClick={() => openEditor()}>
+      <button className="bo-menuFab" type="button" aria-label="Crear menu" onClick={() => openEditor()} data-testid="menus-page-create-button">
         <Plus size={26} />
       </button>
 

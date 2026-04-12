@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { Loader2, Sparkles, Upload, X } from "lucide-react";
+import { cn } from "../shadcn/utils";
 
 interface ImageAdvisorOverlayProps {
   open: boolean;
@@ -8,6 +9,7 @@ interface ImageAdvisorOverlayProps {
   title?: string;
   disableAI?: boolean;
   disableAIReason?: string;
+  className?: string;
   onUploadPlain: () => void;
   onEnhanceAI: () => void;
   onClose: () => void;
@@ -20,6 +22,7 @@ export function ImageAdvisorOverlay({
   title = "Imagen",
   disableAI,
   disableAIReason = "Guarda el elemento primero para usar AI",
+  className,
   onUploadPlain,
   onEnhanceAI,
   onClose,
@@ -41,7 +44,7 @@ export function ImageAdvisorOverlay({
     >
       <div
         data-ui="image-advisor-content"
-        className="bg-[var(--bo-surface)] rounded-2xl border border-[var(--bo-border)] shadow-xl max-w-md w-full mx-4 overflow-hidden"
+        className={cn("bg-[var(--bo-surface)] rounded-2xl border border-[var(--bo-border)] shadow-xl max-w-md w-full mx-4 overflow-hidden", className)}
       >
         <div data-slot="image-advisor-header" className="flex items-center justify-between p-4 border-b border-[var(--bo-border)]">
           <span data-role="image-advisor-title" className="text-sm font-semibold text-[var(--bo-text)]">

@@ -72,7 +72,7 @@ export function MenuPricing({
         {beverageType !== "no_incluida" ? (
           <div className="bo-field">
             <div className="bo-label">Precio por persona</div>
-            <input className="bo-input" value={beveragePrice} onChange={(e) => onBeveragePriceChange(e.target.value)} inputMode="decimal" />
+            <input className="bo-input" value={beveragePrice} onChange={(e) => onBeveragePriceChange(e.target.value)} inputMode="decimal" data-testid="menu-pricing-beverage-price-input" />
           </div>
         ) : null}
 
@@ -80,7 +80,7 @@ export function MenuPricing({
           <>
             <div className="bo-field">
               <div className="bo-label">Tiene suplemento</div>
-              <Switch checked={beverageHasSupplement} onCheckedChange={onBeverageHasSupplementChange} />
+              <Switch checked={beverageHasSupplement} onCheckedChange={onBeverageHasSupplementChange} data-testid="menu-pricing-beverage-supplement-switch" />
             </div>
             {beverageHasSupplement ? (
               <div className="bo-field">
@@ -90,6 +90,7 @@ export function MenuPricing({
                   value={beverageSupplementPrice}
                   onChange={(e) => onBeverageSupplementPriceChange(e.target.value)}
                   inputMode="decimal"
+                  data-testid="menu-pricing-beverage-supplement-price-input"
                 />
               </div>
             ) : null}
@@ -98,12 +99,12 @@ export function MenuPricing({
 
         <div className="bo-field">
           <div className="bo-label">Minimo personas para reservar</div>
-          <input className="bo-input" value={minPartySize} onChange={(e) => onMinPartySizeChange(e.target.value)} inputMode="numeric" />
+          <input className="bo-input" value={minPartySize} onChange={(e) => onMinPartySizeChange(e.target.value)} inputMode="numeric" data-testid="menu-pricing-min-party-size-input" />
         </div>
 
         <div className="bo-field bo-field--inline">
           <div className="bo-label" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
-          <Switch checked={mainLimit} onCheckedChange={onMainLimitChange} />
+          <Switch checked={mainLimit} onCheckedChange={onMainLimitChange} data-testid="menu-pricing-main-limit-switch" />
           {mainLimit ? (
             <PlusMinusCounter
               label="Numero de principales"
@@ -118,7 +119,7 @@ export function MenuPricing({
 
         <div className="bo-field">
           <div className="bo-label">Cafe incluido</div>
-          <Switch checked={includedCoffee} onCheckedChange={onIncludedCoffeeChange} />
+          <Switch checked={includedCoffee} onCheckedChange={onIncludedCoffeeChange} data-testid="menu-pricing-coffee-switch" />
         </div>
 
         <div className="bo-field bo-field--full">
@@ -135,6 +136,7 @@ export function MenuPricing({
               node.style.height = `${node.scrollHeight}px`;
             }}
             style={{ minHeight: "60px", resize: "vertical" }}
+            data-testid="menu-pricing-comments-textarea"
           />
         </div>
       </div>

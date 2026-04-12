@@ -94,7 +94,7 @@ export default function WebsiteBuilder() {
     return (
       <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 m-6" data-ui="error-state">
         <p className="text-red-400">{error}</p>
-        <button onClick={loadWebsite} className="mt-2 text-red-300 underline hover:text-red-200">
+        <button onClick={loadWebsite} className="mt-2 text-red-300 underline hover:text-red-200" data-testid="website-builder-retry">
           Retry
         </button>
       </div>
@@ -125,12 +125,14 @@ export default function WebsiteBuilder() {
               <button
                 onClick={() => setPreviewMode(!previewMode)}
                 className="px-3 py-1.5 text-sm border border-slate-600 rounded hover:bg-slate-700 text-slate-300"
+                data-testid="website-builder-preview-toggle"
               >
                 {previewMode ? 'Edit' : 'Preview'}
               </button>
               <button
                 onClick={handlePreview}
                 className="px-3 py-1.5 text-sm border border-slate-600 rounded hover:bg-slate-700 text-slate-300"
+                data-testid="website-builder-open-preview"
               >
                 Open Preview
               </button>
@@ -138,6 +140,7 @@ export default function WebsiteBuilder() {
                 onClick={handlePublish}
                 disabled={loading}
                 className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+                data-testid="website-builder-publish"
               >
                 Publish
               </button>
@@ -318,7 +321,7 @@ function WebsiteCanvas({
       <div className="flex items-center justify-center h-full" data-ui="no-website">
         <div className="text-center">
           <p className="text-slate-400 mb-4">No website created yet</p>
-          <button 
+          <button
             onClick={async () => {
               try {
                 await websiteBuilderApi.createWebsite({});
@@ -328,6 +331,7 @@ function WebsiteCanvas({
               }
             }}
             className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            data-testid="website-builder-create-website"
           >
             Create Website
           </button>
@@ -339,7 +343,7 @@ function WebsiteCanvas({
   return (
     <div className="p-6" data-ui="canvas-content">
       {/* Page Tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2" data-ui="page-tabs">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2" data-ui="page-tabs" data-testid="website-builder-page-tabs">
         {pages.map(page => (
           <button
             key={page.id}
@@ -352,6 +356,7 @@ function WebsiteCanvas({
             data-ui="page-tab"
             data-page-id={page.id}
             data-active={String(page.id) === currentPage}
+            data-testid={`website-builder-page-tab-${page.id}`}
           >
             {page.title || 'Home'}
           </button>
@@ -374,6 +379,7 @@ function WebsiteCanvas({
           }}
           className="px-4 py-2 rounded text-sm bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-slate-200 border border-dashed border-slate-600"
           data-ui="add-page-btn"
+          data-testid="website-builder-add-page"
         >
           + Add Page
         </button>
@@ -492,10 +498,11 @@ function SectionDropZone({
           <span className="text-xs text-slate-500">
             {section.is_visible ? 'Visible' : 'Hidden'}
           </span>
-          <button 
+          <button
             onClick={onDelete}
             className="text-xs text-red-400 hover:text-red-300"
             aria-label="Delete section"
+            data-testid="website-builder-delete-section"
           >
             🗑️
           </button>
@@ -537,6 +544,7 @@ function SectionDropZone({
                   }}
                   className="text-xs text-red-400 hover:text-red-300"
                   aria-label="Delete component"
+                  data-testid="website-builder-delete-component"
                 >
                   ✕
                 </button>
@@ -563,10 +571,11 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full py-3 border-2 border-dashed border-slate-600 rounded-lg text-slate-400 hover:border-indigo-400 hover:text-indigo-400 transition-colors"
         data-ui="add-section-btn"
+        data-testid="website-builder-add-section"
       >
         + Add Section
       </button>
-      
+
       {isOpen && (
         <div className="absolute z-10 mt-2 w-full bg-slate-800 border border-slate-600 rounded-lg shadow-xl p-2" data-ui="section-type-menu">
           {SECTION_TYPES.map(type => (
@@ -579,6 +588,7 @@ function AddSectionButton({ onAdd }: { onAdd: (type: string) => void }) {
               className="w-full text-left px-3 py-2 text-sm hover:bg-slate-700 rounded capitalize text-slate-200"
               data-ui="section-type-option"
               data-type={type}
+              data-testid={`website-builder-section-type-${type}`}
             >
               {type}
             </button>
@@ -642,6 +652,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
           value={componentId}
           disabled
           className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-sm text-slate-400"
+          data-testid="website-builder-component-id-input"
         />
       </div>
 
@@ -654,6 +665,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
           value={settings.title || ''}
           onChange={(e) => setSettings({ ...settings, title: e.target.value })}
           className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200"
+          data-testid="website-builder-title-input"
         />
       </div>
 
@@ -666,6 +678,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
           value={settings.bgColor || '#1e293b'}
           onChange={(e) => setSettings({ ...settings, bgColor: e.target.value })}
           className="w-full h-10 bg-slate-700 border border-slate-600 rounded cursor-pointer"
+          data-testid="website-builder-color-input"
         />
       </div>
 
@@ -676,6 +689,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
             checked={settings.visible !== false}
             onChange={(e) => setSettings({ ...settings, visible: e.target.checked })}
             className="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500"
+            data-testid="website-builder-visible-checkbox"
           />
           <span className="text-sm text-slate-300">Visible</span>
         </label>
@@ -685,6 +699,7 @@ function PropertiesPanel({ componentId, onUpdate }: { componentId: string; onUpd
         onClick={handleSave}
         disabled={saving}
         className="w-full py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+        data-testid="website-builder-save-button"
       >
         {saving ? 'Saving...' : 'Save Changes'}
       </button>

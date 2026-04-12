@@ -81,6 +81,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
             onClick={onClose}
             aria-label="Cerrar"
             disabled={isSubmitting}
+            data-testid="merge-invoices-close-btn"
           >
             <X size={18} />
           </button>
@@ -152,6 +153,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
                 checked={deleteOriginals}
                 onChange={(e) => setDeleteOriginals(e.target.checked)}
                 disabled={isSubmitting}
+                data-testid="merge-invoices-delete-originals-checkbox"
               />
               <span className="bo-checkboxMark"></span>
               <span className="bo-checkboxLabel">
@@ -171,6 +173,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
             className="bo-btn bo-btn--ghost"
             onClick={onClose}
             disabled={isSubmitting}
+            data-testid="merge-invoices-cancel-btn"
           >
             Cancelar
           </button>
@@ -178,6 +181,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
             className="bo-btn bo-btn--primary"
             onClick={handleMerge}
             disabled={isSubmitting}
+            data-testid="merge-invoices-confirm-btn"
           >
             {isSubmitting ? (
               <>

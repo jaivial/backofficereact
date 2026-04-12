@@ -47,7 +47,9 @@ export function SimpleTabs({
   if (!items || !activeId || !onChange) {
     return (
       <legacyTabsContext.Provider value={{ activeId: legacyActiveId, setActiveId: setLegacyActiveId }}>
-        <div className={["bo-tabsWrap", className].filter(Boolean).join(" ")}>{children}</div>
+        <div className={["bo-tabsWrap", className].filter(Boolean).join(" ")} data-testid="simple-tabs-wrapper" data-role="tabs-wrapper">
+          {children}
+        </div>
       </legacyTabsContext.Provider>
     );
   }
@@ -56,7 +58,7 @@ export function SimpleTabs({
   const effectiveLayoutId = layoutId ?? "boTabIndicator";
 
   return (
-    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label={ariaLabel || "Tabs"}>
+    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label={ariaLabel || "Tabs"} data-testid="simple-tabs" data-role="tabs-list">
       {items.map((item) => {
         const active = item.id === activeId;
         return (
@@ -65,6 +67,8 @@ export function SimpleTabs({
             className={`bo-tab${active ? " is-active" : ""}`}
             role="tab"
             aria-selected={active}
+            data-testid={`simple-tab-${item.id}`}
+            data-role="tab-button"
             {...(panelled ? { "aria-controls": `panel-${item.id}`, id: `tab-${item.id}` } : null)}
             onClick={() => onChange(item.id)}
             type="button"
@@ -117,7 +121,7 @@ export function SimpleTabsList({
   });
 
   return (
-    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label="Tabs">
+    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label="Tabs" data-testid="simple-tabs-list" data-role="tablist">
       {tabs.map((item) => {
         const active = item.id === ctx.activeId;
         return (
@@ -128,6 +132,8 @@ export function SimpleTabsList({
             aria-selected={active}
             aria-controls={`panel-${item.id}`}
             id={`tab-${item.id}`}
+            data-testid={`simple-tab-${item.id}`}
+            data-role="tab-button"
             onClick={() => ctx.setActiveId(item.id)}
             type="button"
           >
@@ -173,7 +179,7 @@ export function SimpleTabsContent({
     const active = panelId === ctx.activeId;
     if (!active) return null;
     return (
-      <div role="tabpanel" id={`panel-${panelId}`} aria-labelledby={`tab-${panelId}`}>
+      <div role="tabpanel" id={`panel-${panelId}`} aria-labelledby={`tab-${panelId}`} data-testid={`simple-tab-panel-${panelId}`} data-role="tab-panel">
         {children}
       </div>
     );
@@ -183,7 +189,7 @@ export function SimpleTabsContent({
   const active = panelId === activeId;
   if (!active) return null;
   return (
-    <div role="tabpanel" id={`panel-${panelId}`} aria-labelledby={`tab-${panelId}`}>
+    <div role="tabpanel" id={`panel-${panelId}`} aria-labelledby={`tab-${panelId}`} data-testid={`simple-tab-panel-${panelId}`} data-role="tab-panel">
       {children}
     </div>
   );

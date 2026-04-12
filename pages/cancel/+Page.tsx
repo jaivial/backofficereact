@@ -47,7 +47,7 @@ export default function Page() {
             <AlertCircle size={20} />
             <span>{error || "Reserva no encontrada."}</span>
           </div>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="cancel-page-back-home-error">
             <ArrowLeft size={18} />
             Volver al inicio
           </a>
@@ -70,11 +70,11 @@ export default function Page() {
             <span>Las reservas para el mismo día no se pueden cancelar online. Por favor, llame al restaurante.</span>
           </div>
           <BookingDetails booking={displayBooking!} />
-          <a href="tel:+34638857294" className="bo-publicPageBtn bo-publicPageBtn--success">
+          <a href="tel:+34638857294" className="bo-publicPageBtn bo-publicPageBtn--success" data-testid="cancel-page-call-restaurant">
             <Phone size={18} />
             Llamar ahora
           </a>
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver al inicio</a>
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="cancel-page-back-home-sameday">Volver al inicio</a>
         </div>
       </div>
     );
@@ -93,7 +93,7 @@ export default function Page() {
             <span>{actionSuccess}</span>
           </div>
           <BookingDetails booking={displayBooking!} />
-          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver al inicio</a>
+          <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="cancel-page-back-home-cancelled">Volver al inicio</a>
         </div>
       </div>
     );
@@ -116,13 +116,14 @@ export default function Page() {
 
         <button
           className="bo-publicPageBtn bo-publicPageBtn--danger"
+          data-testid="cancel-page-submit"
           onClick={handleCancel}
           disabled={loading}
         >
           {loading ? <Loader2 size={18} className="bo-spin" /> : <XCircle size={18} />}
           Cancelar Reserva
         </button>
-        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent">Volver sin cancelar</a>
+        <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="cancel-page-back-home">Volver sin cancelar</a>
         <p className="bo-publicPageNote">Esta acción no se puede deshacer. Se notificará al restaurante de la cancelación.</p>
       </div>
     </div>

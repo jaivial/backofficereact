@@ -31,6 +31,7 @@ export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
               onClick={() => onSelect(panel.value)}
               aria-labelledby={labelId}
               aria-describedby={`${descId} ${countId}`}
+              data-testid={`menu-type-panel-${panel.value}`}
               data-menu-type={panel.value}
               data-surface="minimal-glass"
             >

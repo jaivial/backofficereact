@@ -13,6 +13,7 @@ export const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"in
         className,
       )}
       ref={ref}
+      data-testid={(props as Record<string, string>)["data-testid"] || "shadcn-input"}
       {...props}
     />
   );

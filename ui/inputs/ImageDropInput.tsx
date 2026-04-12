@@ -81,6 +81,7 @@ export function ImageDropInput({
         accept={accept}
         tabIndex={-1}
         style={{ display: "none" }}
+        data-testid="image-drop-file-input"
         onChange={(ev) => {
           const file = ev.target.files?.[0] ?? null;
           pushFile(file);

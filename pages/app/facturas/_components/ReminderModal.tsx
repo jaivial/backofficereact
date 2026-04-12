@@ -161,6 +161,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onClose}
             aria-label="Cerrar"
+            data-testid="reminder-close-btn"
           >
             <X size={18} />
           </button>
@@ -194,6 +195,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
               options={templateOptions}
               disabled={loadingTemplates}
               ariaLabel="Seleccionar plantilla"
+              data-testid="reminder-template-select"
             />
           </div>
 
@@ -208,6 +210,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
                   value="email"
                   checked={sendVia === "email"}
                   onChange={() => setSendVia("email")}
+                  data-testid="reminder-send-email-radio"
                 />
                 <Mail size={14} />
                 <span>Email</span>
@@ -219,6 +222,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
                   value="whatsapp"
                   checked={sendVia === "whatsapp"}
                   onChange={() => setSendVia("whatsapp")}
+                  data-testid="reminder-send-whatsapp-radio"
                 />
                 <MessageSquare size={14} />
                 <span>WhatsApp</span>
@@ -238,6 +242,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
               onChange={(e) => setCustomMessage(e.target.value)}
               placeholder="Deja en blanco para usar la plantilla"
               rows={4}
+              data-testid="reminder-custom-message-textarea"
             />
             <div className="bo-fieldHelp">
               Usa {"{customer_name}"}, {"{invoice_number}"}, {"{amount}"}, {"{due_date}"} como variables
@@ -262,13 +267,14 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
         </div>
 
         <div className="bo-modalFooter">
-          <button className="bo-btn bo-btn--ghost" onClick={onClose}>
+          <button className="bo-btn bo-btn--ghost" onClick={onClose} data-testid="reminder-cancel-btn">
             Cancelar
           </button>
           <button
             className="bo-btn bo-btn--primary"
             onClick={handleSend}
             disabled={sending || loadingTemplates}
+            data-testid="reminder-send-btn"
           >
             <Send size={16} />
             {sending ? "Enviando..." : "Enviar recordatorio"}

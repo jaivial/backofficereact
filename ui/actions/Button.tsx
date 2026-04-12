@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../shadcn/utils";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
@@ -19,13 +20,12 @@ const sizeClass: Record<ButtonSize, string> = {
 export function Button({
   variant = "secondary",
   size = "md",
-  className = "",
+  className,
   type = "button",
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
 }) {
-  const cls = `${variantClass[variant]} ${sizeClass[size]} ${className}`.trim();
-  return <button type={type} className={cls} {...props} />;
+  return <button type={type} className={cn(variantClass[variant], sizeClass[size], className)} {...props} />;
 }

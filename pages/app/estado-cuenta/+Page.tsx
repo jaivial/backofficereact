@@ -297,6 +297,7 @@ export default function Page() {
                 }
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="estado-cuenta-customer-select"
             >
               <option value="">Seleccionar cliente...</option>
               {customers.map((c) => (
@@ -315,6 +316,7 @@ export default function Page() {
               value={statementDateFrom}
               onChange={(e) => setStatementDateFrom(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="estado-cuenta-date-from"
             />
           </div>
 
@@ -326,6 +328,7 @@ export default function Page() {
               value={statementDateTo}
               onChange={(e) => setStatementDateTo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="estado-cuenta-date-to"
             />
           </div>
 
@@ -335,6 +338,7 @@ export default function Page() {
               onClick={loadCustomers}
               disabled={customersLoading}
               className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+              data-testid="estado-cuenta-load-customers-button"
             >
               {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
               Cargar Clientes
@@ -348,6 +352,7 @@ export default function Page() {
             onClick={handleGenerateCustomerStatement}
             disabled={customerLoading || !selectedCustomer}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            data-testid="estado-cuenta-generate-statement-button"
           >
             {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
             Generar Estado de Cuenta
@@ -359,6 +364,7 @@ export default function Page() {
                 onClick={handleExportPDF}
                 disabled={exporting}
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                data-testid="estado-cuenta-export-pdf-button"
               >
                 <FileText className="w-4 h-4" />
                 Exportar PDF
@@ -367,6 +373,7 @@ export default function Page() {
                 onClick={handleExportCSV}
                 disabled={exporting}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                data-testid="estado-cuenta-export-csv-button"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 Exportar Excel

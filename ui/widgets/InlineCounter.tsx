@@ -94,6 +94,7 @@ export function InlineCounter({
           disabled={disabled || !canDecrease}
           aria-label={decrementAriaLabel || `Disminuir ${label}`}
           data-action="decrease"
+          data-testid="inline-counter-minus"
         >
           <Minus size={16} strokeWidth={2} />
         </button>
@@ -114,6 +115,7 @@ export function InlineCounter({
           disabled={disabled || !canIncrease}
           aria-label={incrementAriaLabel || `Aumentar ${label}`}
           data-action="increase"
+          data-testid="inline-counter-plus"
         >
           <Plus size={16} strokeWidth={2} />
         </button>

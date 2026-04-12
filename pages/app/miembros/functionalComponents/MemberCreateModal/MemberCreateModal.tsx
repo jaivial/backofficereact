@@ -107,7 +107,7 @@ export function MemberCreateModal({
     <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate">
       <div className="bo-modalHead">
         <div className="bo-modalTitle">Añadir miembro</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close">
+        <button className="bo-modalX" type="button" data-testid="member-create-close-button" onClick={onClose} aria-label="Close">
           ×
         </button>
       </div>
@@ -142,22 +142,22 @@ export function MemberCreateModal({
             <div className="bo-memberCreateGrid">
               <label className="bo-field">
                 <span className="bo-label">Nombre</span>
-                <input className="bo-input" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-firstname-input" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
               </label>
 
               <label className="bo-field">
                 <span className="bo-label">Apellidos</span>
-                <input className="bo-input" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-lastname-input" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
               </label>
 
               <label className="bo-field">
                 <span className="bo-label">Email</span>
-                <input className="bo-input" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-email-input" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
               </label>
 
               <label className="bo-field">
                 <span className="bo-label">DNI (opcional)</span>
-                <input className="bo-input" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-dni-input" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
               </label>
 
               <label className="bo-field bo-field--wide">
@@ -189,6 +189,7 @@ export function MemberCreateModal({
                     <span className="bo-label">Username</span>
                     <input
                       className="bo-input"
+                      data-testid="member-create-username-input"
                       value={username}
                       disabled={busy}
                       onChange={(e) => setUsername(e.target.value)}
@@ -201,6 +202,7 @@ export function MemberCreateModal({
                     <input
                       className="bo-input"
                       type="password"
+                      data-testid="member-create-password-input"
                       value={temporaryPassword}
                       disabled={busy}
                       onChange={(e) => setTemporaryPassword(e.target.value)}
@@ -216,12 +218,13 @@ export function MemberCreateModal({
       </div>
 
       <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} disabled={busy}>
+        <button className="bo-btn bo-btn--ghost" type="button" data-testid="member-create-cancel-button" onClick={onClose} disabled={busy}>
           Cancelar
         </button>
         <button
           className="bo-btn bo-btn--primary"
           type="button"
+          data-testid="member-create-submit-button"
           disabled={busy || !canSubmit}
           onClick={() => {
             setError(null);

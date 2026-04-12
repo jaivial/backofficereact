@@ -123,6 +123,7 @@ export function InvoiceHistoryModal({
             className="bo-btn bo-btn--ghost bo-btn--sm"
             onClick={onClose}
             aria-label="Cerrar"
+            data-testid="invoice-history-modal-close-btn"
           >
             <X size={18} />
           </button>

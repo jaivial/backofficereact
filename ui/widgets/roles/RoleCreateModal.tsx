@@ -92,7 +92,7 @@ export function RoleCreateModal({
     <Modal open={open} title="Crear rol" onClose={onClose} widthPx={680}>
       <div className="bo-modalHead">
         <div className="bo-modalTitle">Crear rol</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close">
+        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close" data-testid="role-create-close">
           ×
         </button>
       </div>
@@ -108,7 +108,7 @@ export function RoleCreateModal({
           <div className="bo-panelBody bo-roleCreateBody">
             <label className="bo-field bo-field--wide">
               <div className="bo-label">Nombre</div>
-              <input className="bo-input" value={label} onChange={(ev) => setLabel(ev.target.value)} placeholder="Ej. Encargado de eventos" />
+              <input className="bo-input" value={label} onChange={(ev) => setLabel(ev.target.value)} placeholder="Ej. Encargado de eventos" data-testid="role-create-name-input" />
             </label>
 
             <label className="bo-field bo-field--wide">
@@ -143,6 +143,7 @@ export function RoleCreateModal({
                       key={section.key}
                       type="button"
                       className={`bo-chip${on ? " is-on" : ""}`}
+                      data-testid={`role-create-perm-${section.key}`}
                       onClick={() =>
                         setPermissions((prev) =>
                           prev.includes(section.key) ? prev.filter((x) => x !== section.key) : [...prev, section.key],
@@ -160,13 +161,14 @@ export function RoleCreateModal({
       </div>
 
       <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose}>
+        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} data-testid="role-create-cancel">
           Cancelar
         </button>
         <button
           className="bo-btn bo-btn--primary"
           type="button"
           disabled={busy || !canSubmit}
+          data-testid="role-create-submit"
           onClick={() =>
             void onCreate({
               label: label.trim(),

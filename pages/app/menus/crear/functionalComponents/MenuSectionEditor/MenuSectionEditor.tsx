@@ -128,7 +128,7 @@ export function MenuSectionEditor({
   );
 
   return (
-    <div className="bo-panel bo-accordionSection bo-reorderItem" data-section-editor={sec.clientId}>
+    <div className="bo-panel bo-accordionSection bo-reorderItem" data-section-editor={sec.clientId} data-testid={`menu-section-editor-${sec.clientId}`}>
       <div className="bo-accordionHeadRow">
         <div className="bo-sectionReorder bo-sectionReorder--accordion">
           <div className="bo-sectionMoveControls">
@@ -141,6 +141,7 @@ export function MenuSectionEditor({
               whileTap={chevronTapUp}
               onPointerDown={(event) => event.stopPropagation()}
               onClick={() => moveSection(secIdx, secIdx - 1)}
+              data-testid={`menu-section-editor-move-up-${secIdx}`}
             >
               <ChevronUp size={14} />
             </motion.button>
@@ -153,6 +154,7 @@ export function MenuSectionEditor({
               whileTap={chevronTapDown}
               onPointerDown={(event) => event.stopPropagation()}
               onClick={() => moveSection(secIdx, secIdx + 1)}
+              data-testid={`menu-section-editor-move-down-${secIdx}`}
             >
               <ChevronDown size={14} />
             </motion.button>
@@ -165,6 +167,7 @@ export function MenuSectionEditor({
               event.preventDefault();
               onReorderSectionStartDrag(sec.clientId, event);
             }}
+            data-testid={`menu-section-editor-drag-${secIdx}`}
           >
             <GripVertical size={18} />
           </button>
@@ -174,6 +177,7 @@ export function MenuSectionEditor({
           type="button"
           onClick={() => handleSectionToggle(sec.clientId, !sec.expanded)}
           aria-expanded={sec.expanded}
+          data-testid={`menu-section-editor-toggle-${secIdx}`}
         >
           <span className="bo-accordionHeadLeft">
             <input
@@ -181,6 +185,7 @@ export function MenuSectionEditor({
               value={sec.title}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => updateSection(sec.clientId, { title: e.target.value })}
+              data-testid={`menu-section-editor-title-${secIdx}`}
             />
           </span>
           <span className="bo-accordionHeadRight">
@@ -192,7 +197,7 @@ export function MenuSectionEditor({
 
       {sec.expanded ? (
         <div className="bo-accordionBody">
-          <div className="bo-sectionDishTabs" role="tablist" aria-label="Filtro de platos">
+          <div className="bo-sectionDishTabs" role="tablist" aria-label="Filtro de platos" data-testid={`menu-section-editor-tabs-${sec.clientId}`}>
             <button
               id={activeTabId}
               className={`bo-sectionDishTab ${dishTab === "active" ? "is-active" : ""}`}
@@ -203,6 +208,7 @@ export function MenuSectionEditor({
               aria-controls={dishPanelId}
               tabIndex={dishTab === "active" ? 0 : -1}
               onClick={() => handleDishTabChange("active")}
+              data-testid={`menu-section-editor-tab-active-${sec.clientId}`}
             >
               <span className="bo-sectionDishTabLabel">Activos</span>
               <span className="bo-sectionDishTabCount">{activeDishCount}</span>
@@ -217,6 +223,7 @@ export function MenuSectionEditor({
               aria-controls={dishPanelId}
               tabIndex={dishTab === "inactive" ? 0 : -1}
               onClick={() => handleDishTabChange("inactive")}
+              data-testid={`menu-section-editor-tab-inactive-${sec.clientId}`}
             >
               <span className="bo-sectionDishTabLabel">Inactivos</span>
               <span className="bo-sectionDishTabCount">{inactiveDishCount}</span>
@@ -231,6 +238,7 @@ export function MenuSectionEditor({
               aria-controls={dishPanelId}
               tabIndex={dishTab === "annotations" ? 0 : -1}
               onClick={() => handleDishTabChange("annotations")}
+              data-testid={`menu-section-editor-tab-annotations-${sec.clientId}`}
             >
               <span className="bo-sectionDishTabLabel">Anotaciones</span>
               <span className="bo-sectionDishTabIcon"><MessageSquareText size={14} /></span>
@@ -256,6 +264,7 @@ export function MenuSectionEditor({
                         value={line}
                         onChange={(e) => updateSectionAnnotation(sec.clientId, idx, e.target.value)}
                         placeholder="Anotacion"
+                        data-testid={`menu-section-editor-annotation-input-${sec.clientId}-${idx}`}
                       />
                       <button
                         className="bo-btn bo-btn--ghost"
@@ -263,6 +272,7 @@ export function MenuSectionEditor({
                         aria-label={`Eliminar anotacion ${idx + 1} de ${sectionLabel}`}
                         disabled={sec.annotations.length <= 1}
                         onClick={() => removeSectionAnnotation(sec.clientId, idx)}
+                        data-testid={`menu-section-editor-annotation-delete-${sec.clientId}-${idx}`}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -272,6 +282,7 @@ export function MenuSectionEditor({
                     className="bo-btn bo-btn--ghost bo-commentAddBtn"
                     type="button"
                     onClick={() => addSectionAnnotation(sec.clientId)}
+                    data-testid={`menu-section-editor-annotation-add-${sec.clientId}`}
                   >
                     <Plus size={14} /> Añadir anotacion
                   </button>
@@ -325,10 +336,11 @@ export function MenuSectionEditor({
                     onChange={(e) => handleSearch(sec.clientId, e.target.value)}
                     placeholder="Buscar en catalogo..."
                     aria-label={`Buscar plato en catalogo para ${sectionLabel}`}
+                    data-testid={`menu-section-editor-dish-search-${sec.clientId}`}
                   />
                 </div>
                 {searchTerm.trim().length >= 2 && searchItems.length > 0 ? (
-                  <div className="bo-dishSearchResults" role="listbox" aria-label="Resultados de busqueda">
+                  <div className="bo-dishSearchResults" role="listbox" aria-label="Resultados de busqueda" data-testid={`menu-section-editor-search-results-${sec.clientId}`}>
                     {searchItems.map((item) => (
                       <button
                         key={item.id}
@@ -337,6 +349,7 @@ export function MenuSectionEditor({
                         onClick={() => handleAddDishFromCatalog(item)}
                         role="option"
                         aria-selected={false}
+                        data-testid={`menu-section-editor-search-result-${item.id}`}
                       >
                         <span className="bo-dishSearchResultTitle">{item.title}</span>
                         {item.allergens && item.allergens.length > 0 ? (
@@ -351,6 +364,7 @@ export function MenuSectionEditor({
                   type="button"
                   onClick={handleAddDish}
                   aria-label={`Añadir plato a ${sectionLabel}`}
+                  data-testid={`menu-section-editor-add-dish-${sec.clientId}`}
                 >
                   <Plus size={14} /> Añadir plato
                 </button>

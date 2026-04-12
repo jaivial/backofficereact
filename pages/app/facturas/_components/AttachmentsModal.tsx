@@ -78,7 +78,7 @@ export function AttachmentsModal({
               Adjuntos
               {invoiceNumber && <span className="bo-attachmentsModalSubtitle">Factura {invoiceNumber}</span>}
             </h2>
-            <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar">
+            <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="attachments-close-button">
               <X size={18} />
             </button>
           </div>
@@ -115,6 +115,7 @@ export function AttachmentsModal({
                             onClick={() => setPreviewingAttachment(attachment)}
                             title="Vista previa"
                             aria-label={`Vista previa de ${attachment.original_name}`}
+                            data-testid={`attachments-preview-button-${attachment.id}`}
                           >
                             <Eye size={16} />
                           </button>
@@ -124,6 +125,7 @@ export function AttachmentsModal({
                           onClick={() => handleDownloadSingle(attachment)}
                           title="Descargar"
                           aria-label={`Descargar ${attachment.original_name}`}
+                          data-testid={`attachments-download-button-${attachment.id}`}
                         >
                           <Download size={16} />
                         </button>
@@ -134,6 +136,7 @@ export function AttachmentsModal({
                             disabled={isRemoving}
                             title="Eliminar"
                             aria-label={`Eliminar ${attachment.original_name}`}
+                            data-testid={`attachments-remove-button-${attachment.id}`}
                           >
                             {isRemoving ? <Loader2 size={16} className="bo-spin" /> : <Trash2 size={16} />}
                           </button>
@@ -155,6 +158,7 @@ export function AttachmentsModal({
                 className="bo-btn bo-btn--primary bo-btn--sm"
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
+                data-testid="attachments-download-all-button"
               >
                 {downloadingAll ? (
                   <>
@@ -179,7 +183,7 @@ export function AttachmentsModal({
           <div className="bo-modal bo-previewModal" role="dialog" aria-label="Vista previa" onClick={(e) => e.stopPropagation()}>
             <div className="bo-previewModalHeader">
               <h3>{previewingAttachment.original_name}</h3>
-              <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => setPreviewingAttachment(null)} aria-label="Cerrar">
+              <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => setPreviewingAttachment(null)} aria-label="Cerrar" data-testid="attachments-preview-close-button">
                 <X size={18} />
               </button>
             </div>
@@ -191,7 +195,7 @@ export function AttachmentsModal({
               ) : null}
             </div>
             <div className="bo-previewModalFooter">
-              <button className="bo-btn bo-btn--primary" onClick={() => handleDownloadSingle(previewingAttachment)}>
+              <button className="bo-btn bo-btn--primary" onClick={() => handleDownloadSingle(previewingAttachment)} data-testid="attachments-preview-download-button">
                 <Download size={16} />
                 Descargar
               </button>

@@ -146,7 +146,7 @@ function CustomerStatementSection({
   }, [customerStatement, statementDateFrom, statementDateTo, pushToast, errorToast]);
 
   return (
-    <div className="p-6">
+    <div data-testid="reportes-customer-statement-section">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
@@ -155,6 +155,7 @@ function CustomerStatementSection({
               value={selectedCustomer}
               onChange={(e) => { setSelectedCustomer(e.target.value); if (e.target.value && customers.length === 0) loadCustomers(); }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="reportes-customer-select"
             >
               <option value="">Seleccionar cliente...</option>
               {customers.map((c) => (
@@ -165,16 +166,19 @@ function CustomerStatementSection({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
             <input type="date" value={statementDateFrom} onChange={(e) => setStatementDateFrom(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="reportes-customer-date-from" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
             <input type="date" value={statementDateTo} onChange={(e) => setStatementDateTo(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="reportes-customer-date-to" />
           </div>
           <div className="flex items-end">
             <button onClick={loadCustomers} disabled={customersLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50">
+              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+              data-testid="reportes-load-customers-button">
               {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
               Cargar Clientes
             </button>
@@ -182,18 +186,21 @@ function CustomerStatementSection({
         </div>
         <div className="flex gap-2 mt-4">
           <button onClick={handleGenerate} disabled={customerLoading || !selectedCustomer}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            data-testid="reportes-generate-statement-button">
             {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
             Generar Estado de Cuenta
           </button>
           {customerStatement && (
             <>
               <button onClick={handleExportPDF} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50">
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                data-testid="reportes-export-pdf-button">
                 <FileText className="w-4 h-4" /> Exportar PDF
               </button>
               <button onClick={handleExportCSV} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50">
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                data-testid="reportes-export-csv-button">
                 <FileSpreadsheet className="w-4 h-4" /> Exportar Excel
               </button>
             </>
@@ -358,47 +365,54 @@ function IVAReportSection({
   }, [report, includeCreditNotes, pushToast, errorToast]);
 
   return (
-    <div>
+    <div data-testid="reportes-iva-section">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
             <select value={datePreset} onChange={(e) => handleDatePresetChange(e.target.value as DatePreset)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="reportes-iva-period-select">
               {DATE_PRESETS.map(preset => <option key={preset.value} value={preset.value}>{preset.label}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
             <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setDatePreset("custom"); }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="reportes-iva-date-from" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
             <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setDatePreset("custom"); }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="reportes-iva-date-to" />
           </div>
           <div className="flex items-end">
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer" data-testid="reportes-include-credit-notes-label">
               <input type="checkbox" checked={includeCreditNotes} onChange={(e) => setIncludeCreditNotes(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                data-testid="reportes-include-credit-notes-checkbox" />
               <span className="text-sm text-gray-700">Incluir notas de crédito</span>
             </label>
           </div>
         </div>
         <div className="flex gap-2 mt-4">
           <button onClick={handleGenerate} disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            data-testid="reportes-generate-iva-button">
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />} Generar Reporte
           </button>
           {report && (
             <>
               <button onClick={handleExportPDF} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50">
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                data-testid="reportes-iva-export-pdf-button">
                 <FileText className="w-4 h-4" /> Exportar PDF
               </button>
               <button onClick={handleExportCSV} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50">
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                data-testid="reportes-iva-export-csv-button">
                 <FileSpreadsheet className="w-4 h-4" /> Exportar Excel
               </button>
             </>
@@ -512,7 +526,8 @@ function IVAReportSection({
 
             <SimpleTabsContent value="invoices">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <button onClick={() => setExpandedInvoices(!expandedInvoices)} className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100">
+                <button onClick={() => setExpandedInvoices(!expandedInvoices)} className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
+                  data-testid="reportes-toggle-invoices-button">
                   <span className="text-sm font-medium">Lista de facturas ({report.invoices.length})</span>
                   {expandedInvoices ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
@@ -555,7 +570,7 @@ function IVAReportSection({
           <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay reporte generado</h3>
           <p className="text-gray-500 mb-4">Selecciona un periodo y genera el reporte</p>
-          <button onClick={handleGenerate} disabled={loading}
+          <button onClick={handleGenerate} disabled={loading} data-testid="reportes-generate-btn"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />} Generar Reporte
           </button>

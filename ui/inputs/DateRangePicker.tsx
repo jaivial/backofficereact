@@ -313,6 +313,7 @@ export function DateRangePicker({
         aria-expanded={open}
         aria-haspopup="dialog"
         disabled={disabled}
+        data-testid="date-range-picker-btn"
       >
         <Calendar size={16} strokeWidth={1.8} />
         <span className="bo-dateBtnLabel">{label || buttonLabel}</span>

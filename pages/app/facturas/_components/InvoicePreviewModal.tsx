@@ -68,6 +68,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             type="button"
             onClick={handleDownloadPdf}
             disabled={!invoice.pdf_url}
+            data-testid="invoice-preview-modal-download-pdf-btn"
           >
             <FileDown size={16} />
             Descargar PDF
@@ -77,6 +78,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
               className="bo-btn bo-btn--secondary"
               type="button"
               onClick={() => onSendEmail(invoice)}
+              data-testid="invoice-preview-modal-send-email-btn"
             >
               <Send size={16} />
               {invoice.status === "enviada" ? "Reenviar email" : "Enviar email"}
@@ -86,6 +88,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             className="bo-btn bo-btn--secondary"
             type="button"
             onClick={handleEdit}
+            data-testid="invoice-preview-modal-edit-btn"
           >
             <PencilLine size={16} />
             Editar

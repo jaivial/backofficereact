@@ -287,6 +287,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                       className="bo-btn bo-btn--ghost bo-btn--sm"
                       onClick={() => setShowPreview(!showPreview)}
                       disabled={sending}
+                      data-testid="whatsapp-toggle-preview-button"
                     >
                       {showPreview ? "Editar" : "Vista previa"}
                     </button>
@@ -301,6 +302,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                       rows={8}
                       placeholder="Cuerpo del mensaje..."
                       disabled={sending}
+                      data-testid="whatsapp-message-textarea"
                     />
                   )}
                   <span className="bo-fieldHint">
@@ -312,7 +314,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
 
             {/* Actions */}
             <div className="bo-sendWhatsAppActions">
-              <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending}>
+              <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending} data-testid="whatsapp-cancel-button">
                 Cancelar
               </button>
               {hasPhone ? (
@@ -322,6 +324,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                     className="bo-btn bo-btn--secondary"
                     onClick={handleOpenWhatsApp}
                     disabled={sending}
+                    data-testid="whatsapp-open-button"
                   >
                     <MessageCircle size={16} />
                     Abrir WhatsApp
@@ -331,6 +334,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                     className="bo-btn bo-btn--primary"
                     onClick={handleSend}
                     disabled={sending}
+                    data-testid="whatsapp-send-button"
                   >
                     {sending ? (
                       <>
@@ -346,7 +350,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                   </button>
                 </>
               ) : (
-                <button type="button" className="bo-btn bo-btn--primary" disabled>
+                <button type="button" className="bo-btn bo-btn--primary" disabled data-testid="whatsapp-no-phone-btn">
                   Sin numero de telefono
                 </button>
               )}

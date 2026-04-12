@@ -163,23 +163,28 @@ export const Breadcrumbs = memo(function Breadcrumbs({
   if (!items.length) return null;
 
   return (
-    <nav className={cn("bo-breadcrumb", className)} aria-label="Breadcrumb">
-      <ol className="bo-breadcrumbList">
+    <nav className={cn("bo-breadcrumb", className)} aria-label="Breadcrumb" data-testid="breadcrumbs" data-role="breadcrumb-nav">
+      <ol className="bo-breadcrumbList" data-slot="breadcrumb-list">
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1;
           return (
-            <li key={`${item.href ?? "current"}-${item.label}-${index}`} className="bo-breadcrumbItem">
+            <li key={`${item.href ?? "current"}-${item.label}-${index}`} className="bo-breadcrumbItem" data-slot="breadcrumb-item">
               {item.href && !isCurrent ? (
-                <a className="bo-breadcrumbLink" href={item.href}>
+                <a
+                  className="bo-breadcrumbLink"
+                  href={item.href}
+                  data-testid={`breadcrumb-${item.label.toLowerCase()}`}
+                  data-role="breadcrumb-link"
+                >
                   {item.label}
                 </a>
               ) : (
-                <span className="bo-breadcrumbCurrent" aria-current={isCurrent ? "page" : undefined}>
+                <span className="bo-breadcrumbCurrent" aria-current={isCurrent ? "page" : undefined} data-slot="breadcrumb-current">
                   {item.label}
                 </span>
               )}
               {isCurrent ? null : (
-                <span className="bo-breadcrumbSeparator" aria-hidden="true">
+                <span className="bo-breadcrumbSeparator" aria-hidden="true" data-slot="breadcrumb-separator">
                   /
                 </span>
               )}

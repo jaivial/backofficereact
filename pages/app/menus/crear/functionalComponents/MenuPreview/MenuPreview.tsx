@@ -28,7 +28,7 @@ export function MenuPreview({
   previewFrameRef,
 }: MenuPreviewProps) {
   return (
-    <aside className={`bo-previewPane ${mobileTab === "preview" ? "is-mobileActive" : ""}`} data-preview-pane="true">
+    <aside className={`bo-previewPane ${mobileTab === "preview" ? "is-mobileActive" : ""}`} data-preview-pane="true" data-testid="menu-preview-pane">
       <div className="bo-previewHead">
         <div>
           <div className="bo-panelTitle">Preview web</div>
@@ -51,6 +51,7 @@ export function MenuPreview({
           type="button"
           onClick={() => onMobileTabChange("editor")}
           aria-label="Editor"
+          data-testid="menu-preview-tab-editor"
         >
           <span className="bo-previewSwitchBtnLabel">Editor</span>
           <span className="bo-previewSwitchBtnIcon" aria-hidden="true">
@@ -62,6 +63,7 @@ export function MenuPreview({
           type="button"
           onClick={() => onMobileTabChange("preview")}
           aria-label="Preview"
+          data-testid="menu-preview-tab-preview"
         >
           <span className="bo-previewSwitchBtnLabel">Preview</span>
           <span className="bo-previewSwitchBtnIcon" aria-hidden="true">
@@ -76,7 +78,7 @@ export function MenuPreview({
           <span>Cargando plantilla del restaurante...</span>
         </div>
       ) : previewNeedsUpgrade ? (
-        <section className="bo-previewUpgrade" aria-label="Upgrade premium">
+        <section className="bo-previewUpgrade" aria-label="Upgrade premium" data-testid="menu-preview-upgrade-section">
           <div className="bo-previewUpgradeAura bo-previewUpgradeAura--one" aria-hidden="true" />
           <div className="bo-previewUpgradeAura bo-previewUpgradeAura--two" aria-hidden="true" />
           <div className="bo-previewUpgradeAura bo-previewUpgradeAura--three" aria-hidden="true" />
@@ -87,8 +89,8 @@ export function MenuPreview({
             el preview en tiempo real con el tema elegido.
           </p>
           <div className="bo-previewUpgradeActions" aria-label="Acciones premium">
-            <button className="bo-previewUpgradeBtn bo-previewUpgradeBtn--primary" type="button" aria-label="Accion principal de upgrade" />
-            <button className="bo-previewUpgradeBtn" type="button" aria-label="Accion secundaria de upgrade" />
+            <button className="bo-previewUpgradeBtn bo-previewUpgradeBtn--primary" type="button" aria-label="Accion principal de upgrade" data-testid="menu-preview-upgrade-primary" />
+            <button className="bo-previewUpgradeBtn" type="button" aria-label="Accion secundaria de upgrade" data-testid="menu-preview-upgrade-secondary" />
           </div>
         </section>
       ) : (
@@ -97,6 +99,7 @@ export function MenuPreview({
           className="bo-previewFrame"
           title="Preview menu"
           src={previewUrl}
+          data-testid="menu-preview-iframe"
           onLoad={() => {
             const win = previewFrameRef.current?.contentWindow;
             if (!win) return;

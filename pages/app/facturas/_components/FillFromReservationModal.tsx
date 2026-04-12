@@ -114,7 +114,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                   <Calendar size={14} />
                   Desde
                 </span>
-                <DatePicker value={dateFrom} onChange={setDateFrom} />
+                <DatePicker value={dateFrom} onChange={setDateFrom} data-testid="fill-reservation-date-from" />
               </label>
 
               <label className="bo-field">
@@ -122,7 +122,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                   <Calendar size={14} />
                   Hasta
                 </span>
-                <DatePicker value={dateTo} onChange={setDateTo} />
+                <DatePicker value={dateTo} onChange={setDateTo} data-testid="fill-reservation-date-to" />
               </label>
             </div>
 
@@ -138,6 +138,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Buscar por nombre..."
+                  data-testid="fill-reservation-name-input"
                 />
               </label>
 
@@ -152,6 +153,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Buscar por teléfono..."
+                  data-testid="fill-reservation-phone-input"
                 />
               </label>
             </div>
@@ -167,6 +169,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                   onChange={setPartySize}
                   options={PARTY_SIZE_OPTIONS}
                   ariaLabel="Número de personas"
+                  data-testid="fill-reservation-party-size-select"
                 />
               </label>
 
@@ -180,6 +183,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                   onChange={setTime}
                   options={TIME_OPTIONS}
                   ariaLabel="Hora de reserva"
+                  data-testid="fill-reservation-time-select"
                 />
               </label>
             </div>
@@ -203,6 +207,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                     type="button"
                     className="bo-reservationItem"
                     onClick={() => handleSelect(reservation)}
+                    data-testid={`fill-reservation-item-${reservation.id}`}
                   >
                     <div className="bo-reservationItemMain">
                       <span className="bo-reservationItemName">{reservation.customer_name}</span>

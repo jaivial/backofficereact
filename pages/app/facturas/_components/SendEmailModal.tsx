@@ -286,6 +286,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 className={`bo-sendNotificationTab ${notificationMethod === "email" ? "is-active" : ""}`}
                 onClick={() => setNotificationMethod("email")}
                 disabled={!invoice.customer_email}
+                data-testid="send-email-method-email"
               >
                 <Mail size={16} />
                 <span>Email</span>
@@ -295,6 +296,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 className={`bo-sendNotificationTab ${notificationMethod === "whatsapp" ? "is-active" : ""}`}
                 onClick={() => setNotificationMethod("whatsapp")}
                 disabled={!invoice.customer_phone}
+                data-testid="send-email-method-whatsapp"
               >
                 <MessageCircle size={16} />
                 <span>WhatsApp</span>
@@ -347,6 +349,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Asunto del email"
                   disabled={sending}
+                  data-testid="send-email-subject-input"
                 />
                 <span className="bo-fieldHint">
                   Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"}, {"{invoice_link}"}
@@ -361,6 +364,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                     className="bo-btn bo-btn--ghost bo-btn--sm"
                     onClick={() => setShowPreview(!showPreview)}
                     disabled={sending}
+                    data-testid="send-email-toggle-preview"
                   >
                     {showPreview ? "Editar" : "Vista previa"}
                   </button>
@@ -375,6 +379,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                     rows={8}
                     placeholder="Cuerpo del mensaje..."
                     disabled={sending}
+                    data-testid="send-email-message-textarea"
                   />
                 )}
               </div>
@@ -382,7 +387,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
             {/* Actions */}
             <div className="bo-sendEmailActions">
-              <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending}>
+              <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending} data-testid="send-email-cancel">
                 Cancelar
               </button>
               {notificationMethod === "whatsapp" && invoice.customer_phone ? (
@@ -392,6 +397,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                     className="bo-btn bo-btn--secondary"
                     onClick={handleOpenWhatsApp}
                     disabled={sending || !whatsappUrl}
+                    data-testid="send-email-open-whatsapp"
                   >
                     <MessageCircle size={16} />
                     Abrir WhatsApp
@@ -401,6 +407,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                     className="bo-btn bo-btn--primary"
                     onClick={handleSend}
                     disabled={sending}
+                    data-testid="send-email-submit"
                   >
                     {sending ? (
                       <>
@@ -421,6 +428,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                   className="bo-btn bo-btn--primary"
                   onClick={handleSend}
                   disabled={sending || (notificationMethod === "email" && !invoice.customer_email)}
+                  data-testid="send-email-submit"
                 >
                   {sending ? (
                     <>

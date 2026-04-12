@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 
 import { Select } from "../../inputs/Select";
 import { Modal } from "../../overlays/Modal";
+import { cn } from "../../shadcn/utils";
 import { MENU_TYPE_PANELS, menuTypeLabel } from "./menuPresentation";
 
 const MENU_TYPE_OPTIONS = MENU_TYPE_PANELS.map((panel) => ({ value: panel.value, label: panel.label }));
@@ -14,6 +15,7 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
   nextType,
   saving,
   title = "Cambiar tipo de menu",
+  className,
   onClose,
   onNextTypeChange,
   onConfirm,
@@ -23,6 +25,7 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
   nextType: string;
   saving: boolean;
   title?: string;
+  className?: string;
   onClose: () => void;
   onNextTypeChange: (value: string) => void;
   onConfirm: () => void;
@@ -30,10 +33,10 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
   const disableConfirm = saving || !nextType || nextType === currentType;
 
   return (
-    <Modal open={open} title={title} onClose={onClose} widthPx={520}>
+    <Modal open={open} title={title} onClose={onClose} widthPx={520} className={className}>
       <div className="bo-modalHead">
         <div className="bo-modalTitle">{title}</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar">
+        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" data-testid="menu-type-change-modal-close">
           <X size={16} aria-hidden="true" focusable={false} />
         </button>
       </div>
@@ -51,10 +54,10 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
       </div>
 
       <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" disabled={saving} onClick={onClose}>
+        <button className="bo-btn bo-btn--ghost" type="button" disabled={saving} onClick={onClose} data-testid="menu-type-change-modal-cancel">
           Cancelar
         </button>
-        <button className="bo-btn bo-btn--primary" type="button" disabled={disableConfirm} onClick={onConfirm}>
+        <button className="bo-btn bo-btn--primary" type="button" disabled={disableConfirm} onClick={onConfirm} data-testid="menu-type-change-modal-confirm">
           {saving ? "Guardando..." : "Guardar"}
         </button>
       </div>

@@ -128,7 +128,7 @@ function DishImageCropModalComponent({
     <Modal open={open} title="Recortar imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
       <div className="bo-modalHead">
         <div className="bo-modalTitle">Recorte 1:1</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy}>×</button>
+        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy} data-testid="menu-crear-close-crop-modal">×</button>
       </div>
       <div className="bo-modalBody bo-dishCropBody">
         <div className="bo-dishCropViewportWrap">
@@ -156,15 +156,15 @@ function DishImageCropModalComponent({
           </div>
         </div>
         <div className="bo-dishCropControls">
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy}>-</button>
-          <input className="bo-dishCropRange" type="range" min={1} max={4} step={0.01} value={zoom} onChange={(event) => applyZoom(Number(event.target.value))} disabled={busy} aria-label="Control de zoom" />
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy}>+</button>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => { setOffset({ x: 0, y: 0 }); setZoom(1); }} disabled={busy}>Reset</button>
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy} data-testid="menu-crear-zoom-out">-</button>
+          <input className="bo-dishCropRange" type="range" min={1} max={4} step={0.01} value={zoom} onChange={(event) => applyZoom(Number(event.target.value))} disabled={busy} aria-label="Control de zoom" data-testid="menu-crear-zoom-slider" />
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy} data-testid="menu-crear-zoom-in">+</button>
+          <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => { setOffset({ x: 0, y: 0 }); setZoom(1); }} disabled={busy} data-testid="menu-crear-zoom-reset">Reset</button>
         </div>
       </div>
       <div className="bo-modalActions">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} disabled={busy}>Cancelar</button>
-        <button className="bo-btn bo-btn--primary" type="button" onClick={() => onConfirm({ zoom, offsetX: offset.x, offsetY: offset.y, viewportSize })} disabled={busy || viewportSize <= 0}>
+        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} disabled={busy} data-testid="menu-crear-cancel-crop">Cancelar</button>
+        <button className="bo-btn bo-btn--primary" type="button" onClick={() => onConfirm({ zoom, offsetX: offset.x, offsetY: offset.y, viewportSize })} disabled={busy || viewportSize <= 0} data-testid="menu-crear-save-crop">
           {busy ? "Procesando..." : "Guardar imagen"}
         </button>
       </div>
@@ -267,9 +267,9 @@ export function CrearPage() {
   const specialMenuUploadDisabled = !menuId || specialMenuImageBusy || busy;
 
   return (
-    <section className="bo-menuWizardPage" aria-label="Editor de menu">
+    <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
       <div className="bo-menuWizardTop">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/app/menus")}>
+        <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/app/menus")} data-testid="menu-crear-back-to-menus">
           <ArrowLeft size={16} /> Volver a menus
         </button>
         <div className={`bo-saveTag is-${saveState}`}>
@@ -277,9 +277,9 @@ export function CrearPage() {
         </div>
       </div>
 
-      <div className="bo-stepBars" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1}>
+      <div className="bo-stepBars" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1} data-testid="menu-crear-step-progress">
         {[0, 1, 2, 3].map((idx) => (
-          <div key={idx} className={`bo-stepBar ${idx === step ? "is-active" : ""} ${idx < step ? "is-done" : ""}`} />
+          <div key={idx} className={`bo-stepBar ${idx === step ? "is-active" : ""} ${idx < step ? "is-done" : ""}`} data-testid={`menu-crear-step-bar-${idx}`} />
         ))}
       </div>
 
@@ -302,6 +302,7 @@ export function CrearPage() {
                   disabled={!optData.enabled || busy}
                   onClick={() => setMenuType(opt.value)}
                   aria-pressed={isSelected}
+                  data-testid={`menu-crear-type-card-${opt.value}`}
                 >
                   <div className="bo-typeCardTop">
                     <div className="bo-typeIconWrap" aria-hidden="true"><Icon size={18} /></div>
@@ -318,7 +319,7 @@ export function CrearPage() {
             })}
           </div>
           <div className="bo-menuWizardActions bo-menuWizardActions--right">
-            <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void createDraftAndContinue()}>
+            <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void createDraftAndContinue()} data-testid="menu-crear-continue-type">
               Continuar
             </button>
           </div>
@@ -333,12 +334,12 @@ export function CrearPage() {
             <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
               <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
                 <div className="bo-label">Titulo</div>
-                <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-title-input" />
               </div>
               {!isALaCarte && !isSpecial ? (
                 <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
                   <div className="bo-label">Precio</div>
-                  <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+                  <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-price-input" />
                 </div>
               ) : null}
             </div>
@@ -349,13 +350,13 @@ export function CrearPage() {
                 <div className="bo-stackFields">
                   {subtitles.map((line, idx) => (
                     <div key={`subtitle-${idx}`} className="bo-inlineField">
-                      <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} />
-                      <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))}>
+                      <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-subtitle-input-${idx}`} />
+                      <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-subtitle-delete-${idx}`}>
                         <Trash2 size={14} />
                       </button>
                     </div>
                   ))}
-                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
+                  <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])} data-testid="menu-crear-subtitle-add">
                     <Plus size={14} /> Añadir subtitulo
                   </button>
                 </div>
@@ -388,7 +389,7 @@ export function CrearPage() {
           </div>
 
           <div className="bo-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(0)}>Volver</button>
+            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(0)} data-testid="menu-crear-step1-back">Volver</button>
             <button
               className="bo-btn bo-btn--primary" type="button"
               onClick={() => {
@@ -396,6 +397,7 @@ export function CrearPage() {
                 if (isSpecial) setStep(4);
                 else setStep(2);
               }}
+              data-testid="menu-crear-step1-continue"
             >
               Continuar
             </button>
@@ -414,19 +416,19 @@ export function CrearPage() {
                   <div className="bo-sectionCardHead">
                     <div className="bo-sectionReorder">
                       <div className="bo-sectionMoveControls">
-                        <motion.button className="bo-sectionMoveBtn" type="button" aria-label={`Subir seccion ${sec.title || idx + 1}`} disabled={idx === 0} whileHover={chevronHover} whileTap={chevronTapUp} onPointerDown={(event) => event.stopPropagation()} onClick={() => moveSection(idx, idx - 1)}>
+                        <motion.button className="bo-sectionMoveBtn" type="button" aria-label={`Subir seccion ${sec.title || idx + 1}`} disabled={idx === 0} whileHover={chevronHover} whileTap={chevronTapUp} onPointerDown={(event) => event.stopPropagation()} onClick={() => moveSection(idx, idx - 1)} data-testid={`menu-crear-section-move-up-${idx}`}>
                           <ChevronUp size={14} />
                         </motion.button>
-                        <motion.button className="bo-sectionMoveBtn" type="button" aria-label={`Bajar seccion ${sec.title || idx + 1}`} disabled={idx === sections.length - 1} whileHover={chevronHover} whileTap={chevronTapDown} onPointerDown={(event) => event.stopPropagation()} onClick={() => moveSection(idx, idx + 1)}>
+                        <motion.button className="bo-sectionMoveBtn" type="button" aria-label={`Bajar seccion ${sec.title || idx + 1}`} disabled={idx === sections.length - 1} whileHover={chevronHover} whileTap={chevronTapDown} onPointerDown={(event) => event.stopPropagation()} onClick={() => moveSection(idx, idx + 1)} data-testid={`menu-crear-section-move-down-${idx}`}>
                           <ChevronDown size={14} />
                         </motion.button>
                       </div>
-                      <button className="bo-sectionDrag" type="button" aria-label={`Arrastrar seccion ${sec.title || idx + 1}`} onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}>
+                      <button className="bo-sectionDrag" type="button" aria-label={`Arrastrar seccion ${sec.title || idx + 1}`} onPointerDown={(event) => { event.preventDefault(); startDrag(event); }} data-testid={`menu-crear-section-drag-${idx}`}>
                         <GripVertical size={18} />
                       </button>
                     </div>
-                    <input className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} />
-                    <button className="bo-btn bo-btn--ghost" type="button" aria-label={`Eliminar seccion ${sec.title || idx + 1}`} disabled={sections.length <= 1} onClick={() => removeSection(sec.clientId)}>
+                    <input className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} data-testid={`menu-crear-section-title-input-${idx}`} />
+                    <button className="bo-btn bo-btn--ghost" type="button" aria-label={`Eliminar seccion ${sec.title || idx + 1}`} disabled={sections.length <= 1} onClick={() => removeSection(sec.clientId)} data-testid={`menu-crear-section-delete-${idx}`}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -436,12 +438,12 @@ export function CrearPage() {
           </Reorder.Group>
 
           <div className="bo-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={addSection}>
+            <button className="bo-btn bo-btn--ghost" type="button" onClick={addSection} data-testid="menu-crear-add-section">
               <Plus size={14} /> Añadir seccion
             </button>
             <div className="bo-menuWizardActionsRight">
-              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)}>Volver</button>
-              <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)}>Continuar</button>
+              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step2-back">Volver</button>
+              <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)} data-testid="menu-crear-step2-continue">Continuar</button>
             </div>
           </div>
         </div>
@@ -456,13 +458,13 @@ export function CrearPage() {
             desktopPreviewDocked ? "" : "is-previewUndocked",
           ].filter(Boolean).join(" ")}
         >
-          <div className="bo-previewDesktopSwitch">
+          <div className="bo-previewDesktopSwitch" data-testid="menu-crear-preview-toggle">
             <span className="bo-previewDesktopSwitchLabel"><Eye size={14} aria-hidden="true" /> Preview web</span>
-            <Switch checked={desktopPreviewOpen} onCheckedChange={setDesktopPreviewOpen} aria-label={desktopPreviewOpen ? "Ocultar preview web" : "Mostrar preview web"} />
+            <Switch checked={desktopPreviewOpen} onCheckedChange={setDesktopPreviewOpen} aria-label={desktopPreviewOpen ? "Ocultar preview web" : "Mostrar preview web"} data-testid="menu-crear-preview-switch" />
           </div>
 
-          <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane ${mobileTab === "editor" ? "is-mobileActive" : ""}`}>
-            <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead">
+          <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane ${mobileTab === "editor" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane">
+            <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead" data-testid="menu-crear-editor-panel">
               <div className="bo-panelHead">
                 <div>
                   <div className="bo-panelTitle">Editor de menu</div>
@@ -473,12 +475,12 @@ export function CrearPage() {
                 <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`}>
                   <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title">
                     <div className="bo-label">Titulo</div>
-                    <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+                    <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-final-title-input" />
                   </div>
                   {!isALaCarte && !isSpecial ? (
                     <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price">
                       <div className="bo-label">Precio</div>
-                      <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
+                      <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-final-price-input" />
                     </div>
                   ) : null}
                 </div>
@@ -488,13 +490,13 @@ export function CrearPage() {
                     <div className="bo-stackFields">
                       {subtitles.map((line, idx) => (
                         <div key={`subtitle-final-${idx}`} className="bo-inlineField">
-                          <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} />
-                          <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))}>
+                          <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-final-subtitle-input-${idx}`} />
+                          <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-final-subtitle-delete-${idx}`}>
                             <Trash2 size={14} />
                           </button>
                         </div>
                       ))}
-                      <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])}>
+                      <button className="bo-btn bo-btn--ghost bo-btn--sm bo-subtitleAddBtn" type="button" onClick={() => setSubtitles((prev) => [...prev, ""])} data-testid="menu-crear-final-subtitle-add">
                         <Plus size={14} /> Añadir subtitulo
                       </button>
                     </div>
@@ -599,7 +601,7 @@ export function CrearPage() {
                   {beverageType !== "no_incluida" ? (
                     <div className="bo-field">
                       <div className="bo-label">Precio por persona</div>
-                      <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" />
+                      <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-price-input" />
                     </div>
                   ) : null}
                   {beverageType === "ilimitada" ? (
@@ -611,34 +613,34 @@ export function CrearPage() {
                       {beverageHasSupplement ? (
                         <div className="bo-field">
                           <div className="bo-label">Valor suplemento</div>
-                          <input className="bo-input" value={beverageSupplementPrice} onChange={(e) => setBeverageSupplementPrice(e.target.value)} inputMode="decimal" />
+                          <input className="bo-input" value={beverageSupplementPrice} onChange={(e) => setBeverageSupplementPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-supplement-price-input" />
                         </div>
                       ) : null}
                     </>
                   ) : null}
                   <div className="bo-field">
                     <div className="bo-label">Minimo personas para reservar</div>
-                    <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" />
+                    <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" data-testid="menu-crear-min-party-size-input" />
                   </div>
                   <div className="bo-field bo-field--inline">
                     <div className="bo-label" style={{ marginRight: "auto" }}>Limite maximo de principales por mesa</div>
-                    <Switch checked={mainLimit} onCheckedChange={setMainLimit} />
+                    <Switch checked={mainLimit} onCheckedChange={setMainLimit} data-testid="menu-crear-main-limit-switch" />
                   </div>
                   <div className="bo-field">
                     <div className="bo-label">Cafe incluido</div>
-                    <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} />
+                    <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} data-testid="menu-crear-coffee-switch" />
                   </div>
                   <div className="bo-field bo-field--full">
                     <div className="bo-label">Comentarios</div>
-                    <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n").filter((line) => line.trim() !== ""))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} />
+                    <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n").filter((line) => line.trim() !== ""))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
                   </div>
                 </div>
               </motion.div>
             ) : null}
 
             {isDraft ? (
-              <div className="bo-menuWizardActions bo-menuWizardActions--publishDraft">
-                <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void onPublish()}>
+              <div className="bo-menuWizardActions bo-menuWizardActions--publishDraft" data-testid="menu-crear-publish-panel">
+                <button className="bo-btn bo-btn--primary" type="button" disabled={busy} onClick={() => void onPublish()} data-testid="menu-crear-publish-btn">
                   {busy ? "Publicando..." : "Publicar borrador"}
                 </button>
               </div>
@@ -669,16 +671,16 @@ export function CrearPage() {
           </p>
           {renderSpecialMenuImageUploadArea()}
           <div className="bo-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)}>Volver</button>
-            <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)}>Continuar al editor</button>
+            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step4-back">Volver</button>
+            <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)} data-testid="menu-crear-step4-continue">Continuar al editor</button>
           </div>
         </div>
       ) : null}
 
       {/* Hidden file inputs */}
-      <input ref={dishImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onDishImageFileSelected} />
-      <input ref={menuPreviewImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onMenuPreviewImageFileSelected} />
-      <input ref={specialMenuImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="bo-hiddenFileInput" onChange={onSpecialMenuImageFileSelected} />
+      <input ref={dishImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onDishImageFileSelected} data-testid="menu-crear-dish-image-input" />
+      <input ref={menuPreviewImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onMenuPreviewImageFileSelected} data-testid="menu-crear-preview-image-input" />
+      <input ref={specialMenuImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="bo-hiddenFileInput" onChange={onSpecialMenuImageFileSelected} data-testid="menu-crear-special-menu-image-input" />
 
       {/* Dish image advisor modal */}
       <DishImageAdvisorModalComponent
@@ -726,10 +728,10 @@ export function CrearPage() {
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620}>
         <div className="bo-modalHead">
           <div className="bo-modalTitle">Selecciona alergenos</div>
-          <button className="bo-modalX" type="button" onClick={() => setAllergenModal(null)} aria-label="Cerrar">×</button>
+          <button className="bo-modalX" type="button" onClick={() => setAllergenModal(null)} aria-label="Cerrar" data-testid="menu-crear-close-allergen-modal">×</button>
         </div>
         <div className="bo-modalBody">
-          <div className="bo-allergenGrid">
+          <div className="bo-allergenGrid" data-testid="menu-crear-allergen-grid">
             {ALLERGENS.map((item) => {
               const open = allergenModal;
               if (!open) return null;
@@ -749,6 +751,7 @@ export function CrearPage() {
                     else set.add(item.key);
                     updateDish(open.sectionClientId, open.dishClientId, { allergens: Array.from(set) });
                   }}
+                  data-testid={`menu-crear-allergen-${item.key}`}
                 >
                   <span className="bo-allergenCircleIcon"><Icon size={16} /></span>
                   <span className="bo-allergenCircleLabel">{item.key}</span>
