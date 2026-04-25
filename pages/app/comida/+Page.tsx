@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { Plus } from "lucide-react";
+import { FloatingActionButton } from "../../../ui/actions/FloatingActionButton";
 
 import type { FoodEntry, FoodType } from "./@foodType/constants/index";
 import { FOOD_ENTRIES } from "./@foodType/constants/index";
@@ -38,9 +39,7 @@ export default function Page() {
         </div>
       </div>
 
-      <button className="bo-menuFab" type="button" aria-label="Crear elemento de comida" onClick={openCreate} data-ui="food-hub-fab">
-        <Plus size={26} />
-      </button>
+      <FloatingActionButton aria-label="Crear elemento de comida" onClick={openCreate} data-ui="food-hub-fab" />
     </section>
   );
 }

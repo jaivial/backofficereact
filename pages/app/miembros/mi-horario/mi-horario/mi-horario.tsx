@@ -6,6 +6,7 @@ import { createClient } from "../../../../../api/client";
 import type { FichajeSchedule } from "../../../../../api/types";
 import type { Data } from "../../mi-horario/+data";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
+import { Panel } from "../../../../../ui/shell/Panel";
 import { MONTH_NAMES } from "./constants";
 import { diffHours, formatDate, pad2 } from "./helpers";
 
@@ -61,15 +62,15 @@ export default function MiHorarioPage() {
 
   return (
     <section aria-label="Mi Horario" className="bo-content-grid bo-miHorarioPage" data-ui="mi-horario-page">
-      <div className="bo-panel bo-miHorarioPanel" data-ui="mi-horario-panel">
-        <div className="bo-panelHead" data-ui="mi-horario-header">
-          <div data-ui="mi-horario-title-group">
-            <div className="bo-panelTitle" data-ui="mi-horario-title">
-              <Clock3 size={16} strokeWidth={1.8} aria-hidden="true" data-ui="mi-horario-icon" />
-              Mi Horario
-            </div>
-            <div className="bo-panelMeta" data-ui="mi-horario-meta">Consulta tus horarios asignados.</div>
-          </div>
+      <Panel className="bo-miHorarioPanel" data-ui="mi-horario-panel"
+        title={
+          <span>
+            <Clock3 size={16} strokeWidth={1.8} aria-hidden="true" data-ui="mi-horario-icon" />
+            Mi Horario
+          </span>
+        }
+        meta="Consulta tus horarios asignados."
+        actions={
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
             type="button"
@@ -79,9 +80,8 @@ export default function MiHorarioPage() {
           >
             {loading ? "Cargando..." : "Actualizar"}
           </button>
-        </div>
-
-        <div className="bo-panelBody" data-ui="mi-horario-body">
+        }
+      >
           {error ? (
             <div className="bo-alert bo-alert--error" role="alert" data-ui="mi-horario-error">{error}</div>
           ) : sortedSchedules.length === 0 ? (
@@ -122,8 +122,7 @@ export default function MiHorarioPage() {
               })}
             </div>
           )}
-        </div>
-      </div>
+        </Panel>
     </section>
   );
 }

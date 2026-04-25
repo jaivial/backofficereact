@@ -1,0 +1,316 @@
+{
+  "todoList": [
+    {
+      "id": 1,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/inputs/Select.tsx",
+      "file": "ui/inputs/Select.tsx",
+      "details": [
+        "Line 184: className={`bo-selectList${direction === \"up\" ? \" bo-selectList--up\" : \"\"}${listClassName ? ` ${listClassName}` : \"\"}`} → cn(\"bo-selectList\", direction === \"up\" && \"bo-selectList--up\", listClassName)",
+        "Line 208: className={`bo-selectItem${isSel ? \" is-selected\" : \"\"}${isAct ? \" is-active\" : \"\"}`} → cn(\"bo-selectItem\", isSel && \"is-selected\", isAct && \"is-active\")"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/inputs/DropdownMenu.tsx",
+      "file": "ui/inputs/DropdownMenu.tsx",
+      "details": [
+        "Line 242: className={`bo-menuItem${it.tone === \"danger\" ? \" is-danger\" : \"\"}`} → cn(\"bo-menuItem\", it.tone === \"danger\" && \"is-danger\")"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/inputs/SpinWheel.tsx",
+      "file": "ui/inputs/SpinWheel.tsx",
+      "details": [
+        "Line 214: className={`bo-spinWheelItem${idx === activeIndex ? \" is-active\" : \"\"}`} → cn(\"bo-spinWheelItem\", idx === activeIndex && \"is-active\")"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/inputs/TimePicker.tsx",
+      "file": "ui/inputs/TimePicker.tsx",
+      "details": [
+        "Line 156: className={`bo-selectItem${isSel ? \" is-selected\" : \"\"}${isAct ? \" is-active\" : \"\"}`} → cn(\"bo-selectItem\", isSel && \"is-selected\", isAct && \"is-active\")"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/nav/SimpleTabs.tsx",
+      "file": "ui/nav/SimpleTabs.tsx",
+      "details": [
+        "Line 68: className={`bo-tab${active ? \" is-active\" : \"\"}`} → cn(\"bo-tab\", active && \"is-active\")",
+        "Line 131: className={`bo-tab${active ? \" is-active\" : \"\"}`} → cn(\"bo-tab\", active && \"is-active\")"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/nav/Tabs.tsx",
+      "file": "ui/nav/Tabs.tsx",
+      "details": [
+        "Line 187: className={`bo-tab${active ? \" is-active\" : \"\"}`} → cn(\"bo-tab\", active && \"is-active\")"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/overlays/Accordion.tsx",
+      "file": "ui/overlays/Accordion.tsx",
+      "details": [
+        "Line 30: className={`bo-accordionIcon${open ? \" is-open\" : \"\"}`} → cn(\"bo-accordionIcon\", open && \"is-open\")"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/overlays/ConfirmDialog.tsx",
+      "file": "ui/overlays/ConfirmDialog.tsx",
+      "details": [
+        "Line 57: className={`bo-btn bo-btn--primary${danger ? \" bo-btn--danger\" : \"\"}`} → cn(\"bo-btn\", \"bo-btn--primary\", danger && \"bo-btn--danger\")"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/shell/Sidebar.tsx",
+      "file": "ui/shell/Sidebar.tsx",
+      "details": [
+        "Line 120: className={`bo-navBtn bo-navBtn--glass bo-navBtn--mobileMore${mobileMenuOpen ? \" is-active\" : \"\"}`} → cn(\"bo-navBtn\", \"bo-navBtn--glass\", \"bo-navBtn--mobileMore\", mobileMenuOpen && \"is-active\")",
+        "Line 129: className={`bo-navMobileOverflow${mobileMenuOpen ? \" is-open\" : \"\"}`} → cn(\"bo-navMobileOverflow\", mobileMenuOpen && \"is-open\")"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/shell/Topbar.tsx",
+      "file": "ui/shell/Topbar.tsx",
+      "details": [
+        "Line 166: className={`bo-fichajeTopbarChip${fichaje.wsConnected ? \" is-live\" : \"\"}`} → cn(\"bo-fichajeTopbarChip\", fichaje.wsConnected && \"is-live\")"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/feedback/ToastStack.tsx",
+      "file": "ui/feedback/ToastStack.tsx",
+      "details": [
+        "Line 36: className={`bo-toast bo-toast--glass bo-toast--${t.kind}`} → cn(\"bo-toast\", \"bo-toast--glass\", `bo-toast--${t.kind}`)"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/widgets/HorariosRosterTable.tsx",
+      "file": "ui/widgets/HorariosRosterTable.tsx",
+      "details": [
+        "Line 50: className={`bo-horariosRosterRow is-clickable${isLive ? \" is-live\" : \"\"}${row.schedule ? \" is-assigned\" : \"\"}`} → cn(\"bo-horariosRosterRow\", \"is-clickable\", isLive && \"is-live\", row.schedule && \"is-assigned\")",
+        "Line 71: className={`bo-horariosRosterShift${row.schedule ? \"\" : \" is-empty\"}`} → cn(\"bo-horariosRosterShift\", !row.schedule && \"is-empty\")"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/widgets/MemberPicker.tsx",
+      "file": "ui/widgets/MemberPicker.tsx",
+      "details": [
+        "Line 56: className={`bo-memberPickerBtn bo-memberPickerBtn--glass${selectedId === item.id ? \" is-active\" : \"\"}`} → cn(\"bo-memberPickerBtn\", \"bo-memberPickerBtn--glass\", selectedId === item.id && \"is-active\")"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/widgets/TimeEntriesEditor.tsx",
+      "file": "ui/widgets/TimeEntriesEditor.tsx",
+      "details": [
+        "Line 54: className={`bo-badge bo-timeEntrySource${entry.source === \"clock_autocut\" ? \" is-warning\" : \"\"}`} → cn(\"bo-badge\", \"bo-timeEntrySource\", entry.source === \"clock_autocut\" && \"is-warning\")"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/widgets/food/FoodDishCard.tsx",
+      "file": "ui/widgets/food/FoodDishCard.tsx",
+      "details": [
+        "Line 149: className={`bo-foodMemberBody${bodyClassName ? ` ${bodyClassName}` : \"\"}`} → cn(\"bo-foodMemberBody\", bodyClassName)"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/widgets/roles/RoleCreateModal.tsx",
+      "file": "ui/widgets/roles/RoleCreateModal.tsx",
+      "details": [
+        "Line 145: className={`bo-chip${on ? \" is-on\" : \"\"}`} → cn(\"bo-chip\", on && \"is-on\")"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "ui-internal-cn-migration",
+      "description": "Migrate internal template literal className to cn() in ui/widgets/roles/RoleDetailModal.tsx",
+      "file": "ui/widgets/roles/RoleDetailModal.tsx",
+      "details": [
+        "Line 254: className={`bo-roleUserRow bo-roleUserRow--check${disabled ? \" is-disabled\" : \"\"}`} → cn(\"bo-roleUserRow\", \"bo-roleUserRow--check\", disabled && \"is-disabled\")"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/facturas/+Page.tsx",
+      "file": "pages/app/facturas/+Page.tsx",
+      "details": [
+        "Replace bo-panelHead/bo-panelTitle/bo-panelBody with <Panel title='...'>...</Panel>",
+        "Import Panel from @ui/shell/Panel"
+      ]
+    },
+    {
+      "id": 19,
+      "category": "page-migration-modalheader",
+      "description": "Replace bo-modalHead patterns with ModalHeader in pages/app/facturas/_components/",
+      "file": "pages/app/facturas/_components/",
+      "details": [
+        "LineItems.tsx: bo-modalHead + bo-modalTitle + bo-modalX → ModalHeader",
+        "RegisterPaymentModal.tsx: bo-modalHeader + bo-modalTitle → ModalHeader",
+        "ReminderHistoryModal.tsx: bo-modalHeader + bo-modalTitle → ModalHeader",
+        "ReminderModal.tsx: bo-modalHead/bo-modalTitle/bo-modalX → ModalHeader",
+        "ReminderTemplatesModal.tsx: bo-modalHeader + bo-modalTitle → ModalHeader",
+        "SplitInvoiceModal.tsx: bo-modalHead/bo-modalTitle/bo-modalX → ModalHeader",
+        "Import ModalHeader from @ui/overlays/ModalHeader"
+      ]
+    },
+    {
+      "id": 20,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/horarios/ files",
+      "file": "pages/app/horarios/",
+      "details": [
+        "horarios.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "preview/+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "turnos/+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "preview/functionalComponents/IdleMembersGrid/IdleMembersGrid.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "preview/functionalComponents/LiveMembersGrid/LiveMembersGrid.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "functionalComponents/ScheduleModal/ScheduleModal.tsx: Replace bo-modalHead/bo-modalTitle/bo-modalX AND bo-panelHead/bo-panelTitle",
+        "Import Panel from @ui/shell/Panel, ModalHeader from @ui/overlays/ModalHeader"
+      ]
+    },
+    {
+      "id": 21,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/menus/crear/ files",
+      "file": "pages/app/menus/crear/",
+      "details": [
+        "crear.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody AND bo-modalHead/bo-modalTitle/bo-modalX",
+        "functionalComponents/MenuPreview/MenuPreview.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "functionalComponents/MenuPricing/MenuPricing.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "functionalComponents/DishImageAdvisorModal/DishImageAdvisorModal.tsx: Replace bo-modalHead/bo-modalTitle/bo-modalX",
+        "Import Panel from @ui/shell/Panel, ModalHeader from @ui/overlays/ModalHeader"
+      ]
+    },
+    {
+      "id": 22,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/miembros/ files",
+      "file": "pages/app/miembros/",
+      "details": [
+        "+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "@memberId/+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "@memberId/contrato/+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "@memberId/estadisticas/+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "mi-horario/+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "mi-horario/mi-horario/mi-horario.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "roles/+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "roles/roles/roles.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "functionalComponents/MemberCreateModal/MemberCreateModal.tsx: Replace bo-modalHead/bo-modalTitle/bo-modalX AND bo-panelHead/bo-panelTitle",
+        "Import Panel from @ui/shell/Panel, ModalHeader from @ui/overlays/ModalHeader"
+      ]
+    },
+    {
+      "id": 23,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/ files",
+      "file": "pages/app/reservas/",
+      "details": [
+        "reservas.tsx: Replace bo-modalHead/bo-modalTitle/bo-modalX",
+        "config/config.tsx: Replace bo-toolbar with PageToolbar, bo-panelHead/bo-panelTitle/bo-panelBody with Panel",
+        "config/functionalComponents/ConfigDayManager/helpers/ConfigDayManager.helpers.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "config/functionalComponents/MandatoryMenuConfig/MandatoryMenuConfig.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "functionalComponents/BookingDetailsPanel/BookingDetailsPanel.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "functionalComponents/BookingEditor/BookingEditor.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "tables/functionalComponents/TableLegend/TableLegend.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "tables/tables.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody AND bo-modalHead/bo-modalTitle/bo-modalX",
+        "Import Panel from @ui/shell/Panel, ModalHeader from @ui/overlays/ModalHeader, PageToolbar from @ui/shell/PageToolbar"
+      ]
+    },
+    {
+      "id": 24,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/settings/functionalComponents/RenumberPanel.tsx",
+      "file": "pages/app/settings/functionalComponents/RenumberPanel/RenumberPanel.tsx",
+      "details": [
+        "Replace bo-panelHead/bo-panelTitle/bo-panelBody with Panel",
+        "Import Panel from @ui/shell/Panel"
+      ]
+    },
+    {
+      "id": 25,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/website/ files",
+      "file": "pages/app/website/",
+      "details": [
+        "+Page.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "website/website.tsx: Replace bo-panelHead/bo-panelTitle/bo-panelBody",
+        "Import Panel from @ui/shell/Panel"
+      ]
+    },
+    {
+      "id": 26,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel in pages/app/comida/ remaining files",
+      "file": "pages/app/comida/",
+      "details": [
+        "@foodType/@foodId/functionalComponents/FoodDetailHero/FoodDetailHero.tsx: Replace bo-panelTitle",
+        "@foodType/@foodId/+Page.tsx: Already has bo-panelHead/bo-panelTitle but may have been partially migrated - verify and complete",
+        "Import Panel from @ui/shell/Panel"
+      ]
+    },
+    {
+      "id": 27,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns in pages/app/fichaje/+Page.tsx remaining occurrences",
+      "file": "pages/app/fichaje/+Page.tsx",
+      "details": [
+        "Some bo-panelHead/bo-panelTitle may remain - verify and replace remaining",
+        "Import Panel from @ui/shell/Panel"
+      ]
+    },
+    {
+      "id": 28,
+      "category": "page-migration-card",
+      "description": "Replace Tailwind card patterns with Card component in pages/app/reportes/functionalComponents/",
+      "file": "pages/app/reportes/functionalComponents/",
+      "details": [
+        "CustomerStatementContent/CustomerStatementContent.tsx: Replace bg-white rounded-lg shadow-sm border border-gray-200 with Card variant='tailwind'",
+        "CustomerStatementFilters/CustomerStatementFilters.tsx: Replace bg-white rounded-lg shadow-sm border border-gray-200 with Card variant='tailwind'",
+        "IVABreakdownTable/IVABreakdownTable.tsx: Replace bg-white rounded-lg shadow-sm border border-gray-200 with Card variant='tailwind'",
+        "IVAFilters/IVAFilters.tsx: Replace bg-white rounded-lg shadow-sm border border-gray-200 with Card variant='tailwind'",
+        "InvoiceList/InvoiceList.tsx: Replace bg-white rounded-lg shadow-sm border border-gray-200 with Card variant='tailwind'",
+        "QuarterlyBreakdownTable/QuarterlyBreakdownTable.tsx: Replace bg-white rounded-lg shadow-sm border border-gray-200 with Card variant='tailwind'",
+        "Import Card from @ui/shell/Card"
+      ]
+    },
+    {
+      "id": 29,
+      "category": "page-migration-toolbar",
+      "description": "Replace bo-toolbar with PageToolbar in pages/app/reservas/config/config.tsx",
+      "file": "pages/app/reservas/config/config.tsx",
+      "details": [
+        "Line 214: Replace className='bo-toolbar' div with <PageToolbar left={...} right={...} />",
+        "Import PageToolbar from @ui/shell/PageToolbar"
+      ]
+    }
+  ]
+}

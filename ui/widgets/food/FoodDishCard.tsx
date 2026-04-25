@@ -146,7 +146,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
         </div>
       ) : null}
 
-      <div data-ui="dish-card-body" className={`bo-foodMemberBody${bodyClassName ? ` ${bodyClassName}` : ""}`}>
+      <div data-ui="dish-card-body" className={cn("bo-foodMemberBody", bodyClassName)}>
         <div data-ui="dish-card-title-row" className="bo-foodMemberTitleRow">
           <h3 data-role="dish-card-title" className="bo-foodMemberTitle">{title}</h3>
           {inactive ? <span data-role="dish-card-inactive-badge" className="bo-badge bo-badge--danger">Inactivo</span> : null}

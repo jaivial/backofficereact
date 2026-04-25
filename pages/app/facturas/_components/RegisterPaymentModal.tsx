@@ -3,6 +3,7 @@ import { X, Loader2, Trash2 } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import type { Invoice, InvoicePayment, InvoicePaymentInput, PaymentMethod } from "../../../../api/types";
 
 type RegisterPaymentModalProps = {
@@ -92,12 +93,7 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
   return (
     <div className="bo-modalOverlay" onClick={onClose} data-slot="registerPaymentModal-modalOverlay">
       <div className="bo-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="payment-modal-title" data-slot="registerPaymentModal-modal">
-        <div className="bo-modalHeader" data-slot="register-payment-modal-header">
-          <h2 id="payment-modal-title" className="bo-modalTitle" data-slot="register-payment-modal-title">Registrar pago</h2>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="register-payment-close-btn">
-            <X size={18} />
-          </button>
-        </div>
+        <ModalHeader title="Registrar pago" onClose={onClose} />
 
         <div className="bo-modalBody" data-slot="register-payment-modal-body">
           {/* Invoice Summary */}

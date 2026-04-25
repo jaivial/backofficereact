@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
 import { Select } from "../../../../../../ui/inputs/Select";
+import { FloatingActionButton } from "../../../../../../ui/actions/FloatingActionButton";
 import { FoodItemCard } from "../../../_components/FoodItemCard";
 import type { ListItem } from "../../types";
 import type { FoodType } from "../../../_components/foodTypes";
@@ -126,15 +127,12 @@ export function FoodList({
         </div>
       </div>
 
-      <button
-        className="bo-menuFab"
-        type="button"
+      <FloatingActionButton
+        icon={<Plus size={24} data-role="food-list-create-icon" />}
         aria-label={`Anadir ${singularLabel}`}
         onClick={onOpenCreate}
         data-role="food-list-create-btn"
-      >
-        <Plus size={24} data-role="food-list-create-icon" />
-      </button>
+      />
     </>
   );
 }

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Check, ExternalLink, Globe, Loader2, Palette, Search, Sparkles } from "lucide-react";
 
 import { WEBSITE_THEMES } from "./constants";
+import { Panel } from "../../../../ui/shell/Panel";
 import { useWebsiteLoader } from "./hooks";
 import type { TabKey } from "./types";
 
@@ -64,14 +65,12 @@ export default function WebsitePage() {
   if (loading) {
     return (
       <div className="bo-websitePage" data-ui="website-loading">
-        <div className="bo-panel" data-ui="loading-panel">
-          <div className="bo-panelBody" data-ui="loading-body">
+        <Panel data-ui="loading-panel">
             <div className="bo-loadingState" data-ui="loading-state">
               <Loader2 className="bo-spinnerIcon" size={24} aria-hidden="true" data-ui="loading-spinner" />
               <span className="bo-mutedText" data-ui="loading-text">Cargando configuracion...</span>
             </div>
-          </div>
-        </div>
+        </Panel>
       </div>
     );
   }
@@ -164,12 +163,7 @@ export default function WebsitePage() {
       {activeTab === "ai" && (
         <section className="bo-websiteSection" aria-label="Constructor con IA" data-ui="website-section-ai">
           <div className="bo-websiteAIGrid" data-ui="website-ai-grid">
-            <div className="bo-panel" data-ui="ai-prompt-panel">
-              <div className="bo-panelHead" data-ui="ai-prompt-header">
-                <div className="bo-panelTitle" data-ui="ai-prompt-title">Generar con IA</div>
-                <div className="bo-panelMeta" data-ui="ai-prompt-meta">Describe tu sitio ideal</div>
-              </div>
-              <div className="bo-panelBody" data-ui="ai-prompt-body">
+            <Panel data-ui="ai-prompt-panel" title="Generar con IA" meta="Describe tu sitio ideal">
                 <div className="bo-stack" data-ui="ai-prompt-stack">
                   <p className="bo-mutedText" data-ui="ai-prompt-description">
                     Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.
@@ -206,15 +200,9 @@ export default function WebsitePage() {
                     </button>
                   </div>
                 </div>
-              </div>
-            </div>
+            </Panel>
 
-            <div className="bo-panel" data-ui="ai-preview-panel">
-              <div className="bo-panelHead" data-ui="ai-preview-header">
-                <div className="bo-panelTitle" data-ui="ai-preview-title">Vista previa</div>
-                <div className="bo-panelMeta" data-ui="ai-preview-meta">HTML personalizado</div>
-              </div>
-              <div className="bo-panelBody" data-ui="ai-preview-body">
+            <Panel data-ui="ai-preview-panel" title="Vista previa" meta="HTML personalizado">
                 <div className="bo-websitePreviewFrame" data-ui="ai-preview-frame">
                   {config?.custom_html ? (
                     <div dangerouslySetInnerHTML={{ __html: config.custom_html }} data-ui="ai-preview-html" />
@@ -224,20 +212,14 @@ export default function WebsitePage() {
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
+            </Panel>
           </div>
         </section>
       )}
 
       {activeTab === "domain" && (
         <section className="bo-websiteSection" aria-label="Dominio personalizado" data-ui="website-section-domain">
-          <div className="bo-panel bo-panel--lg" data-ui="domain-panel">
-            <div className="bo-panelHead" data-ui="domain-header">
-              <div className="bo-panelTitle" data-ui="domain-title">Dominio personalizado</div>
-              <div className="bo-panelMeta" data-ui="domain-meta">Registra un dominio para tu sitio</div>
-            </div>
-            <div className="bo-panelBody" data-ui="domain-body">
+          <Panel className="bo-panel--lg" data-ui="domain-panel" title="Dominio personalizado" meta="Registra un dominio para tu sitio">
               <div className="bo-stack" data-ui="domain-stack">
                 {config?.domain ? (
                   <div className="bo-websiteDomainActive" data-ui="domain-active">
@@ -318,8 +300,7 @@ export default function WebsitePage() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+          </Panel>
         </section>
       )}
     </div>

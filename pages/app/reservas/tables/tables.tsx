@@ -36,6 +36,7 @@ import { Select } from "../../../../ui/inputs/Select";
 import { formatHHMM } from "../../../../ui/lib/format";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { Modal } from "../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { MonthCalendar } from "../../../../ui/widgets/MonthCalendar";
 import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
@@ -2956,12 +2957,7 @@ export default function TableManagerPage() {
               </aside>
 
               <Modal open={editorOpen} title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} widthPx={980} className="bo-tableEditorModal">
-                <div data-slot="modal-head" className="bo-modalHead">
-                  <div data-ui="modal-title" className="bo-modalTitle">{editingTableId ? "Editar mesa" : "Nueva mesa"}</div>
-                  <button data-ui="close-modal-btn" className="bo-modalX" type="button" onClick={() => setEditorOpen(false)} aria-label="Cerrar">
-                    <X size={16} />
-                  </button>
-                </div>
+                <ModalHeader data-slot="modal-head" data-ui="modal-title" title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} />
 
                 <div data-ui="editor-grid" className="bo-tableEditorGrid">
                   <div data-slot="editor-preview" className="bo-tableEditorPreviewWrap">

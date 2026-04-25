@@ -65,7 +65,7 @@ export function SimpleTabs({
         return (
           <button
             key={item.id}
-            className={`bo-tab${active ? " is-active" : ""}`}
+            className={cn("bo-tab", active && "is-active")}
             role="tab"
             aria-selected={active}
             data-testid={`simple-tab-${item.id}`}
@@ -83,7 +83,7 @@ export function SimpleTabs({
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
-                <span className="bo-tabIndicator" / data-slot="simpleTabs-tabIndicator">
+                <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
               )
             ) : null}
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
@@ -128,7 +128,7 @@ export function SimpleTabsList({
         return (
           <button
             key={item.id}
-            className={`bo-tab${active ? " is-active" : ""}`}
+            className={cn("bo-tab", active && "is-active")}
             role="tab"
             aria-selected={active}
             aria-controls={`panel-${item.id}`}
@@ -146,7 +146,7 @@ export function SimpleTabsList({
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
                 />
               ) : (
-                <span className="bo-tabIndicator" / data-slot="simpleTabs-tabIndicator">
+                <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
               )
             ) : null}
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">

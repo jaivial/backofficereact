@@ -15,6 +15,8 @@ import { diffLabel, elapsedForEntry, fullName, fromMinutes, monthCalendarData, s
 import { HOUR_OPTIONS, MINUTE_OPTIONS, HorariosCalendarTab } from "./constants";
 import { MyScheduleView } from "./functionalComponents/MyScheduleView/MyScheduleView";
 import { ScheduleModal } from "./functionalComponents/ScheduleModal/ScheduleModal";
+import { Panel } from "../../../ui/shell/Panel";
+import { cn } from "../../../ui/shadcn/utils";
 
 export default function Page() {
   const pageContext = usePageContext();
@@ -309,21 +311,22 @@ function AdminHorariosView({ data }: { data: Data }) {
   return (
     <section aria-label="Horarios" className="bo-content-grid bo-horariosPage" data-ui="horarios-page">
       <div className="bo-horariosTopGrid" data-slot="top-grid">
-        <div className="bo-panel bo-horariosCalendarPanel" data-slot="calendar-panel">
-          <div className="bo-panelHead" data-slot="panel-head">
-            <div data-slot="panel-title-block">
-              <div className="bo-panelTitle bo-horariosTitle" data-slot="panel-title">
-                <CalendarClock size={16} strokeWidth={1.8} data-role="calendar-clock-icon" aria-hidden="true" />
-                <span data-slot="title-text">Horarios</span>
-                {realtime.pendingScheduleUpdates && (
-                  <span className="bo-pendingDot" title="Hay cambios sin ver" data-role="pending-dot" />
-                )}
-              </div>
-              <div className="bo-panelMeta" data-slot="panel-meta">Selecciona una fecha y asigna turnos al equipo.</div>
-            </div>
-            <div className="bo-horariosDate-badge" data-slot="date-badge">{selectedDate}</div>
-          </div>
-          <div className="bo-panelBody bo-horariosCalendarBody" data-slot="panel-body">
+        <Panel
+          className="bo-horariosCalendarPanel"
+          data-slot="calendar-panel"
+          title={
+            <span className="bo-horariosTitle" data-slot="panel-title">
+              <CalendarClock size={16} strokeWidth={1.8} data-role="calendar-clock-icon" aria-hidden="true" />
+              <span data-slot="title-text">Horarios</span>
+              {realtime.pendingScheduleUpdates && (
+                <span className="bo-pendingDot" title="Hay cambios sin ver" data-role="pending-dot" />
+              )}
+            </span>
+          }
+          meta="Selecciona una fecha y asigna turnos al equipo."
+          actions={<div className="bo-horariosDate-badge" data-slot="date-badge">{selectedDate}</div>}
+          bodyClassName="bo-horariosCalendarBody"
+        >
             <div className="bo-tabs bo-horariosCalendarTabs !w-fit mx-auto" role="tablist" aria-label="Calendario de miembros y reservas" data-slot="calendar-tabs">
               <button
                 type="button"
@@ -431,18 +434,16 @@ function AdminHorariosView({ data }: { data: Data }) {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+        </Panel>
       </div>
 
-      <div className="bo-panel bo-horariosTablePanel min-w-0" data-slot="table-panel">
-        <div className="bo-panelHead" data-slot="table-panel-head">
-          <div data-slot="table-panel-title-block">
-            <div className="bo-panelTitle" data-slot="table-panel-title">Horarios establecidos</div>
-            <div className="bo-panelMeta" data-slot="table-panel-meta">{selectedDate}</div>
-          </div>
-        </div>
-        <div className="bo-panelBody overflow-hidden !p-0" data-slot="table-panel-body">
+      <Panel
+        className="bo-horariosTablePanel min-w-0"
+        data-slot="table-panel"
+        title="Horarios establecidos"
+        meta={selectedDate}
+        bodyClassName="overflow-hidden !p-0"
+      >
           <div className="bo-tableWrap min-w-0 !mt-0" data-slot="table-wrap">
             <div className="bo-tableScroll" data-slot="table-scroll">
               <table className="bo-table bo-table--horarios" aria-label="Tabla de horarios del dia" data-slot="horarios-table">
@@ -530,8 +531,7 @@ function AdminHorariosView({ data }: { data: Data }) {
               </table>
             </div>
           </div>
-        </div>
-      </div>
+        </Panel>
 
       <ScheduleModal
         open={modalOpen}

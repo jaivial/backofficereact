@@ -6,6 +6,7 @@ import { createClient } from "../../../../api/client";
 import type { FichajeSchedule } from "../../../../api/types";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
+import { Panel } from "../../../../ui/shell/Panel";
 
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
@@ -90,15 +91,10 @@ export default function Page() {
 
   return (
     <section aria-label="Mi Horario" className="bo-content-grid bo-miHorarioPage" data-slot="mi-horario-section">
-      <div className="bo-panel bo-miHorarioPanel" data-slot="mi-horario-miHorarioPanel">
-        <div className="bo-panelHead" data-slot="mi-horario-panelHead">
-          <div data-slot="mi-horario-div">
-            <div className="bo-panelTitle" data-slot="mi-horario-panelTitle">
-              <Clock3 size={16} strokeWidth={1.8} />
-              Mi Horario
-            </div>
-            <div className="bo-panelMeta" data-slot="mi-horario-panelMeta">Consulta tus horarios asignados.</div>
-          </div>
+      <Panel className="bo-miHorarioPanel" data-slot="mi-horario-miHorarioPanel"
+        title={<span><Clock3 size={16} strokeWidth={1.8} /> Mi Horario</span>}
+        meta="Consulta tus horarios asignados."
+        actions={
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
             data-testid="mi-horario-refresh-button"
@@ -107,9 +103,8 @@ export default function Page() {
           >
             {loading ? "Cargando..." : "Actualizar"}
           </button>
-        </div>
-
-        <div className="bo-panelBody" data-slot="mi-horario-panelBody">
+        }
+      >
           {error ? (
             <div className="bo-alert bo-alert--error" data-slot="mi-horario-alert--error">{error}</div>
           ) : sortedSchedules.length === 0 ? (
@@ -150,8 +145,7 @@ export default function Page() {
               })}
             </div>
           )}
-        </div>
-      </div>
+        </Panel>
     </section>
   );
 }

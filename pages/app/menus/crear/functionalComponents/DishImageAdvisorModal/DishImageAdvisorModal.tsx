@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal } from "../../../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../../../ui/overlays/ModalHeader";
 
 export function DishImageAdvisorModalComponent({
   open,
@@ -24,10 +25,7 @@ export function DishImageAdvisorModalComponent({
   const label = subjectLabel || "plato";
   return (
     <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
-      <div className="bo-modalHead" data-slot="dishImageAdvisorModal-modalHead">
-        <div className="bo-modalTitle" data-slot="dishImageAdvisorModal-modalTitle">Asesor IA de imagen</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy} data-testid="dish-advisor-close-modal">×</button>
-      </div>
+      <ModalHeader title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} />
       <div className="bo-modalBody bo-dishAIAdvisorBody" data-slot="dishImageAdvisorModal-dishAIAdvisorBody">
         <div className="bo-dishAIAdvisorCopy" data-slot="dishImageAdvisorModal-dishAIAdvisorCopy">
           <p className="bo-dishAIAdvisorLead" data-slot="dishImageAdvisorModal-dishAIAdvisorLead">

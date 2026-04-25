@@ -10,6 +10,7 @@ import { Select } from "../../../../../ui/inputs/Select";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
 import { applyLiveToBalance, applyLiveToStats, maxHours, useMemberLive } from "../_shared/realtime";
 import { StatsTable } from "./_components/StatsTable";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 type StatsView = "weekly" | "monthly" | "quarterly" | "yearly";
 type ChartType = "bar" | "linear";
@@ -164,7 +165,7 @@ export default function Page() {
               <strong>{weeklyPercent.toFixed(2)}%</strong>
             </div>
             <div className="bo-memberProgressTrack" data-slot="estadisticas-memberProgressTrack">
-              <span className="bo-memberProgressFill" style={{ width: `${weeklyProgress}%` }} / data-slot="estadisticas-memberProgressFill">
+              <span className="bo-memberProgressFill" style={{ width: `${weeklyProgress}%` }} data-slot="estadisticas-memberProgressFill" />
             </div>
           </div>
 
@@ -189,7 +190,7 @@ export default function Page() {
                       <div key={point.date} className="bo-memberBarCol" data-slot="estadisticas-memberBarCol">
                         <div className="bo-memberBarValue" data-slot="estadisticas-memberBarValue">{pointHours.toFixed(1)}</div>
                         <div className="bo-memberBarTrack" data-slot="estadisticas-memberBarTrack">
-                          <div className="bo-memberBarFill" style={{ height: `${Math.max(h, 3)}%` }} / data-slot="estadisticas-memberBarFill">
+                          <div className="bo-memberBarFill" style={{ height: `${Math.max(h, 3)}%` }} data-slot="estadisticas-memberBarFill" />
                         </div>
                         <div className="bo-memberBarLabel" data-slot="estadisticas-memberBarLabel">{point.label}</div>
                       </div>
@@ -231,21 +232,13 @@ export default function Page() {
       </div>
 
       {/* Stats Table Section */}
-      <div className="bo-panel bo-statsTablePanel" data-slot="estadisticas-statsTablePanel">
-        <div className="bo-panelHead" data-slot="estadisticas-panelHead">
-          <div data-slot="estadisticas-div">
-            <div className="bo-panelTitle" data-slot="estadisticas-panelTitle">Tabla de Estadisticas</div>
-            <div className="bo-panelMeta" data-slot="estadisticas-panelMeta">Datos detallados por período completo del año.</div>
-          </div>
-        </div>
-        <div className="bo-panelBody" data-slot="estadisticas-panelBody">
-          {data.memberId > 0 ? (
-            <StatsTable memberId={data.memberId} />
-          ) : (
-            <div className="bo-mutedText" data-slot="estadisticas-mutedText">Selecciona un miembro para ver las estadísticas.</div>
-          )}
-        </div>
-      </div>
+      <Panel className="bo-statsTablePanel" data-slot="estadisticas-statsTablePanel" title="Tabla de Estadisticas" meta="Datos detallados por período completo del año.">
+        {data.memberId > 0 ? (
+          <StatsTable memberId={data.memberId} />
+        ) : (
+          <div className="bo-mutedText" data-slot="estadisticas-mutedText">Selecciona un miembro para ver las estadísticas.</div>
+        )}
+      </Panel>
     </section>
   );
 }

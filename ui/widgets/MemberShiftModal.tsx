@@ -295,7 +295,7 @@ export function MemberShiftModal({
 
         {loading && (
           <div className="bo-shiftModalLoading" data-slot="shift-modal-loading">
-            <div className="bo-spinner" / data-slot="memberShiftModal-spinner">
+            <div className="bo-spinner" data-slot="memberShiftModal-spinner" />
           </div>
         )}
 

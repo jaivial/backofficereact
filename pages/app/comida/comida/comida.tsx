@@ -1,5 +1,6 @@
 import React from "react";
 import { Plus } from "lucide-react";
+import { FloatingActionButton } from "../../../../ui/actions/FloatingActionButton";
 import { FOOD_ENTRIES } from "./constants";
 import { useComidaPageActions } from "./hooks";
 
@@ -44,15 +45,12 @@ export default function ComidaPage() {
         </div>
       </div>
 
-      <button
-        className="bo-menuFab"
-        type="button"
+      <FloatingActionButton
+        icon={<Plus size={26} aria-hidden="true" data-ui="fab-icon" />}
         aria-label="Crear elemento de comida"
         onClick={openCreate}
         data-ui="food-hub-fab"
-      >
-        <Plus size={26} aria-hidden="true" data-ui="fab-icon" />
-      </button>
+      />
     </section>
   );
 }

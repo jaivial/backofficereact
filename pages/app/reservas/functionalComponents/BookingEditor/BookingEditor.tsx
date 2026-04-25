@@ -9,6 +9,7 @@ import { TimePicker } from "../../../../../ui/inputs/TimePicker";
 import { Select } from "../../../../../ui/inputs/Select";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { InlineCounter } from "../../../../../ui/widgets/InlineCounter";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 import { principalesItemsFromMenu, type PrincipalesRow, type RiceRow } from "./bookingDraft";
 
@@ -427,12 +428,7 @@ export function BookingEditor({
         </div>
       </div>
 
-      <div className="bo-panel" data-slot="bookingEditor-panel">
-        <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
-          <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Menú de grupo</div>
-          <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">{draft.special_menu ? "Sí" : "No"}</div>
-        </div>
-        <div className="bo-panelBody" data-slot="bookingEditor-panelBody">
+      <Panel data-slot="bookingEditor-panel" title="Menú de grupo" meta={draft.special_menu ? "Sí" : "No"}>
           <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo" data-slot="booking-editor-menu-toggle">
             <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy} data-slot="booking-editor-menu-no">
               No
@@ -493,16 +489,10 @@ export function BookingEditor({
               </div>
             </div>
           ) : null}
-        </div>
-      </div>
+      </Panel>
 
       {!draft.special_menu ? (
-        <div className="bo-panel" data-slot="bookingEditor-panel">
-          <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
-            <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Arroz</div>
-            <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">{draft.arroz_enabled ? "Sí" : "No"}</div>
-          </div>
-          <div className="bo-panelBody" data-slot="bookingEditor-panelBody">
+        <Panel data-slot="bookingEditor-panel" title="Arroz" meta={draft.arroz_enabled ? "Sí" : "No"}>
             <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?" data-slot="booking-editor-arroz-toggle">
               <button type="button" className={`bo-chip${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy} data-slot="booking-editor-arroz-no">
                 No
@@ -548,20 +538,13 @@ export function BookingEditor({
                 {!riceTypes.length ? <div className="bo-mutedText">Cargando tipos de arroz…</div> : null}
               </div>
             ) : null}
-          </div>
-        </div>
+        </Panel>
       ) : null}
 
       {!draft.special_menu ? (
-        <div className="bo-panel" data-slot="bookingEditor-panel">
-          <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
-            <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Comentario</div>
-            <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">Opcional</div>
-          </div>
-          <div className="bo-panelBody" data-slot="bookingEditor-panelBody">
+        <Panel data-slot="bookingEditor-panel" title="Comentario" meta="Opcional">
             <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} data-slot="booking-editor-commentary" />
-          </div>
-        </div>
+        </Panel>
       ) : null}
       </div>
 

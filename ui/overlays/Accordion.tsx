@@ -27,7 +27,7 @@ export function Accordion({ title, defaultOpen = false, children, className }: A
           <span data-slot="accordion-title">{title}</span>
         </span>
         <span className="bo-accordionTriggerRight" data-slot="accordion-trigger-right">
-          <span className={`bo-accordionIcon${open ? " is-open" : ""}`} data-slot="accordion-chevron">
+          <span className={cn("bo-accordionIcon", open && "is-open")} data-slot="accordion-chevron">
             <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" />
           </span>
         </span>

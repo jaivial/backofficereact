@@ -1,5 +1,6 @@
 import React from "react";
 import { StatCard } from "../../../../../ui/widgets/StatCard";
+import { Card } from "../../../../../ui/shell/Card";
 import { formatCurrency } from "../../../../../api/types";
 import type { CustomerStatement } from "../../../../../api/types";
 
@@ -15,7 +16,7 @@ function formatDate(dateStr: string): string {
 export function CustomerStatementContent({ customerStatement }: CustomerStatementContentProps) {
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-ui="customer-info">
+      <Card variant="tailwind" padding className="mb-6" data-ui="customer-info">
         <h3 className="text-lg font-semibold text-gray-900 mb-4" data-ui="info-title">Informacion del Cliente</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-ui="info-grid">
           <div data-ui="name-info">
@@ -39,7 +40,7 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
             <p className="text-lg font-medium text-gray-900" data-slot="customerStatementContent-text-gray-900">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" data-ui="balance-summary">
         <StatCard title="Saldo Inicial" value={formatCurrency(customerStatement.opening_balance, "EUR")} icon="calendar" />
@@ -50,7 +51,7 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-ui="tables-grid">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="invoices-table">
+        <Card variant="tailwind" data-ui="invoices-table">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-ui="table-header">
             <h3 className="text-lg font-semibold text-gray-900" data-slot="customerStatementContent-text-gray-900">Facturas ({customerStatement.invoices.length})</h3>
           </div>
@@ -92,9 +93,9 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
           ) : (
             <div className="p-6 text-center text-gray-500" data-ui="no-invoices">No hay facturas en este periodo</div>
           )}
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="payments-table">
+        <Card variant="tailwind" data-ui="payments-table">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-ui="table-header">
             <h3 className="text-lg font-semibold text-gray-900" data-slot="customerStatementContent-text-gray-900">Pagos ({customerStatement.payments.length})</h3>
           </div>
@@ -124,7 +125,7 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
           ) : (
             <div className="p-6 text-center text-gray-500" data-ui="no-payments">No hay pagos en este periodo</div>
           )}
-        </div>
+        </Card>
       </div>
     </>
   );

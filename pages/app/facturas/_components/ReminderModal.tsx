@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { X, Send, Mail, MessageSquare, Clock, AlertCircle } from "lucide-react";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import type { Invoice, ReminderTemplate, SendReminderInput } from "../../../../api/types";
 import { Select } from "../../../../ui/inputs/Select";
 import { useToasts } from "../../../../ui/feedback/useToasts";
@@ -155,17 +156,7 @@ export function ReminderModal({ invoice, open, onClose, onReminderSent }: Remind
   return (
     <div className="bo-modal-overlay" onClick={onClose} data-slot="reminderModal-modal-overlay">
       <div className="bo-modal bo-modal--sm" onClick={(e) => e.stopPropagation()} data-slot="reminderModal-modal--sm">
-        <div className="bo-modalHeader" data-slot="reminder-modal-header">
-          <h2 className="bo-modalTitle" data-slot="reminder-modal-title">Enviar recordatorio de pago</h2>
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
-            onClick={onClose}
-            aria-label="Cerrar"
-            data-testid="reminder-close-btn"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        <ModalHeader title="Enviar recordatorio de pago" onClose={onClose} />
 
         <div className="bo-modalBody" data-slot="reminder-modal-body">
           {/* Invoice Info */}

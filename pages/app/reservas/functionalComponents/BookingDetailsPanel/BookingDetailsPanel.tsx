@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { formatArrozShort, formatHHMM, formatPhone } from "../../../../../ui/lib/format";
 import type { Booking, ConfigFloor } from "../../../../../api/types";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 function normalizeTableNumber(v: string): string {
   const raw = String(v || "").trim();
@@ -98,32 +99,26 @@ export function BookingDetailsPanel({ booking, floors }: BookingDetailsPanelProp
         </div>
       </div>
 
-      <div className="bo-panel" data-ui="details-panel">
-        <div className="bo-panelHead" data-ui="panel-header">
-          <div className="bo-panelTitle" data-ui="panel-title">Detalles</div>
-          <div className="bo-panelMeta" data-ui="panel-meta">{booking.special_menu ? "Menú de grupo" : "Reserva"}</div>
-        </div>
-        <div className="bo-panelBody" data-ui="panel-body">
-          <div className="bo-kvGrid" data-ui="kv-grid">
-            <div className="bo-kv bo-kv--wide" data-ui="kv-email">
-              <div className="bo-kvLabel" data-ui="kv-label">Email</div>
-              <div className="bo-kvValue bo-kvValue--wrap" data-ui="kv-value">{booking.contact_email || "—"}</div>
-            </div>
-            <div className="bo-kv" data-ui="kv-strollers">
-              <div className="bo-kvLabel" data-ui="kv-label">Carros</div>
-              <div className="bo-kvValue" data-ui="kv-value">{typeof booking.babyStrollers === "number" ? String(booking.babyStrollers) : "—"}</div>
-            </div>
-            <div className="bo-kv" data-ui="kv-chairs">
-              <div className="bo-kvLabel" data-ui="kv-label">Tronas</div>
-              <div className="bo-kvValue" data-ui="kv-value">{typeof booking.highChairs === "number" ? String(booking.highChairs) : "—"}</div>
-            </div>
-            <div className="bo-kv bo-kv--wide" data-ui="kv-arroz">
-              <div className="bo-kvLabel" data-ui="kv-label">Arroz</div>
-              <div className="bo-kvValue" data-ui="kv-value">{arroz || "—"}</div>
-            </div>
+      <Panel data-ui="details-panel" title="Detalles" meta={booking.special_menu ? "Menú de grupo" : "Reserva"}>
+        <div className="bo-kvGrid" data-ui="kv-grid">
+          <div className="bo-kv bo-kv--wide" data-ui="kv-email">
+            <div className="bo-kvLabel" data-ui="kv-label">Email</div>
+            <div className="bo-kvValue bo-kvValue--wrap" data-ui="kv-value">{booking.contact_email || "—"}</div>
+          </div>
+          <div className="bo-kv" data-ui="kv-strollers">
+            <div className="bo-kvLabel" data-ui="kv-label">Carros</div>
+            <div className="bo-kvValue" data-ui="kv-value">{typeof booking.babyStrollers === "number" ? String(booking.babyStrollers) : "—"}</div>
+          </div>
+          <div className="bo-kv" data-ui="kv-chairs">
+            <div className="bo-kvLabel" data-ui="kv-label">Tronas</div>
+            <div className="bo-kvValue" data-ui="kv-value">{typeof booking.highChairs === "number" ? String(booking.highChairs) : "—"}</div>
+          </div>
+          <div className="bo-kv bo-kv--wide" data-ui="kv-arroz">
+            <div className="bo-kvLabel" data-ui="kv-label">Arroz</div>
+            <div className="bo-kvValue" data-ui="kv-value">{arroz || "—"}</div>
           </div>
         </div>
-      </div>
+      </Panel>
 
       <div className="bo-panel" data-ui="commentary-panel">
         <div className="bo-panelHead" data-ui="panel-header">

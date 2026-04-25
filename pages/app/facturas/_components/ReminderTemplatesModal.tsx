@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { X, Plus, Pencil, Trash2, Star, StarOff, Mail, MessageSquare, AlertCircle } from "lucide-react";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import type { ReminderTemplate, ReminderTemplateInput } from "../../../../api/types";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
@@ -233,17 +234,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
   return (
     <div className="bo-modal-overlay" onClick={onClose} data-slot="reminderTemplatesModal-modal-overlay">
       <div className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()} data-slot="reminderTemplatesModal-modal--lg">
-        <div className="bo-modalHeader" data-slot="reminderTemplatesModal-modalHeader">
-          <h2 className="bo-modalTitle" data-slot="reminderTemplatesModal-modalTitle">Plantillas de recordatorios</h2>
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
-            onClick={onClose}
-            aria-label="Cerrar"
-            data-testid="reminder-template-close"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        <ModalHeader title="Plantillas de recordatorios" onClose={onClose} />
 
         <div className="bo-modalBody" data-slot="reminderTemplatesModal-modalBody">
           {isEditing ? (
@@ -355,7 +346,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
 
               {loading && (
                 <div className="bo-loadingState" data-slot="reminderTemplatesModal-loadingState">
-                  <div className="bo-spinner" / data-slot="reminderTemplatesModal-spinner">
+                  <div className="bo-spinner" data-slot="reminderTemplatesModal-spinner" />
                   <span data-slot="reminderTemplatesModal-las">Cargando plantillas...</span>
                 </div>
               )}

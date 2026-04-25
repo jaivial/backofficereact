@@ -251,7 +251,7 @@ export function RoleDetailModal({
                   else if (!member.hasUser) reason = "Se creará usuario backoffice al asignar";
 
                   return (
-                    <label key={member.memberId} className={`bo-roleUserRow bo-roleUserRow--check${disabled ? " is-disabled" : ""}`} data-slot={`role-detail-member-check-row-${member.memberId}`}>
+                    <label key={member.memberId} className={cn("bo-roleUserRow", "bo-roleUserRow--check", disabled && "is-disabled")} data-slot={`role-detail-member-check-row-${member.memberId}`}>
                       <input
                         type="checkbox"
                         checked={checked}

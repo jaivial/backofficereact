@@ -51,7 +51,7 @@ export function TimeEntriesEditor({
                 <span data-slot="time-entry-label">Registro #{entry.id}</span>
               </div>
               <div className="bo-timeEntryHeadRight" data-slot="time-entry-header-right">
-                <span className={`bo-badge bo-timeEntrySource${entry.source === "clock_autocut" ? " is-warning" : ""}`} data-slot="time-entry-source">{entry.source}</span>
+                <span className={cn("bo-badge", "bo-timeEntrySource", entry.source === "clock_autocut" && "is-warning")} data-slot="time-entry-source">{entry.source}</span>
                 {entry.isLive ? <span className="bo-badge bo-timeEntryLive" data-slot="time-entry-live-badge">En vivo</span> : null}
               </div>
             </div>

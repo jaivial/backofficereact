@@ -8,6 +8,7 @@ import type { Data } from "./+data";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
+import { Panel } from "../../../../../ui/shell/Panel";
 import { applyLiveToStats, formatElapsedHHMMSS, useMemberLive } from "../_shared/realtime";
 
 function parseHours(v: string): number | null {
@@ -96,12 +97,7 @@ export default function Page() {
   return (
     <section aria-label="Contrato del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-contrato-section">
       {!member ? (
-        <div className="bo-panel" data-slot="contrato-panel">
-          <div className="bo-panelHead" data-slot="contrato-panelHead">
-            <div className="bo-panelTitle" data-slot="contrato-panelTitle">Miembro no disponible</div>
-            <div className="bo-panelMeta" data-slot="contrato-panelMeta">No se pudo cargar el contrato del miembro solicitado.</div>
-          </div>
-        </div>
+        <Panel data-slot="contrato-panel" title="Miembro no disponible" meta="No se pudo cargar el contrato del miembro solicitado." />
       ) : (
         <div className="bo-panel" data-slot="contrato-panel">
           <div className="bo-panelHead bo-memberStatsHead" data-slot="contrato-memberStatsHead">

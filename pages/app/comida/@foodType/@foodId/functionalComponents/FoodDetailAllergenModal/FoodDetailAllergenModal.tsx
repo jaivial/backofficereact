@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal } from "../../../../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../../../../ui/overlays/ModalHeader";
 import { CARD_ALLERGENS } from "../../constants";
 
 interface FoodDetailAllergenModalProps {
@@ -19,12 +20,7 @@ export function FoodDetailAllergenModal({
 }: FoodDetailAllergenModalProps) {
   return (
     <Modal open={open} title="Alergenos" onClose={onClose} widthPx={620}>
-      <div className="bo-modalHead" data-slot="food-detail-allergen-modal-head">
-        <div className="bo-modalTitle" data-role="food-detail-allergen-modal-title">Selecciona alergenos</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" data-role="food-detail-allergen-modal-close">
-          ×
-        </button>
-      </div>
+      <ModalHeader title="Selecciona alergenos" onClose={onClose} data-slot="food-detail-allergen-modal-head" data-role="food-detail-allergen-modal-title" />
       <div className="bo-modalBody" data-slot="food-detail-allergen-modal-body">
         <div className="bo-allergenGrid" data-ui="food-detail-allergen-modal-grid">
           {CARD_ALLERGENS.map((item) => {

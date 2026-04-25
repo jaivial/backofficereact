@@ -3,6 +3,7 @@ import { Loader2, Plus, Save } from "lucide-react";
 
 import { Select } from "../../../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../../../ui/shadcn/Switch";
+import { Panel } from "../../../../../../../ui/shell/Panel";
 
 interface FoodDetailQuickEditorProps {
   isPlate: boolean;
@@ -66,17 +67,19 @@ export function FoodDetailQuickEditor({
   onAddCategoryClick,
 }: FoodDetailQuickEditorProps) {
   return (
-    <div className="bo-panel bo-foodDetailPanel bo-foodDetailQuickEditor" data-ui="food-detail-quick-editor">
-      <div className="bo-panelHead bo-foodDetailQuickHead" data-slot="food-detail-quick-head">
-        <div data-slot="food-detail-quick-title-wrap">
-          <div className="bo-panelTitle" data-role="food-detail-quick-title">Edicion rapida</div>
-          <div className="bo-panelMeta" data-role="food-detail-quick-meta">Atajos para ajustar este plato sin volver al listado.</div>
-        </div>
+    <Panel
+      className="bo-foodDetailPanel bo-foodDetailQuickEditor"
+      headClassName="bo-foodDetailQuickHead"
+      title="Edicion rapida"
+      meta="Atajos para ajustar este plato sin volver al listado."
+      actions={
         <span className={`bo-badge bo-badge--sm ${quickDirty ? "bo-badge--warning" : "bo-badge--muted"}`} data-role="food-detail-quick-dirty-badge">
           {quickDirty ? "Cambios sin guardar" : "Sin cambios"}
         </span>
-      </div>
-      <div className="bo-panelBody" data-slot="food-detail-quick-body">
+      }
+      data-ui="food-detail-quick-editor"
+    >
+      <div data-slot="food-detail-quick-body">
         <div className="bo-foodDetailQuickGrid" data-ui="food-detail-quick-grid">
           <label className="bo-field" data-slot="food-detail-quick-name-field">
             <span className="bo-label" data-role="food-detail-quick-name-label">Nombre</span>
@@ -206,6 +209,6 @@ export function FoodDetailQuickEditor({
           {savingQuick ? <Loader2 size={14} className="bo-foodDetailSpinIcon" /> : <Save size={14} />}
         </button>
       </div>
-    </div>
+    </Panel>
   );
 }
