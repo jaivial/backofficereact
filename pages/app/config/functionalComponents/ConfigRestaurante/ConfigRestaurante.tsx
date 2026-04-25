@@ -11,6 +11,7 @@ import { Select } from "../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
 import { Tabs, type TabItem } from "../../../../../ui/nav/Tabs";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast }: RestauranteContentProps) {
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
@@ -233,28 +234,17 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
 
   return (
     <>
-      <div className="bo-panel" data-ui="config-restaurante-opening-panel">
-        <div className="bo-panelHead" data-ui="config-restaurante-opening-header">
-          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Modo de apertura</div>
-          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">{openingModeLabel}</div>
-        </div>
-        <div className="bo-panelBody bo-row" data-ui="config-restaurante-opening-body">
-          <Select
-            value={defaults.openingMode}
-            onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
-            options={openingModeOptions as any}
-            size="sm"
-            ariaLabel="Modo de apertura por defecto"
-          />
-        </div>
-      </div>
+      <Panel title="Modo de apertura" meta={openingModeLabel} bodyClassName="bo-row" data-ui="config-restaurante-opening-panel">
+        <Select
+          value={defaults.openingMode}
+          onChange={(mode) => void saveDefaults({ openingMode: (mode as OpeningMode) || "both" })}
+          options={openingModeOptions as any}
+          size="sm"
+          ariaLabel="Modo de apertura por defecto"
+        />
+      </Panel>
 
-      <div className="bo-panel" data-ui="config-restaurante-hours-panel">
-        <div className="bo-panelHead" data-ui="config-restaurante-hours-header">
-          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Horarios por defecto</div>
-          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">Slots de media hora con guardado inmediato</div>
-        </div>
-        <div className="bo-panelBody bo-hourCardsContainer" data-ui="config-restaurante-hours-body">
+      <Panel title="Horarios por defecto" meta="Slots de media hora con guardado inmediato" bodyClassName="bo-hourCardsContainer" data-ui="config-restaurante-hours-panel">
           <div className="bo-field" data-ui="config-restaurante-morning-field">
             <div className="bo-label" data-slot="configRestaurante-label">Mañana (08:00 - 17:00)</div>
             <div className="bo-hourCards bo-hourCards--slots" data-ui="config-restaurante-morning-slots">
@@ -292,15 +282,9 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
               ))}
             </div>
           </div>
-        </div>
-      </div>
+      </Panel>
 
-      <div className="bo-panel" data-ui="config-restaurante-weekday-panel">
-        <div className="bo-panelHead" data-ui="config-restaurante-weekday-header">
-          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Calendario semanal</div>
-          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">Semana genérica (lunes a domingo)</div>
-        </div>
-        <div className="bo-panelBody bo-configWeekdayGrid" data-ui="config-restaurante-weekday-body">
+      <Panel title="Calendario semanal" meta="Semana genérica (lunes a domingo)" bodyClassName="bo-configWeekdayGrid" data-ui="config-restaurante-weekday-panel">
           {weekdayCardsWithState.map((weekday: WeekdayCard & { isOpen: boolean }) => (
             <button
               key={weekday.key}
@@ -320,15 +304,9 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
               </div>
             </button>
           ))}
-        </div>
-      </div>
+      </Panel>
 
-      <div className="bo-panel" data-ui="config-restaurante-limits-panel">
-        <div className="bo-panelHead" data-ui="config-restaurante-limits-header">
-          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Límites por defecto</div>
-          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">Autosave inmediato</div>
-        </div>
-        <div className="bo-panelBody bo-configLimitGrid" data-ui="config-restaurante-limits-body">
+      <Panel title="Límites por defecto" meta="Autosave inmediato" bodyClassName="bo-configLimitGrid" data-ui="config-restaurante-limits-panel">
           <PlusMinusCounter
             label="Límite diario"
             value={dailyLimitLabel}
@@ -370,15 +348,9 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             decrementAriaLabel="Reducir mesas de 3"
             incrementAriaLabel="Aumentar mesas de 3"
           />
-        </div>
-      </div>
+      </Panel>
 
-      <div className="bo-panel" data-ui="config-restaurante-floors-panel">
-        <div className="bo-panelHead" data-ui="config-restaurante-floors-header">
-          <div className="bo-panelTitle" data-slot="configRestaurante-panelTitle">Plantas del restaurante</div>
-          <div className="bo-panelMeta" data-slot="configRestaurante-panelMeta">{floorCount} plantas</div>
-        </div>
-        <div className="bo-panelBody bo-configFloorsPanel" data-ui="config-restaurante-floors-body">
+      <Panel title="Plantas del restaurante" meta={`${floorCount} plantas`} bodyClassName="bo-configFloorsPanel" data-ui="config-restaurante-floors-panel">
           <Tabs
             tabs={floorTabs}
             activeId={floorTab}
@@ -462,8 +434,7 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
               )}
             </motion.div>
           </AnimatePresence>
-        </div>
-      </div>
+      </Panel>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import type { PdfTemplateType, RestaurantInvoiceSettings } from "../../../../../api/types";
 import { PDF_TEMPLATE_OPTIONS } from "../../../../../api/types";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 interface PdfTemplatePanelProps {
   invoiceSettings: RestaurantInvoiceSettings;
@@ -11,13 +12,8 @@ interface PdfTemplatePanelProps {
 
 export function PdfTemplatePanel({ invoiceSettings, busy, onSettingsChange, onSave }: PdfTemplatePanelProps) {
   return (
-    <div className="bo-panel" aria-label="Plantilla de PDF" data-ui="pdfTemplate-panel">
-      <div className="bo-panelHead" data-slot="panelHead">
-        <div className="bo-panelTitle" data-ui="panelTitle">Plantilla de PDF</div>
-        <div className="bo-panelMeta" data-ui="panelMeta">Selecciona el diseno predeterminado para las facturas</div>
-      </div>
-      <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack" data-slot="pdfTemplatePanel-stack">
+    <Panel title="Plantilla de PDF" meta="Selecciona el diseno predeterminado para las facturas" aria-label="Plantilla de PDF" data-ui="pdfTemplate-panel">
+      <div className="bo-stack" data-slot="pdfTemplatePanel-stack">
           <div className="bo-mutedText" style={{ marginBottom: 16 }} data-ui="description">
             Elige el diseno que se utilizara por defecto al generar los PDFs de las facturas. Los usuarios podran elegir una plantilla diferente al crear cada factura.
           </div>
@@ -55,7 +51,6 @@ export function PdfTemplatePanel({ invoiceSettings, busy, onSettingsChange, onSa
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Panel>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import type { RestaurantInvoiceSettings } from "../../../../../api/types";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 interface InvoiceNumberingPanelProps {
   invoiceSettings: RestaurantInvoiceSettings;
@@ -29,13 +30,8 @@ export function InvoiceNumberingPanel({ invoiceSettings, busy, onSettingsChange,
   }, [invoiceSettings]);
 
   return (
-    <div className="bo-panel" aria-label="Numeracion de facturas" data-ui="invoiceNumbering-panel">
-      <div className="bo-panelHead" data-slot="panelHead">
-        <div className="bo-panelTitle" data-ui="panelTitle">Numeracion de facturas</div>
-        <div className="bo-panelMeta" data-ui="panelMeta">Configura el formato de los numeros de factura</div>
-      </div>
-      <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack" data-slot="invoiceNumberingPanel-stack">
+    <Panel title="Numeracion de facturas" meta="Configura el formato de los numeros de factura" aria-label="Numeracion de facturas" data-ui="invoiceNumbering-panel">
+      <div className="bo-stack" data-slot="invoiceNumberingPanel-stack">
           <div className="bo-mutedText" style={{ marginBottom: 16 }} data-ui="tokensHint">
             Usa los siguientes tokens en el formato: {"{YYYY}"} (ano), {"{YY}"} (ano corto), {"{0001}"} (numero con ceros), {"{N}"} (numero sin padding), {"{prefix}"} (prefijo), {"{suffix}"} (sufijo)
           </div>
@@ -126,7 +122,6 @@ export function InvoiceNumberingPanel({ invoiceSettings, busy, onSettingsChange,
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Panel>
   );
 }

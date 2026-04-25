@@ -4,6 +4,7 @@ import { ChevronLeft, Loader2, Save, Wine } from "lucide-react";
 import { FOOD_TYPE_LABELS } from "../../../../_components/foodTypes";
 import { Select } from "../../../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../../../ui/shadcn/Switch";
+import { Panel } from "../../../../../../../ui/shell/Panel";
 import type { WineDetailEditorProps } from "./types";
 import { WINE_TIPO_OPTIONS } from "./constants";
 import { useWineForm } from "./hooks/useWineForm";
@@ -134,39 +135,22 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
         </div>
       </div>
 
-      <div
+      <Panel
         data-ui="wine-detail-editor"
-        className="bo-panel bo-foodDetailPanel bo-foodDetailQuickEditor"
-      >
-        <div
-          data-slot="wine-detail-editor-head"
-          className="bo-panelHead bo-foodDetailQuickHead"
-        >
-          <div data-slot="wine-detail-editor-title-wrap">
-            <div
-              data-role="wine-detail-editor-title"
-              className="bo-panelTitle"
-            >
-              {isNew ? "Nuevo vino" : "Editar vino"}
-            </div>
-            <div
-              data-role="wine-detail-editor-meta"
-              className="bo-panelMeta"
-            >
-              {isNew
-                ? "Rellena los datos para crear un nuevo vino."
-                : "Modifica los campos y guarda los cambios."}
-            </div>
-          </div>
+        className="bo-foodDetailPanel bo-foodDetailQuickEditor"
+        headClassName="bo-foodDetailQuickHead"
+        title={isNew ? "Nuevo vino" : "Editar vino"}
+        meta={isNew ? "Rellena los datos para crear un nuevo vino." : "Modifica los campos y guarda los cambios."}
+        actions={
           <span
             className={`bo-badge bo-badge--sm ${dirty ? "bo-badge--warning" : "bo-badge--muted"}`}
             data-role="wine-detail-dirty-badge"
           >
             {dirty ? "Cambios sin guardar" : "Sin cambios"}
           </span>
-        </div>
-
-        <div data-slot="wine-detail-editor-body" className="bo-panelBody">
+        }
+      >
+        <div data-slot="wine-detail-editor-body">
           <div
             data-ui="wine-detail-editor-grid"
             className="bo-foodDetailQuickGrid"
@@ -380,7 +364,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
             )}
           </button>
         </div>
-      </div>
+      </Panel>
     </section>
   );
 }

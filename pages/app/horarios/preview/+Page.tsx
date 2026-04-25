@@ -7,6 +7,7 @@ import { fichajeRealtimeAtom } from "../../../../state/atoms";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { SimpleTabs } from "../../../../ui/nav/SimpleTabs";
+import { Panel } from "../../../../ui/shell/Panel";
 import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { HorariosRosterTable, type HorariosRosterRow } from "../../../../ui/widgets/HorariosRosterTable";
 import type { FichajeActiveEntry, FichajeSchedule, Member } from "../../../../api/types";
@@ -104,15 +105,17 @@ export default function Page() {
 
   return (
     <section aria-label="Preview de horarios" data-ui="horariosPreviewPage" className="bo-horariosPreviewPage">
-      <div data-ui="horariosPanel" className="bo-panel">
-        <div data-slot="panelHead" className="bo-panelHead md:flex-row flex-col w-fit md:w-full mx-auto md:mx-0 gap-3 md:gap-0">
-          <div data-slot="panelHeadInfo">
-            <div data-ui="horariosTitle" className="bo-panelTitle bo-horariosTitle">
-              <CalendarClock data-slot="titleIcon" size={16} strokeWidth={1.8} aria-hidden="true" />
-              <span data-slot="titleText">Preview</span>
-            </div>
-            <div data-slot="panelMeta" className="bo-panelMeta">Estado en vivo para la fecha seleccionada.</div>
-          </div>
+      <Panel
+        data-ui="horariosPanel"
+        title={
+          <span className="bo-horariosTitle">
+            <CalendarClock data-slot="titleIcon" size={16} strokeWidth={1.8} aria-hidden="true" />
+            <span data-slot="titleText">Preview</span>
+          </span>
+        }
+        meta="Estado en vivo para la fecha seleccionada."
+        headClassName="md:flex-row flex-col w-fit md:w-full mx-auto md:mx-0 gap-3 md:gap-0"
+        actions={
           <div data-slot="previewActions" className="bo-horariosPreviewActions flex flex-col md:flex-row gap-2">
             <div data-slot="datePicker">
               <DatePicker value={date} onChange={(nextDate) => void onDateChange(nextDate)} />
@@ -126,9 +129,9 @@ export default function Page() {
               className="bo-tabs--glass bo-viewTabs flex flex-row ms-auto rounded-xl !w-fit"
             />
           </div>
-        </div>
-
-        <div data-slot="panelBody" className="bo-panelBody bo-horariosPreviewBody">
+        }
+        bodyClassName="bo-horariosPreviewBody"
+      >
           <PreviewCounters liveCount={liveMembers.length} idleCount={idleMembers.length} />
 
           {view === "grid" ? (
@@ -159,8 +162,7 @@ export default function Page() {
           ) : (
             <MemberFilterView members={membersSorted} />
           )}
-        </div>
-      </div>
+      </Panel>
 
       {selectedMember ? (
         <MemberShiftModal

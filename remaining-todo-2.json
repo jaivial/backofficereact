@@ -1,0 +1,141 @@
+{
+  "todoList": [
+    {
+      "id": 30,
+      "category": "page-migration-modalheader",
+      "description": "Replace remaining bo-modalHead/bo-modalTitle/bo-modalX with ModalHeader in pages/app/reservas/tables/tables.tsx",
+      "file": "pages/app/reservas/tables/tables.tsx",
+      "details": [
+        "Line 2959-2962: Replace bo-modalHead + bo-modalTitle + bo-modalX (close button with onClick and aria-label) with <ModalHeader title={editingTableId ? 'Editar mesa' : 'Nueva mesa'} onClose={() => setEditorOpen(false)} />",
+        "Line 3151: The standalone bo-modalX button for selected booking close - this is just a close button, leave as-is since it has no bo-modalHead parent",
+        "Import ModalHeader from @ui/overlays/ModalHeader"
+      ]
+    },
+    {
+      "id": 31,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/horarios/horarios.tsx",
+      "file": "pages/app/horarios/horarios.tsx"
+    },
+    {
+      "id": 32,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/horarios/turnos/+Page.tsx",
+      "file": "pages/app/horarios/turnos/+Page.tsx"
+    },
+    {
+      "id": 33,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/menus/crear/crear.tsx remaining ones",
+      "file": "pages/app/menus/crear/crear.tsx"
+    },
+    {
+      "id": 34,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/menus/crear/functionalComponents/MenuPreview/MenuPreview.tsx",
+      "file": "pages/app/menus/crear/functionalComponents/MenuPreview/MenuPreview.tsx"
+    },
+    {
+      "id": 35,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/miembros/+Page.tsx",
+      "file": "pages/app/miembros/+Page.tsx"
+    },
+    {
+      "id": 36,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/miembros/@memberId/+Page.tsx",
+      "file": "pages/app/miembros/@memberId/+Page.tsx"
+    },
+    {
+      "id": 37,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/miembros/@memberId/contrato/+Page.tsx",
+      "file": "pages/app/miembros/@memberId/contrato/+Page.tsx"
+    },
+    {
+      "id": 38,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/miembros/@memberId/estadisticas/+Page.tsx",
+      "file": "pages/app/miembros/@memberId/estadisticas/+Page.tsx"
+    },
+    {
+      "id": 39,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/miembros/roles/+Page.tsx",
+      "file": "pages/app/miembros/roles/+Page.tsx"
+    },
+    {
+      "id": 40,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/miembros/roles/roles/roles.tsx",
+      "file": "pages/app/miembros/roles/roles/roles.tsx"
+    },
+    {
+      "id": 41,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/config/config.tsx remaining ones",
+      "file": "pages/app/reservas/config/config.tsx"
+    },
+    {
+      "id": 42,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/config/functionalComponents/ConfigDayManager/helpers/ConfigDayManager.helpers.tsx",
+      "file": "pages/app/reservas/config/functionalComponents/ConfigDayManager/helpers/ConfigDayManager.helpers.tsx"
+    },
+    {
+      "id": 43,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/config/functionalComponents/MandatoryMenuConfig/MandatoryMenuConfig.tsx",
+      "file": "pages/app/reservas/config/functionalComponents/MandatoryMenuConfig/MandatoryMenuConfig.tsx"
+    },
+    {
+      "id": 44,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/functionalComponents/BookingDetailsPanel/BookingDetailsPanel.tsx",
+      "file": "pages/app/reservas/functionalComponents/BookingDetailsPanel/BookingDetailsPanel.tsx"
+    },
+    {
+      "id": 45,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/functionalComponents/BookingEditor/BookingEditor.tsx",
+      "file": "pages/app/reservas/functionalComponents/BookingEditor/BookingEditor.tsx"
+    },
+    {
+      "id": 46,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx",
+      "file": "pages/app/reservas/tables/functionalComponents/TableLegend/TableLegend.tsx"
+    },
+    {
+      "id": 47,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/reservas/tables/tables.tsx",
+      "file": "pages/app/reservas/tables/tables.tsx"
+    },
+    {
+      "id": 48,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/website/+Page.tsx remaining ones",
+      "file": "pages/app/website/+Page.tsx"
+    },
+    {
+      "id": 49,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panel patterns with Panel component in pages/app/website/website/website.tsx remaining ones",
+      "file": "pages/app/website/website/website.tsx"
+    },
+    {
+      "id": 50,
+      "category": "page-migration-panel",
+      "description": "Replace bo-panelTitle pattern with Panel component in pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailHero/FoodDetailHero.tsx",
+      "file": "pages/app/comida/@foodType/@foodId/functionalComponents/FoodDetailHero/FoodDetailHero.tsx"
+    },
+    {
+      "id": 51,
+      "category": "page-migration-panel",
+      "description": "Replace remaining bo-panelTitle patterns in pages/app/fichaje/+Page.tsx",
+      "file": "pages/app/fichaje/+Page.tsx"
+    }
+  ]
+}

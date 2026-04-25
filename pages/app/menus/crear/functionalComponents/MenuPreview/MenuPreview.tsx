@@ -1,6 +1,7 @@
 import React from "react";
 import { Eye, Settings2 } from "lucide-react";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
+import { Panel } from "../../../../../../ui/shell/Panel";
 
 export type MenuPreviewProps = {
   previewThemeLoading: boolean;
@@ -79,9 +80,9 @@ export function MenuPreview({
         </div>
       ) : previewNeedsUpgrade ? (
         <section className="bo-previewUpgrade" aria-label="Upgrade premium" data-testid="menu-preview-upgrade-section">
-          <div className="bo-previewUpgradeAura bo-previewUpgradeAura--one" aria-hidden="true" / data-slot="menuPreview-previewUpgradeAura--one">
-          <div className="bo-previewUpgradeAura bo-previewUpgradeAura--two" aria-hidden="true" / data-slot="menuPreview-previewUpgradeAura--two">
-          <div className="bo-previewUpgradeAura bo-previewUpgradeAura--three" aria-hidden="true" / data-slot="menuPreview-previewUpgradeAura--three">
+          <div className="bo-previewUpgradeAura bo-previewUpgradeAura--one" aria-hidden="true" data-slot="menuPreview-previewUpgradeAura--one" />
+          <div className="bo-previewUpgradeAura bo-previewUpgradeAura--two" aria-hidden="true" data-slot="menuPreview-previewUpgradeAura--two" />
+          <div className="bo-previewUpgradeAura bo-previewUpgradeAura--three" aria-hidden="true" data-slot="menuPreview-previewUpgradeAura--three" />
           <div className="bo-previewUpgradeBadge" data-slot="menuPreview-previewUpgradeBadge">Premium</div>
           <h3 className="bo-previewUpgradeTitle" data-slot="menuPreview-previewUpgradeTitle">Desbloquea la web de menus premium</h3>
           <p className="bo-previewUpgradeText" data-slot="menuPreview-previewUpgradeText">

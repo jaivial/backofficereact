@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { formatCurrency } from "../../../../../api/types";
+import { Card } from "../../../../../ui/shell/Card";
 
 interface Invoice {
   id: number;
@@ -27,7 +28,7 @@ function formatDate(dateStr: string): string {
 
 export function InvoiceList({ invoices, expanded, onToggle }: InvoiceListProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="invoice-list">
+    <Card variant="tailwind" data-ui="invoice-list">
       <button
         onClick={onToggle}
         className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
@@ -72,6 +73,6 @@ export function InvoiceList({ invoices, expanded, onToggle }: InvoiceListProps) 
           </tbody>
         </table>
       )}
-    </div>
+    </Card>
   );
 }

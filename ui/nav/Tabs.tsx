@@ -184,7 +184,7 @@ export function Tabs({
         return (
           <motion.a
             key={t.id}
-            className={`bo-tab${active ? " is-active" : ""}`}
+            className={cn("bo-tab", active && "is-active")}
             href={href}
             aria-current={active ? "page" : undefined}
             data-testid={`tab-${t.id}`}

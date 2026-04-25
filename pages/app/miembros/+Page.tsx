@@ -14,6 +14,7 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { createClient } from "../../../api/client";
 import { Modal } from "../../../ui/overlays/Modal";
+import { Panel } from "../../../ui/shell/Panel";
 
 function initials(firstName: string, lastName: string) {
   const a = firstName.trim()[0] ?? "";
@@ -209,12 +210,7 @@ export default function Page() {
         })}
 
         {members.length === 0 ? (
-          <div className="bo-panel bo-panel--empty" data-slot="miembros-panel--empty">
-            <div className="bo-panelHead" data-slot="miembros-panelHead">
-              <div className="bo-panelTitle" data-slot="miembros-panelTitle">Sin miembros</div>
-              <div className="bo-panelMeta" data-slot="miembros-panelMeta">No hay miembros cargados todavía para este restaurante.</div>
-            </div>
-          </div>
+          <Panel className="bo-panel--empty" data-slot="miembros-panel--empty" title="Sin miembros" meta="No hay miembros cargados todavía para este restaurante." />
         ) : null}
       </div>
 

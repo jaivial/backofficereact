@@ -211,7 +211,7 @@ export function SpinWheel({
               <button
                 key={option}
                 type="button"
-                className={`bo-spinWheelItem${idx === activeIndex ? " is-active" : ""}`}
+                className={cn("bo-spinWheelItem", idx === activeIndex && "is-active")}
                 data-role="wheelItem"
                 data-state={idx === activeIndex ? "selected" : "normal"}
                 data-index={idx}

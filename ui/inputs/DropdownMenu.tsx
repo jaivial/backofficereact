@@ -239,7 +239,7 @@ export function DropdownMenu({
               key={it.id}
               data-menuitem
               type="button"
-              className={`bo-menuItem${it.tone === "danger" ? " is-danger" : ""}`}
+              className={cn("bo-menuItem", it.tone === "danger" && "is-danger")}
               role="menuitem"
               onClick={() => {
                 close();

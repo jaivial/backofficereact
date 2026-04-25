@@ -33,7 +33,7 @@ export function ToastStack({
         {toasts.map((t) => (
           <motion.div
             key={t.id}
-            className={`bo-toast bo-toast--glass bo-toast--${t.kind}`}
+            className={cn("bo-toast", "bo-toast--glass", `bo-toast--${t.kind}`)}
             initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}

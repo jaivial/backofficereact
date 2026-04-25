@@ -3,6 +3,7 @@ import { CircleDollarSign, Hash, List, Percent, Receipt, Eye, Plus, X, Trash2, C
 import type { InvoiceLineItem, InvoiceLineItemInput } from "../../../../api/types";
 import { CURRENCY_SYMBOLS, type CurrencyCode } from "../../../../api/types";
 import { Modal } from "../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 
 export interface LineItemsRef {
@@ -295,18 +296,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           onClose={closeLineItemDetails}
           size="sm"
         >
-          <div className="bo-modalHead" data-slot="lineItems-modalHead">
-            <h3 className="bo-modalTitle" data-slot="lineItems-modalTitle">Detalle de línea {lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}</h3>
-            <button
-              type="button"
-              className="bo-btn bo-btn--ghost bo-btn--sm"
-              onClick={closeLineItemDetails}
-              aria-label="Cerrar detalle de línea"
-              data-testid="line-item-close-details"
-            >
-              <X size={16} />
-            </button>
-          </div>
+          <ModalHeader title={`Detalle de línea ${lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}`} onClose={closeLineItemDetails} />
 
           <div className="bo-lineItemsDetail" data-slot="lineItems-lineItemsDetail">
             <div className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">

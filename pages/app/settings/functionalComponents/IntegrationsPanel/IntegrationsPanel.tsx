@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { Select } from "../../../../../ui/inputs/Select";
+import { Panel } from "../../../../../ui/shell/Panel";
 import type { RestaurantIntegrations } from "../../../../../api/types";
 
 const EVENT_OPTIONS = [
@@ -89,13 +90,8 @@ export function IntegrationsPanel({ integrations, busy, onIntegrationsChange, on
   }, [recipientsText, onIntegrationsChange, onSave]);
 
   return (
-    <div className="bo-panel" aria-label="Integraciones" data-ui="integrations-panel">
-      <div className="bo-panelHead" data-slot="panelHead">
-        <div className="bo-panelTitle" data-ui="panelTitle">Integraciones</div>
-        <div className="bo-panelMeta" data-ui="panelMeta">n8n, eventos y WhatsApp</div>
-      </div>
-      <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack" data-slot="integrationsPanel-stack">
+    <Panel title="Integraciones" meta="n8n, eventos y WhatsApp" aria-label="Integraciones" data-ui="integrations-panel">
+      <div className="bo-stack" data-slot="integrationsPanel-stack">
           <label className="bo-field" data-ui="n8nField">
             <div className="bo-label" data-slot="fieldLabel">n8n Webhook URL</div>
             <input
@@ -180,7 +176,6 @@ export function IntegrationsPanel({ integrations, busy, onIntegrationsChange, on
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Panel>
   );
 }

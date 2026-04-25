@@ -54,7 +54,7 @@ export function ConfirmDialog({
         </button>
         <button
           data-ui="confirm-btn"
-          className={`bo-btn bo-btn--primary${danger ? " bo-btn--danger" : ""}`}
+          className={cn("bo-btn", "bo-btn--primary", danger && "bo-btn--danger")}
           type="button"
           onClick={() => void onConfirm()}
           disabled={busy}

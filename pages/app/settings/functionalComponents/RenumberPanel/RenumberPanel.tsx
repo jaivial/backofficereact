@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { InvoiceRenumberAudit, InvoiceRenumberPreview, RestaurantInvoiceSettings } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 interface RenumberPanelProps {
   renumberStartingNumber: number;
@@ -35,12 +36,7 @@ export function RenumberPanel({
   onShowConfirmChange,
 }: RenumberPanelProps) {
   return (
-    <div className="bo-panel" aria-label="Renumerar facturas" data-ui="renumber-panel">
-      <div className="bo-panelHead" data-slot="panelHead">
-        <div className="bo-panelTitle" data-ui="panelTitle">Renumerar facturas</div>
-        <div className="bo-panelMeta" data-ui="panelMeta">Reasigna numeros de factura de forma masiva</div>
-      </div>
-      <div className="bo-panelBody" data-slot="panelBody">
+    <Panel aria-label="Renumerar facturas" data-ui="renumber-panel" title="Renumerar facturas" meta="Reasigna numeros de factura de forma masiva">
         <div className="bo-stack" data-slot="renumberPanel-stack">
           <div className="bo-mutedText" style={{ marginBottom: 16 }} data-ui="description">
             Esta herramienta permite renumerar todas las facturas existentes. Se mantendra un registro de auditoria con los cambios realizados. Es recomendable previsualizar antes de aplicar.
@@ -177,7 +173,6 @@ export function RenumberPanel({
             )}
           </div>
         </div>
-      </div>
 
       <ConfirmDialog
         isOpen={showConfirmApply}
@@ -189,6 +184,6 @@ export function RenumberPanel({
         onCancel={() => onShowConfirmChange(false)}
         busy={renumberLoading}
       />
-    </div>
+    </Panel>
   );
 }

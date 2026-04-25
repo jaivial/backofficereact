@@ -21,6 +21,8 @@ import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
+import { Panel } from "../../../../ui/shell/Panel";
+import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 
 import { buildHalfHourSlots, todayISO } from "./helpers/configHelpers";
 import { openingModeOptions } from "./constants/config.constants";
@@ -211,14 +213,16 @@ export default function Page() {
 
   return (
     <section data-ui="reservas-config" aria-label="Configuración diaria reservas">
-      <div data-slot="toolbar" className="bo-toolbar">
-        <div data-slot="toolbar-left" className="bo-toolbarLeft">
-          <DateDropdown value={date} onChange={onDateChange} data-ui="date-dropdown" />
-          <button data-action="reload" className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy} data-ui="reload-btn">
-            Recargar
-          </button>
-        </div>
-      </div>
+      <PageToolbar
+        left={
+          <>
+            <DateDropdown value={date} onChange={onDateChange} data-ui="date-dropdown" />
+            <button data-action="reload" className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy} data-ui="reload-btn">
+              Recargar
+            </button>
+          </>
+        }
+      />
 
       <div data-slot="panels-stack" className="bo-stack">
         <ReservationDayPanel
@@ -383,11 +387,7 @@ export default function Page() {
                 </div>
               </div>
 
-              <div data-ui="tables-panel" className="bo-panel">
-                <div data-slot="panel-head" className="bo-panelHead">
-                  <div data-role="title" className="bo-panelTitle">Mesas</div>
-                </div>
-                <div data-slot="panel-body" className="bo-panelBody bo-row bo-configTableLimitsRow">
+              <Panel data-ui="tables-panel" title="Mesas" bodyClassName="bo-row bo-configTableLimitsRow">
                   <div data-slot="mesas-dos" className="bo-field bo-field--inline bo-configTableLimitField">
                     <div data-role="label" className="bo-label">Mesas de 2</div>
                     <Select
@@ -410,15 +410,9 @@ export default function Page() {
                       data-ui="mesas-tres-select"
                     />
                   </div>
-                </div>
-              </div>
+              </Panel>
 
-              <div data-ui="floors-panel" className="bo-panel">
-                <div data-slot="panel-head" className="bo-panelHead">
-                  <div data-role="title" className="bo-panelTitle">Plantas activas del día</div>
-                  <div data-slot="meta" className="bo-panelMeta">{floors.length} plantas</div>
-                </div>
-                <div data-slot="panel-body" className="bo-panelBody">
+              <Panel data-ui="floors-panel" title="Plantas activas del día" meta={`${floors.length} plantas`}>
                   <div data-ui="floor-rows" className="bo-floorRows">
                     {floors.map((floor) => (
                       <div key={floor.id} data-ui="floor-row" className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
@@ -438,8 +432,7 @@ export default function Page() {
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
+              </Panel>
             </motion.div>
           ) : null}
         </AnimatePresence>

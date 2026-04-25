@@ -181,7 +181,7 @@ export function Select({
             {open && (
               <motion.div
                 ref={listRef}
-                className={`bo-selectList${direction === "up" ? " bo-selectList--up" : ""}${listClassName ? ` ${listClassName}` : ""}`}
+                className={cn("bo-selectList", direction === "up" && "bo-selectList--up", listClassName)}
                 role="listbox"
                 tabIndex={-1}
                 onKeyDown={onListKey}
@@ -205,7 +205,7 @@ export function Select({
                     <button
                       key={o.value}
                       type="button"
-                      className={`bo-selectItem${isSel ? " is-selected" : ""}${isAct ? " is-active" : ""}`}
+                      className={cn("bo-selectItem", isSel && "is-selected", isAct && "is-active")}
                       role="option"
                       aria-selected={isSel}
                       tabIndex={idx === activeIdx ? 0 : -1}

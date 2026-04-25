@@ -13,6 +13,8 @@ import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { TimeEntriesEditor, type EditableTimeEntry } from "../../../../ui/widgets/TimeEntriesEditor";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { HorariosRosterTable, type HorariosRosterRow, type HorariosRosterTableView } from "../../../../ui/widgets/HorariosRosterTable";
+import { Panel } from "../../../../ui/shell/Panel";
+import { cn } from "../../../../ui/shadcn/utils";
 import { fullName } from "../../../../lib/member";
 
 type PageData = {
@@ -374,21 +376,22 @@ export default function Page() {
 
   return (
     <section aria-label="Edicion de turnos" className="bo-turnosPage" data-testid="horarios-turnos-section">
-      <div className="bo-panel" data-testid="horarios-turnos-panel">
-        <div className="bo-panelHead" data-testid="horarios-turnos-head">
-          <div data-slot="turnos-div">
-            <div className="bo-panelTitle bo-horariosTitle" data-testid="horarios-turnos-title">
-              <CalendarClock size={16} strokeWidth={1.8} />
-              Turnos
-            </div>
-            <div className="bo-panelMeta" data-testid="horarios-turnos-description">Editar tiempo registrado por miembro y fecha.</div>
-          </div>
+      <Panel
+        data-testid="horarios-turnos-panel"
+        title={
+          <span className="bo-horariosTitle" data-testid="horarios-turnos-title">
+            <CalendarClock size={16} strokeWidth={1.8} />
+            Turnos
+          </span>
+        }
+        meta="Editar tiempo registrado por miembro y fecha."
+        actions={
           <div className="bo-horariosPreviewActions" data-testid="horarios-turnos-actions">
             <DatePicker value={date} onChange={(nextDate) => void selectDate(nextDate)} />
             <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Cambiar vista" data-testid="horarios-turnos-view-tabs">
               <button
                 type="button"
-                className={`bo-tab${view === "grid" ? " is-active" : ""}`}
+                className={cn("bo-tab", view === "grid" && "is-active")}
                 role="tab"
                 aria-selected={view === "grid"}
                 onClick={() => setView("grid")}
@@ -401,7 +404,7 @@ export default function Page() {
               </button>
               <button
                 type="button"
-                className={`bo-tab${view === "table" ? " is-active" : ""}`}
+                className={cn("bo-tab", view === "table" && "is-active")}
                 role="tab"
                 aria-selected={view === "table"}
                 onClick={() => setView("table")}
@@ -414,9 +417,10 @@ export default function Page() {
               </button>
             </div>
           </div>
-        </div>
+        }
+        bodyClassName={cn("bo-turnosBody", view === "table" && "bo-turnosBody--table")}
+      >
 
-        <div className={`bo-panelBody bo-turnosBody${view === "table" ? " bo-turnosBody--table" : ""}`} data-testid="horarios-turnos-body">
           {view === "grid" ? (
             <MemberPicker
               title="Miembros"
@@ -504,8 +508,7 @@ export default function Page() {
             />
             <div className="bo-turnosTotal" data-testid="horarios-turnos-total">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
           </section>
-        </div>
-      </div>
+        </Panel>
 
       {shiftModalMember ? (
         <MemberShiftModal member={shiftModalMember} selectedDate={date} open={shiftModalOpen} onClose={onCloseShiftModal} />

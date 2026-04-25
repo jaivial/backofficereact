@@ -47,7 +47,7 @@ export function HorariosRosterTable({
               <tr
                 key={row.member.id}
                 data-ui={`rosterRow-${row.member.id}`}
-                className={`bo-horariosRosterRow is-clickable${isLive ? " is-live" : ""}${row.schedule ? " is-assigned" : ""}`}
+                className={cn("bo-horariosRosterRow", "is-clickable", isLive && "is-live", row.schedule && "is-assigned")}
                 onClick={() => onRowClick(row.member)}
                 role="button"
                 tabIndex={0}
@@ -68,7 +68,7 @@ export function HorariosRosterTable({
                   </div>
                 </td>
                 <td data-col="shift" className="bo-horariosRosterCol--shift" data-slot="horariosRosterTable-horariosRosterCol--shift">
-                  <span data-slot="shiftLabel" className={`bo-horariosRosterShift${row.schedule ? "" : " is-empty"}`}>
+                  <span data-slot="shiftLabel" className={cn("bo-horariosRosterShift", !row.schedule && "is-empty")}>
                     {row.schedule ? `${row.schedule.startTime} - ${row.schedule.endTime}` : "Sin asignar"}
                   </span>
                 </td>

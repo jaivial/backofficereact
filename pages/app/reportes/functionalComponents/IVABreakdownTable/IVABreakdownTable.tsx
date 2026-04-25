@@ -1,5 +1,6 @@
 import React from "react";
 import { formatCurrency } from "../../../../../api/types";
+import { Card } from "../../../../../ui/shell/Card";
 
 interface IVABreakdownItem {
   iva_rate: number;
@@ -27,7 +28,7 @@ interface IVABreakdownTableProps {
 
 export function IVABreakdownTable({ breakdown, summary, includeCreditNotes }: IVABreakdownTableProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="iva-breakdown-table">
+    <Card variant="tailwind" data-ui="iva-breakdown-table">
       <table className="min-w-full divide-y divide-gray-200" data-slot="iVABreakdownTable-divide-gray-200">
         <thead className="bg-gray-50" data-slot="iVABreakdownTable-bg-gray-50">
           <tr data-slot="iVABreakdownTable-tr">
@@ -80,6 +81,6 @@ export function IVABreakdownTable({ breakdown, summary, includeCreditNotes }: IV
           </tr>
         </tfoot>
       </table>
-    </div>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
+import { Panel } from "../../../../ui/shell/Panel";
 import { InstallGuide } from "./InstallGuide";
 import { WidgetPreview } from "./WidgetPreview";
 import { ColorPicker } from "./ColorPicker";
@@ -96,66 +97,48 @@ export function BookingManager() {
 
   return (
     <div className="bo-stack" data-ui="booking-manager">
-      <div className="bo-panel" data-slot="bookingManager-panel">
-        <div className="bo-panelHead" data-slot="bookingManager-panelHead">
-          <div className="bo-panelTitle" data-slot="bookingManager-panelTitle">Booking Manager</div>
-          <div className="bo-panelMeta" data-slot="bookingManager-panelMeta">Widget de reservas embebible para webs de clientes</div>
-        </div>
-        <div className="bo-panelBody" data-slot="bookingManager-panelBody">
-          <InstallGuide restaurantId="1" />
-        </div>
-      </div>
+      <Panel title="Booking Manager" meta="Widget de reservas embebible para webs de clientes" data-slot="bookingManager-panel">
+        <InstallGuide restaurantId="1" />
+      </Panel>
 
-      <div className="bo-panel" data-slot="bookingManager-panel">
-        <div className="bo-panelHead" data-slot="bookingManager-panelHead">
-          <div className="bo-panelTitle" data-slot="bookingManager-panelTitle">Vista previa</div>
-          <div className="bo-panelMeta" data-slot="bookingManager-panelMeta">Así se verá el widget en la web del cliente</div>
-        </div>
-        <div className="bo-panelBody" data-slot="bookingManager-panelBody">
-          <WidgetPreview settings={settings} />
-        </div>
-      </div>
+      <Panel title="Vista previa" meta="Así se verá el widget en la web del cliente" data-slot="bookingManager-panel">
+        <WidgetPreview settings={settings} />
+      </Panel>
 
-      <div className="bo-panel" data-slot="bookingManager-panel">
-        <div className="bo-panelHead" data-slot="bookingManager-panelHead">
-          <div className="bo-panelTitle" data-slot="bookingManager-panelTitle">Personalización de colores</div>
-          <div className="bo-panelMeta" data-slot="bookingManager-panelMeta">Guardado automático al cambiar</div>
+      <Panel title="Personalización de colores" meta="Guardado automático al cambiar" data-slot="bookingManager-panel">
+        <div className="bo-widget-colors-grid" data-ui="colors-grid">
+          <ColorPicker
+            label="Color primario"
+            value={settings.primary_color}
+            onChange={(v) => handleColorChange("primary_color", v)}
+          />
+          <ColorPicker
+            label="Color de éxito"
+            value={settings.success_color}
+            onChange={(v) => handleColorChange("success_color", v)}
+          />
+          <ColorPicker
+            label="Color de borde"
+            value={settings.border_color}
+            onChange={(v) => handleColorChange("border_color", v)}
+          />
+          <ColorPicker
+            label="Color de fondo"
+            value={settings.surface_color}
+            onChange={(v) => handleColorChange("surface_color", v)}
+          />
+          <ColorPicker
+            label="Color de texto"
+            value={settings.text_color}
+            onChange={(v) => handleColorChange("text_color", v)}
+          />
+          <ColorPicker
+            label="Color secundario"
+            value={settings.muted_color}
+            onChange={(v) => handleColorChange("muted_color", v)}
+          />
         </div>
-        <div className="bo-panelBody" data-slot="bookingManager-panelBody">
-          <div className="bo-widget-colors-grid" data-ui="colors-grid">
-            <ColorPicker
-              label="Color primario"
-              value={settings.primary_color}
-              onChange={(v) => handleColorChange("primary_color", v)}
-            />
-            <ColorPicker
-              label="Color de éxito"
-              value={settings.success_color}
-              onChange={(v) => handleColorChange("success_color", v)}
-            />
-            <ColorPicker
-              label="Color de borde"
-              value={settings.border_color}
-              onChange={(v) => handleColorChange("border_color", v)}
-            />
-            <ColorPicker
-              label="Color de fondo"
-              value={settings.surface_color}
-              onChange={(v) => handleColorChange("surface_color", v)}
-            />
-            <ColorPicker
-              label="Color de texto"
-              value={settings.text_color}
-              onChange={(v) => handleColorChange("text_color", v)}
-            />
-            <ColorPicker
-              label="Color secundario"
-              value={settings.muted_color}
-              onChange={(v) => handleColorChange("muted_color", v)}
-            />
-          </div>
-        </div>
-      </div>
+      </Panel>
     </div>
   );
 }

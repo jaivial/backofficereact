@@ -53,7 +53,7 @@ export function MemberPicker({
           <button
             key={item.id}
             type="button"
-            className={`bo-memberPickerBtn bo-memberPickerBtn--glass${selectedId === item.id ? " is-active" : ""}`}
+            className={cn("bo-memberPickerBtn", "bo-memberPickerBtn--glass", selectedId === item.id && "is-active")}
             onClick={() => onSelect(item.id)}
             data-testid="member-picker-item"
           >

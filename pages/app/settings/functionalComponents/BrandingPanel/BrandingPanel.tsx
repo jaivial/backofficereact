@@ -1,5 +1,6 @@
 import React from "react";
 import type { RestaurantBranding } from "../../../../../api/types";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 interface BrandingPanelProps {
   branding: RestaurantBranding;
@@ -13,13 +14,8 @@ export function BrandingPanel({ branding, busy, onBrandingChange, onSave }: Bran
   const accent = branding.accentColor?.trim() || "transparent";
 
   return (
-    <div className="bo-panel" aria-label="Branding" data-ui="branding-panel">
-      <div className="bo-panelHead" data-slot="panelHead">
-        <div className="bo-panelTitle" data-ui="panelTitle">Branding</div>
-        <div className="bo-panelMeta" data-ui="panelMeta">Nombre, logo y emails</div>
-      </div>
-      <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack" data-slot="brandingPanel-stack">
+    <Panel title="Branding" meta="Nombre, logo y emails" aria-label="Branding" data-ui="branding-panel">
+      <div className="bo-stack" data-slot="brandingPanel-stack">
           <label className="bo-field" data-ui="brandNameField">
             <div className="bo-label" data-slot="fieldLabel">Nombre de marca</div>
             <input
@@ -104,7 +100,6 @@ export function BrandingPanel({ branding, busy, onBrandingChange, onSave }: Bran
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Panel>
   );
 }

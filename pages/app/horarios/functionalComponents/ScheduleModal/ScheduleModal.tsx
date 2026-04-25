@@ -3,6 +3,8 @@ import { Clock3 } from "lucide-react";
 
 import type { Member } from "../../../../../api/types";
 import { Modal } from "../../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
+import { Panel } from "../../../../../ui/shell/Panel";
 import { SpinWheel } from "../../../../../ui/inputs/SpinWheel";
 import { HOUR_OPTIONS, MINUTE_OPTIONS } from "../../constants";
 import { fullName, fromMinutes, splitHHMM, toMinutes } from "../../utils";
@@ -55,31 +57,16 @@ export function ScheduleModal({
       widthPx={760}
       className="max-md:w-[95vw] md:w-[620px]"
     >
-      <div className="bo-modalHead" data-slot="modalHead">
-        <div className="bo-modalTitle" data-ui="modalTitle">Asignar horario</div>
-        <button
-          className="bo-modalX"
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          data-role="closeBtn"
-        >
-          ×
-        </button>
-      </div>
+      <ModalHeader title="Asignar horario" onClose={onClose} />
 
       <div className="bo-modalOutline sm:mt-3 mt-2" data-ui="modalContent">
-        <div className="bo-panel bo-horariosModalPanel" data-role="modalPanel">
-          <div className="bo-panelHead" data-slot="panelHead">
-            <div data-slot="panelHeadInfo">
-              <div className="bo-panelTitle text-sm sm:text-base" data-ui="memberName">
-                {selectedMember ? fullName(selectedMember) : "Miembro"}
-              </div>
-              <div className="bo-panelMeta text-xs" data-ui="selectedDate">Fecha {selectedDate}</div>
-            </div>
-          </div>
-
-          <div className="bo-panelBody bo-horariosModalBody sm:gap-4 gap-3" data-slot="panelBody">
+        <Panel
+          className="bo-horariosModalPanel"
+          data-role="modalPanel"
+          title={<span className="text-sm sm:text-base">{selectedMember ? fullName(selectedMember) : "Miembro"}</span>}
+          meta={<span className="text-xs">Fecha {selectedDate}</span>}
+          bodyClassName="bo-horariosModalBody sm:gap-4 gap-3"
+        >
             <div className="bo-horariosWheels" data-ui="wheelsGrid">
               <div className="bo-horariosWheelGroup" data-role="entryWheelCard">
                 <div className="bo-label sm:text-xs text-[11px]" data-ui="entryLabel">Hora de entrada</div>
@@ -142,7 +129,6 @@ export function ScheduleModal({
               <Clock3 className="sm:w-3.5 sm:h-3.5 w-3 h-3" strokeWidth={1.8} data-slot="previewIcon" />
               {`${entryHour}:${entryMinute}`} - {`${exitHour}:${exitMinute}`}
             </div>
-          </div>
 
           <div className="border-t border-[var(--bo-border)] bg-[var(--bo-surface)] px-4 py-3 sm:px-5 sm:py-4 flex flex-row-reverse gap-2 justify-start" data-ui="modalActions">
             <button className="bo-btn bo-btn--primary" type="button" disabled={busy || !selectedMember} onClick={onSave} data-role="saveBtn">
@@ -152,7 +138,7 @@ export function ScheduleModal({
               Cancelar
             </button>
           </div>
-        </div>
+        </Panel>
       </div>
     </Modal>
   );

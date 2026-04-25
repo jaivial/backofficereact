@@ -67,7 +67,7 @@ export function MobileActionButton({
     >
       {loading ? (
         <>
-          <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" / data-slot="mobileActionButton-rounded-full">
+          <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" data-slot="mobileActionButton-rounded-full" />
           <span data-slot="mobileActionButton-ndo">Cargando...</span>
         </>
       ) : (

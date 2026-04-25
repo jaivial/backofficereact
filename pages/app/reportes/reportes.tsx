@@ -7,6 +7,9 @@ import { SimpleTabs, SimpleTabsContent, SimpleTabsList } from "../../../ui/nav/S
 import { StatCard } from "../../../ui/widgets/StatCard";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { Card } from "../../../ui/shell/Card";
+import { EmptyState } from "../../../ui/feedback/EmptyState";
+import { ExportButtonPair } from "../../../ui/actions/ExportButtonPair";
 import { FileText, Filter, FileSpreadsheet, RefreshCw, ChevronDown, ChevronUp, User, Receipt } from "lucide-react";
 import { exportCustomerStatementPDF, exportCustomerStatementCSV, exportIVAPDF, exportIVACSV } from "./helpers/reportExportHelpers";
 
@@ -147,7 +150,7 @@ function CustomerStatementSection({
 
   return (
     <div data-testid="reportes-customer-statement-section">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="reportes-mb-6">
+      <Card variant="tailwind" padding className="mb-6" data-slot="reportes-mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-slot="reportes-gap-4">
           <div data-slot="reportes-div">
             <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Cliente</label>
@@ -192,25 +195,19 @@ function CustomerStatementSection({
             Generar Estado de Cuenta
           </button>
           {customerStatement && (
-            <>
-              <button onClick={handleExportPDF} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                data-testid="reportes-export-pdf-button">
-                <FileText className="w-4 h-4" /> Exportar PDF
-              </button>
-              <button onClick={handleExportCSV} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                data-testid="reportes-export-csv-button">
-                <FileSpreadsheet className="w-4 h-4" /> Exportar Excel
-              </button>
-            </>
+            <ExportButtonPair
+              onExportPdf={handleExportPDF}
+              onExportExcel={handleExportCSV}
+              pdfLabel="Exportar PDF"
+              excelLabel="Exportar Excel"
+            />
           )}
         </div>
-      </div>
+      </Card>
 
       {customerStatement ? (
         <>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="reportes-mb-6">
+          <Card variant="tailwind" padding className="mb-6" data-slot="reportes-mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4" data-slot="reportes-info-cliente">Información del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-slot="reportes-gap-4">
               <div data-slot="reportes-text-gray-500"><span className="text-sm text-gray-500">Nombre</span><p className="text-lg font-medium">{customerStatement.customer_name}</p></div>
@@ -218,7 +215,7 @@ function CustomerStatementSection({
               {customerStatement.customer_email && <div><span className="text-sm text-gray-500">Email</span><p className="text-lg font-medium">{customerStatement.customer_email}</p></div>}
               <div data-slot="reportes-text-gray-500"><span className="text-sm text-gray-500">Periodo</span><p className="text-lg font-medium">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p></div>
             </div>
-          </div>
+          </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" data-slot="reportes-mb-6">
             <StatCard title="Saldo Inicial" value={formatCurrency(customerStatement.opening_balance, "EUR")} icon="calendar" />
@@ -229,7 +226,7 @@ function CustomerStatementSection({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-slot="reportes-gap-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+            <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="reportes-bg-gray-50">
                 <h3 className="text-lg font-semibold" data-slot="reportes-facturas-list">Facturas ({customerStatement.invoices.length})</h3>
               </div>
@@ -253,9 +250,9 @@ function CustomerStatementSection({
                   </tbody>
                 </table>
               ) : <div className="p-6 text-center text-gray-500">No hay facturas</div>}
-            </div>
+            </Card>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+            <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="reportes-bg-gray-50">
                 <h3 className="text-lg font-semibold" data-slot="reportes-pagos-list">Pagos ({customerStatement.payments.length})</h3>
               </div>
@@ -279,15 +276,15 @@ function CustomerStatementSection({
                   </tbody>
                 </table>
               ) : <div className="p-6 text-center text-gray-500">No hay pagos</div>}
-            </div>
+            </Card>
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" data-slot="reportes-text-center">
-          <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="reportes-sin-estado-cuenta">Sin estado de cuenta</h3>
-          <p className="text-gray-500" data-slot="reportes-text-gray-500">Selecciona un cliente y un periodo para generar</p>
-        </div>
+        <EmptyState variant="tailwind" data-slot="reportes-text-center"
+          icon={<Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />}
+          title="Sin estado de cuenta"
+          description="Selecciona un cliente y un periodo para generar"
+        />
       )}
     </div>
   );
@@ -366,7 +363,7 @@ function IVAReportSection({
 
   return (
     <div data-testid="reportes-iva-section">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="reportes-mb-6">
+      <Card variant="tailwind" padding className="mb-6" data-slot="reportes-mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-slot="reportes-gap-4">
           <div data-slot="reportes-div">
             <label className="block text-sm font-medium text-gray-700 mb-1" data-slot="reportes-mb-1">Periodo</label>
@@ -404,21 +401,15 @@ function IVAReportSection({
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />} Generar Reporte
           </button>
           {report && (
-            <>
-              <button onClick={handleExportPDF} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                data-testid="reportes-iva-export-pdf-button">
-                <FileText className="w-4 h-4" /> Exportar PDF
-              </button>
-              <button onClick={handleExportCSV} disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                data-testid="reportes-iva-export-csv-button">
-                <FileSpreadsheet className="w-4 h-4" /> Exportar Excel
-              </button>
-            </>
+            <ExportButtonPair
+              onExportPdf={handleExportPDF}
+              onExportExcel={handleExportCSV}
+              pdfLabel="Exportar PDF"
+              excelLabel="Exportar Excel"
+            />
           )}
         </div>
-      </div>
+      </Card>
 
       {report ? (
         <>
@@ -459,7 +450,7 @@ function IVAReportSection({
             </SimpleTabsList>
 
             <SimpleTabsContent value="breakdown">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+              <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                   <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Tipo IVA</th>
@@ -490,11 +481,11 @@ function IVAReportSection({
                     {includeCreditNotes && <><td className="px-6 py-4 text-center font-bold">{report.summary.credit_note_count}</td><td className="px-6 py-4 text-right font-bold">{formatCurrency(report.summary.credit_note_base, "EUR")}</td><td className="px-6 py-4 text-right font-bold">{formatCurrency(report.summary.credit_note_iva, "EUR")}</td></>}
                   </tr></tfoot>
                 </table>
-              </div>
+              </Card>
             </SimpleTabsContent>
 
             <SimpleTabsContent value="quarterly">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+              <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                   <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-slot="reportes-uppercase">Trimestre</th>
@@ -521,11 +512,11 @@ function IVAReportSection({
                     )}
                   </tbody>
                 </table>
-              </div>
+              </Card>
             </SimpleTabsContent>
 
             <SimpleTabsContent value="invoices">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="reportes-overflow-hidden">
+              <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <button onClick={() => setExpandedInvoices(!expandedInvoices)} className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
                   data-testid="reportes-toggle-invoices-button">
                   <span className="text-sm font-medium" data-slot="reportes-font-medium">Lista de facturas ({report.invoices.length})</span>
@@ -561,20 +552,21 @@ function IVAReportSection({
                     </tbody>
                   </table>
                 )}
-              </div>
+              </Card>
             </SimpleTabsContent>
           </SimpleTabs>
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" data-slot="reportes-text-center">
-          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="reportes-sin-reporte-generado">No hay reporte generado</h3>
-          <p className="text-gray-500 mb-4" data-slot="reportes-mb-4">Selecciona un periodo y genera el reporte</p>
+        <EmptyState variant="tailwind" data-slot="reportes-text-center"
+          icon={<FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />}
+          title="No hay reporte generado"
+          description="Selecciona un periodo y genera el reporte"
+        >
           <button onClick={handleGenerate} disabled={loading} data-testid="reportes-generate-btn"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />} Generar Reporte
           </button>
-        </div>
+        </EmptyState>
       )}
     </div>
   );
@@ -597,7 +589,7 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6" data-slot="reportes-mb-6">
+      <Card variant="tailwind" className="mb-6" data-slot="reportes-mb-6">
         <SimpleTabs defaultValue="iva">
           <SimpleTabsList className="border-b">
             <SimpleTabsContent value="iva" trigger="Reportes de IVA" />
@@ -612,7 +604,7 @@ export default function Page() {
             <IVAReportSection initialReport={data.report} quarterlyBreakdown={data.quarterlyBreakdown} currentYear={currentYear} api={api} />
           </SimpleTabsContent>
         </SimpleTabs>
-      </div>
+      </Card>
     </div>
   );
 }
