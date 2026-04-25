@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { cn } from "../../shadcn/utils";
 
 interface MobileModalProps {
   open: boolean;
@@ -16,7 +17,7 @@ export function MobileModal({
   onClose,
   title,
   children,
-  className = "",
+  className,
   "data-ui": dataUi,
 }: MobileModalProps) {
   useEffect(() => {
@@ -54,17 +55,15 @@ export function MobileModal({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 400 }}
-            className={[
-              "fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none",
-            ].join(" ")}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
             <div
-              className={[
+              className={cn(
                 "pointer-events-auto w-full max-w-sm rounded-2xl bg-[hsl(var(--background))]",
                 "border border-[hsl(var(--border))] shadow-2xl",
                 "flex flex-col max-h-[80vh]",
                 className,
-              ].join(" ")}
+              )}
               data-ui={dataUi}
               role="dialog"
               aria-modal="true"

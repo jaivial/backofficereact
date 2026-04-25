@@ -1,0 +1,2104 @@
+/* Menu wizard */
+.bo-menuWizardPage {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-menuWizardPage .bo-btn.bo-btn--ghost {
+  width: fit-content;
+}
+
+.bo-menuWizardPage .bo-panelBody {
+  padding: 0 7px 16px;
+}
+
+.bo-menuWizardPage .bo-memberCard.bo-dishCard--horizontal {
+  padding: 14px 0;
+}
+
+.bo-menuWizardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-saveTag {
+  min-height: 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bo-faint);
+  display: inline-flex;
+  align-items: center;
+}
+
+.bo-saveTag.is-saving {
+  border-color: var(--bo-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--bo-muted);
+}
+
+.bo-saveTag.is-saved {
+  border-color: rgba(140, 244, 185, 0.32);
+  background: rgba(140, 244, 185, 0.10);
+  color: rgba(140, 244, 185, 0.95);
+}
+
+.bo-saveTag.is-error {
+  border-color: rgba(255, 166, 166, 0.34);
+  background: rgba(255, 166, 166, 0.12);
+  color: rgba(255, 166, 166, 0.95);
+}
+
+.bo-stepBars {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-stepBar {
+  height: 7px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: transparent;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.bo-stepBar.is-done {
+  border-color: rgba(185, 168, 255, 0.32);
+  background: rgba(185, 168, 255, 0.2);
+}
+
+.bo-stepBar.is-active {
+  border-color: rgba(185, 168, 255, 0.62);
+  background: transparent;
+}
+
+.bo-menuWizardPanel {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.12)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.bo-typeIntro {
+  margin: 0;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-normal);
+}
+
+.bo-typeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bo-space-3);
+}
+
+@media (max-width: 980px) {
+  .bo-typeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.bo-typeCard {
+  border-radius: var(--bo-radius-lg);
+  color: var(--bo-text);
+  text-align: left;
+  padding: var(--bo-space-4);
+  min-height: 176px;
+  display: grid;
+  gap: var(--bo-space-2);
+  align-content: start;
+  cursor: pointer;
+  transition:
+    border-color var(--bo-transition-base) var(--bo-ease),
+    background var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease),
+    transform var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-typeCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-typeIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--bo-radius-md);
+  display: inline-grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--bo-accent) 84%, var(--bo-text));
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+}
+
+.bo-typeState {
+  min-height: 24px;
+  padding-inline: var(--bo-space-2);
+  border-radius: var(--bo-radius-full);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 72%, var(--bo-accent));
+  background: color-mix(in srgb, var(--bo-surface) 74%, var(--bo-surface-2));
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-1);
+}
+
+.bo-typeState.is-selected {
+  border-color: color-mix(in srgb, var(--bo-accent) 56%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 16%, transparent);
+  color: color-mix(in srgb, var(--bo-accent) 82%, var(--bo-text));
+}
+
+.bo-typeCard:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--bo-accent) 36%, var(--bo-border));
+  transform: translateY(-1px);
+}
+
+.bo-typeCard:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-typeCard:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bo-typeCard.is-selected {
+  border-color: color-mix(in srgb, var(--bo-accent) 54%, var(--bo-border));
+  box-shadow: 0 14px 26px color-mix(in srgb, var(--bo-accent) 16%, var(--bo-surface-3));
+}
+
+.bo-typeTitle {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-bold);
+  line-height: var(--bo-leading-tight);
+}
+
+.bo-typeDesc {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  line-height: var(--bo-leading-normal);
+}
+
+.bo-typeHint {
+  margin-top: auto;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-faint);
+  line-height: var(--bo-leading-normal);
+}
+
+.bo-typeSoon {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-faint);
+}
+
+.bo-form--menuWizard {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-form--menuWizardBasics {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.bo-menuBasicsMainRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(190px, 0.8fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.bo-menuBasicsMainRow.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bo-menuBasicsField {
+  min-width: 0;
+}
+
+.bo-menuBasicsField--price,
+.bo-menuBasicsPriceToggle {
+  width: 100%;
+  max-width: 260px;
+  justify-self: end;
+}
+
+.bo-menuBasicsPriceToggle {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.bo-menuBasicsSwitchRow {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-menuBasicsActiveToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-menuBasicsActiveToggle .bo-label {
+  margin: 0;
+}
+
+.bo-menuBasicsActiveToggle .bo-mutedText {
+  white-space: nowrap;
+}
+
+.bo-menuPreviewUploadBlock {
+  display: grid;
+  gap: var(--bo-space-2);
+  width: min(100%, 560px);
+  margin-inline: auto;
+}
+
+.bo-menuPreviewDropzone,
+.bo-menuPreviewImageCard {
+  border: 1px dashed var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  background:
+    radial-gradient(circle at 10% 15%, rgba(147, 239, 231, 0.14), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
+    var(--bo-surface-2);
+}
+
+.bo-menuPreviewDropzone {
+  display: grid;
+  gap: var(--bo-space-2);
+  justify-items: center;
+  text-align: center;
+}
+
+.bo-menuPreviewImageCard {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-menuPreviewSkeletonCard {
+  border: 1px dashed var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  background:
+    radial-gradient(circle at 10% 15%, rgba(147, 239, 231, 0.12), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
+    var(--bo-surface-2);
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-menuPreviewSkeletonMedia {
+  width: 100%;
+  height: clamp(160px, 24vw, 260px);
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+}
+
+.bo-menuPreviewSkeletonLines {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-menuPreviewSkeletonLines .bo-skeletonLine {
+  margin: 0;
+}
+
+.bo-menuPreviewImage {
+  display: block;
+  width: 100%;
+  height: clamp(160px, 24vw, 260px);
+  max-height: none;
+  object-fit: cover;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-3) 80%, transparent);
+}
+
+.bo-menuPreviewActions {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-menuPreviewStatus {
+  text-align: center;
+}
+
+.bo-field--full {
+  grid-column: 1 / -1;
+}
+
+.bo-stackFields {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-inlineField {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.bo-inlineField .bo-btn {
+  min-width: 40px;
+}
+
+.bo-menuWizardActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-menuWizardActions--right {
+  justify-content: flex-end;
+}
+
+.bo-menuWizardActionsRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-sectionsBoard {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-reorderGroup {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bo-reorderItem {
+  will-change: transform;
+}
+
+.bo-sectionCard {
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-2) 88%, rgba(136, 142, 156, 0.22));
+  padding: 10px;
+}
+
+:root[data-theme="light"] .bo-sectionCard {
+  border-color: color-mix(in srgb, var(--bo-border-2) 80%, rgba(20, 21, 26, 0.2));
+  background: color-mix(in srgb, var(--bo-surface-3) 86%, rgba(207, 214, 226, 0.72));
+}
+
+.bo-sectionCardHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.bo-sectionReorder {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bo-sectionMoveControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bo-sectionMoveBtn {
+  width: 26px;
+  height: 22px;
+  border-radius: 11px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--bo-faint);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease, transform 160ms ease;
+  transform-origin: center;
+}
+
+.bo-sectionMoveBtn:hover:not(:disabled) {
+  border-color: var(--bo-border-2);
+  color: var(--bo-text);
+}
+
+.bo-sectionMoveBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bo-sectionDrag {
+  color: var(--bo-faint);
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease, transform 160ms ease;
+  touch-action: none;
+}
+
+.bo-sectionDrag:hover {
+  border-color: var(--bo-border-2);
+  color: var(--bo-text);
+}
+
+.bo-sectionDrag:active {
+  cursor: grabbing;
+}
+
+.bo-sectionDrag svg {
+  width: 18px;
+  height: 18px;
+}
+
+.bo-menuWizardFinal {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.bo-editorPane {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.bo-previewDesktopSwitch {
+  display: none;
+}
+
+.bo-previewDesktopSwitchLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bo-text);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.bo-previewPane {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  height: 98dvh;
+  max-height: 100dvh;
+  position: sticky;
+  top: -15px;
+  align-self: start;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 600ms ease, visibility 0s linear 0s;
+}
+
+.bo-previewSwitchGlass {
+  display: none;
+}
+
+.bo-previewSwitchBtn {
+  border: 0;
+  background: transparent;
+  color: var(--bo-muted);
+  min-height: 34px;
+  min-width: 92px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.bo-previewSwitchBtnLabel {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bo-previewSwitchBtnIcon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-previewSwitchBtn.is-active {
+  background: rgba(185, 168, 255, 0.24);
+  color: var(--bo-text);
+}
+
+@media (min-width: 981px) {
+  .bo-previewDesktopSwitch {
+    grid-column: 1 / -1;
+    display: inline-flex;
+    align-items: center;
+    justify-self: flex-end;
+    gap: 10px;
+    border-radius: 999px;
+    border: 1px solid var(--bo-border);
+    background: rgba(20, 22, 30, 0.56);
+    padding: 8px 12px;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-previewPane {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 600ms ease, visibility 0s linear 600ms;
+  }
+
+  .bo-menuWizardFinal.is-previewUndocked {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bo-menuWizardFinal.is-previewUndocked .bo-previewPane {
+    display: none;
+  }
+}
+
+.bo-menuEditorHead {
+  margin-bottom: 0;
+}
+
+.bo-sectionsEditor {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-accordionSection {
+  overflow: hidden;
+}
+
+.bo-accordionHeadRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 8px;
+}
+
+.bo-sectionReorder--accordion {
+  flex: 0 0 auto;
+}
+
+.bo-accordionHead {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--bo-text);
+  padding: 0;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.bo-accordionHeadLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.bo-accordionHeadLeft .bo-input {
+  min-width: 0;
+}
+
+.bo-sectionDishTabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-1);
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  margin-bottom: var(--bo-space-3);
+  padding: var(--bo-space-1);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-full);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+}
+
+.bo-sectionDishTab {
+  min-height: 32px;
+  border: 0;
+  border-radius: var(--bo-radius-full);
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-medium);
+  padding: 0 var(--bo-space-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-2);
+  cursor: pointer;
+  transition:
+    background var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-sectionDishTabLabel {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bo-sectionDishTabIcon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-sectionDishTab:hover {
+  color: var(--bo-text);
+}
+
+.bo-sectionDishTab.is-active {
+  background: rgba(185, 168, 255, 0.22);
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-sectionDishTab.is-active {
+  background: rgba(124, 92, 231, 0.18);
+}
+
+.bo-sectionDishTabCount {
+  min-width: 20px;
+  border-radius: var(--bo-radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--bo-text);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  line-height: 1;
+  text-align: center;
+  padding: 3px 6px;
+}
+
+:root[data-theme="light"] .bo-sectionDishTabCount {
+  background: rgba(20, 21, 26, 0.1);
+}
+
+.bo-sectionDishTabPanel {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-dishesEmpty {
+  border: 1px dashed var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+  text-align: center;
+  padding: var(--bo-space-4);
+}
+
+.bo-dishesStack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--bo-space-3);
+  align-items: start;
+  grid-auto-flow: row;
+}
+
+.bo-dishReorderItem {
+  min-width: 0;
+  width: 100%;
+  align-self: start;
+  will-change: transform;
+}
+
+.bo-dishCard {
+  min-height: 100%;
+}
+
+.bo-dishCard .bo-foodMemberMedia {
+  aspect-ratio: 16 / 9;
+}
+
+.bo-memberCard.bo-dishCard--horizontal {
+  display: grid;
+  grid-template-columns: clamp(140px, 18vw, 196px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberMedia {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  height: auto;
+  align-self: start;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberMedia img,
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberMediaPlaceholder {
+  width: 100%;
+  height: 100%;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody {
+  min-width: 0;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 168px);
+  grid-template-areas:
+    "title footer"
+    "editor footer";
+  align-items: start;
+  gap: var(--bo-space-2) var(--bo-space-3);
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberTitleRow {
+  grid-area: title;
+  min-width: 0;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
+  grid-area: editor;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  column-gap: var(--bo-space-3);
+  align-items: start;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+  grid-area: footer;
+  margin-top: 0;
+  height: 100%;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
+  display: none;
+}
+
+.bo-dishCardBody {
+  gap: var(--bo-space-3);
+}
+
+.bo-dishEditorContent {
+  display: grid;
+  gap: var(--bo-space-2);
+  min-width: 0;
+}
+
+.bo-dishCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-dishDrag {
+  color: var(--bo-faint);
+  cursor: grab;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  width: var(--bo-space-6);
+  height: var(--bo-space-6);
+  border-radius: var(--bo-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font: inherit;
+  transition:
+    color var(--bo-transition-base) var(--bo-ease),
+    border-color var(--bo-transition-base) var(--bo-ease),
+    background var(--bo-transition-base) var(--bo-ease);
+  touch-action: none;
+}
+
+.bo-dishDrag:hover {
+  color: var(--bo-text);
+  border-color: var(--bo-border-2);
+  background: var(--bo-surface-3);
+}
+
+.bo-dishDrag:active {
+  cursor: grabbing;
+}
+
+.bo-dishFields {
+  display: grid;
+  gap: var(--bo-space-2);
+  min-width: 0;
+}
+
+.bo-dishFieldsSide {
+  display: contents;
+}
+
+.bo-dishTitleTextarea {
+  min-height: 0;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.35;
+}
+
+.bo-dishRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-dishPriceRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.bo-dishPriceRow .bo-label {
+  font-size: 12px;
+  color: var(--bo-muted);
+  min-width: 45px;
+}
+
+.bo-priceInput {
+  width: 100px;
+}
+
+.bo-checkRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-dishRowInlineControls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  flex-wrap: wrap;
+}
+
+.bo-suppInput {
+  width: 50px;
+}
+
+.bo-dishRowInlineControls .bo-suppInput {
+  margin: 0;
+}
+
+.bo-dishCard .bo-foodMemberActions {
+  display: flex;
+  width: 100%;
+}
+
+.bo-dishRowActionsInline {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  width: 100%;
+}
+
+.bo-dishRowActionsInline--split {
+  justify-content: space-between;
+}
+
+.bo-dishIconOnlyBtn,
+.bo-dishAllergenIconBtn,
+.bo-dishDeleteIconBtn {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.bo-dishIconOnlyBtn svg,
+.bo-dishAllergenIconBtn svg,
+.bo-dishDeleteIconBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bo-allergenRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bo-allergenPill {
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  color: var(--bo-muted);
+  padding: 3px 8px;
+  line-height: 1.2;
+}
+
+.bo-menuDishPreviewCard {
+  aspect-ratio: 9 / 16;
+  min-height: 0;
+  border-radius: 18px;
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.14)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, 58%) minmax(0, 42%);
+}
+
+.bo-menuDishPreviewMedia {
+  min-height: 0;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.bo-menuDishPreviewMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bo-menuDishPreviewMediaPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--bo-faint);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.24)),
+    rgba(0, 0, 0, 0.2);
+}
+
+.bo-menuDishPreviewBody {
+  min-height: 0;
+  padding: 12px 12px 11px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.bo-menuDishPreviewTitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--bo-text);
+}
+
+.bo-menuDishPreviewDescription {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--bo-muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.bo-menuDishPreviewAllergens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bo-menuDishPreviewAllergenIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.bo-menuDishPreviewMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bo-menuDishPreviewTag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border-2);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--bo-muted);
+  font-size: 11px;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.bo-dishAddRow {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.bo-dishAddBtn {
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+.bo-searchCatalogRow {
+  margin-top: 8px;
+  position: relative;
+}
+
+.bo-searchCatalogInputWrap {
+  position: relative;
+  color: var(--bo-faint);
+}
+
+.bo-searchCatalogIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.bo-searchCatalogInputWrap .bo-searchCatalogInput {
+  width: 100%;
+  padding-left: 34px;
+}
+
+.bo-commentAddBtn {
+  width: fit-content;
+  align-self: flex-start;
+}
+
+.bo-searchResults {
+  margin-top: 6px;
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.bo-searchResultBtn {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--bo-text);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.bo-searchResultBtn:hover {
+  border-color: var(--bo-border-2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.bo-settingsPanel {
+  margin-top: 4px;
+}
+
+.bo-menuWizardActions--final {
+  margin-top: 2px;
+}
+
+.bo-previewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 0;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.12)),
+    var(--bo-surface);
+  padding: 12px 14px;
+}
+
+.bo-previewOriginSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bo-menuOriginChip {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.bo-previewThemeSummary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.bo-previewLoading {
+  min-height: 0;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background:
+    radial-gradient(120% 110% at 0% 0%, rgba(185, 168, 255, 0.12), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.12)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  color: var(--bo-muted);
+}
+
+.bo-previewUpgrade {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 28%, var(--bo-border));
+  background:
+    radial-gradient(130% 120% at 0% 0%, rgba(185, 168, 255, 0.22), transparent 58%),
+    radial-gradient(110% 120% at 100% 0%, rgba(147, 239, 231, 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(7, 10, 19, 0.64)),
+    var(--bo-surface-2);
+  box-shadow: var(--bo-shadow-soft);
+  padding: clamp(20px, 3vw, 34px);
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 14px;
+}
+
+.bo-previewUpgradeAura {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(12px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.bo-previewUpgradeAura--one {
+  width: 210px;
+  height: 210px;
+  left: -70px;
+  top: -74px;
+  background: rgba(185, 168, 255, 0.34);
+  animation: boPreviewAuraFloatA 6.4s ease-in-out infinite;
+}
+
+.bo-previewUpgradeAura--two {
+  width: 164px;
+  height: 164px;
+  right: -40px;
+  bottom: 32px;
+  background: rgba(147, 239, 231, 0.26);
+  animation: boPreviewAuraFloatB 7.1s ease-in-out infinite;
+}
+
+.bo-previewUpgradeAura--three {
+  width: 126px;
+  height: 126px;
+  right: 28%;
+  top: 22%;
+  background: rgba(185, 168, 255, 0.18);
+  animation: boPreviewAuraPulse 4.2s ease-in-out infinite;
+}
+
+.bo-previewUpgradeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+  color: var(--bo-text);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0 12px;
+}
+
+.bo-previewUpgradeTitle {
+  margin: 0;
+  max-width: 34ch;
+  font-size: clamp(22px, 2.6vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--bo-text);
+}
+
+.bo-previewUpgradeText {
+  margin: 0;
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--bo-muted);
+}
+
+.bo-previewUpgradeActions {
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-previewUpgradeBtn {
+  width: 128px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border-2);
+  background: rgba(255, 255, 255, 0.02);
+  color: transparent;
+  cursor: pointer;
+  transition: transform var(--bo-transition-base, 150ms) ease,
+    border-color var(--bo-transition-base, 150ms) ease,
+    background-color var(--bo-transition-base, 150ms) ease;
+}
+
+.bo-previewUpgradeBtn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--bo-accent) 50%, transparent);
+}
+
+.bo-previewUpgradeBtn--primary {
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+}
+
+.bo-previewFrame {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: #fff;
+  box-shadow: var(--bo-shadow-soft);
+}
+
+@keyframes boPreviewAuraFloatA {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(10px, -8px, 0) scale(1.08); }
+}
+
+@keyframes boPreviewAuraFloatB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-10px, 8px, 0) scale(1.06); }
+}
+
+@keyframes boPreviewAuraPulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.92); }
+  50% { opacity: 0.6; transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-previewUpgradeAura--one,
+  .bo-previewUpgradeAura--two,
+  .bo-previewUpgradeAura--three {
+    animation: none !important;
+  }
+
+  .bo-previewUpgradeBtn {
+    transition: none !important;
+  }
+}
+
+.bo-allergenGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+  gap: 10px;
+}
+
+.bo-allergenCircle {
+  border-radius: 16px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--bo-text);
+  min-height: 88px;
+  padding: 8px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.bo-allergenCircle:hover {
+  border-color: var(--bo-border-2);
+}
+
+.bo-allergenCircle.is-selected {
+  border-color: rgba(185, 168, 255, 0.42);
+  background: rgba(185, 168, 255, 0.2);
+}
+
+.bo-allergenCircleIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border-2);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.bo-allergenCircleIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bo-allergenCircleLabel {
+  font-size: 11px;
+  color: var(--bo-muted);
+  text-align: center;
+}
+
+@media (max-width: 1280px) {
+  .bo-menuWizardFinal {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+  }
+
+  .bo-previewFrame {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .bo-previewLoading,
+  .bo-previewUpgrade {
+    min-height: 0;
+    height: 100%;
+  }
+}
+
+@media (max-width: 980px) {
+  .bo-menuWizardFinal {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-previewPane {
+    position: static;
+  }
+
+  .bo-previewSwitchGlass {
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    justify-self: center;
+    margin-inline: auto;
+    border-radius: 999px;
+    border: 1px solid var(--bo-border);
+    background: rgba(18, 19, 24, 0.45);
+    backdrop-filter: blur(9px);
+    padding: 4px;
+    gap: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 8;
+  }
+
+  .bo-editorPane,
+  .bo-previewPane {
+    display: none;
+  }
+
+  .bo-editorPane.is-mobileActive,
+  .bo-previewPane.is-mobileActive {
+    display: grid;
+  }
+
+  .bo-editorPane.is-mobileActive {
+    margin-top: 2rem;
+  }
+
+  .bo-previewFrame {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .bo-previewLoading,
+  .bo-previewUpgrade {
+    min-height: 0;
+    height: 100%;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 980px) {
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    grid-template-areas:
+      "title footer"
+      "editor footer";
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 0.8fr);
+    grid-template-areas:
+      "title side"
+      "descriptionToggle side"
+      "descriptionInput side"
+      "price price";
+    column-gap: var(--bo-space-2);
+    align-items: start;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishTitleTextarea {
+    grid-area: title;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-checkRow {
+    grid-area: descriptionToggle;
+    justify-self: flex-start;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-textarea:not(.bo-dishTitleTextarea) {
+    grid-area: descriptionInput;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishPriceRow {
+    grid-area: price;
+    margin-bottom: 0;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide {
+    grid-area: side;
+    display: grid;
+    gap: var(--bo-space-2);
+    align-content: start;
+    justify-items: start;
+    min-width: 0;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-allergenRow {
+    justify-content: flex-start;
+    align-content: flex-start;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-dishRow {
+    justify-self: flex-start;
+    align-self: start;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide .bo-dishRowInlineControls {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    align-items: flex-end;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPrice,
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
+    display: none;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberActions,
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline,
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
+    height: 100%;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 981px) and (max-width: 1280px) {
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal {
+    display: block;
+    grid-template-columns: none;
+    align-items: initial;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberMedia {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    min-height: 0;
+    align-self: auto;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+    gap: var(--bo-space-3);
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberTitleRow,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    grid-area: auto;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    margin-top: var(--bo-space-1);
+    height: auto;
+    align-self: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
+    display: block;
+  }
+}
+
+@media (min-width: 981px) {
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    grid-template-areas:
+      "title footer"
+      "editor footer";
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(136px, 170px) minmax(132px, 164px) minmax(148px, 1fr);
+    grid-template-areas:
+      "title head description allergens"
+      "descriptionInput supplement . allergens"
+      "price price price price";
+    column-gap: var(--bo-space-2);
+    align-items: start;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
+    grid-area: head;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields {
+    display: contents;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishTitleTextarea {
+    grid-area: title;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-checkRow {
+    grid-area: description;
+    justify-self: flex-start;
+    align-self: start;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-textarea:not(.bo-dishTitleTextarea) {
+    grid-area: descriptionInput;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishPriceRow {
+    grid-area: price;
+    margin-bottom: 0;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide {
+    display: contents;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-allergenRow {
+    grid-area: allergens;
+    align-self: start;
+    justify-content: flex-start;
+    align-content: flex-start;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-dishRow {
+    grid-area: supplement;
+    justify-self: flex-start;
+    align-self: start;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide .bo-dishRowInlineControls {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    align-items: stretch;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPrice,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
+    display: none;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberActions,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
+    height: 100%;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split > :first-child {
+    align-self: flex-end;
+  }
+
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split > :last-child {
+    align-self: flex-start;
+  }
+}
+
+@media (min-width: 1281px) {
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    grid-template-areas:
+      "title footer"
+      "editor footer";
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 0.8fr);
+    grid-template-areas:
+      "title side"
+      "descriptionToggle side"
+      "descriptionInput side"
+      "price price";
+    column-gap: var(--bo-space-2);
+    align-items: start;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishTitleTextarea {
+    grid-area: title;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-checkRow {
+    grid-area: descriptionToggle;
+    justify-self: flex-start;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-textarea:not(.bo-dishTitleTextarea) {
+    grid-area: descriptionInput;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishPriceRow {
+    grid-area: price;
+    margin-bottom: 0;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide {
+    grid-area: side;
+    display: grid;
+    gap: var(--bo-space-2);
+    align-content: start;
+    justify-items: start;
+    min-width: 0;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-allergenRow {
+    justify-content: flex-start;
+    align-content: flex-start;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-dishRow {
+    justify-self: flex-start;
+    align-self: start;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide .bo-dishRowInlineControls {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide .bo-suppInput {
+    width: 50px;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    align-items: flex-end;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPrice,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
+    display: none;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberActions,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
+    height: 100%;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 800px) {
+  .bo-form--menuWizard {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-menuBasicsMainRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bo-menuBasicsField--price,
+  .bo-menuBasicsPriceToggle {
+    max-width: 100%;
+    justify-self: stretch;
+  }
+
+  .bo-sectionCardHead {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .bo-menuFab {
+    width: 54px;
+    height: 54px;
+    right: calc(12px + env(safe-area-inset-right));
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  .bo-previewHead {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .bo-memberCard.bo-dishCard--horizontal {
+    display: block;
+    grid-template-columns: none;
+    align-items: initial;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberMedia {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    min-height: 0;
+    align-self: auto;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+    gap: var(--bo-space-3);
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberTitleRow,
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent,
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    grid-area: auto;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    margin-top: var(--bo-space-1);
+    height: auto;
+    align-self: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
+    display: block;
+  }
+
+  .bo-sectionDishTab {
+    min-width: 40px;
+    padding: 0 var(--bo-space-2);
+  }
+
+  .bo-sectionDishTabLabel {
+    display: none;
+  }
+
+  .bo-sectionDishTabIcon {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .bo-previewSwitchBtn {
+    min-width: 40px;
+    padding: 0 var(--bo-space-2);
+  }
+
+  .bo-previewSwitchBtnLabel {
+    display: none;
+  }
+
+  .bo-previewSwitchBtnIcon {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 620px) {
+  .bo-typeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-menuV2Card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .bo-menuWizardPanel {
+    padding: 14px;
+  }
+
+  .bo-menuV2Aside {
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .bo-menuV2StatusCtrl {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .bo-menuV2Actions {
+    justify-content: flex-end;
+  }
+
+  .bo-stepBars {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .bo-previewSwitchGlass {
+    width: fit-content;
+    justify-content: center;
+    margin-inline: auto;
+  }
+
+  .bo-previewSwitchBtn {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .bo-sectionDishTabs {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .bo-sectionDishTab {
+    flex: 0 0 auto;
+  }
+
+  .bo-inlineField {
+    grid-template-columns: 1fr auto;
+  }
+
+  .bo-inlineField .bo-btn {
+    width: auto;
+    min-width: 40px;
+  }
+
+  .bo-subtitleAddBtn {
+    display: flex;
+    margin-inline: auto;
+  }
+
+  .bo-dishRow {
+    row-gap: 10px;
+  }
+
+  .bo-dishRow .bo-btn {
+    flex: 1 1 100%;
+  }
+
+  .bo-dishFields {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  .bo-dishPriceRow {
+    flex-wrap: wrap;
+  }
+
+  .bo-dishesStack {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-menuWizardActions {
+    width: 100%;
+  }
+
+  .bo-menuWizardActions>.bo-btn {
+    flex: 1 1 100%;
+  }
+
+  .bo-menuWizardActionsRight {
+    width: 100%;
+  }
+
+  .bo-menuWizardActionsRight .bo-btn {
+    flex: 1 1 0;
+  }
+
+  .bo-previewFrame {
+    min-height: 0;
+    height: 100%;
+  }
+}
+
+@media (max-width: 460px) {
+  .bo-previewOriginSwitch {
+    width: 100%;
+  }
+
+  .bo-menuOriginChip {
+    flex: 1 1 0;
+  }
+
+  .bo-allergenGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .bo-menuV2Card,
+  .bo-menuFab,
+  .bo-typeCard,
+  .bo-stepBar,
+  .bo-menuWizardFinal,
+  .bo-previewPane,
+  .bo-searchResultBtn,
+  .bo-previewSwitchBtn,
+  .bo-menuOriginChip,
+  .bo-allergenCircle,
+  .bo-sectionMoveBtn,
+  .bo-sectionDrag,
+  .bo-dishDrag,
+  .bo-reorderItem,
+  .bo-sc-switch,
+  .bo-sc-switchThumb {
+    transition: none;
+  }
+
+  .bo-menuV2Card:hover,
+  .bo-menuFab:hover,
+  .bo-typeCard:hover,
+  .bo-searchResultBtn:hover,
+  .bo-sectionDrag:hover,
+  .bo-dishDrag:hover {
+    transform: none;
+    filter: none;
+  }
+}
+

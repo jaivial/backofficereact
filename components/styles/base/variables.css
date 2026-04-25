@@ -1,0 +1,167 @@
+:root {
+  --bo-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --bo-font-serif: "Playfair Display", "Cormorant Garamond", Georgia, Cambria, "Times New Roman", Times, serif;
+
+  /* Colors - Dark theme */
+  --bo-bg: #111218;
+  --bo-shell: #1a1b22;
+  --bo-surface: #22232b;
+  --bo-surface-2: #2a2b34;
+  --bo-surface-3: #16171d;
+  --bo-sidebar: #14151b;
+
+  --bo-border: rgba(255, 255, 255, 0.06);
+  --bo-border-2: rgba(255, 255, 255, 0.09);
+
+  --bo-text: #eef0f6;
+  --bo-muted: rgba(238, 240, 246, 0.64);
+  --bo-faint: rgba(238, 240, 246, 0.52);
+  /* WCAG AA: 4.5:1 minimum */
+
+  --bo-accent: #b9a8ff;
+  --bo-accent-2: #93efe7;
+  --bo-accent-3: #cfeff0;
+
+  /* State colors */
+  --bo-color-success: #16a34a;
+  --bo-color-warning: #d97706;
+  --bo-color-danger: #dc2626;
+  --bo-color-info: #0284c7;
+  --bo-text-success: #16a34a;
+  --bo-text-warning: #d97706;
+  --bo-text-danger: #dc2626;
+  --bo-border-color: var(--bo-border);
+
+  /* Compatibility aliases for shared admin modules (facturas/reportes) */
+  --bo-primary: var(--bo-accent);
+  --bo-primary-rgb: 185, 168, 255;
+  --bo-primary-alpha: rgba(185, 168, 255, 0.16);
+  --bo-primary-hover: color-mix(in srgb, var(--bo-accent) 86%, white 14%);
+  --bo-primary-fg: var(--bo-bg);
+  --bo-fg: var(--bo-text);
+  --bo-fg-inverted: var(--bo-bg);
+  --bo-bg-secondary: var(--bo-surface-2);
+  --bo-bg-subtle: var(--bo-surface-3);
+  --bo-bg-hover: color-mix(in srgb, var(--bo-surface) 86%, white 14%);
+  --bo-bg-muted: var(--bo-surface-3);
+  --bo-bg-selected: rgba(185, 168, 255, 0.16);
+  --bo-bg-selected-hover: rgba(185, 168, 255, 0.24);
+  --bo-bg-primary: rgba(185, 168, 255, 0.16);
+  --bo-surface-1: var(--bo-surface);
+  --bo-surface-hover: color-mix(in srgb, var(--bo-surface) 86%, white 14%);
+  --bo-text-primary: var(--bo-text);
+  --bo-text-secondary: var(--bo-muted);
+  --bo-text-muted: var(--bo-faint);
+  --bo-color-primary: var(--bo-accent);
+  --bo-color-muted: var(--bo-faint);
+  --bo-success: var(--bo-color-success);
+  --bo-warning: var(--bo-color-warning);
+  --bo-danger: var(--bo-color-danger);
+  --bo-pending: var(--bo-color-warning);
+  --bo-success-bg: color-mix(in srgb, var(--bo-color-success) 18%, transparent);
+  --bo-warning-bg: color-mix(in srgb, var(--bo-color-warning) 18%, transparent);
+  --bo-warning-fg: var(--bo-color-warning);
+  --bo-muted-bg: color-mix(in srgb, var(--bo-muted) 18%, transparent);
+  --bo-card-bg: var(--bo-surface);
+  --bo-bg-2: var(--bo-surface-2);
+  --bo-shadow-lg: var(--bo-shadow);
+  --bo-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --bo-accent-alpha: rgba(185, 168, 255, 0.16);
+
+  /* Border radius */
+  --bo-radius: var(--bo-radius-md);
+  --bo-radius-lg: 18px;
+  --bo-radius-md: 14px;
+  --bo-radius-sm: 12px;
+  --bo-radius-full: 9999px;
+
+  /* Shadows */
+  --bo-shadow: 0 18px 52px rgba(0, 0, 0, 0.55);
+  --bo-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.36);
+
+  /* Body background */
+  --bo-body-bg:
+    radial-gradient(1100px 640px at 18% -10%, rgba(185, 168, 255, 0.12), transparent 62%),
+    radial-gradient(900px 600px at 72% 15%, rgba(147, 239, 231, 0.08), transparent 55%),
+    linear-gradient(135deg, #0f1016 0%, #171827 55%, #0f1016 100%);
+
+  /* Typography scale */
+  --bo-text-xs: 10px;
+  --bo-text-sm: 12px;
+  --bo-text-base: 14px;
+  --bo-text-lg: 16px;
+  --bo-text-xl: 20px;
+  --bo-text-2xl: 24px;
+  --bo-text-3xl: 32px;
+
+  --bo-weight-normal: 400;
+  --bo-weight-medium: 500;
+  --bo-weight-semibold: 600;
+  --bo-weight-bold: 700;
+
+  --bo-leading-tight: 1.25;
+  --bo-leading-normal: 1.4;
+  --bo-leading-relaxed: 1.6;
+
+  /* Spacing */
+  --bo-space-1: 4px;
+  --bo-space-2: 8px;
+  --bo-space-3: 12px;
+  --bo-space-4: 16px;
+  --bo-space-5: 24px;
+  --bo-space-6: 32px;
+  --bo-space-8: 48px;
+
+  /* Transitions */
+  --bo-transition-fast: 120ms;
+  --bo-transition-base: 150ms;
+  --bo-transition-slow: 300ms;
+  --bo-ease: ease;
+  --bo-ease-out: ease-out;
+  --bo-ease-in-out: ease-in-out;
+}
+
+:root[data-theme="light"] {
+  --bo-bg: #f4f6fb;
+  --bo-shell: #ffffff;
+  --bo-surface: #ffffff;
+  --bo-surface-2: #fbfcff;
+  --bo-surface-3: #f2f4fb;
+  --bo-sidebar: #ffffff;
+
+  --bo-border: rgba(0, 0, 0, 0.08);
+  --bo-border-2: rgba(0, 0, 0, 0.12);
+
+  --bo-text: rgba(20, 21, 26, 0.95);
+  --bo-muted: rgba(20, 21, 26, 0.62);
+  --bo-faint: rgba(20, 21, 26, 0.46);
+
+  /* Accent overrides for better contrast on light backgrounds */
+  --bo-accent: #7c5ce7;
+  --bo-accent-2: #0d9488;
+  --bo-accent-3: #5eead4;
+
+  --bo-primary: var(--bo-accent);
+  --bo-primary-rgb: 124, 92, 231;
+  --bo-primary-alpha: rgba(124, 92, 231, 0.16);
+  --bo-primary-hover: color-mix(in srgb, var(--bo-accent) 90%, black 10%);
+  --bo-primary-fg: var(--bo-shell);
+  --bo-fg-inverted: var(--bo-shell);
+  --bo-bg-hover: color-mix(in srgb, var(--bo-surface) 90%, var(--bo-accent) 10%);
+  --bo-bg-selected: rgba(124, 92, 231, 0.14);
+  --bo-bg-selected-hover: rgba(124, 92, 231, 0.2);
+  --bo-bg-primary: rgba(124, 92, 231, 0.14);
+  --bo-success-bg: color-mix(in srgb, var(--bo-color-success) 14%, transparent);
+  --bo-warning-bg: color-mix(in srgb, var(--bo-color-warning) 14%, transparent);
+  --bo-muted-bg: color-mix(in srgb, var(--bo-muted) 14%, transparent);
+  --bo-accent-alpha: rgba(124, 92, 231, 0.16);
+
+  --bo-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);
+  --bo-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.10);
+
+  --bo-body-bg:
+    radial-gradient(1100px 640px at 18% -10%, rgba(185, 168, 255, 0.20), transparent 62%),
+    radial-gradient(900px 600px at 72% 15%, rgba(147, 239, 231, 0.16), transparent 55%),
+    linear-gradient(135deg, #f5f6ff 0%, #ffffff 55%, #f1f2ff 100%);
+}

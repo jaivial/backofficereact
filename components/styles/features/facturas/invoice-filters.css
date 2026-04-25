@@ -1,0 +1,296 @@
+/* Invoice Filters */
+.bo-invoiceFilters {
+  margin-bottom: 0;
+  padding: 12px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.14)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  display: grid;
+  gap: 10px;
+}
+
+.bo-invoiceFiltersHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bo-invoiceFiltersTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 650;
+  color: var(--bo-text);
+}
+
+.bo-invoiceFiltersToggle {
+  color: var(--bo-faint);
+}
+
+.bo-invoiceFiltersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  padding-top: 8px;
+  padding-bottom: 16px;
+}
+
+/* Responsive filters */
+@media (max-width: 768px) {
+  .bo-invoiceFiltersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-invoiceFilter--search {
+    grid-column: span 1;
+  }
+
+  .bo-searchWithDropdown {
+    flex-direction: column;
+  }
+
+  .bo-searchWithDropdown .bo-searchBySelect {
+    width: 100%;
+  }
+}
+
+.bo-invoiceFiltersGrid>* {
+  min-width: 0;
+}
+
+.bo-invoiceFilter--search {
+  grid-column: span 2;
+}
+
+.bo-searchWithDropdown {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.bo-searchWithDropdown .bo-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-searchWithDropdown .bo-searchBySelect {
+  width: 130px;
+  flex-shrink: 0;
+}
+
+.bo-searchWithDropdown .bo-input:focus {
+  z-index: 1;
+}
+
+.bo-invoiceFilter--category,
+.bo-invoiceFilter--tag {
+  min-width: 150px;
+}
+
+.bo-invoiceFilter--datePresets {
+  grid-column: 1 / -1;
+}
+
+.bo-datePresetButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bo-datePresetBtn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  color: var(--bo-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--bo-transition-base) var(--bo-ease),
+    background-color var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-datePresetBtn:hover {
+  border-color: var(--bo-primary);
+  color: var(--bo-primary);
+}
+
+.bo-datePresetBtn.is-active {
+  background: var(--bo-primary);
+  border-color: var(--bo-primary);
+  color: var(--bo-fg-inverted);
+}
+
+.bo-invoiceFiltersFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: var(--bo-space-2);
+  padding-top: 8px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-invoiceFiltersCount {
+  font-size: 13px;
+}
+
+.bo-invoiceFiltersSummary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bo-invoiceFiltersActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-invoiceFiltersDateRange {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--bo-primary);
+  background: rgba(var(--bo-primary-rgb), 0.1);
+  padding: 2px 8px;
+  border-radius: var(--bo-radius-sm);
+}
+
+/* Saved Filters Styles */
+.bo-filterSaveDialog {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bo-bg-subtle);
+  border-radius: var(--bo-radius);
+  border: 1px solid var(--bo-border);
+}
+
+.bo-filterSaveDialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-filterSaveDialogContent .bo-field {
+  margin-bottom: 0;
+}
+
+.bo-filterSaveDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.bo-savedFilters {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-savedFiltersHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bo-text);
+  margin-bottom: 8px;
+}
+
+.bo-savedFiltersHead svg {
+  color: var(--bo-primary);
+}
+
+.bo-savedFiltersList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-savedFilterPill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bo-bg-subtle);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  font-size: 13px;
+  color: var(--bo-text);
+  overflow: hidden;
+}
+
+.bo-savedFilterApply {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  min-width: 0;
+  transition:
+    background-color var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-savedFilterApply:hover {
+  background: var(--bo-bg-hover);
+  color: var(--bo-primary);
+}
+
+.bo-savedFilterApply:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-savedFilterName {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-savedFilterDelete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  color: var(--bo-muted);
+  cursor: pointer;
+  border-left: 1px solid var(--bo-border);
+  transition:
+    background-color var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-savedFilterDelete:hover {
+  background: var(--bo-danger);
+  color: white;
+}
+
+.bo-savedFilterDelete:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-invoiceClearBtn {
+  color: var(--bo-muted);
+}
+
+.bo-invoiceClearBtn.is-hidden {
+  display: none;
+}
+

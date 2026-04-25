@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../../shadcn/utils";
 
 interface MobileCardProps {
   children: React.ReactNode;
@@ -23,7 +24,7 @@ const ACCENT_COLORS = {
 
 export function MobileCard({
   children,
-  className = "",
+  className,
   onClick,
   href,
   pressable = false,
@@ -32,14 +33,12 @@ export function MobileCard({
   "data-role": dataRole,
   "aria-label": ariaLabel,
 }: MobileCardProps) {
-  const classes = [
+  const classes = cn(
     "flex flex-col gap-2 p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]",
-    accent ? `border-l-4 ${ACCENT_COLORS[accent]}` : "",
-    pressable || onClick ? "active:scale-[0.99] transition-transform cursor-pointer" : "",
+    accent && `border-l-4 ${ACCENT_COLORS[accent]}`,
+    (pressable || onClick) && "active:scale-[0.99] transition-transform cursor-pointer",
     className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  );
 
   if (href) {
     return (
@@ -60,7 +59,7 @@ export function MobileCard({
       <button
         type="button"
         onClick={onClick}
-        className={classes + " w-full text-left"}
+        className={cn(classes, "w-full text-left")}
         data-ui={dataUi}
         data-role={dataRole}
         aria-label={ariaLabel}

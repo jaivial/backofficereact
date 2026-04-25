@@ -1,0 +1,265 @@
+/* Invoice Table - uses bo-table classes */
+.bo-table--facturas th.col-invoice_number,
+.bo-table--facturas td.col-invoice_number {
+  width: 100px;
+}
+
+.bo-table--facturas th.col-customer_name,
+.bo-table--facturas td.col-customer_name {
+  min-width: 200px;
+}
+
+.bo-table--facturas th.col-customer_email,
+.bo-table--facturas td.col-customer_email {
+  min-width: 180px;
+}
+
+.bo-table--facturas th.col-amount,
+.bo-table--facturas td.col-amount {
+  width: 100px;
+  text-align: right;
+}
+
+.bo-table--facturas th.col-invoice_date,
+.bo-table--facturas td.col-invoice_date {
+  width: 100px;
+}
+
+.bo-table--facturas th.col-payment_date,
+.bo-table--facturas td.col-payment_date {
+  width: 100px;
+}
+
+.bo-table--facturas th.col-payment_method,
+.bo-table--facturas td.col-payment_method {
+  width: 100px;
+}
+
+.bo-table--facturas th.col-currency,
+.bo-table--facturas td.col-currency {
+  width: 80px;
+}
+
+.bo-table--facturas th.col-payment_progress,
+.bo-table--facturas td.col-payment_progress {
+  width: 150px;
+}
+
+.bo-table--facturas th.col-due_date,
+.bo-table--facturas td.col-due_date {
+  width: 110px;
+}
+
+.bo-table--facturas th.col-deposit,
+.bo-table--facturas td.col-deposit {
+  width: 140px;
+}
+
+.bo-table--facturas th.col-status,
+.bo-table--facturas td.col-status {
+  width: 100px;
+}
+
+.bo-table--facturas th.col-is_reservation,
+.bo-table--facturas td.col-is_reservation {
+  width: 100px;
+}
+
+.bo-table--facturas th.col-category,
+.bo-table--facturas td.col-category {
+  width: 140px;
+}
+
+.bo-table--facturas th.col-attachment,
+.bo-table--facturas td.col-attachment {
+  width: 40px;
+  text-align: center;
+}
+
+.bo-table--facturas th.col-actions,
+.bo-table--facturas td.col-actions {
+  width: 190px;
+  text-align: right;
+}
+
+.bo-table--facturas td.col-actions .bo-tableActions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .bo-invoiceFiltersFoot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-invoiceFiltersSummary {
+    justify-content: space-between;
+  }
+
+  .bo-invoiceFiltersActions {
+    justify-content: space-between;
+  }
+}
+
+/* Responsive table for facturas */
+@media (max-width: 900px) {
+  .bo-table--facturas {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .bo-table--facturas thead {
+    display: none;
+  }
+
+  .bo-table--facturas tbody,
+  .bo-table--facturas tr,
+  .bo-table--facturas td {
+    display: block;
+    width: 100%;
+  }
+
+  .bo-table--facturas tr {
+    padding: 12px;
+    border-bottom: 1px solid var(--bo-border);
+    margin-bottom: 8px;
+  }
+
+  .bo-table--facturas td {
+    padding: 4px 0;
+    border: none;
+    text-align: left;
+  }
+
+  .bo-table--facturas td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--bo-muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .bo-table--facturas td.col-customer_name {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .bo-table--facturas td.col-amount {
+    font-weight: 600;
+    color: var(--bo-accent);
+  }
+
+  .bo-table--facturas td.col-actions {
+    padding-top: 8px;
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+}
+
+.bo-tableCustomer {
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-tableCustomerName {
+  font-weight: 600;
+}
+
+.bo-tableCustomerSurname {
+  font-weight: 400;
+  color: var(--bo-muted);
+}
+
+.bo-tableAttachment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bo-accent-2);
+}
+
+.bo-tableAttachmentCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background-color: var(--bo-accent-2);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bo-tableAttachmentCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Credit Note Badge */
+.bo-creditNoteBadge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.bo-creditNoteRef {
+  font-size: 11px;
+  color: var(--bo-muted, #9ca3af);
+}
+
+.bo-btn--attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  min-width: auto;
+}
+
+/* Sortable Table Headers */
+.bo-tableSortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bo-tableSortBtn:hover {
+  color: var(--bo-accent);
+}
+
+.bo-tableSortIcon {
+  flex-shrink: 0;
+}
+
+.bo-tableSortIcon--inactive {
+  opacity: 0.4;
+}
+
+.bo-tableSortIcon--active {
+  color: var(--bo-accent);
+}
+
+.bo-tableLoading,
+.bo-tableEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--bo-muted);
+  gap: 12px;
+}
+

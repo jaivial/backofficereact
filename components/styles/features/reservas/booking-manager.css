@@ -1,0 +1,68 @@
+/* ── Booking Manager ─────────────────────────────────── */
+.bo-widget-colors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.bo-colorPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bo-colorPickerLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-text);
+}
+
+.bo-colorPickerField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface-2);
+  padding: 4px 6px 4px 4px;
+}
+
+.bo-colorPickerSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+  flex: 0 0 auto;
+}
+
+.bo-colorPickerInput {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  flex: 0 0 auto;
+}
+
+.bo-colorPickerInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.bo-colorPickerInput::-webkit-color-swatch {
+  border: 0;
+  border-radius: 6px;
+}
+
+.bo-colorPickerCopy {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--bo-muted);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+

@@ -45,7 +45,7 @@ export default function Head() {
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="icon" href="/favicon.ico" sizes="any" />
       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-      {dev ? <link rel="stylesheet" href="/components/bo.css" /> : null}
+      {/* CSS is loaded via import in +Layout.tsx; Vite resolves @import from the aggregator */}
       <script dangerouslySetInnerHTML={{ __html: boot }} />
     </>
   );

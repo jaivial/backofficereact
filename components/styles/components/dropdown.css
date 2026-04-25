@@ -1,0 +1,206 @@
+/* Dropdown / Select / Date */
+.bo-menu {
+  position: fixed;
+  z-index: 9999;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  display: grid;
+  gap: var(--bo-space-1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 6px;
+}
+
+.bo-menuItem {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--bo-text);
+  padding: 10px 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bo-menuItem:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bo-menuItem.is-danger {
+  color: rgba(220, 53, 69, 0.95);
+}
+
+.bo-menuIcon {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+}
+
+.bo-selectBtn {
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-text);
+  padding: 0 10px 0 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-selectLabelWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  padding-block: 0.5rem;
+}
+
+.bo-selectIcon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.bo-selectBtn--sm {
+  height: 34px;
+  border-radius: 14px;
+}
+
+.bo-selectLabel {
+  font-size: 12px;
+  font-weight: 720;
+  color: var(--bo-text);
+  width: 100%;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-selectChev {
+  color: var(--bo-muted);
+}
+
+.bo-selectList {
+  overflow: hidden;
+  position: fixed;
+  z-index: 9999;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bo-timeList {
+  max-height: min(360px, calc(100vh - 140px));
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bo-selectItem {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--bo-text);
+  padding: 10px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-selectItemIcon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.bo-selectItem:hover,
+.bo-selectItem.is-active {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bo-selectItem.is-selected {
+  background: rgba(185, 168, 255, 0.12);
+  border: 1px solid rgba(185, 168, 255, 0.22);
+}
+
+.bo-dateBtn {
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-text);
+  padding: 0 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-dateRangeBtn {
+  min-width: 188px;
+  justify-content: flex-start;
+}
+
+.bo-dateBtnLabel {
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.bo-datePop {
+  position: fixed;
+  z-index: 9999;
+  width: 280px;
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 12px;
+}
+
+.bo-dateRangePop {
+  width: 312px;
+}
+
+.bo-dateHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.bo-dateTitle {
+  font-size: 12px;
+  font-weight: 760;
+  color: var(--bo-text);
+  text-transform: capitalize;
+}
+

@@ -1,0 +1,166 @@
+/* Toolbar */
+.bo-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.bo-toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-mutedText {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-field--inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-field--counter {
+  min-width: 0;
+}
+
+.bo-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-counterBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.bo-counterBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bo-counterInput {
+  width: 58px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.bo-phone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bo-phoneCC {
+  width: fit-content;
+  min-width: fit-content;
+  flex: 0 0 auto;
+  text-align: center;
+}
+
+.bo-selectBtn.bo-phoneCC {
+  justify-content: center;
+  padding: 0 12px;
+  width: fit-content;
+}
+
+.bo-phoneNum {
+  max-width: fit-content;
+  flex: 1 1 auto;
+  min-width: 160px;
+}
+
+@media (max-width: 768px) {
+  .bo-selectBtn.bo-phoneCC {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .bo-selectBtn.bo-phoneCC .bo-selectLabel {
+    display: none;
+  }
+}
+
+.bo-textarea {
+  height: 110px;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.35;
+  width: 100%;
+}
+
+.bo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-chip {
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-muted);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-bookingBinaryChips {
+  justify-content: center;
+}
+
+.bo-bookingBinaryChips .bo-chip {
+  justify-content: center;
+}
+
+.bo-chip.is-on {
+  border-color: rgba(185, 168, 255, 0.26);
+  background: rgba(185, 168, 255, 0.12);
+  color: var(--bo-text);
+}
+
+.bo-chipX {
+  color: var(--bo-faint);
+}
+
+tr.is-inactive {
+  opacity: 0.62;
+}
+

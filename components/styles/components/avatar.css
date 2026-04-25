@@ -1,0 +1,72 @@
+.bo-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: linear-gradient(135deg, rgba(185, 168, 255, 0.28), rgba(147, 239, 231, 0.18));
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 760;
+  color: rgba(16, 16, 20, 0.92);
+  overflow: hidden;
+}
+
+.bo-avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bo-avatarFallback {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+}
+
+/* Avatar sizes */
+.bo-avatar--xs {
+  width: 24px;
+  height: 24px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.bo-avatar--sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.bo-avatar--lg {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  font-size: 16px;
+}
+
+.bo-avatar--xl {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  font-size: 20px;
+}
+
+/* Avatar light theme */
+:root[data-theme="light"] .bo-avatar {
+  background: linear-gradient(135deg, rgba(185, 168, 255, 0.32), rgba(147, 239, 231, 0.24));
+}
+
+.bo-avatarBtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+

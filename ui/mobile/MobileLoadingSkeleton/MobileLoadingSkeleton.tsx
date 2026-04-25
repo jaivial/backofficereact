@@ -1,14 +1,15 @@
 import React from "react";
+import { cn } from "../../shadcn/utils";
 
 interface SkeletonProps {
   className?: string;
   "data-ui"?: string;
 }
 
-export function Skeleton({ className = "", "data-ui": dataUi }: SkeletonProps) {
+export function Skeleton({ className, "data-ui": dataUi }: SkeletonProps) {
   return (
     <div
-      className={["animate-pulse rounded-lg bg-[hsl(var(--muted))]/50", className].join(" ")}
+      className={cn("animate-pulse rounded-lg bg-[hsl(var(--muted))]/50", className)}
       data-ui={dataUi}
       aria-hidden="true"
       role="presentation"
@@ -26,12 +27,12 @@ interface MobileLoadingSkeletonProps {
 export function MobileLoadingSkeleton({
   type = "card",
   count = 3,
-  className = "",
+  className,
   "data-ui": dataUi,
 }: MobileLoadingSkeletonProps) {
   if (type === "list") {
     return (
-      <div className={["flex flex-col gap-3", className].join(" ")} data-ui={dataUi} aria-busy="true" aria-label="Cargando...">
+      <div className={cn("flex flex-col gap-3", className)} data-ui={dataUi} aria-busy="true" aria-label="Cargando...">
         {Array.from({ length: count }).map((_, i) => (
           <div
             key={i}
@@ -51,7 +52,7 @@ export function MobileLoadingSkeleton({
 
   if (type === "form") {
     return (
-      <div className={["flex flex-col gap-4", className].join(" ")} data-ui={dataUi} aria-busy="true" aria-label="Cargando...">
+      <div className={cn("flex flex-col gap-4", className)} data-ui={dataUi} aria-busy="true" aria-label="Cargando...">
         <div className="flex flex-col gap-2" data-slot="mobileLoadingSkeleton-gap-2">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-12 w-full rounded-xl" />
@@ -67,7 +68,7 @@ export function MobileLoadingSkeleton({
 
   // Default: card
   return (
-    <div className={["flex flex-col gap-3", className].join(" ")} data-ui={dataUi} aria-busy="true" aria-label="Cargando...">
+    <div className={cn("flex flex-col gap-3", className)} data-ui={dataUi} aria-busy="true" aria-label="Cargando...">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}

@@ -1,0 +1,71 @@
+/* Install Guide */
+.bo-install-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bo-install-step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bo-install-stepHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bo-install-stepTitle {
+  font-size: 13px;
+  font-weight: 660;
+  color: var(--bo-text);
+}
+
+.bo-install-stepMeta {
+  font-size: 11px;
+  color: var(--bo-muted);
+}
+
+.bo-install-codeBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--bo-surface-3);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 10px 12px;
+  overflow: auto;
+}
+
+.bo-install-code {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--bo-muted);
+  white-space: pre;
+  overflow: auto;
+}
+
+.bo-install-note {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: var(--bo-radius-md);
+  padding: 10px 14px;
+}
+
+.bo-install-noteLabel {
+  font-size: 11px;
+  font-weight: 660;
+  color: var(--bo-primary);
+  margin-bottom: 4px;
+}
+
+.bo-install-noteText {
+  font-size: 11px;
+  color: var(--bo-muted);
+  line-height: 1.5;
+}
+

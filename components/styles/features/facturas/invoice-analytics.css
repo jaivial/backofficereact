@@ -1,0 +1,590 @@
+/* Invoice Analytics Styles */
+.bo-invoiceAnalytics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bo-analyticsFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  padding: 16px;
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+}
+
+.bo-analyticsFiltersGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bo-analyticsFiltersLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-muted);
+}
+
+.bo-analyticsFilters .bo-input,
+.bo-analyticsFilters .bo-select {
+  height: 38px;
+  min-width: 140px;
+}
+
+.bo-analyticsSummary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.bo-analyticsSummaryCard {
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bo-analyticsSummaryLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-muted);
+}
+
+.bo-analyticsSummaryValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-analyticsSummaryValue--success {
+  color: var(--bo-color-success, #16a34a);
+}
+
+.bo-analyticsSummaryValue--warning {
+  color: var(--bo-color-warning, #d97706);
+}
+
+.bo-analyticsCharts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.bo-analyticsChart {
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 16px;
+}
+
+.bo-analyticsChart--wide {
+  grid-column: span 2;
+}
+
+.bo-analyticsChartTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bo-text);
+  margin: 0 0 16px 0;
+}
+
+.bo-analyticsChartContainer {
+  min-height: 280px;
+}
+
+.bo-analyticsTableContainer {
+  overflow-x: auto;
+}
+
+.bo-analyticsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.bo-analyticsTable th,
+.bo-analyticsTable td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-analyticsTable th {
+  font-weight: 600;
+  color: var(--bo-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bo-analyticsTable td {
+  color: var(--bo-text);
+}
+
+.bo-analyticsCustomerName {
+  font-weight: 600;
+}
+
+.bo-analyticsCustomerEmail {
+  font-size: 11px;
+  color: var(--bo-muted);
+}
+
+.bo-analyticsRevenue {
+  font-weight: 600;
+  color: var(--bo-accent);
+}
+
+.bo-analyticsEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--bo-muted);
+  font-size: 14px;
+}
+
+.bo-chartTooltip {
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-chartTooltipLabel {
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  font-size: 13px;
+}
+
+.bo-chartTooltip p {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+.bo-analyticsLoading {
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .bo-analyticsCharts {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-analyticsChart--wide {
+    grid-column: span 1;
+  }
+
+  .bo-analyticsSummary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.bo-filters {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.bo-filtersTop {
+  display: none;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-filtersToggle {
+  gap: 8px;
+  font-size: var(--bo-text-sm);
+}
+
+.bo-filtersToggle .bo-ico {
+  width: var(--bo-text-base);
+  height: var(--bo-text-base);
+}
+
+.bo-filtersBody {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.bo-filterRow--selects {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-filterRow--selects .bo-selectBtn {
+  width: 100%;
+}
+
+@media (max-width: 680px) {
+  .bo-filterRow--selects {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .bo-filterRow--selects {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bo-filterRow--actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.bo-filterRow .bo-search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  min-width: 260px;
+}
+
+.bo-filterRow .bo-search .bo-input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.bo-filterRow .bo-btn.bo-btn--download,
+.bo-btn--downloadTop {
+  margin-left: auto;
+  font-size: var(--bo-text-sm);
+}
+
+.bo-filterRow .bo-btn.bo-btn--download .bo-ico,
+.bo-btn--downloadTop .bo-ico {
+  width: var(--bo-text-base);
+  height: var(--bo-text-base);
+}
+
+@media (max-width: 650px) {
+  .bo-filters {
+    gap: var(--bo-space-2);
+  }
+
+  .bo-filtersTop {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bo-filtersTop > * {
+    width: 100%;
+  }
+
+  .bo-filterRow {
+    align-items: stretch;
+  }
+
+  .bo-filterRow--selects {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-filterRow--actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-filterRow .bo-search {
+    min-width: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-filterRow .bo-search .bo-input,
+  .bo-filterRow .bo-search .bo-btn,
+  .bo-filterRow--actions .bo-btn.bo-btn--download {
+    min-width: 0;
+    width: 100%;
+    height: 40px;
+  }
+
+  .bo-filterRow .bo-btn.bo-btn--download,
+  .bo-btn--downloadTop {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .bo-filtersTop {
+    display: flex;
+  }
+
+  .bo-filtersBody {
+    display: none;
+  }
+
+  .bo-filters.is-open .bo-filtersBody {
+    display: grid;
+  }
+
+  .bo-btn--downloadInline {
+    display: none;
+  }
+
+  .bo-btn--downloadTop {
+    margin-left: auto;
+  }
+
+  .bo-filterRow .bo-search {
+    min-width: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .bo-filterRow .bo-search .bo-input {
+    min-width: 0;
+  }
+}
+
+.bo-input--xs {
+  height: 30px;
+  border-radius: 10px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.bo-tableScroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bo-table--reservas th.col-added,
+.bo-table--reservas td.col-added {
+  width: 96px;
+}
+
+.bo-table--reservas th.col-mesa,
+.bo-table--reservas td.col-mesa {
+  width: 66px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.bo-table--reservas .bo-input--mesa {
+  width: 40px;
+  padding: 0 6px;
+  text-align: center;
+}
+
+.bo-table--reservas thead th,
+.bo-table--reservas td {
+  text-align: center;
+}
+
+.bo-table--reservas th.col-client,
+.bo-table--reservas td.col-client {
+  min-width: 180px;
+}
+
+.bo-table--reservas th.col-status,
+.bo-table--reservas td.col-status {
+  width: 120px;
+}
+
+.bo-table--reservas th.col-time,
+.bo-table--reservas td.col-time {
+  width: 72px;
+}
+
+.bo-table--reservas th.col-children,
+.bo-table--reservas td.col-children {
+  width: 72px;
+}
+
+.bo-table--reservas th.col-phone,
+.bo-table--reservas td.col-phone {
+  width: 130px;
+}
+
+.bo-table--reservas th.col-rice,
+.bo-table--reservas td.col-rice {
+  min-width: 210px;
+}
+
+.bo-table--reservas th.col-comment,
+.bo-table--reservas td.col-comment {
+  min-width: 320px;
+}
+
+.bo-table--reservas td.col-comment {
+  max-width: 360px;
+  white-space: pre-line;
+}
+
+@media (max-width: 1680px) {
+
+  .bo-table--reservas th.col-comment,
+  .bo-table--reservas td.col-comment {
+    display: none;
+  }
+}
+
+@media (max-width: 1480px) {
+
+  .bo-table--reservas th.col-phone,
+  .bo-table--reservas td.col-phone {
+    display: none;
+  }
+}
+
+@media (max-width: 1280px) {
+
+  .bo-table--reservas th.col-children,
+  .bo-table--reservas td.col-children {
+    display: none;
+  }
+}
+
+@media (max-width: 1240px) {
+
+  .bo-table--reservas th.col-added,
+  .bo-table--reservas td.col-added {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+
+  .bo-table--reservas th.col-status,
+  .bo-table--reservas td.col-status {
+    display: none;
+  }
+
+  .bo-table--reservas tbody tr {
+    cursor: pointer;
+  }
+
+  .bo-table--reservas th.col-client,
+  .bo-table--reservas td.col-client {
+    min-width: 180px;
+  }
+
+  .bo-table--reservas th.col-rice,
+  .bo-table--reservas td.col-rice {
+    min-width: 190px;
+  }
+}
+
+.bo-bookingKey {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  text-align: center;
+}
+
+.bo-bookingKeyLabel {
+  font-size: 11px;
+  color: var(--bo-faint);
+  font-weight: 720;
+}
+
+.bo-bookingKeyValue {
+  margin-top: 2px;
+  font-size: 22px;
+  font-weight: 840;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 520px) {
+  .bo-bookingKeyValue {
+    font-size: 20px;
+  }
+}
+
+.bo-kvGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 620px) {
+  .bo-kvGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bo-kv {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bo-kv--wide {
+  grid-column: 1 / -1;
+}
+
+.bo-kvLabel {
+  font-size: 11px;
+  color: var(--bo-faint);
+  font-weight: 720;
+}
+
+.bo-kvValue {
+  font-size: 13px;
+  font-weight: 720;
+  color: var(--bo-text);
+  overflow-wrap: anywhere;
+}
+
+.bo-kvValue--wrap {
+  overflow-wrap: anywhere;
+}
+
+.bo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.bo-badge--ok {
+  border-color: rgba(147, 239, 231, 0.30);
+  background: rgba(147, 239, 231, 0.10);
+  color: rgba(147, 239, 231, 0.92);
+}
+
+.bo-badge--warn {
+  border-color: rgba(255, 223, 132, 0.28);
+  background: rgba(255, 223, 132, 0.10);
+  color: rgba(255, 223, 132, 0.95);
+}
+

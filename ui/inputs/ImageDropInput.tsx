@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
+import { cn } from "../shadcn/utils";
 
 type ImageDropInputProps = {
   className?: string;
@@ -35,7 +36,7 @@ export function ImageDropInput({
 
   return (
     <div
-      className={["bo-imageDropInput", dragging ? "is-dragging" : "", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}
+      className={cn("bo-imageDropInput", dragging && "is-dragging", disabled && "is-disabled", className)}
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-label={ariaLabel}
