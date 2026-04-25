@@ -1,0 +1,138 @@
+/* ShiftModal */
+.bo-shiftModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 4px;
+}
+
+.bo-shiftModalError {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--bo-radius-md);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--bo-text-danger, #dc2626);
+}
+
+.bo-shiftModalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-shiftModalLabel {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bo-muted);
+}
+
+.bo-shiftModalTimeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.bo-shiftModalTimeBlock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-shiftModalTime {
+  font-size: 18px;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+  min-width: 56px;
+  text-align: center;
+}
+
+.bo-shiftModalSeparator {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--bo-muted);
+}
+
+.bo-shiftModalActions {
+  display: flex;
+  gap: 10px;
+}
+
+.bo-shiftModalActions .bo-btn {
+  flex: 1;
+}
+
+.bo-shiftModalActiveBadge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.bo-shiftModalActiveTime {
+  font-size: 14px;
+  color: var(--bo-muted);
+}
+
+.bo-shiftModalAssignForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.bo-shiftModalSpinWheels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.bo-shiftModalSpinWheelCol {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.bo-shiftModalSpinWheel {
+  --wheel-w: 52px;
+}
+
+.bo-shiftModalSpinWheel .bo-spinWheelViewport {
+  width: var(--wheel-w);
+  height: 152px;
+}
+
+.bo-shiftModalSpinWheel .bo-spinWheelTrack {
+  gap: 0;
+}
+
+.bo-shiftModalSpinWheelColon {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bo-muted);
+  margin: 0 2px;
+}
+
+.bo-shiftModalWarning {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: var(--bo-radius-md);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--bo-color-warning, #d97706);
+  text-align: center;
+}
+
+.bo-shiftModalAddShift {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bo-border);
+}
+

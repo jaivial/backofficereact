@@ -1,0 +1,529 @@
+/* Table Footer - Sticky totals row */
+.bo-table tfoot.bo-tableFooter {
+  position: sticky;
+  bottom: 0;
+  background: var(--bo-bg);
+  border-top: 2px solid var(--bo-border);
+  z-index: 10;
+}
+
+.bo-table tfoot.bo-tableFooter td {
+  padding: 12px 16px;
+  color: var(--bo-text);
+  font-weight: 600;
+  background: var(--bo-surface-2);
+}
+
+.bo-table tfoot.bo-tableFooter td.col-amount {
+  font-weight: 700;
+}
+
+.bo-table tfoot.bo-tableFooter tr {
+  border-top: 2px solid var(--bo-border);
+}
+
+:root[data-theme="light"] .bo-tableWrap {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.60), rgba(242, 244, 251, 0.50));
+}
+
+:root[data-theme="light"] .bo-table tbody tr:hover {
+  background: color-mix(in srgb, var(--bo-accent) 4%, transparent);
+}
+
+:root[data-theme="light"] .bo-table tfoot.bo-tableFooter td {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.90), rgba(242, 244, 251, 0.80));
+}
+
+:root[data-theme="light"] .bo-formContainer {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.70), rgba(242, 244, 251, 0.50));
+}
+
+/* Bulk Actions Bar */
+.bo-bulkBar {
+  background: var(--bo-bg-secondary);
+  border: 1px solid var(--bo-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bo-bulkBarContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bo-bulkBarInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-bulkBarCount {
+  font-weight: 500;
+  color: var(--bo-text-primary);
+}
+
+.bo-bulkBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-bulkAction {
+  display: inline-flex;
+}
+
+@media (max-width: 720px) {
+  .bo-bulkBarContent {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-bulkBarActions {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .bo-bulkBarActions .bo-btn {
+    flex: 1 1 160px;
+    justify-content: center;
+  }
+}
+
+
+/* Table row selected state */
+.bo-tableRow.is-selected {
+  background-color: var(--bo-bg-selected);
+}
+
+.bo-tableRow.is-selected:hover {
+  background-color: var(--bo-bg-selected-hover);
+}
+
+/* Overdue invoice row styling */
+.bo-tableRow--overdue {
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.bo-tableRow--overdue:hover {
+  background-color: rgba(239, 68, 68, 0.12);
+}
+
+/* Payment date display */
+.bo-paymentDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bo-text-success, #16a34a);
+  font-size: 0.8125rem;
+}
+
+.bo-paymentDate svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Days overdue indicator */
+.bo-daysOverdue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bo-text-danger, #dc2626);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.bo-daysOverdue svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Payment method display */
+.bo-paymentMethod {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bo-text-secondary, #6b7280);
+  font-size: 0.8125rem;
+}
+
+.bo-paymentMethod svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Payment Progress in Table */
+.bo-paymentProgressCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.bo-paymentProgressText {
+  font-size: 0.75rem;
+  color: var(--bo-text-secondary, #6b7280);
+}
+
+.bo-paymentProgressText.is-paid {
+  color: var(--bo-color-success, #10b981);
+  font-weight: 600;
+}
+
+.bo-paymentProgressBar {
+  width: 100%;
+  height: 4px;
+  background-color: var(--bo-border-color, #e5e7eb);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bo-paymentProgressFill {
+  height: 100%;
+  background-color: var(--bo-color-warning, #f59e0b);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.bo-paymentProgressFill.is-complete {
+  background-color: var(--bo-color-success, #10b981);
+}
+
+/* Payment Modal */
+.bo-paymentSummary {
+  background-color: var(--bo-bg-muted, #f9fafb);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.bo-paymentSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.875rem;
+}
+
+.bo-paymentSummaryRow--remaining {
+  border-top: 1px solid var(--bo-border-color, #e5e7eb);
+  margin-top: 4px;
+  padding-top: 10px;
+  font-weight: 600;
+}
+
+.bo-text--success {
+  color: var(--bo-color-success, #10b981);
+}
+
+.bo-text--warning {
+  color: var(--bo-color-warning, #f59e0b);
+}
+
+.bo-paymentProgress {
+  margin-top: 12px;
+}
+
+.bo-paymentProgressBar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--bo-border-color, #e5e7eb);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bo-paymentProgressLabel {
+  display: block;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--bo-text-secondary, #6b7280);
+  margin-top: 6px;
+}
+
+/* Payment History */
+.bo-paymentHistory {
+  margin-bottom: 20px;
+}
+
+.bo-paymentHistoryTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--bo-text-primary, #111827);
+}
+
+.bo-paymentHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.bo-paymentHistoryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--bo-bg-muted, #f9fafb);
+  border-radius: 6px;
+}
+
+.bo-paymentHistoryItemInfo {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.bo-paymentHistoryItemAmount {
+  font-weight: 600;
+  color: var(--bo-color-success, #10b981);
+}
+
+.bo-paymentHistoryItemMethod {
+  color: var(--bo-text-secondary, #6b7280);
+}
+
+.bo-paymentHistoryItemDate {
+  color: var(--bo-text-muted, #9ca3af);
+  font-size: 0.75rem;
+}
+
+/* Payment Form */
+.bo-paymentForm {
+  border-top: 1px solid var(--bo-border-color, #e5e7eb);
+  padding-top: 20px;
+}
+
+.bo-paymentFormTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--bo-text-primary, #111827);
+}
+
+.bo-paymentFormRow {
+  margin-bottom: 12px;
+}
+
+.bo-paymentComplete {
+  text-align: center;
+  padding: 20px;
+  color: var(--bo-color-success, #10b981);
+  font-weight: 600;
+}
+
+/* Table column for payment progress */
+.col-payment_progress {
+  min-width: 120px;
+}
+
+.bo-table th.col-payment_progress,
+.bo-table td.col-payment_progress {
+  padding: 8px 12px;
+}
+
+/* Muted text */
+.bo-mutedText {
+  color: var(--bo-text-muted, #9ca3af);
+  font-size: 0.8125rem;
+}
+
+/* Special menu image upload */
+.bo-specialImageUpload {
+  border: 2px dashed var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 32px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-specialImageDropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--bo-muted);
+  cursor: pointer;
+  position: relative;
+}
+
+.bo-specialImageDropzone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bo-specialImageDropzone:hover {
+  border-color: rgba(185, 168, 255, 0.42);
+}
+
+.bo-specialImagePreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.bo-specialImagePreview img {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: var(--bo-radius-md);
+  object-fit: contain;
+}
+
+/* Selection column */
+.col-selection {
+  width: 40px;
+  text-align: center;
+}
+
+.bo-table th.col-selection,
+.bo-table td.col-selection {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.bo-tableActions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Status cell with dropdown */
+.bo-tableStatusCell {
+  display: flex;
+  align-items: center;
+}
+
+.bo-statusTrigger {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+}
+
+.bo-statusTrigger:hover {
+  background: transparent !important;
+}
+
+.bo-statusBadge--clickable {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.bo-statusBadge--clickable:hover {
+  opacity: 0.8;
+}
+
+.bo-tableActions .bo-btn--danger:hover:not(:disabled) {
+  color: var(--bo-color-danger, #dc2626);
+  border-color: rgba(255, 107, 107, 0.4);
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.bo-pill {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  display: inline-block;
+}
+
+.bo-rightTitle {
+  margin: 2px 0 10px;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.bo-calDows {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 11px;
+  color: var(--bo-faint);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.bo-calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px 6px;
+  font-size: 12px;
+  color: var(--bo-text);
+  text-align: center;
+}
+
+.bo-calDay {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: 999px;
+  transition: background 160ms ease;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.bo-calDay:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bo-calDay.is-selected {
+  background: rgba(185, 168, 255, 0.28);
+  border: 1px solid rgba(185, 168, 255, 0.32);
+  box-shadow: 0 10px 24px rgba(185, 168, 255, 0.18);
+  color: var(--bo-text);
+}
+
+.bo-calDay.is-inRange {
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 26%, transparent);
+  box-shadow: none;
+}
+
+.bo-calDay.is-rangeStart,
+.bo-calDay.is-rangeEnd {
+  background: color-mix(in srgb, var(--bo-accent) 36%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 48%, var(--bo-border));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--bo-accent) 22%, transparent);
+  color: var(--bo-text);
+}
+
+.bo-dateRangeActions {
+  margin-top: var(--bo-space-3);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--bo-space-2);
+}
+
+.bo-calDay--empty {
+  cursor: default;
+}
+
+.bo-calDay--empty:hover {
+  background: transparent;
+}
+

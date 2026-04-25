@@ -1,0 +1,83 @@
+/* Modal */
+.bo-modalOverlay,
+.bo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.46);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  overflow: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+:root[data-theme="light"] .bo-modalOverlay,
+:root[data-theme="light"] .bo-modal-overlay {
+  background: rgba(20, 21, 26, 0.18);
+}
+
+.bo-modal,
+.bo-modal-content {
+  width: min(var(--bo-modal-w, 520px), calc(100vw - 36px));
+  max-height: 80vh;
+  overflow: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+  box-shadow: var(--bo-shadow);
+  padding: 14px;
+}
+
+.bo-modalOverlay::-webkit-scrollbar,
+.bo-modal::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.bo-modalOutline .bo-panel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.bo-modalOutline .bo-panelHead {
+  padding: 14px 16px 10px;
+}
+
+.bo-modalOutline .bo-panelBody {
+  padding: 0 16px 14px;
+}
+
+.bo-modalHead,
+.bo-modal-header,
+.bo-modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-modalTitle,
+.bo-modal-title {
+  font-size: 14px;
+  font-weight: 760;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-modalX {
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-muted);
+}
+

@@ -1,0 +1,196 @@
+/* ============================================
+   Shift Modal Clean Refresh
+   ============================================ */
+.bo-modal--memberShift {
+  width: min(760px, calc(100vw - 28px));
+  padding: clamp(12px, 1.9vw, 20px);
+}
+
+.bo-shiftModal {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.bo-shiftModalDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-muted);
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 20%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 72%, rgba(255, 255, 255, 0.1));
+}
+
+.bo-shiftModalLoading {
+  min-height: 188px;
+  border-radius: var(--bo-radius-md);
+  border: 1px dashed var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-2) 80%, transparent);
+}
+
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass,
+.bo-shiftModalActive--glass {
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-shiftModalSection--glass,
+.bo-shiftModalAssign--glass {
+  padding: 14px;
+  gap: 12px;
+}
+
+.bo-shiftModalLabel {
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-faint);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bo-shiftModalTimes {
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-shiftModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-shiftModalActions .bo-btn,
+.bo-shiftModal .bo-btn--full {
+  min-height: 40px;
+  border-radius: 12px;
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-shiftModalActive--glass {
+  padding: 12px;
+  border-color: color-mix(in srgb, var(--bo-accent-2) 38%, var(--bo-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-accent-2) 11%, transparent), transparent 78%),
+    color-mix(in srgb, var(--bo-surface) 80%, transparent);
+}
+
+.bo-shiftModalActiveInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-shiftModalActiveTime {
+  font-size: 13px;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-shiftModalWheels {
+  gap: 12px;
+}
+
+.bo-shiftModalWheelGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-shiftModalWheelLabel {
+  font-size: 11px;
+  color: var(--bo-muted);
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-shiftModalWheelRow {
+  gap: 8px;
+}
+
+.bo-shiftModalWheelSpin {
+  width: 100%;
+}
+
+.bo-shiftModalAssign--glass {
+  border-top: 1px solid color-mix(in srgb, var(--bo-accent) 18%, var(--bo-border));
+}
+
+.bo-shiftModalAddBtn {
+  margin-top: 0;
+}
+
+:root[data-theme="light"] .bo-modal--memberShift {
+  box-shadow: 0 14px 32px rgba(17, 24, 39, 0.14);
+}
+
+:root[data-theme="light"] .bo-shiftModalDate {
+  color: rgba(20, 21, 26, 0.74);
+  border-color: rgba(124, 92, 231, 0.24);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+:root[data-theme="light"] .bo-shiftModalLabel {
+  color: rgba(20, 21, 26, 0.58);
+}
+
+:root[data-theme="light"] .bo-shiftModalActive--glass {
+  border-color: rgba(13, 148, 136, 0.32);
+  background:
+    linear-gradient(180deg, rgba(45, 212, 191, 0.16), rgba(255, 255, 255, 0.86));
+}
+
+@media (max-width: 760px) {
+  .bo-modal--memberShift {
+    width: calc(100vw - 20px);
+    padding: 12px;
+  }
+
+  .bo-shiftModalTimes,
+  .bo-shiftModalWheels,
+  .bo-shiftModalWheelRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-shiftModalActions .bo-btn,
+  .bo-shiftModal .bo-btn--full {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+/* Member Shift Modal */
+.bo-shiftModal {
+  display: grid;
+  gap: 16px;
+}
+
+.bo-shiftModalDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--bo-muted);
+  font-weight: 600;
+}
+
+.bo-shiftModalLoading {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.bo-spinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--bo-border);
+  border-top-color: var(--bo-accent);
+  animation: bo-spin 700ms linear infinite;
+}
+

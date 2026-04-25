@@ -1,0 +1,208 @@
+/* Reminder Modal Styles */
+.bo-reminderInvoiceInfo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px;
+  background: var(--bo-bg-2);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.bo-reminderInvoiceInfo .bo-field {
+  margin: 0;
+}
+
+.bo-reminderInvoiceInfo .bo-label {
+  font-size: 11px;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.bo-reminderInvoiceInfo .bo-value {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.bo-reminderPreview {
+  background: var(--bo-bg-2);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.bo-reminderPreviewHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--bo-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bo-reminderPreviewSubject {
+  font-size: 13px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-reminderPreviewBody {
+  font-size: 13px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Reminder History Modal */
+.bo-reminderHistoryInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bo-bg-2);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.bo-reminderHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-reminderHistoryItem {
+  padding: 12px;
+  background: var(--bo-bg-2);
+  border-radius: 8px;
+}
+
+.bo-reminderHistoryItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.bo-reminderHistoryItemStatus {
+  display: flex;
+  gap: 8px;
+}
+
+.bo-reminderHistoryItemDate {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-reminderHistoryItemTemplate {
+  font-size: 12px;
+  color: var(--bo-muted);
+  margin-top: 4px;
+}
+
+.bo-reminderHistoryItemError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--bo-danger);
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 4px;
+}
+
+/* Reminder Templates Modal */
+.bo-templatesHeader {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.bo-templatesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-templateItem {
+  padding: 12px;
+  background: var(--bo-bg-2);
+  border-radius: 8px;
+}
+
+.bo-templateItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.bo-templateItemInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-templateItemName {
+  font-weight: 500;
+}
+
+.bo-templateItemType {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-templateItemActions {
+  display: flex;
+  gap: 4px;
+}
+
+.bo-templateItemPreview {
+  padding-top: 8px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-templateItemSubject {
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.bo-templateItemBody {
+  font-size: 12px;
+  color: var(--bo-muted);
+  white-space: pre-wrap;
+}
+
+.bo-templateForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bo-formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bo-border);
+}
+
+/* Reminder status badges */
+.bo-badge--warning {
+  background: var(--bo-warning-bg, #fef3c7);
+  color: var(--bo-warning-fg, #92400e);
+}
+
+:root[data-theme="dark"] .bo-badge--warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--bo-color-warning, #d97706);
+}
+

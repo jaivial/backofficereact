@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { cn } from "../shadcn/utils";
 
 import { formatISODate, parseISODate } from "../lib/format";
 
@@ -306,7 +307,7 @@ export function DateRangePicker({
     <>
       <button
         ref={btnRef}
-        className={["bo-dateBtn bo-dateBtn--glass bo-dateRangeBtn", className].filter(Boolean).join(" ")}
+        className={cn("bo-dateBtn bo-dateBtn--glass bo-dateRangeBtn", className)}
         type="button"
         onClick={toggle}
         aria-label={ariaLabel || buttonLabel}

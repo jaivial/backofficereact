@@ -1,0 +1,374 @@
+/* InlineCounter alignment in booking choice row */
+.bo-bookingChoiceServings.bo-field--counter {
+  min-width: 0;
+}
+
+.bo-bookingChoiceServings.bo-field--counter .bo-label {
+  display: none;
+}
+
+.bo-bookingChoiceServings.bo-field--counter .bo-counter {
+  margin: 0;
+}
+
+/* ==========================================================================
+   Public Booking Pages (confirm, cancel, update-rice, booking-policies)
+   Standalone customer-facing pages that share backoffice tokens.
+   ========================================================================== */
+
+.bo-publicPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--bo-space-4);
+  background: var(--bo-bg);
+}
+
+.bo-publicPageCard {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg);
+  padding: var(--bo-space-6) var(--bo-space-5);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-publicPageCard--wide {
+  max-width: 680px;
+}
+
+@media (min-width: 520px) {
+  .bo-publicPageCard {
+    padding: calc(var(--bo-space-6) + var(--bo-space-1)) var(--bo-space-6);
+  }
+}
+
+.bo-publicPageTitle {
+  font-size: var(--bo-text-xl);
+  font-weight: var(--bo-weight-semibold);
+  text-align: center;
+  margin-bottom: var(--bo-space-1);
+}
+
+.bo-publicPageSub {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  text-align: center;
+  margin-bottom: var(--bo-space-5);
+}
+
+.bo-publicPageIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--bo-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--bo-space-4);
+}
+
+.bo-publicPageIcon--success {
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  color: var(--bo-color-success);
+}
+
+.bo-publicPageIcon--warning {
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  color: var(--bo-color-warning);
+}
+
+.bo-publicPageIcon--danger {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: var(--bo-color-danger);
+}
+
+.bo-publicPageIcon--accent {
+  background: rgba(185, 168, 255, 0.12);
+  border: 1px solid rgba(185, 168, 255, 0.3);
+  color: var(--bo-accent);
+}
+
+.bo-publicPageAlert {
+  padding: var(--bo-space-3) var(--bo-space-4);
+  border-radius: var(--bo-radius-md);
+  margin-bottom: var(--bo-space-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bo-space-3);
+  border: 1px solid transparent;
+  font-size: var(--bo-text-base);
+  line-height: var(--bo-leading-normal);
+}
+
+.bo-publicPageAlert--success {
+  background: rgba(22, 163, 74, 0.08);
+  border-color: rgba(22, 163, 74, 0.2);
+  color: var(--bo-color-success);
+}
+
+.bo-publicPageAlert--danger {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.2);
+  color: var(--bo-color-danger);
+}
+
+.bo-publicPageAlert--warning {
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.2);
+  color: var(--bo-color-warning);
+}
+
+.bo-publicPageBooking {
+  background: var(--bo-surface-2);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-4);
+  margin-bottom: var(--bo-space-4);
+}
+
+.bo-publicPageBookingHeader {
+  padding-bottom: var(--bo-space-3);
+  margin-bottom: var(--bo-space-3);
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-publicPageBookingName {
+  font-weight: var(--bo-weight-semibold);
+  font-size: var(--bo-text-lg);
+}
+
+.bo-publicPageBookingId {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  margin-top: 2px;
+}
+
+.bo-publicPageDetailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bo-space-3);
+}
+
+.bo-publicPageDetailItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bo-space-2);
+  color: var(--bo-muted);
+}
+
+.bo-publicPageDetailItem > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bo-publicPageDetailLabel {
+  display: block;
+  font-size: var(--bo-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bo-faint);
+}
+
+.bo-publicPageDetailValue {
+  display: block;
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-medium);
+  color: var(--bo-text);
+}
+
+.bo-publicPageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-2);
+  width: 100%;
+  padding: 14px 20px;
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-medium);
+  border-radius: var(--bo-radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  border: 2px solid transparent;
+  background: transparent;
+  color: var(--bo-text);
+  transition: background var(--bo-transition-fast) var(--bo-ease),
+              color var(--bo-transition-fast) var(--bo-ease),
+              border-color var(--bo-transition-fast) var(--bo-ease);
+  font-family: var(--bo-font);
+}
+
+.bo-publicPageBtn:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-publicPageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bo-publicPageBtn + .bo-publicPageBtn {
+  margin-top: var(--bo-space-3);
+}
+
+.bo-publicPageBtn--accent {
+  border-color: var(--bo-accent);
+  color: var(--bo-accent);
+}
+
+.bo-publicPageBtn--accent:hover {
+  background: var(--bo-accent);
+  color: #fff;
+}
+
+.bo-publicPageBtn--success {
+  border-color: var(--bo-color-success);
+  color: var(--bo-color-success);
+}
+
+.bo-publicPageBtn--success:hover {
+  background: var(--bo-color-success);
+  color: #fff;
+}
+
+.bo-publicPageBtn--danger {
+  border-color: var(--bo-color-danger);
+  color: var(--bo-color-danger);
+}
+
+.bo-publicPageBtn--danger:hover {
+  background: var(--bo-color-danger);
+  color: #fff;
+}
+
+.bo-publicPageBtn--primary {
+  background: var(--bo-accent);
+  color: #fff;
+  border-color: var(--bo-accent);
+}
+
+.bo-publicPageBtn--primary:hover {
+  opacity: 0.9;
+}
+
+.bo-publicPageNote {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-faint);
+  text-align: center;
+  margin-top: var(--bo-space-4);
+  padding-top: var(--bo-space-4);
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-publicPageForm {
+  margin-bottom: var(--bo-space-3);
+}
+
+.bo-publicPageFormGroup {
+  margin-bottom: var(--bo-space-4);
+  text-align: left;
+}
+
+.bo-publicPageFormLabel {
+  display: block;
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  margin-bottom: var(--bo-space-2);
+  color: var(--bo-muted);
+}
+
+.bo-publicPageFormControl {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--bo-space-3);
+  font-size: var(--bo-text-base);
+  font-family: var(--bo-font);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  border: 1px solid var(--bo-border-2);
+  border-radius: var(--bo-radius-sm);
+  appearance: none;
+  transition: border-color var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-publicPageFormControl:focus {
+  outline: none;
+  border-color: var(--bo-accent);
+}
+
+/* Policies page */
+.bo-publicPagePoliciesHeader {
+  text-align: center;
+  margin-bottom: var(--bo-space-5);
+}
+
+.bo-publicPagePoliciesContent {
+  font-size: var(--bo-text-base);
+  line-height: var(--bo-leading-relaxed);
+  color: var(--bo-text);
+}
+
+.bo-publicPagePoliciesContent h2 {
+  font-size: var(--bo-text-lg);
+  font-weight: var(--bo-weight-semibold);
+  margin-top: var(--bo-space-5);
+  margin-bottom: var(--bo-space-2);
+  text-decoration: underline;
+}
+
+.bo-publicPagePoliciesContent h3 {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+  margin-top: var(--bo-space-4);
+  margin-bottom: var(--bo-space-2);
+}
+
+.bo-publicPagePoliciesContent p {
+  margin-bottom: var(--bo-space-3);
+  color: var(--bo-muted);
+}
+
+.bo-publicPagePoliciesContent ul {
+  margin-bottom: var(--bo-space-3);
+  padding-left: var(--bo-space-5);
+  color: var(--bo-muted);
+}
+
+.bo-publicPagePoliciesContent li {
+  margin-bottom: var(--bo-space-1);
+}
+
+.bo-publicPagePoliciesContent strong {
+  color: var(--bo-text);
+}
+
+/* Spin animation for loading */
+.bo-spin {
+  animation: bo-spin-anim 1s linear infinite;
+}
+
+@keyframes bo-spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 400px) {
+  .bo-publicPageCard {
+    padding: var(--bo-space-4) var(--bo-space-3);
+    border-radius: var(--bo-radius-md);
+  }
+  .bo-publicPageDetailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-spin {
+    animation: none !important;
+  }
+}

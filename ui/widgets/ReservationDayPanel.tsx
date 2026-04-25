@@ -1,5 +1,6 @@
 import React from "react";
 import { Lock, LockOpen } from "lucide-react";
+import { cn } from "../shadcn/utils";
 
 import type { ConfigDayStatus } from "../../api/types";
 
@@ -48,7 +49,7 @@ export function ReservationDayStateBlock({
   const buttonLabel = actionLabel ?? (actionMode === "openOnly" ? "Abrir día" : day.isOpen ? "Cerrar día" : "Abrir día");
 
   return (
-    <div className={["bo-configDayState flex flex-col !justify-center !items-center !gap-4 pt-4", className].filter(Boolean).join(" ")} data-slot="reservation-day-state-block">
+    <div className={cn("bo-configDayState flex flex-col !justify-center !items-center !gap-4 pt-4", className)} data-slot="reservation-day-state-block">
       <div className="bo-label !text-center" data-slot="reservation-day-state-label">{label}</div>
       <div className="bo-configStatus !text-center flex flex-row justify-center" data-slot="reservation-day-status">
         {day.isOpen ? <LockOpen size={16} strokeWidth={1.8} /> : <Lock size={16} strokeWidth={1.8} />}
@@ -80,12 +81,12 @@ export function ReservationDayPanel({
   bodyClassName,
 }: ReservationDayPanelProps) {
   return (
-    <div className={["bo-panel", "bo-dayStatePanel", "!w-fit py-4 px-14 !mx-auto", panelClassName].filter(Boolean).join(" ")} data-slot="reservation-day-panel">
+    <div className={cn("bo-panel", "bo-dayStatePanel", "!w-fit py-4 px-14 !mx-auto", panelClassName)} data-slot="reservation-day-panel">
       <div className="bo-panelHead flex flex-col gap-2 justify-center !items-center" data-slot="reservation-day-panel-header">
         <div className="bo-panelTitle !text-center" data-slot="reservation-day-panel-title">{title}</div>
         {meta ? <div className="bo-panelMeta !text-center" data-slot="reservation-day-panel-meta">{meta}</div> : null}
       </div>
-      <div className={["bo-panelBody", "bo-configDayLimitRow", "!flex !flex-col gap-2 !justify-center !items-center", bodyClassName].filter(Boolean).join(" ")} data-slot="reservation-day-panel-body">
+      <div className={cn("bo-panelBody", "bo-configDayLimitRow", "!flex !flex-col gap-2 !justify-center !items-center", bodyClassName)} data-slot="reservation-day-panel-body">
         <ReservationDayStateBlock
           day={day}
           busy={busy}

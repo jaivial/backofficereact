@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { cn } from "../shadcn/utils";
 
 export const NavLink = memo(function NavLink({
   href,
@@ -15,10 +16,8 @@ export const NavLink = memo(function NavLink({
   className?: string;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }) {
-  const classes = ["bo-navBtn", "bo-navBtn--glass", active ? "is-active" : "", className ?? ""].filter(Boolean).join(" ");
-
   return (
-    <a className={classes} href={href} aria-label={label} onClick={onClick} data-testid={`nav-link-${label.toLowerCase().replace(/\s+/g, "-")}`} data-ui="nav-link">
+    <a className={cn("bo-navBtn", "bo-navBtn--glass", active && "is-active", className)} href={href} aria-label={label} onClick={onClick} data-testid={`nav-link-${label.toLowerCase().replace(/\s+/g, "-")}`} data-ui="nav-link">
       {children}
     </a>
   );

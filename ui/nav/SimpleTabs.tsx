@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { cn } from "../shadcn/utils";
 
 export type SimpleTabItem = {
   id: string;
@@ -47,7 +48,7 @@ export function SimpleTabs({
   if (!items || !activeId || !onChange) {
     return (
       <legacyTabsContext.Provider value={{ activeId: legacyActiveId, setActiveId: setLegacyActiveId }}>
-        <div className={["bo-tabsWrap", className].filter(Boolean).join(" ")} data-testid="simple-tabs-wrapper" data-role="tabs-wrapper" data-slot="tabs-legacy-wrapper">
+        <div className={cn("bo-tabsWrap", className)} data-testid="simple-tabs-wrapper" data-role="tabs-wrapper" data-slot="tabs-legacy-wrapper">
           {children}
         </div>
       </legacyTabsContext.Provider>
@@ -58,7 +59,7 @@ export function SimpleTabs({
   const effectiveLayoutId = layoutId ?? "boTabIndicator";
 
   return (
-    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label={ariaLabel || "Tabs"} data-testid="simple-tabs" data-role="tabs-list">
+    <div className={cn("bo-tabs", className)} role="tablist" aria-label={ariaLabel || "Tabs"} data-testid="simple-tabs" data-role="tabs-list">
       {items.map((item) => {
         const active = item.id === activeId;
         return (
@@ -121,7 +122,7 @@ export function SimpleTabsList({
   });
 
   return (
-    <div className={["bo-tabs", className].filter(Boolean).join(" ")} role="tablist" aria-label="Tabs" data-testid="simple-tabs-list" data-role="tablist">
+    <div className={cn("bo-tabs", className)} role="tablist" aria-label="Tabs" data-testid="simple-tabs-list" data-role="tablist">
       {tabs.map((item) => {
         const active = item.id === ctx.activeId;
         return (

@@ -1,0 +1,332 @@
+/* Batch Send Modal Styles */
+.bo-batchSendModal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bo-batchSendWarning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bo-warning-bg);
+  border: 1px solid var(--bo-warning);
+  border-radius: var(--bo-radius);
+  font-size: 0.875rem;
+  color: var(--bo-warning-fg);
+}
+
+.bo-batchSendWarning svg {
+  flex-shrink: 0;
+}
+
+.bo-batchSendInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bo-surface-hover);
+  border-radius: var(--bo-radius);
+  font-size: 0.9375rem;
+  color: var(--bo-fg);
+}
+
+.bo-batchSendInfo svg {
+  color: var(--bo-primary);
+  flex-shrink: 0;
+}
+
+.bo-batchSendForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bo-batchSendProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bo-batchSendProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9375rem;
+  color: var(--bo-fg);
+}
+
+.bo-batchSendProgressPercent {
+  font-weight: 600;
+  color: var(--bo-primary);
+}
+
+.bo-batchSendProgressBar {
+  height: 8px;
+  background: var(--bo-surface-hover);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bo-batchSendProgressFill {
+  height: 100%;
+  background: var(--bo-primary);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.bo-batchSendProgressStats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.bo-batchSendProgressStat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bo-batchSendProgressStat--success {
+  color: var(--bo-success);
+}
+
+.bo-batchSendProgressStat--error {
+  color: var(--bo-danger);
+}
+
+.bo-batchSendComplete {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.bo-batchSendSummary {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--bo-surface-hover);
+  border-radius: var(--bo-radius);
+}
+
+.bo-batchSendSummaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bo-batchSendSummaryItem--success {
+  color: var(--bo-success);
+}
+
+.bo-batchSendSummaryItem--error {
+  color: var(--bo-danger);
+}
+
+.bo-batchSendSummaryCount {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.bo-batchSendSummaryLabel {
+  font-size: 0.875rem;
+  color: var(--bo-muted);
+}
+
+.bo-batchSendResults {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.bo-batchSendResults h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bo-fg);
+}
+
+.bo-batchSendResultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bo-batchSendResultItem {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--bo-surface-hover);
+  border-radius: var(--bo-radius);
+  font-size: 0.875rem;
+}
+
+.bo-batchSendResultItem.is-success .bo-batchSendResultIcon {
+  color: var(--bo-success);
+}
+
+.bo-batchSendResultItem.is-error .bo-batchSendResultIcon {
+  color: var(--bo-danger);
+}
+
+.bo-batchSendResultNumber {
+  font-weight: 500;
+  color: var(--bo-fg);
+}
+
+.bo-batchSendResultCustomer {
+  color: var(--bo-fg);
+}
+
+.bo-batchSendResultEmail {
+  color: var(--bo-muted);
+  font-size: 0.8125rem;
+}
+
+.bo-batchSendResultError {
+  color: var(--bo-danger);
+  font-size: 0.8125rem;
+  grid-column: 1 / -1;
+  margin-left: 1.5rem;
+}
+
+.bo-batchSendRetry {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-batchSendActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bo-border);
+}
+
+/* Send WhatsApp Modal Styles */
+.bo-sendWhatsAppModal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bo-sendWhatsAppSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bo-surface-hover);
+  border-radius: var(--bo-radius);
+}
+
+.bo-sendWhatsAppSummaryRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--bo-fg);
+}
+
+.bo-sendWhatsAppSummaryRow svg {
+  color: var(--bo-muted);
+  flex-shrink: 0;
+}
+
+.bo-sendWhatsAppWarning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bo-warning-bg);
+  border: 1px solid var(--bo-warning);
+  border-radius: var(--bo-radius);
+  font-size: 0.875rem;
+  color: var(--bo-warning-fg);
+}
+
+.bo-sendWhatsAppWarning svg {
+  flex-shrink: 0;
+}
+
+.bo-sendWhatsAppForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bo-sendWhatsAppPreview {
+  padding: 1rem;
+  background: var(--bo-surface-hover);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  color: var(--bo-fg);
+}
+
+.bo-sendWhatsAppActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-sendWhatsAppSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.bo-sendWhatsAppSuccessIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: var(--bo-success-bg);
+  border-radius: 50%;
+  color: var(--bo-success);
+}
+
+.bo-sendWhatsAppSuccess h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--bo-fg);
+}
+
+.bo-sendWhatsAppSuccess p {
+  margin: 0;
+  color: var(--bo-muted);
+}
+
+.bo-sendWhatsAppTo {
+  font-weight: 500;
+  color: var(--bo-fg) !important;
+}
+
+/* Light theme adjustments */
+:root[data-theme="light"] .bo-foodTab.is-active {
+  color: var(--bo-shell);
+}
+
+:root[data-theme="light"] .bo-foodCard-image {
+  background: var(--bo-surface-2);
+}
+
+:root[data-theme="light"] .bo-foodFab {
+  box-shadow: 0 4px 12px rgba(185, 168, 255, 0.3);
+}
+
+:root[data-theme="light"] .bo-foodFab:hover {
+  box-shadow: 0 6px 16px rgba(185, 168, 255, 0.4);
+}
+

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { cn } from "../shadcn/utils";
 
 export type TabItem = {
   id: string;
@@ -164,7 +165,7 @@ export function Tabs({
   }, [activeId, mounted, reduceMotion, tabs]);
 
   return (
-    <nav ref={navRef} className={["bo-tabs", "bo-tabs--glass", className].filter(Boolean).join(" ")} aria-label={ariaLabel} data-testid="tabs" data-role="tabs-nav">
+    <nav ref={navRef} className={cn("bo-tabs", "bo-tabs--glass", className)} aria-label={ariaLabel} data-testid="tabs" data-role="tabs-nav">
       {tabs.map((t) => {
         const active = t.id === activeId;
         const href = (() => {

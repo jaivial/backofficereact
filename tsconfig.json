@@ -8,7 +8,9 @@
     "types": ["vite/client", "vitest/globals"],
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": { "@ui/*": ["ui/*"] }
   },
   "include": [
     "pages",

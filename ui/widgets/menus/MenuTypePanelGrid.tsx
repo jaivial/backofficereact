@@ -6,14 +6,16 @@ import { MENU_TYPE_PANELS } from "./menuPresentation";
 export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
   countsByType,
   onSelect,
+  className,
 }: {
   countsByType: Record<string, number>;
   onSelect: (type: string) => void;
+  className?: string;
 }) {
   const panelIdPrefix = React.useId();
 
   return (
-    <div className="bo-menuTypePanels" data-slot="menu-type-panels">
+    <div className={cn("bo-menuTypePanels", className)} data-slot="menu-type-panels">
       <div className="bo-menuTypePanelsGrid" role="group" aria-label="Tipos de menu" data-slot="menu-type-panels-grid">
         {MENU_TYPE_PANELS.map((panel) => {
           const Icon = panel.icon;

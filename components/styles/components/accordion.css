@@ -1,0 +1,299 @@
+/* ===========================================
+   Accordion Component
+   =========================================== */
+
+/* Base Accordion */
+.bo-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bo-accordion--bordered {
+  gap: 0;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  overflow: hidden;
+}
+
+.bo-accordion--bordered .bo-accordionItem {
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-accordion--bordered .bo-accordionItem:last-child {
+  border-bottom: none;
+}
+
+.bo-accordionItem {
+  background: var(--bo-surface);
+  border-radius: var(--bo-radius-sm);
+  overflow: hidden;
+  transition: background 160ms ease;
+}
+
+.bo-accordionItem[hidden] {
+  display: none;
+}
+
+/* Accordion Header/Trigger */
+.bo-accordionTrigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  color: var(--bo-text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+  position: relative;
+}
+
+.bo-accordionTrigger:hover {
+  background: var(--bo-surface-2);
+}
+
+.bo-accordionTrigger:focus {
+  outline: none;
+}
+
+.bo-accordionTrigger:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: -2px;
+}
+
+.bo-accordionTrigger[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bo-accordionTrigger[disabled]:hover {
+  background: transparent;
+}
+
+/* Accordion Trigger Left Content */
+.bo-accordionTriggerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Accordion Trigger Right Content */
+.bo-accordionTriggerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Accordion Icon */
+.bo-accordionIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--bo-muted);
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+
+.bo-accordionTrigger[aria-expanded="true"] .bo-accordionIcon {
+  transform: rotate(180deg);
+}
+
+.bo-accordionTrigger[aria-expanded="false"] .bo-accordionIcon {
+  transform: rotate(0deg);
+}
+
+/* Accordion Content */
+.bo-accordionContent {
+  padding: 0 16px 16px;
+  color: var(--bo-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: hidden;
+  animation: bo-accordionSlideDown 200ms ease forwards;
+}
+
+.bo-accordionContent[hidden] {
+  display: none;
+  animation: none;
+}
+
+.bo-accordionItem:not(.is-active) .bo-accordionContent {
+  display: none;
+}
+
+@keyframes bo-accordionSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accordion with Icons */
+.bo-accordion--with-icons .bo-accordionTriggerLeft {
+  gap: 12px;
+}
+
+.bo-accordionTriggerIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--bo-accent);
+  flex-shrink: 0;
+}
+
+.bo-accordionTriggerIcon--start {
+  margin-right: 2px;
+}
+
+/* Accordion Badge */
+.bo-accordionBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bo-accent);
+  color: #111218;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bo-accordionBadge--lila {
+  background: #b9a8ff;
+}
+
+.bo-accordionBadge--cyan {
+  background: #93efe7;
+}
+
+.bo-accordionBadge--green {
+  background: #7ddba5;
+}
+
+.bo-accordionBadge--red {
+  background: #ff9a8b;
+}
+
+.bo-accordionBadge--yellow {
+  background: #ffe066;
+}
+
+/* Accordion - Multiple Open Mode */
+.bo-accordion--multiple .bo-accordionItem.is-active .bo-accordionContent {
+  display: block;
+  animation: bo-accordionSlideDown 200ms ease forwards;
+}
+
+/* Nested Accordion */
+.bo-accordion--nested {
+  gap: 1px;
+  padding-left: 20px;
+}
+
+.bo-accordion--nested .bo-accordionItem {
+  background: var(--bo-surface-2);
+}
+
+.bo-accordion--nested .bo-accordionTrigger {
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.bo-accordion--nested .bo-accordionContent {
+  padding: 0 14px 14px;
+  font-size: 13px;
+}
+
+/* Accordion with Search Filter */
+.bo-accordionSearchWrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.bo-accordionSearchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--bo-faint);
+  pointer-events: none;
+}
+
+.bo-accordionSearch {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bo-accordionSearch:focus {
+  outline: none;
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 3px rgba(185, 168, 255, 0.15);
+}
+
+.bo-accordionSearch::placeholder {
+  color: var(--bo-faint);
+}
+
+.bo-accordionSearch--noResults {
+  text-align: center;
+  padding: 20px;
+  color: var(--bo-muted);
+  font-size: 13px;
+}
+
+/* Accordion Item - Hover State */
+.bo-accordionItem.is-active .bo-accordionTrigger {
+  background: var(--bo-surface-2);
+}
+
+.bo-accordionTrigger:hover .bo-accordionIcon {
+  color: var(--bo-text);
+}
+
+/* Accordion - Flat Style */
+.bo-accordion--flat {
+  gap: 8px;
+}
+
+.bo-accordion--flat .bo-accordionItem {
+  background: var(--bo-surface-2);
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-accordion--flat .bo-accordionTrigger {
+  padding: 12px 14px;
+}
+
+/* Accordion - Ghost Style */
+.bo-accordion--ghost .bo-accordionItem {
+  background: transparent;
+}
+
+.bo-accordion--ghost .bo-accordionTrigger:hover {
+  background: var(--bo-surface);
+}
+

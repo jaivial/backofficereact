@@ -1,0 +1,61 @@
+.bo-breadcrumb {
+  min-width: 0;
+}
+
+.bo-breadcrumbList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bo-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bo-breadcrumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-1);
+  min-width: 0;
+}
+
+.bo-breadcrumbLink,
+.bo-breadcrumbCurrent {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--bo-space-5);
+  padding: 0 var(--bo-space-2);
+  border-radius: var(--bo-radius-sm);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-normal);
+}
+
+.bo-breadcrumbLink {
+  color: var(--bo-muted);
+  background-color: transparent;
+  transition:
+    color var(--bo-transition-base) var(--bo-ease),
+    background-color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-breadcrumbLink:hover {
+  color: var(--bo-text);
+  background-color: color-mix(in srgb, var(--bo-surface-2) 90%, transparent);
+}
+
+.bo-breadcrumbLink:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+  color: var(--bo-text);
+}
+
+.bo-breadcrumbCurrent {
+  color: var(--bo-text);
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-breadcrumbSeparator {
+  color: var(--bo-faint);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-normal);
+}

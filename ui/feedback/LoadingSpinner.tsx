@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../shadcn/utils";
 
 type SpinnerSize = "sm" | "md" | "lg" | "xl";
 type SpinnerTone = "default" | "lila" | "cyan" | "white" | "dark";
@@ -24,12 +25,11 @@ export function LoadingSpinner({
   className,
 }: LoadingSpinnerProps) {
   const wrapperClass = centered ? "bo-spinnerCentered" : "bo-spinnerWithText";
-  const rootClass = `${wrapperClass}${className ? ` ${className}` : ""}`;
   const spinnerClass = `bo-spinner bo-spinner--${size}${toneClass(tone)}`;
 
   return (
     <div
-      className={rootClass}
+      className={cn(wrapperClass, className)}
       role="status"
       aria-live="polite"
       aria-label={label || "Cargando..."}

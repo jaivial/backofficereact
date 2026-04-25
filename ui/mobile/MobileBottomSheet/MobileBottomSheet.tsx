@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { cn } from "../../shadcn/utils";
 
 interface MobileBottomSheetProps {
   open: boolean;
@@ -16,7 +17,7 @@ export function MobileBottomSheet({
   onClose,
   title,
   children,
-  className = "",
+  className,
   "data-ui": dataUi,
 }: MobileBottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -58,12 +59,12 @@ export function MobileBottomSheet({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 400 }}
-            className={[
+            className={cn(
               "fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-[hsl(var(--background))]",
               "flex flex-col max-h-[90vh]",
               "shadow-2xl border-t border-[hsl(var(--border))]",
               className,
-            ].join(" ")}
+            )}
             data-ui={dataUi}
             role="dialog"
             aria-modal="true"

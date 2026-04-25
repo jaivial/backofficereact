@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../../shadcn/utils";
 
 type Variant = "primary" | "secondary" | "destructive" | "ghost";
 type Size = "sm" | "md" | "lg" | "full";
@@ -39,7 +40,7 @@ export function MobileActionButton({
   size = "md",
   disabled = false,
   loading = false,
-  className = "",
+  className,
   "data-ui": dataUi,
   "data-role": dataRole,
   "aria-label": ariaLabel,
@@ -50,7 +51,7 @@ export function MobileActionButton({
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={[
+      className={cn(
         "flex items-center justify-center gap-2 font-semibold transition-all",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "active:scale-95",
@@ -58,9 +59,7 @@ export function MobileActionButton({
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      )}
       data-ui={dataUi}
       data-role={dataRole}
       aria-label={ariaLabel}

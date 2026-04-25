@@ -1,0 +1,86 @@
+/* Base button hover state */
+.bo-btn:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--bo-border-2);
+  transform: translateY(-1px);
+}
+
+.bo-btn--primary {
+  border-color: rgba(185, 168, 255, 0.30);
+  background: rgba(185, 168, 255, 0.16);
+  margin: 0 auto;
+}
+
+.bo-btn--ghost {
+  background: transparent;
+}
+
+.bo-btn--secondary {
+  border-color: var(--bo-border-2);
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+}
+
+.bo-btn--secondary:hover:not(:disabled) {
+  border-color: var(--bo-primary);
+  background: color-mix(in srgb, var(--bo-surface-2) 80%, var(--bo-primary) 20%);
+}
+
+.bo-btn--outline {
+  border-color: var(--bo-border-2);
+  background: transparent;
+}
+
+.bo-btn--outline:hover:not(:disabled) {
+  border-color: var(--bo-primary);
+  color: var(--bo-primary);
+}
+
+.bo-btn--sm {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.bo-btn--danger {
+  border-color: rgba(220, 53, 69, 0.35);
+  background: rgba(220, 53, 69, 0.14);
+}
+
+.bo-btn--warning {
+  border-color: color-mix(in srgb, var(--bo-color-warning) 38%, transparent);
+  background: color-mix(in srgb, var(--bo-color-warning) 16%, transparent);
+  color: var(--bo-text-warning);
+}
+
+.bo-btn--warning:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--bo-color-warning) 52%, transparent);
+  background: color-mix(in srgb, var(--bo-color-warning) 24%, transparent);
+}
+
+.bo-btn--success {
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.14);
+  color: #16a34a;
+}
+
+.bo-btn--success:hover:not(:disabled) {
+  background: rgba(22, 163, 74, 0.24);
+  border-color: rgba(22, 163, 74, 0.5);
+}
+
+.bo-btn--fit {
+  width: fit-content;
+  align-self: start;
+}
+
+.bo-spin {
+  animation: bo-spin 0.9s linear infinite;
+}
+
+.bo-spin--sm {
+  width: 14px;
+  height: 14px;
+}
+

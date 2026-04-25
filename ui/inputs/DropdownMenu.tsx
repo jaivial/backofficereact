@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import { createPortal } from "react-dom";
 import { MoreVertical } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { cn } from "../shadcn/utils";
 
 type MenuItem = {
   id: string;
@@ -198,7 +199,7 @@ export function DropdownMenu({
     <button
       ref={triggerRef}
       type="button"
-      className={triggerClassName || "bo-actionBtn"}
+      className={cn("bo-actionBtn", triggerClassName)}
       aria-haspopup="menu"
       aria-expanded={open}
       aria-label={label}
@@ -258,9 +259,9 @@ export function DropdownMenu({
   ) : null;
 
   return (
-    <>
+    <div className={cn("bo-dropdownWrapper", className)}>
       {trigger}
       {menu}
-    </>
+    </div>
   );
 }

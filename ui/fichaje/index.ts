@@ -1,0 +1,1 @@
+export { FichajeRealtimeBridge } from "./FichajeRealtimeBridge";

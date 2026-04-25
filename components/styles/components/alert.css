@@ -1,0 +1,72 @@
+/* Alerts */
+.bo-alert {
+  margin-top: 12px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px;
+}
+
+.bo-alertTitle {
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.bo-alertMsg {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-alert--error {
+  border-color: rgba(220, 53, 69, 0.32);
+  background: rgba(220, 53, 69, 0.10);
+}
+
+.bo-alert--success {
+  border-color: rgba(40, 167, 69, 0.26);
+  background: rgba(40, 167, 69, 0.10);
+}
+
+.bo-alert--warning {
+  border-color: rgba(255, 193, 7, 0.32);
+  background: rgba(255, 193, 7, 0.10);
+}
+
+.bo-alert--info {
+  border-color: rgba(13, 202, 240, 0.32);
+  background: rgba(13, 202, 240, 0.10);
+}
+
+.bo-alert--borderless {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-alertIcon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.bo-alertDismissible {
+  margin-left: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--bo-muted);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.bo-alertDismissible:hover {
+  opacity: 1;
+}
+
+.bo-alertDismissible:focus-visible {
+  outline: 2px solid rgba(185, 168, 255, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
