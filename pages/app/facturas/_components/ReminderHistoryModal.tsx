@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { X, Mail, MessageSquare, Clock, AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import type { InvoiceReminder } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
 
@@ -111,17 +112,7 @@ export function ReminderHistoryModal({
   return (
     <div className="bo-modal-overlay" onClick={onClose} data-slot="reminder-history-overlay">
       <div className="bo-modal bo-modal--md" onClick={(e) => e.stopPropagation()} data-slot="reminder-history-modal">
-        <div className="bo-modalHeader" data-slot="reminder-history-header">
-          <h2 className="bo-modalTitle" data-slot="reminderHistoryModal-modalTitle">Historial de recordatorios</h2>
-          <button
-            className="bo-btn bo-btn--ghost bo-btn--sm"
-            onClick={onClose}
-            aria-label="Cerrar"
-            data-testid="reminder-history-close-btn"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        <ModalHeader title="Historial de recordatorios" onClose={onClose} />
 
         <div className="bo-modalBody" data-slot="reminder-history-body">
           {/* Invoice Info */}
@@ -137,7 +128,7 @@ export function ReminderHistoryModal({
           {/* Loading State */}
           {loading && (
             <div className="bo-loadingState" data-slot="reminder-history-loading">
-              <div className="bo-spinner" / data-slot="reminderHistoryModal-spinner">
+              <div className="bo-spinner" data-slot="reminderHistoryModal-spinner" />
               <span data-slot="reminderHistoryModal-ial">Cargando historial...</span>
             </div>
           )}

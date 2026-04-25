@@ -8,6 +8,7 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { FileText, PlusCircle } from "lucide-react";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
+import { Panel } from "../../../ui/shell/Panel";
 import { InvoiceFilters } from "./_components/InvoiceFilters";
 import { InvoiceTable } from "./_components/InvoiceTable";
 import { InvoiceForm } from "./_components/InvoiceForm";
@@ -407,8 +408,7 @@ export default function Page() {
         <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir" data-slot="facturas-div">
         <div className="bo-formContainer" data-slot="facturas-formContainer">
           <div className="bo-container bo-facturasFormContainer" data-slot="facturas-facturasFormContainer">
-            <div className="bo-panel bo-facturasFormPanel" data-slot="facturas-facturasFormPanel">
-              <div className="bo-panelBody bo-facturasFormPanelBody" data-slot="facturas-facturasFormPanelBody">
+            <Panel bodyClassName="bo-facturasFormPanelBody" className="bo-facturasFormPanel" data-slot="facturas-facturasFormPanel">
                 <InvoiceForm
                   invoice={editingInvoice}
                   onSave={handleSaveInvoice}
@@ -416,8 +416,7 @@ export default function Page() {
                   searchReservations={searchReservations}
                   currentUserId={currentUserId}
                 />
-              </div>
-            </div>
+            </Panel>
           </div>
         </div>
       </div>

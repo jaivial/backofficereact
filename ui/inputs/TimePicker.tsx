@@ -153,7 +153,7 @@ export function TimePicker({
                 <button
                   key={t}
                   type="button"
-                  className={`bo-selectItem${isSel ? " is-selected" : ""}${isAct ? " is-active" : ""}`}
+                  className={cn("bo-selectItem", isSel && "is-selected", isAct && "is-active")}
                   role="option"
                   aria-selected={isSel}
                   tabIndex={idx === activeIdx ? 0 : -1}

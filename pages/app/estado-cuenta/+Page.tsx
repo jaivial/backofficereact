@@ -5,6 +5,9 @@ import type { CustomerStatement } from "../../../api/types";
 import { formatCurrency } from "../../../api/types";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { Card } from "../../../ui/shell/Card";
+import { EmptyState } from "../../../ui/feedback/EmptyState";
+import { ExportButtonPair } from "../../../ui/actions/ExportButtonPair";
 import { FileText, Calendar, Filter, RefreshCw, DollarSign, Receipt, CreditCard, Download, FileSpreadsheet, User } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -283,7 +286,7 @@ export default function Page() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="estado-cuenta-filters-card">
+      <Card variant="tailwind" padding className="mb-6" data-slot="estado-cuenta-filters-card">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-slot="estado-cuenta-filters-grid">
           {/* Customer Select */}
           <div data-slot="estado-cuenta-customer-field">
@@ -359,35 +362,21 @@ export default function Page() {
           </button>
 
           {customerStatement && (
-            <>
-              <button
-                onClick={handleExportPDF}
-                disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                data-testid="estado-cuenta-export-pdf-button"
-              >
-                <FileText className="w-4 h-4" />
-                Exportar PDF
-              </button>
-              <button
-                onClick={handleExportCSV}
-                disabled={exporting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                data-testid="estado-cuenta-export-csv-button"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                Exportar Excel
-              </button>
-            </>
+            <ExportButtonPair
+              onExportPdf={handleExportPDF}
+              onExportExcel={handleExportCSV}
+              pdfLabel="Exportar PDF"
+              excelLabel="Exportar Excel"
+            />
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Statement Content */}
       {customerStatement ? (
         <>
           {/* Customer Info */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-slot="estado-cuenta-customer-info-card">
+          <Card variant="tailwind" padding className="mb-6" data-slot="estado-cuenta-customer-info-card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4" data-slot="estado-cuenta-customer-info-title">Informacion del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-slot="estado-cuenta-customer-info-grid">
               <div data-slot="estado-cuenta-customer-name-field">
@@ -411,51 +400,51 @@ export default function Page() {
                 <p className="text-lg font-medium text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatDate(customerStatement.date_from)} - {formatDate(customerStatement.date_to)}</p>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Balance Summary */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" data-slot="estado-cuenta-balance-summary-grid">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-opening-card">
+            <Card variant="tailwind" padding data-slot="estado-cuenta-balance-opening-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-opening-header">
                 <DollarSign className="w-5 h-5 text-gray-600" />
                 <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Saldo Inicial</span>
               </div>
               <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.opening_balance, "EUR")}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-invoiced-card">
+            </Card>
+            <Card variant="tailwind" padding data-slot="estado-cuenta-balance-invoiced-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-invoiced-header">
                 <Receipt className="w-5 h-5 text-blue-600" />
                 <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Total Facturado</span>
               </div>
               <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.summary.total_invoiced, "EUR")}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-paid-card">
+            </Card>
+            <Card variant="tailwind" padding data-slot="estado-cuenta-balance-paid-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-paid-header">
                 <CreditCard className="w-5 h-5 text-green-600" />
                 <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Total Pagado</span>
               </div>
               <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.summary.total_paid, "EUR")}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-pending-card">
+            </Card>
+            <Card variant="tailwind" padding data-slot="estado-cuenta-balance-pending-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-pending-header">
                 <Calendar className="w-5 h-5 text-yellow-600" />
                 <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Pendiente</span>
               </div>
               <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.summary.total_pending, "EUR")}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" data-slot="estado-cuenta-balance-final-card">
+            </Card>
+            <Card variant="tailwind" padding data-slot="estado-cuenta-balance-final-card">
               <div className="flex items-center gap-2 mb-2" data-slot="estado-cuenta-balance-final-header">
                 <DollarSign className="w-5 h-5 text-red-600" />
                 <span className="text-sm text-gray-500" data-slot="estado-cuenta-text-gray-500">Saldo Final</span>
               </div>
               <p className="text-xl font-bold text-gray-900" data-slot="estado-cuenta-text-gray-900">{formatCurrency(customerStatement.closing_balance, "EUR")}</p>
-            </div>
+            </Card>
           </div>
 
           {/* Invoices and Payments Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-slot="estado-cuenta-tables-grid">
             {/* Invoices */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="estado-cuenta-invoices-card">
+            <Card variant="tailwind" className="overflow-hidden" data-slot="estado-cuenta-invoices-card">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="estado-cuenta-invoices-header">
                 <h3 className="text-lg font-semibold text-gray-900" data-slot="estado-cuenta-text-gray-900">Facturas ({customerStatement.invoices.length})</h3>
               </div>
@@ -499,10 +488,10 @@ export default function Page() {
                   No hay facturas en este periodo
                 </div>
               )}
-            </div>
+            </Card>
 
             {/* Payments */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-slot="estado-cuenta-payments-card">
+            <Card variant="tailwind" className="overflow-hidden" data-slot="estado-cuenta-payments-card">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50" data-slot="estado-cuenta-payments-header">
                 <h3 className="text-lg font-semibold text-gray-900" data-slot="estado-cuenta-text-gray-900">Pagos ({customerStatement.payments.length})</h3>
               </div>
@@ -534,15 +523,15 @@ export default function Page() {
                   No hay pagos en este periodo
                 </div>
               )}
-            </div>
+            </Card>
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" data-slot="estado-cuenta-empty-state">
-          <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2" data-slot="estado-cuenta-mb-2">Sin estado de cuenta</h3>
-          <p className="text-gray-500 mb-4" data-slot="estado-cuenta-mb-4">Selecciona un cliente y un periodo para generar el estado de cuenta</p>
-        </div>
+        <EmptyState variant="tailwind" data-slot="estado-cuenta-empty-state"
+          icon={<Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />}
+          title="Sin estado de cuenta"
+          description="Selecciona un cliente y un periodo para generar el estado de cuenta"
+        />
       )}
     </div>
   );

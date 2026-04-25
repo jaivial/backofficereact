@@ -117,7 +117,7 @@ export function Sidebar({
           <div className="bo-navMobileMoreWrap" ref={mobileMoreRef} data-slot="sidebar-nav-more-wrap">
             <button
               type="button"
-              className={`bo-navBtn bo-navBtn--glass bo-navBtn--mobileMore${mobileMenuOpen ? " is-active" : ""}`}
+              className={cn("bo-navBtn", "bo-navBtn--glass", "bo-navBtn--mobileMore", mobileMenuOpen && "is-active")}
               aria-label="Mas secciones"
               aria-expanded={mobileMenuOpen}
               aria-controls="bo-nav-mobile-overflow"
@@ -126,7 +126,7 @@ export function Sidebar({
             >
               <Ellipsis size={iconProps.size} strokeWidth={iconProps.strokeWidth} />
             </button>
-            <div id="bo-nav-mobile-overflow" className={`bo-navMobileOverflow${mobileMenuOpen ? " is-open" : ""}`} data-slot="sidebar-nav-more-dropdown">
+            <div id="bo-nav-mobile-overflow" className={cn("bo-navMobileOverflow", mobileMenuOpen && "is-open")} data-slot="sidebar-nav-more-dropdown">
               <div className="bo-navMobileOverflowList" data-slot="sidebar-nav-more-list">
                 {mobileOverflow.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -142,7 +142,7 @@ export function Sidebar({
         </div>
       </nav>
 
-      <div className="bo-sidebarSpacer" aria-hidden="true" / data-slot="sidebar-sidebarSpacer">
+      <div className="bo-sidebarSpacer" aria-hidden="true" data-slot="sidebar-sidebarSpacer" />
     </aside>
   );
 }

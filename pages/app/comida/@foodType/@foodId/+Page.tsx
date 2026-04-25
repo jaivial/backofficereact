@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 
 import { Breadcrumbs } from "../../../../../ui/nav/Breadcrumbs";
 import type { BreadcrumbItem } from "../../../../../ui/nav/Breadcrumbs";
+import { Panel } from "../../../../../ui/shell/Panel";
 import { FOOD_TYPE_LABELS } from "../../_components/foodTypes";
 import type { FoodType } from "../../_components/foodTypes";
 import { WineDetailEditor } from "./functionalComponents/WineDetailEditor/WineDetailEditor";
@@ -138,12 +139,12 @@ function FoodDetailPage() {
       </div>
 
       {!item && !isNew ? (
-        <div className="bo-panel bo-foodDetailPanel" data-ui="food-detail-empty-panel">
-          <div className="bo-panelHead" data-slot="food-detail-empty-head">
-            <div className="bo-panelTitle" data-role="food-detail-empty-title">Elemento no disponible</div>
-            <div className="bo-panelMeta" data-role="food-detail-empty-meta">No se pudo cargar el detalle solicitado.</div>
-          </div>
-        </div>
+        <Panel
+          className="bo-foodDetailPanel"
+          title="Elemento no disponible"
+          meta="No se pudo cargar el detalle solicitado."
+          data-ui="food-detail-empty-panel"
+        />
       ) : (
         <>
           <FoodDetailHero

@@ -13,6 +13,7 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { DatePicker } from "../../../ui/inputs/DatePicker";
 import { MemberPicker, type MemberPickerItem } from "../../../ui/widgets/MemberPicker";
 import { TimeAdjust } from "../../../ui/widgets/TimeAdjust";
+import { Panel } from "../../../ui/shell/Panel";
 import { fullName } from "../../../lib/member";
 
 function formatElapsed(totalSeconds: number): string {
@@ -370,28 +371,24 @@ export default function Page() {
   if (!data.isAdminView) {
     return (
       <section aria-label="Fichaje" className="bo-content-grid bo-fichajePage" data-testid="fichaje-section">
-        <div className="bo-panel bo-fichajePanel" data-testid="fichaje-panel">
-          <div className="bo-panelHead" data-testid="fichaje-panel-head">
-            <div data-slot="fichaje-div">
-              <div className="bo-panelTitle bo-fichajeTitle" data-testid="fichaje-title">
-                <Clock3 size={16} strokeWidth={1.8} />
-                Fichaje
-              </div>
-              <div className="bo-panelMeta" data-testid="fichaje-status">
-                {realtime.wsConnected
-                  ? "Conectado en tiempo real"
-                  : realtime.wsConnecting
-                    ? "Conectando tiempo real..."
-                    : "Sincronización por API"}
-              </div>
-            </div>
+        <Panel
+          className="bo-fichajePanel"
+          title={<><Clock3 size={16} strokeWidth={1.8} /> Fichaje</>}
+          meta={realtime.wsConnected
+            ? "Conectado en tiempo real"
+            : realtime.wsConnecting
+              ? "Conectando tiempo real..."
+              : "Sincronización por API"}
+          actions={
             <div className={`bo-fichajeConn${realtime.wsConnected ? " is-live" : ""}`} data-testid="fichaje-connection">
               {realtime.wsConnected ? <Wifi size={15} strokeWidth={1.8} /> : <WifiOff size={15} strokeWidth={1.8} />}
               {realtime.wsConnected ? "WS" : "OFF"}
             </div>
-          </div>
-
-          <div className="bo-panelBody bo-fichajeBody" data-testid="fichaje-panel-body">
+          }
+          bodyClassName="bo-fichajeBody"
+          data-testid="fichaje-panel"
+        >
+          <div data-testid="fichaje-panel-body">
             <AnimatePresence mode="wait" initial={false}>
               {realtime.activeEntry ? (
                 <motion.div
@@ -468,22 +465,18 @@ export default function Page() {
               )}
             </AnimatePresence>
           </div>
-        </div>
+        </Panel>
       </section>
     );
   }
 
   return (
     <section aria-label="Fichaje administrado" className="bo-fichajePage bo-fichajeAdminPage" data-testid="fichaje-admin-section">
-      <div className="bo-panel bo-fichajeAdminPanel" data-testid="fichaje-admin-panel">
-        <div className="bo-panelHead" data-testid="fichaje-admin-head">
-          <div data-slot="fichaje-div">
-            <div className="bo-panelTitle bo-fichajeTitle" data-testid="fichaje-admin-title">
-              <Clock3 size={16} strokeWidth={1.8} />
-              Fichaje Admin
-            </div>
-            <div className="bo-panelMeta" data-testid="fichaje-admin-description">Inicia, finaliza y supervisa fichajes del equipo en tiempo real.</div>
-          </div>
+      <Panel
+        className="bo-fichajeAdminPanel"
+        title={<><Clock3 size={16} strokeWidth={1.8} /> Fichaje Admin</>}
+        meta="Inicia, finaliza y supervisa fichajes del equipo en tiempo real."
+        actions={
           <div className="bo-horariosPreviewActions" data-testid="fichaje-admin-actions">
             <DatePicker value={date} onChange={(nextDate) => void onDateChange(nextDate)} />
             <div className="bo-horariosDateBadge" data-testid="fichaje-admin-date">{date}</div>
@@ -492,9 +485,11 @@ export default function Page() {
               {realtime.wsConnected ? "WS" : "OFF"}
             </div>
           </div>
-        </div>
-
-        <div className="bo-panelBody bo-fichajeAdminBody" data-testid="fichaje-admin-body">
+        }
+        bodyClassName="bo-fichajeAdminBody"
+        data-testid="fichaje-admin-panel"
+      >
+        <div data-testid="fichaje-admin-body">
           <MemberPicker
             title="Miembros"
             searchValue={memberSearch}
@@ -564,7 +559,7 @@ export default function Page() {
             </div>
           </section>
         </div>
-      </div>
+      </Panel>
     </section>
   );
 }

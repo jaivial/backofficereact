@@ -1,5 +1,6 @@
 import React from "react";
 import { RefreshCw, Filter, FileText, FileSpreadsheet } from "lucide-react";
+import { Card } from "../../../../../ui/shell/Card";
 
 type DatePreset = "this_quarter" | "last_quarter" | "this_year" | "last_year" | "custom";
 
@@ -45,7 +46,7 @@ export function IVAFilters({
   onExportExcel,
 }: IVAFiltersProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-ui="iva-filters">
+    <Card variant="tailwind" padding className="mb-6" data-ui="iva-filters">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-ui="filters-grid">
         <div data-ui="date-preset-wrapper">
           <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="date-preset" data-slot="iVAFilters-mb-1">Periodo</label>
@@ -140,6 +141,6 @@ export function IVAFilters({
           </>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

@@ -142,7 +142,7 @@ export function RoleCreateModal({
                     <button
                       key={section.key}
                       type="button"
-                      className={`bo-chip${on ? " is-on" : ""}`}
+                      className={cn("bo-chip", on && "is-on")}
                       data-testid={`role-create-perm-${section.key}`}
                       onClick={() =>
                         setPermissions((prev) =>

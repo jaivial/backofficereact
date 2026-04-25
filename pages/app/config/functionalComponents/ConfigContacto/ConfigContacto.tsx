@@ -5,6 +5,7 @@ import { readAPIMessage } from "../../../config/helpers/configHelpers";
 import { clasificacionOptions } from "../../../config/constants/config.constants";
 import type { ContactoContentProps } from "./types/ConfigContacto.types";
 import { Select } from "../../../../../ui/inputs/Select";
+import { Panel } from "../../../../../ui/shell/Panel";
 import EmailProviderConfigInner from "../EmailProviderConfig/EmailProviderConfig";
 import { useEmailProviderConfig } from "../EmailProviderConfig/hooks/useEmailProviderConfig";
 
@@ -78,11 +79,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
 
   return (
     <>
-      <div className="bo-panel" data-ui="config-contacto-main-panel" data-slot="config-contacto-panel">
-        <div className="bo-panelHead" data-ui="config-contacto-main-header" data-slot="config-contacto-header">
-          <div className="bo-panelTitle" data-slot="config-contacto-title">Contacto</div>
-        </div>
-        <div className="bo-panelBody bo-stack" data-ui="config-contacto-main-body" data-slot="config-contacto-body">
+      <Panel title="Contacto" bodyClassName="bo-stack" data-ui="config-contacto-main-panel" data-slot="config-contacto-panel">
           <div className="bo-field" data-ui="config-contacto-address-field" data-slot="config-contacto-address-field">
             <label className="bo-label" htmlFor="config-contacto-direccion" data-slot="configContacto-label">
               Dirección
@@ -142,15 +139,9 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             saving={emailProv.saving}
             pushToast={pushToast as (t: { kind: "success" | "error" | "info" | "warning"; title: string; message?: string }) => void}
           />
-        </div>
-      </div>
+      </Panel>
 
-      <div className="bo-panel" data-ui="config-contacto-fiscal-panel" data-slot="config-contacto-fiscal-panel">
-        <div className="bo-panelHead" data-ui="config-contacto-fiscal-header" data-slot="config-contacto-fiscal-header">
-          <div className="bo-panelTitle" data-slot="config-contacto-fiscal-title">Información fiscal</div>
-          <div className="bo-panelMeta" data-slot="config-contacto-fiscal-meta">Datos para facturación</div>
-        </div>
-        <div className="bo-panelBody bo-stack" data-ui="config-contacto-fiscal-body" data-slot="config-contacto-fiscal-body">
+      <Panel title="Información fiscal" meta="Datos para facturación" bodyClassName="bo-stack" data-ui="config-contacto-fiscal-panel" data-slot="config-contacto-fiscal-panel">
           <div className="bo-field" data-ui="config-contacto-cif-field" data-slot="config-contacto-cif-field">
             <label className="bo-label" htmlFor="config-contacto-cif" data-slot="configContacto-label">
               CIF / NIF
@@ -196,8 +187,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               ariaLabel="Clasificación fiscal"
             />
           </div>
-        </div>
-      </div>
+      </Panel>
     </>
   );
 }

@@ -3,6 +3,7 @@ import { Plus, Settings2, Trash2 } from "lucide-react";
 import { Switch } from "../../../../../../ui/shadcn/Switch";
 import { Select } from "../../../../../../ui/inputs/Select";
 import { PlusMinusCounter } from "../../../../../../ui/widgets/PlusMinusCounter";
+import { Panel } from "../../../../../../ui/shell/Panel";
 import { beverageTypeOptions } from "../../constants/menuEditor.constants";
 
 export type MenuPricingProps = {
@@ -50,13 +51,10 @@ export function MenuPricing({
 }: MenuPricingProps) {
   if (isSpecial) return null;
   return (
-    <div className="bo-panel bo-settingsPanel" data-pricing-panel="true" data-slot="menuPricing-settingsPanel">
-      <div className="bo-panelHead" data-slot="menuPricing-panelHead">
-        <div className="bo-panelTitle" data-slot="menuPricing-panelTitle">
-          <Settings2 size={15} /> Configuracion
-        </div>
-      </div>
-      <div className="bo-panelBody bo-form bo-form--menuWizard" data-slot="menuPricing-form--menuWizard">
+    <Panel className="bo-settingsPanel" data-pricing-panel="true" data-slot="menuPricing-settingsPanel"
+      title={<><Settings2 size={15} /> Configuracion</>}
+      bodyClassName="bo-form bo-form--menuWizard"
+    >
         <div className="bo-field" data-slot="menuPricing-field">
           <div className="bo-label" data-slot="menuPricing-label">Bebida</div>
           <Select
@@ -139,7 +137,6 @@ export function MenuPricing({
             data-testid="menu-pricing-comments-textarea"
           />
         </div>
-      </div>
-    </div>
+    </Panel>
   );
 }

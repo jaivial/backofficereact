@@ -12,6 +12,7 @@ import { Select } from "../../../ui/inputs/Select";
 import { Switch } from "../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../ui/widgets/PlusMinusCounter";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
+import { PageToolbar } from "../../../ui/shell/PageToolbar";
 import { ConfigRestauranteContent as ConfigRestaurante } from "./functionalComponents/ConfigRestaurante/ConfigRestaurante";
 import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/ConfigContacto/ConfigContacto";
 import { BookingManager } from "./booking/BookingManager";
@@ -221,16 +222,17 @@ export default function Page() {
 
   return (
     <section aria-label="Configuración" className="max-w-3xl mx-auto" data-testid="config-section">
-      <div className="bo-toolbar" data-slot="config-toolbar">
-        <div className="bo-toolbarLeft" data-slot="config-toolbarLeft">
+      <PageToolbar
+        left={
           <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy} data-testid="config-reload-button">
             Recargar
           </button>
-        </div>
-        <div className="bo-toolbarRight" data-slot="config-toolbarRight">
+        }
+        right={
           <div className="bo-mutedText" data-slot="config-mutedText">{busy ? "Actualizando..." : "Valores por defecto"}</div>
-        </div>
-      </div>
+        }
+        data-slot="config-toolbar"
+      />
 
       <Tabs
         tabs={contentTabs}

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { X, Loader2, Plus, Trash2, ArrowRight, AlertCircle } from "lucide-react";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import type { Invoice, InvoiceSplitInput, InvoiceSplitMethod, InvoiceSplitItem, CurrencyCode } from "../../../../api/types";
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
@@ -211,12 +212,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
   return (
     <div className="bo-modalOverlay" onClick={onClose} data-testid="split-invoice-overlay">
       <div className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="split-modal-title" data-testid="split-invoice-modal">
-        <div className="bo-modalHeader" data-slot="splitInvoiceModal-modalHeader">
-          <h2 id="split-modal-title" className="bo-modalTitle" data-slot="splitInvoiceModal-modalTitle">Dividir factura</h2>
-          <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="split-invoice-close-btn">
-            <X size={18} />
-          </button>
-        </div>
+        <ModalHeader title="Dividir factura" onClose={onClose} />
 
         <form onSubmit={handleSubmit} data-testid="split-invoice-form">
           <div className="bo-modalBody" data-slot="splitInvoiceModal-modalBody">

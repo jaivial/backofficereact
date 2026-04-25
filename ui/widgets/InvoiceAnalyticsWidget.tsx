@@ -144,7 +144,7 @@ export function InvoiceAnalyticsWidget({
   if (loading) {
     return (
       <div className="bo-analyticsLoading" data-slot="invoiceAnalyticsWidget-analyticsLoading">
-        <div className="bo-skeleton" style={{ height: "300px", width: "100%" }} / data-slot="invoiceAnalyticsWidget-skeleton">
+        <div className="bo-skeleton" style={{ height: "300px", width: "100%" }} data-slot="invoiceAnalyticsWidget-skeleton" />
       </div>
     );
   }

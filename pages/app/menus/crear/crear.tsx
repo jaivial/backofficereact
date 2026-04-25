@@ -21,6 +21,8 @@ import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { Modal } from "../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
+import { Panel } from "../../../../ui/shell/Panel";
 
 import { useMenuEditor } from "./hooks/useMenuEditor";
 import { MenuPreview } from "./functionalComponents/MenuPreview/MenuPreview";
@@ -126,10 +128,7 @@ function DishImageCropModalComponent({
 
   return (
     <Modal open={open} title="Recortar imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
-      <div className="bo-modalHead" data-slot="crear-modalHead">
-        <div className="bo-modalTitle" data-slot="crear-modalTitle">Recorte 1:1</div>
-        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" disabled={busy} data-testid="menu-crear-close-crop-modal">×</button>
-      </div>
+      <ModalHeader title="Recorte 1:1" onClose={busy ? () => undefined : onClose} />
       <div className="bo-modalBody bo-dishCropBody" data-slot="crear-dishCropBody">
         <div className="bo-dishCropViewportWrap" data-slot="crear-dishCropViewportWrap">
           <div
@@ -153,7 +152,7 @@ function DishImageCropModalComponent({
                 setNaturalSize({ width: Math.max(1, img.naturalWidth || img.width || 1), height: Math.max(1, img.naturalHeight || img.height || 1) });
               }}
             />
-            <div className="bo-dishCropFrame" aria-hidden="true" / data-slot="crear-dishCropFrame">
+            <div className="bo-dishCropFrame" aria-hidden="true" data-slot="crear-dishCropFrame" />
           </div>
         </div>
         <div className="bo-dishCropControls" data-slot="crear-dishCropControls">
@@ -532,25 +531,15 @@ export function CrearPage() {
             </motion.div>
 
             {isSpecial ? (
-              <div className="bo-panel bo-accordionSection bo-sectionsEditor" data-slot="crear-sectionsEditor">
-                <div className="bo-panelHead" data-slot="crear-panelHead">
-                  <div className="bo-panelTitle" data-slot="crear-panelTitle">Contenido del menu especial</div>
-                </div>
-                <div className="bo-panelBody" data-slot="crear-panelBody">
-                  {renderSpecialMenuImageUploadArea()}
-                </div>
-              </div>
+              <Panel className="bo-accordionSection bo-sectionsEditor" data-slot="crear-sectionsEditor" title="Contenido del menu especial">
+                {renderSpecialMenuImageUploadArea()}
+              </Panel>
             ) : !hydrated ? (
               <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true" data-slot="crear-sectionsEditor">
                 {loadingSectionTitles.map((sectionTitle, idx) => (
-                  <div key={`section-loading-${idx}`} className="bo-panel bo-accordionSection" data-slot="crear-accordionSection">
-                    <div className="bo-panelHead" data-slot="crear-panelHead">
-                      <div className="bo-panelTitle" data-slot="crear-panelTitle">{sectionTitle}</div>
-                    </div>
-                    <div className="bo-panelBody" data-slot="crear-panelBody">
-                      <LoadingSpinner centered size="sm" label="Cargando platos..." />
-                    </div>
-                  </div>
+                  <Panel key={`section-loading-${idx}`} className="bo-accordionSection" data-slot="crear-accordionSection" title={sectionTitle}>
+                    <LoadingSpinner centered size="sm" label="Cargando platos..." />
+                  </Panel>
                 ))}
               </div>
             ) : (
@@ -728,10 +717,7 @@ export function CrearPage() {
 
       {/* Allergen modal */}
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620}>
-        <div className="bo-modalHead" data-slot="crear-modalHead">
-          <div className="bo-modalTitle" data-slot="crear-modalTitle">Selecciona alergenos</div>
-          <button className="bo-modalX" type="button" onClick={() => setAllergenModal(null)} aria-label="Cerrar" data-testid="menu-crear-close-allergen-modal">×</button>
-        </div>
+        <ModalHeader title="Selecciona alergenos" onClose={() => setAllergenModal(null)} />
         <div className="bo-modalBody" data-slot="crear-modalBody">
           <div className="bo-allergenGrid" data-testid="menu-crear-allergen-grid">
             {ALLERGENS.map((item) => {

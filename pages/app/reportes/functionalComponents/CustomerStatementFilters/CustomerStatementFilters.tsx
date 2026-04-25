@@ -1,5 +1,6 @@
 import React from "react";
 import { RefreshCw, User, Receipt, FileText, FileSpreadsheet } from "lucide-react";
+import { Card } from "../../../../../ui/shell/Card";
 
 interface Customer {
   name: string;
@@ -43,7 +44,7 @@ export function CustomerStatementFilters({
   onExportCSV,
 }: CustomerStatementFiltersProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6" data-ui="customer-statement-filters">
+    <Card variant="tailwind" padding className="mb-6" data-ui="customer-statement-filters">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-ui="filters-grid">
         <div data-ui="customer-select-wrapper">
           <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="customer-select" data-slot="customerStatementFilters-mb-1">Cliente</label>
@@ -134,6 +135,6 @@ export function CustomerStatementFilters({
           </>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

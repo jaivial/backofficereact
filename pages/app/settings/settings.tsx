@@ -11,6 +11,7 @@ import type {
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { PageToolbar } from "../../../ui/shell/PageToolbar";
 import { IntegrationsPanel } from "./functionalComponents/IntegrationsPanel/IntegrationsPanel";
 import { BrandingPanel } from "./functionalComponents/BrandingPanel/BrandingPanel";
 import { WebsitePanel } from "./functionalComponents/WebsitePanel/WebsitePanel";
@@ -276,16 +277,17 @@ export default function Page() {
 
   return (
     <section aria-label="Ajustes" data-ui="settings-page">
-      <div className="bo-toolbar" data-ui="toolbar">
-        <div className="bo-toolbarLeft" data-slot="toolbarLeft">
+      <PageToolbar
+        left={
           <button className="bo-btn bo-btn--ghost" type="button" onClick={reload} disabled={busy} data-role="reloadBtn">
             Recargar
           </button>
-        </div>
-        <div className="bo-toolbarRight" data-slot="toolbarRight">
+        }
+        right={
           <div className="bo-mutedText" data-slot="busyIndicator">{busy ? "Guardando..." : ""}</div>
-        </div>
-      </div>
+        }
+        data-ui="toolbar"
+      />
 
       <div className="bo-stack" data-ui="panelsStack">
         <IntegrationsPanel

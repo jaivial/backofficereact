@@ -163,7 +163,7 @@ export function Topbar({
         />
 
         {fichaje.activeEntry ? (
-          <div className={`bo-fichajeTopbarChip${fichaje.wsConnected ? " is-live" : ""}`} aria-live="polite" data-slot="topbar-fichaje-chip">
+          <div className={cn("bo-fichajeTopbarChip", fichaje.wsConnected && "is-live")} aria-live="polite" data-slot="topbar-fichaje-chip">
             <span className="bo-fichajeTopbarDot" aria-hidden="true" data-slot="topbar-fichaje-dot" />
             <span className="bo-fichajeTopbarTime" data-slot="topbar-fichaje-time">{fichajeElapsed || "--:--:--"}</span>
           </div>

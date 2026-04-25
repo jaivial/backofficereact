@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import type { MenuTemplateType, RestaurantWebsiteMenuTemplatesConfig } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
+import { Panel } from "../../../../../ui/shell/Panel";
 
 const MENU_TYPE_OPTIONS: { value: MenuTemplateType; label: string }[] = [
   { value: "closed_conventional", label: "Menu cerrado convencional" },
@@ -33,13 +34,8 @@ export function WebsitePanel({
   );
 
   return (
-    <div className="bo-panel" aria-label="Pagina web" data-ui="website-panel">
-      <div className="bo-panelHead" data-slot="panelHead">
-        <div className="bo-panelTitle" data-ui="panelTitle">Pagina web</div>
-        <div className="bo-panelMeta" data-ui="panelMeta">Plantillas premium para menus por tipo</div>
-      </div>
-      <div className="bo-panelBody" data-slot="panelBody">
-        <div className="bo-stack" data-slot="websitePanel-stack">
+    <Panel title="Pagina web" meta="Plantillas premium para menus por tipo" aria-label="Pagina web" data-ui="website-panel">
+      <div className="bo-stack" data-slot="websitePanel-stack">
           <label className="bo-field" data-ui="defaultThemeField">
             <div className="bo-label" data-slot="fieldLabel">Plantilla por defecto</div>
             <Select
@@ -99,7 +95,6 @@ export function WebsitePanel({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Panel>
   );
 }

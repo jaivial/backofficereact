@@ -8,6 +8,7 @@ import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFlo
 import { sessionAtom } from "../../../state/atoms";
 import { Select } from "../../../ui/inputs/Select";
 import { DropdownMenu } from "../../../ui/inputs/DropdownMenu";
+import { ModalHeader } from "../../../ui/overlays/ModalHeader";
 import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -146,9 +147,8 @@ const BookingRow = React.memo(function BookingRow({
 
   return (
     <tr
-      onClick={() => {
       data-slot="reservas-table-row"
-
+      onClick={() => {
         if (typeof window === "undefined") return;
         if (!window.matchMedia("(max-width: 760px)").matches) return;
         onOpenDetails(booking);
@@ -606,7 +606,7 @@ export default function Page() {
                             <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
                             <th className="col-rice" data-slot="reservas-col-rice">Arroz</th>
                             <th className="col-comment" data-slot="reservas-col-comment">Comentario</th>
-                            <th className="end" / data-slot="reservas-end">
+                            <th className="end" data-slot="reservas-end" />
                           </tr>
                         </thead>
                         <tbody data-slot="reservas-tbody">
@@ -659,10 +659,7 @@ export default function Page() {
       <ConfirmDialog open={confirm.open} title="Cancelar reserva" message={confirm.booking ? `Cancelar la reserva #${confirm.booking.id} de ${confirm.booking.customer_name}?` : ""} confirmText="Cancelar" danger onClose={() => setConfirm({ open: false, booking: null })} onConfirm={doCancel} />
 
       <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details">
-        <div className="bo-modalHead" data-slot="reservas-modalHead">
-          <div className="bo-modalTitle" data-slot="reservas-modalTitle">Reserva completa</div>
-          <button className="bo-modalX" type="button" onClick={closeDetails} aria-label="Close" data-testid="reservas-page-details-close">×</button>
-        </div>
+        <ModalHeader title="Reserva completa" onClose={closeDetails} />
         <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {details.booking && <BookingDetailsPanel booking={details.booking} floors={floors} />}
         </div>
@@ -675,10 +672,7 @@ export default function Page() {
       </Modal>
 
       <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit">
-        <div className="bo-modalHead" data-slot="reservas-modalHead">
-          <div className="bo-modalTitle" data-slot="reservas-modalTitle">Editar reserva</div>
-          <button className="bo-modalX" type="button" onClick={closeEdit} aria-label="Close" data-testid="reservas-page-edit-close">×</button>
-        </div>
+        <ModalHeader title="Editar reserva" onClose={closeEdit} />
         <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {edit.booking && editInitial ? (
             <BookingEditor api={api} initial={editInitial} busy={busy} submitLabel="Guardar" onSubmit={submitEdit} onCancel={closeEdit} stickyFooter floors={floors} />

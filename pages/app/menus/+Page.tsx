@@ -9,6 +9,7 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { Select } from "../../../ui/inputs/Select";
 import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
+import { FloatingActionButton } from "../../../ui/actions/FloatingActionButton";
 import { cn } from "../../../ui/shadcn/utils";
 import { MenuSummaryCard } from "../../../ui/widgets/menus/MenuSummaryCard";
 import { MenuTypeChangeModal } from "../../../ui/widgets/menus/MenuTypeChangeModal";
@@ -448,9 +449,7 @@ export default function Page() {
         </>
       )}
 
-      <button className="bo-menuFab" type="button" aria-label="Crear menu" onClick={() => openEditor()} data-testid="menus-page-create-button">
-        <Plus size={26} />
-      </button>
+      <FloatingActionButton aria-label="Crear menu" onClick={() => openEditor()} data-testid="menus-page-create-button" />
 
       <ConfirmDialog
         open={confirmDel.open}

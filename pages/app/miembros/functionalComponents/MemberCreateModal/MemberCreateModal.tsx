@@ -6,6 +6,8 @@ import { ImageDropInput } from "../../../../../ui/inputs/ImageDropInput";
 import { PhoneInput } from "../../../../../ui/inputs/PhoneInput";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Modal } from "../../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
+import { Panel } from "../../../../../ui/shell/Panel";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../../../ui/shell/Avatar";
 import { RoleIcon } from "../../../../../ui/widgets/roles/RoleIcon";
 
@@ -105,21 +107,13 @@ export function MemberCreateModal({
 
   return (
     <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate">
-      <div className="bo-modalHead" data-slot="memberCreateModal-modalHead">
-        <div className="bo-modalTitle" data-slot="memberCreateModal-modalTitle">Añadir miembro</div>
-        <button className="bo-modalX" type="button" data-testid="member-create-close-button" onClick={onClose} aria-label="Close">
-          ×
-        </button>
-      </div>
+      <ModalHeader title="Añadir miembro" onClose={onClose} />
 
       <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="memberCreateModal-modalOutline">
-        <div className="bo-panel bo-memberCreatePanel" data-slot="memberCreateModal-memberCreatePanel">
-          <div className="bo-panelHead" data-slot="memberCreateModal-panelHead">
-            <div data-slot="memberCreateModal-div">
-              <div className="bo-panelTitle" data-slot="memberCreateModal-panelTitle">Datos de acceso y perfil</div>
-            </div>
-          </div>
-          <div className="bo-panelBody bo-memberCreateBody" data-slot="memberCreateModal-memberCreateBody">
+        <Panel className="bo-memberCreatePanel" data-slot="memberCreateModal-memberCreatePanel"
+          title="Datos de acceso y perfil"
+          bodyClassName="bo-memberCreateBody"
+        >
             <div className="bo-memberCreateAvatarBlock" data-slot="memberCreateModal-memberCreateAvatarBlock">
               <ImageDropInput
                 className="bo-memberCreateAvatarDrop"
@@ -213,8 +207,7 @@ export function MemberCreateModal({
             </div>
 
             {error ? <div className="bo-inlineError">{error}</div> : null}
-          </div>
-        </div>
+        </Panel>
       </div>
 
       <div className="bo-modalActions" data-slot="memberCreateModal-modalActions">

@@ -5,6 +5,7 @@ import { Check, Globe, Loader2, Palette, Search, Sparkles, ExternalLink } from "
 import { createClient } from "../../../api/client";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
+import { Panel } from "../../../ui/shell/Panel";
 
 interface WebsiteConfig {
   id: number;
@@ -177,14 +178,12 @@ export default function WebsiteBuilderPage() {
   if (loading) {
     return (
       <div className="bo-websitePage" data-ui="website-loading">
-        <div className="bo-panel" data-slot="website-panel">
-          <div className="bo-panelBody" data-slot="website-panelBody">
+        <Panel data-slot="website-panel">
             <div className="bo-loadingState" data-slot="website-loadingState">
               <Loader2 className="bo-spinnerIcon" size={24} />
               <span className="bo-mutedText" data-slot="website-mutedText">Cargando configuracion...</span>
             </div>
-          </div>
-        </div>
+        </Panel>
       </div>
     );
   }
@@ -244,7 +243,7 @@ export default function WebsiteBuilderPage() {
                   data-testid={`website-page-theme-${theme.id}`}
                 >
                   <div className="bo-websiteTemplatePreview" data-slot="website-websiteTemplatePreview">
-                    <div className="bo-websiteTemplatePreviewInner" data-theme-id={theme.id} / data-slot="website-websiteTemplatePreviewInner">
+                    <div className="bo-websiteTemplatePreviewInner" data-theme-id={theme.id} data-slot="website-websiteTemplatePreviewInner" />
                   </div>
                   <div className="bo-websiteTemplateInfo" data-slot="website-websiteTemplateInfo">
                     <div className="bo-websiteTemplateName" data-slot="website-websiteTemplateName">{theme.name}</div>
@@ -265,12 +264,7 @@ export default function WebsiteBuilderPage() {
       {activeTab === "ai" && (
         <section className="bo-websiteSection" aria-label="Constructor con IA" data-testid="website-page-ai-section">
           <div className="bo-websiteAIGrid" data-slot="website-websiteAIGrid">
-            <div className="bo-panel" data-slot="website-panel">
-              <div className="bo-panelHead" data-slot="website-panelHead">
-                <div className="bo-panelTitle" data-slot="website-panelTitle">Generar con IA</div>
-                <div className="bo-panelMeta" data-slot="website-panelMeta">Describe tu sitio ideal</div>
-              </div>
-              <div className="bo-panelBody" data-slot="website-panelBody">
+            <Panel data-slot="website-panel" title="Generar con IA" meta="Describe tu sitio ideal">
                 <div className="bo-stack" data-slot="website-stack">
                   <p className="bo-mutedText" data-slot="website-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
                   <label className="bo-field" data-slot="website-field">
@@ -299,38 +293,26 @@ export default function WebsiteBuilderPage() {
                     </button>
                   </div>
                 </div>
-              </div>
-            </div>
+            </Panel>
 
-            <div className="bo-panel" data-slot="website-panel">
-              <div className="bo-panelHead" data-slot="website-panelHead">
-                <div className="bo-panelTitle" data-slot="website-panelTitle">Vista previa</div>
-                <div className="bo-panelMeta" data-slot="website-panelMeta">HTML personalizado</div>
-              </div>
-              <div className="bo-panelBody" data-slot="website-panelBody">
+            <Panel data-slot="website-panel" title="Vista previa" meta="HTML personalizado">
                 <div className="bo-websitePreviewFrame" data-slot="website-websitePreviewFrame">
                   {config?.custom_html ? (
-                    <div dangerouslySetInnerHTML={{ __html: config.custom_html }} / data-slot="website-div">
+                    <div dangerouslySetInnerHTML={{ __html: config.custom_html }} data-slot="website-div" />
                   ) : (
                     <div className="bo-emptyState" data-slot="website-emptyState">
                       <p className="bo-mutedText" data-slot="website-mutedText">No hay HTML generado aun</p>
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
+            </Panel>
           </div>
         </section>
       )}
 
       {activeTab === "domain" && (
         <section className="bo-websiteSection" aria-label="Dominio personalizado" data-testid="website-page-domain-section">
-          <div className="bo-panel bo-panel--lg" data-slot="website-panel--lg">
-            <div className="bo-panelHead" data-slot="website-panelHead">
-              <div className="bo-panelTitle" data-slot="website-panelTitle">Dominio personalizado</div>
-              <div className="bo-panelMeta" data-slot="website-panelMeta">Registra un dominio para tu sitio</div>
-            </div>
-            <div className="bo-panelBody" data-slot="website-panelBody">
+          <Panel className="bo-panel--lg" data-slot="website-panel--lg" title="Dominio personalizado" meta="Registra un dominio para tu sitio">
               <div className="bo-stack" data-slot="website-stack">
                 {config?.domain ? (
                   <div className="bo-websiteDomainActive" data-slot="website-websiteDomainActive">
@@ -397,8 +379,7 @@ export default function WebsiteBuilderPage() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+          </Panel>
         </section>
       )}
     </div>

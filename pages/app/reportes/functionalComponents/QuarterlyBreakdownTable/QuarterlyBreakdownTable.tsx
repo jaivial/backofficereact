@@ -1,5 +1,6 @@
 import React from "react";
 import { formatCurrency } from "../../../../../api/types";
+import { Card } from "../../../../../ui/shell/Card";
 
 interface QuarterlyBreakdownItem {
   quarterLabel: string;
@@ -23,7 +24,7 @@ function formatDate(dateStr: string): string {
 
 export function QuarterlyBreakdownTable({ quarterlyBreakdown }: QuarterlyBreakdownTableProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" data-ui="quarterly-table">
+    <Card variant="tailwind" data-ui="quarterly-table">
       <table className="min-w-full divide-y divide-gray-200" data-slot="quarterlyBreakdownTable-divide-gray-200">
         <thead className="bg-gray-50" data-slot="quarterlyBreakdownTable-bg-gray-50">
           <tr data-slot="quarterlyBreakdownTable-tr">
@@ -58,6 +59,6 @@ export function QuarterlyBreakdownTable({ quarterlyBreakdown }: QuarterlyBreakdo
           )}
         </tbody>
       </table>
-    </div>
+    </Card>
   );
 }

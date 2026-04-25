@@ -15,6 +15,7 @@ import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { imageToWebpMax200KB } from "../../../../ui/lib/imageFile";
 import { composePhoneE164, splitStoredPhone } from "../../../../ui/lib/phone";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
+import { Panel } from "../../../../ui/shell/Panel";
 import { formatElapsedHHMMSS, useMemberLive } from "./_shared/realtime";
 
 function initials(member: Member | null): string {
@@ -188,12 +189,7 @@ export default function Page() {
   return (
     <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-detail-section">
       {!member ? (
-        <div className="bo-panel" data-slot="@memberId-panel">
-          <div className="bo-panelHead" data-slot="@memberId-panelHead">
-            <div className="bo-panelTitle" data-slot="@memberId-panelTitle">Miembro no disponible</div>
-            <div className="bo-panelMeta" data-slot="@memberId-panelMeta">No se pudo cargar el detalle del miembro solicitado.</div>
-          </div>
-        </div>
+        <Panel data-slot="@memberId-panel" title="Miembro no disponible" meta="No se pudo cargar el detalle del miembro solicitado." />
       ) : (
         <>
           <div className="bo-panel bo-memberHero" data-slot="@memberId-memberHero">
@@ -278,12 +274,8 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="bo-panel" data-slot="@memberId-panel">
-            <div className="bo-panelHead" data-slot="@memberId-panelHead">
-              <div className="bo-panelTitle" data-slot="@memberId-panelTitle">Informacion de usuario</div>
-            </div>
-            <div className="bo-panelBody" data-slot="@memberId-panelBody">
-              <div className="bo-memberFormGrid" data-slot="@memberId-memberFormGrid">
+          <Panel data-slot="@memberId-panel" title="Informacion de usuario">
+            <div className="bo-memberFormGrid" data-slot="@memberId-memberFormGrid">
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Nombre</span>
                   <input id="firstName" className="bo-input" data-testid="miembro-detail-firstname-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
@@ -315,8 +307,7 @@ export default function Page() {
                   />
                 </label>
               </div>
-            </div>
-          </div>
+            </Panel>
         </>
       )}
 
