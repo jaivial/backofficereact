@@ -1,0 +1,217 @@
+.bo-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 18px;
+  align-items: start;
+}
+
+.bo-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bo-panel {
+  border-radius: var(--bo-radius-lg);
+  background: var(--bo-surface);
+  border: none;
+  box-shadow: var(--bo-shadow-soft);
+}
+
+:root[data-theme="light"] .bo-panel {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)),
+    color-mix(in srgb, var(--bo-surface) 90%, transparent);
+  border: 1px solid var(--bo-glass-border-strong);
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+}
+
+.bo-panelHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+}
+
+.bo-panelTitle {
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.bo-panelMeta {
+  font-size: 12px;
+  color: var(--bo-faint);
+}
+
+.bo-panelBody {
+  padding: 0 18px 16px;
+}
+
+.bo-chart {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  height: 220px;
+  padding-top: 6px;
+}
+
+.bo-chartTicks {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  font-size: 11px;
+  color: rgba(238, 240, 246, 0.46);
+}
+
+.bo-chartPlot {
+  position: relative;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 0 18px;
+}
+
+.bo-chartGrid {
+  position: absolute;
+  inset: 0 0 18px 0;
+  background:
+    repeating-linear-gradient(to top,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px,
+      transparent 52px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.bo-months {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 10px;
+  align-items: end;
+  padding: 0 8px;
+}
+
+.bo-month {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-bars {
+  width: 100%;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  align-items: end;
+}
+
+.bo-bar {
+  width: 100%;
+  height: calc(var(--h) * 1%);
+  min-height: 6px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.bo-bar.income {
+  background: linear-gradient(180deg, rgba(185, 168, 255, 0.95), rgba(185, 168, 255, 0.58));
+  box-shadow: 0 10px 20px rgba(185, 168, 255, 0.10);
+}
+
+.bo-bar.spent {
+  background: linear-gradient(180deg, rgba(147, 239, 231, 0.86), rgba(147, 239, 231, 0.42));
+  box-shadow: 0 10px 20px rgba(147, 239, 231, 0.10);
+}
+
+.bo-monthLabel {
+  font-size: 10px;
+  color: rgba(238, 240, 246, 0.46);
+  letter-spacing: 0.3px;
+}
+
+.bo-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding-top: 10px;
+  font-size: 12px;
+  color: rgba(238, 240, 246, 0.56);
+}
+
+.bo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.bo-dot.income {
+  background: var(--bo-accent);
+}
+
+.bo-dot.spent {
+  background: var(--bo-accent-2);
+}
+
+.bo-sectionTitle {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.bo-tableWrap {
+  margin-top: 16px;
+  border-radius: var(--bo-radius-lg);
+  background: var(--bo-surface-3);
+  border: 1px solid var(--bo-border);
+  overflow: hidden;
+}
+
+.bo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.bo-table thead th {
+  text-align: left;
+  font-weight: 650;
+  color: var(--bo-faint);
+  padding: 12px 16px;
+}
+
+.bo-table tbody td {
+  padding: 12px 16px;
+  color: var(--bo-text);
+}
+
+.bo-table tbody tr {
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-table tbody tr:hover {
+  background: color-mix(in srgb, var(--bo-accent) 8%, transparent);
+}
+
+.bo-table td.num,
+.bo-table th.num {
+  text-align: right;
+}
+
+.bo-table td.end,
+.bo-table th.end {
+  width: 38px;
+  text-align: right;
+}
+

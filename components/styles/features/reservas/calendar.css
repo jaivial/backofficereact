@@ -1,0 +1,319 @@
+/* Occupancy tones for open days */
+.bo-mcalCell.occ-50 {
+  background: rgba(255, 223, 132, 0.14);
+  border-color: rgba(255, 223, 132, 0.22);
+}
+
+.bo-mcalCell.occ-75 {
+  background: rgba(255, 159, 67, 0.16);
+  border-color: rgba(255, 159, 67, 0.24);
+}
+
+.bo-mcalCell.occ-85 {
+  background: rgba(255, 122, 41, 0.18);
+  border-color: rgba(255, 122, 41, 0.26);
+}
+
+.bo-mcalCell.occ-100 {
+  background: rgba(255, 76, 76, 0.18);
+  border-color: rgba(255, 76, 76, 0.28);
+}
+
+@media (max-width: 480px) {
+  .bo-mcal {
+    padding: 12px;
+  }
+
+  .bo-mcalHead {
+    gap: 8px;
+  }
+
+  .bo-mcalMeta {
+    display: block;
+    margin-left: 0;
+    margin-top: 2px;
+  }
+
+  .bo-mcalDows {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+
+  .bo-mcalSub {
+    gap: 4px;
+  }
+}
+
+/* Sidebar compact calendar variant */
+.bo-mcal--sidebar {
+  padding: var(--bo-space-2);
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-mcal--sidebar .bo-mcalHead {
+  margin-bottom: var(--bo-space-2);
+  padding-bottom: var(--bo-space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--bo-border) 40%, transparent);
+}
+
+.bo-mcal--sidebar .bo-mcalTitle {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-mcal--sidebar .bo-mcalMeta {
+  display: none;
+}
+
+.bo-mcal--sidebar .bo-mcalNav {
+  gap: var(--bo-space-1);
+}
+
+.bo-mcal--sidebar .bo-mcalNav .bo-actionBtn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+.bo-mcal--sidebar .bo-mcalDows {
+  font-size: var(--bo-text-xs);
+  margin-bottom: var(--bo-space-1);
+  gap: 2px;
+  padding: 0;
+}
+
+.bo-mcal--sidebar .bo-mcalGrid {
+  gap: 2px;
+}
+
+.bo-mcal--sidebar .bo-mcalCell {
+  min-height: 28px;
+  padding: 2px;
+  border-radius: var(--bo-radius-sm);
+}
+
+.bo-mcal--sidebar .bo-mcalNum {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-bold);
+}
+
+.bo-mcal--sidebar .bo-mcalSub {
+  display: none;
+}
+
+.bo-mcal--sidebar .bo-mcalCell::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.bo-mcal--sidebar .bo-mcalCell.occ-50::after {
+  background: var(--bo-color-warning);
+}
+
+.bo-mcal--sidebar .bo-mcalCell.occ-75::after,
+.bo-mcal--sidebar .bo-mcalCell.occ-85::after {
+  background: #f97316;
+}
+
+.bo-mcal--sidebar .bo-mcalCell.occ-100::after {
+  background: var(--bo-color-danger);
+}
+
+.bo-mcal--sidebar .bo-mcalCell {
+  position: relative;
+}
+
+@media (max-width: 360px) {
+  .bo-mcal {
+    padding: 10px;
+  }
+
+  .bo-mcalCell {
+    min-height: 32px;
+    outline-offset: 1px;
+  }
+}
+
+@media (max-width: 300px) {
+  .bo-mcal {
+    padding: 8px;
+  }
+
+  .bo-mcalDows,
+  .bo-mcalGrid {
+    gap: 2px;
+  }
+
+  .bo-mcalCell {
+    min-height: 28px;
+    border-radius: 8px;
+    padding: 3px 2px;
+  }
+}
+
+.bo-donut {
+  width: auto;
+  border-radius: var(--bo-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+  border: 1px solid var(--bo-border);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+}
+
+@media (max-width: 520px) {
+  .bo-donut {
+    grid-template-columns: 1fr;
+    place-items: center;
+    text-align: center;
+  }
+}
+
+@media (min-width: 580px) and (max-width: 650px) {
+  .bo-reservasSide .bo-donutLegend,
+  .bo-reservasSide .bo-donutHint {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .bo-donutLegend {
+    display: none;
+  }
+}
+
+.bo-donutSvg {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+}
+
+.bo-donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.bo-donutPct {
+  font-size: var(--bo-text-xl);
+  font-weight: 820;
+  letter-spacing: 0.01em;
+}
+
+.bo-donutMeta {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  font-weight: 700;
+}
+
+.bo-donutTrack {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.bo-donutArc {
+  stroke: rgba(185, 168, 255, 0.90);
+}
+
+.bo-donut--y50 .bo-donutArc {
+  stroke: rgba(255, 223, 132, 0.92);
+}
+
+.bo-donut--o75 .bo-donutArc {
+  stroke: rgba(255, 159, 67, 0.92);
+}
+
+.bo-donut--o85 .bo-donutArc {
+  stroke: rgba(255, 122, 41, 0.95);
+}
+
+.bo-donut--r100 .bo-donutArc {
+  stroke: rgba(255, 76, 76, 0.96);
+}
+
+.bo-donutLegend {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  justify-content: center;
+  align-items: normal;
+  justify-items: normal;
+  min-width: 0;
+}
+
+.bo-donutLegend .bo-mutedText {
+  font-size: 13px;
+}
+
+.bo-donutLegend .bo-donutHint {
+  font-size: 13px;
+}
+
+.bo-donutRow {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.bo-donutVal {
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+}
+
+.bo-pill--used {
+  background: rgba(185, 168, 255, 0.75);
+  border-color: rgba(185, 168, 255, 0.32);
+}
+
+.bo-donut--y50 .bo-pill--used {
+  background: rgba(255, 223, 132, 0.75);
+  border-color: rgba(255, 223, 132, 0.28);
+}
+
+.bo-donut--o75 .bo-pill--used {
+  background: rgba(255, 159, 67, 0.75);
+  border-color: rgba(255, 159, 67, 0.28);
+}
+
+.bo-donut--o85 .bo-pill--used {
+  background: rgba(255, 122, 41, 0.78);
+  border-color: rgba(255, 122, 41, 0.30);
+}
+
+.bo-donut--r100 .bo-pill--used {
+  background: rgba(255, 76, 76, 0.78);
+  border-color: rgba(255, 76, 76, 0.30);
+}
+
+.bo-pill--free {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.bo-donutHint {
+  font-size: 12px;
+  color: var(--bo-faint);
+  font-weight: 650;
+}
+

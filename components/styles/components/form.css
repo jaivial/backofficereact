@@ -1,0 +1,84 @@
+/* Form field error states */
+.bo-field--error {
+  display: grid;
+  gap: 4px;
+}
+
+.bo-input--error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.bo-input--error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.bo-fieldError {
+  font-size: 11px;
+  color: var(--bo-color-danger, #dc2626);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 2px;
+}
+
+.bo-label {
+  font-size: 12px;
+  color: var(--bo-muted);
+  font-weight: 650;
+}
+
+.bo-input {
+  height: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--bo-text);
+  padding: 0 12px;
+  outline: none;
+  min-width: 0;
+  transition: border-color var(--bo-transition-base, 150ms) ease,
+    background-color var(--bo-transition-base, 150ms) ease;
+}
+
+.bo-input:hover {
+  border-color: var(--bo-border-2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bo-input--sm {
+  height: 36px;
+  min-height: 36px;
+  border-radius: 12px;
+}
+
+.bo-input:focus {
+  border-color: rgba(185, 168, 255, 0.38);
+  box-shadow: 0 0 0 3px rgba(185, 168, 255, 0.10);
+}
+
+.bo-btn {
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--bo-text);
+  cursor: pointer;
+  padding: 0 14px;
+  font-weight: 720;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bo-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+

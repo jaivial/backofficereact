@@ -1,0 +1,326 @@
+/* ============================================
+   Badge Variants - Color System
+   Designed for accessible contrast in both
+   light and dark themes
+   ============================================ */
+
+/* Lila Badge */
+.bo-badge--lila {
+  border-color: rgba(185, 168, 255, 0.32);
+  background: rgba(185, 168, 255, 0.14);
+  color: rgba(216, 206, 255, 0.95);
+}
+
+:root[data-theme="light"] .bo-badge--lila {
+  border-color: rgba(142, 122, 214, 0.40);
+  background: rgba(142, 122, 214, 0.12);
+  color: rgba(74, 54, 141, 0.92);
+}
+
+/* Cyan Badge */
+.bo-badge--cyan {
+  border-color: rgba(147, 239, 231, 0.32);
+  background: rgba(147, 239, 231, 0.12);
+  color: rgba(147, 239, 231, 0.92);
+}
+
+:root[data-theme="light"] .bo-badge--cyan {
+  border-color: rgba(16, 185, 165, 0.35);
+  background: rgba(16, 185, 165, 0.10);
+  color: rgba(4, 120, 105, 0.92);
+}
+
+/* Green Badge */
+.bo-badge--green {
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.14);
+  color: rgba(74, 222, 128, 0.95);
+}
+
+:root[data-theme="light"] .bo-badge--green {
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.10);
+  color: rgba(21, 128, 61, 0.92);
+}
+
+/* Red Badge */
+.bo-badge--red {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(248, 113, 113, 0.14);
+  color: rgba(252, 165, 165, 0.95);
+}
+
+:root[data-theme="light"] .bo-badge--red {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.10);
+  color: rgba(185, 28, 28, 0.92);
+}
+
+/* Yellow Badge */
+.bo-badge--yellow {
+  border-color: rgba(255, 223, 132, 0.35);
+  background: rgba(255, 223, 132, 0.14);
+  color: rgba(255, 237, 176, 0.95);
+}
+
+:root[data-theme="light"] .bo-badge--yellow {
+  border-color: rgba(202, 138, 4, 0.35);
+  background: rgba(202, 138, 4, 0.10);
+  color: rgba(161, 98, 7, 0.92);
+}
+
+/* Outlined Badge Variants */
+.bo-badge--outlined {
+  background: transparent;
+}
+
+/* Status Badge: Active */
+.bo-badge--active {
+  border-color: rgba(34, 197, 94, 0.40);
+  background: rgba(34, 197, 94, 0.18);
+  color: rgba(74, 222, 128, 0.95);
+}
+
+:root[data-theme="light"] .bo-badge--active {
+  border-color: rgba(22, 163, 74, 0.45);
+  background: rgba(22, 163, 74, 0.14);
+  color: rgba(21, 128, 61, 0.92);
+}
+
+/* Status Badge: Inactive */
+.bo-badge--inactive {
+  border-color: rgba(107, 114, 128, 0.32);
+  background: rgba(107, 114, 128, 0.12);
+  color: rgba(156, 163, 175, 0.85);
+}
+
+:root[data-theme="light"] .bo-badge--inactive {
+  border-color: rgba(107, 114, 128, 0.30);
+  background: rgba(107, 114, 128, 0.08);
+  color: rgba(75, 85, 99, 0.85);
+}
+
+/* Status Badge: Pending */
+.bo-badge--pending {
+  border-color: rgba(251, 191, 36, 0.40);
+  background: rgba(251, 191, 36, 0.16);
+  color: rgba(253, 224, 71, 0.95);
+}
+
+:root[data-theme="light"] .bo-badge--pending {
+  border-color: rgba(217, 119, 6, 0.40);
+  background: rgba(217, 119, 6, 0.12);
+  color: rgba(180, 83, 9, 0.92);
+}
+
+/* Compatibility aliases used by facturas modules */
+.bo-badge--info {
+  border-color: color-mix(in srgb, var(--bo-color-info) 45%, transparent);
+  background: color-mix(in srgb, var(--bo-color-info) 16%, transparent);
+  color: color-mix(in srgb, var(--bo-color-info) 70%, white 30%);
+}
+
+:root[data-theme="light"] .bo-badge--info {
+  color: color-mix(in srgb, var(--bo-color-info) 88%, black 12%);
+}
+
+.bo-badge--muted {
+  border-color: var(--bo-border-2);
+  background: color-mix(in srgb, var(--bo-muted) 16%, transparent);
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-badge--muted {
+  color: var(--bo-text-secondary);
+}
+
+.bo-badge--danger {
+  border-color: color-mix(in srgb, var(--bo-color-danger) 45%, transparent);
+  background: color-mix(in srgb, var(--bo-color-danger) 16%, transparent);
+  color: color-mix(in srgb, var(--bo-color-danger) 76%, white 24%);
+}
+
+:root[data-theme="light"] .bo-badge--danger {
+  color: color-mix(in srgb, var(--bo-color-danger) 90%, black 10%);
+}
+
+/* Badge Small Size */
+.bo-badge--sm {
+  padding: 3px 6px;
+  font-size: 10px;
+}
+
+/* Badge with Icon */
+.bo-badge .bo-ico {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.bo-badge--sm .bo-ico {
+  width: 11px;
+  height: 11px;
+}
+
+/* ============================================
+   Tags Styles
+   ============================================ */
+
+.bo-tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.bo-tagItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+:root[data-theme="light"] .bo-tagItem {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.bo-tagItem--sm {
+  padding: 1px 6px;
+  font-size: 10px;
+}
+
+.bo-tagItem--more {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:root[data-theme="light"] .bo-tagItem--more {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.bo-tagRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 2px;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.bo-tagRemove:hover {
+  opacity: 1;
+}
+
+/* ============================================
+   Chip Color Variants
+   ============================================ */
+
+/* Lila Chip */
+.bo-chip--lila {
+  border-color: rgba(185, 168, 255, 0.32);
+  background: rgba(185, 168, 255, 0.14);
+  color: rgba(216, 206, 255, 0.95);
+}
+
+:root[data-theme="light"] .bo-chip--lila {
+  border-color: rgba(142, 122, 214, 0.40);
+  background: rgba(142, 122, 214, 0.12);
+  color: rgba(74, 54, 141, 0.92);
+}
+
+/* Cyan Chip */
+.bo-chip--cyan {
+  border-color: rgba(147, 239, 231, 0.32);
+  background: rgba(147, 239, 231, 0.12);
+  color: rgba(147, 239, 231, 0.92);
+}
+
+:root[data-theme="light"] .bo-chip--cyan {
+  border-color: rgba(16, 185, 165, 0.35);
+  background: rgba(16, 185, 165, 0.10);
+  color: rgba(4, 120, 105, 0.92);
+}
+
+/* Green Chip */
+.bo-chip--green {
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.14);
+  color: rgba(74, 222, 128, 0.95);
+}
+
+:root[data-theme="light"] .bo-chip--green {
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.10);
+  color: rgba(21, 128, 61, 0.92);
+}
+
+/* Red Chip */
+.bo-chip--red {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(248, 113, 113, 0.14);
+  color: rgba(252, 165, 165, 0.95);
+}
+
+:root[data-theme="light"] .bo-chip--red {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.10);
+  color: rgba(185, 28, 28, 0.92);
+}
+
+/* Yellow Chip */
+.bo-chip--yellow {
+  border-color: rgba(255, 223, 132, 0.35);
+  background: rgba(255, 223, 132, 0.14);
+  color: rgba(255, 237, 176, 0.95);
+}
+
+:root[data-theme="light"] .bo-chip--yellow {
+  border-color: rgba(202, 138, 4, 0.35);
+  background: rgba(202, 138, 4, 0.10);
+  color: rgba(161, 98, 7, 0.92);
+}
+
+/* Chip Small Size */
+.bo-chip--sm {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.bo-chip--sm .bo-ico {
+  width: 12px;
+  height: 12px;
+}
+
+/* Chip as Tag */
+.bo-chip--tag {
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Chip Selected State */
+.bo-chip--is-on {
+  border-color: rgba(185, 168, 255, 0.40);
+  background: rgba(185, 168, 255, 0.20);
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-chip--is-on {
+  border-color: rgba(142, 122, 214, 0.50);
+  background: rgba(142, 122, 214, 0.20);
+}
+

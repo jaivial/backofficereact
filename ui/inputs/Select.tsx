@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { cn } from "../shadcn/utils";
 
 type Option = { value: string; label: string; icon?: React.ReactNode };
 
@@ -153,7 +154,7 @@ export function Select({
     <div ref={wrapperRef} className="bo-selectWrapper" style={style} data-ui="select-wrapper">
       <button
         ref={btnRef}
-        className={[btnClass, className].filter(Boolean).join(" ")}
+        className={cn(btnClass, className)}
         type="button"
         aria-label={ariaLabel}
         aria-haspopup="listbox"

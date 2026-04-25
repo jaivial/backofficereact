@@ -1,0 +1,144 @@
+/* Facturas Page */
+.bo-facturasPage {
+  position: relative;
+  padding-bottom: 98px;
+  display: grid;
+  gap: 14px;
+}
+
+.bo-facturasSummary {
+  display: grid;
+  gap: var(--bo-space-4);
+  margin-bottom: var(--bo-space-4);
+}
+
+.bo-facturasFormContainer {
+  width: 100%;
+}
+
+.bo-facturasFormPanel {
+  overflow: hidden;
+}
+
+.bo-facturasFormPanelBody {
+  padding-top: var(--bo-space-4);
+}
+
+.bo-facturasPageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bo-shortcutsHelpBtn {
+  flex-shrink: 0;
+}
+
+/* Keyboard Shortcuts Modal */
+.bo-shortcutsModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.bo-shortcutsModalContent {
+  background: var(--bo-surface);
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  box-shadow: var(--bo-shadow-lg);
+  max-width: 420px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-shortcutsModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-shortcutsModalHeader h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.bo-shortcutsModalBody {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.bo-shortcutGroup {
+  margin-bottom: 20px;
+}
+
+.bo-shortcutGroup:last-child {
+  margin-bottom: 0;
+}
+
+.bo-shortcutGroup h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bo-shortcutItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.bo-shortcutKeys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bo-shortcutKeys kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--bo-bg);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--bo-fg);
+}
+
+.bo-shortcutDesc {
+  color: var(--bo-fg);
+  font-size: 0.875rem;
+}
+
+.bo-facturasStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.bo-facturasTabs {
+  display: grid;
+  gap: 14px;
+}
+

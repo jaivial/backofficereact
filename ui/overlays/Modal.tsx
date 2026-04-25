@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { cn } from "../shadcn/utils";
 
 function portalEl(): HTMLElement | null {
   return document.getElementById("bo-portal") || document.body;
@@ -74,7 +75,7 @@ export function Modal({
         >
           <motion.div
             data-role="dialog"
-            className={["bo-modal", "bo-modal--glass", className].filter(Boolean).join(" ")}
+            className={cn("bo-modal", "bo-modal--glass", className)}
             role="dialog"
             aria-label={title}
             style={

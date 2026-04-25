@@ -1,0 +1,2934 @@
+/* Members & Fichaje */
+.bo-input:disabled,
+.bo-selectNative:disabled,
+.bo-selectBtn:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.bo-selectNative {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--bo-muted) 50%),
+    linear-gradient(135deg, var(--bo-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+.bo-slider {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-sliderInput {
+  width: 100%;
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  outline: none;
+  background: linear-gradient(90deg,
+      rgba(185, 168, 255, 0.9) 0%,
+      rgba(185, 168, 255, 0.9) var(--bo-slider-progress, 0%),
+      rgba(255, 255, 255, 0.12) var(--bo-slider-progress, 0%),
+      rgba(255, 255, 255, 0.12) 100%);
+}
+
+.bo-sliderInput::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(185, 168, 255, 0.45);
+  background: var(--bo-text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}
+
+.bo-sliderInput::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(185, 168, 255, 0.45);
+  background: var(--bo-text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}
+
+.bo-sliderInput:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.bo-sliderMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-sliderValue {
+  color: var(--bo-text);
+  font-weight: 760;
+}
+
+.bo-membersPage {
+  gap: 14px;
+}
+
+.bo-membersIntroHead {
+  align-items: center;
+  gap: 12px;
+}
+
+.bo-membersIntroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(185, 168, 255, 0.30);
+  background: rgba(185, 168, 255, 0.14);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 760;
+  color: var(--bo-text);
+}
+
+.bo-tabs--members {
+  width: fit-content;
+}
+
+.bo-tabs--members .bo-tab {
+  min-width: 136px;
+  flex: 0 0 auto;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+@media (max-width: 905px) {
+  .bo-tabs--members {
+    width: fit-content;
+    margin: 0 auto;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+
+  .bo-tabs--members .bo-tab {
+    min-width: 136px;
+    flex: 0 0 136px;
+  }
+}
+
+.bo-membersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.bo-memberCard {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+  transition: transform 120ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+:root[data-theme="light"] .bo-memberCard {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)),
+    color-mix(in srgb, var(--bo-surface) 90%, transparent);
+  border: 1px solid var(--bo-glass-border-strong);
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+}
+
+.bo-memberCard:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--bo-accent) 28%, var(--bo-border));
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.30);
+}
+
+:root[data-theme="light"] .bo-memberCard:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 36%, var(--bo-border));
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.bo-memberCardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.bo-memberAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid var(--bo-border-2);
+}
+
+.bo-memberAvatarFallback {
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(185, 168, 255, 0.36), rgba(147, 239, 231, 0.26));
+  color: var(--bo-text);
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.bo-memberMain {
+  min-width: 0;
+}
+
+.bo-memberNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bo-memberName {
+  font-size: 14px;
+  font-weight: 760;
+  letter-spacing: 0.01em;
+  color: var(--bo-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-memberSub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--bo-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-memberCardFoot {
+  border-top: 1px solid var(--bo-border);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-memberMeta {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-memberRoleRow {
+  border-top: 1px solid var(--bo-border);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-memberHours {
+  font-size: 11px;
+  font-weight: 760;
+  color: var(--bo-text);
+}
+
+.bo-roleBadge {
+  border-color: rgba(185, 168, 255, 0.32);
+  background: rgba(185, 168, 255, 0.12);
+  color: var(--bo-text);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+.bo-roleBadge--ghost {
+  border-color: var(--bo-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--bo-muted);
+}
+
+.bo-panel--empty {
+  grid-column: 1 / -1;
+}
+
+.bo-memberRolesTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-table--membersRoles th,
+.bo-table--membersRoles td {
+  vertical-align: top;
+}
+
+.bo-table--membersRoles .col-role {
+  width: 194px;
+}
+
+.bo-membersRoleSelect {
+  width: 100%;
+  min-width: 168px;
+  justify-content: space-between;
+}
+
+.bo-chips--dense .bo-chip {
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
+.bo-chip--static {
+  cursor: default;
+}
+
+.bo-membersRoleNote {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-roleToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bo-roleToolbar .bo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.bo-roleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.bo-roleCard {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  transition: transform 120ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bo-roleCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(185, 168, 255, 0.28);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.30);
+}
+
+.bo-roleCardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.bo-roleCardIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(185, 168, 255, 0.30);
+  background: rgba(185, 168, 255, 0.14);
+  color: rgba(238, 240, 246, 0.95);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-roleCardTitleWrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.bo-roleCardTitle {
+  font-size: 14px;
+  font-weight: 760;
+  color: var(--bo-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-roleCardChevron {
+  color: var(--bo-faint);
+}
+
+.bo-roleCardFoot {
+  border-top: 1px solid var(--bo-border);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-roleCardUsers {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--bo-muted);
+  font-weight: 720;
+}
+
+.bo-roleCardLevel {
+  font-size: 11px;
+  font-weight: 780;
+  color: var(--bo-accent);
+  background: rgba(185, 168, 255, 0.12);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+.bo-roleModalTitleIcon {
+  margin-right: 8px;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.bo-roleModalPanel .bo-panelHead {
+  padding-bottom: 8px;
+}
+
+.bo-roleModalInfoTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.bo-roleModalInfoBody {
+  display: grid;
+  gap: 12px;
+}
+
+.bo-roleMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-roleModalGrid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.bo-roleModalUsersTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-roleModalUserList {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-roleUserRow {
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-roleUserRow.is-disabled {
+  opacity: 0.62;
+}
+
+.bo-roleUserRow input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.bo-roleUserMain {
+  min-width: 0;
+  flex: 1;
+}
+
+.bo-roleUserName {
+  font-size: 12px;
+  font-weight: 740;
+  color: var(--bo-text);
+}
+
+.bo-roleUserEmail {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--bo-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-roleUserHint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--bo-faint);
+}
+
+.bo-roleUserSelect {
+  width: 180px;
+  min-width: 180px;
+}
+
+.bo-roleAssignBox {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bo-roleAssignHead {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-roleModalAssignFoot {
+  flex-shrink: 0;
+  border-top: 1px solid var(--bo-border);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.bo-roleCreateBody {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-roleCreateBody .bo-field--wide {
+  grid-column: 1 / -1;
+}
+
+.bo-roleCreateIconRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 220px);
+  gap: 10px;
+  align-items: center;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.bo-roleCreateIconPreview {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(185, 168, 255, 0.28);
+  background: rgba(185, 168, 255, 0.14);
+  color: var(--bo-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-roleCreateIconSelect {
+  width: min(220px, 100%);
+  justify-content: space-between;
+}
+
+.bo-modal--memberCreate {
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-modal--memberCreate .bo-modalOutline {
+  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.bo-memberCreateBody {
+  display: grid;
+  gap: var(--bo-space-4);
+}
+
+.bo-memberCreateAvatarBlock {
+  display: grid;
+  gap: var(--bo-space-3);
+  justify-items: center;
+  justify-self: center;
+}
+
+.bo-memberCreateAvatarDrop {
+  width: calc((var(--bo-space-8) * 2) + var(--bo-space-3));
+  height: calc((var(--bo-space-8) * 2) + var(--bo-space-3));
+  border-radius: var(--bo-radius-full);
+  border: 1px dashed var(--bo-border-2);
+  position: relative;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  margin-inline: auto;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--bo-surface-2) 90%, white 10%),
+      color-mix(in srgb, var(--bo-surface-3) 92%, black 8%));
+}
+
+.bo-memberCreateAvatarDrop:focus-visible {
+  border-radius: var(--bo-radius-full);
+}
+
+.bo-memberCreateAvatar {
+  width: calc(var(--bo-space-8) * 2);
+  height: calc(var(--bo-space-8) * 2);
+  border-radius: var(--bo-radius-full);
+}
+
+.bo-memberCreateAvatar .bo-memberAvatarFallback {
+  font-size: var(--bo-text-lg);
+  font-weight: var(--bo-weight-semibold);
+  line-height: var(--bo-leading-tight);
+}
+
+.bo-memberCreateAvatarHint {
+  position: absolute;
+  right: var(--bo-space-1);
+  bottom: var(--bo-space-1);
+  width: calc(var(--bo-space-5) - var(--bo-space-1));
+  height: calc(var(--bo-space-5) - var(--bo-space-1));
+  border-radius: var(--bo-radius-full);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-memberCreateAvatarOverlay {
+  position: absolute;
+  inset: var(--bo-space-1);
+  border-radius: var(--bo-radius-full);
+  background: color-mix(in srgb, var(--bo-surface-3) 62%, transparent);
+  color: var(--bo-text);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--bo-transition-base) var(--bo-ease),
+    background-color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-memberCreateAvatarDrop.is-dragging .bo-memberCreateAvatarOverlay,
+.bo-memberCreateAvatarDrop:focus-visible .bo-memberCreateAvatarOverlay {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bo-memberCreateAvatarDrop:hover .bo-memberCreateAvatarOverlay {
+    opacity: 1;
+  }
+}
+
+.bo-memberCreateGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bo-space-4);
+}
+
+.bo-inlineError {
+  border-radius: var(--bo-radius-md);
+  border: 1px solid color-mix(in srgb, var(--bo-color-danger) 40%, transparent);
+  background: color-mix(in srgb, var(--bo-color-danger) 16%, transparent);
+  color: var(--bo-text-danger);
+  padding: var(--bo-space-2) var(--bo-space-3);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-normal);
+}
+
+@media (max-width: 760px) {
+  .bo-memberCreateGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 860px) {
+  .bo-modal--roleDetail {
+    max-height: 80dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bo-modal--roleDetail .bo-modalOutline {
+    flex: 0 0 auto;
+  }
+
+  .bo-modal--roleDetail .bo-roleModalGrid {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    align-items: stretch;
+  }
+
+  .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel {
+    min-height: 0;
+    max-height: 100%;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .bo-modal--roleDetail .bo-roleAssignBox {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .bo-modal--roleDetail .bo-roleAssignBox .bo-roleModalUserList {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .bo-modal--roleDetail .bo-roleAssignBox .bo-roleModalUserList::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+.bo-memberDetailPage {
+  gap: var(--bo-space-4);
+}
+
+.bo-memberDetailRoute {
+  display: grid;
+  gap: var(--bo-space-4);
+}
+
+.bo-tabs--memberDetail {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.bo-memberHeroHead {
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.bo-memberHeroIdentity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.bo-memberHeroAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  border: 1px solid var(--bo-border-2);
+  background: linear-gradient(135deg, rgba(185, 168, 255, 0.42), rgba(147, 239, 231, 0.24));
+  overflow: hidden;
+}
+
+.bo-imageDropInput {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.bo-imageDropInput:focus-visible {
+  outline: 2px solid rgba(185, 168, 255, 0.45);
+  outline-offset: 2px;
+  border-radius: 20px;
+}
+
+.bo-imageDropInput.is-disabled {
+  cursor: not-allowed;
+}
+
+.bo-memberHeroAvatarDropzone {
+  border-radius: 20px;
+}
+
+.bo-memberHeroAvatar .bo-memberAvatarFallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+}
+
+.bo-memberAvatarUploadOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: rgba(10, 12, 20, 0.56);
+  color: rgba(255, 255, 255, 0.96);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, background 160ms ease;
+}
+
+.bo-memberAvatarUploadIcon.is-spinning {
+  animation: bo-spin 900ms linear infinite;
+}
+
+.bo-memberHeroAvatarDropzone.is-dragging .bo-memberAvatarUploadOverlay,
+.bo-memberHeroAvatarDropzone.is-busy .bo-memberAvatarUploadOverlay,
+.bo-memberHeroAvatarDropzone:focus-visible .bo-memberAvatarUploadOverlay {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bo-memberHeroAvatarDropzone:hover .bo-memberAvatarUploadOverlay {
+    opacity: 1;
+  }
+}
+
+@media (hover: none),
+(pointer: coarse) {
+  .bo-memberAvatarUploadOverlay {
+    display: none;
+  }
+
+  .bo-memberHeroAvatarDropzone.is-busy .bo-memberAvatarUploadOverlay {
+    display: grid;
+  }
+}
+
+.bo-memberHeroTitle {
+  font-size: 18px;
+}
+
+.bo-memberHeroTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-memberHeroActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bo-memberHeroStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-memberFormsGrid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.bo-memberFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-memberFormGrid .bo-input,
+.bo-memberContractBody .bo-input,
+.bo-memberStatsControls .bo-input {
+  width: 100%;
+}
+
+.bo-field--wide {
+  grid-column: 1 / -1;
+}
+
+.bo-memberContractBody {
+  display: grid;
+  gap: 12px;
+}
+
+.bo-memberContractNote {
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-muted);
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.bo-memberSaveInline {
+  padding-top: 2px;
+}
+
+.bo-memberStatsHead {
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bo-memberStatsControls {
+  margin-left: auto;
+  margin-right: 8px;
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  column-gap: var(--bo-space-3);
+  row-gap: var(--bo-space-2);
+}
+
+.bo-memberControl {
+  min-width: 142px;
+}
+
+.bo-memberControlSelect {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-memberRefreshBtn {
+  margin-bottom: 1px;
+}
+
+.bo-memberRefreshIcon.is-spinning {
+  animation: bo-spin 900ms linear infinite;
+}
+
+@keyframes bo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bo-memberStatsBody {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-memberProgress {
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px;
+}
+
+.bo-memberProgressTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.bo-memberProgressTrack {
+  margin-top: 8px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.bo-memberProgressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(185, 168, 255, 0.96), rgba(147, 239, 231, 0.80));
+}
+
+.bo-memberBarsSection {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-memberBarsScroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bo-memberBarsGrid {
+  display: grid;
+  align-items: end;
+  gap: 10px;
+  min-width: 100%;
+  padding-bottom: 4px;
+}
+
+.bo-memberBarCol {
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bo-memberBarValue {
+  font-size: 11px;
+  color: var(--bo-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bo-memberBarTrack {
+  width: 100%;
+  height: 176px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.bo-memberBarFill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 4px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, rgba(185, 168, 255, 0.96), rgba(147, 239, 231, 0.72));
+}
+
+.bo-memberBarLabel {
+  width: 100%;
+  font-size: 11px;
+  color: var(--bo-faint);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-memberLinearChart {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 0;
+}
+
+.bo-memberLinearScroll {
+  min-height: 220px;
+}
+
+.bo-memberLinearSvg {
+  width: 100%;
+  min-width: 300px;
+  height: 220px;
+  display: block;
+}
+
+.bo-memberLinearLine {
+  filter: drop-shadow(0 4px 12px rgba(185, 168, 255, 0.25));
+}
+
+.bo-memberLinearDot {
+  filter: drop-shadow(0 2px 6px rgba(185, 168, 255, 0.4));
+  transition: r 120ms ease;
+}
+
+.bo-memberLinearDot:hover {
+  r: 7;
+}
+
+.bo-memberLinearValue {
+  font-size: 11px;
+  fill: var(--bo-muted);
+  font-weight: 700;
+}
+
+.bo-memberLinearLabel {
+  font-size: 11px;
+  fill: var(--bo-faint);
+  font-weight: 700;
+}
+
+.bo-memberSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-memberBalance.is-positive {
+  color: rgba(147, 239, 231, 0.92);
+}
+
+.bo-memberBalance.is-negative {
+  color: rgba(255, 128, 128, 0.95);
+}
+
+.bo-badge--self {
+  border-color: rgba(185, 168, 255, 0.38);
+  background: rgba(185, 168, 255, 0.16);
+  color: var(--bo-text);
+}
+
+.bo-memberQuarterNote {
+  font-size: 12px;
+  color: var(--bo-faint);
+}
+
+.bo-statsTable {
+  margin-top: var(--bo-space-2);
+  display: grid;
+  gap: var(--bo-space-4);
+}
+
+.bo-statsTableControls {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-statsTableFilters {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--bo-space-3);
+}
+
+.bo-statsTableSelect,
+.bo-statsRangePicker {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-statsTableRangeField {
+  min-width: 204px;
+}
+
+.bo-statsTableModeTag {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-statsTableSurface {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.12));
+}
+
+.bo-statsTableWrap {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.bo-statsTableWrap .bo-table {
+  table-layout: fixed;
+}
+
+.bo-statsTableWrap .bo-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--bo-surface-2) 86%, transparent);
+}
+
+.bo-statsTableCol--period {
+  width: 36%;
+}
+
+.bo-statsTableCol--worked {
+  width: 22%;
+}
+
+.bo-statsTableCol--expected {
+  width: 22%;
+}
+
+.bo-statsTableCol--difference {
+  width: 20%;
+}
+
+.bo-table--stats .bo-positive {
+  color: var(--bo-color-success);
+}
+
+.bo-table--stats .bo-negative {
+  color: var(--bo-color-danger);
+}
+
+.bo-statsTableEmpty {
+  text-align: center;
+}
+
+.bo-statsTableFooter {
+  border-top: 1px solid var(--bo-border);
+  width: 100%;
+}
+
+.bo-table--statsFooter {
+  table-layout: fixed;
+  background: color-mix(in srgb, var(--bo-surface-2) 84%, transparent);
+}
+
+.bo-table--statsFooter tfoot td {
+  padding: var(--bo-space-3) var(--bo-space-4);
+  color: var(--bo-text);
+}
+
+.bo-table--statsFooter tfoot tr {
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-fichajeTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-fichajeTopbarChip {
+  height: 32px;
+  min-width: 124px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 7px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 740;
+  color: var(--bo-muted);
+}
+
+.bo-fichajeTopbarTime {
+  display: inline-flex;
+  justify-content: center;
+  width: 9ch;
+  min-width: 9ch;
+  text-align: center;
+  letter-spacing: 0.02em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+
+.bo-fichajeTopbarChip.is-live {
+  border-color: rgba(147, 239, 231, 0.32);
+  color: rgba(147, 239, 231, 0.95);
+}
+
+.bo-fichajeTopbarDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 3px rgba(147, 239, 231, 0.16);
+}
+
+.bo-fichajePanel {
+  width: min(680px, 100%);
+  margin-inline: auto;
+}
+
+.bo-fichajeBody {
+  min-height: 290px;
+  display: grid;
+  align-items: center;
+}
+
+.bo-fichajeConn {
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bo-faint);
+}
+
+.bo-fichajeConn.is-live {
+  border-color: rgba(147, 239, 231, 0.32);
+  color: rgba(147, 239, 231, 0.94);
+}
+
+.bo-fichajeForm {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 14px;
+}
+
+.bo-fichajeFormRow {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-fichajeStartBtn {
+  justify-self: flex-start;
+  min-width: 148px;
+}
+
+.bo-fichajeRunning {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.bo-fichajeStartSmall {
+  justify-self: flex-start;
+  width: 100%;
+  font-size: 12px;
+  color: var(--bo-faint);
+  font-weight: 700;
+}
+
+.bo-fichajeCounter {
+  font-size: clamp(36px, 7vw, 64px);
+  font-weight: 780;
+  letter-spacing: 0.4px;
+  line-height: 1;
+}
+
+.bo-fichajeMemberName {
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.bo-fichajeScheduleNote {
+  font-size: 12px;
+  color: var(--bo-faint);
+}
+
+.bo-fichajeStopBtn {
+  margin-top: 4px;
+}
+
+.bo-fichajeAdminPanel {
+  width: min(1100px, 100%);
+  margin-inline: auto;
+}
+
+.bo-fichajeAdminBody {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  align-items: start;
+}
+
+.bo-fichajeAdminPage .bo-memberPicker {
+  max-height: 50vh;
+}
+
+.bo-fichajeAdminWork {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 14px;
+}
+
+.bo-fichajeAdminMember {
+  display: grid;
+  gap: 4px;
+}
+
+.bo-fichajeAdminIdle {
+  display: grid;
+  justify-items: start;
+}
+
+.bo-fichajeAdminSchedule {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-fichajeAdminScheduleTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-fichajeAdminScheduleGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-horariosPage {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bo-horariosTopGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+  width: 100%;
+  min-width: 0;
+}
+
+.bo-horariosCalendarPanel {
+  min-width: 0;
+}
+
+.bo-horariosCalendarBody {
+  display: grid;
+  gap: 12px;
+  grid-template-rows: auto 1fr;
+}
+
+.bo-horariosCalendarTabs {
+  grid-column: 1 / -1;
+}
+
+.bo-horariosCalendarRow {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+}
+
+.bo-horariosCalendarViewport {
+  max-width: 450px;
+}
+
+.bo-horariosMembersPanel {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+}
+
+.bo-horariosMembersPanelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.bo-horariosMembersPanelHead .bo-panelTitle {
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.bo-horariosMembersPanel .bo-horariosMemberList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  .bo-horariosCalendarRow {
+    grid-template-columns: minmax(0, 450px) 280px;
+    justify-content: center;
+    align-items: start;
+  }
+
+  .bo-horariosMembersPanel {
+    max-height: var(--bo-horarios-mcal-height, 480px);
+    overflow: hidden;
+    align-self: start;
+  }
+
+  .bo-horariosMembersPanel .bo-horariosMemberList {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 1023px) {
+  .bo-horariosCalendarRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-horariosCalendarViewport {
+    margin: 0 auto;
+  }
+
+  .bo-horariosMembersPanel {
+    width: 100%;
+    max-height: 320px;
+  }
+}
+
+.bo-horariosTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-horariosDateBadge {
+  min-height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 740;
+  color: var(--bo-muted);
+}
+
+.bo-horariosCalendarTabs {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+.bo-horariosCalendarTab {
+  appearance: none;
+  cursor: pointer;
+  background: transparent;
+  font: inherit;
+}
+
+.bo-horariosCalendarTab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(185, 168, 255, 0.2);
+}
+
+.bo-horariosCalendarViewport {
+  min-width: 0;
+}
+
+.bo-horariosCalendarViewItem {
+  min-width: 0;
+}
+
+.bo-horariosCalendarPanel .bo-mcal {
+  margin-inline: auto;
+  max-width: 450px;
+  width: 100%;
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: clamp(32px, 7vw, 44px);
+  border-radius: clamp(8px, 1.8vw, 12px);
+  padding: clamp(3px, 1vw, 6px) clamp(3px, 1vw, 6px) clamp(2px, 0.8vw, 4px);
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  background: transparent;
+  transition: opacity 160ms ease, background 160ms ease;
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell>* {
+  position: relative;
+  z-index: 1;
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell.is-selected {
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  box-shadow:
+    var(--bo-shadow-soft),
+    0 0 0 1px color-mix(in srgb, var(--bo-accent) 34%, transparent);
+}
+
+.bo-horariosCalendarPanel .bo-mcalCell.is-selected::before {
+  background: color-mix(in srgb, var(--bo-accent) 78%, transparent);
+  opacity: 0.5;
+}
+
+.bo-horariosCalendarPanel .bo-mcalNum {
+  font-size: clamp(10px, 2.8vw, 13px);
+}
+
+.bo-horariosCalendarPanel .bo-mcalSub {
+  font-size: clamp(8px, 2vw, 10px);
+}
+
+@media (max-width: 480px) {
+  .bo-horariosCalendarPanel .bo-mcal {
+    max-width: 320px;
+  }
+
+  .bo-horariosCalendarPanel .bo-mcalCell {
+    min-height: 30px;
+    border-radius: 8px;
+    padding: 2px;
+  }
+
+  .bo-horariosCalendarPanel .bo-mcalNum {
+    font-size: 10px;
+  }
+
+  .bo-horariosCalendarPanel .bo-mcalSub {
+    font-size: 8px;
+  }
+}
+
+.bo-horariosMemberCount {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(185, 168, 255, 0.30);
+  background: rgba(185, 168, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.bo-horariosMemberSearch {
+  margin-bottom: 10px;
+}
+
+.bo-horariosMemberSearchInput {
+  width: 100%;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--bo-text);
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.bo-horariosMemberSearchInput::placeholder {
+  color: var(--bo-muted);
+}
+
+.bo-horariosMemberSearchInput:focus {
+  outline: none;
+  border-color: var(--bo-accent);
+}
+
+.bo-horariosMemberList {
+  display: grid;
+  gap: 8px;
+  overflow: auto;
+}
+
+.bo-horariosMemberBtn {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.bo-horariosMemberBtn:hover {
+  border-color: var(--bo-border-2);
+  background: rgba(185, 168, 255, 0.08);
+}
+
+.bo-horariosMemberName {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.bo-horariosLiveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bo-accent-2) 95%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bo-accent-2) 14%, transparent);
+  flex: 0 0 auto;
+}
+
+.bo-horariosLivePill {
+  min-width: 96px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(147, 239, 231, 0.34);
+  background: rgba(147, 239, 231, 0.12);
+  color: rgba(147, 239, 231, 0.95);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.02em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+
+.bo-table--horarios th:nth-child(5),
+.bo-table--horarios td:nth-child(5) {
+  width: 132px;
+  text-align: center;
+}
+
+.bo-horariosMemberAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bo-table--horarios th:last-child,
+.bo-table--horarios td:last-child {
+  width: 100px;
+  text-align: right;
+}
+
+.bo-horariosModalPanel .bo-panelHead {
+  align-items: center;
+}
+
+.bo-horariosModalBody {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-horariosWheels {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-horariosWheelGroup {
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.bo-horariosWheelRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bo-horariosWheelLabel {
+  font-size: 12px;
+  color: var(--bo-faint);
+  margin-bottom: 6px;
+}
+
+.bo-horariosWheelSpin {
+  width: 100%;
+}
+
+.bo-spinWheel {
+  --bo-wheel-item-h: 38px;
+  --bo-wheel-view-h: 190px;
+  width: 100%;
+}
+
+.bo-spinWheelViewport {
+  position: relative;
+  height: var(--bo-wheel-view-h);
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(9, 12, 20, 0.32)),
+    rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+  touch-action: none;
+  outline: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.bo-spinWheelViewport:focus-visible {
+  border-color: rgba(185, 168, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(185, 168, 255, 0.18);
+}
+
+.bo-spinWheelTrack {
+  padding-inline: 8px;
+  will-change: transform;
+  cursor: grab;
+}
+
+.bo-spinWheelTrack:active {
+  cursor: grabbing;
+}
+
+.bo-spinWheelItem {
+  width: 100%;
+  height: var(--bo-wheel-item-h);
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--bo-muted);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 780;
+  letter-spacing: 0.4px;
+  font-variant-numeric: tabular-nums;
+  transform-origin: center center;
+  transition: color 120ms ease, opacity 120ms ease, transform 120ms ease;
+  cursor: pointer;
+}
+
+.bo-spinWheelItem.is-active {
+  color: var(--bo-text);
+  text-shadow: 0 7px 20px rgba(185, 168, 255, 0.22);
+}
+
+.bo-spinWheelCenter {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: var(--bo-wheel-item-h);
+  transform: translateY(-50%);
+  border-radius: 10px;
+  border: 1px solid rgba(185, 168, 255, 0.34);
+  background: rgba(185, 168, 255, 0.08);
+  pointer-events: none;
+}
+
+.bo-spinWheelFade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 34%;
+  pointer-events: none;
+}
+
+.bo-spinWheelFade--top {
+  top: 0;
+  background: linear-gradient(180deg, var(--bo-surface-2) 0%, transparent 100%);
+}
+
+.bo-spinWheelFade--bottom {
+  bottom: 0;
+  background: linear-gradient(0deg, var(--bo-surface-2) 0%, transparent 100%);
+}
+
+.bo-horariosTimeSelect {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-horariosWheelSelect {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--bo-text);
+  padding: 8px 6px;
+  height: 152px;
+  outline: none;
+}
+
+.bo-horariosWheelSelect option {
+  padding: 4px 6px;
+}
+
+.bo-menuSettingSelect {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-menuSettingSelect .bo-selectLabel {
+  max-width: 320px;
+}
+
+.bo-horariosPreview {
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-3);
+  width: fit-content;
+  margin-inline: auto;
+  justify-self: center;
+  padding: 9px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.bo-horariosPreviewPage,
+.bo-turnosPage {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bo-viewTabs {
+  padding: var(--bo-space-1);
+  gap: var(--bo-space-1);
+  border-radius: var(--bo-radius-full);
+}
+
+.bo-viewTabs .bo-tab {
+  padding: var(--bo-space-2) var(--bo-space-3);
+  border-radius: var(--bo-radius-full);
+}
+
+.bo-viewTabs .bo-tabLabel {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-viewTabs .bo-tabIndicator {
+  border-radius: var(--bo-radius-full);
+  background: color-mix(in srgb, var(--bo-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent) 26%, var(--bo-border));
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--bo-accent) 10%, transparent);
+}
+
+.bo-horariosRosterWrap {
+  margin-top: 0;
+}
+
+.bo-horariosRosterWrap--glass {
+  border: 1px solid var(--bo-glass-border-strong);
+  border-radius: var(--bo-radius-lg);
+  overflow: hidden;
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 10%, transparent), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.2)),
+    color-mix(in srgb, var(--bo-surface-2) 80%, transparent);
+  box-shadow: var(--bo-glass-shadow);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+}
+
+:root[data-theme="light"] .bo-horariosRosterWrap--glass {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, white), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(231, 237, 249, 0.84)),
+    color-mix(in srgb, var(--bo-surface) 92%, rgba(230, 236, 246, 0.96));
+  border-color: color-mix(in srgb, var(--bo-accent) 18%, var(--bo-border));
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.bo-horariosRosterTable {
+  width: 100%;
+  border-spacing: 0;
+  font-size: var(--bo-text-sm);
+}
+
+.bo-horariosRosterTable thead th {
+  padding: var(--bo-space-3) var(--bo-space-4);
+  text-align: left;
+  font-weight: var(--bo-weight-semibold);
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--bo-surface-3) 78%, transparent);
+  border-bottom: 1px solid var(--bo-border);
+  vertical-align: middle;
+}
+
+:root[data-theme="light"] .bo-horariosRosterTable thead th {
+  background: color-mix(in srgb, var(--bo-surface-3) 86%, rgba(255, 255, 255, 0.92));
+}
+
+.bo-horariosRosterTable tbody td {
+  padding: var(--bo-space-3) var(--bo-space-4);
+  border-bottom: 1px solid var(--bo-border);
+  vertical-align: middle;
+}
+
+.bo-horariosRosterTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bo-horariosRosterTable thead th,
+.bo-horariosRosterTable tbody td {
+  border-left: var(--bo-space-1) solid transparent;
+}
+
+.bo-horariosRosterTable thead th:first-child,
+.bo-horariosRosterTable tbody td:first-child {
+  border-left-color: var(--bo-border);
+}
+
+.bo-horariosRosterCol--member {
+  padding-left: calc(var(--bo-space-4) + var(--bo-space-1));
+  min-width: calc(var(--bo-space-8) * 5);
+}
+
+.bo-horariosRosterCol--status {
+  min-width: calc(var(--bo-space-8) * 2 + var(--bo-space-5));
+}
+
+.bo-horariosRosterCol--shift {
+  min-width: calc(var(--bo-space-8) * 3 + var(--bo-space-3));
+}
+
+.bo-horariosRosterCol--hours {
+  min-width: calc(var(--bo-space-8) * 3 + var(--bo-space-6));
+}
+
+.bo-horariosRosterCol--percent {
+  min-width: calc(var(--bo-space-8) * 3);
+}
+
+.bo-horariosRosterCol--day {
+  min-width: calc(var(--bo-space-8) * 4 + var(--bo-space-2));
+}
+
+.bo-horariosRosterCol--actions {
+  width: calc(var(--bo-space-4) * 2 + var(--bo-space-3));
+}
+
+.bo-horariosRosterTable tbody td:first-child {
+  position: relative;
+}
+
+.bo-horariosRosterRow.is-clickable {
+  cursor: pointer;
+}
+
+.bo-horariosRosterTable tbody td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--bo-space-1);
+  background: transparent;
+  opacity: 0;
+}
+
+.bo-horariosRosterRow.is-live td:first-child::before {
+  background: color-mix(in srgb, var(--bo-accent-2) 62%, transparent);
+  opacity: 1;
+}
+
+.bo-horariosRosterRow.is-assigned:not(.is-live) td:first-child::before {
+  background: color-mix(in srgb, var(--bo-accent) 58%, transparent);
+  opacity: 1;
+}
+
+.bo-horariosRosterRow:hover {
+  background: color-mix(in srgb, var(--bo-text) 4%, transparent);
+}
+
+.bo-horariosRosterRow.is-selected {
+  background: color-mix(in srgb, var(--bo-accent) 9%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bo-accent) 22%, var(--bo-border));
+}
+
+.bo-horariosRosterRow:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: -2px;
+}
+
+.bo-horariosRosterEmpty {
+  padding: var(--bo-space-5) var(--bo-space-4);
+  text-align: center;
+}
+
+.bo-horariosRosterMember {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-3);
+  min-width: 0;
+}
+
+.bo-horariosRosterMemberText {
+  min-width: 0;
+  display: grid;
+  gap: var(--bo-space-1);
+}
+
+.bo-horariosRosterMemberName {
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+  line-height: var(--bo-leading-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-horariosRosterMemberMeta {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-horariosRosterStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  color: var(--bo-text);
+  font-weight: var(--bo-weight-medium);
+}
+
+.bo-horariosIdleDot {
+  width: var(--bo-space-2);
+  height: var(--bo-space-2);
+  border-radius: var(--bo-radius-full);
+  border: 1px solid var(--bo-border-2);
+  background: color-mix(in srgb, var(--bo-surface-3) 70%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bo-border) 85%, transparent);
+  flex: 0 0 auto;
+}
+
+.bo-horariosRosterStatusLabel {
+  font-size: var(--bo-text-sm);
+}
+
+.bo-horariosRosterShift {
+  font-variant-numeric: tabular-nums;
+  color: var(--bo-text);
+  white-space: nowrap;
+}
+
+.bo-horariosRosterShift.is-empty {
+  color: var(--bo-muted);
+}
+
+.bo-horariosRosterMetric {
+  display: grid;
+  gap: var(--bo-space-1);
+}
+
+.bo-horariosRosterMetricTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-horariosRosterMetricValue {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.bo-horariosRosterMetricMeta {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bo-meter {
+  width: 100%;
+  height: var(--bo-space-2);
+  border-radius: var(--bo-radius-full);
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-3) 72%, transparent);
+  overflow: hidden;
+}
+
+.bo-meter--sm {
+  height: var(--bo-space-1);
+}
+
+.bo-meterFill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--bo-transition-base) var(--bo-ease-out);
+  will-change: width;
+}
+
+.bo-meterFill--accent {
+  background: linear-gradient(90deg,
+      color-mix(in srgb, var(--bo-accent) 90%, transparent),
+      color-mix(in srgb, var(--bo-accent) 55%, var(--bo-accent-2)));
+}
+
+.bo-meterFill--accent2 {
+  background: linear-gradient(90deg,
+      color-mix(in srgb, var(--bo-accent-2) 88%, transparent),
+      color-mix(in srgb, var(--bo-accent-2) 55%, var(--bo-accent)));
+}
+
+.bo-horariosRosterDay {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
+.bo-horariosRosterDayTime {
+  min-width: calc(var(--bo-space-4) * 2 + var(--bo-space-3));
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bo-horariosRosterDayBar {
+  flex: 1;
+  height: var(--bo-space-1);
+  border-radius: var(--bo-radius-full);
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-3) 70%, transparent);
+  overflow: hidden;
+}
+
+.bo-horariosRosterDayBarFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+      color-mix(in srgb, var(--bo-accent-2) 85%, transparent),
+      color-mix(in srgb, var(--bo-accent) 70%, transparent));
+  transition: width var(--bo-transition-base) var(--bo-ease-out);
+  will-change: width;
+}
+
+.bo-horariosRosterEditBtn {
+  width: 36px;
+  height: 36px;
+}
+
+.bo-horariosPreviewActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-horariosPreviewBody {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-horariosPreviewCounters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-horariosPreviewCounter {
+  min-height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-3);
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bo-horariosPreviewGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-horariosPreviewBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-horariosPreviewCards {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.bo-horariosPreviewCards .bo-memberCard {
+  cursor: pointer;
+}
+
+.bo-memberCard--live {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 35%, var(--bo-border));
+  box-shadow:
+    var(--bo-shadow-soft),
+    0 0 0 1px color-mix(in srgb, var(--bo-accent-2) 26%, transparent);
+}
+
+.bo-memberCard--assigned {
+  border-color: color-mix(in srgb, var(--bo-accent) 28%, var(--bo-border));
+  background: var(--bo-surface-2);
+}
+
+:root[data-theme="light"] .bo-memberCard--assigned {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-accent) 8%, white), rgba(242, 244, 251, 0.70)),
+    var(--bo-surface);
+  border-color: color-mix(in srgb, var(--bo-accent) 32%, var(--bo-border));
+}
+
+.bo-horariosPreviewBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-horariosPreviewBadge {
+  font-size: 11px;
+  font-weight: 730;
+}
+
+.bo-horariosPreviewBadge--live {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 44%, transparent);
+  background: color-mix(in srgb, var(--bo-accent-2) 18%, transparent);
+}
+
+.bo-horariosPreviewBadge.is-assigned {
+  border-color: color-mix(in srgb, var(--bo-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+}
+
+.bo-horariosPreviewBadge.is-unassigned {
+  border-color: var(--bo-border);
+  background: var(--bo-surface-3);
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-horariosPreviewBadge.is-unassigned {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme="light"] .bo-horariosPreviewCounter {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme="light"] .bo-memberCard--live {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 0 0 1px color-mix(in srgb, var(--bo-accent-2) 20%, transparent);
+}
+
+:root[data-theme="light"] .bo-horariosPreviewBadge--live {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 38%, transparent);
+  background: color-mix(in srgb, var(--bo-accent-2) 12%, transparent);
+  color: color-mix(in srgb, var(--bo-accent-2) 70%, var(--bo-text));
+}
+
+:root[data-theme="light"] .bo-horariosPreviewBadge.is-assigned {
+  border-color: color-mix(in srgb, var(--bo-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 10%, transparent);
+  color: color-mix(in srgb, var(--bo-accent) 70%, var(--bo-text));
+}
+
+.bo-turnosBody {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 280px minmax(0, 1fr);
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+}
+
+.bo-turnosBody--table {
+  grid-template-columns: 1fr;
+}
+
+.bo-turnosRoster {
+  min-width: 0;
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-turnosRosterHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-3);
+}
+
+.bo-memberPicker {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  max-height: 60vh;
+}
+
+.bo-memberPickerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-memberPickerCount {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 20%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.bo-memberPickerSearch {
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--bo-muted);
+}
+
+.bo-memberPickerSearchInput {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 13px;
+}
+
+.bo-memberPickerSearchInput::placeholder {
+  color: var(--bo-muted);
+}
+
+.bo-memberPickerList {
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  gap: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bo-memberPickerList::-webkit-scrollbar {
+  display: none;
+}
+
+.bo-memberPickerBtn {
+  appearance: none;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-text);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+}
+
+.bo-memberPickerBtn:hover {
+  border-color: var(--bo-border-2);
+}
+
+.bo-memberPickerBtn.is-active {
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+}
+
+.bo-memberPickerName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bo-memberPickerMeta {
+  color: var(--bo-muted);
+  font-size: 12px;
+}
+
+.bo-memberPickerEmpty {
+  padding: 12px;
+}
+
+.bo-turnosEditor {
+  min-width: 0;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 10px;
+}
+
+.bo-turnosEditorHead {
+  display: grid;
+  gap: 4px;
+}
+
+.bo-turnosEditorMeta {
+  color: var(--bo-muted);
+  font-size: 12px;
+}
+
+.bo-timeEntriesList {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-timeEntriesEmpty {
+  padding: 10px;
+  text-align: center;
+}
+
+.bo-timeEntryCard {
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 10px;
+}
+
+.bo-timeEntryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-timeEntryHeadLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 740;
+  color: var(--bo-muted);
+}
+
+.bo-timeEntryHeadRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-timeEntrySource {
+  text-transform: lowercase;
+}
+
+.bo-timeEntrySource.is-warning {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 45%, transparent);
+  background: color-mix(in srgb, var(--bo-accent-2) 18%, transparent);
+}
+
+.bo-timeEntryLive {
+  border-color: color-mix(in srgb, var(--bo-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+}
+
+.bo-timeEntryBody {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-timeAdjust {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-timeAdjustLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-timeAdjustCtrls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-timeAdjustValue {
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.bo-timeEntryLiveActions {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-timeEntryFoot {
+  color: var(--bo-muted);
+  font-size: 12px;
+}
+
+.bo-turnosTotal {
+  color: var(--bo-text);
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.bo-turnosFichajeSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-turnosFichajeSection--active {
+  border-color: rgba(147, 239, 231, 0.28);
+  background: rgba(147, 239, 231, 0.08);
+}
+
+.bo-turnosFichajeActive {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.bo-btn--fit {
+  width: fit-content;
+}
+
+@media (max-width: 1024px) {
+  .bo-horariosCalendarPanel .bo-mcal {
+    width: min(100%, 720px);
+  }
+}
+
+@media (max-width: 920px) {
+  .bo-fichajeAdminBody {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-fichajeAdminScheduleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-horariosWheels {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-horariosPreviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-turnosBody {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-memberPicker {
+    max-height: 320px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-spinWheelItem {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .bo-horariosCalendarTabs .bo-tab {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .bo-horariosCalendarTabs .bo-tabInner {
+    gap: 0;
+  }
+
+  .bo-horariosCalendarTabs .bo-tabLabel {
+    display: none;
+  }
+
+  .bo-timeEntryBody {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px),
+(max-aspect-ratio: 9/16) {
+  .bo-fichajeTopbarChip {
+    order: 99;
+  }
+
+  .bo-fichajePanel {
+    max-width: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .bo-memberFormsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-memberHeroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .bo-memberStatsControls {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .bo-memberControl {
+    min-width: 0;
+    flex: 1 1 180px;
+  }
+
+  .bo-statsTableFilters .bo-field {
+    min-width: 0;
+    flex: 1 1 180px;
+  }
+
+  .bo-statsTableRangeField {
+    flex: 1 1 100%;
+  }
+
+  .bo-memberSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bo-roleModalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel,
+  .bo-modal--roleDetail .bo-roleAssignBox {
+    max-height: 500px;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel::-webkit-scrollbar,
+  .bo-modal--roleDetail .bo-roleAssignBox::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .bo-roleUserSelect {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .bo-tabs--memberDetail {
+    width: fit-content;
+    margin: 0 auto;
+  }
+
+  .bo-tabs--memberDetail .bo-tab {
+    min-width: 44px;
+    justify-content: center;
+    padding: 11px;
+  }
+
+  .bo-tabs--memberDetail .bo-tabInner {
+    gap: 0;
+  }
+
+  .bo-tabs--memberDetail .bo-tabLabel {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .bo-dateRangeBtn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bo-dateRangePop {
+    width: min(312px, calc(100vw - 16px));
+  }
+
+  .bo-statsTableWrap {
+    max-height: min(56vh, 360px);
+  }
+
+  .bo-membersIntroHead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bo-tabs--members {
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .bo-tabs--members .bo-tab {
+    min-width: 136px;
+    flex: 0 0 136px;
+    padding: 11px 10px;
+  }
+
+  .bo-memberHeroIdentity {
+    width: 100%;
+  }
+
+  .bo-memberHeroActions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .bo-memberHeroActions .bo-btn {
+    flex: 1 1 0;
+    min-width: 130px;
+  }
+
+  .bo-memberHeroStats,
+  .bo-memberFormGrid,
+  .bo-memberSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-memberBarTrack {
+    height: 148px;
+  }
+
+  .bo-roleToolbar {
+    align-items: stretch;
+  }
+
+  .bo-roleToolbar .bo-btn {
+    justify-content: center;
+  }
+
+  .bo-roleCreateBody {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-memberCard {
+    transition: none;
+  }
+
+  .bo-memberCard:hover {
+    transform: none;
+  }
+
+  .bo-roleCard {
+    transition: none;
+  }
+
+  .bo-roleCard:hover {
+    transform: none;
+  }
+
+  .bo-memberRefreshIcon.is-spinning {
+    animation: none;
+  }
+}
+

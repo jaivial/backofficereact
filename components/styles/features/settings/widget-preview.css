@@ -1,0 +1,657 @@
+/* Widget Preview */
+.bo-widget-preview-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.bo-widget-preview {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 12px;
+  border: 1px solid var(--vc-color-border, #e5e7eb);
+  background: var(--vc-color-surface, #ffffff);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  font-family: var(--vc-font-stack, system-ui);
+  color: var(--vc-color-text, #1f2937);
+}
+
+.vc-widget-header {
+  background: var(--vc-color-primary, #7c3aed);
+  padding: 14px 16px;
+}
+
+.vc-widget-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.vc-widget-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vc-widget-steps {
+  display: flex;
+  gap: 4px;
+}
+
+.vc-widget-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.vc-widget-stepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.vc-widget-stepLabel {
+  font-size: 9px;
+  color: var(--vc-color-muted, #6b7280);
+}
+
+.vc-widget-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vc-widget-sectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--vc-color-text);
+}
+
+.vc-widget-calendar {
+  border: 1px solid var(--vc-color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vc-widget-calHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--vc-color-primary);
+}
+
+.vc-widget-calNav {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+}
+
+.vc-widget-calMonth {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vc-widget-calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  padding: 8px;
+  background: var(--vc-color-border);
+}
+
+.vc-widget-calWeekday {
+  font-size: 9px;
+  color: var(--vc-color-muted);
+  text-align: center;
+  padding: 3px 0;
+}
+
+.vc-widget-calDay {
+  background: var(--vc-color-surface);
+  border: 0;
+  padding: 5px 2px;
+  font-size: 10px;
+  color: var(--vc-color-text);
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.vc-widget-calDay:hover:not(.is-disabled) {
+  background: var(--vc-color-primary);
+  color: #fff;
+}
+
+.vc-widget-calDay.is-selected {
+  background: var(--vc-color-primary);
+  color: #fff;
+}
+
+.vc-widget-calDay.is-today {
+  font-weight: 700;
+  border: 1px solid var(--vc-color-primary);
+}
+
+.vc-widget-calDay.is-disabled {
+  color: var(--vc-color-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.vc-widget-guestCounter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid var(--vc-color-border);
+  border-radius: 8px;
+}
+
+.vc-widget-guestBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--vc-color-border);
+  background: var(--vc-color-surface);
+  color: var(--vc-color-text);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vc-widget-guestBtn:hover {
+  border-color: var(--vc-color-primary);
+  color: var(--vc-color-primary);
+}
+
+.vc-widget-guestCount {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vc-color-text);
+  min-width: 20px;
+  text-align: center;
+}
+
+.vc-widget-cta {
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bo-modalX:hover {
+  color: var(--bo-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.bo-modalBody,
+.bo-modal-body {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--bo-muted);
+  padding: 0 16px;
+}
+
+.bo-modalActions,
+.bo-modal-footer,
+.bo-modalFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 16px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-modalActions--reservas {
+  opacity: 1;
+  padding-bottom: 0;
+  margin-left: -14px;
+  margin-right: -14px;
+  margin-bottom: -14px;
+  padding-left: 14px;
+  padding-right: 14px;
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.18)),
+    color-mix(in srgb, var(--bo-surface-2) 78%, transparent);
+}
+
+.bo-reservasModal {
+  display: flex;
+  flex-direction: column;
+  max-height: min(88vh, 980px);
+  overflow: hidden;
+}
+
+.bo-reservasModal--details {
+  padding-bottom: 0;
+}
+
+.bo-modal.bo-modal--glass.bo-reservasModal.bo-reservasModal--details .bo-panelHead,
+.bo-modal.bo-modal--glass.bo-reservasModal.bo-reservasModal--details .bo-panelBody {
+  padding-inline: 0;
+}
+
+.bo-reservasModal--edit {
+  padding-bottom: 0;
+}
+
+.bo-reservasModal .bo-modalHead {
+  flex: 0 0 auto;
+}
+
+.bo-reservasModal .bo-modalOutline {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.bo-reservasModal--details .bo-modalActions--reservas {
+  padding-bottom: 1rem;
+}
+
+.bo-reservasModal--edit .bo-modalActions--reservas {
+  padding-bottom: 1rem;
+}
+
+
+.bo-modalActions--reservas .bo-btn--primary,
+.bo-modalActions--reservas.bo-bookingEditorFooter .bo-btn--primary {
+  margin: 0;
+}
+.bo-bookingEditor--stickyFooter {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.bo-bookingEditorBody {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.bo-bookingEditorBody--inline {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-bookingRow--schedule,
+.bo-bookingRow--contact,
+.bo-bookingRow--extras {
+  align-items: flex-end;
+}
+
+.bo-bookingChoiceRow {
+  align-items: center;
+}
+
+.bo-selectBtn.bo-bookingChoiceSelect {
+  flex: 1 1 0px;
+}
+
+.bo-selectBtn.bo-bookingChoiceSelect .bo-selectLabel {
+  width: 100%;
+  max-width: 70vw;
+}
+
+.bo-bookingChoiceActions {
+  display: inline-flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.bo-bookingChoiceServings {
+  width: 96px;
+  text-align: center;
+}
+
+@media (max-width: 550px) {
+  .bo-bookingPanel--customer .bo-panelHead {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--bo-space-2);
+    text-align: center;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField {
+    justify-items: center;
+    text-align: center;
+    width: min(100%, 340px);
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client,
+  .bo-bookingPanel--customer .bo-bookingField--phone,
+  .bo-bookingPanel--customer .bo-bookingField--email,
+  .bo-bookingPanel--customer .bo-bookingField--salon {
+    display: flex;
+    flex: 1 1 0px !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: min(100%, 340px);
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client .bo-label,
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-label,
+  .bo-bookingPanel--customer .bo-bookingField--email .bo-label,
+  .bo-bookingPanel--customer .bo-bookingField--salon .bo-label {
+    margin: 0;
+    white-space: normal;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField > .bo-input,
+  .bo-bookingPanel--customer .bo-bookingField > .bo-selectBtn,
+  .bo-bookingPanel--customer .bo-bookingField > .bo-dateBtn {
+    width: 100%;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client,
+  .bo-bookingPanel--customer .bo-bookingField--email,
+  .bo-bookingPanel--customer .bo-bookingField--salon,
+  .bo-bookingPanel--customer .bo-bookingField--phone {
+    width: 100%;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--client > .bo-input,
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-phoneNum {
+    width: 100% !important;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField .bo-counter {
+    justify-content: center;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-phone {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: none;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingField--phone .bo-phoneNum {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--strollers,
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--highchairs {
+    flex: 1 1 calc(50% - 10px);
+    width: calc(50% - 10px);
+    max-width: 165px;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--table,
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--salon {
+    flex: 1 1 100%;
+    width: min(100%, 340px);
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--date {
+    order: 1;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--time {
+    order: 2;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--party {
+    order: 3;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--strollers {
+    order: 1;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--highchairs {
+    order: 2;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--table {
+    order: 3;
+  }
+
+  .bo-bookingPanel--customer .bo-bookingRow--extras .bo-bookingField--salon {
+    order: 4;
+  }
+
+  .bo-bookingChoiceRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-bookingChoiceRow .bo-bookingChoiceSelect {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bo-bookingChoiceActions {
+    justify-content: space-evenly;
+    width: 100%;
+  }
+}
+
+.bo-reservasModal--edit .bo-modalOutline {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.bo-reservasModal--edit .bo-bookingEditorBody {
+  display: grid;
+  gap: 14px;
+  overflow: auto;
+  padding-bottom: 14px;
+}
+
+.bo-reservasModal--edit .bo-bookingEditorFooter {
+  margin-top: auto;
+}
+
+.bo-hiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bo-dishCropBody {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-dishCropViewportWrap {
+  display: grid;
+  place-items: center;
+}
+
+.bo-dishCropViewport {
+  width: min(100%, 420px);
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--bo-border-2);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(147, 239, 231, 0.18), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.18)),
+    var(--bo-surface);
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.bo-dishCropViewport:active {
+  cursor: grabbing;
+}
+
+.bo-dishCropImage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.bo-dishCropFrame {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.bo-dishCropControls {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
+.bo-dishCropRange {
+  flex: 1 1 auto;
+}
+
+.bo-dishAIAdvisorBody {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-dishAIAdvisorCopy {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-dishAIAdvisorLead {
+  margin: 0;
+  font-size: var(--bo-text-base);
+  line-height: var(--bo-leading-normal);
+  color: var(--bo-text);
+}
+
+.bo-dishAIAdvisorHint {
+  margin: 0;
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+}
+
+.bo-dishAIAdvisorPreviewWrap {
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid var(--bo-border);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(147, 239, 231, 0.18), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.2)),
+    var(--bo-surface-2);
+}
+
+.bo-dishAIAdvisorPreview {
+  display: block;
+  width: 100%;
+  max-height: min(52vh, 360px);
+  object-fit: contain;
+}
+
+.bo-dishAIAdvisorActions {
+  gap: var(--bo-space-2);
+}
+
+.bo-btn--advisorPrimary {
+  min-width: 188px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 58%, rgba(0, 0, 0, 0.48));
+  background:
+    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.26), transparent 58%),
+    linear-gradient(
+      136deg,
+      color-mix(in srgb, var(--bo-accent) 82%, #251253 18%),
+      color-mix(in srgb, var(--bo-accent-2) 20%, #32156a 80%)
+    );
+  box-shadow:
+    0 10px 24px color-mix(in srgb, var(--bo-accent) 44%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  color: #fdfdff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.44);
+  font-weight: var(--bo-weight-bold);
+  letter-spacing: 0.01em;
+}
+
+:root[data-theme="light"] .bo-btn--advisorPrimary {
+  border-color: color-mix(in srgb, var(--bo-accent) 70%, #2c1763 30%);
+  background:
+    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.2), transparent 58%),
+    linear-gradient(
+      136deg,
+      color-mix(in srgb, var(--bo-accent) 84%, #27135b 16%),
+      color-mix(in srgb, var(--bo-accent-2) 18%, #36186e 82%)
+    );
+}
+
+.bo-btn--advisorPrimary:hover:not(:disabled) {
+  filter: saturate(112%) brightness(1.04);
+  box-shadow:
+    0 12px 28px color-mix(in srgb, var(--bo-accent) 52%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+.bo-btn--advisorPrimary:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--bo-accent-2) 56%, #ffffff 44%);
+  outline-offset: 2px;
+}
+
+.bo-btn--advisorSecondary {
+  min-width: 186px;
+  border: 1px solid var(--bo-border-2);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.22)),
+    color-mix(in srgb, var(--bo-surface-2) 84%, #70788a 16%);
+  color: var(--bo-faint);
+}
+
+.bo-btn--advisorSecondary:hover:not(:disabled) {
+  color: var(--bo-muted);
+}
+

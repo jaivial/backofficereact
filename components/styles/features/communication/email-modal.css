@@ -1,0 +1,162 @@
+/* Send Email Modal */
+.bo-sendEmailModal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bo-sendEmailSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bo-surface-hover);
+  border-radius: var(--bo-radius);
+}
+
+.bo-sendEmailSummaryRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--bo-fg);
+}
+
+.bo-sendEmailSummaryRow svg {
+  color: var(--bo-muted);
+  flex-shrink: 0;
+}
+
+.bo-sendEmailWarning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bo-warning-bg);
+  border: 1px solid var(--bo-warning);
+  border-radius: var(--bo-radius);
+  font-size: 0.875rem;
+  color: var(--bo-warning-fg);
+}
+
+.bo-sendEmailWarning svg {
+  flex-shrink: 0;
+}
+
+.bo-sendEmailForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bo-fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.bo-fieldHint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--bo-muted);
+}
+
+.bo-sendEmailPreview {
+  padding: 1rem;
+  background: var(--bo-surface-hover);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  color: var(--bo-fg);
+}
+
+.bo-sendEmailActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-sendEmailSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.bo-sendEmailSuccessIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: var(--bo-success-bg);
+  border-radius: 50%;
+  color: var(--bo-success);
+}
+
+.bo-sendEmailSuccess h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--bo-fg);
+}
+
+.bo-sendEmailSuccess p {
+  margin: 0;
+  color: var(--bo-muted);
+}
+
+.bo-sendEmailTo {
+  font-weight: 500;
+  color: var(--bo-fg) !important;
+}
+
+/* Send Notification Toggle */
+.bo-sendNotificationToggle {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bo-surface-hover);
+  border-radius: var(--bo-radius);
+}
+
+.bo-sendNotificationTab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  color: var(--bo-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bo-sendNotificationTab:hover:not(:disabled) {
+  background: var(--bo-surface);
+  color: var(--bo-fg);
+}
+
+.bo-sendNotificationTab.is-active {
+  background: var(--bo-primary);
+  border-color: var(--bo-primary);
+  color: var(--bo-primary-fg);
+}
+
+.bo-sendNotificationTab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

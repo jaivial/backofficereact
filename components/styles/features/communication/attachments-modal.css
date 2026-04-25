@@ -1,0 +1,170 @@
+/* Attachments Modal */
+.bo-attachmentsModal {
+  max-width: 600px;
+  width: 90vw;
+}
+
+.bo-attachmentsModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-attachmentsModalTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.bo-attachmentsModalSubtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--bo-muted);
+}
+
+.bo-attachmentsModalBody {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.bo-attachmentsEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--bo-muted);
+  gap: 12px;
+}
+
+.bo-attachmentsEmptyIcon {
+  opacity: 0.5;
+}
+
+.bo-attachmentsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bo-attachmentItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bo-surface);
+  border-radius: 8px;
+  border: 1px solid var(--bo-border);
+}
+
+.bo-attachmentIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-attachmentInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bo-attachmentName {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-attachmentMeta {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-attachmentActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.bo-attachmentsModalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-attachmentsCount {
+  font-size: 13px;
+  color: var(--bo-muted);
+}
+
+/* Preview Modal */
+.bo-previewModal {
+  max-width: 90vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+}
+
+.bo-previewModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-previewModalHeader h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+
+.bo-previewModalBody {
+  padding: 0;
+  max-height: 70vh;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bo-shell);
+}
+
+.bo-previewImage {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.bo-previewPdf {
+  width: 80vw;
+  max-width: 900px;
+  height: 70vh;
+  border: none;
+}
+
+.bo-previewModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  border-top: 1px solid var(--bo-border);
+}
+

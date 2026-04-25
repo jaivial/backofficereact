@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { cn } from "../shadcn/utils";
 
 function clamp(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return min;
@@ -33,7 +34,7 @@ export function Slider({
   }, [max, min, normalized]);
 
   return (
-    <div className={["bo-slider", className].filter(Boolean).join(" ")} data-slot="slider-container">
+    <div className={cn("bo-slider", className)} data-slot="slider-container">
       <input
         className="bo-sliderInput"
         type="range"

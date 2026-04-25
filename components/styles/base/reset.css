@@ -1,0 +1,60 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--bo-font);
+  color: var(--bo-text);
+  background: var(--bo-body-bg);
+}
+
+/* Global focus styles for WCAG 2.1 AA */
+:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+:root[data-theme="light"] :focus-visible {
+  outline-color: rgba(124, 92, 231, 0.9);
+  /* Darker accent for visibility on light */
+}
+
+/* Ensure buttons have visible focus */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+/* Links focus */
+a:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Input focus */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
