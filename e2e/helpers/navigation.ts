@@ -4,29 +4,71 @@
 import type { Page } from "@playwright/test";
 
 export const APP_ROUTES = {
+  // Auth
   login: "/login",
+  
+  // Main
   dashboard: "/app",
+  
+  // Reservas
   reservas: "/app/reservas",
   reservasCreate: "/app/reservas/anadir",
   reservasConfig: "/app/reservas/config",
   reservasTables: "/app/reservas/tables",
+  
+  // Comida
   comida: "/app/comida",
   comidaPlatos: "/app/comida/platos",
   comidaVinos: "/app/comida/vinos",
   comidaPostres: "/app/comida/postres",
   comidaBebidas: "/app/comida/bebidas",
   comidaCafes: "/app/comida/cafes",
+  
+  // Menus
   menus: "/app/menus",
   menusCrear: "/app/menus/crear",
+  
+  // Miembros
   miembros: "/app/miembros",
   miembrosRoles: "/app/miembros/roles",
+  miembrosMiHorario: "/app/miembros/mi-horario",
+  
+  // Fichaje
   fichaje: "/app/fichaje",
+  
+  // Horarios
   horarios: "/app/horarios",
+  horariosTurnos: "/app/horarios/turnos",
+  horariosPreview: "/app/horarios/preview",
+  
+  // Config
   config: "/app/config",
-  settings: "/app/settings",
+  configBooking: "/app/config/booking",
+  
+  // Facturas
   facturas: "/app/facturas",
+  facturasRecurrentes: "/app/facturas/recurrentes",
+  
+  // Estado de Cuenta
   estadoCuenta: "/app/estado-cuenta",
+  
+  // Reportes
   reportes: "/app/reportes",
+  
+  // Settings
+  settings: "/app/settings",
+  
+  // Site Builder
+  siteBuilder: "/app/site-builder",
+  
+  // Website
+  website: "/app/website",
+  
+  // Backoffice
+  backoffice: "/app/backoffice",
+  
+  // Comsit
+  comsit: "/app/comsit",
 } as const;
 
 export type AppRoute = keyof typeof APP_ROUTES;

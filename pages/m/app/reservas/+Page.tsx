@@ -50,7 +50,7 @@ function BookingCard({ booking }: { booking: Booking }) {
           <span data-slot="reservas-ime">{formatHHMM(time)}</span>
         </div>
         <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${statusStyle.bg} ${statusStyle.text}`} data-ui="mobile-booking-status">
-          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} aria-hidden="true" / data-slot="reservas-span">
+          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} aria-hidden="true" data-slot="reservas-span" />
           {statusStyle.label}
         </span>
       </div>

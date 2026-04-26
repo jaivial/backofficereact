@@ -753,17 +753,17 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
             <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">1</div>
             <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Subir archivo</div>
           </div>
-          <div className="bo-importWizardStepConnector" / data-slot="importWizard-importWizardStepConnector">
+          <div className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
           <div className={`bo-importWizardStep ${currentStep === "mapping" ? "active" : ""} ${["preview", "importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
             <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">2</div>
             <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Mapear columnas</div>
           </div>
-          <div className="bo-importWizardStepConnector" / data-slot="importWizard-importWizardStepConnector">
+          <div className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
           <div className={`bo-importWizardStep ${currentStep === "preview" ? "active" : ""} ${["importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
             <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">3</div>
             <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Validar y previsualizar</div>
           </div>
-          <div className="bo-importWizardStepConnector" / data-slot="importWizard-importWizardStepConnector">
+          <div className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
           <div className={`bo-importWizardStep ${currentStep === "complete" ? "active" : ""}`} data-slot="importWizard-div">
             <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">4</div>
             <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Completado</div>
