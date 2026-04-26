@@ -1,5 +1,5 @@
 import type { Decorator } from "@storybook/react";
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { Provider as JotaiProvider, createStore } from "jotai";
 
 import type { BOSession } from "../../api/types";
@@ -41,6 +41,15 @@ const withAppShell: Decorator = (Story, context) => {
   const session = params.session ?? MOCK_SESSION;
   const noShell = params.noShell ?? false;
 
+  // Set page context synchronously during render so the story
+  // component sees the correct data on its first render.
+  const lastCtxKey = useRef("");
+  const ctxKey = `${pathname}:${JSON.stringify(data)}`;
+  if (lastCtxKey.current !== ctxKey) {
+    setPageContext({ urlPathname: pathname, data, routeParams: {} });
+    lastCtxKey.current = ctxKey;
+  }
+
   const store = useMemo(() => {
     const s = createStore();
     s.set(themeAtom, "dark" as ThemeMode);
@@ -48,14 +57,6 @@ const withAppShell: Decorator = (Story, context) => {
     s.set(sessionMovingExpirationAtom, new Date(Date.now() + 3600000).toISOString());
     return s;
   }, [session]);
-
-  useEffect(() => {
-    setPageContext({
-      urlPathname: pathname,
-      data,
-      routeParams: {},
-    });
-  }, [pathname, data]);
 
   if (noShell) {
     return (

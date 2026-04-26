@@ -1,4 +1,5 @@
 import React from "react";
+import { Sparkles } from "lucide-react";
 import { Modal } from "../../../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../../../ui/overlays/ModalHeader";
 
@@ -21,7 +22,6 @@ export function DishImageAdvisorModalComponent({
   onContinueWithoutAI: () => void;
   onImproveWithAI: () => void;
 }) {
-  const { Sparkles } = require("lucide-react");
   const label = subjectLabel || "plato";
   return (
     <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
