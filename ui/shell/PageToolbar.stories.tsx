@@ -20,3 +20,60 @@ export const Default: Story = {
     right: <button>Action</button>,
   },
 };
+
+export const WithLeftContentOnly: Story = {
+  name: "Left Content Only",
+  args: {
+    left: <h1>Dashboard</h1>,
+  },
+};
+
+export const WithMultipleActions: Story = {
+  name: "Multiple Actions",
+  args: {
+    left: <h1>Users</h1>,
+    right: (
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button>Refresh</button>
+        <button>Export</button>
+        <button>Add User</button>
+      </div>
+    ),
+  },
+};
+
+export const WithSearch: Story = {
+  name: "With Search",
+  args: {
+    left: (
+      <input
+        type="search"
+        placeholder="Search..."
+        style={{ padding: "6px 12px", borderRadius: "4px", border: "1px solid #ccc" }}
+      />
+    ),
+    right: (
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button>Filter</button>
+        <button>Create New</button>
+      </div>
+    ),
+  },
+};
+
+export const WithBreadcrumbs: Story = {
+  name: "With Breadcrumbs",
+  args: {
+    left: (
+      <nav style={{ fontSize: "14px", color: "#666" }}>
+        Home / Settings / <strong>Users</strong>
+      </nav>
+    ),
+    right: (
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button>Save</button>
+        <button>Cancel</button>
+      </div>
+    ),
+  },
+};
