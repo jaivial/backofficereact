@@ -230,6 +230,7 @@ export type UseMenuEditorReturn = {
   closeDishImageCropper: (opts?: { keepTarget?: boolean }) => void;
   closeMenuPreviewImageAdvisor: () => void;
   closeMenuPreviewImageCropper: () => void;
+  toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => Promise<void>;
 
   // Render helpers (defined inside the hook for access to state)
   renderMenuPreviewUploadArea: () => React.ReactNode;
@@ -324,6 +325,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const inFlightSectionsRef = useRef<string | null>(null);
   const inFlightSectionAnnotationsRef = useRef<Record<string, string>>({});
   const syncRequestSeqRef = useRef(0);
+  const sameDayBookingBlockedRef = useRef<Set<number>>(new Set());
 
   const isALaCarte = menuType === "a_la_carte" || menuType === "a_la_carte_group";
   const isSpecial = menuType === "special";
@@ -1569,6 +1571,63 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setMenuPreviewImageCropBusy(false);
   }, []);
 
+  // --- toggleSameDayBooking ---
+  const toggleSameDayBooking = useCallback(
+    async (sectionClientId: string, dishClientId: string, blocked: boolean) => {
+      const snapshot = sectionsRef.current;
+      let targetDishId: number | undefined;
+      for (const sec of snapshot) {
+        for (const d of sec.dishes) {
+          if (d.clientId === dishClientId) { targetDishId = d.id; break; }
+        }
+        if (targetDishId) break;
+      }
+      if (!menuId || !targetDishId) return;
+
+      setSections((prev) => {
+        let changed = false;
+        const next = prev.map((sec) => {
+          if (sec.clientId !== sectionClientId) return sec;
+          const dishes = sec.dishes.map((d) => {
+            if (d.clientId !== dishClientId) return d;
+            changed = true;
+            return { ...d, same_day_booking_blocked: blocked };
+          });
+          return changed ? { ...sec, dishes } : sec;
+        });
+        return changed ? next : prev;
+      });
+
+      try {
+        if (blocked) {
+          const res = await api.menus.gruposV2.setSameDayBookingBlocked(menuId, targetDishId);
+          if (!res.success) throw new Error(res.message || "No se pudo bloquear la reserva mismo dia");
+          sameDayBookingBlockedRef.current = new Set(sameDayBookingBlockedRef.current).add(targetDishId);
+        } else {
+          const res = await api.menus.gruposV2.setSameDayBookingAllowed(menuId, targetDishId);
+          if (!res.success) throw new Error(res.message || "No se pudo desbloquear la reserva mismo dia");
+          const next = new Set(sameDayBookingBlockedRef.current);
+          next.delete(targetDishId);
+          sameDayBookingBlockedRef.current = next;
+        }
+      } catch (e) {
+        setSections((prev) => {
+          const next = prev.map((sec) => {
+            if (sec.clientId !== sectionClientId) return sec;
+            const dishes = sec.dishes.map((d) => {
+              if (d.clientId !== dishClientId) return d;
+              return { ...d, same_day_booking_blocked: sameDayBookingBlockedRef.current.has(d.id ?? 0) };
+            });
+            return { ...sec, dishes };
+          });
+          return next;
+        });
+        pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo actualizar la reserva mismo dia" });
+      }
+    },
+    [api, menuId, pushToast],
+  );
+
   // --- Hydration effect ---
   useEffect(() => {
     if (!data.menu) {
@@ -1638,6 +1697,31 @@ export function useMenuEditor(): UseMenuEditorReturn {
     inFlightSectionAnnotationsRef.current = {};
     syncRequestSeqRef.current = 0;
     setHydrated(true);
+
+    if (data.menu?.id) {
+      void (async () => {
+        try {
+          const res = await api.menus.gruposV2.getSameDayBooking(data.menu.id);
+          if (res.success && Array.isArray(res.dish_ids)) {
+            const blockedSet = new Set<number>(res.dish_ids);
+            sameDayBookingBlockedRef.current = blockedSet;
+            setSections((prev) => {
+              let changed = false;
+              const next = prev.map((sec) => {
+                const dishes = sec.dishes.map((d) => {
+                  const blocked = d.id ? blockedSet.has(d.id) : false;
+                  if (d.same_day_booking_blocked === blocked) return d;
+                  changed = true;
+                  return { ...d, same_day_booking_blocked: blocked };
+                });
+                return changed ? { ...sec, dishes } : sec;
+              });
+              return changed ? next : prev;
+            });
+          }
+        } catch { /* ignore */ }
+      })();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1761,6 +1845,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     onMenuPreviewImageCropConfirm, resolvePersistedDishTarget, moveDishImageAdvisorToCrop,
     moveMenuPreviewImageAdvisorToCrop, requestMenuAITrackerSync, closeDishImageAdvisor,
     closeDishImageCropper, closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper,
+    toggleSameDayBooking,
     // Render helpers
     renderMenuPreviewUploadArea,
     renderSpecialMenuImageUploadArea,

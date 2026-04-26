@@ -1565,6 +1565,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             body: form,
           });
         },
+        async getSameDayBooking(menuId: number): Promise<APISuccess<{ dish_ids: number[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/same-day-booking`, { method: "GET" });
+        },
+        async setSameDayBookingBlocked(menuId: number, dishId: number): Promise<APISuccess<{ record: { id: number; dish_id: number; menu_id: number } }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/same-day-booking/${dishId}`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({}),
+          });
+        },
+        async setSameDayBookingAllowed(menuId: number, dishId: number): Promise<APISuccess<{ dish_id: number; menu_id: number }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/same-day-booking/${dishId}`, { method: "DELETE" });
+        },
       },
       dishesCatalog: {
         async search(q: string, limit = 12): Promise<APISuccess<{ items: DishCatalogItem[] }> | APIError> {
