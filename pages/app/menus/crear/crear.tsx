@@ -30,7 +30,7 @@ import { MenuPublishPanel } from "./functionalComponents/MenuPublishPanel/MenuPu
 import { MenuPricing } from "./functionalComponents/MenuPricing/MenuPricing";
 import { MenuSectionEditor } from "./functionalComponents/MenuSectionEditor/MenuSectionEditor";
 import { DishImageAdvisorModalComponent } from "./functionalComponents/DishImageAdvisorModal/DishImageAdvisorModal";
-import { ALLERGENS, beverageTypeOptions, dishVisibilityOptions, menuPreviewVisibilityOptions, menuTypeOptions } from "./constants/menuEditor.constants";
+import { ALLERGENS, beverageTypeOptions, dishVisibilityOptions, menuPreviewVisibilityOptions, menuTypeOptions, MENU_TYPES } from "./constants/menuEditor.constants";
 import type { DishImageCropConfirm } from "./types/menuEditor.types";
 
 function DishImageCropModalComponent({
@@ -229,7 +229,7 @@ export function CrearPage() {
     moveMenuPreviewImageAdvisorToCrop, closeDishImageAdvisor, closeDishImageCropper,
     closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper, renderMenuPreviewUploadArea,
     renderSpecialMenuImageUploadArea, basicsFingerprint, basicsPayload, sectionsFingerprint,
-    menuAIDishesById, loadingSectionTitles,
+    menuAIDishesById, loadingSectionTitles, toggleSameDayBooking,
   } = H;
 
   const { pushToast } = useToasts();
@@ -290,7 +290,6 @@ export function CrearPage() {
           <p className="bo-typeIntro" data-slot="crear-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
           <div className="bo-typeGrid" data-slot="crear-typeGrid">
             {H.isSpecial !== undefined && menuTypeOptions.map((opt) => {
-              const MENU_TYPES = require("./constants/menuEditor.constants").MENU_TYPES;
               const optData = MENU_TYPES.find((p: any) => p.value === opt.value) || { icon: Settings2, description: "" };
               const Icon = optData.icon || Settings2;
               const isSelected = menuType === opt.value;
@@ -574,6 +573,7 @@ export function CrearPage() {
                     searchItems={searchResults[sec.clientId] ?? []}
                     sectionLoadingState={sectionLoadingState[sec.clientId]}
                     onReorderSectionStartDrag={handleReorderSectionStartDrag}
+                    toggleSameDayBooking={toggleSameDayBooking}
                   />
                 ))}
               </Reorder.Group>

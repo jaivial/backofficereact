@@ -17,6 +17,7 @@ export type EditorDish = {
   ai_requested: boolean;
   ai_generating: boolean;
   ai_generated_img?: string | null;
+  same_day_booking_blocked?: boolean;
 };
 
 export type MenuAIDishTracker = {

@@ -19,6 +19,7 @@ export type MenuItemEditorProps = {
   setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
   removeDish: (sectionClientId: string, dishClientId: string) => void;
   updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => void;
+  toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => void;
   reorderTransition?: any;
   reorderWhileDrag?: any;
 };
@@ -77,7 +78,7 @@ function ReorderItemContainer({ as = "div", value, className, transition, whileD
 
 export function MenuItemEditor({
   sectionClientId, dish, dishIdx, isALaCarte, showDishImages, mediaLoading,
-  startDishDrag, pickDishImage, setAllergenModal, removeDish, updateDish,
+  startDishDrag, pickDishImage, setAllergenModal, removeDish, updateDish, toggleSameDayBooking,
   reorderTransition, reorderWhileDrag,
 }: MenuItemEditorProps) {
   const dishLabel = dish.title || `Plato ${dishIdx + 1}`;
@@ -252,6 +253,17 @@ export function MenuItemEditor({
                         data-testid={`menu-item-editor-supplement-input-${dish.clientId}`}
                       />
                     ) : null}
+                    <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
+                      <Switch
+                        checked={dish.same_day_booking_blocked ?? false}
+                        onCheckedChange={(checked) => {
+                          toggleSameDayBooking(sectionClientId, dish.clientId, checked);
+                        }}
+                        disabled={!dish.id}
+                        data-testid={`menu-item-editor-same-day-booking-switch-${dish.clientId}`}
+                      />
+                      <span data-slot="menuItemEditor-sdb">No permitir reserva mismo dia</span>
+                    </label>
                   </div>
                 </div>
               </div>
