@@ -3,7 +3,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
 import type { TaxReport, TaxReportQuarterlyBreakdown, CustomerStatement } from "../../../api/types";
 import { formatCurrency } from "../../../api/types";
-import { SimpleTabs, SimpleTabsContent, SimpleTabsList } from "../../../ui/nav/SimpleTabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../ui/shadcn/tabs";
 import { StatCard } from "../../../ui/widgets/StatCard";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -442,14 +442,14 @@ function IVAReportSection({
             </>
           )}
 
-          <SimpleTabs defaultValue="breakdown">
-            <SimpleTabsList>
-              <SimpleTabsContent value="breakdown" trigger="Desglose por IVA" />
-              <SimpleTabsContent value="quarterly" trigger="Trimestral" />
-              <SimpleTabsContent value="invoices" trigger="Facturas" />
-            </SimpleTabsList>
+          <Tabs defaultValue="breakdown">
+            <TabsList>
+              <TabsTrigger value="breakdown">Desglose por IVA</TabsTrigger>
+              <TabsTrigger value="quarterly">Trimestral</TabsTrigger>
+              <TabsTrigger value="invoices">Facturas</TabsTrigger>
+            </TabsList>
 
-            <SimpleTabsContent value="breakdown">
+            <TabsContent value="breakdown">
               <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                   <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
@@ -482,9 +482,9 @@ function IVAReportSection({
                   </tr></tfoot>
                 </table>
               </Card>
-            </SimpleTabsContent>
+            </TabsContent>
 
-            <SimpleTabsContent value="quarterly">
+            <TabsContent value="quarterly">
               <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200" data-slot="reportes-divide-gray-200">
                   <thead className="bg-gray-50" data-slot="reportes-bg-gray-50"><tr>
@@ -513,9 +513,9 @@ function IVAReportSection({
                   </tbody>
                 </table>
               </Card>
-            </SimpleTabsContent>
+            </TabsContent>
 
-            <SimpleTabsContent value="invoices">
+            <TabsContent value="invoices">
               <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <button onClick={() => setExpandedInvoices(!expandedInvoices)} className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
                   data-testid="reportes-toggle-invoices-button">
@@ -553,8 +553,8 @@ function IVAReportSection({
                   </table>
                 )}
               </Card>
-            </SimpleTabsContent>
-          </SimpleTabs>
+            </TabsContent>
+          </Tabs>
         </>
       ) : (
         <EmptyState variant="tailwind" data-slot="reportes-text-center"
@@ -590,20 +590,20 @@ export default function Page() {
       </div>
 
       <Card variant="tailwind" className="mb-6" data-slot="reportes-mb-6">
-        <SimpleTabs defaultValue="iva">
-          <SimpleTabsList className="border-b">
-            <SimpleTabsContent value="iva" trigger="Reportes de IVA" />
-            <SimpleTabsContent value="customer" trigger="Estado de Cuenta Cliente" />
-          </SimpleTabsList>
+        <Tabs defaultValue="iva">
+          <TabsList className="border-b">
+            <TabsTrigger value="iva">Reportes de IVA</TabsTrigger>
+            <TabsTrigger value="customer">Estado de Cuenta Cliente</TabsTrigger>
+          </TabsList>
 
-          <SimpleTabsContent value="customer">
+          <TabsContent value="customer">
             <CustomerStatementSection api={api} customers={data.customers || []} currentYear={currentYear} />
-          </SimpleTabsContent>
+          </TabsContent>
 
-          <SimpleTabsContent value="iva">
+          <TabsContent value="iva">
             <IVAReportSection initialReport={data.report} quarterlyBreakdown={data.quarterlyBreakdown} currentYear={currentYear} api={api} />
-          </SimpleTabsContent>
-        </SimpleTabs>
+          </TabsContent>
+        </Tabs>
       </Card>
     </div>
   );

@@ -6,7 +6,7 @@ import { CalendarClock } from "lucide-react";
 import { fichajeRealtimeAtom } from "../../../../state/atoms";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
-import { SimpleTabs } from "../../../../ui/nav/SimpleTabs";
+import { Tabs } from "../../../../ui/nav/Tabs";
 import { Panel } from "../../../../ui/shell/Panel";
 import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { HorariosRosterTable, type HorariosRosterRow } from "../../../../ui/widgets/HorariosRosterTable";
@@ -120,13 +120,13 @@ export default function Page() {
             <div data-slot="datePicker">
               <DatePicker value={date} onChange={(nextDate) => void onDateChange(nextDate)} />
             </div>
-            <SimpleTabs
-              items={VIEW_TAB_ITEMS}
+            <Tabs
+              tabs={VIEW_TAB_ITEMS}
               activeId={view}
-              onChange={onViewChange}
-              aria-label="Cambiar vista"
+              ariaLabel="Cambiar vista"
               layoutId="horariosPreviewViewTabs"
               className="bo-tabs--glass bo-viewTabs flex flex-row ms-auto rounded-xl !w-fit"
+              onNavigate={(_href, id) => onViewChange(id)}
             />
           </div>
         }
