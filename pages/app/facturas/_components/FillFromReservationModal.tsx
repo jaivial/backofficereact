@@ -192,7 +192,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
           <div className="bo-reservationResults" data-slot="reservation-results">
             {loading ? (
               <div className="bo-reservationLoading" data-slot="reservation-loading">
-                <div className="bo-spinner" / data-slot="fillFromReservationModal-spinner">
+                <div className="bo-spinner" data-slot="fillFromReservationModal-spinner" />
                 <span data-slot="fillFromReservationModal-vas">Buscando reservas...</span>
               </div>
             ) : searched && results.length === 0 ? (

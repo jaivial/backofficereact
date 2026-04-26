@@ -194,7 +194,7 @@ export function BlockEditor({
           {isSelected && (
             <div className="bo-siteBuilderResizeHandles" data-ui="resize-handles">
               {(["nw", "n", "ne", "e", "se", "s", "sw", "w"] as const).map((handle) => (
-                <div key={handle} className="bo-siteBuilderResizeHandle" data-handle={handle} title="Resize" / data-slot="blockEditor-siteBuilderResizeHandle">
+                <div key={handle} className="bo-siteBuilderResizeHandle" data-handle={handle} title="Resize" data-slot="blockEditor-siteBuilderResizeHandle" />
               ))}
             </div>
           )}
@@ -394,7 +394,7 @@ export function BlockEditor({
               <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">V</span>
             </button>
           ) : null}
-          <div className="bo-siteBuilderContextMenuDivider" / data-slot="blockEditor-siteBuilderContextMenuDivider">
+          <div className="bo-siteBuilderContextMenuDivider" data-slot="blockEditor-siteBuilderContextMenuDivider" />
           <button
             className="bo-siteBuilderContextMenuItem is-danger"
             type="button"

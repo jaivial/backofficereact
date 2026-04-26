@@ -95,7 +95,7 @@ export default function Page() {
     return (
       <div className="bo-publicInvoice" data-slot="@invoiceId-publicInvoice">
         <div className="bo-publicInvoiceLoading" data-slot="@invoiceId-publicInvoiceLoading">
-          <div className="bo-spinner" / data-slot="@invoiceId-spinner">
+          <div className="bo-spinner" data-slot="@invoiceId-spinner" />
           <p data-slot="@invoiceId-ura">Cargando factura...</p>
         </div>
       </div>

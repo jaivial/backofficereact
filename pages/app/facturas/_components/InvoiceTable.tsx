@@ -214,41 +214,41 @@ function TableSkeletonRow() {
   return (
     <tr className="bo-tableRow" data-slot="invoice-table-row">
       <td data-label="" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "20px" }} / data-slot="invoiceTable-skeleton--sm">
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "20px" }} data-slot="invoiceTable-skeleton--sm" />
       </td>
       <td data-label="N. Factura" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px" }} / data-slot="invoiceTable-skeleton--sm">
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px" }} data-slot="invoiceTable-skeleton--sm" />
       </td>
       <td data-label="Cliente" data-slot="invoice-table-cell">
         <div className="bo-tableCustomer" data-slot="invoiceTable-tableCustomer">
-          <div className="bo-skeleton bo-skeleton--md" style={{ width: "120px" }} / data-slot="invoiceTable-skeleton--md">
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "80px", marginTop: "4px" }} / data-slot="invoiceTable-skeleton--sm">
+          <div className="bo-skeleton bo-skeleton--md" style={{ width: "120px" }} data-slot="invoiceTable-skeleton--md" />
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "80px", marginTop: "4px" }} data-slot="invoiceTable-skeleton--sm" />
         </div>
       </td>
       <td data-label="Email" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "140px" }} / data-slot="invoiceTable-skeleton--sm">
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "140px" }} data-slot="invoiceTable-skeleton--sm" />
       </td>
       <td data-label="Importe" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--md" style={{ width: "80px" }} / data-slot="invoiceTable-skeleton--md">
+        <div className="bo-skeleton bo-skeleton--md" style={{ width: "80px" }} data-slot="invoiceTable-skeleton--md" />
       </td>
       <td data-label="Moneda" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "50px" }} / data-slot="invoiceTable-skeleton--sm">
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "50px" }} data-slot="invoiceTable-skeleton--sm" />
       </td>
       <td data-label="Fecha" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px" }} / data-slot="invoiceTable-skeleton--sm">
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px" }} data-slot="invoiceTable-skeleton--sm" />
       </td>
       <td data-label="Estado" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px", height: "22px" }} / data-slot="invoiceTable-skeleton--sm">
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "60px", height: "22px" }} data-slot="invoiceTable-skeleton--sm" />
       </td>
       <td data-label="Tipo" data-slot="invoice-table-cell">
-        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px", height: "22px" }} / data-slot="invoiceTable-skeleton--sm">
+        <div className="bo-skeleton bo-skeleton--sm" style={{ width: "70px", height: "22px" }} data-slot="invoiceTable-skeleton--sm" />
       </td>
       <td data-label="" data-slot="invoice-table-cell"></td>
       <td data-label="" data-slot="invoice-table-cell">
         <div className="bo-tableActions" data-slot="invoiceTable-tableActions">
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} / data-slot="invoiceTable-skeleton--sm">
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} / data-slot="invoiceTable-skeleton--sm">
-          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} / data-slot="invoiceTable-skeleton--sm">
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} data-slot="invoiceTable-skeleton--sm" />
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} data-slot="invoiceTable-skeleton--sm" />
+          <div className="bo-skeleton bo-skeleton--sm" style={{ width: "28px", height: "28px" }} data-slot="invoiceTable-skeleton--sm" />
         </div>
       </td>
     </tr>
@@ -285,7 +285,7 @@ function TableSkeleton() {
       </div>
       <div className="bo-pager is-solo" data-slot="invoice-pager">
         <div className="bo-pagerText" aria-live="polite" data-slot="invoiceTable-pagerText">
-          <span className="bo-skeleton bo-skeleton--sm" style={{ width: "100px", display: "inline-block" }} / data-slot="invoiceTable-skeleton--sm">
+          <span className="bo-skeleton bo-skeleton--sm" style={{ width: "100px", display: "inline-block" }} data-slot="invoiceTable-skeleton--sm" />
           <span className="bo-srOnly" data-slot="invoiceTable-srOnly">Cargando...</span>
         </div>
       </div>

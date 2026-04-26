@@ -74,7 +74,7 @@ export default function Page() {
           <div className="bo-cardObHead" data-slot="dashboard-cardObHead">
             <div className="bo-statLabel" data-slot="dashboard-statLabel">Dia seleccionado</div>
             <div className="bo-cardObIcon" aria-hidden="true" data-slot="dashboard-cardObIcon">
-              <div className="bo-pill" / data-slot="dashboard-pill">
+              <div className="bo-pill" data-slot="dashboard-pill" />
             </div>
           </div>
           <div className="bo-cardObTitle" data-slot="dashboard-cardObTitle">{data.date}</div>
