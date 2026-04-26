@@ -5,17 +5,18 @@ import { createClient } from "../../../../../../api/client";
 import type { Member, FichajeSchedule } from "../../../../../../api/types";
 import type { MemberFilterViewProps } from "./types";
 
-import { SimpleTabs } from "../../../../../../ui/nav/SimpleTabs";
+import { Tabs } from "../../../../../../ui/nav/Tabs";
 import { DateRangePicker } from "../../../../../../ui/inputs/DateRangePicker";
 import { DailyScheduleCard } from "./DailyScheduleCard";
 import { WeeklyScheduleTable } from "./WeeklyScheduleTable";
 
 import { generateDateRange, getWeekGroups } from "../../helpers";
 import { fullName } from "../../../../../../lib/member";
+import type { TabItem } from "../../../../../../ui/nav/Tabs";
 
-const MEMBER_VIEW_TAB_ITEMS = [
-  { id: "diario", label: "Diario" },
-  { id: "semanal", label: "Semanal" },
+const MEMBER_VIEW_TAB_ITEMS: TabItem[] = [
+  { id: "diario", label: "Diario", href: "#" },
+  { id: "semanal", label: "Semanal", href: "#" },
 ];
 
 const MEMBER_FILTER_VIEW_KEY = "bo_horarios_preview_member_view";
@@ -253,13 +254,13 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           </div>
 
           <div data-slot="viewTabs" className="flex-1 flex justify-end">
-            <SimpleTabs
-              items={MEMBER_VIEW_TAB_ITEMS}
+            <Tabs
+              tabs={MEMBER_VIEW_TAB_ITEMS}
               activeId={view}
-              onChange={handleViewChange}
-              aria-label="Cambiar vista"
+              ariaLabel="Cambiar vista"
               layoutId="horariosMemberViewTabs"
               className="bo-tabs--glass rounded-xl !w-fit"
+              onNavigate={(_href, id) => handleViewChange(id)}
             />
           </div>
         </div>

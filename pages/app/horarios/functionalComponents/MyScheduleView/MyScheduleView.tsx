@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { createClient } from "../../../../../api/client";
 import type { FichajeSchedule } from "../../../../../api/types";
 import { DateRangePicker } from "../../../../../ui/inputs/DateRangePicker";
-import { SimpleTabs } from "../../../../../ui/nav/SimpleTabs";
+import { Tabs } from "../../../../../ui/nav/Tabs";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
 import { DailyScheduleCard } from "../../preview/functionalComponents/MemberFilterView/DailyScheduleCard";
 import { WeeklyScheduleTable } from "../../preview/functionalComponents/MemberFilterView/WeeklyScheduleTable";
@@ -106,13 +106,13 @@ export function MyScheduleView({ initialSchedules }: { initialSchedules: Fichaje
           </div>
 
           <div data-slot="viewTabs" className="flex-1 flex justify-end mx-auto">
-            <SimpleTabs
-              items={MY_SCHEDULE_VIEW_TAB_ITEMS}
+            <Tabs
+              tabs={MY_SCHEDULE_VIEW_TAB_ITEMS}
               activeId={view}
-              onChange={handleViewChange}
-              aria-label="Cambiar vista"
+              ariaLabel="Cambiar vista"
               layoutId="horariosMyScheduleTabs"
               className="bo-tabs--glass rounded-xl !w-fit !mx-auto"
+              onNavigate={(_href, id) => handleViewChange(id)}
             />
           </div>
         </div>

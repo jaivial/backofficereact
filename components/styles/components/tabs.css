@@ -32,3 +32,10 @@
   height: 0;
 }
 
+/* Tab inner container - icon + label in a row */
+.bo-tabInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
