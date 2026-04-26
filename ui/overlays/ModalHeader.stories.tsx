@@ -21,10 +21,40 @@ export const Default: Story = {
   },
 };
 
+export const WithLongTitle: Story = {
+  name: "With Long Title",
+  args: {
+    title: "This is a very long modal header title that might wrap to multiple lines depending on the container width",
+    onClose: () => {},
+  },
+};
+
+export const WithCustomCloseLabel: Story = {
+  name: "With Custom Close Label",
+  args: {
+    title: "Custom Close Label",
+    closeLabel: "Cancelar",
+    onClose: () => {},
+  },
+};
+
 export const WithNodeTitle: Story = {
   name: "With Node Title",
   args: {
     title: <strong>Bold Title</strong>,
+    onClose: () => {},
+  },
+};
+
+export const WithRichNodeTitle: Story = {
+  name: "With Rich Node Title",
+  args: {
+    title: (
+      <span>
+        <strong>Bold</strong> and <em>Italic</em> Title
+      </span>
+    ),
+    closeLabel: "Cerrar",
     onClose: () => {},
   },
 };
