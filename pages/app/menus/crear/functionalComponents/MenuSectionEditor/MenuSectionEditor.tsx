@@ -38,6 +38,7 @@ export type MenuSectionEditorProps = {
   searchItems: DishCatalogItem[];
   sectionLoadingState?: "loading" | "error" | null;
   onReorderSectionStartDrag: (sectionClientId: string, event: React.PointerEvent<Element>) => void;
+  toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => void;
 };
 
 function ReorderSectionContainer({ value, className, transition, whileDrag, children }: {
@@ -78,7 +79,7 @@ export function MenuSectionEditor({
   setAllergenModal, removeDish, updateDish,
   updateSectionAnnotation, addSectionAnnotation, removeSectionAnnotation,
   pickDishImage, addDish, handleSearch, searchTerm, searchItems,
-  sectionLoadingState, onReorderSectionStartDrag,
+  sectionLoadingState, onReorderSectionStartDrag, toggleSameDayBooking,
 }: MenuSectionEditorProps) {
   const [dishTab, setDishTab] = useState<SectionDishTab>("active");
   const sectionLabel = sec.title.trim() || `seccion ${secIdx + 1}`;
@@ -310,6 +311,7 @@ export function MenuSectionEditor({
                     setAllergenModal={setAllergenModal}
                     removeDish={removeDish}
                     updateDish={updateDish}
+                    toggleSameDayBooking={toggleSameDayBooking}
                     reorderTransition={reorderTransition}
                     reorderWhileDrag={reorderWhileDrag}
                   />
