@@ -18,8 +18,6 @@ const config: StorybookConfig = {
     options: {},
   },
   viteFinal: async (viteConfig) => {
-    // Keep existing plugins from vite.config.ts (which excludes vike in storybook mode).
-    // Just add path aliases.
     return {
       ...viteConfig,
       resolve: {
@@ -27,7 +25,10 @@ const config: StorybookConfig = {
         alias: {
           ...viteConfig.resolve?.alias,
           "~": path.resolve(__dirname, "../src"),
-          "vike-react": path.resolve(__dirname, "../node_modules/vike-react"),
+          "vike-react/dist/hooks/usePageContext": path.resolve(__dirname, "mocks/usePageContext.ts"),
+          "../../api/client": path.resolve(__dirname, "mocks/api.ts"),
+          "../../../api/client": path.resolve(__dirname, "mocks/api.ts"),
+          "../../../../api/client": path.resolve(__dirname, "mocks/api.ts"),
         },
       },
     };

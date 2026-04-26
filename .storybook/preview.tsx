@@ -1,6 +1,7 @@
 import type { Preview } from "@storybook/react";
 import React from "react";
 import "../components/bo.css";
+import withAppShell from "./decorators/withAppShell";
 
 const preview: Preview = {
   parameters: {
@@ -71,14 +72,20 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story) => (
-      <div
-        data-storybook="with-session"
-        style={{ backgroundColor: "#0f0f14", padding: "1rem" }}
-      >
-        <Story />
-      </div>
-    ),
+    (Story, context) => {
+      const hasAppShell = context.parameters?.appShell !== undefined;
+      if (hasAppShell) {
+        return withAppShell(Story, context);
+      }
+      return (
+        <div
+          data-storybook="with-session"
+          style={{ backgroundColor: "#0f0f14", padding: "1rem" }}
+        >
+          <Story />
+        </div>
+      );
+    },
   ],
 };
 
