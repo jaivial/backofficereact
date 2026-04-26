@@ -44,3 +44,75 @@ export const WithMeta: Story = {
     children: <p>Panel content</p>,
   },
 };
+
+export const WithActions: Story = {
+  name: "With Actions",
+  args: {
+    title: "Panel with Actions",
+    actions: (
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button onClick={() => {}}>Edit</button>
+        <button onClick={() => {}}>Delete</button>
+      </div>
+    ),
+    children: <p>This panel has action buttons in the header.</p>,
+  },
+};
+
+export const WithFullHeader: Story = {
+  name: "With Full Header",
+  args: {
+    title: "Complete Panel",
+    meta: "Version 1.0",
+    actions: (
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button onClick={() => {}}>Settings</button>
+      </div>
+    ),
+    children: (
+      <div>
+        <p>This panel has all header elements: title, meta, and actions.</p>
+        <p>Additional content can go here.</p>
+      </div>
+    ),
+  },
+};
+
+export const GlassWithFullHeader: Story = {
+  name: "Glass With Full Header",
+  args: {
+    variant: "glass",
+    title: "Glass Panel",
+    meta: "Premium feature",
+    actions: (
+      <button onClick={() => {}}>Upgrade</button>
+    ),
+    children: <p>Glass panels work great with all header elements.</p>,
+  },
+};
+
+export const Empty: Story = {
+  name: "Empty (No Header)",
+  args: {
+    children: <p>A panel without a header - just body content.</p>,
+  },
+};
+
+export const RichContent: Story = {
+  name: "Rich Content",
+  args: {
+    title: "Rich Content Panel",
+    meta: "Documentation",
+    children: (
+      <div>
+        <h3>Features</h3>
+        <ul>
+          <li>Feature one</li>
+          <li>Feature two</li>
+          <li>Feature three</li>
+        </ul>
+        <p>This panel demonstrates rich HTML content in the body.</p>
+      </div>
+    ),
+  },
+};
