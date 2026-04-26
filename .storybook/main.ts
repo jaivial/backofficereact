@@ -25,11 +25,16 @@ const config: StorybookConfig = {
         alias: {
           ...viteConfig.resolve?.alias,
           "~": path.resolve(__dirname, "../src"),
+          "vike-react/usePageContext": path.resolve(__dirname, "mocks/usePageContext.ts"),
           "vike-react/dist/hooks/usePageContext": path.resolve(__dirname, "mocks/usePageContext.ts"),
           "../../api/client": path.resolve(__dirname, "mocks/api.ts"),
           "../../../api/client": path.resolve(__dirname, "mocks/api.ts"),
           "../../../../api/client": path.resolve(__dirname, "mocks/api.ts"),
         },
+      },
+      optimizeDeps: {
+        ...viteConfig.optimizeDeps,
+        exclude: ["vike-react"],
       },
     };
   },

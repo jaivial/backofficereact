@@ -30,9 +30,26 @@ export const Empty: Story = {
 export const Populated: Story = {
   name: "Populated",
   parameters: shell({
-    integrations: { cloudflare: { enabled: false }, bunny: { enabled: true } },
-    branding: { logo_url: "", primary_color: "#1a1a2e", restaurant_name: "Alqueria Villa Carmen" },
-    invoiceSettings: { default_payment_method: "transfer", invoice_prefix: "F", next_number: 4, tax_rate: 21 },
+    integrations: {
+      n8nWebhookUrl: "https://n8n.example.com/webhook/abc",
+      enabledEvents: ["booking.created", "booking.cancelled"],
+      uazapiUrl: "",
+      uazapiToken: "",
+      restaurantWhatsappNumbers: [],
+    },
+    branding: {
+      brandName: "Alqueria Villa Carmen",
+      logoUrl: "",
+      primaryColor: "#1a1a2e",
+      accentColor: "",
+      emailFromName: "Villa Carmen",
+      emailFromAddress: "info@villacarmen.es",
+    },
+    invoiceSettings: {
+      format: { prefix: "F-", suffix: "", startingNumber: 1, format: "F-{YYYY}-{0001}", paddingZeros: 4 },
+      nextNumber: 4,
+      defaultPdfTemplate: "basic",
+    },
     websiteMenuTemplates: null,
     error: null,
   }),
