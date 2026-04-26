@@ -907,7 +907,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       {/* Loading overlay for form submission */}
       {isSubmitting && (
         <div className="bo-formLoadingOverlay" role="status" aria-live="polite" data-slot="invoiceForm-formLoadingOverlay">
-          <div className="bo-spinner bo-spinner--glow" / data-slot="invoiceForm-spinner--glow">
+          <div className="bo-spinner bo-spinner--glow" data-slot="invoiceForm-spinner--glow" />
           <span className="bo-formLoadingOverlayText" data-slot="invoiceForm-formLoadingOverlayText">Guardando factura...</span>
           <span className="bo-srOnly" data-slot="invoiceForm-srOnly">Por favor, espere mientras se guarda la factura</span>
         </div>

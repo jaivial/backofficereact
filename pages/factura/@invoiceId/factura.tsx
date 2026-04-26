@@ -40,7 +40,7 @@ export default function Page() {
     return (
       <div className="bo-publicInvoice" data-ui="invoice-loading">
         <div className="bo-publicInvoiceLoading" data-slot="factura-publicInvoiceLoading">
-          <div className="bo-spinner" / data-slot="factura-spinner">
+          <div className="bo-spinner" data-slot="factura-spinner" />
           <p data-slot="factura-ura">Cargando factura...</p>
         </div>
       </div>

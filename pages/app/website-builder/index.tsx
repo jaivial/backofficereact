@@ -84,7 +84,7 @@ export default function WebsiteBuilder() {
   if (loading && !website) {
     return (
       <div className="flex items-center justify-center h-64" data-ui="loading-state">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" / data-slot="website-builder-border-purple-500">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" data-slot="website-builder-border-purple-500" />
         <span className="ml-2 text-slate-400" data-slot="website-builder-text-slate-400">Loading...</span>
       </div>
     );
@@ -389,7 +389,7 @@ function WebsiteCanvas({
       <div className="bg-slate-800 rounded-lg border border-slate-700 p-6 min-h-[500px]" data-ui="canvas-area">
         {loadingSections ? (
           <div className="flex items-center justify-center h-32" data-slot="website-builder-h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" / data-slot="website-builder-border-indigo-500">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" data-slot="website-builder-border-indigo-500" />
           </div>
         ) : (
           <div className="space-y-4" data-slot="website-builder-space-y-4">

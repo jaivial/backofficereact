@@ -1664,7 +1664,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         <div className="bo-menuPreviewUploadBlock" data-slot="useMenuEditor-menuPreviewUploadBlock">
           {menuPreviewAIGenerating ? (
             <div className="bo-menuPreviewSkeletonCard" role="status" aria-live="polite" data-slot="useMenuEditor-menuPreviewSkeletonCard">
-              <div className="bo-menuPreviewSkeletonMedia bo-skeleton" / data-slot="useMenuEditor-skeleton">
+              <div className="bo-menuPreviewSkeletonMedia bo-skeleton" data-slot="useMenuEditor-skeleton" />
             </div>
           ) : menuPreviewImageUrl ? (
             <div className="bo-menuPreviewImageCard" data-slot="useMenuEditor-menuPreviewImageCard">

@@ -139,7 +139,7 @@ export function InvoiceHistoryModal({
 
           {loading && (
             <div className="bo-historyLoading" data-slot="invoice-history-loading">
-              <div className="bo-spinner" / data-slot="invoiceHistoryModal-spinner">
+              <div className="bo-spinner" data-slot="invoiceHistoryModal-spinner" />
               <span data-slot="invoiceHistoryModal-ial">Cargando historial...</span>
             </div>
           )}
