@@ -776,7 +776,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
           {currentStep === "upload" && (
             <div className="bo-importWizardUpload" data-slot="importWizard-importWizardUpload">
               <div
-                className={`bo-importWizardDropzone` data-slot="import-wizard-dropzone" ${isDragging ? "dragging" : ""} ${selectedFile ? "has-file" : ""}`}
+                className={`bo-importWizardDropzone ${isDragging ? "dragging" : ""} ${selectedFile ? "has-file" : ""}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}

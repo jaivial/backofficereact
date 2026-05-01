@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { navigate } from "vike/client/router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { BarChart3, FileSpreadsheet, UserRound } from "lucide-react";
 
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 
 const TAB_FADE_DURATION_MS = 800;
+const TAB_NAV_DELAY_MS = 860;
+const TAB_NAVIGATION_WAIT_MS = Math.max(0, TAB_NAV_DELAY_MS - TAB_FADE_DURATION_MS);
 
 type MemberTabId = "informacion" | "contrato" | "estadisticas";
 
@@ -28,7 +29,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const activeId = activeTabId(pathname);
   const basePath = baseMemberPath(pathname);
 
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isNavigatingOut, setIsNavigatingOut] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   const tabs = useMemo<TabItem[]>(
     () => [
@@ -40,40 +42,46 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   const onNavigateTab = useCallback(
-    async (href: string, id: string) => {
+    (href: string, id: string) => {
+      if (isNavigatingOut) return;
       if (id === activeId) return;
+      if (reduceMotion) {
+        window.location.assign(href);
+        return;
+      }
+      if (typeof window === "undefined") return;
       if (!href) return;
-
-      setIsTransitioning(true);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      await navigate(href);
+      setIsNavigatingOut(true);
+      setPendingHref(href);
     },
-    [activeId],
+    [activeId, isNavigatingOut, reduceMotion],
   );
 
-  useEffect(() => {
-    setIsTransitioning(false);
-  }, [pathname]);
+  const transition = reduceMotion ? { duration: 0 } : { duration: TAB_FADE_DURATION_MS / 1000, ease: "easeInOut" as const };
 
-  const transition = reduceMotion
-    ? { duration: 0 }
-    : { duration: TAB_FADE_DURATION_MS / 1000, ease: "easeInOut" as const };
+  const handleExitComplete = useCallback(() => {
+    if (!isNavigatingOut || reduceMotion || !pendingHref) return;
+    const href = pendingHref;
+    window.setTimeout(() => {
+      window.location.assign(href);
+    }, TAB_NAVIGATION_WAIT_MS);
+  }, [isNavigatingOut, pendingHref, reduceMotion]);
 
   return (
     <div className="bo-memberDetailRoute" data-slot="Layout-memberDetailRoute">
       <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembro" className="bo-tabs--memberDetail" onNavigate={onNavigateTab} />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={pathname}
-          initial={{ opacity: reduceMotion ? 1 : 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: reduceMotion ? 1 : 0 }}
-          transition={transition}
-          data-ui="page-content"
-          data-role="member-content"
-        >
-          {children}
-        </motion.div>
+      <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
+        {!isNavigatingOut ? (
+          <motion.div
+            key={pathname}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: 1 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={transition}
+          >
+            {children}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </div>
   );

@@ -48,7 +48,7 @@ export default function Page() {
           ) : error ? (
             <>
               <div className="bo-onboardingIcon bo-onboardingIcon--error" data-slot="invitacion-onboardingIcon--error">
-                <CircleAlert size={30}>
+                <CircleAlert size={30} />
               </div>
               <div className="bo-title" data-slot="invitacion-title">No se pudo validar la invitación</div>
               <div className="bo-authSub" data-slot="invitacion-authSub">{error}</div>
@@ -59,7 +59,7 @@ export default function Page() {
           ) : (
             <>
               <div className="bo-onboardingIcon bo-onboardingIcon--ok" data-slot="invitacion-onboardingIcon--ok">
-                <CheckCircle2 size={30}>
+                <CheckCircle2 size={30} />
               </div>
               <div className="bo-title" data-slot="invitacion-title">Bienvenido{invitation?.firstName ? `, ${invitation.firstName}` : ""}</div>
               <div className="bo-authSub" data-slot="invitacion-authSub">Tu invitación está activa. Pulsa empezar para completar tu onboarding.</div>
