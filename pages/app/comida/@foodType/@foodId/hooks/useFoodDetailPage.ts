@@ -498,6 +498,41 @@ export function useFoodDetailPage() {
     setQuickCategoria(category.value);
   }, []);
 
+  // Upload image directly (no AI) for existing items (cafes/bebidas only)
+  const handleImageUpdate = useCallback(async (file: File) => {
+    if (!currentFoodItem || (!isBebida && !isCafe)) return;
+    setUploading(true);
+    try {
+      const compressed = await compressImageToWebP(file, 80);
+      const b64 = compressed.split(",")[1];
+      if (!b64) throw new Error("No image data");
+
+      const byteChars = atob(b64);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteArray[i] = byteChars.charCodeAt(i);
+      }
+      const blob = new Blob([byteArray], { type: "image/webp" });
+      const webpFile = new File([blob], "item.webp", { type: "image/webp" });
+
+      const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
+      const res = await targetApi.uploadImage(currentFoodItem.num, webpFile);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar la imagen" });
+        return;
+      }
+      const newUrl = (res as any).foto_url as string;
+      setItemState((prev) => prev ? { ...prev, foto_url: newUrl } : prev);
+      setImagePreview(newUrl);
+      pushToast({ kind: "success", title: "Imagen actualizada" });
+    } catch {
+      pushToast({ kind: "error", title: "Error", message: "No se pudo actualizar la imagen" });
+    } finally {
+      setUploading(false);
+    }
+  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, isBebida, isCafe, pushToast]);
+
+
   const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -560,40 +595,6 @@ export function useFoodDetailPage() {
       setAiBusy(false);
     }
   }, [api.comida.bebidas, api.comida.cafes, imageBase64, isBebida, pushToast]);
-
-  // Upload image directly (no AI) for existing items (cafes/bebidas only)
-  const handleImageUpdate = useCallback(async (file: File) => {
-    if (!currentFoodItem || (!isBebida && !isCafe)) return;
-    setUploading(true);
-    try {
-      const compressed = await compressImageToWebP(file, 80);
-      const b64 = compressed.split(",")[1];
-      if (!b64) throw new Error("No image data");
-
-      const byteChars = atob(b64);
-      const byteArray = new Uint8Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) {
-        byteArray[i] = byteChars.charCodeAt(i);
-      }
-      const blob = new Blob([byteArray], { type: "image/webp" });
-      const webpFile = new File([blob], "item.webp", { type: "image/webp" });
-
-      const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
-      const res = await targetApi.uploadImage(currentFoodItem.num, webpFile);
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar la imagen" });
-        return;
-      }
-      const newUrl = (res as any).foto_url as string;
-      setItemState((prev) => prev ? { ...prev, foto_url: newUrl } : prev);
-      setImagePreview(newUrl);
-      pushToast({ kind: "success", title: "Imagen actualizada" });
-    } catch {
-      pushToast({ kind: "error", title: "Error", message: "No se pudo actualizar la imagen" });
-    } finally {
-      setUploading(false);
-    }
-  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, isBebida, isCafe, pushToast]);
 
   const handleAIAdvisorClose = useCallback(() => {
     setShowAIAdvisor(false);
