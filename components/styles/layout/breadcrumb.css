@@ -1,3 +1,7 @@
+/* =============================================
+   BREADCRUMBS — Clean minimal style
+   ============================================= */
+
 .bo-breadcrumb {
   min-width: 0;
 }
@@ -6,7 +10,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--bo-space-1);
+  gap: 0;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -15,32 +19,30 @@
 .bo-breadcrumbItem {
   display: inline-flex;
   align-items: center;
-  gap: var(--bo-space-1);
   min-width: 0;
 }
 
-.bo-breadcrumbLink,
-.bo-breadcrumbCurrent {
+/* Links: subtle pill, accent on hover */
+.bo-breadcrumbLink {
   display: inline-flex;
   align-items: center;
-  min-height: var(--bo-space-5);
-  padding: 0 var(--bo-space-2);
-  border-radius: var(--bo-radius-sm);
-  font-size: var(--bo-text-sm);
-  line-height: var(--bo-leading-normal);
-}
-
-.bo-breadcrumbLink {
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--bo-muted);
-  background-color: transparent;
+  text-decoration: none;
+  line-height: 1;
   transition:
-    color var(--bo-transition-base) var(--bo-ease),
-    background-color var(--bo-transition-base) var(--bo-ease);
+    color 140ms ease,
+    background-color 140ms ease;
+  white-space: nowrap;
 }
 
 .bo-breadcrumbLink:hover {
   color: var(--bo-text);
-  background-color: color-mix(in srgb, var(--bo-surface-2) 90%, transparent);
+  background-color: color-mix(in srgb, var(--bo-surface-2) 88%, transparent);
 }
 
 .bo-breadcrumbLink:focus-visible {
@@ -49,13 +51,70 @@
   color: var(--bo-text);
 }
 
+/* Current page: muted text, no interaction */
 .bo-breadcrumbCurrent {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--bo-text);
-  font-weight: var(--bo-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
 }
 
+/* Chevron separator */
 .bo-breadcrumbSeparator {
+  display: inline-flex;
+  align-items: center;
   color: var(--bo-faint);
-  font-size: var(--bo-text-sm);
-  line-height: var(--bo-leading-normal);
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+  user-select: none;
+}
+
+/* Dark theme */
+:root[data-theme="dark"] .bo-breadcrumbLink {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+:root[data-theme="dark"] .bo-breadcrumbLink:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-theme="dark"] .bo-breadcrumbLink:focus-visible {
+  outline-color: var(--bo-accent);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:root[data-theme="dark"] .bo-breadcrumbCurrent {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+:root[data-theme="dark"] .bo-breadcrumbSeparator {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* Light theme */
+:root[data-theme="light"] .bo-breadcrumbLink {
+  color: rgba(15, 18, 30, 0.56);
+}
+
+:root[data-theme="light"] .bo-breadcrumbLink:hover {
+  color: rgba(15, 18, 30, 0.9);
+  background-color: rgba(15, 18, 30, 0.05);
+}
+
+:root[data-theme="light"] .bo-breadcrumbLink:focus-visible {
+  outline-color: var(--bo-accent);
+}
+
+:root[data-theme="light"] .bo-breadcrumbCurrent {
+  color: rgba(15, 18, 30, 0.88);
+}
+
+:root[data-theme="light"] .bo-breadcrumbSeparator {
+  color: rgba(15, 18, 30, 0.28);
 }
