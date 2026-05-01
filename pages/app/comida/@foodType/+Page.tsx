@@ -91,30 +91,33 @@ function FoodTypePage() {
   return (
     <section aria-label={`Carta ${listLabel}`} className="bo-foodPage" data-role="food-type-page">
       <div className="bo-container" data-slot="@foodType-container">
-        <Breadcrumbs items={breadcrumbs}>
+        <Breadcrumbs items={breadcrumbs} />
 
         <div className="bo-foodPage-hero" data-ui="food-type-hero">
-          <h1 className="bo-pageTitle" data-role="food-type-title">{listLabel}</h1>
-          <p className="bo-pageSubtitle" data-role="food-type-subtitle">
-            Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.
-          </p>
-        </div>
-
-        {showPageVisibilityToggle && (
-          <div className="bo-foodPageVisibility" data-ui="food-page-visibility">
-            <div className="bo-foodPageVisibilityRow flex flex-row justify-center align-center gap-4 py-4" data-ui="food-page-visibility-row">
-              <div className="bo-foodPageVisibilityLabel" data-ui="food-page-visibility-label">
-                <span className="bo-foodPageVisibilityTitle" data-slot="@foodType-foodPageVisibilityTitle">Pagina publica activa</span>
-              </div>
-              <Switch
-                checked={pageActive}
-                onCheckedChange={togglePageActive}
-                disabled={pageVisibilityLoading}
-                data-ui="food-page-visibility-switch"
-              />
+          <div className="bo-foodPage-heroTop" data-ui="food-type-hero-top">
+            <div className="bo-foodPage-heroTitles" data-ui="food-type-hero-titles">
+              <h1 className="bo-pageTitle" data-role="food-type-title">{listLabel}</h1>
+              <p className="bo-pageSubtitle" data-role="food-type-subtitle">
+                Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.
+              </p>
             </div>
+            {showPageVisibilityToggle && (
+              <div className="bo-foodPageVisibility" data-ui="food-page-visibility">
+                <div className="bo-foodPageVisibilityRow" data-ui="food-page-visibility-row">
+                  <span className="bo-foodPageVisibilityTitle" data-slot="@foodType-foodPageVisibilityTitle">
+                    Pagina publica activa
+                  </span>
+                  <Switch
+                    checked={pageActive}
+                    onCheckedChange={togglePageActive}
+                    disabled={pageVisibilityLoading}
+                    data-ui="food-page-visibility-switch"
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         <FoodFilters
           foodType={foodType}
