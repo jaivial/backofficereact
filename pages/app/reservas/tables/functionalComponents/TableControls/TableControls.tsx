@@ -38,7 +38,7 @@ export function TopControls({
   return (
     <div data-ui="top-controls" className="bo-tableMapTopControls">
       <button data-ui="back-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
-        <ChevronLeft size={18} strokeWidth={1.8}>
+        <ChevronLeft size={18} strokeWidth={1.8} />
       </button>
 
       <div data-ui="top-center" className="bo-tableMapTopCenter">
@@ -50,7 +50,7 @@ export function TopControls({
           aria-expanded={menuVisible}
           onClick={onToggleMenu}
         >
-          <Ellipsis size={18} strokeWidth={1.8}>
+          <Ellipsis size={18} strokeWidth={1.8} />
         </button>
 
         <AnimatePresence>
@@ -74,14 +74,14 @@ export function TopControls({
               <div data-slot="tooltip-actions" className="bo-tableMapTooltipActions" role="group" aria-label="Acciones de mapa">
                 <button data-ui="add-table-btn" className="bo-menuItem" type="button" onClick={onOpenAddModal} role="menuitem">
                   <span data-ui="menu-icon" className="bo-menuIcon" aria-hidden="true">
-                    <Plus size={16} strokeWidth={1.8}>
+                    <Plus size={16} strokeWidth={1.8} />
                   </span>
                   <span data-ui="menu-label" className="bo-menuLabel">Añadir mesa</span>
                 </button>
 
                 <button data-ui="toggle-draw-btn" className="bo-menuItem" type="button" onClick={onToggleDrawMode} role="menuitem">
                   <span data-ui="menu-icon" className="bo-menuIcon" aria-hidden="true">
-                    <Pencil size={16} strokeWidth={1.8}>
+                    <Pencil size={16} strokeWidth={1.8} />
                   </span>
                   <span data-ui="menu-label" className="bo-menuLabel">{mapMode === "draw" ? "Salir de dibujo" : "Dibujar"}</span>
                 </button>
@@ -128,7 +128,7 @@ export function TopControls({
           aria-label="Añadir mesa"
           onClick={onOpenAddModal}
         >
-          <Plus size={18} strokeWidth={1.8}>
+          <Plus size={18} strokeWidth={1.8} />
         </button>
         <div
           data-ui="draw-trigger"
@@ -143,7 +143,7 @@ export function TopControls({
             aria-label="Modo dibujo"
             onClick={onToggleDrawMode}
           >
-            <Pencil size={18} strokeWidth={1.8}>
+            <Pencil size={18} strokeWidth={1.8} />
           </button>
         </div>
         {!rightSheetOpen ? (
@@ -155,7 +155,7 @@ export function TopControls({
             aria-expanded={rightSheetOpen}
             onClick={onOpenRightSheet}
           >
-            <LayoutGrid size={18} strokeWidth={1.8}>
+            <LayoutGrid size={18} strokeWidth={1.8} />
           </button>
         ) : null}
       </div>

@@ -57,7 +57,7 @@ const SearchResultRow = React.memo(function SearchResultRow({
           data-slot="go-to-day"
           data-ui="navigate-btn"
         >
-          <ExternalLink size={16} strokeWidth={1.8}>
+          <ExternalLink size={16} strokeWidth={1.8} />
         </button>
       </td>
     </tr>
@@ -93,7 +93,7 @@ export function SearchResultsTable({
           </thead>
           <tbody data-ui="table-body">
             {searchResults.map((b) => (
-              <SearchResultRow key={b.id} booking={b} onNavigate={onNavigate} busy={searchBusy}>
+              <SearchResultRow key={b.id} booking={b} onNavigate={onNavigate} busy={searchBusy} />
             ))}
             {!searchResults.length ? (
               <tr data-ui="empty-row">

@@ -58,7 +58,7 @@ export function BookingRow({
           <span data-ui="checkbox-mark" className="bo-checkboxMark" />
         </label>
       ) : (
-        <span data-ui="drag-handle" className="bo-bookingDragIndicator"><GripVertical size={16}></span>
+        <span data-ui="drag-handle" className="bo-bookingDragIndicator"><GripVertical size={16} /></span>
       )}
       <span data-ui="booking-status-dot" className="bo-tableMapBookingStatusDot" />
       <div data-ui="booking-main" className="bo-tableMapBookingMain">
@@ -69,8 +69,8 @@ export function BookingRow({
         label="Acciones reserva"
         triggerClassName="bo-actionBtn bo-actionBtn--glass"
         items={[
-          { id: "details", label: "Ver", icon: <FileText size={16} strokeWidth={1.8}>, onSelect: () => onSelect(booking) },
-          { id: "cancel", label: "Cancelar", tone: "danger", icon: <Trash2 size={16} strokeWidth={1.8}>, onSelect: () => onCancel(booking) },
+          { id: "details", label: "Ver", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => onSelect(booking) },
+          { id: "cancel", label: "Cancelar", tone: "danger", icon: <Trash2 size={16} strokeWidth={1.8} />, onSelect: () => onCancel(booking) },
         ]}
       />
     </div>
@@ -237,7 +237,7 @@ export function TableLegend({
           </div>
           <div data-slot="sheet-header-actions" className="bo-tableMapSheetHeaderActions">
             <button data-ui="date-toggle-btn" className="bo-btn bo-btn--ghost bo-tableMapDateBtn" type="button" onClick={onCalendarToggle} aria-expanded={calendarExpanded}>
-              <CalendarRange size={14}>
+              <CalendarRange size={14} />
               <span data-ui="date-label">{selectedDate}</span>
             </button>
             <button
@@ -247,7 +247,7 @@ export function TableLegend({
               aria-label="Colapsar panel derecho"
               onClick={onCloseRightSheet}
             >
-              <PanelRightClose size={18} strokeWidth={1.8}>
+              <PanelRightClose size={18} strokeWidth={1.8} />
             </button>
           </div>
         </div>
@@ -328,7 +328,7 @@ export function TableLegend({
               </div>
               {bookings.length === 0 ? (
                 <div data-ui="empty-bookings" className="bo-tableMapEmptyState">
-                  <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><CalendarDays size={24}></div>
+                  <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><CalendarDays size={24} /></div>
                   <div data-ui="empty-text">No hay reservas para esta fecha</div>
                   <button data-ui="today-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => onDateSelect(todayISO())}>Ver hoy</button>
                 </div>
@@ -339,7 +339,7 @@ export function TableLegend({
                   )}
                   {assignMode && !hasUnassignedBookings && (
                     <div data-ui="all-assigned" className="bo-tableMapEmptyState">
-                      <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24}></div>
+                      <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
                       <div data-ui="empty-text">Todas las reservas tienen mesa asignada</div>
                     </div>
                   )}
@@ -383,7 +383,7 @@ export function TableLegend({
                 >
                   <div data-slot="detail-header" className="bo-tableSheetDetailHeader">
                     <button data-ui="back-to-list-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onCloseTableDetail} aria-label="Volver a mesas">
-                      <ChevronLeft size={18} strokeWidth={1.8}>
+                      <ChevronLeft size={18} strokeWidth={1.8} />
                     </button>
                     <div data-ui="detail-table-info" className="bo-tableSheetDetailTableInfo">
                       <span data-ui="detail-table-name" className="bo-tableSheetDetailTableName">{selectedTableCard.name}</span>
@@ -462,7 +462,7 @@ export function TableLegend({
                   </div>
                   {visibleTables.length === 0 ? (
                     <div data-ui="empty-tables" className="bo-tableMapEmptyState">
-                      <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24}></div>
+                      <div data-ui="empty-icon" className="bo-tableMapEmptyStateIcon"><LayoutGrid size={24} /></div>
                       <div data-ui="empty-text">No hay mesas en este salón</div>
                       <button data-ui="create-table-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => {}}>Crear mesa</button>
                     </div>
