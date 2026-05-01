@@ -144,7 +144,7 @@ export function MenuSectionEditor({
               onClick={() => moveSection(secIdx, secIdx - 1)}
               data-testid={`menu-section-editor-move-up-${secIdx}`}
             >
-              <ChevronUp size={14} />
+              <ChevronUp size={14}>
             </motion.button>
             <motion.button
               className="bo-sectionMoveBtn"
@@ -157,7 +157,7 @@ export function MenuSectionEditor({
               onClick={() => moveSection(secIdx, secIdx + 1)}
               data-testid={`menu-section-editor-move-down-${secIdx}`}
             >
-              <ChevronDown size={14} />
+              <ChevronDown size={14}>
             </motion.button>
           </div>
           <button
@@ -170,7 +170,7 @@ export function MenuSectionEditor({
             }}
             data-testid={`menu-section-editor-drag-${secIdx}`}
           >
-            <GripVertical size={18} />
+            <GripVertical size={18}>
           </button>
         </div>
         <button
@@ -191,7 +191,7 @@ export function MenuSectionEditor({
           </span>
           <span className="bo-accordionHeadRight" data-slot="menuSectionEditor-accordionHeadRight">
             <span className="bo-accordionBadge" data-slot="menuSectionEditor-accordionBadge">{sec.dishes.length} platos</span>
-            <ChevronDown size={14} />
+            <ChevronDown size={14}>
           </span>
         </button>
       </div>
@@ -242,7 +242,7 @@ export function MenuSectionEditor({
               data-testid={`menu-section-editor-tab-annotations-${sec.clientId}`}
             >
               <span className="bo-sectionDishTabLabel" data-slot="menuSectionEditor-sectionDishTabLabel">Anotaciones</span>
-              <span className="bo-sectionDishTabIcon" data-slot="menuSectionEditor-sectionDishTabIcon"><MessageSquareText size={14} /></span>
+              <span className="bo-sectionDishTabIcon" data-slot="menuSectionEditor-sectionDishTabIcon"><MessageSquareText size={14}></span>
               <span className="bo-sectionDishTabCount" data-slot="menuSectionEditor-sectionDishTabCount">{annotationCount}</span>
             </button>
           </div>
@@ -276,7 +276,7 @@ export function MenuSectionEditor({
                         onClick={() => removeSectionAnnotation(sec.clientId, idx)}
                         data-testid={`menu-section-editor-annotation-delete-${sec.clientId}-${idx}`}
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={14}>
                       </button>
                     </div>
                   ))}
@@ -286,7 +286,7 @@ export function MenuSectionEditor({
                     onClick={() => addSectionAnnotation(sec.clientId)}
                     data-testid={`menu-section-editor-annotation-add-${sec.clientId}`}
                   >
-                    <Plus size={14} /> Añadir anotacion
+                    <Plus size={14}> Añadir anotacion
                   </button>
                 </div>
               </div>
@@ -369,7 +369,7 @@ export function MenuSectionEditor({
                   aria-label={`Añadir plato a ${sectionLabel}`}
                   data-testid={`menu-section-editor-add-dish-${sec.clientId}`}
                 >
-                  <Plus size={14} /> Añadir plato
+                  <Plus size={14}> Añadir plato
                 </button>
               </div>
             </>

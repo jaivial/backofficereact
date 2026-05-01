@@ -122,14 +122,14 @@ export default function RecurringInvoicesPage() {
     if (isActive) {
       return (
         <span className="bo-recurringStatus bo-recurringStatus--active" data-slot="recurrentes-recurringStatus--active">
-          <CheckCircle size={12} />
+          <CheckCircle size={12}>
           Activa
         </span>
       );
     }
     return (
       <span className="bo-recurringStatus bo-recurringStatus--paused" data-slot="recurrentes-recurringStatus--paused">
-        <Pause size={12} />
+        <Pause size={12}>
         Pausada
       </span>
     );
@@ -139,7 +139,7 @@ export default function RecurringInvoicesPage() {
     <div className="bo-recurringInvoicesPage" data-testid="facturas-recurrentes-page">
       <div className="bo-pageHeader" data-testid="facturas-recurrentes-header">
         <div className="bo-pageHeaderTitle" data-testid="facturas-recurrentes-title">
-          <RefreshCw size={24} />
+          <RefreshCw size={24}>
           <h1 data-slot="recurrentes-nte">Facturación Recurrente</h1>
         </div>
         <div className="bo-pageHeaderActions" data-testid="facturas-recurrentes-header-actions">
@@ -148,7 +148,7 @@ export default function RecurringInvoicesPage() {
             onClick={() => navigate("/app/facturas/crear?recurring=true")}
             data-testid="facturas-recurrentes-nueva-btn"
           >
-            <Plus size={16} />
+            <Plus size={16}>
             Nueva Facturación Recurrente
           </button>
         </div>
@@ -172,7 +172,7 @@ export default function RecurringInvoicesPage() {
 
       {data.error && (
         <div className="bo-alert bo-alert--error" data-testid="facturas-recurrentes-error-alert">
-          <AlertCircle size={16} />
+          <AlertCircle size={16}>
           {data.error}
         </div>
       )}
@@ -181,7 +181,7 @@ export default function RecurringInvoicesPage() {
       <div className="bo-recurringList" data-testid="facturas-recurrentes-list">
         {data.recurringInvoices.length === 0 ? (
           <div className="bo-emptyState" data-testid="facturas-recurrentes-empty-state">
-            <RefreshCw size={48} />
+            <RefreshCw size={48}>
             <h3 data-slot="recurrentes-nte">No hay facturación recurrente</h3>
             <p data-slot="recurrentes-ras">Crea tu primera facturación recurrente para automatizar la creación de facturas.</p>
             <button
@@ -189,7 +189,7 @@ export default function RecurringInvoicesPage() {
               onClick={() => navigate("/app/facturas/crear?recurring=true")}
               data-testid="facturas-recurrentes-crear-btn"
             >
-              <Plus size={16} />
+              <Plus size={16}>
               Crear Facturación Recurrente
             </button>
           </div>
@@ -228,7 +228,7 @@ export default function RecurringInvoicesPage() {
                     </td>
                     <td data-slot="recurring-table-cell">
                       <div className="bo-recurringNextDate" data-testid="facturas-recurrentes-next-date">
-                        <Calendar size={14} />
+                        <Calendar size={14}>
                         {item.next_billing_date}
                       </div>
                     </td>
@@ -250,7 +250,7 @@ export default function RecurringInvoicesPage() {
                           title="Generar factura ahora"
                           data-testid={`facturas-recurrentes-generate-btn-${item.id}`}
                         >
-                          <RefreshCw size={14} />
+                          <RefreshCw size={14}>
                         </button>
                         <button
                           className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -259,7 +259,7 @@ export default function RecurringInvoicesPage() {
                           title={item.is_active ? "Pausar" : "Reanudar"}
                           data-testid={`facturas-recurrentes-toggle-btn-${item.id}`}
                         >
-                          {item.is_active ? <Pause size={14} /> : <Play size={14} />}
+                          {item.is_active ? <Pause size={14}> : <Play size={14}>}
                         </button>
                         <button
                           className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -267,7 +267,7 @@ export default function RecurringInvoicesPage() {
                           title="Ver detalles"
                           data-testid={`facturas-recurrentes-view-btn-${item.id}`}
                         >
-                          <Eye size={14} />
+                          <Eye size={14}>
                         </button>
                         <button
                           className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
@@ -276,7 +276,7 @@ export default function RecurringInvoicesPage() {
                           title="Eliminar"
                           data-testid={`facturas-recurrentes-delete-btn-${item.id}`}
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={14}>
                         </button>
                       </div>
                     </td>

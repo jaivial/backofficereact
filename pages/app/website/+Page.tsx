@@ -163,9 +163,9 @@ export default function WebsiteBuilderPage() {
 
   const tabs = useMemo<{ key: TabKey; label: string; icon: React.ReactNode }[]>(
     () => [
-      { key: "templates", label: "Plantillas", icon: <Palette size={16} /> },
-      { key: "ai", label: "Constructor IA", icon: <Sparkles size={16} /> },
-      { key: "domain", label: "Dominio", icon: <Globe size={16} /> },
+      { key: "templates", label: "Plantillas", icon: <Palette size={16}> },
+      { key: "ai", label: "Constructor IA", icon: <Sparkles size={16}> },
+      { key: "domain", label: "Dominio", icon: <Globe size={16}> },
     ],
     []
   );
@@ -180,7 +180,7 @@ export default function WebsiteBuilderPage() {
       <div className="bo-websitePage" data-ui="website-loading">
         <Panel data-slot="website-panel">
             <div className="bo-loadingState" data-slot="website-loadingState">
-              <Loader2 className="bo-spinnerIcon" size={24} />
+              <Loader2 className="bo-spinnerIcon" size={24}>
               <span className="bo-mutedText" data-slot="website-mutedText">Cargando configuracion...</span>
             </div>
         </Panel>
@@ -193,7 +193,7 @@ export default function WebsiteBuilderPage() {
       <div className="bo-websiteHeader" data-slot="website-websiteHeader">
         <div className="bo-websiteHeaderMain" data-slot="website-websiteHeaderMain">
           <div className="bo-websiteTitle" data-testid="website-page-title">
-            <Globe size={24} />
+            <Globe size={24}>
             <h1 data-slot="website-der">Website Builder</h1>
           </div>
           <p className="bo-websiteSubtitle" data-testid="website-page-subtitle">Crea y publica la web de tu restaurante</p>
@@ -204,7 +204,7 @@ export default function WebsiteBuilderPage() {
           </button>
           {previewUrl && (
             <a className="bo-btn bo-btn--secondary" href={previewUrl} target="_blank" rel="noopener noreferrer" data-testid="website-page-preview-link">
-              <ExternalLink size={16} />
+              <ExternalLink size={16}>
               <span data-slot="website-via">Vista previa</span>
             </a>
           )}
@@ -251,7 +251,7 @@ export default function WebsiteBuilderPage() {
                   </div>
                   {isSelected && (
                     <div className="bo-websiteTemplateBadge" data-slot="website-websiteTemplateBadge">
-                      <Check size={14} />
+                      <Check size={14}>
                     </div>
                   )}
                 </button>
@@ -286,7 +286,7 @@ export default function WebsiteBuilderPage() {
                         </>
                       ) : (
                         <>
-                          <Sparkles size={16} />
+                          <Sparkles size={16}>
                           <span data-slot="website-web">Generar Web</span>
                         </>
                       )}
@@ -341,7 +341,7 @@ export default function WebsiteBuilderPage() {
                       </>
                     ) : (
                       <>
-                        <Search size={16} />
+                        <Search size={16}>
                         <span data-slot="website-car">Buscar</span>
                       </>
                     )}

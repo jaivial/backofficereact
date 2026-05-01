@@ -42,7 +42,7 @@ describe("WineDetailEditor", () => {
   });
 
   it("renders all wine fields pre-filled in edit mode", () => {
-    render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={vi.fn()} />);
+    render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={vi.fn()}>);
     expect(screen.getByDisplayValue("Rioja Reserva")).toBeTruthy();
     expect(screen.getByDisplayValue("Bodega Test")).toBeTruthy();
     expect(screen.getByDisplayValue("Rioja")).toBeTruthy();
@@ -52,13 +52,13 @@ describe("WineDetailEditor", () => {
   });
 
   it("renders empty fields and 'Nuevo vino' title for new wine", () => {
-    const { container } = render(<WineDetailEditor vino={null} isNew={true} onSave={vi.fn()} />);
+    const { container } = render(<WineDetailEditor vino={null} isNew={true} onSave={vi.fn()}>);
     expect(container.querySelector("[data-role='wine-detail-editor']")).toBeTruthy();
     expect(screen.getByText("Nuevo vino")).toBeTruthy();
   });
 
   it("shows dirty badge when fields change", () => {
-    render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={vi.fn()} />);
+    render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={vi.fn()}>);
     expect(screen.getByText("Sin cambios")).toBeTruthy();
     const nameInput = screen.getByDisplayValue("Rioja Reserva");
     fireEvent.change(nameInput, { target: { value: "Rioja Gran Reserva" } });
@@ -69,7 +69,7 @@ describe("WineDetailEditor", () => {
     mockPatch.mockResolvedValue({ success: true });
     mockGet.mockResolvedValue({ success: true, vino: { ...SAMPLE_VINO, nombre: "Updated" } });
     const onSave = vi.fn();
-    render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={onSave} />);
+    render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={onSave}>);
 
     const nameInput = screen.getByDisplayValue("Rioja Reserva");
     fireEvent.change(nameInput, { target: { value: "Rioja Gran Reserva" } });
@@ -86,7 +86,7 @@ describe("WineDetailEditor", () => {
     mockCreate.mockResolvedValue({ success: true, num: 99 });
     mockGet.mockResolvedValue({ success: true, vino: { ...SAMPLE_VINO, num: 99 } });
     const onSave = vi.fn();
-    render(<WineDetailEditor vino={null} isNew={true} onSave={onSave} />);
+    render(<WineDetailEditor vino={null} isNew={true} onSave={onSave}>);
 
     const nameInputs = screen.getAllByRole("textbox");
     const emptyInput = nameInputs.find((el) => (el as HTMLInputElement).value === "");
@@ -101,7 +101,7 @@ describe("WineDetailEditor", () => {
   });
 
   it("all HTML elements have semantic data-* attributes", () => {
-    const { container } = render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={vi.fn()} />);
+    const { container } = render(<WineDetailEditor vino={SAMPLE_VINO} isNew={false} onSave={vi.fn()}>);
     const editor = container.querySelector("[data-role='wine-detail-editor']") || container;
     const all = (editor as HTMLElement).querySelectorAll("*");
     const skipped = new Set([

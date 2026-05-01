@@ -35,7 +35,7 @@ export function FoodDetailAllergenModal({
                 disabled={savingAllergens}
                 data-role="food-detail-allergen-modal-item"
               >
-                <span className="bo-allergenCircleIcon" data-role="food-detail-allergen-modal-item-icon"><Icon size={16} /></span>
+                <span className="bo-allergenCircleIcon" data-role="food-detail-allergen-modal-item-icon"><Icon size={16}></span>
                 <span className="bo-allergenCircleLabel" data-role="food-detail-allergen-modal-item-label">{item.key}</span>
               </button>
             );

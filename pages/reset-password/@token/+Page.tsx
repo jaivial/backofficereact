@@ -91,7 +91,7 @@ export default function Page() {
           ) : error && !preview ? (
             <>
               <div className="bo-onboardingIcon bo-onboardingIcon--error" data-slot="@token-onboardingIcon--error">
-                <CircleAlert size={30} />
+                <CircleAlert size={30}>
               </div>
               <div className="bo-title" data-slot="@token-title">Enlace no válido</div>
               <div className="bo-authSub" data-slot="@token-authSub">{error}</div>
@@ -102,7 +102,7 @@ export default function Page() {
           ) : done ? (
             <>
               <div className="bo-onboardingIcon bo-onboardingIcon--ok" data-slot="@token-onboardingIcon--ok">
-                <CheckCircle2 size={30} />
+                <CheckCircle2 size={30}>
               </div>
               <div className="bo-title" data-slot="@token-title">Password actualizada</div>
               <div className="bo-authSub" data-slot="@token-authSub">Ya puedes iniciar sesión con tu nueva password.</div>

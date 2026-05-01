@@ -59,7 +59,7 @@ export function BlockPalette({
             aria-label="Viewport desktop"
             data-ui="viewport-btn-desktop"
           >
-            <Monitor size={18} />
+            <Monitor size={18}>
           </button>
           <button
             className={cn("bo-siteBuilderViewportBtn", viewportSize === "tablet" && "is-active")}
@@ -69,7 +69,7 @@ export function BlockPalette({
             aria-label="Viewport tablet"
             data-ui="viewport-btn-tablet"
           >
-            <Tablet size={18} />
+            <Tablet size={18}>
           </button>
           <button
             className={cn("bo-siteBuilderViewportBtn", viewportSize === "mobile" && "is-active")}
@@ -79,7 +79,7 @@ export function BlockPalette({
             aria-label="Viewport mobile"
             data-ui="viewport-btn-mobile"
           >
-            <Smartphone size={18} />
+            <Smartphone size={18}>
           </button>
         </div>
       </div>
@@ -93,10 +93,10 @@ export function BlockPalette({
           aria-label={leftPanelOpen ? "Ocultar panel izquierdo" : "Mostrar panel izquierdo"}
           data-ui="toolbar-toggle-left-panel"
         >
-          {leftPanelOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+          {leftPanelOpen ? <ChevronLeft size={18}> : <ChevronRight size={18}>}
         </button>
         <button className="bo-btn bo-btn--ghost" type="button" title="Deshacer" aria-label="Deshacer" data-ui="toolbar-undo">
-          <Undo size={18} />
+          <Undo size={18}>
         </button>
         <button
           className="bo-btn bo-btn--primary"
@@ -105,7 +105,7 @@ export function BlockPalette({
           disabled={saving}
           data-ui="toolbar-save"
         >
-          {saving ? <Loader2 className="bo-spinnerIcon" size={16} /> : <Save size={16} />}
+          {saving ? <Loader2 className="bo-spinnerIcon" size={16}> : <Save size={16}>}
           <span data-ui="toolbar-save-label">Guardar</span>
         </button>
       </div>

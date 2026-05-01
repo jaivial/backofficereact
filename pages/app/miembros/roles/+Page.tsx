@@ -233,7 +233,7 @@ export default function Page() {
             <div className="bo-panelMeta" data-slot="roles-panelMeta">Gestiona roles por importancia (0-100), permisos y asignación de usuarios.</div>
           </div>
           <div className="bo-membersIntroBadge" data-slot="roles-membersIntroBadge">
-            <ShieldUser size={16} strokeWidth={1.8} />
+            <ShieldUser size={16} strokeWidth={1.8}>
             {roles.length} roles
           </div>
         </div>
@@ -242,7 +242,7 @@ export default function Page() {
       <div className="bo-roleToolbar" data-slot="roles-roleToolbar">
         <div className="bo-mutedText" data-slot="roles-mutedText">Tu importancia actual: {actorImportance}</div>
         <button className="bo-btn bo-btn--primary bo-btn--sm" type="button" data-testid="miembros-roles-new-role-button" onClick={() => setCreateOpen(true)}>
-          <Plus size={14} strokeWidth={1.8} />
+          <Plus size={14} strokeWidth={1.8}>
           Nuevo rol
         </button>
       </div>

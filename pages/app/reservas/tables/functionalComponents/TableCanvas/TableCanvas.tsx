@@ -32,7 +32,7 @@ function TableFromRFNode(data: TableNodeData): React.JSX.Element {
       style={style}
     >
       {geom.chairs.map((chair, idx) => (
-        <span key={`node-chair-${idx}`} data-ui="chair" className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }} />
+        <span key={`node-chair-${idx}`} data-ui="chair" className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }}>
       ))}
       <div data-ui="node-name" className="bo-tableMapNodeName">{data.name}</div>
       <div data-ui="node-capacity" className="bo-tableMapNodeCap">{data.capacity}</div>

@@ -79,7 +79,7 @@ export function AttachmentsModal({
               {invoiceNumber && <span className="bo-attachmentsModalSubtitle">Factura {invoiceNumber}</span>}
             </h2>
             <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="attachments-close-button">
-              <X size={18} />
+              <X size={18}>
             </button>
           </div>
 
@@ -98,7 +98,7 @@ export function AttachmentsModal({
                   return (
                     <li key={attachment.id} className="bo-attachmentItem" data-slot="attachment-item">
                       <div className="bo-attachmentIcon" style={{ color: iconColor }} data-slot="attachment-icon">
-                        <FileIcon size={24} />
+                        <FileIcon size={24}>
                       </div>
                       <div className="bo-attachmentInfo" data-slot="attachment-info">
                         <span className="bo-attachmentName" data-slot="attachment-name" title={attachment.original_name}>
@@ -117,7 +117,7 @@ export function AttachmentsModal({
                             aria-label={`Vista previa de ${attachment.original_name}`}
                             data-testid={`attachments-preview-button-${attachment.id}`}
                           >
-                            <Eye size={16} />
+                            <Eye size={16}>
                           </button>
                         )}
                         <button
@@ -127,7 +127,7 @@ export function AttachmentsModal({
                           aria-label={`Descargar ${attachment.original_name}`}
                           data-testid={`attachments-download-button-${attachment.id}`}
                         >
-                          <Download size={16} />
+                          <Download size={16}>
                         </button>
                         {onRemoveAttachment && (
                           <button
@@ -138,7 +138,7 @@ export function AttachmentsModal({
                             aria-label={`Eliminar ${attachment.original_name}`}
                             data-testid={`attachments-remove-button-${attachment.id}`}
                           >
-                            {isRemoving ? <Loader2 size={16} className="bo-spin" /> : <Trash2 size={16} />}
+                            {isRemoving ? <Loader2 size={16} className="bo-spin" /> : <Trash2 size={16}>}
                           </button>
                         )}
                       </div>
@@ -167,7 +167,7 @@ export function AttachmentsModal({
                   </>
                 ) : (
                   <>
-                    <Archive size={16} />
+                    <Archive size={16}>
                     Descargar todo (ZIP)
                   </>
                 )}
@@ -184,7 +184,7 @@ export function AttachmentsModal({
             <div className="bo-previewModalHeader" data-slot="preview-modal-header">
               <h3 data-slot="preview-modal-title">{previewingAttachment.original_name}</h3>
               <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => setPreviewingAttachment(null)} aria-label="Cerrar" data-testid="attachments-preview-close-button">
-                <X size={18} />
+                <X size={18}>
               </button>
             </div>
             <div className="bo-previewModalBody" data-slot="preview-modal-body">
@@ -196,7 +196,7 @@ export function AttachmentsModal({
             </div>
             <div className="bo-previewModalFooter" data-slot="preview-modal-footer">
               <button className="bo-btn bo-btn--primary" onClick={() => handleDownloadSingle(previewingAttachment)} data-testid="attachments-preview-download-button">
-                <Download size={16} />
+                <Download size={16}>
                 Descargar
               </button>
             </div>

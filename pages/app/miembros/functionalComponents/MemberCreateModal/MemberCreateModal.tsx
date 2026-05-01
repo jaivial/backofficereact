@@ -92,7 +92,7 @@ export function MemberCreateModal({
       roles.map((role) => ({
         value: role.slug,
         label: role.label,
-        icon: <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={15} strokeWidth={1.8} />,
+        icon: <RoleIcon roleSlug={role.slug} iconKey={role.iconKey} size={15} strokeWidth={1.8}>,
       })),
     [roles],
   );
@@ -128,7 +128,7 @@ export function MemberCreateModal({
                   <AvatarFallback className="bo-memberAvatarFallback">{initials(firstName, lastName)}</AvatarFallback>
                 </Avatar>
                 <span className="bo-memberCreateAvatarOverlay" aria-hidden="true" data-slot="memberCreateModal-memberCreateAvatarOverlay">
-                  <Upload size={18} strokeWidth={1.8} />
+                  <Upload size={18} strokeWidth={1.8}>
                 </span>
               </ImageDropInput>
             </div>
@@ -136,22 +136,22 @@ export function MemberCreateModal({
             <div className="bo-memberCreateGrid" data-slot="memberCreateModal-memberCreateGrid">
               <label className="bo-field" data-slot="member-create-firstname-label">
                 <span className="bo-label" data-slot="memberCreateModal-label">Nombre</span>
-                <input className="bo-input" data-testid="member-create-firstname-input" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-firstname-input" value={firstName} disabled={busy} onChange={(e) => setFirstName(e.target.value)}>
               </label>
 
               <label className="bo-field" data-slot="member-create-lastname-label">
                 <span className="bo-label" data-slot="memberCreateModal-label">Apellidos</span>
-                <input className="bo-input" data-testid="member-create-lastname-input" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-lastname-input" value={lastName} disabled={busy} onChange={(e) => setLastName(e.target.value)}>
               </label>
 
               <label className="bo-field" data-slot="member-create-email-label">
                 <span className="bo-label" data-slot="memberCreateModal-label">Email</span>
-                <input className="bo-input" data-testid="member-create-email-input" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-email-input" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)}>
               </label>
 
               <label className="bo-field" data-slot="member-create-dni-label">
                 <span className="bo-label" data-slot="memberCreateModal-label">DNI (opcional)</span>
-                <input className="bo-input" data-testid="member-create-dni-input" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)} />
+                <input className="bo-input" data-testid="member-create-dni-input" value={dni} disabled={busy} onChange={(e) => setDni(e.target.value)}>
               </label>
 
               <label className="bo-field bo-field--wide" data-slot="member-create-phone-label">

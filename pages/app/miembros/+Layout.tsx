@@ -58,7 +58,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <MiembrosTabs activeId={activeId} onNavigate={onNavigateTab} />
+      <MiembrosTabs activeId={activeId} onNavigate={onNavigateTab}>
       <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
         {!isNavigatingOut ? (
           <motion.div

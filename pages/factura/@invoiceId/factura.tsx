@@ -24,7 +24,7 @@ export default function Page() {
       <div className="bo-publicInvoice" data-ui="invoice-error">
         <div className="bo-publicInvoiceError" data-slot="factura-publicInvoiceError">
           <div className="bo-publicInvoiceErrorIcon" data-slot="factura-publicInvoiceErrorIcon">
-            <AlertCircle size={48} />
+            <AlertCircle size={48}>
           </div>
           <h1 data-ui="error-title">Error</h1>
           <p data-ui="error-message">{error}</p>
@@ -73,7 +73,7 @@ export default function Page() {
           </div>
           {pdfUrl && (
             <a href={pdfUrl} className="bo-btn bo-btn--primary" target="_blank" rel="noopener noreferrer" data-ui="download-pdf-btn">
-              <Download size={16} />
+              <Download size={16}>
               Descargar PDF
             </a>
           )}
@@ -92,7 +92,7 @@ export default function Page() {
           <h3 data-ui="section-title-customer">Cliente</h3>
           <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2" data-slot="factura-publicInvoiceGrid--2">
             <div className="bo-publicInvoiceField" data-slot="field-name">
-              <User size={16} />
+              <User size={16}>
               <div data-slot="factura-div">
                 <label data-slot="factura-bre">Nombre</label>
                 <p data-slot="factura-p">
@@ -103,7 +103,7 @@ export default function Page() {
             </div>
             {invoice.customer_dni_cif && (
               <div className="bo-publicInvoiceField" data-slot="field-dni">
-                <FileText size={16} />
+                <FileText size={16}>
                 <div data-slot="factura-div">
                   <label data-slot="factura-cif">DNI/CIF</label>
                   <p data-slot="factura-cif">{invoice.customer_dni_cif}</p>
@@ -112,7 +112,7 @@ export default function Page() {
             )}
             {invoice.customer_email && (
               <div className="bo-publicInvoiceField" data-slot="field-email">
-                <Mail size={16} />
+                <Mail size={16}>
                 <div data-slot="factura-div">
                   <label data-slot="factura-ail">Email</label>
                   <p data-slot="factura-ail">{invoice.customer_email}</p>
@@ -121,7 +121,7 @@ export default function Page() {
             )}
             {invoice.customer_phone && (
               <div className="bo-publicInvoiceField" data-slot="field-phone">
-                <Phone size={16} />
+                <Phone size={16}>
                 <div data-slot="factura-div">
                   <label data-slot="factura-ono">Teléfono</label>
                   <p data-slot="factura-one">{invoice.customer_phone}</p>
@@ -131,7 +131,7 @@ export default function Page() {
           </div>
           {(invoice.customer_address_street || invoice.customer_address_city) && (
             <div className="bo-publicInvoiceField bo-publicInvoiceField--full" data-slot="field-address">
-              <MapPin size={16} />
+              <MapPin size={16}>
               <div data-slot="factura-div">
                 <label data-slot="factura-cci">Dirección</label>
                 <p data-slot="factura-p">
@@ -152,7 +152,7 @@ export default function Page() {
           <h3 data-ui="section-title-details">Detalles de la Factura</h3>
           <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2" data-slot="factura-publicInvoiceGrid--2">
             <div className="bo-publicInvoiceField" data-slot="field-invoice-date">
-              <Calendar size={16} />
+              <Calendar size={16}>
               <div data-slot="factura-div">
                 <label data-slot="factura-ura">Fecha de Factura</label>
                 <p data-slot="factura-ate">{formatDate(invoice.invoice_date)}</p>
@@ -160,7 +160,7 @@ export default function Page() {
             </div>
             {invoice.payment_date && (
               <div className="bo-publicInvoiceField" data-slot="field-payment-date">
-                <Calendar size={16} />
+                <Calendar size={16}>
                 <div data-slot="factura-div">
                   <label data-slot="factura-ago">Fecha de Pago</label>
                   <p data-slot="factura-ate">{formatDate(invoice.payment_date)}</p>
@@ -169,7 +169,7 @@ export default function Page() {
             )}
             {invoice.payment_method && (
               <div className="bo-publicInvoiceField" data-slot="field-payment-method">
-                <CreditCard size={16} />
+                <CreditCard size={16}>
                 <div data-slot="factura-div">
                   <label data-slot="factura-ago">Método de Pago</label>
                   <p style={{ textTransform: "capitalize" }} data-slot="factura-hod">{invoice.payment_method}</p>
@@ -178,7 +178,7 @@ export default function Page() {
             )}
             {invoice.reservation_date && (
               <div className="bo-publicInvoiceField" data-slot="field-reservation-date">
-                <Calendar size={16} />
+                <Calendar size={16}>
                 <div data-slot="factura-div">
                   <label data-slot="factura-rva">Fecha de Reserva</label>
                   <p data-slot="factura-p">
@@ -240,7 +240,7 @@ export default function Page() {
             Si tiene alguna pregunta sobre esta factura, por favor contacte con nosotros.
           </p>
           <p className="bo-publicInvoiceFooterContact" data-ui="footer-contact">
-            <Mail size={14} /> villacarmen@example.com | <Phone size={14} /> +34 900 000 000
+            <Mail size={14}> villacarmen@example.com | <Phone size={14}> +34 900 000 000
           </p>
         </div>
       </div>

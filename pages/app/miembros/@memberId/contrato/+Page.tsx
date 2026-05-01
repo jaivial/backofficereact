@@ -117,7 +117,7 @@ export default function Page() {
                 />
               </label>
               <button className="bo-actionBtn bo-memberRefreshBtn" type="button" data-testid="miembro-contrato-refresh-button" onClick={() => void reloadStats(date)} disabled={loading} aria-label="Recargar contrato">
-                <RefreshCcw size={14} className={`bo-memberRefreshIcon${loading ? " is-spinning" : ""}`} />
+                <RefreshCcw size={14} className={`bo-memberRefreshIcon${loading ? " is-spinning" : ""}`}>
               </button>
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function Page() {
 
             <div className="bo-memberSaveInline" data-slot="contrato-memberSaveInline">
               <button className="bo-btn bo-btn--primary" type="button" data-testid="miembro-contrato-save-button" onClick={onSave} disabled={saving}>
-                <Check size={14} strokeWidth={1.8} />
+                <Check size={14} strokeWidth={1.8}>
                 {saving ? "Guardando..." : "Guardar contrato"}
               </button>
             </div>
