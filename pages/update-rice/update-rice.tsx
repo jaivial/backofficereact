@@ -47,11 +47,11 @@ export default function Page() {
       <div className="bo-publicPage" data-ui="book-rice">
         <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
           <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="update-rice-publicPageAlert--danger">
-            <AlertCircle size={20}>
+            <AlertCircle size={20} />
             <span data-slot="update-rice-ada">{error || "Reserva no encontrada."}</span>
           </div>
           <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-back-home-link">
-            <ArrowLeft size={18}>
+            <ArrowLeft size={18} />
             Volver al inicio
           </a>
         </div>
@@ -64,16 +64,16 @@ export default function Page() {
       <div className="bo-publicPage" data-ui="book-rice">
         <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
           <div className="bo-publicPageIcon bo-publicPageIcon--warning" data-slot="update-rice-publicPageIcon--warning">
-            <AlertTriangle size={24}>
+            <AlertTriangle size={24} />
           </div>
           <h1 className="bo-publicPageTitle" data-slot="update-rice-publicPageTitle">No Disponible</h1>
           <p className="bo-publicPageSub" data-slot="update-rice-publicPageSub">Reserva para hoy</p>
           <div className="bo-publicPageAlert bo-publicPageAlert--warning" data-slot="update-rice-publicPageAlert--warning">
-            <AlertTriangle size={20}>
+            <AlertTriangle size={20} />
             <span data-slot="update-rice-ono">Las reservas de arroz para el mismo día deben hacerse por teléfono.</span>
           </div>
           <a href="tel:+34638857294" className="bo-publicPageBtn bo-publicPageBtn--success" data-testid="update-rice-call-link">
-            <Phone size={18}>
+            <Phone size={18} />
             Llamar ahora
           </a>
           <a href="/" className="bo-publicPageBtn bo-publicPageBtn--accent" data-testid="update-rice-back-home-link-2">Volver al inicio</a>
@@ -87,7 +87,7 @@ export default function Page() {
       <div className="bo-publicPage" data-ui="book-rice">
         <div className="bo-publicPageCard" data-slot="update-rice-publicPageCard">
           <div className="bo-publicPageIcon bo-publicPageIcon--success" data-slot="update-rice-publicPageIcon--success">
-            <CheckCircle size={24}>
+            <CheckCircle size={24} />
           </div>
           <h1 className="bo-publicPageTitle" data-slot="update-rice-publicPageTitle">Arroz Reservado</h1>
           <p className="bo-publicPageSub" data-slot="update-rice-publicPageSub">{actionSuccess}</p>
@@ -116,7 +116,7 @@ export default function Page() {
             </div>
             <div className="bo-publicPageDetailGrid" data-slot="update-rice-publicPageDetailGrid">
               <div className="bo-publicPageDetailItem" data-slot="update-rice-publicPageDetailItem">
-                <Utensils size={16}>
+                <Utensils size={16} />
                 <div data-slot="update-rice-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Arroz</span><span className="bo-publicPageDetailValue">{booking.arrozDisplay || "No Arroz"}</span></div>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function Page() {
 
         {actionError && (
           <div className="bo-publicPageAlert bo-publicPageAlert--danger" data-slot="update-rice-publicPageAlert--danger">
-            <AlertCircle size={20}>
+            <AlertCircle size={20} />
             <span data-slot="update-rice-ror">{actionError}</span>
           </div>
         )}
@@ -184,7 +184,7 @@ export default function Page() {
             disabled={loading || !selectedRice}
             data-testid="update-rice-submit-button"
           >
-            {loading ? <Loader2 size={18} className="bo-spin" /> : <Utensils size={18}>}
+            {loading ? <Loader2 size={18} className="bo-spin" /> : <Utensils size={18} />}
             Reservar Arroz
           </button>
         </form>

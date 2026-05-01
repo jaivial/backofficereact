@@ -18,14 +18,14 @@ export function formatDateShort(dateStr: string): string {
 
 export function getStatusBadge(status: string) {
   const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-    borrador: { label: "Borrador", className: "bo-badge--gray", icon: <FileText size={14}> },
-    solicitada: { label: "Solicitada", className: "bo-badge--blue", icon: <Clock size={14}> },
-    pendiente: { label: "Pendiente", className: "bo-badge--yellow", icon: <Clock size={14}> },
-    enviada: { label: "Enviada", className: "bo-badge--orange", icon: <Mail size={14}> },
-    pagada: { label: "Pagada", className: "bo-badge--green", icon: <CheckCircle size={14}> },
+    borrador: { label: "Borrador", className: "bo-badge--gray", icon: <FileText size={14} /> },
+    solicitada: { label: "Solicitada", className: "bo-badge--blue", icon: <Clock size={14} /> },
+    pendiente: { label: "Pendiente", className: "bo-badge--yellow", icon: <Clock size={14} /> },
+    enviada: { label: "Enviada", className: "bo-badge--orange", icon: <Mail size={14} /> },
+    pagada: { label: "Pagada", className: "bo-badge--green", icon: <CheckCircle size={14} /> },
   };
 
-  const config = statusConfig[status] || { label: status, className: "bo-badge--gray", icon: <FileText size={14}> };
+  const config = statusConfig[status] || { label: status, className: "bo-badge--gray", icon: <FileText size={14} /> };
 
   return (
     <span className={`bo-badge ${config.className}`} data-slot="factura.helpers-span">

@@ -202,7 +202,8 @@ export default function Page() {
                   className="p-2 rounded-full hover:bg-green-500/20 text-slate-400 hover:text-green-400 transition-colors"
                   aria-label="Enviar WhatsApp"
                 > */}
-                  {/* <MessageCircle size={18} /> */}
+                  {/* <MessageCircle size={18} />
+                </button> */}
               </div>
             </button>
           );

@@ -70,7 +70,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             disabled={!invoice.pdf_url}
             data-testid="invoice-preview-modal-download-pdf-btn"
           >
-            <FileDown size={16}>
+            <FileDown size={16} />
             Descargar PDF
           </button>
           {invoice.customer_email && (
@@ -80,7 +80,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
               onClick={() => onSendEmail(invoice)}
               data-testid="invoice-preview-modal-send-email-btn"
             >
-              <Send size={16}>
+              <Send size={16} />
               {invoice.status === "enviada" ? "Reenviar email" : "Enviar email"}
             </button>
           )}
@@ -90,7 +90,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             onClick={handleEdit}
             data-testid="invoice-preview-modal-edit-btn"
           >
-            <PencilLine size={16}>
+            <PencilLine size={16} />
             Editar
           </button>
         </div>
@@ -114,7 +114,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
           {/* Dates Column */}
           <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-dates">
             <h3 className="bo-invoicePreviewSectionTitle" data-slot="invoicePreviewModal-invoicePreviewSectionTitle">
-              <Calendar size={14}>
+              <Calendar size={14} />
               Fechas
             </h3>
             <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
@@ -138,7 +138,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
           {/* Customer Column */}
           <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-customer">
             <h3 className="bo-invoicePreviewSectionTitle" data-slot="invoicePreviewModal-invoicePreviewSectionTitle">
-              <User size={14}>
+              <User size={14} />
               Cliente
             </h3>
             <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
@@ -155,7 +155,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             )}
             <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
               <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">
-                <Mail size={12}>
+                <Mail size={12} />
                 Email
               </span>
               <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{invoice.customer_email}</span>
@@ -163,7 +163,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             {invoice.customer_phone && (
               <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
                 <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">
-                  <Phone size={12}>
+                  <Phone size={12} />
                   Teléfono
                 </span>
                 <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{invoice.customer_phone}</span>
@@ -172,7 +172,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             {fullAddress && (
               <div className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
                 <span className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">
-                  <MapPin size={12}>
+                  <MapPin size={12} />
                   Dirección
                 </span>
                 <span className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{fullAddress}</span>
@@ -183,7 +183,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
           {/* Payment Column */}
           <div className="bo-invoicePreviewSection" data-slot="invoice-preview-section-payment">
             <h3 className="bo-invoicePreviewSectionTitle" data-slot="invoicePreviewModal-invoicePreviewSectionTitle">
-              <CreditCard size={14}>
+              <CreditCard size={14} />
               Pago
             </h3>
             {invoice.payment_method && (

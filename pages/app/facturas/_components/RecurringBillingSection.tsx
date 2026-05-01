@@ -84,7 +84,7 @@ export function RecurringBillingSection({
       case "pending":
         return (
           <span className="bo-recurringStatus bo-recurringStatus--pending" data-slot="recurringBillingSection-recurringStatus--pending">
-            <Clock size={12}>
+            <Clock size={12} />
             Pendiente
           </span>
         );
@@ -98,14 +98,14 @@ export function RecurringBillingSection({
       case "sent":
         return (
           <span className="bo-recurringStatus bo-recurringStatus--sent" data-slot="recurringBillingSection-recurringStatus--sent">
-            <RefreshCw size={12}>
+            <RefreshCw size={12} />
             Enviada
           </span>
         );
       case "failed":
         return (
           <span className="bo-recurringStatus bo-recurringStatus--failed" data-slot="recurringBillingSection-recurringStatus--failed">
-            <AlertCircle size={12}>
+            <AlertCircle size={12} />
             Error
           </span>
         );
@@ -139,7 +139,7 @@ export function RecurringBillingSection({
     <div className="bo-invoiceFormSection bo-recurringBilling" data-slot="recurring-billing-section">
       <div className="bo-recurringBillingHeader" data-slot="recurring-billing-header">
         <div className="bo-recurringBillingTitle" data-slot="recurringBillingSection-recurringBillingTitle">
-          <RefreshCw size={18}>
+          <RefreshCw size={18} />
           <h3 data-slot="recurringBillingSection-nte">Facturación recurrente</h3>
         </div>
 
@@ -153,7 +153,7 @@ export function RecurringBillingSection({
             title="Pausar facturación recurrente"
             data-testid="recurring-billing-pause-btn"
           >
-            <Pause size={14}>
+            <Pause size={14} />
             Pausar
           </button>
         )}
@@ -166,7 +166,7 @@ export function RecurringBillingSection({
             title="Reanudar facturación recurrente"
             data-testid="recurring-billing-resume-btn"
           >
-            <Play size={14}>
+            <Play size={14} />
             Reanudar
           </button>
         )}
@@ -192,7 +192,7 @@ export function RecurringBillingSection({
           <div className="bo-recurringBillingRow" data-slot="recurring-billing-row-frequency">
             <div className="bo-field" data-slot="recurringBillingSection-field">
               <span className="bo-label" data-slot="recurringBillingSection-label">
-                <Clock size={14}>
+                <Clock size={14} />
                 Frecuencia
               </span>
               <Select
@@ -210,7 +210,7 @@ export function RecurringBillingSection({
           <div className="bo-recurringBillingRow" data-slot="recurring-billing-row-dates">
             <div className="bo-field" data-slot="recurringBillingSection-field">
               <span className="bo-label" data-slot="recurringBillingSection-label">
-                <Calendar size={14}>
+                <Calendar size={14} />
                 Fecha de inicio
               </span>
               <DatePicker
@@ -223,7 +223,7 @@ export function RecurringBillingSection({
 
             <div className="bo-field" data-slot="recurringBillingSection-field">
               <span className="bo-label" data-slot="recurringBillingSection-label">
-                <Calendar size={14}>
+                <Calendar size={14} />
                 Fecha de fin (opcional)
               </span>
               <DatePicker
@@ -259,7 +259,7 @@ export function RecurringBillingSection({
                 data-testid="recurring-billing-auto-send-toggle"
               />
               <span className="bo-label" data-slot="recurringBillingSection-label">
-                <Send size={14}>
+                <Send size={14} />
                 Auto-enviar facturas
               </span>
             </div>
@@ -301,7 +301,7 @@ export function RecurringBadge({ isRecurring, nextBillingDate }: { isRecurring?:
 
   return (
     <span className="bo-recurringBadge" title={nextBillingDate ? `Próxima: ${nextBillingDate}` : "Facturación recurrente"} data-slot="recurring-badge">
-      <RefreshCw size={12}>
+      <RefreshCw size={12} />
       <span data-slot="recurringBillingSection-nte">Recurrente</span>
     </span>
   );

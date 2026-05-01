@@ -164,7 +164,7 @@ export default function WebsiteBuilder() {
           {/* Main Canvas */}
           <main className="flex-1 overflow-y-auto bg-slate-900" data-ui="canvas">
             {previewMode ? (
-              <WebsitePreview website={website} currentPage={currentPage}>
+              <WebsitePreview website={website} currentPage={currentPage} />
             ) : (
               <WebsiteCanvas 
                 website={website}
@@ -185,7 +185,7 @@ export default function WebsiteBuilder() {
                 <h2 className="text-sm font-semibold text-slate-300 mb-3" data-slot="website-builder-mb-3">
                   Properties
                 </h2>
-                <PropertiesPanel componentId={selectedComponent} onUpdate={loadWebsite}>
+                <PropertiesPanel componentId={selectedComponent} onUpdate={loadWebsite} />
               </div>
             </aside>
           )}
@@ -218,7 +218,7 @@ function ComponentLibrary() {
   return (
     <div className="space-y-2" data-ui="component-list">
       {COMPONENT_CATALOG.map(comp => (
-        <DraggableComponent key={comp.id} component={comp}>
+        <DraggableComponent key={comp.id} component={comp} />
       ))}
     </div>
   );
@@ -410,7 +410,7 @@ function WebsiteCanvas({
             )}
             
             {/* Add Section Button */}
-            <AddSectionButton onAdd={handleAddSection}>
+            <AddSectionButton onAdd={handleAddSection} />
           </div>
         )}
       </div>
