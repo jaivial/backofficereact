@@ -561,9 +561,9 @@ export function useFoodDetailPage() {
     }
   }, [api.comida.bebidas, api.comida.cafes, imageBase64, isBebida, pushToast]);
 
-  // Upload image directly (no AI) for existing items
+  // Upload image directly (no AI) for existing items (cafes/bebidas only)
   const handleImageUpdate = useCallback(async (file: File) => {
-    if (!currentFoodItem) return;
+    if (!currentFoodItem || (!isBebida && !isCafe)) return;
     setUploading(true);
     try {
       const compressed = await compressImageToWebP(file, 80);
@@ -593,7 +593,7 @@ export function useFoodDetailPage() {
     } finally {
       setUploading(false);
     }
-  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, isBebida, pushToast]);
+  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, isBebida, isCafe, pushToast]);
 
   const handleAIAdvisorClose = useCallback(() => {
     setShowAIAdvisor(false);
@@ -601,10 +601,9 @@ export function useFoodDetailPage() {
 
   const handleAIContinueWithout = useCallback(() => {
     setShowAIAdvisor(false);
-    // For existing items: upload directly without AI
-    if (!data.isNew && currentFoodItem && imagePreview) {
+    // For existing items (cafes/bebidas only): upload directly without AI
+    if (!data.isNew && currentFoodItem && imagePreview && (isBebida || isCafe)) {
       void (async () => {
-        // imageBase64 holds the compressed WebP data
         if (!imageBase64) return;
         const b64 = imageBase64.split(",")[1];
         if (!b64) return;
@@ -628,13 +627,7 @@ export function useFoodDetailPage() {
     }
     setImageBase64(null);
     setImagePreview(null);
-  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, data.isNew, imageBase64, imagePreview, isBebida, pushToast]);
-
-  const handleAIContinueWithout = useCallback(() => {
-    setShowAIAdvisor(false);
-    setImageBase64(null);
-    setImagePreview(null);
-  }, []);
+  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, data.isNew, imageBase64, imagePreview, isBebida, isCafe, pushToast]);
 
   const handleAIEnhance = useCallback(() => {
     if (!currentFoodItem) return;
