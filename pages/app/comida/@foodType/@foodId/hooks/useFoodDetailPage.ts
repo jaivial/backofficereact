@@ -499,12 +499,14 @@ export function useFoodDetailPage() {
   }, []);
 
   // Upload image directly (no AI) for existing items (cafes/bebidas only)
-  const handleImageUpdate = useCallback(async (file: File) => {
+  // If preCompressed is provided, skip recompression (already compressed by caller)
+  const handleImageUpdate = useCallback(async (file: File, preCompressed?: string) => {
     if (!currentFoodItem || (!isBebida && !isCafe)) return;
     setUploading(true);
     try {
-      const compressed = await compressImageToWebP(file, 80);
-      const b64 = compressed.split(",")[1];
+      // Use pre-compressed data if available, otherwise compress now
+      const compressedData = preCompressed ?? await compressImageToWebP(file, 80);
+      const b64 = compressedData.split(",")[1];
       if (!b64) throw new Error("No image data");
 
       const byteChars = atob(b64);
@@ -546,15 +548,15 @@ export function useFoodDetailPage() {
     try {
       const compressed = await compressImageToWebP(file, 80);
       setImageBase64(compressed);
-      setImagePreview(compressed);
 
-      // Existing item: upload directly (no AI advisor needed)
+      // Existing item: upload immediately — show URL when done, no AI advisor
       if (!data.isNew && currentFoodItem) {
-        await handleImageUpdate(file);
+        await handleImageUpdate(file, compressed);
         return;
       }
 
-      // New item: show AI advisor if supported
+      // New item: show preview + AI advisor
+      setImagePreview(compressed);
       if (showAdvisorForType) {
         setShowAIAdvisor(true);
       }
