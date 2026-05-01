@@ -51,13 +51,13 @@ function makeProps(overrides: Partial<React.ComponentProps<typeof FoodList>> = {
 
 describe("FoodList", () => {
   it("shows loading spinner when loading", () => {
-    const { container } = render(<FoodList {...makeProps({ loading: true })} />);
+    const { container } = render(<FoodList {...makeProps({ loading: true })}>);
     const loading = container.querySelector('[data-ui="food-list-loading"]');
     expect(loading).toBeInTheDocument();
   });
 
   it("shows empty state text when no items", () => {
-    const { container } = render(<FoodList {...makeProps({ loading: false, items: [] })} />);
+    const { container } = render(<FoodList {...makeProps({ loading: false, items: [] })}>);
     const emptyText = container.querySelector('[data-role="food-list-empty-text"]');
     const emptyHint = container.querySelector('[data-role="food-list-empty-hint"]');
     expect(emptyText).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("FoodList", () => {
         total: 15,
         totalPages: 2,
         showPagerBtns: true,
-      })} />
+      })}>
     );
 
     const pagerInfo = container.querySelector('[data-role="food-list-pager-info"]');
@@ -92,7 +92,7 @@ describe("FoodList", () => {
         totalPages: 2,
         showPagerBtns: true,
         onPageChange,
-      })} />
+      })}>
     );
 
     const prevBtn = container.querySelector('[data-role="food-list-pager-prev"]');

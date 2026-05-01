@@ -326,7 +326,7 @@ export function BookingEditor({
 
   return (
     <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }} data-slot="bookingEditor-div">
-      {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
+      {formError ? <InlineAlert kind="error" title="Error" message={formError}> : null}
       <div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`} data-slot="bookingEditor-div">
 
       <div className="bo-panel bo-bookingPanel--customer" data-slot="bookingEditor-bookingPanel--customer">
@@ -338,7 +338,7 @@ export function BookingEditor({
           <div className="bo-row bo-bookingRow bo-bookingRow--schedule" data-slot="booking-editor-schedule">
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--date" data-slot="booking-editor-date">
               <div className="bo-label" data-slot="bookingEditor-label">Fecha</div>
-              <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
+              <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)}>
             </div>
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time" data-slot="booking-editor-time">
               <div className="bo-label" data-slot="bookingEditor-label">Hora</div>
@@ -477,13 +477,13 @@ export function BookingEditor({
                         className="bo-bookingChoiceServings"
                       />
                       <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy} data-slot={`booking-editor-remove-principal-${idx}`}>
-                        <Trash2 size={18} strokeWidth={1.8} />
+                        <Trash2 size={18} strokeWidth={1.8}>
                       </button>
                     </div>
                   </div>
                 ))}
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addPrincipalRow} disabled={busy || !principalesItems.length} data-slot="booking-editor-add-principal">
-                  <Plus size={18} strokeWidth={1.8} /> Añadir principal
+                  <Plus size={18} strokeWidth={1.8}> Añadir principal
                 </button>
                 {!principalesItems.length ? <div className="bo-mutedText">Este menú no tiene lista de principales.</div> : null}
               </div>
@@ -527,13 +527,13 @@ export function BookingEditor({
                         className="bo-bookingChoiceServings"
                       />
                       <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy} data-slot={`booking-editor-remove-arroz-${idx}`}>
-                        <Trash2 size={18} strokeWidth={1.8} />
+                        <Trash2 size={18} strokeWidth={1.8}>
                       </button>
                     </div>
                   </div>
                 ))}
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addRiceRow} disabled={busy || !riceTypes.length} data-slot="booking-editor-add-arroz">
-                  <Plus size={18} strokeWidth={1.8} /> Añadir arroz
+                  <Plus size={18} strokeWidth={1.8}> Añadir arroz
                 </button>
                 {!riceTypes.length ? <div className="bo-mutedText">Cargando tipos de arroz…</div> : null}
               </div>
@@ -594,7 +594,7 @@ function CounterField({
           aria-label={`Disminuir ${label}`}
           data-testid={`booking-editor-counter-${label.toLowerCase()}-decrease`}
         >
-          <Minus size={16} strokeWidth={2} />
+          <Minus size={16} strokeWidth={2}>
         </button>
         <input
           className="bo-input bo-input--sm bo-counterInput"
@@ -612,7 +612,7 @@ function CounterField({
           aria-label={`Aumentar ${label}`}
           data-testid={`booking-editor-counter-${label.toLowerCase()}-increase`}
         >
-          <Plus size={16} strokeWidth={2} />
+          <Plus size={16} strokeWidth={2}>
         </button>
       </div>
     </div>

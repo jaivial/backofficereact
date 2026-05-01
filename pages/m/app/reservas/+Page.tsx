@@ -145,7 +145,7 @@ export default function MobileReservasPage() {
       </header>
 
       {/* Status filter */}
-      <StatusFilter value={statusFilter} onChange={setStatusFilter} />
+      <StatusFilter value={statusFilter} onChange={setStatusFilter}>
 
       {/* Booking cards */}
       {data.error && (
@@ -162,7 +162,7 @@ export default function MobileReservasPage() {
           </div>
         ) : (
           filteredBookings.map((booking) => (
-            <BookingCard key={booking.id} booking={booking} />
+            <BookingCard key={booking.id} booking={booking}>
           ))
         )}
       </div>

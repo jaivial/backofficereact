@@ -69,7 +69,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="bo-memberDetailRoute" data-slot="Layout-memberDetailRoute">
-      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembro" className="bo-tabs--memberDetail" onNavigate={onNavigateTab} />
+      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Secciones de miembro" className="bo-tabs--memberDetail" onNavigate={onNavigateTab}>
       <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
         {!isNavigatingOut ? (
           <motion.div

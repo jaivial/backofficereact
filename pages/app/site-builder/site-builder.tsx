@@ -76,7 +76,7 @@ function SiteBuilderEditorPage() {
 
   return (
     <>
-      <style data-ui="site-builder-inline-styles" dangerouslySetInnerHTML={{ __html: SITE_BUILDER_PAGE_STYLES }} />
+      <style data-ui="site-builder-inline-styles" dangerouslySetInnerHTML={{ __html: SITE_BUILDER_PAGE_STYLES }}>
       <div className="bo-siteBuilder" data-ui="site-builder">
         {/* Toolbar */}
         <BlockPalette
@@ -168,7 +168,7 @@ function SiteBuilderEditorPage() {
               aria-label="Mostrar propiedades"
               data-ui="toggle-right-panel"
             >
-              <Settings size={18} />
+              <Settings size={18}>
             </button>
           ) : null}
         </div>

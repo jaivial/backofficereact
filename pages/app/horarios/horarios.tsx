@@ -33,10 +33,10 @@ export default function Page() {
   }) as Data;
 
   if (data.isAdmin === false) {
-    return <MyScheduleView initialSchedules={data.schedules} />;
+    return <MyScheduleView initialSchedules={data.schedules}>;
   }
 
-  return <AdminHorariosView data={data} />;
+  return <AdminHorariosView data={data}>;
 }
 
 function AdminHorariosView({ data }: { data: Data }) {

@@ -46,7 +46,7 @@ export default function Head() {
       <link rel="icon" href="/favicon.ico" sizes="any" />
       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       {/* CSS is loaded via import in +Layout.tsx; Vite resolves @import from the aggregator */}
-      <script dangerouslySetInnerHTML={{ __html: boot }} />
+      <script dangerouslySetInnerHTML={{ __html: boot }}>
     </>
   );
 }

@@ -14,6 +14,42 @@ Scope: todo lo que cuelga de `backoffice/`.
 - El valor debe describir el rol semántico del nodo y ser único dentro de su bloque lógico (componente funcional).
 - No dejar ningún tag sin este atributo.
 
+### JSX Data Attribute Placement Rule (CRÍTICO - causa 500 en producción)
+**ATENCIÓN**: Esta regla previene un bug crítico que causa "500 Internal Server Error" en producción.
+
+Los atributos `data-*` (`data-slot`, `data-testid`, `data-role`, etc.) **DEBEN** colocarse ANTES del cierre `/>` en tags auto-cerrados.
+
+```tsx
+// ✅ CORRECTO - El atributo va ANTES de />
+<div className="bo-card" data-slot="card-root" />
+<span data-testid="submit-button" className="btn" />
+
+// ❌ INCORRECTO - El atributo DESPUÉS de /> causa error 500
+<div className="bo-card" /data-slot="card-root">
+<span className="btn" /data-testid="submit-button">
+```
+
+**Por qué es crítico**: esbuild (el bundler) no puede parsear `/>data-*` como JSX válido, lo que causa un error de transpilación silencioso que resulta en "500 Internal Server Error" cuando el usuario accede a cualquier página.
+
+**Validación automática**:
+```bash
+# Verificación manual (ya integrada en pre-commit hook)
+pnpm lint:jsx
+
+# Verificación completa (lint + typecheck + eslint)
+pnpm lint:all
+
+# Solo eslint
+pnpm lint:es
+```
+
+**Para prevenir**: el hook `pre-commit` (husky) ejecuta automáticamente `pnpm lint:jsx` antes de cada commit. Si hay errores, el commit se rechaza.
+
+**Cómo resolver si aparece el error**: La regex de sed para bulk fix:
+```bash
+find pages ui -name "*.tsx" -exec sed -i 's/ \/>/>/g; s/\/data-/ data-/g' {} \;
+```
+
 ### TailwindCSS obligatorio para componentes nuevos
 - **Todo componente React nuevo** debe usar **TailwindCSS** para estilos.
 - Tailwind coexiste con las clases `bo-` legacy (vanilla CSS): los componentes existentes que usan `bo-` se mantienen, pero los nuevos usan utilidades Tailwind.
@@ -31,6 +67,25 @@ Scope: todo lo que cuelga de `backoffice/`.
   usar por defecto para cualquier `read/edit/update` en `backoffice/` (SSR vike, cliente API admin, UI compartida).
 - `villacarmen-contract-sync`:
   usar además cuando el cambio dependa de nuevos contratos backend o modifique consumo de `/api/admin/*`.
+- `villacarmen-smoke-check`:
+  usar al cerrar tareas para validación rápida de typecheck/build e integración.
+
+## Comandos de validación obligatorios antes de commit
+
+Antes de hacer `git commit` en `backoffice/`, ejecutar **SIEMPRE**:
+
+```bash
+# Validación JSX data-* (crítico - previene 500 errors)
+pnpm lint:jsx
+
+# Validación completa recomendada
+pnpm lint:all
+
+# Build de producción (verifica que todo compila)
+pnpm build
+```
+
+Si el build falla, **NO hacer commit** hasta resolver los errores.
 - `villacarmen-smoke-check`:
   usar al cerrar tareas para validacion rapida de typecheck/build e integracion.
 

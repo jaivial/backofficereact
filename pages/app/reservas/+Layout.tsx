@@ -128,7 +128,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestañas reservas" className="bo-tabs--reservas flex flex-row rounded-xl w-fit my-0 mx-auto" onNavigate={onNavigateTab} />
+      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestañas reservas" className="bo-tabs--reservas flex flex-row rounded-xl w-fit my-0 mx-auto" onNavigate={onNavigateTab}>
       <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
         {!isNavigatingOut ? (
           <motion.div
