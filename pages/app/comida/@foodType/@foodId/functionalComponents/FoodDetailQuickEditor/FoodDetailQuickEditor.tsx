@@ -139,7 +139,7 @@ export function FoodDetailQuickEditor({
                   className="bo-btn bo-btn--ghost bo-btn--sm"
                   onClick={onAddCategoryClick}
                 >
-                  <Plus size={14} />
+                  <Plus size={14}>
                   Añadir categoria
                 </button>
               ) : null}
@@ -206,7 +206,7 @@ export function FoodDetailQuickEditor({
           title="Guardar cambios"
           data-role="food-detail-quick-save-btn"
         >
-          {savingQuick ? <Loader2 size={14} className="bo-foodDetailSpinIcon" /> : <Save size={14} />}
+          {savingQuick ? <Loader2 size={14} className="bo-foodDetailSpinIcon" /> : <Save size={14}>}
         </button>
       </div>
     </Panel>

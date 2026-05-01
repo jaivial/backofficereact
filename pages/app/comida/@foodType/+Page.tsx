@@ -91,7 +91,7 @@ function FoodTypePage() {
   return (
     <section aria-label={`Carta ${listLabel}`} className="bo-foodPage" data-role="food-type-page">
       <div className="bo-container" data-slot="@foodType-container">
-        <Breadcrumbs items={breadcrumbs} />
+        <Breadcrumbs items={breadcrumbs}>
 
         <div className="bo-foodPage-hero" data-ui="food-type-hero">
           <h1 className="bo-pageTitle" data-role="food-type-title">{listLabel}</h1>

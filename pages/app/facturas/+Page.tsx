@@ -338,7 +338,7 @@ export default function Page() {
 
   return (
     <div className="bo-facturasPage" data-slot="facturas-facturasPage">
-      <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab} />
+      <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab}>
       {activeTab === "resumen" ? (
         <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen" data-slot="facturas-div">
         <div className="bo-facturasSummary" data-slot="facturas-facturasSummary">

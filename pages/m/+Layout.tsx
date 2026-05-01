@@ -29,7 +29,7 @@ function MobileLayoutInner({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       {/* Bottom navigation bar */}
-      <MobileNav pathname={pathname} />
+      <MobileNav pathname={pathname}>
     </div>
   );
 }

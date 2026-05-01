@@ -112,7 +112,7 @@ export function InvoicePdfPreviewModal({
                 download
                 data-testid="pdf-preview-download-btn"
               >
-                <Download size={14} />
+                <Download size={14}>
                 Descargar
               </a>
             )}
@@ -123,7 +123,7 @@ export function InvoicePdfPreviewModal({
               disabled={isSending}
               data-testid="pdf-preview-edit-btn"
             >
-              <Edit3 size={14} />
+              <Edit3 size={14}>
               Editar
             </button>
           </div>
@@ -145,7 +145,7 @@ export function InvoicePdfPreviewModal({
 
           {error && (
             <div className="bo-pdf-preview-error" data-slot="pdf-preview-error">
-              <FileText size={48} />
+              <FileText size={48}>
               <p data-slot="pdf-preview-error-text">{error}</p>
               {hasInvoiceId && (
                 <button
@@ -199,7 +199,7 @@ export function InvoicePdfPreviewModal({
               disabled={isSending}
               data-testid="pdf-preview-footer-edit-btn"
             >
-              <Edit3 size={16} />
+              <Edit3 size={16}>
               Volver a editar
             </button>
             <button
@@ -217,7 +217,7 @@ export function InvoicePdfPreviewModal({
                 </>
               ) : (
                 <>
-                  <Send size={16} />
+                  <Send size={16}>
                   Confirmar y enviar
                 </>
               )}

@@ -126,7 +126,7 @@ export function MenuItemEditor({
                 onClick={() => setAllergenModal({ open: true, sectionClientId, dishClientId: dish.clientId })}
                 data-testid={`menu-item-editor-allergen-btn-${dish.clientId}`}
               >
-                <WheatOffIcon size={14} />
+                <WheatOffIcon size={14}>
               </button>
               <button
                 className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
@@ -135,7 +135,7 @@ export function MenuItemEditor({
                 onClick={() => removeDish(sectionClientId, dish.clientId)}
                 data-testid={`menu-item-editor-delete-btn-${dish.clientId}`}
               >
-                <Trash2 size={14} />
+                <Trash2 size={14}>
               </button>
             </div>
           )}
@@ -152,7 +152,7 @@ export function MenuItemEditor({
                 }}
                 data-testid={`menu-item-editor-drag-${dish.clientId}`}
               >
-                <GripVertical size={14} />
+                <GripVertical size={14}>
               </button>
               <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
                 <Switch

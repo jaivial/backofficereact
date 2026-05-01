@@ -111,7 +111,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-dates">
               <label className="bo-field" data-slot="fillFromReservationModal-field">
                 <span className="bo-label" data-slot="fillFromReservationModal-label">
-                  <Calendar size={14} />
+                  <Calendar size={14}>
                   Desde
                 </span>
                 <DatePicker value={dateFrom} onChange={setDateFrom} data-testid="fill-reservation-date-from" />
@@ -119,7 +119,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
 
               <label className="bo-field" data-slot="fillFromReservationModal-field">
                 <span className="bo-label" data-slot="fillFromReservationModal-label">
-                  <Calendar size={14} />
+                  <Calendar size={14}>
                   Hasta
                 </span>
                 <DatePicker value={dateTo} onChange={setDateTo} data-testid="fill-reservation-date-to" />
@@ -129,7 +129,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-search">
               <label className="bo-field" data-slot="fillFromReservationModal-field">
                 <span className="bo-label" data-slot="fillFromReservationModal-label">
-                  <Search size={14} />
+                  <Search size={14}>
                   Nombre
                 </span>
                 <input
@@ -144,7 +144,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
 
               <label className="bo-field" data-slot="fillFromReservationModal-field">
                 <span className="bo-label" data-slot="fillFromReservationModal-label">
-                  <Search size={14} />
+                  <Search size={14}>
                   Teléfono
                 </span>
                 <input
@@ -161,7 +161,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             <div className="bo-reservationFiltersRow" data-slot="reservation-filter-row-party-time">
               <label className="bo-field" data-slot="fillFromReservationModal-field">
                 <span className="bo-label" data-slot="fillFromReservationModal-label">
-                  <Users size={14} />
+                  <Users size={14}>
                   Personas
                 </span>
                 <Select
@@ -175,7 +175,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
 
               <label className="bo-field" data-slot="fillFromReservationModal-field">
                 <span className="bo-label" data-slot="fillFromReservationModal-label">
-                  <Clock size={14} />
+                  <Clock size={14}>
                   Hora
                 </span>
                 <Select
@@ -215,15 +215,15 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
                     </div>
                     <div className="bo-reservationItemMeta" data-slot="reservation-item-meta">
                       <span className="bo-reservationItemDate" data-slot="fillFromReservationModal-reservationItemDate">
-                        <Calendar size={12} />
+                        <Calendar size={12}>
                         {formatDate(reservation.reservation_date)}
                       </span>
                       <span className="bo-reservationItemTime" data-slot="fillFromReservationModal-reservationItemTime">
-                        <Clock size={12} />
+                        <Clock size={12}>
                         {formatTime(reservation.reservation_time)}
                       </span>
                       <span className="bo-reservationItemSize" data-slot="fillFromReservationModal-reservationItemSize">
-                        <Users size={12} />
+                        <Users size={12}>
                         {reservation.party_size}
                       </span>
                     </div>

@@ -108,18 +108,18 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
       <div className="bo-modal-content bo-importHistory" onClick={(e) => e.stopPropagation()} data-slot="import-history-modal">
         <div className="bo-modal-header" data-slot="import-history-header">
           <div className="bo-modal-title" data-slot="importHistoryModal-modal-title">
-            <History size={20} />
+            <History size={20}>
             <span data-slot="importHistoryModal-nes">Historial de importaciones</span>
           </div>
           <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="import-history-close-btn">
-            <X size={18} />
+            <X size={18}>
           </button>
         </div>
 
         <div className="bo-modal-body" data-slot="import-history-body">
           {history.length === 0 ? (
             <div className="bo-importHistoryEmpty" data-slot="import-history-empty">
-              <FileText size={48} />
+              <FileText size={48}>
               <p data-slot="importHistoryModal-ias">No hay importaciones previas</p>
               <span data-slot="importHistoryModal-qui">El historial de importaciones aparecera aqui</span>
             </div>
@@ -129,7 +129,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
                 <div key={entry.id} className="bo-importHistoryItem" data-slot="import-history-item">
                   <div className="bo-importHistoryItemHeader" data-slot="import-history-item-header">
                     <div className="bo-importHistoryItemFile" data-slot="importHistoryModal-importHistoryItemFile">
-                      <FileText size={16} />
+                      <FileText size={16}>
                       <span className="bo-importHistoryItemFilename" data-slot="importHistoryModal-importHistoryItemFilename">{entry.filename}</span>
                     </div>
                     <div className={`bo-importHistoryItemStatus ${entry.status}`} data-slot="importHistoryModal-div">
@@ -140,7 +140,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
 
                   <div className="bo-importHistoryItemMeta" data-slot="import-history-item-meta">
                     <span className="bo-importHistoryItemDate" data-slot="importHistoryModal-importHistoryItemDate">
-                      <Clock size={12} />
+                      <Clock size={12}>
                       {formatDate(entry.created_at)}
                     </span>
                     <span className="bo-importHistoryItemStats" data-slot="importHistoryModal-importHistoryItemStats">
@@ -184,7 +184,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
         {history.length > 0 && (
           <div className="bo-modal-footer" data-slot="import-history-footer">
             <button className="bo-btn bo-btn--ghost" onClick={clearHistory} data-testid="import-history-clear-btn">
-              <Trash2 size={16} />
+              <Trash2 size={16}>
               Limpiar historial
             </button>
           </div>

@@ -42,7 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         roleImportance={session.user.roleImportance}
       />
       <main className={`bo-main${isReservasTables ? " bo-main--immersive" : ""}`} data-ui="app-main">
-        {isReservasTables ? null : <Topbar title={title} />}
+        {isReservasTables ? null : <Topbar title={title}>}
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

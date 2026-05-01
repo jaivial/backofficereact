@@ -58,7 +58,7 @@ export const FoodTypePanelGrid = React.memo(function FoodTypePanelGrid({
               data-ui="food-hub-card"
             >
               <div className="bo-menuTypePanelIcon" aria-hidden="true" data-ui="panel-grid-icon">
-                <Icon size={28} />
+                <Icon size={28}>
               </div>
               <div className="bo-menuTypePanelLabel" id={labelId} data-role="panel-grid-label">
                 {panel.label}

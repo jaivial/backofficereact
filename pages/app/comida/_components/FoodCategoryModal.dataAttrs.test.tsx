@@ -6,7 +6,7 @@ import { expectAllElementsHaveDataAttr } from "../../../../lib/test/assertDataAt
 describe("FoodCategoryModal data-* attributes", () => {
   it("all rendered HTML elements have a semantic data-* attribute when open", () => {
     const { container } = render(
-      <FoodCategoryModal open={true} onClose={vi.fn()} onCreate={vi.fn()} />,
+      <FoodCategoryModal open={true} onClose={vi.fn()} onCreate={vi.fn()}>,
     );
     const portal = container.querySelector("[data-role='dialog']") || container;
     expectAllElementsHaveDataAttr(portal as HTMLElement);

@@ -271,7 +271,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
         {sent ? (
           <div className="bo-sendEmailSuccess" data-slot="send-email-success">
             <div className="bo-sendEmailSuccessIcon" data-slot="send-email-success-icon">
-              <CheckCircle size={48} />
+              <CheckCircle size={48}>
             </div>
             <h3 data-slot="send-email-success-title">{successTitle}</h3>
             <p data-slot="send-email-success-description">La factura ha sido enviada correctamente a:</p>
@@ -288,7 +288,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 disabled={!invoice.customer_email}
                 data-testid="send-email-method-email"
               >
-                <Mail size={16} />
+                <Mail size={16}>
                 <span data-slot="sendEmailModal-ail">Email</span>
               </button>
               <button
@@ -298,7 +298,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 disabled={!invoice.customer_phone}
                 data-testid="send-email-method-whatsapp"
               >
-                <MessageCircle size={16} />
+                <MessageCircle size={16}>
                 <span data-slot="sendEmailModal-app">WhatsApp</span>
               </button>
             </div>
@@ -306,24 +306,24 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
             {/* Invoice summary */}
             <div className="bo-sendEmailSummary" data-slot="send-email-invoice-summary">
               <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-customer">
-                <User size={16} />
+                <User size={16}>
                 <span data-slot="send-email-customer-name">
                   {invoice.customer_name} {invoice.customer_surname}
                 </span>
               </div>
               {notificationMethod === "email" ? (
                 <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-email">
-                  <Mail size={16} />
+                  <Mail size={16}>
                   <span data-slot="send-email-customer-email">{invoice.customer_email || "Sin email"}</span>
                 </div>
               ) : (
                 <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-phone">
-                  <Phone size={16} />
+                  <Phone size={16}>
                   <span data-slot="send-email-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
                 </div>
               )}
               <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-invoice">
-                <FileText size={16} />
+                <FileText size={16}>
                 <span data-slot="send-email-invoice-detail">
                   Factura {invoice.invoice_number || `#${invoice.id}`} - {formatPrice(invoice.total || invoice.amount)}
                 </span>
@@ -333,7 +333,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
             {/* Resend warning */}
             {isResend && (
               <div className="bo-sendEmailWarning" data-slot="send-email-resend-warning">
-                <AlertCircle size={16} />
+                <AlertCircle size={16}>
                 <span data-slot="send-email-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo email.</span>
               </div>
             )}
@@ -399,7 +399,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                     disabled={sending || !whatsappUrl}
                     data-testid="send-email-open-whatsapp"
                   >
-                    <MessageCircle size={16} />
+                    <MessageCircle size={16}>
                     Abrir WhatsApp
                   </button>
                   <button
@@ -416,7 +416,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                       </>
                     ) : (
                       <>
-                        <Send size={16} />
+                        <Send size={16}>
                         {isResend ? "Reenviar WhatsApp" : "Enviar WhatsApp"}
                       </>
                     )}
@@ -437,7 +437,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                     </>
                   ) : (
                     <>
-                      <Send size={16} />
+                      <Send size={16}>
                       {isResend ? "Reenviar email" : "Enviar email"}
                     </>
                   )}

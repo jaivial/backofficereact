@@ -1,0 +1,11 @@
+echo ""
+echo "🔍 Running JSX data-* attribute validation..."
+node scripts/check-jsx-data-attr.js pages ui components
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Pre-commit check failed: Invalid JSX data-* attributes found"
+  echo ""
+  exit 1
+fi
+echo "✅ JSX validation passed"
+echo ""

@@ -15,15 +15,15 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
       </div>
       <div className="bo-publicPageDetailGrid" data-slot="bookingDetails-publicPageDetailGrid">
         <div className="bo-publicPageDetailItem" data-slot="bookingDetails-publicPageDetailItem">
-          <Calendar size={16} />
+          <Calendar size={16}>
           <div data-slot="bookingDetails-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Fecha</span><span className="bo-publicPageDetailValue">{booking.reservationDate}</span></div>
         </div>
         <div className="bo-publicPageDetailItem" data-slot="bookingDetails-publicPageDetailItem">
-          <Clock size={16} />
+          <Clock size={16}>
           <div data-slot="bookingDetails-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Hora</span><span className="bo-publicPageDetailValue">{booking.reservationTime}</span></div>
         </div>
         <div className="bo-publicPageDetailItem" data-slot="bookingDetails-publicPageDetailItem">
-          <Users size={16} />
+          <Users size={16}>
           <div data-slot="bookingDetails-publicPageDetailLabel"><span className="bo-publicPageDetailLabel">Personas</span><span className="bo-publicPageDetailValue">{booking.partySize}</span></div>
         </div>
       </div>

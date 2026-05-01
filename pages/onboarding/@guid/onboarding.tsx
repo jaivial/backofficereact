@@ -177,7 +177,7 @@ export default function Page() {
                         <AvatarFallback className="bo-memberAvatarFallback">{initials(firstName, lastName)}</AvatarFallback>
                       </Avatar>
                       <span className="bo-memberCreateAvatarHint" aria-hidden="true" data-slot="onboarding-memberCreateAvatarHint">
-                        <Upload size={16} />
+                        <Upload size={16}>
                       </span>
                     </ImageDropInput>
                   </div>
@@ -283,7 +283,7 @@ export default function Page() {
                   data-testid="onboarding-done-step"
                 >
                   <div className="bo-onboardingDoneIcon" aria-hidden="true" data-slot="onboarding-onboardingDoneIcon">
-                    <CheckCircle2 size={34} />
+                    <CheckCircle2 size={34}>
                   </div>
                   <div className="bo-title" data-testid="onboarding-done-title">¡Todo listo!</div>
                   <div className="bo-authSub" data-testid="onboarding-done-subtitle">Tu cuenta está preparada. Ya puedes acceder al login.</div>
@@ -297,7 +297,7 @@ export default function Page() {
                     transition={reduceMotion ? { duration: 0 } : { delay: 0.15, duration: 0.35, ease: "easeOut" }}
                     data-testid="onboarding-start-button"
                   >
-                    Empezar <ArrowRight size={16} />
+                    Empezar <ArrowRight size={16}>
                   </motion.button>
                 </motion.div>
               ) : null}
