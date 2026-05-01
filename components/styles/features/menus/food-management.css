@@ -243,6 +243,44 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--bo-radius-sm);
+  transition: background 0.15s ease;
+}
+
+.bo-foodFiltersHead:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bo-foodFiltersHead:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.bo-foodFiltersHead:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+:root[data-theme="light"] .bo-foodFiltersHead:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+:root[data-theme="light"] .bo-foodFiltersHead:active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.bo-foodFiltersChevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  color: var(--bo-muted);
 }
 
 .bo-foodFiltersTitle {
@@ -259,16 +297,20 @@
   font-weight: 400;
 }
 
-.bo-foodFiltersToggle {
-  padding: 6px;
-}
+/* Removed: toggle is now the whole header button */
 
 .bo-foodFiltersGrid {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr;
   gap: 12px;
   margin-top: 12px;
   align-items: end;
+}
+
+@media (min-width: 640px) {
+  .bo-foodFiltersGrid {
+    grid-template-columns: 1fr auto auto auto;
+  }
 }
 
 .bo-foodFilter--search .bo-input-wrapper {
@@ -334,7 +376,13 @@
 }
 
 .bo-foodFiltersGrid--extended {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .bo-foodFiltersGrid--extended {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
 }
 
 .bo-foodPagerExtras {
@@ -963,6 +1011,56 @@
   color: var(--bo-faint);
 }
 
+/* Hover overlay on food detail media — appears on image hover */
+.bo-foodDetailMedia--editable {
+  position: relative;
+  cursor: pointer;
+  border-radius: var(--bo-radius-lg);
+  overflow: hidden;
+}
+
+.bo-foodDetailMediaOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.52);
+  opacity: 0;
+  transition: opacity 180ms ease;
+  border-radius: inherit;
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.bo-foodDetailMedia--editable:hover .bo-foodDetailMediaOverlay,
+.bo-foodDetailMedia--editable:focus-within .bo-foodDetailMediaOverlay,
+.bo-foodDetailMedia--editable:focus-visible .bo-foodDetailMediaOverlay {
+  opacity: 1;
+}
+
+.bo-foodDetailOverlayLabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* Loading overlay on media */
+.bo-foodDetailMediaLoadingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.42);
+  color: white;
+  border-radius: inherit;
+}
+
 .bo-foodDetailHeroBody {
   display: grid;
   grid-template-rows: auto 1fr;
@@ -1270,6 +1368,10 @@
     grid-template-columns: 1fr;
   }
 
+  .bo-foodFilterActions {
+    width: 100%;
+  }
+
   .bo-foodModal-grid {
     grid-template-columns: 1fr;
   }
@@ -1342,6 +1444,10 @@
 
   .bo-foodDetailPrice {
     font-size: clamp(20px, 8vw, 28px);
+  }
+
+  .bo-foodDetailOverlayLabel {
+    font-size: 11px;
   }
 }
 

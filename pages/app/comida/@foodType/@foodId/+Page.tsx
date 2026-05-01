@@ -61,6 +61,7 @@ function FoodDetailPage() {
     handleBebidaCatAdd,
     handleBebidaCatOptimistic,
     handleImageSelect,
+    handleImageUpdate,
     handleAIAdvisorClose,
     handleAIContinueWithout,
     handleAIEnhance,
@@ -159,6 +160,7 @@ function FoodDetailPage() {
             heroBadges={isNew ? [] : heroBadges}
             fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>}
             onImageSelect={handleImageSelect}
+            onImageUpdate={handleImageUpdate}
           />
 
           {supportsQuickEditor && (currentFoodItem || isNew) ? (
