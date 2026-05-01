@@ -161,7 +161,7 @@ export function BlockEditor({
 
     return (
       <div className="bo-nodePreviewGeneric" data-ui="node-preview-generic">
-        <Square size={20}>
+        <Square size={20} />
         <span data-ui="node-preview-generic-label">{node.type}</span>
       </div>
     );
@@ -209,7 +209,7 @@ export function BlockEditor({
                 data-ui="canvas-node-drag-handle"
                 onPointerDown={(event) => { event.stopPropagation(); }}
               >
-                <GripVertical size={14}>
+                <GripVertical size={14} />
               </button>
               <span className="bo-siteBuilderNodeType" data-ui="canvas-node-type">{node.type}</span>
               <span className="bo-siteBuilderNodeId" data-ui="canvas-node-id">#{node.id.slice(-5)}</span>
@@ -227,7 +227,7 @@ export function BlockEditor({
                   aria-label={`Eliminar ${node.type}`}
                   data-ui="canvas-node-delete"
                 >
-                  <Trash2 size={13}>
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>
@@ -333,7 +333,7 @@ export function BlockEditor({
               )
             ) : (
               <div className="bo-siteBuilderCanvasEmpty" data-ui="canvas-empty-no-page">
-                <LayoutGrid size={48}>
+                <LayoutGrid size={48} />
                 <h3 data-ui="canvas-empty-no-page-title">Sin pagina activa</h3>
                 <p data-ui="canvas-empty-no-page-description">Selecciona una pagina para editar su estructura</p>
               </div>
@@ -341,7 +341,7 @@ export function BlockEditor({
 
             {currentPage && currentPage.tree.children.length === 0 ? (
               <div className="bo-siteBuilderCanvasEmpty" data-ui="canvas-empty">
-                <LayoutGrid size={48}>
+                <LayoutGrid size={48} />
                 <h3 data-ui="canvas-empty-title">Canvas vacio</h3>
                 <p data-ui="canvas-empty-description">Arrastra componentes desde la izquierda para construir la pagina</p>
               </div>
@@ -366,7 +366,7 @@ export function BlockEditor({
             onClick={() => onDuplicateNode(contextMenu.nodeId)}
             data-testid="block-editor-context-menu-duplicate"
           >
-            <Square size={14}>
+            <Square size={14} />
             <span data-slot="blockEditor-car">Duplicar</span>
             <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">D</span>
           </button>
@@ -377,7 +377,7 @@ export function BlockEditor({
             onClick={() => onCopyNode(contextMenu.nodeId)}
             data-testid="block-editor-context-menu-copy"
           >
-            <Square size={14}>
+            <Square size={14} />
             <span data-slot="blockEditor-iar">Copiar</span>
             <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">C</span>
           </button>
@@ -389,7 +389,7 @@ export function BlockEditor({
               onClick={() => onPasteNode(contextMenu.nodeId)}
               data-testid="block-editor-context-menu-paste"
             >
-              <Square size={14}>
+              <Square size={14} />
               <span data-slot="blockEditor-ues">Pegar despues</span>
               <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">V</span>
             </button>
@@ -402,7 +402,7 @@ export function BlockEditor({
             onClick={() => onDeleteNode(contextMenu.nodeId)}
             data-testid="block-editor-context-menu-delete"
           >
-            <Trash2 size={14}>
+            <Trash2 size={14} />
             <span data-slot="blockEditor-nar">Eliminar</span>
             <span className="bo-siteBuilderContextMenuShortcut" data-slot="blockEditor-siteBuilderContextMenuShortcut">Del</span>
           </button>

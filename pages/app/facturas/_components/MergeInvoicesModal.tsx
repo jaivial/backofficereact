@@ -73,7 +73,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
       <div className="bo-modal-content bo-mergeModal" onClick={(e) => e.stopPropagation()} data-slot="merge-invoice-modal">
         <div className="bo-modal-header" data-slot="merge-invoice-header">
           <div className="bo-modal-title" data-slot="mergeInvoicesModal-modal-title">
-            <AlertTriangle size={20}>
+            <AlertTriangle size={20} />
             <span data-slot="mergeInvoicesModal-ras">Fusionar facturas</span>
           </div>
           <button
@@ -83,14 +83,14 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
             disabled={isSubmitting}
             data-testid="merge-invoices-close-btn"
           >
-            <X size={18}>
+            <X size={18} />
           </button>
         </div>
 
         <div className="bo-modal-body" data-slot="merge-invoice-body">
           {/* Warning */}
           <div className="bo-mergeWarning" data-slot="merge-invoice-warning">
-            <AlertTriangle size={16}>
+            <AlertTriangle size={16} />
             <span data-slot="mergeInvoicesModal-span">
               Se fusionaran {invoices.length} facturas en una sola factura
             </span>
@@ -121,7 +121,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           {/* Different customers warning */}
           {totals.customerCount > 1 && (
             <div className="bo-mergeCustomersWarning" data-slot="merge-invoice-customers-warning">
-              <User size={16}>
+              <User size={16} />
               <span data-slot="mergeInvoicesModal-span">
                 <strong>Atencion:</strong> Las facturas son de {totals.customerCount} clientes diferentes.
                 La factura fusionada usara los datos del primer cliente.
@@ -190,7 +190,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
               </>
             ) : (
               <>
-                <Check size={16}>
+                <Check size={16} />
                 Fusionar facturas
               </>
             )}

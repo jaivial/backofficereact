@@ -20,14 +20,14 @@ function formatDateShort(dateStr: string): string {
 
 function getStatusBadge(status: string) {
   const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-    borrador: { label: "Borrador", className: "bo-badge--gray", icon: <FileText size={14}> },
-    solicitada: { label: "Solicitada", className: "bo-badge--blue", icon: <Clock size={14}> },
-    pendiente: { label: "Pendiente", className: "bo-badge--yellow", icon: <Clock size={14}> },
-    enviada: { label: "Enviada", className: "bo-badge--orange", icon: <Mail size={14}> },
-    pagada: { label: "Pagada", className: "bo-badge--green", icon: <CheckCircle size={14}> },
+    borrador: { label: "Borrador", className: "bo-badge--gray", icon: <FileText size={14} /> },
+    solicitada: { label: "Solicitada", className: "bo-badge--blue", icon: <Clock size={14} /> },
+    pendiente: { label: "Pendiente", className: "bo-badge--yellow", icon: <Clock size={14} /> },
+    enviada: { label: "Enviada", className: "bo-badge--orange", icon: <Mail size={14} /> },
+    pagada: { label: "Pagada", className: "bo-badge--green", icon: <CheckCircle size={14} /> },
   };
 
-  const config = statusConfig[status] || { label: status, className: "bo-badge--gray", icon: <FileText size={14}> };
+  const config = statusConfig[status] || { label: status, className: "bo-badge--gray", icon: <FileText size={14} /> };
 
   return (
     <span className={`bo-badge ${config.className}`} data-slot="@invoiceId-span">
@@ -79,7 +79,7 @@ export default function Page() {
       <div className="bo-publicInvoice" data-slot="@invoiceId-publicInvoice">
         <div className="bo-publicInvoiceError" data-slot="@invoiceId-publicInvoiceError">
           <div className="bo-publicInvoiceErrorIcon" data-slot="@invoiceId-publicInvoiceErrorIcon">
-            <AlertCircle size={48}>
+            <AlertCircle size={48} />
           </div>
           <h1 data-slot="@invoiceId-ror">Error</h1>
           <p data-slot="@invoiceId-ror">{error}</p>
@@ -128,7 +128,7 @@ export default function Page() {
           </div>
           {pdfUrl && (
             <a href={pdfUrl} className="bo-btn bo-btn--primary" target="_blank" rel="noopener noreferrer" data-testid="factura-page-download-pdf-link">
-              <Download size={16}>
+              <Download size={16} />
               Descargar PDF
             </a>
           )}
@@ -147,7 +147,7 @@ export default function Page() {
           <h3 data-slot="@invoiceId-nte">Cliente</h3>
           <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2" data-slot="@invoiceId-publicInvoiceGrid--2">
             <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-              <User size={16}>
+              <User size={16} />
               <div data-slot="@invoiceId-div">
                 <label data-slot="@invoiceId-bre">Nombre</label>
                 <p data-slot="@invoiceId-p">
@@ -158,7 +158,7 @@ export default function Page() {
             </div>
             {invoice.customer_dni_cif && (
               <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-                <FileText size={16}>
+                <FileText size={16} />
                 <div data-slot="@invoiceId-div">
                   <label data-slot="@invoiceId-cif">DNI/CIF</label>
                   <p data-slot="@invoiceId-cif">{invoice.customer_dni_cif}</p>
@@ -167,7 +167,7 @@ export default function Page() {
             )}
             {invoice.customer_email && (
               <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-                <Mail size={16}>
+                <Mail size={16} />
                 <div data-slot="@invoiceId-div">
                   <label data-slot="@invoiceId-ail">Email</label>
                   <p data-slot="@invoiceId-ail">{invoice.customer_email}</p>
@@ -176,7 +176,7 @@ export default function Page() {
             )}
             {invoice.customer_phone && (
               <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-                <Phone size={16}>
+                <Phone size={16} />
                 <div data-slot="@invoiceId-div">
                   <label data-slot="@invoiceId-ono">Teléfono</label>
                   <p data-slot="@invoiceId-one">{invoice.customer_phone}</p>
@@ -186,7 +186,7 @@ export default function Page() {
           </div>
           {(invoice.customer_address_street || invoice.customer_address_city) && (
             <div className="bo-publicInvoiceField bo-publicInvoiceField--full" data-slot="@invoiceId-publicInvoiceField--full">
-              <MapPin size={16}>
+              <MapPin size={16} />
               <div data-slot="@invoiceId-div">
                 <label data-slot="@invoiceId-cci">Dirección</label>
                 <p data-slot="@invoiceId-p">
@@ -207,7 +207,7 @@ export default function Page() {
           <h3 data-slot="@invoiceId-ura">Detalles de la Factura</h3>
           <div className="bo-publicInvoiceGrid bo-publicInvoiceGrid--2" data-slot="@invoiceId-publicInvoiceGrid--2">
             <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-              <Calendar size={16}>
+              <Calendar size={16} />
               <div data-slot="@invoiceId-div">
                 <label data-slot="@invoiceId-ura">Fecha de Factura</label>
                 <p data-slot="@invoiceId-ate">{formatDate(invoice.invoice_date)}</p>
@@ -215,7 +215,7 @@ export default function Page() {
             </div>
             {invoice.payment_date && (
               <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-                <Calendar size={16}>
+                <Calendar size={16} />
                 <div data-slot="@invoiceId-div">
                   <label data-slot="@invoiceId-ago">Fecha de Pago</label>
                   <p data-slot="@invoiceId-ate">{formatDate(invoice.payment_date)}</p>
@@ -224,7 +224,7 @@ export default function Page() {
             )}
             {invoice.payment_method && (
               <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-                <CreditCard size={16}>
+                <CreditCard size={16} />
                 <div data-slot="@invoiceId-div">
                   <label data-slot="@invoiceId-ago">Método de Pago</label>
                   <p style={{ textTransform: "capitalize" }} data-slot="@invoiceId-hod">{invoice.payment_method}</p>
@@ -233,7 +233,7 @@ export default function Page() {
             )}
             {invoice.reservation_date && (
               <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
-                <Calendar size={16}>
+                <Calendar size={16} />
                 <div data-slot="@invoiceId-div">
                   <label data-slot="@invoiceId-rva">Fecha de Reserva</label>
                   <p data-slot="@invoiceId-p">
@@ -295,7 +295,7 @@ export default function Page() {
             Si tiene alguna pregunta sobre esta factura, por favor contacte con nosotros.
           </p>
           <p className="bo-publicInvoiceFooterContact" data-slot="@invoiceId-publicInvoiceFooterContact">
-            <Mail size={14}> villacarmen@example.com | <Phone size={14}> +34 900 000 000
+            <Mail size={14} /> villacarmen@example.com | <Phone size={14} /> +34 900 000 000
           </p>
         </div>
       </div>

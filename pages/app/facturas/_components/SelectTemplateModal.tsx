@@ -117,7 +117,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 />
               </div>
               <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew} data-testid="select-template-create-btn">
-                <Plus size={16}>
+                <Plus size={16} />
                 Nueva plantilla
               </button>
             </div>
@@ -131,10 +131,10 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 </div>
               ) : filteredTemplates.length === 0 ? (
                 <div className="bo-templateEmpty" data-slot="select-template-empty">
-                  <FileText size={48} strokeWidth={1}>
+                  <FileText size={48} strokeWidth={1} />
                   <p data-slot="select-template-empty-text">{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
                   <button className="bo-btn bo-btn--secondary" onClick={handleCreateNew} data-testid="select-template-create-first-btn">
-                    <Plus size={16}>
+                    <Plus size={16} />
                     Crear primera plantilla
                   </button>
                 </div>
@@ -150,7 +150,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                     data-slot="select-template-item"
                   >
                     <div className="bo-templateItemIcon" data-slot="select-template-item-icon">
-                      <FileText size={20}>
+                      <FileText size={20} />
                     </div>
                     <div className="bo-templateItemContent" data-slot="select-template-item-content">
                       <div className="bo-templateItemName" data-slot="select-template-item-name">{template.name}</div>
@@ -174,7 +174,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                         title="Editar"
                         data-testid="select-template-edit-btn"
                       >
-                        <Edit size={16}>
+                        <Edit size={16} />
                       </button>
                       <button
                         className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
@@ -182,7 +182,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                         title="Eliminar"
                         data-testid="select-template-delete-btn"
                       >
-                        <Trash2 size={16}>
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -327,7 +327,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
       <div className="bo-templateFormHeader" data-slot="select-template-form-header">
         <h3 data-slot="select-template-form-title">{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
         <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onCancel} data-testid="select-template-close-btn">
-          <X size={18}>
+          <X size={18} />
         </button>
       </div>
 
@@ -474,7 +474,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
             </>
           ) : (
             <>
-              <Copy size={16}>
+              <Copy size={16} />
               {template ? "Actualizar" : "Crear"} plantilla
             </>
           )}

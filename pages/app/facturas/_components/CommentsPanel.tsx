@@ -211,7 +211,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
     <div className="bo-commentsPanel" data-slot="comments-panel">
       <div className="bo-commentsPanelHeader" data-slot="comments-panel-header">
         <h3 className="bo-commentsPanelTitle" data-slot="comments-panel-title">
-          <MessageSquare size={18}>
+          <MessageSquare size={18} />
           Comentarios
           {comments.length > 0 && (
             <span className="bo-commentsPanelCount" data-slot="commentsPanel-commentsPanelCount">({comments.length})</span>
@@ -245,7 +245,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
             disabled={!newComment.trim() || submitting}
             data-testid="comments-submit"
           >
-            <Send size={14}>
+            <Send size={14} />
             Comentar
           </button>
         </div>
@@ -285,7 +285,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                         disabled={submitting}
                         data-testid={`comments-edit-cancel-${comment.id}`}
                       >
-                        <X size={14}>
+                        <X size={14} />
                         Cancelar
                       </button>
                       <button
@@ -304,11 +304,11 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                   <>
                     <div className="bo-commentHeader" data-slot="comments-panel-item-header">
                       <div className="bo-commentAuthor" data-slot="comments-panel-item-author">
-                        <User size={14}>
+                        <User size={14} />
                         <span className="bo-commentAuthorName" data-slot="comments-panel-author-name">{comment.user_name}</span>
                       </div>
                       <div className="bo-commentDate" data-slot="comments-panel-item-date">
-                        <Clock size={12}>
+                        <Clock size={12} />
                         <span data-slot="comments-panel-date-text">{formatDate(comment.created_at)}</span>
                         {comment.updated_at && (
                           <span className="bo-commentEdited" data-slot="comments-panel-edited-badge">(editado)</span>
@@ -325,7 +325,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                           title="Editar comentario"
                           data-testid={`comments-edit-${comment.id}`}
                         >
-                          <Edit2 size={14}>
+                          <Edit2 size={14} />
                           Editar
                         </button>
                         <button
@@ -335,7 +335,7 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
                           title="Eliminar comentario"
                           data-testid={`comments-delete-${comment.id}`}
                         >
-                          <Trash2 size={14}>
+                          <Trash2 size={14} />
                           Eliminar
                         </button>
                       </div>

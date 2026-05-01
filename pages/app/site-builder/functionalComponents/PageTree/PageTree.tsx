@@ -48,7 +48,7 @@ export function PageTree({
           onClick={() => onSetActiveLeftTab("components")}
           data-ui="left-tab-components"
         >
-          <Blocks size={16}>
+          <Blocks size={16} />
           <span data-ui="left-tab-components-label">Componentes</span>
         </button>
         <button
@@ -57,7 +57,7 @@ export function PageTree({
           onClick={() => onSetActiveLeftTab("pages")}
           data-ui="left-tab-pages"
         >
-          <FileText size={16}>
+          <FileText size={16} />
           <span data-ui="left-tab-pages-label">Paginas</span>
         </button>
         <button
@@ -66,7 +66,7 @@ export function PageTree({
           onClick={() => onSetActiveLeftTab("layers")}
           data-ui="left-tab-layers"
         >
-          <Layers size={16}>
+          <Layers size={16} />
           <span data-ui="left-tab-layers-label">Capas</span>
         </button>
       </div>
@@ -88,7 +88,7 @@ export function PageTree({
                 data-component-type={component.type}
               >
                 <span className="bo-siteBuilderComponentIcon" data-ui="component-item-icon">
-                  <Square size={16}>
+                  <Square size={16} />
                 </span>
                 <span className="bo-siteBuilderComponentLabel" data-ui="component-item-label">
                   {component.label}
@@ -97,7 +97,7 @@ export function PageTree({
             ))}
             {components.length === 0 ? (
               <div className="bo-emptyState" data-ui="components-empty-state">
-                <Blocks size={32}>
+                <Blocks size={32} />
                 <p data-ui="components-empty-text">No hay componentes disponibles</p>
               </div>
             ) : null}
@@ -115,7 +115,7 @@ export function PageTree({
                 data-ui="page-item"
                 data-page-id={page.id}
               >
-                <FileText size={16}>
+                <FileText size={16} />
                 <span data-ui="page-item-name">{page.name}</span>
                 {page.is_home ? (
                   <span className="bo-siteBuilderPageBadge" data-ui="page-item-badge">Home</span>
@@ -149,7 +149,7 @@ export function PageTree({
                 data-layer-depth={layer.depth}
               >
                 <span className="bo-siteBuilderLayerIcon" data-ui="layer-item-icon">
-                  <Square size={12}>
+                  <Square size={12} />
                 </span>
                 <span className="bo-siteBuilderLayerItemContent" style={{ paddingLeft: `${layer.depth * 14}px` }} data-ui="layer-item-content">
                   <span className="bo-siteBuilderLayerName" data-ui="layer-item-name">
@@ -170,13 +170,13 @@ export function PageTree({
                   aria-label={`Eliminar ${layer.node.type}`}
                   data-ui="layer-item-delete"
                 >
-                  <Trash2 size={14}>
+                  <Trash2 size={14} />
                 </button>
               </div>
             ))}
             {layerItems.length === 0 ? (
               <div className="bo-emptyState" data-ui="layers-empty-state">
-                <Layers size={32}>
+                <Layers size={32} />
                 <p data-ui="layers-empty-text">Arrastra componentes al canvas para empezar</p>
               </div>
             ) : null}

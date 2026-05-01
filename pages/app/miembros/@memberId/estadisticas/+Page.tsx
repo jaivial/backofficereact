@@ -177,9 +177,8 @@ export default function Page() {
               <div className="bo-memberBarsScroll" data-slot="estadisticas-memberBarsScroll">
                 <div
                   className="bo-memberBarsGrid"
-                  style={
-                  data-slot="estadisticas-memberBarsGrid",
-                  {
+                  data-slot="estadisticas-memberBarsGrid"
+                  style={{
                     gridTemplateColumns: `repeat(${Math.max(points.length, 1)}, minmax(42px, 1fr))`,
                   }}
                 >

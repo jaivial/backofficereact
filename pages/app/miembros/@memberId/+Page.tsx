@@ -202,7 +202,7 @@ export default function Page() {
                   onSelectFile={onAvatarSelect}
                 >
                   <Avatar className="bo-memberHeroAvatar">
-                    {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={memberName || `Miembro #${member.id}`}> : null}
+                    {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={memberName || `Miembro #${member.id}`} /> : null}
                     <AvatarFallback className="bo-memberAvatarFallback">{initials(member)}</AvatarFallback>
                   </Avatar>
                   <span className="bo-memberAvatarUploadOverlay" aria-hidden="true" data-slot="@memberId-memberAvatarUploadOverlay">
@@ -225,7 +225,7 @@ export default function Page() {
                   onClick={() => setConfirmResendOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
                 >
-                  <RefreshCcw size={14} strokeWidth={1.8}>
+                  <RefreshCcw size={14} strokeWidth={1.8} />
                   Reenviar invitación
                 </button>
                 <button
@@ -235,16 +235,16 @@ export default function Page() {
                   onClick={() => setConfirmResetOpen(true)}
                   disabled={saving || avatarBusy || resendBusy || resetBusy}
                 >
-                  <Mail size={14} strokeWidth={1.8}>
+                  <Mail size={14} strokeWidth={1.8} />
                   Recuperar contraseña
                 </button>
                 <button className="bo-btn bo-btn--ghost" type="button" data-testid="miembro-detail-edit-button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
-                  <Pencil size={14} strokeWidth={1.8}>
+                  <Pencil size={14} strokeWidth={1.8} />
                   {editing ? "Cancelar" : "Editar"}
                 </button>
                 {editing ? (
                   <button className="bo-btn bo-btn--primary flex-wrap !text-wrap !h-fit !py-4" type="button" data-testid="miembro-detail-save-button" onClick={onSave} disabled={saving || avatarBusy}>
-                    <Check size={14} strokeWidth={1.8}>
+                    <Check size={14} strokeWidth={1.8} />
                     {saving ? "Guardando..." : "Guardar cambios"}
                   </button>
                 ) : null}
@@ -278,23 +278,23 @@ export default function Page() {
             <div className="bo-memberFormGrid" data-slot="@memberId-memberFormGrid">
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Nombre</span>
-                  <input id="firstName" className="bo-input" data-testid="miembro-detail-firstname-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)}>
+                  <input id="firstName" className="bo-input" data-testid="miembro-detail-firstname-input" value={firstName} disabled={!editing || saving || avatarBusy} onChange={(e) => setFirstName(e.target.value)} />
                 </label>
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Apellidos</span>
-                  <input id="lastName" className="bo-input" data-testid="miembro-detail-lastname-input" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)}>
+                  <input id="lastName" className="bo-input" data-testid="miembro-detail-lastname-input" value={lastName} disabled={!editing || saving || avatarBusy} onChange={(e) => setLastName(e.target.value)} />
                 </label>
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Email</span>
-                  <input id="email" className="bo-input" data-testid="miembro-detail-email-input" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)}>
+                  <input id="email" className="bo-input" data-testid="miembro-detail-email-input" value={email} disabled={!editing || saving || avatarBusy} onChange={(e) => setEmail(e.target.value)} />
                 </label>
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">DNI (opcional)</span>
-                  <input id="dni" className="bo-input" data-testid="miembro-detail-dni-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)}>
+                  <input id="dni" className="bo-input" data-testid="miembro-detail-dni-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
                 </label>
                 <label className="bo-field bo-field--wide" data-slot="@memberId-field--wide">
                   <span className="bo-label" data-slot="@memberId-label">Numero de cuenta (opcional)</span>
-                  <input id="bankAccount" className="bo-input" data-testid="miembro-detail-bankaccount-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)}>
+                  <input id="bankAccount" className="bo-input" data-testid="miembro-detail-bankaccount-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
                 </label>
                 <label className="bo-field bo-field--wide" data-slot="@memberId-field--wide">
                   <span className="bo-label" data-slot="@memberId-label">Telefono (opcional)</span>

@@ -163,9 +163,9 @@ export default function WebsiteBuilderPage() {
 
   const tabs = useMemo<{ key: TabKey; label: string; icon: React.ReactNode }[]>(
     () => [
-      { key: "templates", label: "Plantillas", icon: <Palette size={16}> },
-      { key: "ai", label: "Constructor IA", icon: <Sparkles size={16}> },
-      { key: "domain", label: "Dominio", icon: <Globe size={16}> },
+      { key: "templates", label: "Plantillas", icon: <Palette size={16} /> },
+      { key: "ai", label: "Constructor IA", icon: <Sparkles size={16} /> },
+      { key: "domain", label: "Dominio", icon: <Globe size={16} /> },
     ],
     []
   );
@@ -179,10 +179,10 @@ export default function WebsiteBuilderPage() {
     return (
       <div className="bo-websitePage" data-ui="website-loading">
         <Panel data-slot="website-panel">
-            <div className="bo-loadingState" data-slot="website-loadingState">
-              <Loader2 className="bo-spinnerIcon" size={24}>
-              <span className="bo-mutedText" data-slot="website-mutedText">Cargando configuracion...</span>
-            </div>
+          <div className="bo-loadingState" data-slot="website-loadingState">
+            <Loader2 className="bo-spinnerIcon" size={24} />
+            <span className="bo-mutedText" data-slot="website-mutedText">Cargando configuracion...</span>
+          </div>
         </Panel>
       </div>
     );
@@ -193,7 +193,7 @@ export default function WebsiteBuilderPage() {
       <div className="bo-websiteHeader" data-slot="website-websiteHeader">
         <div className="bo-websiteHeaderMain" data-slot="website-websiteHeaderMain">
           <div className="bo-websiteTitle" data-testid="website-page-title">
-            <Globe size={24}>
+            <Globe size={24} />
             <h1 data-slot="website-der">Website Builder</h1>
           </div>
           <p className="bo-websiteSubtitle" data-testid="website-page-subtitle">Crea y publica la web de tu restaurante</p>
@@ -204,7 +204,7 @@ export default function WebsiteBuilderPage() {
           </button>
           {previewUrl && (
             <a className="bo-btn bo-btn--secondary" href={previewUrl} target="_blank" rel="noopener noreferrer" data-testid="website-page-preview-link">
-              <ExternalLink size={16}>
+              <ExternalLink size={16} />
               <span data-slot="website-via">Vista previa</span>
             </a>
           )}
@@ -251,7 +251,7 @@ export default function WebsiteBuilderPage() {
                   </div>
                   {isSelected && (
                     <div className="bo-websiteTemplateBadge" data-slot="website-websiteTemplateBadge">
-                      <Check size={14}>
+                      <Check size={14} />
                     </div>
                   )}
                 </button>
@@ -265,46 +265,46 @@ export default function WebsiteBuilderPage() {
         <section className="bo-websiteSection" aria-label="Constructor con IA" data-testid="website-page-ai-section">
           <div className="bo-websiteAIGrid" data-slot="website-websiteAIGrid">
             <Panel data-slot="website-panel" title="Generar con IA" meta="Describe tu sitio ideal">
-                <div className="bo-stack" data-slot="website-stack">
-                  <p className="bo-mutedText" data-slot="website-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
-                  <label className="bo-field" data-slot="website-field">
-                    <textarea
-                      className="bo-textarea bo-textarea--lg"
-                      placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      rows={6}
-                      data-testid="website-page-ai-prompt-input"
-                    />
-                  </label>
-                  <div className="bo-row bo-row--right" data-slot="website-row--right">
-                    <button className="bo-btn bo-btn--primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating} data-testid="website-page-ai-generate-button">
-                      {generating ? (
-                        <>
-                          <Loader2 size={16} className="bo-spinnerIcon" />
-                          <span data-slot="website-ndo">Generando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={16}>
-                          <span data-slot="website-web">Generar Web</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+              <div className="bo-stack" data-slot="website-stack">
+                <p className="bo-mutedText" data-slot="website-mutedText">Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.</p>
+                <label className="bo-field" data-slot="website-field">
+                  <textarea
+                    className="bo-textarea bo-textarea--lg"
+                    placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    rows={6}
+                    data-testid="website-page-ai-prompt-input"
+                  />
+                </label>
+                <div className="bo-row bo-row--right" data-slot="website-row--right">
+                  <button className="bo-btn bo-btn--primary" type="button" onClick={handleAIGenerate} disabled={!prompt.trim() || generating} data-testid="website-page-ai-generate-button">
+                    {generating ? (
+                      <>
+                        <Loader2 size={16} className="bo-spinnerIcon" />
+                        <span data-slot="website-ndo">Generando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={16} />
+                        <span data-slot="website-web">Generar Web</span>
+                      </>
+                    )}
+                  </button>
                 </div>
+              </div>
             </Panel>
 
             <Panel data-slot="website-panel" title="Vista previa" meta="HTML personalizado">
-                <div className="bo-websitePreviewFrame" data-slot="website-websitePreviewFrame">
-                  {config?.custom_html ? (
-                    <div dangerouslySetInnerHTML={{ __html: config.custom_html }} data-slot="website-div" />
-                  ) : (
-                    <div className="bo-emptyState" data-slot="website-emptyState">
-                      <p className="bo-mutedText" data-slot="website-mutedText">No hay HTML generado aun</p>
-                    </div>
-                  )}
-                </div>
+              <div className="bo-websitePreviewFrame" data-slot="website-websitePreviewFrame">
+                {config?.custom_html ? (
+                  <div dangerouslySetInnerHTML={{ __html: config.custom_html }} data-slot="website-div" />
+                ) : (
+                  <div className="bo-emptyState" data-slot="website-emptyState">
+                    <p className="bo-mutedText" data-slot="website-mutedText">No hay HTML generado aun</p>
+                  </div>
+                )}
+              </div>
             </Panel>
           </div>
         </section>
@@ -313,72 +313,72 @@ export default function WebsiteBuilderPage() {
       {activeTab === "domain" && (
         <section className="bo-websiteSection" aria-label="Dominio personalizado" data-testid="website-page-domain-section">
           <Panel className="bo-panel--lg" data-slot="website-panel--lg" title="Dominio personalizado" meta="Registra un dominio para tu sitio">
-              <div className="bo-stack" data-slot="website-stack">
-                {config?.domain ? (
-                  <div className="bo-websiteDomainActive" data-slot="website-websiteDomainActive">
-                    <p className="bo-websiteDomainLabel" data-slot="website-websiteDomainLabel">Dominio activo</p>
-                    <div className="bo-websiteDomainName" data-slot="website-websiteDomainName">{config.domain}</div>
-                  </div>
-                ) : (
-                  <p className="bo-mutedText" data-slot="website-mutedText">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
-                )}
-
-                <div className="bo-websiteDomainSearch" data-slot="website-websiteDomainSearch">
-                  <input
-                    type="text"
-                    className="bo-input"
-                    placeholder="Ej: mirestaurante.com"
-                    value={domainQuery}
-                    onChange={(e) => setDomainQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearchDomain()}
-                    data-testid="website-page-domain-search-input"
-                  />
-                  <button className="bo-btn bo-btn--primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()} data-testid="website-page-domain-search-button">
-                    {searchingDomain ? (
-                      <>
-                        <Loader2 size={16} className="bo-spinnerIcon" />
-                        <span data-slot="website-ndo">Buscando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Search size={16}>
-                        <span data-slot="website-car">Buscar</span>
-                      </>
-                    )}
-                  </button>
+            <div className="bo-stack" data-slot="website-stack">
+              {config?.domain ? (
+                <div className="bo-websiteDomainActive" data-slot="website-websiteDomainActive">
+                  <p className="bo-websiteDomainLabel" data-slot="website-websiteDomainLabel">Dominio activo</p>
+                  <div className="bo-websiteDomainName" data-slot="website-websiteDomainName">{config.domain}</div>
                 </div>
+              ) : (
+                <p className="bo-mutedText" data-slot="website-mutedText">Busca y registra un dominio para tu sitio web. El pago se añadira a tu facturacion anual.</p>
+              )}
 
-                {domainResult && (
-                  <div className="bo-websiteDomainResult" data-slot="website-websiteDomainResult">
-                    <div className="bo-websiteDomainResultMain" data-slot="website-websiteDomainResultMain">
-                      <div className="bo-websiteDomainResultName" data-slot="website-websiteDomainResultName">{domainResult.domain}</div>
-                      {domainResult.available ? (
-                        <span className="bo-badge bo-badge--success" data-slot="website-badge--success">Disponible</span>
-                      ) : (
-                        <span className="bo-badge bo-badge--danger" data-slot="website-badge--danger">No disponible</span>
-                      )}
-                    </div>
-                    {domainResult.available && (
-                      <div className="bo-websiteDomainResultActions" data-slot="website-websiteDomainResultActions">
-                        <div className="bo-websiteDomainPrice" data-slot="website-websiteDomainPrice">
-                          {domainResult.marked_price.toFixed(2)} {domainResult.currency}
-                          <span className="bo-mutedText" data-slot="website-mutedText"> / ano</span>
-                        </div>
-                        <button className="bo-btn bo-btn--primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain} data-testid="website-page-domain-register-button">
-                          {registeringDomain ? (
-                            <>
-                              <Loader2 size={16} className="bo-spinnerIcon" />
-                              <span data-slot="website-ndo">Registrando...</span>
-                            </>
-                          ) : (
-                            <span data-slot="website-ora">Registrar ahora</span>
-                          )}
-                        </button>
-                      </div>
+              <div className="bo-websiteDomainSearch" data-slot="website-websiteDomainSearch">
+                <input
+                  type="text"
+                  className="bo-input"
+                  placeholder="Ej: mirestaurante.com"
+                  value={domainQuery}
+                  onChange={(e) => setDomainQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchDomain()}
+                  data-testid="website-page-domain-search-input"
+                />
+                <button className="bo-btn bo-btn--primary" type="button" onClick={handleSearchDomain} disabled={searchingDomain || !domainQuery.trim()} data-testid="website-page-domain-search-button">
+                  {searchingDomain ? (
+                    <>
+                      <Loader2 size={16} className="bo-spinnerIcon" />
+                      <span data-slot="website-ndo">Buscando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Search size={16} />
+                      <span data-slot="website-car">Buscar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {domainResult && (
+                <div className="bo-websiteDomainResult" data-slot="website-websiteDomainResult">
+                  <div className="bo-websiteDomainResultMain" data-slot="website-websiteDomainResultMain">
+                    <div className="bo-websiteDomainResultName" data-slot="website-websiteDomainResultName">{domainResult.domain}</div>
+                    {domainResult.available ? (
+                      <span className="bo-badge bo-badge--success" data-slot="website-badge--success">Disponible</span>
+                    ) : (
+                      <span className="bo-badge bo-badge--danger" data-slot="website-badge--danger">No disponible</span>
                     )}
                   </div>
-                )}
-              </div>
+                  {domainResult.available && (
+                    <div className="bo-websiteDomainResultActions" data-slot="website-websiteDomainResultActions">
+                      <div className="bo-websiteDomainPrice" data-slot="website-websiteDomainPrice">
+                        {domainResult.marked_price.toFixed(2)} {domainResult.currency}
+                        <span className="bo-mutedText" data-slot="website-mutedText"> / ano</span>
+                      </div>
+                      <button className="bo-btn bo-btn--primary" type="button" onClick={handleRegisterDomain} disabled={registeringDomain} data-testid="website-page-domain-register-button">
+                        {registeringDomain ? (
+                          <>
+                            <Loader2 size={16} className="bo-spinnerIcon" />
+                            <span data-slot="website-ndo">Registrando...</span>
+                          </>
+                        ) : (
+                          <span data-slot="website-ora">Registrar ahora</span>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </Panel>
         </section>
       )}
