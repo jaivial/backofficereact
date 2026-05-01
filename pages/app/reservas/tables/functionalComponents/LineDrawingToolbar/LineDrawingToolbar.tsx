@@ -37,7 +37,7 @@ export function LineDrawingToolbar({
             type="button"
             onClick={onUndoPoint}
           >
-            <Undo size={14}>
+            <Undo size={14} />
             Deshacer
           </button>
         )}
@@ -48,7 +48,7 @@ export function LineDrawingToolbar({
             type="button"
             onClick={onCloseArea}
           >
-            <SquareMinus size={14}>
+            <SquareMinus size={14} />
             Cerrar area
           </button>
         )}
