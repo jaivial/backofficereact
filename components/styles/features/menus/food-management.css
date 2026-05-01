@@ -1026,14 +1026,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.52);
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.58);
   opacity: 0;
-  transition: opacity 180ms ease;
+  transition: opacity 200ms ease;
   border-radius: inherit;
-  color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
 }
 
 .bo-foodDetailMedia--editable:hover .bo-foodDetailMediaOverlay,
@@ -1043,10 +1044,10 @@
 }
 
 .bo-foodDetailOverlayLabel {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Loading overlay on media */
@@ -1061,12 +1062,24 @@
   border-radius: inherit;
 }
 
+/* Photo action button */
+.bo-foodDetailPhotoBtn {
+  width: 100%;
+  max-width: 280px;
+  margin-inline: auto;
+  margin-block-start: var(--bo-space-3);
+  justify-content: center;
+}
+
 .bo-foodDetailHeroBody {
   display: grid;
   grid-template-rows: auto 1fr;
   gap: var(--bo-space-4);
   min-width: 0;
   padding-block: 2px;
+  /* Center content on mobile */
+  justify-items: center;
+  text-align: center;
 }
 
 .bo-foodDetailHeroIdentity {
@@ -1315,12 +1328,23 @@
 
 @media (max-width: 1100px) {
   .bo-foodDetailHero {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--bo-space-4);
   }
 
   .bo-foodDetailMedia {
     min-height: 210px;
     max-height: 320px;
+    max-width: 360px;
+    width: 100%;
+  }
+
+  .bo-foodDetailHeroBody {
+    justify-items: center;
+    text-align: center;
+    gap: var(--bo-space-3);
   }
 
   .bo-foodDetailBodyGrid {
@@ -1393,12 +1417,17 @@
   }
 
   .bo-foodDetailMedia {
-    min-height: 190px;
-    max-height: 260px;
+    min-height: 180px;
+    max-height: 240px;
+    max-width: 280px;
   }
 
   .bo-foodDetailTitle {
     font-size: var(--bo-text-lg);
+  }
+
+  .bo-foodDetailHeroBody {
+    gap: var(--bo-space-2);
   }
 
   .bo-foodDetailFactsGrid {
@@ -1430,6 +1459,11 @@
 }
 
 @media (max-width: 520px) {
+  .bo-foodDetailHero {
+    gap: var(--bo-space-2);
+    padding: var(--bo-space-2);
+  }
+
   .bo-foodDetailFactsGrid {
     grid-template-columns: 1fr;
   }
@@ -1447,6 +1481,16 @@
   }
 
   .bo-foodDetailOverlayLabel {
+    font-size: 11px;
+  }
+
+  .bo-foodDetailMedia {
+    min-height: 150px;
+    max-height: 200px;
+    max-width: 240px;
+  }
+
+  .bo-foodDetailEyebrow {
     font-size: 11px;
   }
 }

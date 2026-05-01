@@ -37,7 +37,8 @@ export function FoodDetailHero({
   onImageSelect,
   onImageUpdate,
 }: FoodDetailHeroProps) {
-  const TypeIcon = FOOD_TYPE_ICONS[foodType as keyof typeof FOOD_TYPE_ICONS] || (() => null);
+  const TypeIcon =
+    FOOD_TYPE_ICONS[foodType as keyof typeof FOOD_TYPE_ICONS] || ((() => null) as LucideIcon);
   const busy = uploading || aiBusy;
   const hasImage = Boolean(imageUrl);
   const showHoverOverlay = supportsQuickEditor && hasImage && onImageUpdate;
@@ -46,26 +47,41 @@ export function FoodDetailHero({
     fileInputRef.current?.click();
   };
 
+  const eyebrow = `${FOOD_TYPE_LABELS[foodType as keyof typeof FOOD_TYPE_LABELS] ?? foodType} · #${
+    item?.num ?? "—"
+  }`;
+
   return (
-    <div className="bo-panel bo-foodDetailHero" data-ui="food-detail-hero">
-      {/* Media column */}
+    <div
+      className="bo-panel bo-foodDetailHero"
+      data-ui="food-detail-hero"
+    >
+      {/* ── Media column ── */}
       <div
-        className={`bo-foodDetailMedia max-w-[280px] mx-auto max-h-auto${showHoverOverlay ? " bo-foodDetailMedia--editable" : ""}`}
+        className={`bo-foodDetailMedia${showHoverOverlay ? " bo-foodDetailMedia--editable" : ""}`}
         data-slot="food-detail-media"
         onClick={showHoverOverlay ? handleOverlayClick : undefined}
         role={showHoverOverlay ? "button" : undefined}
         tabIndex={showHoverOverlay ? 0 : undefined}
-        onKeyDown={showHoverOverlay ? (e) => { if (e.key === "Enter" || e.key === " ") handleOverlayClick(); } : undefined}
+        onKeyDown={
+          showHoverOverlay
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleOverlayClick();
+                }
+              }
+            : undefined
+        }
         aria-label={showHoverOverlay ? "Actualizar imagen" : undefined}
       >
         {aiGenerating ? (
           <div
             className="bo-foodDetailMediaSkeleton flex items-center justify-center"
             data-role="food-detail-image-skeleton"
-            style={{ minHeight: 160 }}
           >
             <Loader2
-              size={32}
+              size={36}
               className="bo-foodDetailSpinIcon animate-spin"
               data-role="food-detail-skeleton-spinner"
             />
@@ -79,13 +95,13 @@ export function FoodDetailHero({
               decoding="async"
               data-role="food-detail-image"
             />
-            {/* Hover overlay — appears on mouse hover */}
+            {/* Hover overlay */}
             <div
               className="bo-foodDetailMediaOverlay"
               data-ui="food-detail-media-overlay"
               aria-hidden="true"
             >
-              <Camera size={26} strokeWidth={1.5} data-slot="overlay-camera-icon" />
+              <Camera size={28} strokeWidth={1.5} data-slot="overlay-camera-icon" />
               <span className="bo-foodDetailOverlayLabel" data-slot="overlay-label">
                 Actualizar imagen
               </span>
@@ -97,24 +113,32 @@ export function FoodDetailHero({
             aria-hidden="true"
             data-role="food-detail-media-placeholder"
           >
-            <TypeIcon size={42} data-role="food-detail-type-icon" />
+            <TypeIcon size={44} data-role="food-detail-type-icon" />
           </div>
         )}
 
         {/* Loading overlay */}
         {busy && (
-          <div className="bo-foodDetailMediaLoadingOverlay" data-ui="food-detail-media-loading" aria-label="Subiendo imagen...">
-            <Loader2 size={24} className="bo-foodDetailSpinIcon animate-spin" data-slot="media-loading-spinner" />
+          <div
+            className="bo-foodDetailMediaLoadingOverlay"
+            data-ui="food-detail-media-loading"
+            aria-label="Subiendo imagen..."
+          >
+            <Loader2
+              size={24}
+              className="bo-foodDetailSpinIcon animate-spin"
+              data-slot="media-loading-spinner"
+            />
           </div>
         )}
       </div>
 
-      {/* Action button — always visible for quick editor */}
+      {/* ── Action button ── */}
       {supportsQuickEditor && (
         <button
           data-role="food-detail-change-photo-btn"
           type="button"
-          className="bo-btn bo-btn--glass w-full mt-3 max-w-[280px] mx-auto"
+          className="bo-btn bo-btn--glass bo-foodDetailPhotoBtn"
           onClick={() => fileInputRef.current?.click()}
           disabled={busy}
         >
@@ -138,19 +162,29 @@ export function FoodDetailHero({
         data-role="food-detail-file-input"
       />
 
-      {/* Info column */}
+      {/* ── Info column ── */}
       <div
         className="bo-foodDetailHeroBody"
         data-slot="food-detail-hero-body"
-        style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
       >
-        <div className="bo-foodDetailHeroIdentity w-fit mx-auto" data-slot="food-detail-hero-identity">
+        <div
+          className="bo-foodDetailHeroIdentity"
+          data-slot="food-detail-hero-identity"
+        >
           <div className="bo-foodDetailEyebrow" data-role="food-detail-eyebrow">
-            {FOOD_TYPE_LABELS[foodType as keyof typeof FOOD_TYPE_LABELS]} · #{item?.num}
+            {eyebrow}
           </div>
           <div className="bo-foodDetailTitleRow" data-ui="food-detail-title-row">
-            <TypeIcon className="bo-foodDetailTypeIcon" size={18} aria-hidden="true" data-ui="food-detail-title-icon" />
-            <div className="bo-panelTitle bo-foodDetailTitle" data-role="food-detail-title">
+            <TypeIcon
+              className="bo-foodDetailTypeIcon"
+              size={18}
+              aria-hidden="true"
+              data-ui="food-detail-title-icon"
+            />
+            <div
+              className="bo-panelTitle bo-foodDetailTitle"
+              data-role="food-detail-title"
+            >
               {title}
             </div>
           </div>
@@ -169,14 +203,19 @@ export function FoodDetailHero({
 
         {foodType !== "platos" ? (
           <div
-            className="bo-foodDetailPriceWrap !bg-transparent !shadow-none !border-none w-fit mx-auto justify-center"
-            style={{ background: "none" }}
+            className="bo-foodDetailPriceWrap"
             data-ui="food-detail-price-wrap"
           >
-            <span className="bo-foodDetailPriceLabel" data-role="food-detail-price-label">
+            <span
+              className="bo-foodDetailPriceLabel"
+              data-role="food-detail-price-label"
+            >
               Precio carta
             </span>
-            <div className="bo-foodDetailPrice" data-role="food-detail-price-value">
+            <div
+              className="bo-foodDetailPrice"
+              data-role="food-detail-price-value"
+            >
               {formatEuro(item?.precio ?? 0)}
             </div>
           </div>
