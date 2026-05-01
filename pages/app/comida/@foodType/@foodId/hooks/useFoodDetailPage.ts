@@ -312,7 +312,27 @@ export function useFoodDetailPage() {
 
         const newNum = (createRes as any).num ?? createRes.item?.num;
         const toastTitle = isPlate ? "Plato creado" : isCafe ? "Cafe creado" : "Bebida creada";
-        pushToast({ kind: "success", title: toastTitle });
+
+        // If a compressed image is pending, upload it before navigating
+        if (imageBase64 && newNum && (isCafe || isBebida)) {
+          pushToast({ kind: "success", title: toastTitle + " Subiendo imagen..." });
+          try {
+            const b64 = imageBase64.split(",")[1];
+            const byteChars = atob(b64);
+            const byteArray = new Uint8Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) {
+              byteArray[i] = byteChars.charCodeAt(i);
+            }
+            const blob = new Blob([byteArray], { type: "image/webp" });
+            const webpFile = new File([blob], "item.webp", { type: "image/webp" });
+            const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
+            await targetApi.uploadImage(newNum, webpFile);
+          } catch {
+            // Image upload failed but item was created — continue anyway
+          }
+        } else {
+          pushToast({ kind: "success", title: toastTitle });
+        }
 
         // Navigate to the detail page for the new item
         if (newNum) {
@@ -492,6 +512,14 @@ export function useFoodDetailPage() {
       const compressed = await compressImageToWebP(file, 80);
       setImageBase64(compressed);
       setImagePreview(compressed);
+
+      // Existing item: upload directly (no AI advisor needed)
+      if (!data.isNew && currentFoodItem) {
+        await handleImageUpdate(file);
+        return;
+      }
+
+      // New item: show AI advisor if supported
       if (showAdvisorForType) {
         setShowAIAdvisor(true);
       }
@@ -500,7 +528,7 @@ export function useFoodDetailPage() {
     } finally {
       setUploading(false);
     }
-  }, [pushToast, showAdvisorForType]);
+  }, [currentFoodItem, data.isNew, handleImageUpdate, pushToast, showAdvisorForType]);
 
   const runAIEnhance = useCallback(async (targetNum: number) => {
     setAiBusy(true);
@@ -533,9 +561,74 @@ export function useFoodDetailPage() {
     }
   }, [api.comida.bebidas, api.comida.cafes, imageBase64, isBebida, pushToast]);
 
+  // Upload image directly (no AI) for existing items
+  const handleImageUpdate = useCallback(async (file: File) => {
+    if (!currentFoodItem) return;
+    setUploading(true);
+    try {
+      const compressed = await compressImageToWebP(file, 80);
+      const b64 = compressed.split(",")[1];
+      if (!b64) throw new Error("No image data");
+
+      const byteChars = atob(b64);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteArray[i] = byteChars.charCodeAt(i);
+      }
+      const blob = new Blob([byteArray], { type: "image/webp" });
+      const webpFile = new File([blob], "item.webp", { type: "image/webp" });
+
+      const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
+      const res = await targetApi.uploadImage(currentFoodItem.num, webpFile);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar la imagen" });
+        return;
+      }
+      const newUrl = (res as any).foto_url as string;
+      setItemState((prev) => prev ? { ...prev, foto_url: newUrl } : prev);
+      setImagePreview(newUrl);
+      pushToast({ kind: "success", title: "Imagen actualizada" });
+    } catch {
+      pushToast({ kind: "error", title: "Error", message: "No se pudo actualizar la imagen" });
+    } finally {
+      setUploading(false);
+    }
+  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, isBebida, pushToast]);
+
   const handleAIAdvisorClose = useCallback(() => {
     setShowAIAdvisor(false);
   }, []);
+
+  const handleAIContinueWithout = useCallback(() => {
+    setShowAIAdvisor(false);
+    // For existing items: upload directly without AI
+    if (!data.isNew && currentFoodItem && imagePreview) {
+      void (async () => {
+        // imageBase64 holds the compressed WebP data
+        if (!imageBase64) return;
+        const b64 = imageBase64.split(",")[1];
+        if (!b64) return;
+        const byteChars = atob(b64);
+        const byteArray = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) {
+          byteArray[i] = byteChars.charCodeAt(i);
+        }
+        const blob = new Blob([byteArray], { type: "image/webp" });
+        const webpFile = new File([blob], "item.webp", { type: "image/webp" });
+        const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
+        const res = await targetApi.uploadImage(currentFoodItem.num, webpFile);
+        if (res.success) {
+          setItemState((prev) => prev ? { ...prev, foto_url: (res as any).foto_url } : prev);
+          pushToast({ kind: "success", title: "Imagen actualizada" });
+        }
+        setImageBase64(null);
+        setImagePreview(null);
+      })();
+      return;
+    }
+    setImageBase64(null);
+    setImagePreview(null);
+  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, data.isNew, imageBase64, imagePreview, isBebida, pushToast]);
 
   const handleAIContinueWithout = useCallback(() => {
     setShowAIAdvisor(false);
@@ -612,6 +705,7 @@ export function useFoodDetailPage() {
     handleBebidaCatAdd,
     handleBebidaCatOptimistic,
     handleImageSelect,
+    handleImageUpdate,
     handleAIAdvisorClose,
     handleAIContinueWithout,
     handleAIEnhance,
