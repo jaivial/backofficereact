@@ -51,6 +51,38 @@ type BOPageContext = {
 const LOCAL_BACKEND_START_CMD = "cd ../backend && go run ./cmd/server";
 const backendHelpLogged = new Set<string>();
 
+// Session cache: server-side only, no client exposure
+// TTL: 30 seconds to balance freshness vs performance
+const SESSION_CACHE_TTL_MS = 30_000;
+type SessionCacheEntry = {
+  session: BOSession | null;
+  movingExpirationDate: string | null;
+  setCookies: string[];
+  expiresAt: number;
+};
+const sessionCache = new Map<string, SessionCacheEntry>();
+
+// Clean expired entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of sessionCache) {
+    if (entry.expiresAt <= now) {
+      sessionCache.delete(key);
+    }
+  }
+}, SESSION_CACHE_TTL_MS);
+
+// Simple hash for cache key (not cryptographic, just for Map lookup)
+function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return String(hash);
+}
+
 function isBackendConnectionError(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
   const errorLike = err as {
@@ -169,6 +201,23 @@ async function fetchSession(
   pagePath: string | undefined,
 ): Promise<FetchSessionResult> {
   if (!cookieHeader) return { session: null, movingExpirationDate: null, setCookies: [] };
+
+  // Create cache key from cookie header hash (server-side only, never exposed to client)
+  const cacheKey = hashString(cookieHeader);
+  const now = Date.now();
+
+  // Check cache first
+  const cached = sessionCache.get(cacheKey);
+  if (cached && cached.expiresAt > now) {
+    return {
+      session: cached.session,
+      movingExpirationDate: cached.movingExpirationDate,
+      setCookies: [],
+    };
+  }
+
+
+  // Cache miss or expired - fetch fresh from backend
   try {
     const url = new URL("/api/admin/me", backendOrigin);
     const headers: Record<string, string> = { cookie: cookieHeader };
@@ -180,16 +229,38 @@ async function fetchSession(
       headers,
     });
     const setCookies = readSetCookies(res.headers);
-    if (!res.ok) return { session: null, movingExpirationDate: null, setCookies };
+
+    // Always invalidate cache on auth failures (401/403)
+    if (!res.ok) {
+      sessionCache.delete(cacheKey);
+      return { session: null, movingExpirationDate: null, setCookies };
+    }
+
     const json = (await res.json()) as any;
     if (!json || json.success !== true || !json.session) {
-      return { session: null, movingExpirationDate: normalizeMovingExpirationDate(json?.moving_expiration_date), setCookies };
+      const movingExp = normalizeMovingExpirationDate(json?.moving_expiration_date);
+      // Cache null sessions too to avoid hammering backend
+      sessionCache.set(cacheKey, {
+        session: null,
+        movingExpirationDate: movingExp,
+        setCookies,
+        expiresAt: now + SESSION_CACHE_TTL_MS,
+      });
+      return { session: null, movingExpirationDate: movingExp, setCookies };
     }
-    return {
-      session: json.session as BOSession,
-      movingExpirationDate: normalizeMovingExpirationDate(json?.moving_expiration_date),
+
+    const session = json.session as BOSession;
+    const movingExpirationDate = normalizeMovingExpirationDate(json?.moving_expiration_date);
+
+    // Cache successful session
+    sessionCache.set(cacheKey, {
+      session,
+      movingExpirationDate,
       setCookies,
-    };
+      expiresAt: now + SESSION_CACHE_TTL_MS,
+    });
+
+    return { session, movingExpirationDate, setCookies };
   } catch (err) {
     if (isBackendConnectionError(err)) {
       logBackendUnavailable("fetchSession", backendOrigin, err);
