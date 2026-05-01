@@ -69,6 +69,51 @@
   margin-bottom: 20px;
 }
 
+.bo-foodPage-heroTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bo-foodPage-heroTitles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Page visibility toggle — embedded in hero header */
+.bo-foodPageVisibility {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.bo-foodPageVisibilityRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--bo-surface) 96%, transparent),
+    color-mix(in srgb, var(--bo-shell) 90%, transparent)
+  );
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--bo-bg) 18%, transparent);
+  white-space: nowrap;
+}
+
+.bo-foodPageVisibilityTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bo-muted);
+  letter-spacing: 0.02em;
+}
+
 .bo-pageTitle {
   font-size: 24px;
   font-weight: 780;
