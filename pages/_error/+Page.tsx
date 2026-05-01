@@ -78,7 +78,7 @@ export default function ErrorPage() {
     <div className="bo-errorPage" data-slot="_error-errorPage">
       <div className="bo-errorPage__content" data-slot="_error-errorPage__content">
         <div className="bo-errorPage__icon" data-slot="_error-errorPage__icon">
-          <AlertTriangle size={48} strokeWidth={1.5}>
+          <AlertTriangle size={48} strokeWidth={1.5} />
         </div>
         <div className="bo-errorPage__status" data-slot="_error-errorPage__status">{statusCode}</div>
         <h1 className="bo-errorPage__title" data-slot="_error-errorPage__title">{content.title}</h1>
@@ -86,17 +86,17 @@ export default function ErrorPage() {
         <div className="bo-errorPage__actions" data-slot="_error-errorPage__actions">
           {content.primaryAction === "reload" ? (
             <button type="button" className="bo-btn bo-btn--primary" onClick={handleRetry} data-testid="error-page-primary-button">
-              <RefreshCw size={14} strokeWidth={1.8}>
+              <RefreshCw size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </button>
           ) : (
             <a href={content.primaryHref ?? "/app/backoffice"} className="bo-btn bo-btn--primary" data-testid="error-page-primary-link">
-              <LogIn size={14} strokeWidth={1.8}>
+              <LogIn size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </a>
           )}
           <a href={content.secondaryHref} className="bo-btn bo-btn--ghost" data-testid="error-page-secondary-link">
-            <Home size={14} strokeWidth={1.8}>
+            <Home size={14} strokeWidth={1.8} />
             {content.secondaryLabel}
           </a>
         </div>

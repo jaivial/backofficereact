@@ -21,7 +21,7 @@ export default function ErrorPage() {
     <div className="bo-errorPage" data-ui="error-page">
       <div className="bo-errorPage__content" data-ui="error-content">
         <div className="bo-errorPage__icon" data-ui="error-icon">
-          <AlertTriangle size={48} strokeWidth={1.5}>
+          <AlertTriangle size={48} strokeWidth={1.5} />
         </div>
         <div className="bo-errorPage__status" data-ui="error-status">{statusCode}</div>
         <h1 className="bo-errorPage__title" data-ui="error-title">{content.title}</h1>
@@ -34,7 +34,7 @@ export default function ErrorPage() {
               onClick={handleRetry}
               data-ui="error-retry-btn"
             >
-              <RefreshCw size={14} strokeWidth={1.8}>
+              <RefreshCw size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </button>
           ) : (
@@ -43,7 +43,7 @@ export default function ErrorPage() {
               className="bo-btn bo-btn--primary"
               data-ui="error-primary-link"
             >
-              <LogIn size={14} strokeWidth={1.8}>
+              <LogIn size={14} strokeWidth={1.8} />
               {content.primaryLabel}
             </a>
           )}
@@ -52,7 +52,7 @@ export default function ErrorPage() {
             className="bo-btn bo-btn--ghost"
             data-ui="error-secondary-link"
           >
-            <Home size={14} strokeWidth={1.8}>
+            <Home size={14} strokeWidth={1.8} />
             {content.secondaryLabel}
           </a>
         </div>
