@@ -602,6 +602,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         form.append("image", file, file.name || "comida-ai.webp");
         return json(`/api/admin/comida/cafes/${id}/image/ai`, { method: "POST", body: form });
       },
+      async uploadImage(id: number, file: File): Promise<APISuccess<{ foto_url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "cafe-image.webp");
+        return json(`/api/admin/comida/cafes/${id}/image`, { method: "POST", body: form });
+      },
     },
     bebidas: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
@@ -638,6 +643,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         const form = new FormData();
         form.append("image", file, file.name || "comida-ai.webp");
         return json(`/api/admin/comida/bebidas/${id}/image/ai`, { method: "POST", body: form });
+      },
+      async uploadImage(id: number, file: File): Promise<APISuccess<{ foto_url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "bebida-image.webp");
+        return json(`/api/admin/comida/bebidas/${id}/image`, { method: "POST", body: form });
       },
       categories: {
         async list(): Promise<APISuccess<{ categories: FoodCategory[] }> | APIError> {
