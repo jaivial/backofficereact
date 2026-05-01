@@ -185,7 +185,9 @@ export const Breadcrumbs = memo(function Breadcrumbs({
               )}
               {isCurrent ? null : (
                 <span className="bo-breadcrumbSeparator" aria-hidden="true" data-slot="breadcrumb-separator">
-                  /
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="4.5,2 7.5,6 4.5,10" />
+                  </svg>
                 </span>
               )}
             </li>

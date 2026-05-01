@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { useAtomValue } from "jotai";
+import { useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
@@ -24,12 +24,22 @@ function titleForPath(pathname: string): string {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pageContext = usePageContext();
-  const session = useAtomValue(sessionAtom);
+  const setSession = useSetAtom(sessionAtom);
+  // Use pageContext.bo.session (SSR-provided) as source of truth.
+  // Hydrate the Jotai atom on first render so other components that read
+  // sessionAtom get the server session without extra fetches.
+  const session = pageContext.bo?.session ?? null;
   const reduceMotion = useReducedMotion();
   const pathname = pageContext.urlPathname ?? "/";
   const isReservasTables = pathname.startsWith("/app/reservas/tables");
   const title = useMemo(() => titleForPath(pathname), [pathname]);
   const prevRestaurant = useRef<number | null>(null);
+
+  // Hydrate the Jotai session atom from the SSR-provided session.
+  // This makes the session available to all atoms/hooks that read sessionAtom.
+  useEffect(() => {
+    if (session) setSession(session);
+  }, [session, setSession]);
 
   // `session` is guaranteed by server middleware, but keep render stable.
   if (!session) return null;
