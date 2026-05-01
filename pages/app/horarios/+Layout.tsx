@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import { navigate } from "vike/client/router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CalendarClock, Eye, Clock3 } from "lucide-react";
 import { useAtomValue } from "jotai";
@@ -9,8 +10,6 @@ import { sessionAtom } from "../../../state/atoms";
 import { canManageHorarios } from "../../../lib/rbac";
 
 const TAB_FADE_DURATION_MS = 420;
-const TAB_NAV_DELAY_MS = 500;
-const TAB_NAVIGATION_WAIT_MS = Math.max(0, TAB_NAV_DELAY_MS - TAB_FADE_DURATION_MS);
 
 type HorariosTabId = "horarios" | "preview" | "turnos" | "mis-horarios";
 
@@ -42,8 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const date = dateFromSearch || dateFromData || todayISO();
   const qs = `?date=${encodeURIComponent(date)}`;
 
-  const [isNavigatingOut, setIsNavigatingOut] = useState(false);
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -66,46 +64,46 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [isAdmin, qs]);
 
   const onNavigateTab = useCallback(
-    (href: string, id: string) => {
-      if (isNavigatingOut) return;
+    async (href: string, id: string) => {
       if (id === activeId) return;
-      if (reduceMotion) {
-        window.location.assign(href);
-        return;
-      }
-      if (typeof window === "undefined") return;
       if (!href) return;
-      setIsNavigatingOut(true);
-      setPendingHref(href);
+
+      // Start transition animation
+      setIsTransitioning(true);
+
+      // Small delay to let exit animation start before navigation
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Use vike's navigate() for smooth client-side navigation
+      await navigate(href);
     },
-    [activeId, isNavigatingOut, reduceMotion],
+    [activeId],
   );
 
-  const transition = reduceMotion ? { duration: 0 } : { duration: TAB_FADE_DURATION_MS / 1000, ease: "easeInOut" as const };
+  // Reset transitioning state when pathname changes
+  useEffect(() => {
+    setIsTransitioning(false);
+  }, [pathname]);
 
-  const handleExitComplete = useCallback(() => {
-    if (!isNavigatingOut || reduceMotion || !pendingHref) return;
-    const href = pendingHref;
-    window.setTimeout(() => {
-      window.location.assign(href);
-    }, TAB_NAVIGATION_WAIT_MS);
-  }, [isNavigatingOut, pendingHref, reduceMotion]);
+  const transition = reduceMotion
+    ? { duration: 0 }
+    : { duration: TAB_FADE_DURATION_MS / 1000, ease: "easeInOut" as const };
 
   return (
     <>
-      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestanas de horarios" className="bo-tabs--horarios flex flex-row rounded-xl !w-fit my-0 mx-auto" onNavigate={onNavigateTab}>
-      <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
-        {!isNavigatingOut ? (
-          <motion.div
-            key={pathname}
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            transition={transition}
-          >
-            {children}
-          </motion.div>
-        ) : null}
+      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestanas de horarios" className="bo-tabs--horarios flex flex-row rounded-xl !w-fit my-0 mx-auto" onNavigate={onNavigateTab} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={{ opacity: reduceMotion ? 1 : 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: reduceMotion ? 1 : 0 }}
+          transition={transition}
+          data-ui="page-content"
+          data-role="horarios-content"
+        >
+          {children}
+        </motion.div>
       </AnimatePresence>
     </>
   );

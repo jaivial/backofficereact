@@ -151,7 +151,7 @@ export default function Page() {
             <div className="bo-panelMeta" data-slot="miembros-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
           <div className="bo-membersIntroBadge mx-auto" data-slot="miembros-mx-auto">
-            <ShieldUser size={16} strokeWidth={1.8}>
+            <ShieldUser size={16} strokeWidth={1.8} />
             {members.length} miembros
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function Page() {
             >
               <div className="bo-memberCardTop" data-slot="miembros-memberCardTop">
                 <Avatar className="bo-memberAvatar">
-                  {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)}> : null}
+                  {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
                   <AvatarFallback className="bo-memberAvatarFallback">{initials(member.firstName, member.lastName)}</AvatarFallback>
                 </Avatar>
                 <div className="bo-memberMain" data-slot="miembros-memberMain">
@@ -202,8 +202,7 @@ export default function Page() {
                   className="p-2 rounded-full hover:bg-green-500/20 text-slate-400 hover:text-green-400 transition-colors"
                   aria-label="Enviar WhatsApp"
                 > */}
-                  {/* <MessageCircle size={18}>
-                </button> */}
+                  {/* <MessageCircle size={18} /> */}
               </div>
             </button>
           );
@@ -219,7 +218,7 @@ export default function Page() {
           {needsSubscription ? (
             <div className="text-center space-y-4" data-slot="miembros-space-y-4">
               <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-green-400 mb-4" data-slot="miembros-mb-4">
-                <MessageCircle size={32}>
+                <MessageCircle size={32} />
               </div>
               <h2 className="text-xl font-bold text-slate-100" data-slot="miembros-text-slate-100">WhatsApp Premium Pack</h2>
               <p className="text-slate-400 text-sm" data-slot="miembros-text-sm">

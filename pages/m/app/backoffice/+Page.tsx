@@ -120,10 +120,10 @@ export default function MobileHomePage() {
         <section aria-label="Metricas de hoy" data-ui="mobile-home-metrics">
           <h2 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-3" data-ui="mobile-home-metrics-title">Hoy</h2>
           <div className="grid grid-cols-2 gap-3" data-ui="mobile-home-metrics-grid">
-            <StatCard label="Reservas" value={metrics.total ?? 0} icon={CalendarDays}>
-            <StatCard label="Cubiertos" value={metrics.totalPeople ?? 0} icon={ChefHat}>
-            <StatCard label="Confirmadas" value={metrics.confirmed ?? 0} icon={CalendarDays}>
-            <StatCard label="Pendientes" value={metrics.pending ?? 0} icon={ClipboardList}>
+            <StatCard label="Reservas" value={metrics.total ?? 0} icon={CalendarDays} />
+            <StatCard label="Cubiertos" value={metrics.totalPeople ?? 0} icon={ChefHat} />
+            <StatCard label="Confirmadas" value={metrics.confirmed ?? 0} icon={CalendarDays} />
+            <StatCard label="Pendientes" value={metrics.pending ?? 0} icon={ClipboardList} />
           </div>
         </section>
       )}

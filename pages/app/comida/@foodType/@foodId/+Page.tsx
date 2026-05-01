@@ -130,7 +130,7 @@ function FoodDetailPage() {
   return (
     <section aria-label="Detalle comida" className="bo-content-grid bo-memberDetailPage bo-foodDetailPage" data-role="food-detail-page">
       <div className="bo-foodDetailTopbar" data-ui="food-detail-topbar">
-        <Breadcrumbs items={breadcrumbs}>
+        <Breadcrumbs items={breadcrumbs} />
         {item ? (
           <span className={`bo-badge bo-badge--sm ${item.active ? "bo-badge--active" : "bo-badge--inactive"}`} data-role="food-detail-status-badge">
             {item.active ? "Visible" : "Oculto"}

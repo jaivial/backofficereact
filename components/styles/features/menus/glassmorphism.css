@@ -293,3 +293,38 @@
   }
 }
 
+/* ============================================
+   Glassmorphism Tabs — Responsive small screens
+   More gap between tabs when icons-only
+   ============================================ */
+@media (max-width: 639px) {
+  .bo-tabs--glass {
+    gap: 18px;
+    padding: 10px;
+  }
+
+  .bo-tabs--glass .bo-tab {
+    padding: 12px 16px;
+  }
+
+  .bo-tabs--glass .bo-tab.is-active {
+    padding: 14px 20px;
+  }
+
+  .bo-tabs--glass .bo-tabInner {
+    gap: 14px;
+  }
+
+  .bo-tabs--glass .bo-tabIcon {
+    opacity: 0.65;
+  }
+
+  .bo-tabs--glass .bo-tab.is-active .bo-tabIcon {
+    opacity: 0.85;
+  }
+
+  .bo-tabs--glass .bo-tabLabel {
+    display: none;
+  }
+}
+

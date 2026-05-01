@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import { navigate } from "vike/client/router";
 import { CalendarDays, PlusCircle, SlidersHorizontal, Map } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 
 const TAB_FADE_DURATION_MS = 500;
-const TAB_NAV_DELAY_MS = 600;
-const TAB_NAVIGATION_WAIT_MS = Math.max(0, TAB_NAV_DELAY_MS - TAB_FADE_DURATION_MS);
 
 function todayISO(): string {
   const d = new Date();
@@ -39,8 +38,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const dateFromData = typeof (pageContext.data as any)?.date === "string" ? String((pageContext.data as any).date) : "";
   const initialDate = dateFromSearch || dateFromData || todayISO();
 
+  // Track if this is the first render after navigation (for entrance animation)
+  const isFirstRender = pageContext.previousPageContext === undefined;
+
   // Track the current date from URL to keep tabs in sync when date changes via replaceState
   const [currentDate, setCurrentDate] = useState(initialDate);
+
+  // Track if we're in a tab transition (to coordinate animations)
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Sync currentDate with URL on mount and on popstate
   useEffect(() => {
@@ -74,8 +79,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const reduceMotion = useReducedMotion();
   const activeId = activeTabId(pathname);
   const isTablesRoute = pathname.startsWith("/app/reservas/tables");
-  const [isNavigatingOut, setIsNavigatingOut] = useState(false);
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -97,30 +100,34 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   const onNavigateTab = useCallback(
-    (_href: string, id: string) => {
-      if (isNavigatingOut) return;
+    async (_href: string, id: string) => {
       if (id === activeId) return;
-      if (reduceMotion) {
-        window.location.assign(_href);
-        return;
-      }
-      if (typeof window === "undefined") return;
       if (!_href) return;
-      setIsNavigatingOut(true);
-      setPendingHref(_href);
+
+      // Start transition animation
+      setIsTransitioning(true);
+
+      // Small delay to let exit animation start before navigation
+      // This prevents visual gaps during client-side navigation
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Use vike's navigate() for smooth client-side navigation
+      // This avoids full page reload and prevents flash
+      await navigate(_href);
+
+      // Transition state will reset on next render (when pathname changes)
     },
-    [activeId, isNavigatingOut, reduceMotion],
+    [activeId],
   );
 
-  const transition = reduceMotion ? { duration: 0 } : { duration: TAB_FADE_DURATION_MS / 1000, ease: "easeInOut" as const };
+  // Reset transitioning state when pathname changes (new page rendered)
+  useEffect(() => {
+    setIsTransitioning(false);
+  }, [pathname]);
 
-  const handleExitComplete = useCallback(() => {
-    if (!isNavigatingOut || reduceMotion || !pendingHref) return;
-    const href = pendingHref;
-    window.setTimeout(() => {
-      window.location.assign(href);
-    }, TAB_NAVIGATION_WAIT_MS);
-  }, [isNavigatingOut, pendingHref, reduceMotion]);
+  const transition = reduceMotion
+    ? { duration: 0 }
+    : { duration: TAB_FADE_DURATION_MS / 1000, ease: "easeInOut" as const };
 
   if (isTablesRoute) {
     return <>{children}</>;
@@ -128,19 +135,31 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestañas reservas" className="bo-tabs--reservas flex flex-row rounded-xl w-fit my-0 mx-auto" onNavigate={onNavigateTab} />
-      <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
-        {!isNavigatingOut ? (
-          <motion.div
-            key={pathname}
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            animate={reduceMotion ? { opacity: 1 } : { opacity: 1 }}
-            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            transition={transition}
-          >
-            {children}
-          </motion.div>
-        ) : null}
+      <Tabs
+        tabs={tabs}
+        activeId={activeId}
+        ariaLabel="Pestañas reservas"
+        className="bo-tabs--reservas flex flex-row rounded-xl w-fit my-0 mx-auto"
+        onNavigate={onNavigateTab}
+      />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={{
+            opacity: isFirstRender || reduceMotion ? 1 : 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          exit={{
+            opacity: reduceMotion ? 1 : 0,
+          }}
+          transition={transition}
+          data-ui="page-content"
+          data-role="reservas-content"
+        >
+          {children}
+        </motion.div>
       </AnimatePresence>
     </>
   );

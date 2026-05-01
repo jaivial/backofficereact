@@ -78,7 +78,7 @@ export function InstallGuide({ restaurantId }: { restaurantId: string }) {
             <pre className="bo-install-code" data-ui="install-code">
               <code data-ui="install-code-content">{step.code}</code>
             </pre>
-            <CopyButton code={step.code}>
+            <CopyButton code={step.code} />
           </div>
         </div>
       ))}

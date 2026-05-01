@@ -227,7 +227,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
         {/* Warning for invoices without email */}
         {invalidInvoices.length > 0 && (
           <div className="bo-batchSendWarning" data-slot="batch-send-warning">
-            <AlertCircle size={16}>
+            <AlertCircle size={16} />
             <span data-slot="batch-send-warning-text">
               {invalidInvoices.length} factura{invalidInvoices.length !== 1 ? "s" : ""} sin email no se
               enviara{invalidInvoices.length !== 1 ? "n" : ""}
@@ -240,13 +240,13 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
           <div className="bo-batchSendComplete" data-slot="batch-send-complete">
             <div className="bo-batchSendSummary" data-slot="batch-send-summary">
               <div className="bo-batchSendSummaryItem bo-batchSendSummaryItem--success" data-slot="batch-send-summary-success">
-                <CheckCircle size={24}>
+                <CheckCircle size={24} />
                 <span className="bo-batchSendSummaryCount" data-slot="batch-send-success-count">{summary.sent}</span>
                 <span className="bo-batchSendSummaryLabel" data-slot="batch-send-success-label">Enviadas</span>
               </div>
               {summary.failed > 0 && (
                 <div className="bo-batchSendSummaryItem bo-batchSendSummaryItem--error" data-slot="batch-send-summary-error">
-                  <XCircle size={24}>
+                  <XCircle size={24} />
                   <span className="bo-batchSendSummaryCount" data-slot="batch-send-error-count">{summary.failed}</span>
                   <span className="bo-batchSendSummaryLabel" data-slot="batch-send-error-label">Fallidas</span>
                 </div>
@@ -298,7 +298,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                     </>
                   ) : (
                     <>
-                      <RotateCcw size={16}>
+                      <RotateCcw size={16} />
                       Reintentar envio fallido{summary.failed !== 1 ? "s" : ""}
                     </>
                   )}
@@ -334,11 +334,11 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                 {results.length > 0 && (
                   <div className="bo-batchSendProgressStats" data-slot="batch-send-progress-stats">
                     <span className="bo-batchSendProgressStat bo-batchSendProgressStat--success" data-slot="batch-send-progress-stat-success">
-                      <Check size={14}> {summary.sent} enviadas
+                      <Check size={14} /> {summary.sent} enviadas
                     </span>
                     {summary.failed > 0 && (
                       <span className="bo-batchSendProgressStat bo-batchSendProgressStat--error" data-slot="batch-send-progress-stat-error">
-                        <X size={14}> {summary.failed} fallidas
+                        <X size={14} /> {summary.failed} fallidas
                       </span>
                     )}
                   </div>
@@ -350,7 +350,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
             {!isProcessing && results.length === 0 && (
               <>
                 <div className="bo-batchSendInfo" data-slot="batch-send-info">
-                  <Mail size={20}>
+                  <Mail size={20} />
                   <div data-slot="batch-send-info-text">
                     <strong>{validInvoices.length} facturas</strong> seran enviadas por email
                   </div>
@@ -421,7 +421,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                   disabled={validInvoices.length === 0}
                   data-testid="batch-send-submit"
                 >
-                  <Send size={16}>
+                  <Send size={16} />
                   Enviar {validInvoices.length} factura{validInvoices.length !== 1 ? "s" : ""}
                 </button>
               )}

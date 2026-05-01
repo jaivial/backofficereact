@@ -1,8 +1,12 @@
-/* Reservas */
+/* ============================================
+   Tabs — Reservas + Reusable Components
+   ============================================ */
+
+/* Main tabs container */
 .bo-tabs {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   padding: 8px;
   border-radius: 18px;
   border: 1px solid var(--bo-border);
@@ -32,10 +36,162 @@
   height: 0;
 }
 
-/* Tab inner container - icon + label in a row */
-.bo-tabInner {
-  display: inline-flex;
+/* Individual tab link */
+.bo-tab {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  color: var(--bo-muted);
+  white-space: nowrap;
+  font-family: var(--bo-font);
+  text-decoration: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
+.bo-tab:hover {
+  color: var(--bo-text);
+}
+
+.bo-tab.is-active {
+  color: var(--bo-text);
+}
+
+/* Active tab — more padding for selected state */
+.bo-tab.is-active {
+  padding: 12px 20px;
+}
+
+/* Tab indicator (background pill for active state) */
+.bo-tabIndicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 26%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--bo-accent) 12%, transparent);
+  pointer-events: none;
+}
+
+/* Tab inner container — icon + label in a row */
+.bo-tabInner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tab icon — 85% opacity */
+.bo-tabIcon {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.bo-tab:hover .bo-tabIcon {
+  opacity: 1;
+}
+
+/* Tab label — 85% opacity, improved font */
+.bo-tabLabel {
+  font-size: 14px;
+  font-weight: 720;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.bo-tab:hover .bo-tabLabel {
+  opacity: 1;
+}
+
+/* ============================================
+   Responsive: Icons-only on small screens
+   ============================================ */
+@media (max-width: 639px) {
+  .bo-tabs {
+    gap: 16px;
+  }
+
+  .bo-tab {
+    padding: 10px 14px;
+  }
+
+  .bo-tab.is-active {
+    padding: 12px 18px;
+  }
+
+  /* Hide labels, show only icons on small screens */
+  .bo-tabLabel {
+    display: none;
+  }
+
+  .bo-tabInner {
+    gap: 12px;
+  }
+
+  .bo-tabIcon {
+    opacity: 0.7;
+  }
+
+  .bo-tab.is-active .bo-tabIcon {
+    opacity: 0.85;
+  }
+}
+
+@media (min-width: 640px) {
+  /* Ensure labels are visible on larger screens */
+  .bo-tabLabel {
+    display: inline;
+  }
+}
+
+/* ============================================
+   Compact tabs variant
+   ============================================ */
+.bo-tabs--compact {
+  width: 100%;
+  padding: 4px;
+  justify-content: center;
+}
+
+.bo-tabs--compact .bo-tabsList {
+  width: 100%;
+  justify-content: center;
+}
+
+.bo-tabs--compact .bo-tab {
+  min-height: 36px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  flex: 1;
+  justify-content: center;
+}
+
+.bo-tabs--compact .bo-tabLabel {
+  font-size: 13px;
+}
+
+.bo-tabs--compact .bo-tabIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================
+   Reduced motion preference
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .bo-tab {
+    transition: none;
+  }
+}

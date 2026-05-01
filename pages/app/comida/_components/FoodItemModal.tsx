@@ -403,12 +403,12 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                       onClick={handleRemoveImage}
                       aria-label="Eliminar imagen"
                     >
-                      <X size={16}>
+                      <X size={16} />
                     </button>
                   </>
                 ) : (
                   <div data-ui="food-modal-image-placeholder" className="bo-foodModal-imagePlaceholder">
-                    <ImagePlus size={32}>
+                    <ImagePlus size={32} />
                     <span data-role="food-modal-placeholder-text">Sin imagen</span>
                   </div>
                 )}
@@ -436,7 +436,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                   </>
                 ) : (
                   <>
-                    <Upload size={16}>
+                    <Upload size={16} />
                     Subir imagen
                   </>
                 )}
@@ -495,7 +495,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                           className="bo-btn bo-btn--ghost bo-btn--sm"
                           onClick={() => setBebidaCatModalOpen(true)}
                         >
-                          <Plus size={14}>
+                          <Plus size={14} />
                           Añadir categoria
                         </button>
                       ) : onRequestCreateCategory ? (
@@ -505,7 +505,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                           className="bo-btn bo-btn--ghost bo-btn--sm"
                           onClick={onRequestCreateCategory}
                         >
-                          <Plus size={14}>
+                          <Plus size={14} />
                           Añadir categoria
                         </button>
                       ) : null}
