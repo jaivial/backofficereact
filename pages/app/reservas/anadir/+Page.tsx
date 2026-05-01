@@ -93,7 +93,7 @@ export default function Page() {
 
   return (
     <section aria-label="Añadir reserva" className="bo-reservaAddPage" data-testid="reservas-anadir-page">
-      <BookingEditor api={api} initial={initial} busy={busy} submitLabel="Crear" onSubmit={submit} floors={floors}>
+      <BookingEditor api={api} initial={initial} busy={busy} submitLabel="Crear" onSubmit={submit} floors={floors} />
     </section>
   );
 }
