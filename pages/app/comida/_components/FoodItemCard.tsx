@@ -90,7 +90,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
             disabled={busy}
             data-role="food-card-edit-btn"
           >
-            <PencilLine size={14}>
+            <PencilLine size={14} />
           </button>
           <button
             className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm bo-foodCardIconBtn"
@@ -104,7 +104,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
             disabled={busy}
             data-role="food-card-delete-btn"
           >
-            <Trash2 size={14}>
+            <Trash2 size={14} />
           </button>
         </>
       )}

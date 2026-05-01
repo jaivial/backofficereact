@@ -362,7 +362,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
     <div className="bo-invoiceFilters" aria-label="Filtros de facturas" data-slot="invoiceFilters-filtros-de-facturas">
       <div className="bo-invoiceFiltersHead" data-slot="invoiceFilters-invoiceFiltersHead">
         <div className="bo-invoiceFiltersTitle" data-slot="invoiceFilters-invoiceFiltersTitle">
-          <Filter size={15}>
+          <Filter size={15} />
           <span data-slot="invoiceFilters-ros">Filtros</span>
         </div>
         <button
@@ -373,7 +373,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
           aria-label={isExpanded ? "Colapsar filtros" : "Expandir filtros"}
           data-testid="invoice-filters-toggle-btn"
         >
-          {isExpanded ? <ChevronUp size={15}> : <ChevronDown size={15}>}
+          {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </button>
       </div>
 
@@ -620,7 +620,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 <span className="bo-mutedText bo-invoiceFiltersCount" data-slot="invoiceFilters-invoiceFiltersCount">{summaryText}</span>
                 {dateRangeText && (
                   <span className="bo-invoiceFiltersDateRange" data-slot="invoiceFilters-invoiceFiltersDateRange">
-                    <Calendar size={12}>
+                    <Calendar size={12} />
                     {dateRangeText}
                   </span>
                 )}
@@ -633,7 +633,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     onClick={onImport}
                     data-testid="invoice-filters-import-btn"
                   >
-                    <Upload size={15}>
+                    <Upload size={15} />
                     Importar
                   </button>
                 )}
@@ -644,7 +644,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     onClick={onImportHistory}
                     data-testid="invoice-filters-history-btn"
                   >
-                    <History size={15}>
+                    <History size={15} />
                     Historial
                   </button>
                 )}
@@ -654,7 +654,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   onClick={onExportCSV}
                   data-testid="invoice-filters-export-btn"
                 >
-                  <Download size={15}>
+                  <Download size={15} />
                   Exportar CSV
                 </button>
                 <button
@@ -666,7 +666,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   aria-hidden={!hasFilters}
                   data-testid="invoice-filters-clear-btn"
                 >
-                  <FilterX size={15}>
+                  <FilterX size={15} />
                   Limpiar filtros
                 </button>
                 <button
@@ -678,7 +678,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   aria-hidden={!hasFilters}
                   data-testid="invoice-filters-save-btn"
                 >
-                  <Save size={15}>
+                  <Save size={15} />
                   Guardar filtro
                 </button>
               </div>
@@ -727,7 +727,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         disabled={!filterName.trim()}
                         data-testid="invoice-filter-save-dialog-save-btn"
                       >
-                        <Save size={15}>
+                        <Save size={15} />
                         Guardar
                       </button>
                     </div>
@@ -740,7 +740,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
             {savedFilters.length > 0 && (
               <div className="bo-savedFilters" data-slot="invoiceFilters-savedFilters">
                 <div className="bo-savedFiltersHead" data-slot="invoiceFilters-savedFiltersHead">
-                  <Bookmark size={14}>
+                  <Bookmark size={14} />
                   <span data-slot="invoiceFilters-dos">Mis filtros guardados</span>
                 </div>
                 <div className="bo-savedFiltersList" data-slot="invoiceFilters-savedFiltersList">
@@ -769,7 +769,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         aria-label={`Eliminar filtro ${preset.name}`}
                         data-testid={`invoice-filter-saved-delete-${preset.id}-btn`}
                       >
-                        <Trash2 size={12}>
+                        <Trash2 size={12} />
                       </button>
                     </div>
                   ))}

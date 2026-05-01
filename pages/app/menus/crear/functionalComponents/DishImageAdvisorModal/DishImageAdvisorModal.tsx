@@ -42,7 +42,7 @@ export function DishImageAdvisorModalComponent({
           Continuar sin mejorar
         </button>
         <button className="bo-btn bo-btn--advisorPrimary" type="button" onClick={onImproveWithAI} disabled={busy} aria-label={busy ? "Mejorando con IA" : "Mejorar con IA"} data-testid="dish-advisor-improve-with-ai">
-          <Sparkles size={15}>
+          <Sparkles size={15} />
           <span data-slot="dishImageAdvisorModal-con">{busy ? "Mejorando con IA..." : "Mejorar con IA"}</span>
         </button>
       </div>

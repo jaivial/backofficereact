@@ -37,7 +37,7 @@ export function SiteSettings({
           aria-label="Ocultar propiedades"
           data-ui="right-panel-hide"
         >
-          <EyeOff size={16}>
+          <EyeOff size={16} />
         </button>
       </div>
 
@@ -110,7 +110,7 @@ export function SiteSettings({
             onClick={() => onDeleteNode(selectedNode.id)}
             data-ui="property-delete-node"
           >
-            <Trash2 size={16}>
+            <Trash2 size={16} />
             <span data-ui="property-delete-node-label">Eliminar componente</span>
           </button>
         </div>

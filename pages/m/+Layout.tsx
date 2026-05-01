@@ -23,13 +23,13 @@ function initStore(theme: ThemeMode, session: BOSession | null, movingExpiration
 function MobileLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePageContext().urlPathname ?? "/";
   return (
-    <div className="bo-mobile-shell flex flex-col h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]" data-slot="Layout-text-[hsl(var(-">
+    <div className="bo-mobile-shell flex flex-col h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]" data-slot="Layout-mobile-shell">
       {/* Content area with bottom nav padding */}
       <main className="flex-1 overflow-y-auto pb-20" data-testid="mobile-layout-main">
         {children}
       </main>
       {/* Bottom navigation bar */}
-      <MobileNav pathname={pathname}>
+      <MobileNav pathname={pathname} />
     </div>
   );
 }
