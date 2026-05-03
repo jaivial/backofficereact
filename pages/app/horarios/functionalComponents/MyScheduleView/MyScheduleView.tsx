@@ -109,10 +109,9 @@ export function MyScheduleView({ initialSchedules }: { initialSchedules: Fichaje
             <Tabs
               tabs={MY_SCHEDULE_VIEW_TAB_ITEMS}
               activeId={view}
+              onNavigate={(_, id) => handleViewChange(id)}
               ariaLabel="Cambiar vista"
-              layoutId="horariosMyScheduleTabs"
               className="bo-tabs--glass rounded-xl !w-fit !mx-auto"
-              onNavigate={(_href, id) => handleViewChange(id)}
             />
           </div>
         </div>
