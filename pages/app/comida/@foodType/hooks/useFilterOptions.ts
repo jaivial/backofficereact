@@ -14,9 +14,12 @@ interface UseFilterOptionsOptions {
 export function useFilterOptions({ foodType, items, categories }: UseFilterOptionsOptions) {
   const tipoOptions = useMemo(() => {
     const byValue = new Map<string, string>();
-    FOOD_TYPE_TIPO_OPTIONS[foodType].forEach((option) => {
-      byValue.set(option.value, option.label);
-    });
+    const tipoList = FOOD_TYPE_TIPO_OPTIONS[foodType];
+    if (Array.isArray(tipoList)) {
+      tipoList.forEach((option) => {
+        byValue.set(option.value, option.label);
+      });
+    }
     items.forEach((item) => {
       const value = String(item.tipo || "").trim();
       if (!value || byValue.has(value)) return;
