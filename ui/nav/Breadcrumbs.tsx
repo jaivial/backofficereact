@@ -167,20 +167,23 @@ export const Breadcrumbs = memo(function Breadcrumbs({
       <ol className="bo-breadcrumbList" data-slot="breadcrumb-list">
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1;
+          // Guard against undefined labels
+          const label = item.label ?? "";
+          const labelKey = item.href ?? "current";
           return (
-            <li key={`${item.href ?? "current"}-${item.label}-${index}`} className="bo-breadcrumbItem" data-slot="breadcrumb-item">
+            <li key={`${labelKey}-${label}-${index}`} className="bo-breadcrumbItem" data-slot="breadcrumb-item">
               {item.href && !isCurrent ? (
                 <a
                   className="bo-breadcrumbLink"
                   href={item.href}
-                  data-testid={`breadcrumb-${item.label.toLowerCase()}`}
+                  data-testid={`breadcrumb-${label.toLowerCase()}`}
                   data-role="breadcrumb-link"
                 >
-                  {item.label}
+                  {label}
                 </a>
               ) : (
                 <span className="bo-breadcrumbCurrent" aria-current={isCurrent ? "page" : undefined} data-slot="breadcrumb-current">
-                  {item.label}
+                  {label}
                 </span>
               )}
               {isCurrent ? null : (

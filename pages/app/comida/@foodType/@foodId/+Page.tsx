@@ -85,9 +85,10 @@ function FoodDetailPage() {
   }, [item, itemNum, isNew]);
 
   const breadcrumbs = useMemo<BreadcrumbItem[]>(() => {
+    const foodTypeLabel = FOOD_TYPE_LABELS[foodType as FoodType] ?? "Carta";
     const items: BreadcrumbItem[] = [
       { label: "Carta", href: "/app/comida" },
-      { label: FOOD_TYPE_LABELS[foodType as FoodType], href: `/app/comida/${foodType}` },
+      { label: foodTypeLabel, href: `/app/comida/${foodType}` },
     ];
     if (item) {
       items.push({ label: item.nombre || `#${itemNum}` });
