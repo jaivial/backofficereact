@@ -18,7 +18,16 @@ import { FoodList } from "./functionalComponents/FoodList";
 
 function FoodTypePage() {
   const pageContext = usePageContext();
-  const data = pageContext.data as Data;
+  const data = (pageContext.data ?? {
+    foodType: "platos" as const,
+    items: [],
+    categories: [],
+    page: 1,
+    pageSize: 24,
+    total: 0,
+    filters: { search: "", tipo: "", active: "all" as const, category: "", alergeno: "", suplemento: "all" as const },
+    error: null,
+  }) as Data;
   useErrorToast(data.error);
 
   const {
@@ -74,8 +83,8 @@ function FoodTypePage() {
     categories,
   });
 
-  const listLabel = FOOD_TYPE_LABELS[foodType];
-  const singularLabel = FOOD_TYPE_SINGULAR[foodType];
+  const listLabel = FOOD_TYPE_LABELS[foodType as FoodType] ?? "Carta";
+  const singularLabel = FOOD_TYPE_SINGULAR[foodType as FoodType] ?? "elemento";
 
   const breadcrumbs = useMemo<BreadcrumbItem[]>(() => [
     { label: "Carta", href: "/app/comida" },
