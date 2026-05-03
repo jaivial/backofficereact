@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 
 import { cn } from "../shadcn/utils";
@@ -116,7 +116,12 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
 MonthCalendarGrid.displayName = "MonthCalendarGrid";
 
 function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, loading, className }: MonthCalendarProps) {
-  const today = useMemo(() => todayISO(), []);
+  // "today" is cosmetic only — compute it client-side to avoid SSR hydration mismatch
+  // caused by server (UTC) and browser (local) timezone differences crossing midnight.
+  const [today, setToday] = useState<string | null>(null);
+  useEffect(() => {
+    setToday(todayISO());
+  }, []);
   const monthLabel = useMemo(() => `${monthNameES(month)} ${year}`, [month, year]);
   const handlePrevMonth = useCallback(() => {
     if (loading) return;

@@ -123,10 +123,9 @@ export default function Page() {
             <Tabs
               tabs={VIEW_TAB_ITEMS}
               activeId={view}
+              onNavigate={(_, id) => onViewChange(id)}
               ariaLabel="Cambiar vista"
-              layoutId="horariosPreviewViewTabs"
               className="bo-tabs--glass bo-viewTabs flex flex-row ms-auto rounded-xl !w-fit"
-              onNavigate={(_href, id) => onViewChange(id)}
             />
           </div>
         }
