@@ -5,7 +5,6 @@ import { usePageContext } from "vike-react/usePageContext";
 
 import type { Member, RoleCatalogItem, RoleUserItem } from "../../../api/types";
 import { roleLabel } from "../../../lib/rbac";
-import { fullName } from "../../../lib/member";
 import { sessionAtom } from "../../../state/atoms";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/shell/Avatar";
 import { RoleBadge } from "../../../ui/widgets/roles/RoleBadge";
@@ -13,13 +12,18 @@ import type { Data } from "./+data";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { createClient } from "../../../api/client";
+import { Button } from "../../../ui/shadcn/button";
 import { Modal } from "../../../ui/overlays/Modal";
-import { Panel } from "../../../ui/shell/Panel";
 
 function initials(firstName: string, lastName: string) {
   const a = firstName.trim()[0] ?? "";
   const b = lastName.trim()[0] ?? "";
   return (a + b).toUpperCase() || "MM";
+}
+
+function fullName(member: Member): string {
+  const name = `${member.firstName || ""} ${member.lastName || ""}`.trim();
+  return name || `Miembro #${member.id}`;
 }
 
 function normalizeEmail(v: string | null | undefined): string {
@@ -34,7 +38,8 @@ export default function Page() {
   const roles = Array.isArray(raw.roles) ? raw.roles : [];
   const initialError = typeof raw.error === "string" ? raw.error : null;
   useErrorToast(initialError);
-  const { pushToast } = useToasts();
+  const { addToast } = useToasts();
+  const { handleError } = useErrorToast();
   const client = useMemo(() => createClient({ baseUrl: "" }), []);
   const session = useAtomValue(sessionAtom);
 
@@ -103,21 +108,19 @@ export default function Page() {
     if (!selectedMember || !message.trim()) return;
     try {
       setSending(true);
-      const res = await fetch("/api/admin/members/whatsapp/send", {
+      const res = await client.request<{ success: boolean; message?: string; code?: string }>("/admin/members/whatsapp/send", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ member_id: selectedMember.id, message }),
       });
-      const data = await res.json();
-      if (data.success) {
-        pushToast({ kind: "success", title: "Enviado", message: "Mensaje enviado correctamente" });
+      if (res.success) {
+        addToast({ title: "Enviado", description: "Mensaje enviado correctamente" });
         setWhatsappModalOpen(false);
       }
     } catch (err: any) {
       if (err?.code === "NEEDS_SUBSCRIPTION") {
         setNeedsSubscription(true);
       } else {
-        pushToast({ kind: "error", title: "Error", message: err instanceof Error ? err.message : "Error desconocido" });
+        handleError(err);
       }
     } finally {
       setSending(false);
@@ -127,37 +130,36 @@ export default function Page() {
   const handleSubscribe = async () => {
     try {
       setSubscribing(true);
-      const res = await fetch("/api/admin/members/whatsapp/subscribe", {
+      const res = await client.request<{ success: boolean; message: string }>("/admin/members/whatsapp/subscribe", {
         method: "POST",
       });
-      const data = await res.json();
-      if (data.success) {
-        pushToast({ kind: "success", title: "Suscrito", message: data.message || "Suscripcion activada" });
+      if (res.success) {
+        addToast({ title: "Suscrito", description: res.message });
         setNeedsSubscription(false);
       }
     } catch (err) {
-      pushToast({ kind: "error", title: "Error", message: err instanceof Error ? err.message : "Error al suscribirse" });
+      handleError(err);
     } finally {
       setSubscribing(false);
     }
   };
 
   return (
-    <section aria-label="Miembros y roles" className="bo-content-grid bo-membersPage" data-slot="miembros-page-section">
-      <div className="bo-panel !w-fit mx-auto" data-slot="miembros-mx-auto">
-        <div className="!w-fit bo-panelHead bo-membersIntroHead" data-slot="miembros-membersIntroHead">
-          <div data-slot="miembros-div">
-            <div className="bo-panelTitle text-center" data-slot="miembros-text-center">Equipo y permisos</div>
-            <div className="bo-panelMeta" data-slot="miembros-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
+    <section aria-label="Miembros y roles" className="bo-content-grid bo-membersPage">
+      <div className="bo-panel">
+        <div className="bo-panelHead bo-membersIntroHead">
+          <div>
+            <div className="bo-panelTitle">Equipo y permisos</div>
+            <div className="bo-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
-          <div className="bo-membersIntroBadge mx-auto" data-slot="miembros-mx-auto">
+          <div className="bo-membersIntroBadge">
             <ShieldUser size={16} strokeWidth={1.8} />
             {members.length} miembros
           </div>
         </div>
       </div>
 
-      <div className="bo-membersGrid" data-slot="miembros-membersGrid">
+      <div className="bo-membersGrid">
         {members.map((member) => {
           const roleMeta = memberRoleMeta(member);
           return (
@@ -165,25 +167,24 @@ export default function Page() {
               key={member.id}
               type="button"
               className="bo-memberCard"
-              data-testid={`miembros-page-member-card-${member.id}`}
               onClick={() => window.location.assign(`/app/miembros/${member.id}`)}
             >
-              <div className="bo-memberCardTop" data-slot="miembros-memberCardTop">
+              <div className="bo-memberCardTop">
                 <Avatar className="bo-memberAvatar">
                   {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
                   <AvatarFallback className="bo-memberAvatarFallback">{initials(member.firstName, member.lastName)}</AvatarFallback>
                 </Avatar>
-                <div className="bo-memberMain" data-slot="miembros-memberMain">
-                  <div className="bo-memberNameRow" data-slot="miembros-memberNameRow">
-                    <div className="bo-memberName" data-slot="miembros-memberName">{fullName(member)}</div>
+                <div className="bo-memberMain">
+                  <div className="bo-memberNameRow">
+                    <div className="bo-memberName">{fullName(member)}</div>
                     {isSelfMember(member) ? <span className="bo-badge bo-badge--self">Tu</span> : null}
                   </div>
-                  <div className="bo-memberSub" data-slot="miembros-memberSub">{member.email ?? "Sin email"}</div>
+                  <div className="bo-memberSub">{member.email ?? "Sin email"}</div>
                 </div>
               </div>
 
-              <div className="bo-memberRoleRow" data-slot="miembros-memberRoleRow">
-                <span className="bo-memberMeta" data-slot="miembros-memberMeta">Rol</span>
+              <div className="bo-memberRoleRow">
+                <span className="bo-memberMeta">Rol</span>
                 <RoleBadge
                   roleSlug={roleMeta.slug}
                   roleName={roleMeta.label}
@@ -192,75 +193,79 @@ export default function Page() {
                 />
               </div>
 
-              <div className="bo-memberCardFoot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} data-slot="miembros-memberCardFoot">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} data-slot="miembros-div">
-                  <span className="bo-memberMeta" data-slot="miembros-memberMeta">Contrato semanal</span>
-                  <span className="bo-badge bo-memberHours" data-slot="miembros-memberHours">{member.weeklyContractHours.toFixed(2)} h</span>
+              <div className="bo-memberCardFoot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="bo-memberMeta">Contrato semanal</span>
+                  <span className="bo-badge bo-memberHours">{member.weeklyContractHours.toFixed(2)} h</span>
                 </div>
-                {/* <button
+                <button 
                   onClick={(e) => handleOpenWhatsApp(e, member)}
                   className="p-2 rounded-full hover:bg-green-500/20 text-slate-400 hover:text-green-400 transition-colors"
                   aria-label="Enviar WhatsApp"
-                > */}
-                  {/* <MessageCircle size={18} />
-                </button> */}
+                >
+                  <MessageCircle size={18} />
+                </button>
               </div>
             </button>
           );
         })}
 
         {members.length === 0 ? (
-          <Panel className="bo-panel--empty" data-slot="miembros-panel--empty" title="Sin miembros" meta="No hay miembros cargados todavía para este restaurante." />
+          <div className="bo-panel bo-panel--empty">
+            <div className="bo-panelHead">
+              <div className="bo-panelTitle">Sin miembros</div>
+              <div className="bo-panelMeta">No hay miembros cargados todavía para este restaurante.</div>
+            </div>
+          </div>
         ) : null}
       </div>
 
-      <Modal open={whatsappModalOpen} onClose={() => setWhatsappModalOpen(false)} title={`WhatsApp a ${selectedMember?.firstName || ""}`}>
-        <div className="p-6 max-w-md w-full" data-slot="miembros-w-full">
+      <Modal open={whatsappModalOpen} onOpenChange={setWhatsappModalOpen}>
+        <div className="p-6 max-w-md w-full">
           {needsSubscription ? (
-            <div className="text-center space-y-4" data-slot="miembros-space-y-4">
-              <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-green-400 mb-4" data-slot="miembros-mb-4">
+            <div className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-green-400 mb-4">
                 <MessageCircle size={32} />
               </div>
-              <h2 className="text-xl font-bold text-slate-100" data-slot="miembros-text-slate-100">WhatsApp Premium Pack</h2>
-              <p className="text-slate-400 text-sm" data-slot="miembros-text-sm">
-                Desbloquea la capacidad de enviar mensajes de WhatsApp directamente a tu personal.
+              <h2 className="text-xl font-bold text-slate-100">WhatsApp Premium Pack</h2>
+              <p className="text-slate-400 text-sm">
+                Desbloquea la capacidad de enviar mensajes de WhatsApp directamente a tu personal. 
                 Ideal para avisos de turnos y comunicaciones importantes.
               </p>
-              <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 my-4" data-slot="miembros-my-4">
-                <div className="text-2xl font-bold text-slate-100 mb-1" data-slot="miembros-mb-1">29.99 € <span className="text-sm text-slate-400 font-normal">/ mes</span></div>
-                <ul className="text-sm text-left text-slate-300 space-y-2 mt-4" data-slot="miembros-mt-4">
-                  <li data-slot="miembros-aff">✓ Mensajes ilimitados al staff</li>
-                  <li data-slot="miembros-ral">✓ Integración con cuenta de empresa central</li>
-                  <li data-slot="miembros-ear">✓ Sin necesidad de escanear QR</li>
+              <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 my-4">
+                <div className="text-2xl font-bold text-slate-100 mb-1">29.99 € <span className="text-sm text-slate-400 font-normal">/ mes</span></div>
+                <ul className="text-sm text-left text-slate-300 space-y-2 mt-4">
+                  <li>✓ Mensajes ilimitados al staff</li>
+                  <li>✓ Integración con cuenta de empresa central</li>
+                  <li>✓ Sin necesidad de escanear QR</li>
                 </ul>
               </div>
-              <button type="button" className="bo-btn bo-btn--primary w-full" data-testid="miembros-page-subscribe-button" onClick={handleSubscribe} disabled={subscribing}>
+              <Button variant="primary" className="w-full" onClick={handleSubscribe} disabled={subscribing}>
                 {subscribing ? "Activando..." : "Suscribirse y Continuar"}
-              </button>
+              </Button>
             </div>
           ) : (
-            <div className="space-y-4" data-slot="miembros-space-y-4">
-              <h2 className="text-lg font-bold text-slate-100" data-slot="miembros-text-slate-100">Mensaje para {selectedMember?.firstName}</h2>
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold text-slate-100">Mensaje para {selectedMember?.firstName}</h2>
               {!selectedMember?.whatsappNumber ? (
-                <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 p-3 rounded text-sm" data-slot="miembros-text-sm">
+                <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 p-3 rounded text-sm">
                   Este miembro no tiene un número de WhatsApp configurado en su perfil.
                 </div>
               ) : (
                 <>
-                  <div data-slot="miembros-div">
-                    <label className="block text-xs text-slate-400 mb-1" data-slot="miembros-mb-1">Mensaje</label>
-                    <textarea
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Mensaje</label>
+                    <textarea 
                       className="w-full h-32 bg-slate-900 border border-slate-700 rounded-lg p-3 text-slate-200 text-sm focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
-                      data-testid="miembros-page-whatsapp-message"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
-                  <div className="flex justify-end gap-3 pt-2" data-slot="miembros-pt-2">
-                    <button type="button" className="bo-btn bo-btn--secondary" data-testid="miembros-page-cancel-button" onClick={() => setWhatsappModalOpen(false)}>Cancelar</button>
-                    <button type="button" className="bo-btn bo-btn--primary" data-testid="miembros-page-send-button" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button variant="secondary" onClick={() => setWhatsappModalOpen(false)}>Cancelar</Button>
+                    <Button variant="primary" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
                       {sending ? "Enviando..." : "Enviar por WhatsApp"}
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}
