@@ -3,8 +3,8 @@ export type BORole = string;
 export type BOSection = "reservas" | "menus" | "comida" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estado_cuenta" | "website" | "site-builder";
 
 export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
-  root: ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas"],
-  admin: ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas"],
+  root: ["reservas", "menus", "comida", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estado_cuenta", "website", "site-builder"],
+  admin: ["reservas", "menus", "comida", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estado_cuenta", "website", "site-builder"],
   metre: ["reservas", "menus", "comida", "fichaje", "facturas"],
   jefe_cocina: ["reservas", "menus", "comida", "fichaje", "horarios"],
   arrocero: ["fichaje", "horarios"],
