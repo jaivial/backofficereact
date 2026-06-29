@@ -1137,16 +1137,26 @@
   padding: 0;
 }
 
-.bo-mainLimitCounterField {
-  margin-top: -8px;
+/* Group the toggle + counter so it occupies a single grid cell,
+   letting "Cafe incluido" sit on the same row when width allows. */
+.bo-mainLimitGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .bo-mainLimitCounterField .bo-timeAdjustCounter {
   gap: 4px;
 }
 
+/* When the toggle is active its label is redundant with the row above. */
+.bo-mainLimitCounterField .bo-timeAdjustCounterLabel {
+  display: none;
+}
+
 .bo-mainLimitCounterField .bo-timeAdjustCounterCtrls {
   max-width: 200px;
+  margin: 0 auto;
 }
 
 .bo-dishAddBtn {

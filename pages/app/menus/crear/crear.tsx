@@ -614,25 +614,27 @@ export function CrearPage() {
                     <div className="bo-label" data-slot="crear-label">Minimo personas para reservar</div>
                     <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" data-testid="menu-crear-min-party-size-input" />
                   </div>
-                  <div className="bo-field bo-field--inline" data-slot="crear-field--inline">
-                    <div className="bo-label" style={{ marginRight: "auto" }} data-slot="crear-label">Limite maximo de principales por mesa</div>
-                    <Switch checked={mainLimit} onCheckedChange={setMainLimit} data-testid="menu-crear-main-limit-switch" />
-                  </div>
-                  {mainLimit ? (
-                    <div className="bo-field bo-field--full bo-mainLimitCounterField" data-slot="crear-field-main-limit-number">
-                      <PlusMinusCounter
-                        label="Numero maximo de principales por mesa"
-                        value={Math.max(1, Number.parseInt(mainLimitNum || "1", 10) || 1)}
-                        onDecrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) - 1)))}
-                        onIncrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) + 1)))}
-                        canDecrease={(Number.parseInt(mainLimitNum || "1", 10) || 1) > 1}
-                        decrementAriaLabel="Reducir numero maximo de principales por mesa"
-                        incrementAriaLabel="Aumentar numero maximo de principales por mesa"
-                      />
+                  <div className="bo-field bo-mainLimitGroup" data-slot="crear-field-main-limit-group">
+                    <div className="bo-field bo-field--inline" data-slot="crear-field--inline">
+                      <div className="bo-label" style={{ marginRight: "auto" }} data-slot="crear-label">Limite maximo de principales por mesa</div>
+                      <Switch checked={mainLimit} onCheckedChange={setMainLimit} data-testid="menu-crear-main-limit-switch" />
                     </div>
-                  ) : null}
-                  <div className="bo-field" data-slot="crear-field">
-                    <div className="bo-label" data-slot="crear-label">Cafe incluido</div>
+                    {mainLimit ? (
+                      <div className="bo-field bo-mainLimitCounterField" data-slot="crear-field-main-limit-number">
+                        <PlusMinusCounter
+                          label="Numero maximo de principales por mesa"
+                          value={Math.max(1, Number.parseInt(mainLimitNum || "1", 10) || 1)}
+                          onDecrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) - 1)))}
+                          onIncrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) + 1)))}
+                          canDecrease={(Number.parseInt(mainLimitNum || "1", 10) || 1) > 1}
+                          decrementAriaLabel="Reducir numero maximo de principales por mesa"
+                          incrementAriaLabel="Aumentar numero maximo de principales por mesa"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="bo-field bo-field--inline" data-slot="crear-field">
+                    <div className="bo-label" style={{ marginRight: "auto" }} data-slot="crear-label">Cafe incluido</div>
                     <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} data-testid="menu-crear-coffee-switch" />
                   </div>
                   <div className="bo-field bo-field--full" data-slot="crear-field--full">
