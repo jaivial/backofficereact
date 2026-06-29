@@ -1097,8 +1097,15 @@
 
 .bo-dishAddRow {
   margin-top: 10px;
+  padding-bottom: 16px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.bo-dishAddRow > .bo-btn {
+  align-self: center;
 }
 
 .bo-dishAddBtn {
