@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { ReactCountryFlag as CountryFlag } from "react-country-flag";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { createClient } from "../../../../../api/client";
 import type { ConfigFloor, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
@@ -98,6 +99,7 @@ export function BookingEditor({
   stickyFooter?: boolean;
   floors?: ConfigFloor[];
 }) {
+  const reduceMotion = useReducedMotion();
   const [draft, setDraft] = useState<BookingEditorDraft>(initial);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -136,15 +138,17 @@ export function BookingEditor({
       return;
     }
     let cancelled = false;
+    setMenusLoaded(false);
     (async () => {
+      const minDelay = new Promise<void>((resolve) => setTimeout(resolve, 2000));
       try {
         const res = await api.menus.grupos.list("active");
-        if (!res.success) return;
         if (cancelled) return;
-        setMenus(res.menus || []);
+        if (res.success) setMenus(res.menus || []);
       } catch {
         // ignore
       } finally {
+        await minDelay;
         if (!cancelled) setMenusLoaded(true);
       }
     })();
@@ -444,8 +448,30 @@ export function BookingEditor({
             </button>
           </div>
 
-          {draft.special_menu && menusLoaded && menus.length === 0 ? (
-            <div style={{ marginTop: 12, display: "grid", gap: 12 }} data-slot="booking-editor-menu-empty">
+          <AnimatePresence mode="wait" initial={false}>
+          {draft.special_menu && !menusLoaded ? (
+            <motion.div
+              key="menu-loading"
+              style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10, justifyContent: "center", padding: "24px 0" }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
+              data-slot="booking-editor-menu-loading"
+            >
+              <span className="bo-spinner" aria-hidden="true" />
+              <span className="bo-mutedText">Cargando menús de grupo…</span>
+            </motion.div>
+          ) : draft.special_menu && menus.length === 0 ? (
+            <motion.div
+              key="menu-empty"
+              style={{ marginTop: 12, display: "grid", gap: 12 }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
+              data-slot="booking-editor-menu-empty"
+            >
               <div className="bo-mutedText" data-slot="booking-editor-menu-empty-message">
                 No hay menús de grupo. Debes crear un menú de grupo antes de poder asignarlo a una reserva.
               </div>
@@ -457,9 +483,17 @@ export function BookingEditor({
               >
                 <Plus size={18} strokeWidth={1.8} /> Crear menú de grupo
               </a>
-            </div>
+            </motion.div>
           ) : draft.special_menu ? (
-            <div style={{ marginTop: 12, display: "grid", gap: 10 }} data-slot="bookingEditor-div">
+            <motion.div
+              key="menu-content"
+              style={{ marginTop: 12, display: "grid", gap: 10 }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
+              data-slot="bookingEditor-div"
+            >
               <div className="bo-field" data-slot="booking-editor-menu-select-field">
                 <div className="bo-label" data-slot="bookingEditor-label">Seleccionar menú</div>
                 <Select
@@ -507,8 +541,9 @@ export function BookingEditor({
                 </button>
                 {!principalesItems.length ? <div className="bo-mutedText">Este menú no tiene lista de principales.</div> : null}
               </div>
-            </div>
+            </motion.div>
           ) : null}
+          </AnimatePresence>
       </Panel>
 
       {!draft.special_menu ? (
