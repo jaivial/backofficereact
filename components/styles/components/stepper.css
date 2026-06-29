@@ -236,6 +236,7 @@
 
 .bo-reservasGrid--closed {
   grid-template-columns: 1fr;
+  justify-items: center;
 }
 
 .bo-reservasClosedGate {
