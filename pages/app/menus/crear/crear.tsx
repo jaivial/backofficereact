@@ -387,8 +387,8 @@ export function CrearPage() {
             {renderMenuPreviewUploadArea()}
           </div>
 
-          <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(0)} data-testid="menu-crear-step1-back">Volver</button>
+          <div className="bo-menuWizardActions bo-menuWizardActions--centered" data-slot="crear-menuWizardActions">
+            <button className="bo-btn bo-btn--ghost bo-menuWizardActionsBack" type="button" onClick={() => setStep(0)} data-testid="menu-crear-step1-back">Volver</button>
             <button
               className="bo-btn bo-btn--primary" type="button"
               onClick={() => {
