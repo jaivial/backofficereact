@@ -1137,6 +1137,14 @@
   padding: 0;
 }
 
+.bo-mainLimitCounterField {
+  margin-top: -8px;
+}
+
+.bo-mainLimitCounterField .bo-timeAdjustCounter {
+  gap: 4px;
+}
+
 .bo-mainLimitCounterField .bo-timeAdjustCounterCtrls {
   max-width: 200px;
 }
