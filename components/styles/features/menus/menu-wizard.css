@@ -1126,6 +1126,21 @@
   max-width: 420px;
 }
 
+/* Main-limit counter: borderless container, constrained controls. */
+:root .bo-mainLimitCounterField .bo-timeAdjustCounter,
+:root[data-theme="light"] .bo-mainLimitCounterField .bo-timeAdjustCounter--glass {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+}
+
+.bo-mainLimitCounterField .bo-timeAdjustCounterCtrls {
+  max-width: 200px;
+}
+
 .bo-dishAddBtn {
   gap: 6px;
   font-size: 11px;
