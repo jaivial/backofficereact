@@ -105,6 +105,7 @@ export function BookingEditor({
   useEffect(() => setDraft(initial), [initial]);
 
   const [menus, setMenus] = useState<GroupMenuSummary[]>([]);
+  const [menusLoaded, setMenusLoaded] = useState(false);
   const [menuDetail, setMenuDetail] = useState<GroupMenu | null>(null);
   const [riceTypes, setRiceTypes] = useState<string[]>([]);
 
@@ -130,7 +131,10 @@ export function BookingEditor({
   }, [floors]);
 
   useEffect(() => {
-    if (!draft.special_menu) return;
+    if (!draft.special_menu) {
+      setMenusLoaded(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -140,6 +144,8 @@ export function BookingEditor({
         setMenus(res.menus || []);
       } catch {
         // ignore
+      } finally {
+        if (!cancelled) setMenusLoaded(true);
       }
     })();
     return () => {
@@ -438,7 +444,23 @@ export function BookingEditor({
             </button>
           </div>
 
-          {draft.special_menu ? (
+          {draft.special_menu && menusLoaded && menus.length === 0 ? (
+            <div style={{ marginTop: 12, display: "grid", gap: 12 }} data-slot="booking-editor-menu-empty">
+              <InlineAlert
+                kind="info"
+                title="No hay menús de grupo"
+                message="Debes crear un menú de grupo antes de poder asignarlo a una reserva."
+              />
+              <a
+                className="bo-btn bo-btn--primary"
+                href="/app/menus"
+                style={{ justifySelf: "start", textDecoration: "none" }}
+                data-slot="booking-editor-menu-create-link"
+              >
+                <Plus size={18} strokeWidth={1.8} /> Crear menú de grupo
+              </a>
+            </div>
+          ) : draft.special_menu ? (
             <div style={{ marginTop: 12, display: "grid", gap: 10 }} data-slot="bookingEditor-div">
               <div className="bo-field" data-slot="booking-editor-menu-select-field">
                 <div className="bo-label" data-slot="bookingEditor-label">Seleccionar menú</div>
