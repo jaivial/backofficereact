@@ -167,7 +167,7 @@
 }
 
 .bo-typeCard:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--bo-accent) 36%, var(--bo-border));
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 36%, var(--bo-border));
   transform: translateY(-1px);
 }
 
@@ -182,7 +182,7 @@
 }
 
 .bo-typeCard.is-selected {
-  border-color: color-mix(in srgb, var(--bo-accent) 54%, var(--bo-border));
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 54%, var(--bo-border));
   box-shadow: 0 14px 26px color-mix(in srgb, var(--bo-accent) 16%, var(--bo-surface-3));
 }
 

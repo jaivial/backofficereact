@@ -296,7 +296,7 @@ export function CrearPage() {
               return (
                 <button
                   key={opt.value}
-                  className={`bo-typeCard bo-menuGlassPanel ${isSelected ? "is-selected" : ""}`}
+                  className={`bo-panel bo-typeCard ${isSelected ? "is-selected" : ""}`}
                   type="button"
                   disabled={!optData.enabled || busy}
                   onClick={() => setMenuType(opt.value)}
