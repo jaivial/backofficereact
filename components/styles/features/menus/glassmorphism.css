@@ -288,7 +288,7 @@
     place-items: stretch;
   }
 
-  .bo-menuTypePanel.bo-menuGlassPanel {
+  .bo-menuTypePanel {
     min-height: 164px;
   }
 }
