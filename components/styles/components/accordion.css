@@ -193,6 +193,43 @@
   background: #ffe066;
 }
 
+/* White theme: outline-only badge (no fill). */
+:root[data-theme="light"] .bo-accordionBadge {
+  background: transparent;
+  border: 1px solid var(--bo-accent);
+  color: var(--bo-accent);
+}
+
+:root[data-theme="light"] .bo-accordionBadge--lila {
+  background: transparent;
+  border-color: #8b7cf7;
+  color: #8b7cf7;
+}
+
+:root[data-theme="light"] .bo-accordionBadge--cyan {
+  background: transparent;
+  border-color: #2bb3a8;
+  color: #2bb3a8;
+}
+
+:root[data-theme="light"] .bo-accordionBadge--green {
+  background: transparent;
+  border-color: #2e9d5f;
+  color: #2e9d5f;
+}
+
+:root[data-theme="light"] .bo-accordionBadge--red {
+  background: transparent;
+  border-color: #e0593f;
+  color: #e0593f;
+}
+
+:root[data-theme="light"] .bo-accordionBadge--yellow {
+  background: transparent;
+  border-color: #c79a16;
+  color: #c79a16;
+}
+
 /* Accordion - Multiple Open Mode */
 .bo-accordion--multiple .bo-accordionItem.is-active .bo-accordionContent {
   display: block;

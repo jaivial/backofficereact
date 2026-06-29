@@ -617,6 +617,19 @@ export function CrearPage() {
                     <div className="bo-label" style={{ marginRight: "auto" }} data-slot="crear-label">Limite maximo de principales por mesa</div>
                     <Switch checked={mainLimit} onCheckedChange={setMainLimit} data-testid="menu-crear-main-limit-switch" />
                   </div>
+                  {mainLimit ? (
+                    <div className="bo-field" data-slot="crear-field-main-limit-number">
+                      <div className="bo-label" data-slot="crear-label">Numero maximo de principales por mesa</div>
+                      <input
+                        className="bo-input"
+                        value={mainLimitNum}
+                        onChange={(e) => setMainLimitNum(e.target.value.replace(/[^0-9]/g, ""))}
+                        inputMode="numeric"
+                        min={1}
+                        data-testid="menu-crear-main-limit-number-input"
+                      />
+                    </div>
+                  ) : null}
                   <div className="bo-field" data-slot="crear-field">
                     <div className="bo-label" data-slot="crear-label">Cafe incluido</div>
                     <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} data-testid="menu-crear-coffee-switch" />
