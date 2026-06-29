@@ -532,6 +532,17 @@
   font-weight: 650;
 }
 
+:root[data-theme="light"] .bo-previewDesktopSwitch {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)),
+    color-mix(in srgb, var(--bo-surface) 90%, transparent);
+  border: 1px solid var(--bo-glass-border-strong);
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+}
+
 .bo-previewPane {
   min-width: 0;
   display: grid;
@@ -590,10 +601,11 @@
     align-items: center;
     justify-self: flex-end;
     gap: 10px;
-    border-radius: 999px;
-    border: 1px solid var(--bo-border);
-    background: rgba(20, 22, 30, 0.56);
-    padding: 8px 12px;
+    border-radius: var(--bo-radius-lg);
+    border: none;
+    background: var(--bo-surface);
+    box-shadow: var(--bo-shadow-soft);
+    padding: 8px 14px;
   }
 
   .bo-menuWizardFinal.is-previewHidden .bo-previewPane {
@@ -770,6 +782,7 @@
 .bo-sectionDishTabPanel {
   display: grid;
   gap: var(--bo-space-3);
+  padding: var(--bo-space-3);
 }
 
 .bo-dishesEmpty {
@@ -1233,7 +1246,7 @@
 
 .bo-commentAddBtn {
   width: fit-content;
-  align-self: flex-start;
+  justify-self: center;
 }
 
 .bo-searchResults {
@@ -1278,12 +1291,22 @@
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 0;
-  border-radius: var(--bo-radius-md);
-  border: 1px solid var(--bo-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.12)),
-    var(--bo-surface);
+  border-radius: var(--bo-radius-lg);
+  background: var(--bo-surface);
+  border: none;
+  box-shadow: var(--bo-shadow-soft);
   padding: 12px 14px;
+}
+
+:root[data-theme="light"] .bo-previewHead {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)),
+    color-mix(in srgb, var(--bo-surface) 90%, transparent);
+  border: 1px solid var(--bo-glass-border-strong);
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
 }
 
 .bo-previewOriginSwitch {

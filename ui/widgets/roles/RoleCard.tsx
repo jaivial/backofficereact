@@ -34,7 +34,7 @@ export function RoleCard({
           {usersCount} miembros
         </span>
         <span className="bo-mutedText" data-slot="roleCard-mutedText">{role.permissions.length} permisos</span>
-        <span className="bo-roleCardLevel" data-slot="roleCard-roleCardLevel">Nivel {role.level}</span>
+        <span className="bo-roleCardLevel" data-slot="roleCard-roleCardLevel">Nivel {Math.floor(role.sortOrder / 10) + 1}</span>
       </div>
     </button>
   );

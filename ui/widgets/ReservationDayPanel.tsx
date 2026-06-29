@@ -82,10 +82,6 @@ export function ReservationDayPanel({
 }: ReservationDayPanelProps) {
   return (
     <div className={cn("bo-panel", "bo-dayStatePanel", "!w-fit py-4 px-14 !mx-auto", panelClassName)} data-slot="reservation-day-panel">
-      <div className="bo-panelHead flex flex-col gap-2 justify-center !items-center" data-slot="reservation-day-panel-header">
-        <div className="bo-panelTitle !text-center" data-slot="reservation-day-panel-title">{title}</div>
-        {meta ? <div className="bo-panelMeta !text-center" data-slot="reservation-day-panel-meta">{meta}</div> : null}
-      </div>
       <div className={cn("bo-panelBody", "bo-configDayLimitRow", "!flex !flex-col gap-2 !justify-center !items-center", bodyClassName)} data-slot="reservation-day-panel-body">
         <ReservationDayStateBlock
           day={day}

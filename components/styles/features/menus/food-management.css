@@ -24,9 +24,10 @@
 
 .bo-foodHubCard {
   min-height: 132px;
-  border: 1px solid var(--bo-border);
-  border-radius: var(--bo-radius-md);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--bo-surface) 94%, transparent), color-mix(in srgb, var(--bo-shell) 88%, transparent));
+  border-radius: var(--bo-radius-lg);
+  background: var(--bo-surface);
+  border: none;
+  box-shadow: var(--bo-shadow-soft);
   color: var(--bo-text);
   display: flex;
   flex-direction: column;
@@ -41,7 +42,23 @@
 .bo-foodHubCard:hover {
   border-color: color-mix(in srgb, var(--bo-accent) 42%, var(--bo-border));
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(12, 14, 26, 0.24);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.30);
+}
+
+:root[data-theme="light"] .bo-foodHubCard {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)),
+    color-mix(in srgb, var(--bo-surface) 90%, transparent);
+  border: 1px solid var(--bo-glass-border-strong);
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
+}
+
+:root[data-theme="light"] .bo-foodHubCard:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 36%, var(--bo-border));
+  box-shadow: 0 8px 24px rgba(124, 92, 231, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .bo-foodHubIcon {

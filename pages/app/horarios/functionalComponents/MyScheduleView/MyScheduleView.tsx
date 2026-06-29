@@ -112,6 +112,7 @@ export function MyScheduleView({ initialSchedules }: { initialSchedules: Fichaje
               onNavigate={(_, id) => handleViewChange(id)}
               ariaLabel="Cambiar vista"
               className="bo-tabs--glass rounded-xl !w-fit !mx-auto"
+              layoutId="boMyScheduleViewTabIndicator"
             />
           </div>
         </div>
