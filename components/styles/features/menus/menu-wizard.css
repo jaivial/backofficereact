@@ -1100,12 +1100,30 @@
   padding-bottom: 16px;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   gap: 10px;
 }
 
 .bo-dishAddRow > .bo-btn {
   align-self: center;
+}
+
+.bo-dishSearchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.bo-dishSearchWrap .bo-dishSearch {
+  width: 100%;
+}
+
+.bo-dishSearchResults {
+  width: 100%;
+  max-width: 420px;
 }
 
 .bo-dishAddBtn {
