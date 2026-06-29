@@ -446,11 +446,9 @@ export function BookingEditor({
 
           {draft.special_menu && menusLoaded && menus.length === 0 ? (
             <div style={{ marginTop: 12, display: "grid", gap: 12 }} data-slot="booking-editor-menu-empty">
-              <InlineAlert
-                kind="info"
-                title="No hay menús de grupo"
-                message="Debes crear un menú de grupo antes de poder asignarlo a una reserva."
-              />
+              <div className="bo-mutedText" data-slot="booking-editor-menu-empty-message">
+                No hay menús de grupo. Debes crear un menú de grupo antes de poder asignarlo a una reserva.
+              </div>
               <a
                 className="bo-btn bo-btn--primary"
                 href="/app/menus"
