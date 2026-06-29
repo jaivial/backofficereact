@@ -443,6 +443,10 @@ function wsOriginFromBackend(backendOrigin: string): string {
 }
 
 function toBackendAdminPath(pathWithQuery: string): string {
+  // Incoming from Express proxy at /api/admin/*: strip /api prefix for Go backend
+  if (pathWithQuery === "/api/admin") return "/admin";
+  if (pathWithQuery.startsWith("/api/admin/")) return pathWithQuery.replace("/api/admin/", "/admin/");
+  // Legacy /admin/* paths → add /api prefix
   if (pathWithQuery === "/admin") return "/api/admin";
   if (pathWithQuery.startsWith("/admin/")) return `/api${pathWithQuery}`;
   return pathWithQuery;
@@ -461,7 +465,7 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws")) return;
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
       let upstreamPath = "";
