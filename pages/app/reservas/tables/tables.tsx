@@ -368,7 +368,7 @@ export default function TableManagerPage() {
   const [draft, setDraft] = useState<TableDraft>(() => defaultDraft(1));
   const [draftTextureFile, setDraftTextureFile] = useState<File | null>(null);
   const [shortSideHover, setShortSideHover] = useState<RectShortSide | null>(null);
-  const nodeTypes = useMemo(() => NODE_TYPES, []);
+  const nodeTypes = NODE_TYPES;
   const reduceMotion = useReducedMotion();
   const isDayOpen = day?.isOpen !== false;
   const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
