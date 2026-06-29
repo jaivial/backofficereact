@@ -23,6 +23,7 @@ import { Switch } from "../../../../ui/shadcn/Switch";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { Panel } from "../../../../ui/shell/Panel";
+import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 
 import { useMenuEditor } from "./hooks/useMenuEditor";
 import { MenuPreview } from "./functionalComponents/MenuPreview/MenuPreview";
@@ -618,15 +619,15 @@ export function CrearPage() {
                     <Switch checked={mainLimit} onCheckedChange={setMainLimit} data-testid="menu-crear-main-limit-switch" />
                   </div>
                   {mainLimit ? (
-                    <div className="bo-field" data-slot="crear-field-main-limit-number">
-                      <div className="bo-label" data-slot="crear-label">Numero maximo de principales por mesa</div>
-                      <input
-                        className="bo-input"
-                        value={mainLimitNum}
-                        onChange={(e) => setMainLimitNum(e.target.value.replace(/[^0-9]/g, ""))}
-                        inputMode="numeric"
-                        min={1}
-                        data-testid="menu-crear-main-limit-number-input"
+                    <div className="bo-field bo-field--full bo-mainLimitCounterField" data-slot="crear-field-main-limit-number">
+                      <PlusMinusCounter
+                        label="Numero maximo de principales por mesa"
+                        value={Math.max(1, Number.parseInt(mainLimitNum || "1", 10) || 1)}
+                        onDecrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) - 1)))}
+                        onIncrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) + 1)))}
+                        canDecrease={(Number.parseInt(mainLimitNum || "1", 10) || 1) > 1}
+                        decrementAriaLabel="Reducir numero maximo de principales por mesa"
+                        incrementAriaLabel="Aumentar numero maximo de principales por mesa"
                       />
                     </div>
                   ) : null}
