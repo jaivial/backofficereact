@@ -215,18 +215,18 @@ export default function Page() {
     <section data-ui="reservas-config" aria-label="Configuración diaria reservas">
       <PageToolbar
         left={
-          <>
-            <DateDropdown value={date} onChange={onDateChange} data-ui="date-dropdown" />
-            <button data-action="reload" className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy} data-ui="reload-btn">
-              Recargar
-            </button>
-          </>
+          <DateDropdown value={date} onChange={onDateChange} data-ui="date-dropdown" />
+        }
+        right={
+          <button data-action="reload" className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy} data-ui="reload-btn">
+            Recargar
+          </button>
         }
       />
 
       <div data-slot="panels-stack" className="bo-stack">
         <ReservationDayPanel
-          title="Estado del día"
+          title={day.isOpen ? "Estado del día" : null}
           meta={day.isOpen ? `${dailyLimit.totalPeople}/${dailyLimit.limit} pax` : "Día cerrado"}
           day={day}
           busy={busy}

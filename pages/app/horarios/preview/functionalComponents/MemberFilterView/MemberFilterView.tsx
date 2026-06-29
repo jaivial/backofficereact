@@ -259,6 +259,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               onNavigate={(_, id) => handleViewChange(id)}
               ariaLabel="Cambiar vista"
               className="bo-tabs--glass rounded-xl !w-fit"
+              layoutId="boMemberFilterViewTabIndicator"
             />
           </div>
         </div>
