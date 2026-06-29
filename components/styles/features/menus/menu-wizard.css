@@ -616,6 +616,30 @@
   margin-bottom: 0;
 }
 
+/* Editor de menu: center the "Añadir subtitulo" button. */
+.bo-menuEditorHead .bo-subtitleAddBtn {
+  display: flex;
+  margin-inline: auto;
+}
+
+/* Editor de menu: center selectors and constrain their width. */
+.bo-menuEditorHead .bo-menuSettingSelect {
+  width: 100%;
+  max-width: 250px;
+  margin-inline: auto;
+  justify-content: center;
+}
+
+.bo-menuEditorHead .bo-menuSettingSelect .bo-selectLabelWrap {
+  justify-content: center;
+  width: auto;
+}
+
+.bo-menuEditorHead .bo-menuSettingSelect .bo-selectLabel {
+  width: auto;
+  text-align: center;
+}
+
 .bo-sectionsEditor {
   display: grid;
   gap: 10px;
