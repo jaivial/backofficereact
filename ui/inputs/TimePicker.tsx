@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Clock3 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
@@ -51,8 +52,28 @@ export function TimePicker({
   const times = useMemo(() => buildTimes(stepMinutes ?? 5), [stepMinutes]);
   const selected = useMemo(() => normalizeHHMM(value), [value]);
 
+  const [listPosition, setListPosition] = useState({ top: 0, left: 0, width: 0, openUp: false });
+
   const close = useCallback(() => setOpen(false), []);
   const toggle = useCallback(() => setOpen((v) => !v), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const desiredHeight = Math.min(360, vh - 140);
+    const spaceBelow = vh - rect.bottom;
+    const spaceAbove = rect.top;
+    const openUp = spaceBelow < desiredHeight && spaceAbove > spaceBelow;
+    setListPosition({
+      top: openUp ? rect.top - desiredHeight - 6 : rect.bottom + 6,
+      left: rect.left,
+      width: Math.max(rect.width, 120),
+      openUp,
+    });
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -132,20 +153,28 @@ export function TimePicker({
         <Clock3 size={18} strokeWidth={1.8} aria-hidden="true" />
         <span className="bo-dateBtnLabel" data-slot="timePicker-dateBtnLabel">{selected || "—:—"}</span>
       </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            ref={listRef}
-            className="bo-selectList bo-timeList"
-            role="listbox"
-            tabIndex={-1}
-            onKeyDown={onListKey}
-            initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -6 }}
-            transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
-            data-ui="time-picker-list"
-          >
+      {typeof window !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                ref={listRef}
+                className="bo-selectList bo-timeList"
+                role="listbox"
+                tabIndex={-1}
+                onKeyDown={onListKey}
+                initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: listPosition.openUp ? 6 : -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: listPosition.openUp ? 6 : -6 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
+                style={{
+                  position: "fixed",
+                  top: `${listPosition.top}px`,
+                  left: `${listPosition.left}px`,
+                  width: `${listPosition.width}px`,
+                }}
+                data-ui="time-picker-list"
+              >
             {times.map((t, idx) => {
               const isSel = t === selected;
               const isAct = idx === activeIdx;
@@ -171,9 +200,11 @@ export function TimePicker({
                 </button>
               );
             })}
-          </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </div>
   );
 }
