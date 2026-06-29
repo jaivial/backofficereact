@@ -1159,6 +1159,20 @@
   margin: 0 auto;
 }
 
+.bo-mainLimitCounterField .bo-timeAdjustCounterValue {
+  padding-inline: 2rem;
+}
+
+/* Cafe incluido: keep label and switch close together. */
+.bo-coffeeField {
+  justify-content: center;
+  gap: 10px;
+}
+
+.bo-coffeeField .bo-label {
+  margin-right: 0 !important;
+}
+
 .bo-dishAddBtn {
   gap: 6px;
   font-size: 11px;

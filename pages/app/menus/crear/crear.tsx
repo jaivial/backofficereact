@@ -633,8 +633,8 @@ export function CrearPage() {
                       </div>
                     ) : null}
                   </div>
-                  <div className="bo-field bo-field--inline" data-slot="crear-field">
-                    <div className="bo-label" style={{ marginRight: "auto" }} data-slot="crear-label">Cafe incluido</div>
+                  <div className="bo-field bo-field--inline bo-coffeeField" data-slot="crear-field">
+                    <div className="bo-label" data-slot="crear-label">Cafe incluido</div>
                     <Switch checked={includedCoffee} onCheckedChange={setIncludedCoffee} data-testid="menu-crear-coffee-switch" />
                   </div>
                   <div className="bo-field bo-field--full" data-slot="crear-field--full">
