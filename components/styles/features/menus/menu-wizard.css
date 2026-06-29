@@ -623,6 +623,11 @@
 }
 
 /* Editor de menu: center selectors and constrain their width. */
+.bo-menuEditorHead .bo-selectWrapper {
+  display: flex;
+  justify-content: center;
+}
+
 .bo-menuEditorHead .bo-menuSettingSelect {
   width: 100%;
   max-width: 250px;
