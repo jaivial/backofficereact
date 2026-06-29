@@ -126,6 +126,7 @@ export default function Page() {
               onNavigate={(_, id) => onViewChange(id)}
               ariaLabel="Cambiar vista"
               className="bo-tabs--glass bo-viewTabs flex flex-row ms-auto rounded-xl !w-fit"
+              layoutId="boPreviewViewTabIndicator"
             />
           </div>
         }
