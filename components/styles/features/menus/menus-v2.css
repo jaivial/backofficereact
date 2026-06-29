@@ -124,12 +124,6 @@
 }
 
 .bo-menuV2Card {
-  border-radius: var(--bo-radius-md);
-  border: 1px solid var(--bo-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.12)),
-    var(--bo-surface-2);
-  box-shadow: var(--bo-shadow-soft);
   padding: 14px;
   min-height: 0;
   display: grid;
@@ -137,12 +131,16 @@
   gap: 10px 16px;
   align-items: start;
   cursor: pointer;
-  transition: border-color 160ms ease, transform 120ms ease, background 160ms ease;
+  transition: transform 120ms ease, box-shadow 160ms ease;
 }
 
 .bo-menuV2Card:hover {
-  border-color: var(--bo-border-2);
   transform: translateY(-1px);
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--bo-accent) 12%, rgba(8, 10, 22, 0.4));
+}
+
+.bo-menuV2Card.is-draft {
+  border: 1px dashed var(--bo-border-2);
 }
 
 .bo-menuV2Main {

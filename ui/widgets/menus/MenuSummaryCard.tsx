@@ -81,7 +81,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
 
   return (
     <article
-      className={cn("bo-menuV2Card", "bo-menuGlassPanel", menu.active ? "is-active" : "is-inactive", menu.is_draft && "is-draft", className)}
+      className={cn("bo-panel", "bo-menuV2Card", menu.active ? "is-active" : "is-inactive", menu.is_draft && "is-draft", className)}
       role="listitem"
       tabIndex={0}
       onClick={openMenuEditor}
