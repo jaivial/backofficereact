@@ -28,7 +28,7 @@ export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
           return (
             <button
               key={panel.value}
-              className={cn("bo-menuTypePanel", "bo-menuGlassPanel", "bo-menuTypePanel--minimalGlass")}
+              className={cn("bo-panel", "bo-menuTypePanel", "bo-menuTypePanel--minimalGlass")}
               type="button"
               onClick={() => onSelect(panel.value)}
               aria-labelledby={labelId}
