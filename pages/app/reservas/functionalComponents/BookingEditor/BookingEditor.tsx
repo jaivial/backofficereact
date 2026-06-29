@@ -140,7 +140,7 @@ export function BookingEditor({
     let cancelled = false;
     setMenusLoaded(false);
     (async () => {
-      const minDelay = new Promise<void>((resolve) => setTimeout(resolve, 2000));
+      const minDelay = new Promise<void>((resolve) => setTimeout(resolve, 1000));
       try {
         const res = await api.menus.grupos.list("active");
         if (cancelled) return;
