@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
 
@@ -25,13 +25,9 @@ export function Tabs({
   layoutId?: string;
 }) {
   const reduceMotion = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const initialUrlRef = useRef<string | null>(null);
   const mountLoggedRef = useRef(false);
-
-  // Avoid layout animation quirks during SSR/hydration (especially visible on first load).
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -162,7 +158,7 @@ export function Tabs({
 
     const links = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map((l) => l.href);
     console.log("[bo-tabs] stylesheets", { count: document.styleSheets.length, links });
-  }, [activeId, mounted, reduceMotion, tabs]);
+  }, [activeId, reduceMotion, tabs]);
 
   return (
     <nav ref={navRef} className={cn("bo-tabs", "bo-tabs--glass", className)} aria-label={ariaLabel} data-testid="tabs" data-role="tabs-nav">
@@ -198,17 +194,7 @@ export function Tabs({
               onNavigate(href, t.id, ev);
             }}
           >
-            {mounted ? (
-              <motion.span
-                layoutId={active ? layoutId : `${layoutId}--${t.id}`}
-                className="bo-tabIndicator"
-                animate={{ opacity: active ? 1 : 0 }}
-                transition={reduceMotion ? { duration: 0 } : { duration: 0.12 }}
-                initial={false}
-              />
-            ) : active ? (
-              <span className="bo-tabIndicator" />
-            ) : null}
+            <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="tab-inner">
               <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
                 {t.icon}
