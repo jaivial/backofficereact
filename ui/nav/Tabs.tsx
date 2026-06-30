@@ -165,13 +165,14 @@ export function Tabs({
       {tabs.map((t) => {
         const active = t.id === activeId;
         const href = (() => {
-          if (t.href.includes("?")) return t.href;
-          if (typeof window === "undefined") return t.href;
-          const isMenusTab = t.id === "menus" || t.href.startsWith("/app/menus");
-          if (isMenusTab) return t.href;
+          const raw = t.href ?? "#";
+          if (raw === "#" || raw.includes("?")) return raw;
+          if (typeof window === "undefined") return raw;
+          const isMenusTab = t.id === "menus" || raw.startsWith("/app/menus");
+          if (isMenusTab) return raw;
           const sp = new URLSearchParams(window.location.search || "");
           const date = sp.get("date");
-          return date ? `${t.href}?date=${encodeURIComponent(date)}` : t.href;
+          return date ? `${raw}?date=${encodeURIComponent(date)}` : raw;
         })();
         const motionTransition = reduceMotion
           ? { duration: 0 }
