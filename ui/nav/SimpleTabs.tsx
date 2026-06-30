@@ -75,16 +75,16 @@ export function SimpleTabs({
             type="button"
             title={item.title}
           >
-            {active ? (
-              mounted ? (
-                <motion.span
-                  className="bo-tabIndicator"
-                  layoutId={effectiveLayoutId}
-                  transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
-                />
-              ) : (
-                <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
-              )
+            {mounted ? (
+              <motion.span
+                className="bo-tabIndicator"
+                layoutId={active ? effectiveLayoutId : `${effectiveLayoutId}--${item.id}`}
+                animate={{ opacity: active ? 1 : 0 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.12 }}
+                initial={false}
+              />
+            ) : active ? (
+              <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
             ) : null}
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
               <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
@@ -138,16 +138,16 @@ export function SimpleTabsList({
             onClick={() => ctx.setActiveId(item.id)}
             type="button"
           >
-            {active ? (
-              mounted ? (
-                <motion.span
-                  className="bo-tabIndicator"
-                  layoutId={effectiveLayoutId}
-                  transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 42, mass: 0.9 }}
-                />
-              ) : (
-                <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
-              )
+            {mounted ? (
+              <motion.span
+                className="bo-tabIndicator"
+                layoutId={active ? effectiveLayoutId : `${effectiveLayoutId}--${item.id}`}
+                animate={{ opacity: active ? 1 : 0 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.12 }}
+                initial={false}
+              />
+            ) : active ? (
+              <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
             ) : null}
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
               <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
