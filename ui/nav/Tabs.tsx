@@ -196,9 +196,11 @@ export function Tabs({
           >
             <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="tab-inner">
-              <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
-                {t.icon}
-              </span>
+              {t.icon != null && (
+                <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
+                  {t.icon}
+                </span>
+              )}
               <span className="bo-tabLabel hidden sm:inline" data-slot="tab-label">{t.label}</span>
             </span>
           </motion.a>
