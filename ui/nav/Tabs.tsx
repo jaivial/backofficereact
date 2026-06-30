@@ -198,8 +198,16 @@ export function Tabs({
               onNavigate(href, t.id, ev);
             }}
           >
-            {active || !mounted ? (
-              <motion.span layoutId={layoutId} className="bo-tabIndicator" />
+            {mounted ? (
+              <motion.span
+                layoutId={active ? layoutId : `${layoutId}--${t.id}`}
+                className="bo-tabIndicator"
+                animate={{ opacity: active ? 1 : 0 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.12 }}
+                initial={false}
+              />
+            ) : active ? (
+              <span className="bo-tabIndicator" />
             ) : null}
             <span className="bo-tabInner" data-slot="tab-inner">
               <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
