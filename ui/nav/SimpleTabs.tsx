@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
 
 export type SimpleTabItem = {
@@ -24,7 +24,6 @@ export function SimpleTabs({
   className,
   "aria-label": ariaLabel,
   panelled,
-  layoutId,
 }: {
   items?: SimpleTabItem[];
   activeId?: string;
@@ -35,15 +34,8 @@ export function SimpleTabs({
   "aria-label"?: string;
   /** Set true when tab panels exist in the DOM. Adds aria-controls/id on tabs. */
   panelled?: boolean;
-  layoutId?: string;
 }) {
-  const reduceMotion = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
   const [legacyActiveId, setLegacyActiveId] = useState(defaultValue ?? "");
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!items || !activeId || !onChange) {
     return (
@@ -56,7 +48,6 @@ export function SimpleTabs({
   }
 
   const activeIndex = items.findIndex((t) => t.id === activeId);
-  const effectiveLayoutId = layoutId ?? "boTabIndicator";
 
   return (
     <div className={cn("bo-tabs", className)} role="tablist" aria-label={ariaLabel || "Tabs"} data-testid="simple-tabs" data-role="tabs-list">
@@ -75,17 +66,7 @@ export function SimpleTabs({
             type="button"
             title={item.title}
           >
-            {mounted ? (
-              <motion.span
-                className="bo-tabIndicator"
-                layoutId={active ? effectiveLayoutId : `${effectiveLayoutId}--${item.id}`}
-                animate={{ opacity: active ? 1 : 0 }}
-                transition={reduceMotion ? { duration: 0 } : { duration: 0.12 }}
-                initial={false}
-              />
-            ) : active ? (
-              <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
-            ) : null}
+            <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
               <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
             </span>
@@ -105,11 +86,6 @@ export function SimpleTabsList({
 }) {
   const ctx = React.useContext(legacyTabsContext);
   const reduceMotion = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!ctx) return <>{children}</>;
 
@@ -138,17 +114,7 @@ export function SimpleTabsList({
             onClick={() => ctx.setActiveId(item.id)}
             type="button"
           >
-            {mounted ? (
-              <motion.span
-                className="bo-tabIndicator"
-                layoutId={active ? effectiveLayoutId : `${effectiveLayoutId}--${item.id}`}
-                animate={{ opacity: active ? 1 : 0 }}
-                transition={reduceMotion ? { duration: 0 } : { duration: 0.12 }}
-                initial={false}
-              />
-            ) : active ? (
-              <span className="bo-tabIndicator" data-slot="simpleTabs-tabIndicator" />
-            ) : null}
+            <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
               <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
             </span>
