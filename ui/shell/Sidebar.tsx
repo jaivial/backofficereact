@@ -86,9 +86,6 @@ export function Sidebar({
 
   return (
     <aside className={cn("bo-sidebar", className)} aria-label="Sidebar" data-testid="sidebar" data-ui="sidebar">
-      <div className="bo-brand" aria-label="Backoffice" data-testid="sidebar-brand" data-slot="sidebar-brand">
-        <Settings {...iconProps} />
-      </div>
 
       <nav className="bo-nav bo-navDesktop" aria-label="Navigation" data-testid="sidebar-nav-desktop" data-slot="sidebar-nav-desktop">
         {items.map((item) => {

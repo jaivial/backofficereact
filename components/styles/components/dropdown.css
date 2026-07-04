@@ -13,6 +13,13 @@
   padding: 6px;
 }
 
+/* Panel-styled menu: reuse the .bo-panel .bo-invoiceFilters surface for the
+   popover while keeping the menu's fixed positioning/stacking. */
+.bo-menu.bo-menu--panel {
+  gap: var(--bo-space-1);
+  padding: 8px;
+}
+
 .bo-menuItem {
   width: 100%;
   border: 0;

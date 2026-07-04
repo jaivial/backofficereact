@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "../../../state/atoms";
@@ -82,6 +82,23 @@ export default function Page() {
   const [batchSendOpen, setBatchSendOpen] = useState(false);
 
   useErrorToast(error);
+
+  // Read URL params on mount for tab and invoice id
+  useEffect(() => {
+    const tab = getUrlParam("tab");
+    const idStr = getUrlParam("id");
+    if (tab === "añadir") {
+      setActiveTab("añadir");
+      setIsCreatingNew(true);
+      if (idStr) {
+        const id = Number(idStr);
+        if (id && !Number.isNaN(id)) {
+          const found = invoices.find((inv) => inv.id === id);
+          if (found) setEditingInvoice(found);
+        }
+      }
+    }
+  }, []); // ponytail: run once on mount; invoices from SSR data
 
   // Fetch invoices with filters
   const fetchInvoices = useCallback(async () => {
@@ -176,11 +193,27 @@ export default function Page() {
     setPage(newPage);
   }, []);
 
+  // ── URL param helpers ──
+  const getUrlParam = (key: string): string | null => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get(key);
+  };
+
+  const updateUrl = (params: Record<string, string>) => {
+    const q = new URLSearchParams(window.location.search);
+    for (const [k, v] of Object.entries(params)) {
+      if (v) q.set(k, v); else q.delete(k);
+    }
+    const url = `${window.location.pathname}?${q.toString()}`;
+    window.history.replaceState(null, "", url);
+  };
+
   // Handle create new invoice
   const handleCreateNew = useCallback(() => {
     setEditingInvoice(null);
     setIsCreatingNew(true);
     setActiveTab("añadir");
+    updateUrl({ tab: "añadir", id: "" });
   }, []);
 
   // Handle edit existing invoice
@@ -188,12 +221,14 @@ export default function Page() {
     setEditingInvoice(invoice);
     setIsCreatingNew(true);
     setActiveTab("añadir");
+    updateUrl({ tab: "añadir", id: String(invoice.id) });
   }, []);
 
   // Handle cancel edit
   const handleCancelEdit = useCallback(() => {
     setEditingInvoice(null);
     setIsCreatingNew(false);
+    updateUrl({ tab: "resumen", id: "" });
   }, []);
 
   // Handle save invoice
@@ -338,6 +373,69 @@ export default function Page() {
 
   return (
     <div className="bo-facturasPage" data-slot="facturas-facturasPage">
+      <style>{`@media (max-width: 768px) {
+        /* ── Table cards ── */
+        .bo-table--facturas thead{display:none}
+        .bo-table--facturas,.bo-table--facturas tbody,.bo-tableWrap .bo-tableScroll{display:block}
+        .bo-table--facturas tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:0;padding:14px;border:1px solid var(--bo-border);border-radius:14px;margin-bottom:10px;background:var(--bo-surface);position:relative}
+        .bo-table--facturas tbody td{padding:2px 0;text-align:left}
+        .bo-table--facturas tbody td::before{display:none}
+
+        /* Card rows: full-width elements */
+        .bo-table--facturas td.col-selection{display:none!important}
+        .bo-table--facturas td.col-customer_name{width:calc(100% - 90px);font-weight:720;font-size:15px;order:1;padding:0 0 2px}
+        .bo-table--facturas td.col-status{width:80px;text-align:right;order:2;padding:0 0 2px}
+        .bo-table--facturas td.col-amount{width:100%;font-weight:780;font-size:20px;color:var(--bo-accent);order:3;padding:0 0 8px}
+        .bo-table--facturas td.col-invoice_date{order:4;font-size:12px;color:var(--bo-muted);padding:0 8px 6px 0}
+        .bo-table--facturas td.col-payment_progress{width:100%;order:5;padding:4px 0}
+        .bo-table--facturas td.col-actions{width:100%;order:99;display:flex;justify-content:flex-end;padding-top:10px;margin-top:6px;border-top:1px solid var(--bo-border);gap:4px}
+
+        /* Hide noise + low-value cells */
+        .bo-table--facturas td.col-customer_email,.bo-table--facturas td.col-currency,.bo-table--facturas td.col-payment_date,.bo-table--facturas td.col-payment_method,.bo-table--facturas td.col-is_reservation,.bo-table--facturas td.col-deposit,.bo-table--facturas td.col-category,.bo-table--facturas td.col-attachment,.bo-table--facturas td.col-invoice_number,.bo-table--facturas td.col-due_date{display:none}
+
+
+
+        /* ── Strip table wrapper on mobile ── */
+        .bo-tableWrap{background:transparent!important;border:none!important;border-radius:0!important;margin-top:0!important;padding:0!important}
+        .bo-tableScroll{overflow:visible!important}
+        .bo-table--facturas{border:none!important;background:transparent!important}
+        /* ── tfoot: hidden on mobile ── */
+        .bo-table--facturas tfoot{display:none!important}
+        /* ── Pager ── */
+        .bo-pager{flex-direction:column;align-items:stretch;gap:8px;padding:10px 14px;background:var(--bo-surface);border:1px solid var(--bo-border);border-radius:12px}
+        .bo-pager .bo-pagerText{text-align:center;font-size:12px;color:var(--bo-faint)}
+        .bo-pager .bo-pagerBtns{justify-content:center;gap:8px}
+        .bo-pager .bo-pagerBtns .bo-btn{flex:1}
+        .bo-bulkBar{flex-wrap:wrap;gap:8px}
+        .bo-bulkBar .bo-bulkBarInfo{width:100%}
+
+        /* ── Form container ── */
+        .bo-facturasFormContainer{padding:0 8px!important}
+        /* ── Form ── */
+        .bo-invoiceFormTopGrid{flex-direction:column;gap:var(--bo-space-4)}
+        .bo-invoiceFormRow,.bo-invoiceFormRow--reservation,.bo-invoiceFormRow--invoiceDates,.bo-invoiceFormRow--category,.bo-invoiceFormRow--iva{grid-template-columns:1fr!important}
+        .bo-invoiceFormHeader{flex-direction:column;align-items:stretch}
+        .bo-invoiceFormHeaderActions{width:100%}
+        .bo-invoiceFormHeaderActions .bo-btn{flex:1}
+        .bo-lineItemsTableHeader{display:none}
+        .bo-lineItemsTableRow{grid-template-columns:1fr!important;gap:8px;padding:12px;border:1px solid var(--bo-border);border-radius:12px;margin-bottom:8px;background:var(--bo-surface)}
+        .bo-lineItemCell{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+        .bo-lineItemCell::before{content:attr(data-label);font-size:11px;font-weight:650;color:var(--bo-muted);text-transform:uppercase;letter-spacing:.03em;margin-right:12px;flex-shrink:0}
+        .bo-lineItemCell--actions{justify-content:flex-end;padding-top:8px;margin-top:4px;border-top:1px solid var(--bo-border)}
+        .bo-lineItemCell--actions::before{display:none}
+        .bo-invoiceFormActions{flex-direction:column;gap:10px}
+        .bo-invoiceFormActions .bo-btn{width:100%}
+
+        /* ── Modals ── */
+        .bo-modal,.bo-modal-content{width:calc(100vw - 24px)!important;max-width:none!important;max-height:85vh;border-radius:16px 16px 0 0;margin-top:auto}
+        .bo-modalOverlay,.bo-modal-overlay{align-items:flex-end;padding:0}
+        .bo-modalHead,.bo-modalHeader{padding:4px 4px 8px}
+        .bo-modalX{width:40px;height:40px;border-radius:14px}
+        .bo-modalActions{flex-direction:column;gap:8px}
+        .bo-modalActions .bo-btn{width:100%}
+        .bo-modalBody{max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        .bo-invoicePreviewGrid{grid-template-columns:1fr!important}
+      }`}</style>
       <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab} />
       {activeTab === "resumen" ? (
         <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen" data-slot="facturas-div">

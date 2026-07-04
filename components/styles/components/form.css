@@ -38,6 +38,7 @@
   background: rgba(255, 255, 255, 0.03);
   color: var(--bo-text);
   padding: 0 12px;
+  font-size: 16px; /* prevents iOS Safari auto-zoom on focus */
   outline: none;
   min-width: 0;
   transition: border-color var(--bo-transition-base, 150ms) ease,
