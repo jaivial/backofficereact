@@ -18,6 +18,7 @@ export function MandatoryMenuConfig({
   onMenuChange,
   onBookingChange,
   onInfoToggle,
+  onInfoClose,
   onSave,
 }: MandatoryMenuConfigProps) {
   return (
@@ -137,7 +138,7 @@ export function MandatoryMenuConfig({
         open={showMandatoryInfo}
         title="Reserva obligatoria"
         content="Si se selecciona reserva obligatoria, los clientes deben seleccionar un menú para poder avanzar con su reserva. Si no se selecciona la casilla, los menús serán mostrados durante el proceso de reserva, pero el cliente puede continuar sin seleccionar uno."
-        onClose={onInfoToggle}
+        onClose={onInfoClose}
       />
     </motion.div>
   );

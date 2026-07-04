@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { MessageSquare, Send, Edit2, Trash2, X, Clock, User } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import type { InvoiceComment, InvoiceCommentInput, InvoiceCommentUpdateInput } from "../../../../api/types";
@@ -20,8 +20,9 @@ export function CommentsPanel({ invoiceId, currentUserId, api }: CommentsPanelPr
   const [editContent, setEditContent] = useState("");
   const [showAllComments, setShowAllComments] = useState(false);
 
-  // Use provided API or create a new one
-  const client = api || createClient({ baseUrl: "" });
+  // Use provided API or create a new one (memoized so its identity is stable
+  // across renders; otherwise the fetch effect below would re-run in a loop).
+  const client = useMemo(() => api || createClient({ baseUrl: "" }), [api]);
 
   // Fetch comments on mount
   useEffect(() => {

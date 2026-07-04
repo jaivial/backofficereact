@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { Copy, Paperclip, PencilLine, FolderOpen, Trash2, FileDown, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, Check, X, Eye, History, Printer, CreditCard, Calendar, AlertTriangle, Bell, BellOff, MessageSquare, Mail, Tag, Combine, Scissors, Receipt, MessageCircle } from "lucide-react";
+import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine } from "lucide-react";
 import type { Invoice, InvoiceStatus, InvoiceAttachment, PaymentMethod, CurrencyCode, InvoiceCategory, InvoiceDepositType } from "../../../../api/types";
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
 import type { SortField, SortDirection, InvoiceTableProps } from "../types/table";
@@ -825,178 +825,46 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 </td>
                 <td className={`col-actions`} data-slot="invoice-table-cell">
                   <div className="bo-tableActions" data-slot="invoiceTable-tableActions">
-                    <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
-                      type="button"
-                      onClick={() => onPreview(invoice)}
-                      aria-label={`Ver detalles de factura ${invoice.id}`}
-                      title="Ver detalles"
-                      data-testid={`invoice-view-btn-${invoice.id}`}
-                    >
-                      <Eye size={14} />
-                    </button>
-                    <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
-                      type="button"
-                      onClick={() => onEdit(invoice)}
-                      aria-label={`Editar factura ${invoice.id}`}
-                      title="Editar"
-                      data-testid={`invoice-edit-btn-${invoice.id}`}
-                    >
-                      <PencilLine size={14} />
-                    </button>
-                    <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
-                      type="button"
-                      onClick={() => onShowHistory(invoice)}
-                      aria-label={`Ver historial de factura ${invoice.id}`}
-                      title="Historial"
-                      data-testid={`invoice-history-btn-${invoice.id}`}
-                    >
-                      <History size={14} />
-                    </button>
-                    <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
-                      type="button"
-                      onClick={() => onViewNotes(invoice)}
-                      aria-label={`Ver notas internas de factura ${invoice.id}`}
-                      title="Ver notas"
-                      data-testid={`invoice-notes-btn-${invoice.id}`}
-                    >
-                      <MessageSquare size={14} />
-                    </button>
-                    {/* Reminder button - only show for pending/sent invoices */}
-                    {(invoice.status === "pendiente" || invoice.status === "enviada") && (
-                      <>
-                        <button
-                          className={`bo-btn bo-btn--ghost bo-btn--sm ${invoice.has_reminder_sent ? "bo-btn--warning" : ""}`}
-                          type="button"
-                          onClick={() => onSendReminder(invoice)}
-                          aria-label={`Enviar recordatorio de pago a ${invoice.customer_name}`}
-                          title={invoice.has_reminder_sent ? "Enviar otro recordatorio" : "Enviar recordatorio de pago"}
-                          data-testid={`invoice-reminder-btn-${invoice.id}`}
-                        >
-                          {invoice.has_reminder_sent ? <BellOff size={14} /> : <Bell size={14} />}
-                        </button>
-                        {(invoice.reminders_count && invoice.reminders_count > 0) && (
-                          <button
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
-                            type="button"
-                            onClick={() => onShowReminderHistory(invoice)}
-                            aria-label={`Ver historial de recordatorios de factura ${invoice.id}`}
-                            title="Historial de recordatorios"
-                            data-testid={`invoice-reminder-history-btn-${invoice.id}`}
-                          >
-                            <Bell size={14} />
-                          </button>
-                        )}
-                      </>
-                    )}
-                    {/* Marcar como pagada quick action - only show for non-paid invoices */}
-                    {(invoice.status === "pendiente" || invoice.status === "enviada") && (
-                      <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--success"
-                        type="button"
-                        onClick={() => onStatusChange(invoice, "pagada")}
-                        aria-label={`Marcar como pagada la factura ${invoice.id}`}
-                        title="Marcar como pagada"
-                        data-testid={`invoice-mark-paid-btn-${invoice.id}`}
-                      >
-                        <Check size={14} />
-                      </button>
-                    )}
-                    <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
-                      type="button"
-                      onClick={() => onRegisterPayment(invoice)}
-                      aria-label={`Registrar pago de factura ${invoice.id}`}
-                      title="Registrar pago"
-                      data-testid={`invoice-register-payment-btn-${invoice.id}`}
-                    >
-                      <CreditCard size={14} />
-                    </button>
-                    <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm"
-                      type="button"
-                      onClick={() => onDuplicate(invoice)}
-                      aria-label={`Duplicar factura ${invoice.id}`}
-                      title="Duplicar"
-                      data-testid={`invoice-duplicate-btn-${invoice.id}`}
-                    >
-                      <Copy size={14} />
-                    </button>
-                    {/* Create Credit Note button - only show for sent/paid invoices that are not credit notes */}
-                    {!invoice.is_credit_note && (invoice.status === "enviada" || invoice.status === "pagada") && onCreateCreditNote && (
-                      <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
-                        type="button"
-                        onClick={() => onCreateCreditNote(invoice)}
-                        aria-label={`Crear nota de credito para factura ${invoice.id}`}
-                        title="Crear nota de credito"
-                        data-testid={`invoice-credit-note-btn-${invoice.id}`}
-                      >
-                        <Receipt size={14} />
-                      </button>
-                    )}
-                    {/* Split button - only show for invoices that are not already split children */}
-                    {!invoice.is_split_child && (
-                      <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
-                        type="button"
-                        onClick={() => onSplit(invoice)}
-                        aria-label={`Dividir factura ${invoice.id}`}
-                        title="Dividir factura"
-                        data-testid={`invoice-split-btn-${invoice.id}`}
-                      >
-                        <Scissors size={14} />
-                      </button>
-                    )}
-                    {invoice.pdf_url && (
-                      <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
-                        type="button"
-                        onClick={() => onDownloadPdf(invoice)}
-                        aria-label={`Descargar PDF de factura ${invoice.id}`}
-                        title="Descargar PDF"
-                        data-testid={`invoice-download-btn-${invoice.id}`}
-                      >
-                        <FileDown size={14} />
-                      </button>
-                    )}
-                    {invoice.customer_email && (
-                      <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
-                        type="button"
-                        onClick={() => onSendEmail(invoice)}
-                        aria-label={`Enviar email de factura ${invoice.id}`}
-                        title={invoice.status === "enviada" ? "Reenviar email" : "Enviar email"}
-                        data-testid={`invoice-email-btn-${invoice.id}`}
-                      >
-                        <Mail size={14} />
-                      </button>
-                    )}
-                    {invoice.customer_phone && (
-                      <button
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
-                        type="button"
-                        onClick={() => onSendWhatsApp(invoice)}
-                        aria-label={`Enviar WhatsApp de factura ${invoice.id}`}
-                        title={invoice.status === "enviada" ? "Reenviar WhatsApp" : "Enviar WhatsApp"}
-                        data-testid={`invoice-whatsapp-btn-${invoice.id}`}
-                      >
-                        <MessageCircle size={14} />
-                      </button>
-                    )}
-                    <button
-                      className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
-                      type="button"
-                      onClick={() => onDelete(invoice)}
-                      aria-label={`Eliminar factura ${invoice.id}`}
-                      title="Eliminar"
-                      data-testid={`invoice-delete-btn-${invoice.id}`}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <DropdownMenu
+                      label={`Acciones de factura ${invoice.invoice_number || invoice.id}`}
+                      menuMinWidthPx={200}
+                      menuClassName="bo-panel bo-invoiceFilters bo-menu--panel"
+                      items={[
+                        {
+                          id: "view",
+                          label: "Ver detalles",
+                          icon: <Eye size={16} />,
+                          onSelect: () => onPreview(invoice),
+                        },
+                        {
+                          id: "edit",
+                          label: "Editar",
+                          icon: <PencilLine size={16} />,
+                          onSelect: () => onEdit(invoice),
+                        },
+                        {
+                          id: "register-payment",
+                          label: "Registrar pago",
+                          icon: <CreditCard size={16} />,
+                          onSelect: () => onRegisterPayment(invoice),
+                        },
+                        ...(invoice.customer_email
+                          ? [{
+                              id: "send-email",
+                              label: invoice.status === "enviada" ? "Reenviar email" : "Enviar email",
+                              icon: <Mail size={16} />,
+                              onSelect: () => onSendEmail(invoice),
+                            }]
+                          : []),
+                        {
+                          id: "delete",
+                          label: "Borrar",
+                          icon: <Trash2 size={16} />,
+                          tone: "danger" as const,
+                          onSelect: () => onDelete(invoice),
+                        },
+                      ]}
+                    />
                   </div>
                 </td>
               </tr>

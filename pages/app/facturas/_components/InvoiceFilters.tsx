@@ -359,7 +359,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
   );
 
   return (
-    <div className="bo-invoiceFilters" aria-label="Filtros de facturas" data-slot="invoiceFilters-filtros-de-facturas">
+    <div className="bo-panel bo-invoiceFilters" aria-label="Filtros de facturas" data-slot="invoiceFilters-filtros-de-facturas">
       <div className="bo-invoiceFiltersHead" data-slot="invoiceFilters-invoiceFiltersHead">
         <div className="bo-invoiceFiltersTitle" data-slot="invoiceFilters-invoiceFiltersTitle">
           <Filter size={15} />

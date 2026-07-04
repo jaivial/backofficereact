@@ -113,6 +113,7 @@ export function DropdownMenu({
   triggerClassName,
   menuMinWidthPx,
   className,
+  menuClassName,
 }: {
   label: string;
   items: MenuItem[];
@@ -120,6 +121,7 @@ export function DropdownMenu({
   triggerClassName?: string;
   menuMinWidthPx?: number;
   className?: string;
+  menuClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -215,7 +217,7 @@ export function DropdownMenu({
       <AnimatePresence>
         <motion.div
           ref={menuRef}
-          className="bo-menu"
+          className={cn("bo-menu", menuClassName)}
           role="menu"
           initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: pos.direction === "up" ? -6 : 6 }}
           animate={{ opacity: 1, y: 0 }}

@@ -1,20 +1,23 @@
 import React, { useMemo } from "react";
+import { usePageContext } from "vike-react/usePageContext";
 import { useAtomValue } from "jotai";
+import { sessionAtom } from "../../../state/atoms";
 import { ChefHat } from "lucide-react";
 
 import type { SidebarItem } from "../../../lib/rbac";
 import { sidebarItemsForRole } from "../../../lib/rbac";
-import { sessionAtom } from "../../../state/atoms";
 import { iconForSidebarItemKey } from "../../../ui/nav/sectionIcons";
 import type { OrbitItem } from "./types/index";
 
 export default function Page() {
-  const session = useAtomValue(sessionAtom);
+  const pageContext = usePageContext();
+  const atomSession = useAtomValue(sessionAtom);
+  const session = pageContext.bo?.session ?? atomSession;
 
-  // Guaranteed by server middleware, but keep render stable.
-  if (!session) return null;
-
-  const { role, sectionAccess, roleImportance, name } = session.user;
+  const role = session?.user?.role ?? "admin";
+  const sectionAccess = session?.user?.sectionAccess ?? [];
+  const roleImportance = session?.user?.roleImportance ?? 100;
+  const name = session?.user?.name ?? "Admin";
 
   const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance), [role, roleImportance, sectionAccess]);
 

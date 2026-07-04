@@ -212,6 +212,8 @@ export default function Page() {
       void _href;
       event.preventDefault();
       setContentTab(id as ContentTab);
+      // ponytail: sync URL so tab survives refresh
+      window.history.replaceState(null, "", `${window.location.pathname}?content=${id}`);
     },
     [],
   );
@@ -221,7 +223,18 @@ export default function Page() {
   }
 
   return (
-    <section aria-label="Configuración" className="max-w-3xl mx-auto" data-testid="config-section">
+    <>
+      <style>{`@media (max-width: 640px) { .bo-main:has([data-testid="config-section"]) { padding: 0 1rem 2rem !important } .bo-install-code, .bo-install-code code { white-space: pre-wrap !important; word-break: break-all !important; overflow-x: auto !important; max-width: 100% !important } }`}</style>
+    <section aria-label="Configuración" className="max-w-3xl mx-auto max-sm:mx-0 max-sm:px-0" data-testid="config-section">
+      <Tabs
+        tabs={contentTabs}
+        activeId={contentTab}
+        ariaLabel="Secciones de configuración"
+        className="bo-tabs--reservas mx-auto mb-6"
+        onNavigate={onNavigateContentTab}
+        layoutId="boContentTabIndicator"
+      />
+
       <PageToolbar
         left={
           <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy} data-testid="config-reload-button">
@@ -232,15 +245,6 @@ export default function Page() {
           <div className="bo-mutedText" data-slot="config-mutedText">{busy ? "Actualizando..." : "Valores por defecto"}</div>
         }
         data-slot="config-toolbar"
-      />
-
-      <Tabs
-        tabs={contentTabs}
-        activeId={contentTab}
-        ariaLabel="Secciones de configuración"
-        className="bo-tabs--reservas mx-auto mb-6"
-        onNavigate={onNavigateContentTab}
-        layoutId="boContentTabIndicator"
       />
 
       <AnimatePresence mode="wait">
@@ -286,5 +290,6 @@ export default function Page() {
         </motion.div>
       </AnimatePresence>
     </section>
+    </>
   );
 }

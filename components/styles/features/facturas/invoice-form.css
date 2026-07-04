@@ -1174,3 +1174,93 @@
   grid-column: 1 / -1;
 }
 
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Stack the two-column header */
+  .bo-invoiceFormHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-invoiceFormHeaderActions {
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .bo-invoiceFormHeaderActions .bo-btn {
+    flex: 1;
+  }
+
+  /* Collapse top grid (customer info + invoice details side by side) */
+  .bo-invoiceFormTopGrid {
+    flex-direction: column;
+    gap: var(--bo-space-4);
+  }
+
+  /* All multi-column rows → single column */
+  .bo-invoiceFormRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-invoiceFormRow--reservation,
+  .bo-invoiceFormRow--invoiceDates,
+  .bo-invoiceFormRow--category,
+  .bo-invoiceFormRow--iva {
+    grid-template-columns: 1fr;
+  }
+
+  /* Line items: hide desktop header, stack as cards */
+  .bo-lineItemsTableHeader {
+    display: none;
+  }
+
+  .bo-lineItemsTableRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--bo-border);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: var(--bo-surface);
+  }
+
+  .bo-lineItemCell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  .bo-lineItemCell::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 650;
+    color: var(--bo-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .bo-lineItemCell--actions {
+    justify-content: flex-end;
+    padding-top: 8px;
+    margin-top: 4px;
+    border-top: 1px solid var(--bo-border);
+  }
+
+  .bo-lineItemCell--actions::before {
+    display: none;
+  }
+
+  /* Form actions: full-width stacked */
+  .bo-invoiceFormActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .bo-invoiceFormActions .bo-btn {
+    width: 100%;
+  }
+}

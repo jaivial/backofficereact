@@ -47,7 +47,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <JotaiProvider store={store}>
+    <>
+      <style>{`input.bo-input, textarea.bo-input { font-size: 16px !important; }`}</style>
+      <JotaiProvider store={store}>
       <ThemeSync />
       <SessionExpiryGuard />
       <FichajeRealtimeBridge />
@@ -55,5 +57,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div id="bo-portal" data-slot="portal-target" />
       {children}
     </JotaiProvider>
+    </>
   );
 }

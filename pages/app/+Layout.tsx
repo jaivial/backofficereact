@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -7,42 +7,23 @@ import { sessionAtom } from "../../state/atoms";
 import { Sidebar } from "../../ui/shell/Sidebar";
 import { Topbar } from "../../ui/shell/Topbar";
 
-function titleForPath(pathname: string): string {
-  if (pathname.startsWith("/app/reservas")) return "Reservas";
-  if (pathname.startsWith("/app/menus")) return "Menus";
-  if (pathname.startsWith("/app/config")) return "Configuracion";
-  if (pathname.startsWith("/app/comsit")) return "Configuracion";
-  if (pathname.startsWith("/app/settings")) return "Ajustes";
-  if (pathname.startsWith("/app/miembros")) return "Miembros";
-  if (pathname.startsWith("/app/horarios")) return "Horarios";
-  if (pathname.startsWith("/app/fichaje")) return "Fichaje";
-  if (pathname.startsWith("/app/reportes")) return "Reportes";
-  if (pathname.startsWith("/app/website")) return "Website Builder";
-  if (pathname.startsWith("/app/estado-cuenta")) return "Estado de Cuenta";
-  return "Backoffice";
-}
-
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pageContext = usePageContext();
   const setSession = useSetAtom(sessionAtom);
-  // Use pageContext.bo.session (SSR-provided) as source of truth.
-  // Hydrate the Jotai atom on first render so other components that read
-  // sessionAtom get the server session without extra fetches.
   const session = pageContext.bo?.session ?? null;
   const reduceMotion = useReducedMotion();
   const pathname = pageContext.urlPathname ?? "/";
   const isReservasTables = pathname.startsWith("/app/reservas/tables");
-  const title = useMemo(() => titleForPath(pathname), [pathname]);
   const prevRestaurant = useRef<number | null>(null);
 
-  // Hydrate the Jotai session atom from the SSR-provided session.
-  // This makes the session available to all atoms/hooks that read sessionAtom.
   useEffect(() => {
     if (session) setSession(session);
   }, [session, setSession]);
 
-  // `session` is guaranteed by server middleware, but keep render stable.
-  if (!session) return null;
+  // ponytail: never unmount during CSR, children handle missing session
+  if (!session) {
+    return <main className="bo-main">{children}</main>;
+  }
 
   useEffect(() => {
     const current = session.activeRestaurantId || null;
@@ -52,7 +33,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       return;
     }
     if (prevRestaurant.current !== current) {
-      // Force a full reload so SSR data + local state are consistent for the new tenant.
       window.location.reload();
     }
   }, [session.activeRestaurantId]);
@@ -66,7 +46,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         roleImportance={session.user.roleImportance}
       />
       <main className={`bo-main${isReservasTables ? " bo-main--immersive" : ""}`} data-testid="app-layout-main">
-        {isReservasTables ? null : <Topbar title={title} />}
+        {isReservasTables ? null : <Topbar />}
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
