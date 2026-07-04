@@ -310,6 +310,7 @@ export default function Page() {
                 setMenuChooseMain(chooseMain);
               }}
               onBookingChange={setMandatoryBooking}
+              onInfoClose={() => setShowMandatoryInfo(false)}
               onInfoToggle={() => setShowMandatoryInfo(true)}
               onSave={saveMandatoryMenus}
             />

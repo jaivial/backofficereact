@@ -12,5 +12,6 @@ export interface MandatoryMenuConfigProps {
   onMenuChange: (ids: number[], chooseMain: number[]) => void;
   onBookingChange: (checked: boolean) => void;
   onInfoToggle: () => void;
+  onInfoClose: () => void;
   onSave: () => void;
 }

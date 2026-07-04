@@ -94,7 +94,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   useEffect(() => {
     if (item) {
       setNombre(item.nombre || "");
-      setTipo(item.tipo || TIPO_OPTIONS[foodType][0]?.value || "");
+      setTipo(item.tipo || TIPO_OPTIONS[foodType]?.[0]?.value || "");
       setPrecio(item.precio?.toString() || "");
       setSuplemento(item.suplemento?.toString() || "");
       setTitulo(item.titulo || "");
@@ -107,7 +107,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       return;
     }
     setNombre("");
-    setTipo(TIPO_OPTIONS[foodType][0]?.value || "");
+    setTipo(TIPO_OPTIONS[foodType]?.[0]?.value || "");
     setPrecio("");
     setSuplemento("");
     setTitulo("");

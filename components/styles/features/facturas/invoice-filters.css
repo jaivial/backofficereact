@@ -2,12 +2,6 @@
 .bo-invoiceFilters {
   margin-bottom: 0;
   padding: 12px;
-  border-radius: var(--bo-radius-md);
-  border: 1px solid var(--bo-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.14)),
-    var(--bo-surface);
-  box-shadow: var(--bo-shadow-soft);
   display: grid;
   gap: 10px;
 }

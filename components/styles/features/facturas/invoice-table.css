@@ -263,3 +263,66 @@
   gap: 12px;
 }
 
+
+/* ── Mobile: responsive table ───────────────────────── */
+@media (max-width: 768px) {
+  .bo-table--facturas thead {
+    display: none;
+  }
+
+  .bo-table--facturas tbody tr {
+    display: block;
+    padding: 14px 12px;
+    border: 1px solid var(--bo-border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background: var(--bo-surface);
+  }
+
+  .bo-table--facturas td {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 0;
+    text-align: left;
+  }
+
+  .bo-table--facturas td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 650;
+    color: var(--bo-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    min-width: 72px;
+  }
+
+  .bo-table--facturas td.col-selection {
+    padding: 0 0 8px 0;
+  }
+
+  .bo-table--facturas td.col-selection::before {
+    display: none;
+  }
+
+  .bo-table--facturas td.col-actions {
+    justify-content: flex-end;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1px solid var(--bo-border);
+  }
+
+  .bo-table--facturas td.col-actions::before {
+    display: none;
+  }
+
+  .bo-bulkBar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .bo-bulkBar .bo-bulkBarInfo {
+    width: 100%;
+  }
+}

@@ -110,6 +110,7 @@ export function BookingEditor({
   const [menusLoaded, setMenusLoaded] = useState(false);
   const [menuDetail, setMenuDetail] = useState<GroupMenu | null>(null);
   const [riceTypes, setRiceTypes] = useState<string[]>([]);
+  const [riceTypesLoaded, setRiceTypesLoaded] = useState(false);
 
   const principalesItems = useMemo(() => principalesItemsFromMenu(menuDetail), [menuDetail]);
   const menuOptions = useMemo(
@@ -182,22 +183,28 @@ export function BookingEditor({
 
   useEffect(() => {
     if (draft.special_menu) return;
-    if (!draft.arroz_enabled) return;
-    if (riceTypes.length) return;
+    if (!draft.arroz_enabled) {
+      setRiceTypesLoaded(false);
+      return;
+    }
+    if (riceTypesLoaded) return;
     let cancelled = false;
+    setRiceTypesLoaded(false);
     (async () => {
       try {
         const list = await api.arrozTypes.list();
         if (cancelled) return;
-        setRiceTypes(list || []);
+        setRiceTypes(Array.isArray(list) ? list : []);
       } catch {
         // ignore
+      } finally {
+        if (!cancelled) setRiceTypesLoaded(true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [api.arrozTypes, draft.arroz_enabled, draft.special_menu, riceTypes.length]);
+  }, [api.arrozTypes, draft.arroz_enabled, draft.special_menu, riceTypesLoaded]);
 
   const remainingArroz = useMemo(() => Math.max(0, (draft.party_size || 0) - sumServings(draft.arroz)), [draft.arroz, draft.party_size]);
   const remainingPrincipales = useMemo(
@@ -556,10 +563,53 @@ export function BookingEditor({
                 Sí
               </button>
             </div>
-            {draft.arroz_enabled ? <div className="bo-mutedText" style={{ marginTop: 10 }}>Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div> : null}
-
-            {draft.arroz_enabled ? (
-              <div style={{ marginTop: 10, display: "grid", gap: 8 }} data-slot="bookingEditor-div">
+            <AnimatePresence mode="wait" initial={false}>
+            {draft.arroz_enabled && !riceTypesLoaded ? (
+              <motion.div
+                key="arroz-loading"
+                style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10, justifyContent: "center", padding: "24px 0" }}
+                initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
+                data-slot="booking-editor-arroz-loading"
+              >
+                <span className="bo-spinner" aria-hidden="true" />
+                <span className="bo-mutedText">Cargando tipos de arroz…</span>
+              </motion.div>
+            ) : draft.arroz_enabled && riceTypes.length === 0 && riceTypesLoaded ? (
+              <motion.div
+                key="arroz-empty"
+                style={{ marginTop: 12, display: "grid", gap: 12 }}
+                initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
+                data-slot="booking-editor-arroz-empty"
+              >
+                <div className="bo-mutedText" data-slot="booking-editor-arroz-empty-message">
+                  No hay tipos de arroz. Debes crear un tipo de arroz antes de poder añadirlo a una reserva.
+                </div>
+                <a
+                  className="bo-btn bo-btn--primary"
+                  href="/app/comida"
+                  style={{ justifySelf: "start", textDecoration: "none" }}
+                  data-slot="booking-editor-arroz-create-link"
+                >
+                  <Plus size={18} strokeWidth={1.8} /> Añadir tipo de arroz
+                </a>
+              </motion.div>
+            ) : draft.arroz_enabled && riceTypes.length > 0 ? (
+              <motion.div
+                key="arroz-content"
+                style={{ marginTop: 10, display: "grid", gap: 8 }}
+                initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
+                data-slot="bookingEditor-div"
+              >
+                <div className="bo-mutedText">Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div>
                 {draft.arroz.map((row, idx) => (
                   <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
                     <Select
@@ -590,9 +640,9 @@ export function BookingEditor({
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addRiceRow} disabled={busy || !riceTypes.length} data-slot="booking-editor-add-arroz">
                   <Plus size={18} strokeWidth={1.8} /> Añadir arroz
                 </button>
-                {!riceTypes.length ? <div className="bo-mutedText">Cargando tipos de arroz…</div> : null}
-              </div>
+              </motion.div>
             ) : null}
+            </AnimatePresence>
         </Panel>
       ) : null}
 
