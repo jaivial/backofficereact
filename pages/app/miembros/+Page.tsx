@@ -14,6 +14,7 @@ import { useToasts } from "../../../ui/feedback/useToasts";
 import { createClient } from "../../../api/client";
 import { Button } from "../../../ui/shadcn/button";
 import { Modal } from "../../../ui/overlays/Modal";
+import { MemberCreateModal, type CreateMemberInput } from "./functionalComponents/MemberCreateModal/MemberCreateModal";
 
 function initials(firstName: string, lastName: string) {
   const a = firstName.trim()[0] ?? "";
@@ -49,6 +50,9 @@ export default function Page() {
   const [sending, setSending] = useState(false);
   const [needsSubscription, setNeedsSubscription] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [localMembers, setLocalMembers] = useState<Member[]>([]);
 
   const currentEmail = useMemo(() => normalizeEmail(session?.user?.email), [session?.user?.email]);
   const rolesBySlug = useMemo(() => {
@@ -144,6 +148,38 @@ export default function Page() {
     }
   };
 
+  const handleCreateMember = async (input: CreateMemberInput) => {
+    try {
+      setCreating(true);
+      const phone = input.phoneNumber ? `+${input.phoneCountryCode}${input.phoneNumber}` : null;
+      const res = await client.members.create({
+        firstName: input.firstName,
+        lastName: input.lastName,
+        email: input.email,
+        dni: input.dni,
+        phone,
+        roleSlug: input.roleSlug,
+        username: input.username,
+        temporaryPassword: input.temporaryPassword,
+      });
+      if (!res.success) {
+        throw new Error(res.message || "Error creando miembro");
+      }
+      if (input.avatarFile && res.member) {
+        await client.members.uploadAvatar(res.member.id, input.avatarFile);
+      }
+      if (res.member) {
+        setLocalMembers((prev) => [...prev, res.member!]);
+      }
+      addToast({ title: "Creado", description: `Miembro ${input.firstName} ${input.lastName} creado correctamente` });
+      setCreateModalOpen(false);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <section aria-label="Miembros y roles" className="bo-content-grid bo-membersPage">
       <div className="bo-panel">
@@ -152,15 +188,20 @@ export default function Page() {
             <div className="bo-panelTitle">Equipo y permisos</div>
             <div className="bo-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
-          <div className="bo-membersIntroBadge">
-            <ShieldUser size={16} strokeWidth={1.8} />
-            {members.length} miembros
+          <div className="flex items-center gap-3">
+            <div className="bo-membersIntroBadge" data-testid="member-count">
+              <ShieldUser size={16} strokeWidth={1.8} />
+              {members.length + localMembers.length} miembros
+            </div>
+            <Button variant="primary" size="sm" data-testid="add-member-button" onClick={() => setCreateModalOpen(true)}>
+              + Añadir miembro
+            </Button>
           </div>
         </div>
       </div>
 
       <div className="bo-membersGrid">
-        {members.map((member) => {
+        {[...members, ...localMembers].map((member) => {
           const roleMeta = memberRoleMeta(member);
           return (
             <button
@@ -210,7 +251,7 @@ export default function Page() {
           );
         })}
 
-        {members.length === 0 ? (
+        {members.length === 0 && localMembers.length === 0 ? (
           <div className="bo-panel bo-panel--empty">
             <div className="bo-panelHead">
               <div className="bo-panelTitle">Sin miembros</div>
@@ -273,6 +314,14 @@ export default function Page() {
           )}
         </div>
       </Modal>
+
+      <MemberCreateModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        roles={roles}
+        busy={creating}
+        onCreate={handleCreateMember}
+      />
     </section>
   );
 }
