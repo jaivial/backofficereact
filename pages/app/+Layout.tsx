@@ -17,6 +17,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const prevRestaurant = useRef<number | null>(null);
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  useEffect(() => {
     if (session) setSession(session);
   }, [session, setSession]);
 
