@@ -270,17 +270,24 @@
   }
 }
 
+body:has(.bo-app--page) {
+  overflow: hidden;
+}
+
 @media (max-width: 720px),
 (max-aspect-ratio: 9 / 16) {
   .bo-app--page {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr auto;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   .bo-app--page .bo-main {
     grid-column: 1;
     grid-row: 1;
-    padding: 18px 16px 16px;
+    padding: 18px 16px 80px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .bo-app--page .bo-cardsRow {
