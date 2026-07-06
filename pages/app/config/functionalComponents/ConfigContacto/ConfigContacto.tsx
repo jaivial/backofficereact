@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ImagePlus, Loader2, Upload } from "lucide-react";
 
 import type { RestaurantInfo } from "../../../../../api/types";
 import { readAPIMessage } from "../../../config/helpers/configHelpers";
@@ -21,6 +22,21 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
   const emailProv = useEmailProviderConfig();
   const branding = useBranding();
   const [logoPreviewNonce, setLogoPreviewNonce] = useState(0);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
+
+  const openLogoPicker = useCallback(() => {
+    logoInputRef.current?.click();
+  }, []);
+
+  const onLogoInputChange = useCallback(
+    async (ev: React.ChangeEvent<HTMLInputElement>) => {
+      const file = ev.target.files?.[0];
+      ev.target.value = "";
+      if (!file) return;
+      await handleLogoFile(file);
+    },
+    [handleLogoFile],
+  );
 
   // Sync when initialInfo changes (e.g. after page reload)
   useEffect(() => {
@@ -141,31 +157,66 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
           <label className="bo-label" data-slot="configContacto-label">
             Logo (cabecera del email)
           </label>
-          <ImageDropInput
-            disabled={busy || branding.uploading}
-            ariaLabel="Subir logo del restaurante"
-            onSelectFile={handleLogoFile}
-          >
-            <div className="bo-imageDropInput-preview" data-slot="logo-preview-wrapper">
-              {branding.branding.logoUrl ? (
-                <img
-                  src={`${branding.branding.logoUrl}${logoPreviewNonce ? `?v=${logoPreviewNonce}` : ""}`}
-                  alt="Logo actual"
-                  className="bo-imageDropInput-preview-image"
-                  data-testid="config-contacto-logo-preview"
-                />
-              ) : (
-                <span className="bo-imageDropInput-empty" data-slot="logo-empty">
-                  Suelta una imagen o haz click para subir
-                </span>
-              )}
-              {branding.uploading ? (
-                <span className="bo-imageDropInput-status" data-slot="logo-uploading-status">
-                  Subiendo...
-                </span>
-              ) : null}
+          <div className="bo-brandingLogo" data-slot="config-contacto-logo-block">
+            <ImageDropInput
+              className="bo-brandingLogo-dropzone"
+              disabled={busy || branding.uploading}
+              ariaLabel="Subir logo del restaurante"
+              onSelectFile={handleLogoFile}
+            >
+              <div className="bo-brandingLogo-preview" data-slot="logo-preview-wrapper">
+                {branding.branding.logoUrl ? (
+                  <img
+                    src={`${branding.branding.logoUrl}${logoPreviewNonce ? `?v=${logoPreviewNonce}` : ""}`}
+                    alt="Logo actual"
+                    className="bo-brandingLogo-image"
+                    data-testid="config-contacto-logo-preview"
+                  />
+                ) : (
+                  <span className="bo-brandingLogo-fallback" data-slot="logo-empty" aria-hidden="true">
+                    <ImagePlus size={42} strokeWidth={1.6} className="bo-brandingLogo-fallbackIcon" />
+                  </span>
+                )}
+                {branding.uploading ? (
+                  <span className="bo-brandingLogo-status" data-slot="logo-uploading-status">
+                    <Loader2 size={28} className="bo-brandingLogo-iconSpin" />
+                  </span>
+                ) : null}
+              </div>
+            </ImageDropInput>
+            <div className="bo-brandingLogo-actions">
+              <button
+                type="button"
+                className="bo-brandingLogo-uploadBtn"
+                onClick={openLogoPicker}
+                disabled={busy || branding.uploading}
+                aria-label="Subir logo del restaurante"
+                data-testid="config-contacto-logo-upload-btn"
+              >
+                {branding.uploading ? (
+                  <>
+                    <Loader2 size={16} className="bo-brandingLogo-iconSpin" />
+                    Subiendo...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} strokeWidth={1.8} />
+                    {branding.branding.logoUrl ? "Cambiar logo" : "Subir logo"}
+                  </>
+                )}
+              </button>
+              <span className="bo-brandingLogo-hint">PNG, JPG o WebP · se reduce a 50 KB automaticamente</span>
             </div>
-          </ImageDropInput>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              onChange={onLogoInputChange}
+              data-slot="logo-picker-input"
+              data-testid="config-contacto-logo-picker-input"
+            />
+          </div>
         </div>
       </Panel>
 
