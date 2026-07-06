@@ -31,6 +31,10 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
     setInfo(initialInfo);
   }, [initialInfo]);
 
+  useEffect(() => {
+    void branding.load();
+  }, [branding]);
+
   const save = useCallback(
     async (patch: Partial<RestaurantInfo>) => {
       setError(null);
@@ -115,6 +119,56 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
 
   return (
     <>
+      <Panel title="Marca (email)" bodyClassName="bo-stack" data-ui="config-contacto-branding-panel" data-slot="config-contacto-branding-panel">
+        <div className="bo-field" data-ui="config-contacto-brandname-field" data-slot="config-contacto-brandname-field">
+          <label className="bo-label" htmlFor="config-contacto-brandname" data-slot="configContacto-label">
+            Nombre del restaurante (cabecera del email)
+          </label>
+          <input
+            id="config-contacto-brandname"
+            type="text"
+            className="bo-input"
+            value={branding.branding.brandName}
+            onChange={(e) => handleBrandingField("brandName", e.target.value)}
+            disabled={busy || branding.saving}
+            placeholder="Alquería Villa Carmen"
+            aria-label="Nombre del restaurante para emails"
+            data-testid="config-contacto-brandname-input"
+          />
+        </div>
+
+        <div className="bo-field" data-ui="config-contacto-logo-field" data-slot="config-contacto-logo-field">
+          <label className="bo-label" data-slot="configContacto-label">
+            Logo (cabecera del email)
+          </label>
+          <ImageDropInput
+            disabled={busy || branding.uploading}
+            ariaLabel="Subir logo del restaurante"
+            onSelectFile={handleLogoFile}
+          >
+            <div className="bo-imageDropInput-preview" data-slot="logo-preview-wrapper">
+              {branding.branding.logoUrl ? (
+                <img
+                  src={`${branding.branding.logoUrl}${logoPreviewNonce ? `?v=${logoPreviewNonce}` : ""}`}
+                  alt="Logo actual"
+                  className="bo-imageDropInput-preview-image"
+                  data-testid="config-contacto-logo-preview"
+                />
+              ) : (
+                <span className="bo-imageDropInput-empty" data-slot="logo-empty">
+                  Suelta una imagen o haz click para subir
+                </span>
+              )}
+              {branding.uploading ? (
+                <span className="bo-imageDropInput-status" data-slot="logo-uploading-status">
+                  Subiendo...
+                </span>
+              ) : null}
+            </div>
+          </ImageDropInput>
+        </div>
+      </Panel>
+
       <Panel title="Contacto" bodyClassName="bo-stack" data-ui="config-contacto-main-panel" data-slot="config-contacto-panel">
           <div className="bo-field" data-ui="config-contacto-address-field" data-slot="config-contacto-address-field">
             <label className="bo-label" htmlFor="config-contacto-direccion" data-slot="configContacto-label">
