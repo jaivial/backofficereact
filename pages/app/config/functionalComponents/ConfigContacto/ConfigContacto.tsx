@@ -6,16 +6,21 @@ import { clasificacionOptions } from "../../../config/constants/config.constants
 import type { ContactoContentProps } from "./types/ConfigContacto.types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Panel } from "../../../../../ui/shell/Panel";
+import { ImageDropInput } from "../../../../../ui/inputs/ImageDropInput";
 import EmailProviderConfigInner from "../EmailProviderConfig/EmailProviderConfig";
 import { useEmailProviderConfig } from "../EmailProviderConfig/hooks/useEmailProviderConfig";
+import { useBranding } from "./hooks/useBranding";
 
 const DEBOUNCE_MS = 400;
 
 export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, api, pushToast }: ContactoContentProps) {
   const [info, setInfo] = useState<RestaurantInfo>(initialInfo);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const brandingDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   const emailProv = useEmailProviderConfig();
+  const branding = useBranding();
+  const [logoPreviewNonce, setLogoPreviewNonce] = useState(0);
 
   // Sync when initialInfo changes (e.g. after page reload)
   useEffect(() => {
@@ -57,6 +62,37 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
       }, DEBOUNCE_MS);
     },
     [save, pushToast],
+  );
+
+  const scheduleBrandingSave = useCallback(() => {
+    if (brandingDebounceRef.current) clearTimeout(brandingDebounceRef.current);
+    brandingDebounceRef.current = setTimeout(async () => {
+      const ok = await branding.save();
+      if (ok) {
+        pushToast({ kind: "success", title: "Guardado", message: "Cambios guardados" });
+      }
+    }, DEBOUNCE_MS);
+  }, [branding, pushToast]);
+
+  const handleBrandingField = useCallback(
+    (field: "brandName", value: string) => {
+      branding.setField(field, value);
+      scheduleBrandingSave();
+    },
+    [branding, scheduleBrandingSave],
+  );
+
+  const handleLogoFile = useCallback(
+    async (file: File) => {
+      const url = await branding.uploadLogo(file);
+      if (url) {
+        setLogoPreviewNonce(Date.now());
+        pushToast({ kind: "success", title: "Logo actualizado" });
+      } else {
+        pushToast({ kind: "error", title: "No se pudo subir el logo" });
+      }
+    },
+    [branding, pushToast],
   );
 
   const handleField = useCallback(
@@ -131,6 +167,10 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             />
           </div>
 
+
+        <p className="bo-help" data-slot="config-contacto-email-helper">
+          Estos datos aparecen en el email de confirmación.
+        </p>
           <EmailProviderConfigInner
             config={emailProv.config}
             setField={emailProv.setField as (key: string, value: unknown) => void}
