@@ -530,37 +530,42 @@
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass {
-    max-width: 380px;
-    width: 100%;
+    width: 95vw;
+    max-width: 95vw;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalCell {
-    min-height: 38px;
-    padding: 2px 1px;
+    min-height: clamp(48px, 11vw, 72px);
+    padding: clamp(5px, 1.8vw, 12px) clamp(4px, 1.6vw, 10px);
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalNum {
-    font-size: var(--bo-text-xs);
+    font-size: clamp(15px, 4.6vw, 22px);
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub {
-    font-size: 10px;
-    gap: 1px;
+    font-size: clamp(11px, 3vw, 15px);
+    gap: 3px;
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub .bo-ico {
+    width: clamp(13px, 3.4vw, 17px);
+    height: clamp(13px, 3.4vw, 17px);
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalDows {
-    font-size: 9px;
-    gap: 1px;
-    padding: 1px 0;
+    font-size: clamp(11px, 3vw, 14px);
+    gap: clamp(3px, 1.6vw, 8px);
+    padding: 3px 0;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalGrid {
-    gap: 2px;
+    gap: clamp(4px, 2vw, 9px);
   }
 
   .bo-reservasSide {
-    max-width: 380px;
-    width: 100%;
+    width: 95vw;
+    max-width: 95vw;
   }
 }
 
@@ -657,7 +662,7 @@
 }
 
 .bo-mcal--glass .bo-mcalCell.is-selected.is-open {
-  background: rgba(185, 168, 255, 0.22);
+  background: rgb(99 163 121 / 49%);
   color: var(--bo-accent);
 }
 
@@ -666,7 +671,7 @@
 }
 
 :root[data-theme="light"] .bo-mcal--glass .bo-mcalCell.is-selected.is-open {
-  background: rgba(124, 92, 231, 0.16);
+  background: rgb(40 197 105 / 69%);
   color: var(--bo-accent);
 }
 
@@ -706,12 +711,31 @@
 }
 
 .bo-mcalCell.is-closed {
-  background: rgba(255, 255, 255, 0.01);
+  background: rgb(77 68 110 / 63%);
   border-style: dashed;
-  color: var(--bo-muted);
+  border-color: #6b6f80;
+  color: #f2f3f7;
+}
+
+.bo-mcalCell.is-closed .bo-mcalNum {
+  color: #ffffff;
 }
 
 .bo-mcalCell.is-closed .bo-mcalSub {
-  color: var(--bo-faint);
+  color: #d5d7e0;
+}
+
+:root[data-theme="light"] .bo-mcalCell.is-closed {
+  background: #c2c5cf;
+  border-color: #9a9ead;
+  color: #23252d;
+}
+
+:root[data-theme="light"] .bo-mcalCell.is-closed .bo-mcalNum {
+  color: rgba(20, 21, 26, 0.9);
+}
+
+:root[data-theme="light"] .bo-mcalCell.is-closed .bo-mcalSub {
+  color: rgba(20, 21, 26, 0.68);
 }
 

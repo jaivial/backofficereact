@@ -59,6 +59,41 @@ export type Booking = {
   principales_json: string | null;
 };
 
+export type CancelledBookingItem = {
+  id: number;
+  booking_id: number;
+  reservation_date: string;
+  party_size: number;
+  reservation_time: string;
+  customer_name: string;
+  contact_phone: string;
+  contact_email: string;
+  commentary: string;
+  arroz_type: string | null;
+  arroz_servings: string | null;
+  babyStrollers: number;
+  highChairs: number;
+  cancellation_date: string;
+  cancelled_by: string;
+  cancelled_by_user_id: number | null;
+  cancelled_by_name: string;
+};
+
+export type ModifiedBookingItem = {
+  id: number;
+  booking_id: number;
+  original_reservation_date: string;
+  field_modified: string;
+  old_value: string;
+  new_value: string;
+  modified_by: string;
+  modified_by_user_id: number | null;
+  modified_by_name: string;
+  customer_name: string;
+  contact_phone: string;
+  modification_date: string;
+};
+
 export type CalendarDay = {
   date: string;
   booking_count: number;

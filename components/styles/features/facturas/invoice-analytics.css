@@ -587,4 +587,9 @@
   background: rgba(255, 223, 132, 0.10);
   color: rgba(255, 223, 132, 0.95);
 }
+:root[data-theme="light"] .bo-badge--warn {
+  border-color: rgba(180, 83, 9, 0.55);
+  background: rgba(245, 158, 11, 0.18);
+  color: #7c2d12;
+}
 
