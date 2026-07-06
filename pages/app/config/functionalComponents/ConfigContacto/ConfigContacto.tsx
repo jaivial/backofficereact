@@ -24,20 +24,6 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
   const [logoPreviewNonce, setLogoPreviewNonce] = useState(0);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
-  const openLogoPicker = useCallback(() => {
-    logoInputRef.current?.click();
-  }, []);
-
-  const onLogoInputChange = useCallback(
-    async (ev: React.ChangeEvent<HTMLInputElement>) => {
-      const file = ev.target.files?.[0];
-      ev.target.value = "";
-      if (!file) return;
-      await handleLogoFile(file);
-    },
-    [handleLogoFile],
-  );
-
   // Sync when initialInfo changes (e.g. after page reload)
   useEffect(() => {
     if (isFirstRender.current) {
@@ -114,6 +100,21 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
     },
     [branding, pushToast],
   );
+
+  const openLogoPicker = useCallback(() => {
+    logoInputRef.current?.click();
+  }, []);
+
+  const onLogoInputChange = useCallback(
+    async (ev: React.ChangeEvent<HTMLInputElement>) => {
+      const file = ev.target.files?.[0];
+      ev.target.value = "";
+      if (!file) return;
+      await handleLogoFile(file);
+    },
+    [handleLogoFile],
+  );
+
 
   const handleField = useCallback(
     (field: keyof RestaurantInfo, value: string) => {
