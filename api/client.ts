@@ -926,6 +926,14 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(branding),
         });
       },
+      async uploadBrandingLogo(file: File): Promise<APISuccess<{ logoUrl: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "logo.webp");
+        return json("/api/admin/branding/logo", {
+          method: "POST",
+          body: form,
+        });
+      },
       async getInvoiceSettings(): Promise<APISuccess<{ settings: RestaurantInvoiceSettings }> | APIError> {
         return json("/api/admin/invoices/settings", { method: "GET" });
       },
