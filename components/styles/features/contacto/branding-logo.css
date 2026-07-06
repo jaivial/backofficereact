@@ -1,0 +1,137 @@
+/* ── Features: Config — Branding Logo ─────────────────── */
+
+.bo-brandingLogo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.bo-brandingLogo-dropzone {
+  /* ImageDropInput base already gives a clickable area; we shape it. */
+  width: 160px;
+  height: 160px;
+  border-radius: var(--bo-radius-full, 9999px);
+  padding: 4px;
+  border: 1px dashed var(--bo-border);
+  background: linear-gradient(
+    135deg,
+    rgba(185, 168, 255, 0.18),
+    rgba(147, 239, 231, 0.12)
+  );
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bo-brandingLogo-dropzone:hover,
+.bo-brandingLogo-dropzone:focus-visible,
+.bo-brandingLogo-dropzone.is-dragging {
+  border-color: var(--bo-accent, rgba(185, 168, 255, 0.85));
+  box-shadow: 0 0 0 4px rgba(185, 168, 255, 0.18);
+  outline: none;
+}
+
+.bo-brandingLogo-dropzone.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bo-brandingLogo-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.bo-brandingLogo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.bo-brandingLogo-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  display: grid;
+  place-items: center;
+  color: var(--bo-muted, rgba(255, 255, 255, 0.72));
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(185, 168, 255, 0.22),
+      rgba(185, 168, 255, 0) 70%
+    );
+}
+
+.bo-brandingLogo-fallbackIcon {
+  opacity: 0.85;
+}
+
+.bo-brandingLogo-status {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(8, 8, 14, 0.45);
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+
+.bo-brandingLogo-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-brandingLogo-uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--bo-radius-md, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(185, 168, 255, 0.28),
+    rgba(147, 239, 231, 0.18)
+  );
+  border: 1px solid var(--bo-border);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: filter 140ms ease, transform 140ms ease;
+}
+
+.bo-brandingLogo-uploadBtn:hover:not(:disabled),
+.bo-brandingLogo-uploadBtn:focus-visible:not(:disabled) {
+  filter: brightness(1.08);
+  outline: none;
+}
+
+.bo-brandingLogo-uploadBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.bo-brandingLogo-uploadBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bo-brandingLogo-iconSpin {
+  animation: bo-spin 900ms linear infinite;
+}
+
+@keyframes bo-spin {
+  to { transform: rotate(360deg); }
+}
+
+.bo-brandingLogo-hint {
+  font-size: 12px;
+  color: var(--bo-muted, rgba(255, 255, 255, 0.62));
+}
