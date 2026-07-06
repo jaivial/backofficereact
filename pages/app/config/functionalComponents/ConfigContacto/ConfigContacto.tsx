@@ -206,8 +206,8 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
                   </>
                 )}
               </button>
-              <span className="bo-brandingLogo-hint">PNG, JPG o WebP · se reduce a 50 KB automaticamente</span>
             </div>
+            <span className="bo-brandingLogo-hint">PNG, JPG o WebP · se reduce a 50 KB automaticamente</span>
             <input
               ref={logoInputRef}
               type="file"

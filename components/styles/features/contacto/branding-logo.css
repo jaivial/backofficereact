@@ -3,7 +3,7 @@
 .bo-brandingLogo {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
 }
 
@@ -85,8 +85,13 @@
 .bo-brandingLogo-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  flex-wrap: wrap;
+}
+
+.bo-brandingLogo-hint {
+  font-size: 12px;
+  text-align: center;
 }
 
 .bo-brandingLogo-uploadBtn {
@@ -130,8 +135,4 @@
 @keyframes bo-spin {
   to { transform: rotate(360deg); }
 }
-
-.bo-brandingLogo-hint {
-  font-size: 12px;
-  color: var(--bo-muted, rgba(255, 255, 255, 0.62));
 }
