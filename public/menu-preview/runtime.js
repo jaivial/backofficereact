@@ -450,43 +450,6 @@
     return out;
   }
 
-  function splitClosedConventionalSections(menu) {
-    const sections = getMenuViewSections(menu);
-    const starters = [];
-    const mains = [];
-    const rice = [];
-    const others = [];
-    let mainsTitle = "";
-
-    sections.forEach(function (section) {
-      const titleLower = String(section.title || "").toLowerCase();
-      const kind = String(section.kind || "").toLowerCase();
-
-      if (kind === "entrantes" || titleLower.includes("entrante")) {
-        starters.push.apply(starters, section.dishes);
-        return;
-      }
-      if (kind === "principales" || titleLower.includes("principal")) {
-        if (!mainsTitle) mainsTitle = section.title;
-        mains.push.apply(mains, section.dishes);
-        return;
-      }
-      if (kind === "arroces" || titleLower.includes("arroz")) {
-        rice.push.apply(rice, section.dishes);
-        return;
-      }
-      others.push(section);
-    });
-
-    return {
-      starters: starters,
-      mains: mains,
-      mainsTitle: mainsTitle,
-      rice: rice,
-      others: others,
-    };
-  }
-
   function beverageLabel(settings) {
     const beverage = (settings && settings.beverage) || {};
     const t = String(beverage.type || "no_incluida").toLowerCase();
@@ -823,10 +786,8 @@
   }
 
   function mountVillaTemplate(tokens) {
-    console.log("[vc-preview] mountVillaTemplate", { hasTemplate: !!state.templateHtml, templateLength: state.templateHtml ? state.templateHtml.length : 0, tokens: tokens });
     if (!state.templateHtml) return false;
     var applied = applyTokens(state.templateHtml, tokens || {});
-    console.log("[vc-preview] applied html (first 500 chars)", applied.substring(0, 500));
     root.innerHTML = applied;
     return true;
   }
@@ -867,22 +828,18 @@
       const hasContent = sections.some(function (section) {
         return Array.isArray(section.dishes) && section.dishes.length > 0;
       });
-      const emptyState = hasContent ? "" : '<div class="menuState">No hay contenido disponible.</div>';
+      const emptyState = hasContent ? "" : '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay contenido disponible.</p></div>';
       const priceCard = renderMenuPriceCardVC(formatMenuPrice(menu.price));
       const initialHeroSrc = HERO_SLIDER_IMAGES[0] || HERO_DEFAULT_IMAGE;
       const initialHeroClass = prefersReducedMotion() ? "menuHeroShot is-active is-reduced" : "menuHeroShot is-active";
+
+      const menuBody = sectionBlocks + emptyState + priceCard;
 
       return mountVillaTemplate({
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
         MENU_SUBTITLE: escapeHtml(menu.menu_subtitle[0] || "Jueves y viernes (no festivos)"),
         MENU_HERO_SHOTS: '<img src="' + escapeHtml(initialHeroSrc) + '" alt="" class="' + initialHeroClass + '" loading="eager" decoding="async" />',
-        MENU_SECTION_STARTERS: sectionBlocks,
-        MENU_SECTION_MAINS: "",
-        MENU_SECTION_RICE_LEAD: "",
-        MENU_SECTION_RICE: "",
-        MENU_SECTION_OTHERS: "",
-        MENU_EMPTY_STATE: emptyState,
-        MENU_PRICE_CARD: priceCard,
+        MENU_BODY: menuBody,
         ALLERGENS_LEGEND: renderAllergensLegendVC(),
         CURRENT_YEAR: String(new Date().getFullYear()),
       });
@@ -895,7 +852,7 @@
       let body = "";
 
       if (sections.length === 0) {
-        body = '<div class="menuState">No hay contenido disponible.</div>';
+        body = '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay contenido disponible.</p></div>';
       } else {
         const cards = sections
           .map(function (section) {
@@ -929,6 +886,7 @@
         MENU_SUBTITLE: escapeHtml(menu.menu_subtitle[0] || "Carta convencional"),
         MENU_BODY: body,
         ALLERGENS_LEGEND: renderAllergensLegendVC(),
+        CURRENT_YEAR: String(new Date().getFullYear()),
       });
     }
 
@@ -941,7 +899,7 @@
       let body = "";
 
       if (sections.length === 0) {
-        body = '<div class="menuState">No hay contenido disponible.</div>';
+        body = '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay contenido disponible.</p></div>';
       } else {
         const sectionsHtml = sections
           .map(function (section) {
@@ -1000,6 +958,7 @@
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
         MENU_SUBTITLE: escapeHtml(menu.menu_subtitle[0] || "Menu de grupos a la carta"),
         MENU_BODY: body,
+        CURRENT_YEAR: String(new Date().getFullYear()),
       });
     }
 
@@ -1043,7 +1002,6 @@
     }
 
     if (state.menuType === "special") {
-      console.log("[vc-preview] special branch", { state: JSON.parse(JSON.stringify(state)), menu: JSON.parse(JSON.stringify(menu)) });
       var resolvedUrl = "";
       if (parseLooseBool(menu.show_menu_preview_image, false)) {
         var previewUrl = String(menu.menu_preview_image_url || "").trim();
@@ -1055,18 +1013,16 @@
       var hasSpecialImage = Boolean(resolvedUrl);
       var imageSection = hasSpecialImage
         ? '<div class="specialMenuImageContainer"><img class="specialMenuImage" src="' + escapeHtml(resolvedUrl) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div>'
-        : '<div class="menuState">No hay imagen subida para este menú especial.</div>';
+        : '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay imagen subida para este menú especial.</p></div>';
 
       var subtitle = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle.filter(function (s) { return s && s.trim(); })[0] : "";
       var subtitleBlock = '<p class="page-subtitle">' + escapeHtml(subtitle || "Menú especial (temporada)") + '</p>';
-      console.log("[vc-preview] special subtitle", { subtitle: subtitle, subtitleBlock: subtitleBlock, templateHtml: state.templateHtml ? state.templateHtml.substring(0, 200) : "(empty)" });
       var tokens = {
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
         MENU_SUBTITLE_BLOCK: subtitleBlock,
         SPECIAL_IMAGE_SECTION: imageSection,
         CURRENT_YEAR: String(new Date().getFullYear()),
       };
-      console.log("[vc-preview] special tokens", tokens);
       return mountVillaTemplate(tokens);
     }
 

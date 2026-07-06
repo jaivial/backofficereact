@@ -608,10 +608,17 @@
     padding: 8px 14px;
   }
 
+  .bo-menuWizardFinal.is-previewHidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .bo-menuWizardFinal.is-previewHidden .bo-previewPane {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    grid-column: 1 / -1;
+    height: 0;
+    min-height: 0;
     transition: opacity 600ms ease, visibility 0s linear 600ms;
   }
 
