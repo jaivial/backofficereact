@@ -94,3 +94,6 @@
 /* ── Features: Public Pages ───────────────────────────── */
 @import "./styles/features/public/home.css";
 @import "./styles/features/public/public-booking.css";
+
+/* ── Features: Config — Contacto branding logo ───────── */
+@import "./styles/features/contacto/branding-logo.css";
