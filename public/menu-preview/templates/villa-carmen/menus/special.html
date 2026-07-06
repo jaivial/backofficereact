@@ -1,7 +1,7 @@
 <div class="client-shell">
   <header class="header" data-solid="1">
     <div class="container header-bar">
-      <button type="button" class="header__menuBurger" aria-label="Menu" aria-expanded="false">
+      <button type="button" class="header__menuBurger" aria-label="Menu" aria-expanded="false" disabled tabindex="-1">
         <i></i>
         <i></i>
         <i></i>
@@ -21,8 +21,8 @@
 
       <div class="header__tools">
         <div class="header__callAction">
-          <a href="/#menus" class="link link--center">Menus</a>
-          <a href="/reservas" class="link link--center reservaBttn">Reservar</a>
+          <a href="#" class="link link--center" onclick="return false">Menus</a>
+          <a href="#" class="link link--center reservaBttn" onclick="return false">Reservar</a>
         </div>
       </div>
     </div>

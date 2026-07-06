@@ -844,6 +844,23 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         if (params.count !== undefined) q.set("count", String(params.count));
         return json(`/api/admin/bookings/search?${q.toString()}`, { method: "GET" });
       },
+      async cancelledByDate(date: string): Promise<
+        APISuccess<{ staff: CancelledBookingItem[]; customer: CancelledBookingItem[]; whatsapp: CancelledBookingItem[]; total: number }> | APIError
+      > {
+        return json(`/api/admin/bookings/cancelled?date=${encodeURIComponent(date)}`, { method: "GET" });
+      },
+      async modifiedByDate(date: string): Promise<
+        APISuccess<{ staff: ModifiedBookingItem[]; customer: ModifiedBookingItem[]; whatsapp: ModifiedBookingItem[]; total: number }> | APIError
+      > {
+        return json(`/api/admin/bookings/modified?date=${encodeURIComponent(date)}`, { method: "GET" });
+      },
+      async reactivateCancelled(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/bookings/cancelled/${id}/reactivate`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
     },
     tables: {
       async list(params?: { date?: string; floor_number?: number }): Promise<APISuccess<{ data: TableMapArea[]; areas: TableMapArea[]; tables: TableMapItem[]; layout?: Record<string, unknown> }> | APIError> {

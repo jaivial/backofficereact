@@ -25,6 +25,7 @@ import { arrozRowsFromBooking, principalesRowsFromBooking } from "./functionalCo
 import { BookingSearch, type BookingSearchParams } from "./functionalComponents/BookingSearch/BookingSearch";
 import { BookingDetailsPanel } from "./functionalComponents/BookingDetailsPanel";
 import { SearchResultsTable } from "./functionalComponents/SearchResultsTable";
+import { BookingsViewTabs, type ViewTabId } from "./functionalComponents/BookingsViewTabs/BookingsViewTabs";
 
 type PageData = {
   date: string;
@@ -243,6 +244,8 @@ export default function Page() {
   const [details, setDetails] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
   const [edit, setEdit] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
 
+  const [viewTab, setViewTab] = useState<ViewTabId>("activas");
+
   const [searchMode, setSearchMode] = useState(false);
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
   const [searchTotalCount, setSearchTotalCount] = useState(0);
@@ -393,6 +396,12 @@ export default function Page() {
   const onCancel = useCallback((b: Booking) => setConfirm({ open: true, booking: b }), []);
   const openDetails = useCallback((b: Booking) => setDetails({ open: true, booking: b }), []);
   const closeDetails = useCallback(() => setDetails({ open: false, booking: null }), []);
+
+  const onViewTabChange = useCallback((id: ViewTabId) => setViewTab(id), []);
+  const onReactivate = useCallback(() => {
+    void loadBookings({ date, status, q, sort, dir, page, count });
+    void loadSummary(date);
+  }, [loadBookings, loadSummary, date, status, q, sort, dir, page, count]);
 
   const doCancel = useCallback(async () => {
     const b = confirm.booking;
@@ -591,44 +600,55 @@ export default function Page() {
             <AnimatePresence mode="wait" initial={false}>
               {isDayOpen ? (
                 <motion.div key="reservas-open-content" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
-                  <div className="bo-tableWrap" style={{ marginTop: 14 }} data-slot="reservas-tableWrap">
-                    <div className="bo-tableScroll" data-slot="reservas-tableScroll">
-                      <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
-                        <thead data-slot="reservas-thead">
-                          <tr data-slot="reservas-tr">
-                            <th className="col-added" data-slot="reservas-col-added">Añadida</th>
-                            <th className="col-mesa" data-slot="reservas-col-mesa">Mesa</th>
-                            <th className="col-time" data-slot="reservas-col-time">Hora</th>
-                            <th className="col-client" data-slot="reservas-col-client">Cliente</th>
-                            <th className="col-status" data-slot="reservas-col-status">Estado</th>
-                            <th className="num" data-slot="reservas-num">Pax</th>
-                            <th className="col-children num" data-slot="reservas-num">Niños</th>
-                            <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
-                            <th className="col-rice" data-slot="reservas-col-rice">Arroz</th>
-                            <th className="col-comment" data-slot="reservas-col-comment">Comentario</th>
-                            <th className="end" data-slot="reservas-end" />
-                          </tr>
-                        </thead>
-                        <tbody data-slot="reservas-tbody">
-                          {rows.map((b) => (
-                            <BookingRow key={b.id} booking={b} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
-                          ))}
-                          {!rows.length ? (
-                            <tr data-slot="reservas-tro"><td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
-                          ) : null}
-                        </tbody>
-                      </table>
+                  <BookingsViewTabs
+                    date={date}
+                    activeTab={viewTab}
+                    onTabChange={onViewTabChange}
+                    onReactivate={onReactivate}
+                    onNavigateDate={onSelectDate}
+                    busy={busy}
+                    reduceMotion={reduceMotion === true}
+                  />
+                  {viewTab === "activas" ? (
+                    <div className="bo-tableWrap" style={{ marginTop: 14 }} data-slot="reservas-tableWrap">
+                      <div className="bo-tableScroll" data-slot="reservas-tableScroll">
+                        <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
+                          <thead data-slot="reservas-thead">
+                            <tr data-slot="reservas-tr">
+                              <th className="col-added" data-slot="reservas-col-added">Añadida</th>
+                              <th className="col-mesa" data-slot="reservas-col-mesa">Mesa</th>
+                              <th className="col-time" data-slot="reservas-col-time">Hora</th>
+                              <th className="col-client" data-slot="reservas-col-client">Cliente</th>
+                              <th className="col-status" data-slot="reservas-col-status">Estado</th>
+                              <th className="num" data-slot="reservas-num">Pax</th>
+                              <th className="col-children num" data-slot="reservas-num">Niños</th>
+                              <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
+                              <th className="col-rice" data-slot="reservas-col-rice">Arroz</th>
+                              <th className="col-comment" data-slot="reservas-col-comment">Comentario</th>
+                              <th className="end" data-slot="reservas-end" />
+                            </tr>
+                          </thead>
+                          <tbody data-slot="reservas-tbody">
+                            {rows.map((b) => (
+                              <BookingRow key={b.id} booking={b} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
+                            ))}
+                            {!rows.length ? (
+                              <tr data-slot="reservas-tro"><td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
+                            ) : null}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
+                        <div className="bo-pagerText" data-slot="reservas-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
+                        {showPagerBtns ? (
+                          <div className="bo-pagerBtns" data-slot="reservas-page-pagination-btns">
+                            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1} data-testid="reservas-page-pagination-prev">Anterior</button>
+                            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages} data-testid="reservas-page-pagination-next">Siguiente</button>
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
-                    <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
-                      <div className="bo-pagerText" data-slot="reservas-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
-                      {showPagerBtns ? (
-                        <div className="bo-pagerBtns" data-slot="reservas-page-pagination-btns">
-                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1} data-testid="reservas-page-pagination-prev">Anterior</button>
-                          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages} data-testid="reservas-page-pagination-next">Siguiente</button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
+                  ) : null}
                 </motion.div>
               ) : (
                 <motion.div key="reservas-closed-content" style={{ marginTop: 14 }} initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>

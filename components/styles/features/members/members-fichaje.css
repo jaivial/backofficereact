@@ -80,6 +80,13 @@
   gap: 14px;
 }
 
+@media (max-width: 720px),
+(max-aspect-ratio: 9 / 16) {
+  .bo-membersPage {
+    padding-bottom: 40px;
+  }
+}
+
 .bo-membersIntroHead {
   align-items: center;
   gap: 12px;
@@ -755,6 +762,13 @@
 
 .bo-memberDetailPage {
   gap: var(--bo-space-4);
+}
+
+@media (max-width: 720px),
+(max-aspect-ratio: 9 / 16) {
+  .bo-memberDetailPage {
+    padding-bottom: 40px;
+  }
 }
 
 .bo-memberDetailRoute {
