@@ -12,11 +12,9 @@ import EmailProviderConfigInner from "../EmailProviderConfig/EmailProviderConfig
 import { useEmailProviderConfig } from "../EmailProviderConfig/hooks/useEmailProviderConfig";
 import { useBranding } from "./hooks/useBranding";
 
-const DEBOUNCE_MS = 400;
-
 export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, api, pushToast }: ContactoContentProps) {
   const [info, setInfo] = useState<RestaurantInfo>(initialInfo);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [savedInfo, setSavedInfo] = useState<RestaurantInfo>(initialInfo);
   const [savedBrandName, setSavedBrandName] = useState<string | null>(null);
   const isFirstRender = useRef(true);
   const emailProv = useEmailProviderConfig();
@@ -32,6 +30,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
       return;
     }
     setInfo(initialInfo);
+    setSavedInfo(initialInfo);
   }, [initialInfo]);
 
   useEffect(() => {
@@ -51,37 +50,43 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
     setLogoError(false);
   }, [branding.branding.logoUrl, logoPreviewNonce]);
 
-  const save = useCallback(
-    async (patch: Partial<RestaurantInfo>) => {
+  const saveSection = useCallback(
+    async (fields: (keyof RestaurantInfo)[]) => {
       setError(null);
+      setBusy(true);
+      const patch = fields.reduce<Partial<RestaurantInfo>>((acc, f) => {
+        (acc as Record<string, unknown>)[f] = info[f];
+        return acc;
+      }, {});
       try {
         const res = await api.config.setRestaurantInfo(patch);
         if (!res.success) {
           setError(readAPIMessage(res, "No se pudo guardar"));
           return;
         }
+        // Advance the saved baseline for the patched fields. Use the server
+        // echo when present so normalized values are reflected.
+        const next = res.restaurantInfo ?? info;
         if (res.restaurantInfo) {
-          setInfo(res.restaurantInfo);
+          setInfo((prev) => {
+            const merged = { ...prev };
+            for (const f of fields) (merged as Record<string, unknown>)[f] = next[f];
+            return merged;
+          });
         }
+        setSavedInfo((prev) => {
+          const merged = { ...prev };
+          for (const f of fields) (merged as Record<string, unknown>)[f] = next[f];
+          return merged;
+        });
+        pushToast({ kind: "success", title: "Guardado", message: "Cambios guardados" });
       } catch (e) {
         setError(e instanceof Error ? e.message : "No se pudo guardar");
       } finally {
         setBusy(false);
       }
     },
-    [api.config, setError, setBusy],
-  );
-
-  const scheduleDebouncedSave = useCallback(
-    (patch: Partial<RestaurantInfo>) => {
-      setBusy(true);
-      clearTimeout(debounceRef.current ?? undefined);
-      debounceRef.current = setTimeout(() => {
-        void save(patch);
-        pushToast({ kind: "success", title: "Guardado", message: "Cambios guardados" });
-      }, DEBOUNCE_MS);
-    },
-    [save, pushToast],
+    [api.config, info, setError, setBusy, pushToast],
   );
 
   const handleBrandingField = useCallback(
@@ -128,24 +133,18 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
     [handleLogoFile],
   );
 
+  const handleField = useCallback((field: keyof RestaurantInfo, value: string) => {
+    setInfo((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
-  const handleField = useCallback(
-    (field: keyof RestaurantInfo, value: string) => {
-      const patch = { [field]: value } as Partial<RestaurantInfo>;
-      setInfo((prev) => ({ ...prev, [field]: value }));
-      scheduleDebouncedSave(patch);
-    },
-    [scheduleDebouncedSave],
-  );
+  const handleClasificacion = useCallback((value: string) => {
+    setInfo((prev) => ({ ...prev, clasificacion: value as "persona_fisica" | "sociedad" }));
+  }, []);
 
-  const handleClasificacion = useCallback(
-    (value: string) => {
-      const patch = { clasificacion: value as "persona_fisica" | "sociedad" };
-      setInfo((prev) => ({ ...prev, clasificacion: value as "persona_fisica" | "sociedad" }));
-      scheduleDebouncedSave(patch);
-    },
-    [scheduleDebouncedSave],
-  );
+  const contactoFields: (keyof RestaurantInfo)[] = ["direccion", "telefono", "email"];
+  const fiscalFields: (keyof RestaurantInfo)[] = ["cif", "direccionFacturacion", "clasificacion"];
+  const contactoDirty = contactoFields.some((f) => info[f] !== savedInfo[f]);
+  const fiscalDirty = fiscalFields.some((f) => info[f] !== savedInfo[f]);
 
   return (
     <>
@@ -321,6 +320,20 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             saving={emailProv.saving}
             pushToast={pushToast as (t: { kind: "success" | "error" | "info" | "warning"; title: string; message?: string }) => void}
           />
+          <div className="bo-sectionSaveRow" data-slot="config-contacto-save-row">
+            {contactoDirty ? (
+              <button
+                type="button"
+                className="bo-brandingSaveBtn"
+                onClick={() => void saveSection(contactoFields)}
+                disabled={busy}
+                aria-label="Guardar datos de contacto"
+                data-testid="config-contacto-save-btn"
+              >
+                {busy ? "Guardando..." : "Guardar"}
+              </button>
+            ) : null}
+          </div>
       </Panel>
 
       <Panel title="Información fiscal" meta="Datos para facturación" bodyClassName="bo-stack" data-ui="config-contacto-fiscal-panel" data-slot="config-contacto-fiscal-panel">
@@ -368,6 +381,20 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               disabled={busy}
               ariaLabel="Clasificación fiscal"
             />
+          </div>
+          <div className="bo-sectionSaveRow" data-slot="config-contacto-fiscal-save-row">
+            {fiscalDirty ? (
+              <button
+                type="button"
+                className="bo-brandingSaveBtn"
+                onClick={() => void saveSection(fiscalFields)}
+                disabled={busy}
+                aria-label="Guardar información fiscal"
+                data-testid="config-contacto-fiscal-save-btn"
+              >
+                {busy ? "Guardando..." : "Guardar"}
+              </button>
+            ) : null}
           </div>
       </Panel>
     </>
