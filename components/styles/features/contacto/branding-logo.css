@@ -175,3 +175,17 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* ── Config sections: bottom-right save row ────────────── */
+
+.bo-sectionSaveRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 8px;
+  min-height: 0;
+}
+
+.bo-sectionSaveRow:empty {
+  display: none;
+}
