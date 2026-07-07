@@ -17,7 +17,7 @@ const DEBOUNCE_MS = 400;
 export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, api, pushToast }: ContactoContentProps) {
   const [info, setInfo] = useState<RestaurantInfo>(initialInfo);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const brandingDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [savedBrandName, setSavedBrandName] = useState<string | null>(null);
   const isFirstRender = useRef(true);
   const emailProv = useEmailProviderConfig();
   const branding = useBranding();
@@ -37,6 +37,14 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
   useEffect(() => {
     void branding.load();
   }, [branding.load]);
+
+  // Capture the saved brand name once branding has loaded, so we can show a
+  // Save button only when the field actually changed.
+  useEffect(() => {
+    if (branding.loaded && savedBrandName === null) {
+      setSavedBrandName(branding.branding.brandName);
+    }
+  }, [branding.loaded, branding.branding.brandName, savedBrandName]);
 
   // Clear a stale image error whenever the logo URL changes.
   useEffect(() => {
@@ -67,7 +75,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
   const scheduleDebouncedSave = useCallback(
     (patch: Partial<RestaurantInfo>) => {
       setBusy(true);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      clearTimeout(debounceRef.current ?? undefined);
       debounceRef.current = setTimeout(() => {
         void save(patch);
         pushToast({ kind: "success", title: "Guardado", message: "Cambios guardados" });
@@ -76,23 +84,22 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
     [save, pushToast],
   );
 
-  const scheduleBrandingSave = useCallback(() => {
-    if (brandingDebounceRef.current) clearTimeout(brandingDebounceRef.current);
-    brandingDebounceRef.current = setTimeout(async () => {
-      const ok = await branding.save();
-      if (ok) {
-        pushToast({ kind: "success", title: "Guardado", message: "Cambios guardados" });
-      }
-    }, DEBOUNCE_MS);
-  }, [branding, pushToast]);
-
   const handleBrandingField = useCallback(
     (field: "brandName", value: string) => {
       branding.setField(field, value);
-      scheduleBrandingSave();
     },
-    [branding, scheduleBrandingSave],
+    [branding],
   );
+
+  const handleBrandingSave = useCallback(async () => {
+    const ok = await branding.save();
+    if (ok) {
+      setSavedBrandName(branding.branding.brandName);
+      pushToast({ kind: "success", title: "Guardado", message: "Cambios guardados" });
+    } else {
+      pushToast({ kind: "error", title: "No se pudo guardar" });
+    }
+  }, [branding, pushToast]);
 
   const handleLogoFile = useCallback(
     async (file: File) => {
@@ -158,12 +165,22 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             aria-label="Nombre del restaurante para emails"
             data-testid="config-contacto-brandname-input"
           />
+          {savedBrandName !== null && branding.branding.brandName !== savedBrandName ? (
+            <div className="bo-brandingSaveRow" data-slot="brandname-save-row">
+              <button
+                type="button"
+                className="bo-brandingSaveBtn"
+                onClick={handleBrandingSave}
+                disabled={busy || branding.saving}
+                aria-label="Guardar nombre del restaurante"
+                data-testid="config-contacto-brandname-save-btn"
+              >
+                {branding.saving ? "Guardando..." : "Guardar"}
+              </button>
+            </div>
+          ) : null}
         </div>
-
         <div className="bo-field" data-ui="config-contacto-logo-field" data-slot="config-contacto-logo-field">
-          <label className="bo-label" data-slot="configContacto-label">
-            Logo (cabecera del email)
-          </label>
           <div className="bo-brandingLogo" data-slot="config-contacto-logo-block">
             <ImageDropInput
               className="bo-brandingLogo-dropzone"
