@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -16,6 +16,7 @@ import { PageToolbar } from "../../../ui/shell/PageToolbar";
 import { ConfigRestauranteContent as ConfigRestaurante } from "./functionalComponents/ConfigRestaurante/ConfigRestaurante";
 import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/ConfigContacto/ConfigContacto";
 import { BookingManager } from "./booking/BookingManager";
+import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/ConfigLegalPages";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -24,7 +25,7 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages";
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -167,6 +168,12 @@ export default function Page() {
         href: "#booking",
         icon: <CalendarDays className="bo-ico" />,
       },
+      {
+        id: "legal-pages",
+        label: "Paginas legales",
+        href: "#legal-pages",
+        icon: <Scale className="bo-ico" />,
+      },
     ],
     [],
   );
@@ -281,6 +288,8 @@ export default function Page() {
               api={api}
               pushToast={pushToast}
             />
+          ) : contentTab === "legal-pages" ? (
+            <ConfigLegalPages />
           ) : (
             <BookingManager />
           )}

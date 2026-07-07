@@ -60,6 +60,10 @@ import type {
   InvoiceReminder,
   SendReminderInput,
   MenuSelectorItem,
+  LegalPage,
+  LegalPageListResponse,
+  LegalPageSlug,
+  LegalPageUpsertRequest,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 import { emitSessionExpired, emitSessionExpirationUpdate } from "../lib/session-expiration";
@@ -1786,6 +1790,22 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
+        });
+      },
+    },
+
+    legalPages: {
+      async list(): Promise<LegalPageListResponse | APIError> {
+        return json("/api/admin/legal-pages", { method: "GET" });
+      },
+      async get(slug: LegalPageSlug): Promise<APISuccess<{ page: LegalPage }> | APIError> {
+        return json(`/api/admin/legal-pages/${slug}`, { method: "GET" });
+      },
+      async upsert(slug: LegalPageSlug, body: LegalPageUpsertRequest): Promise<APISuccess | APIError> {
+        return json(`/api/admin/legal-pages/${slug}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
         });
       },
     },
