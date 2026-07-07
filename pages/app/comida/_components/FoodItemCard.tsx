@@ -14,6 +14,7 @@ interface FoodItemCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
+  showMedia?: boolean;
 }
 
 function formatEuro(price: number): string {
@@ -28,6 +29,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
   onEdit,
   onDelete,
   onToggle,
+  showMedia = true,
 }: FoodItemCardProps) {
   const isWine = foodType === "vinos";
 
@@ -63,6 +65,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
       title={item.nombre}
       imageUrl={item.foto_url}
       mediaLoading={!!(item as { ai_generating?: boolean }).ai_generating}
+      showMedia={showMedia}
       inactive={!item.active}
       primaryMeta={secondaryMeta}
       secondaryMeta={extraMeta}

@@ -579,7 +579,10 @@ export default function Page() {
                           <Select value={status} onChange={onStatusChange} options={statusOptions} size="sm" ariaLabel="Estado" />
                           <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" />
                           <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Dirección" />
-                          <Select value={String(count)} onChange={onCountChange} options={pageSizeOptions} size="sm" ariaLabel="Tamaño página" className="bo-reservasCountSelect" style={{ width: 60 }} menuMinWidthPx={60} listClassName="bo-bookingSearchCountList" />
+                          <label className="bo-filterRow--count" data-slot="reservas-page-filter-count">
+                            <span className="bo-filterRow--countLabel">Resultados por página:</span>
+                            <Select value={String(count)} onChange={onCountChange} options={pageSizeOptions} size="sm" ariaLabel="Tamaño página" className="bo-reservasCountSelect" style={{ width: 60 }} menuMinWidthPx={60} listClassName="bo-bookingSearchCountList" />
+                          </label>
                         </div>
                         <div className="bo-filterRow bo-filterRow--actions" data-slot="reservas-page-filter-actions">
                           <div className="bo-search" data-slot="reservas-page-search">

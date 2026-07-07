@@ -45,6 +45,10 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   const [pageVisibilityLoading, setPageVisibilityLoading] = useState(false);
   const showPageVisibilityToggle = foodType === "cafes" || foodType === "bebidas";
 
+  // Local UI toggle: show/hide the dish card image media block on the list page.
+  // No persistence — resets to true on every mount, like an accordion/filter.
+  const [showImages, setShowImages] = useState(true);
+
   // Wire WebSocket for real-time AI image generation status
   const handleAIWSEvent = useCallback(
     (event: ComidaAIWSMessage) => {
@@ -306,10 +310,11 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   }, [api, foodType, pushToast]);
 
   return {
-    // State
-    items,
-    categories,
-    page,
+    pageActive,
+    pageVisibilityLoading,
+    showPageVisibilityToggle,
+    showImages,
+    setShowImages,
     setPage,
     pageSize,
     setPageSize,

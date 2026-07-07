@@ -129,4 +129,35 @@ describe("FoodItemCard", () => {
     expect(toggle).toBeInTheDocument();
     expect(toggle).toBeDisabled();
   });
+
+  it("renders the media region by default (showMedia defaults to true)", () => {
+    const { container } = render(
+      <FoodItemCard
+        item={PLATO_ITEM}
+        foodType="platos"
+        onOpen={() => {}}
+        onEdit={() => {}}
+        onDelete={() => {}}
+        onToggle={() => {}}
+      />,
+    );
+    expect(container.querySelector('[data-ui="dish-card-media"]')).toBeInTheDocument();
+    expect(container.textContent).toContain("Paella Valenciana");
+  });
+
+  it("forwards showMedia=false to FoodDishCard and hides the media region", () => {
+    const { container } = render(
+      <FoodItemCard
+        item={PLATO_ITEM}
+        foodType="platos"
+        onOpen={() => {}}
+        onEdit={() => {}}
+        onDelete={() => {}}
+        onToggle={() => {}}
+        showMedia={false}
+      />,
+    );
+    expect(container.querySelector('[data-ui="dish-card-media"]')).toBeNull();
+    expect(container.textContent).toContain("Paella Valenciana");
+  });
 });
