@@ -28,6 +28,7 @@ interface FoodListProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   listLabel: string;
+  showMedia?: boolean;
 }
 
 export function FoodList({
@@ -49,6 +50,7 @@ export function FoodList({
   onPageChange,
   onPageSizeChange,
   listLabel,
+  showMedia = true,
 }: FoodListProps) {
   if (loading) {
     return (
@@ -82,6 +84,7 @@ export function FoodList({
             onToggle={() => {
               void onToggle(item);
             }}
+            showMedia={showMedia}
           />
         ))}
       </div>

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { usePageContext } from "vike-react/usePageContext";
 import { Building2, LayoutGrid } from "lucide-react";
 
 import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../../../../../api/types";
@@ -16,8 +17,8 @@ import { Panel } from "../../../../../ui/shell/Panel";
 export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast }: RestauranteContentProps) {
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
   const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
-  const floorTabFromQuery =
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("floortab") : null;
+  const pageContext = usePageContext();
+  const floorTabFromQuery = pageContext.urlParsed.search.floortab;
   const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery === "salones" ? "salones" : "plantas");
 
   const floorTabs = useMemo<TabItem[]>(
