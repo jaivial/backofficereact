@@ -725,6 +725,60 @@ async function start() {
     }
   });
 
+  // Proxy for public legal-page lookup (no auth required). The public site
+  // reads legal pages server-side; this same-origin proxy lets the backoffice
+  // origin reach the endpoint too (e.g. e2e smoke, preview parity). GET-only.
+  app.use("/api/public/legal-page", async (req, res) => {
+    try {
+      const upstreamURL = new URL(req.originalUrl, backendOrigin);
+
+      const headers = new Headers();
+      for (const [k, v] of Object.entries(req.headers)) {
+        if (v === undefined) continue;
+        if (Array.isArray(v)) headers.set(k, v.join(","));
+        else headers.set(k, v);
+      }
+      headers.delete("host");
+      headers.set("accept-encoding", "identity");
+
+      const upstream = await fetch(upstreamURL, { method: "GET", headers, redirect: "manual" });
+      res.status(upstream.status);
+
+      upstream.headers.forEach((v, k) => {
+        const lk = k.toLowerCase();
+        if (lk === "set-cookie") return;
+        const skip = [
+          "connection",
+          "keep-alive",
+          "proxy-authenticate",
+          "proxy-authorization",
+          "te",
+          "trailer",
+          "transfer-encoding",
+          "upgrade",
+          "content-length",
+          "content-encoding",
+        ];
+        if (skip.includes(lk)) return;
+        res.setHeader(k, v);
+      });
+
+      const buf = Buffer.from(await upstream.arrayBuffer());
+      res.send(buf);
+    } catch (err) {
+      if (isBackendConnectionError(err)) {
+        logBackendUnavailable("public legal-page proxy", backendOrigin, err);
+        res.status(502).json({
+          success: false,
+          message: `Backend unavailable at ${backendOrigin}. Run: ${LOCAL_BACKEND_START_CMD}`,
+        });
+      } else {
+        console.error("[backoffice] public legal-page proxy error", err);
+        res.status(502).json({ success: false, message: "Upstream error" });
+      }
+    }
+  });
+
   // Proxy for local web preview iframe used by the menus wizard.
   // Keeping it same-origin avoids mixed-content issues when backoffice runs on HTTPS.
   app.use("/preview-web", async (req, res) => {
