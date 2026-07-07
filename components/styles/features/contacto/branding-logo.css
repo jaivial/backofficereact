@@ -176,6 +176,11 @@
   cursor: not-allowed;
 }
 
+:root[data-theme="light"] .bo-brandingSaveBtn {
+  background: #3f07f7b3;
+  color: #ffffff;
+}
+
 /* ── Config sections: bottom-right save row ────────────── */
 
 .bo-sectionSaveRow {
