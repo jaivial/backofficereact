@@ -1845,3 +1845,31 @@ export type WidgetSettings = {
   muted_color: string;
   font_stack: string;
 };
+
+export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos";
+
+export type LegalPageSummary = {
+  slug: LegalPageSlug;
+  title: string;
+  updatedAt: string;
+  updatedByName?: string;
+};
+
+export type LegalPage = {
+  slug: LegalPageSlug;
+  title: string;
+  contentJson: string;
+  contentHtml: string;
+  updatedAt: string;
+};
+
+export type LegalPageListResponse = {
+  success: true;
+  pages: LegalPageSummary[];
+};
+
+export type LegalPageUpsertRequest = {
+  title: string;
+  contentJson: string;
+  contentHtml: string;
+};
