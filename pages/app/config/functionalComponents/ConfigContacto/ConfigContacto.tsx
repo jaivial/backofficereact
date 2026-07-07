@@ -23,6 +23,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
   const branding = useBranding();
   const [logoPreviewNonce, setLogoPreviewNonce] = useState(0);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
+  const [logoError, setLogoError] = useState(false);
 
   // Sync when initialInfo changes (e.g. after page reload)
   useEffect(() => {
@@ -35,7 +36,12 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
 
   useEffect(() => {
     void branding.load();
-  }, [branding]);
+  }, [branding.load]);
+
+  // Clear a stale image error whenever the logo URL changes.
+  useEffect(() => {
+    setLogoError(false);
+  }, [branding.branding.logoUrl, logoPreviewNonce]);
 
   const save = useCallback(
     async (patch: Partial<RestaurantInfo>) => {
@@ -165,25 +171,38 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               ariaLabel="Subir logo del restaurante"
               onSelectFile={handleLogoFile}
             >
-              <div className="bo-brandingLogo-preview" data-slot="logo-preview-wrapper">
-                {branding.branding.logoUrl ? (
-                  <img
-                    src={`${branding.branding.logoUrl}${logoPreviewNonce ? `?v=${logoPreviewNonce}` : ""}`}
-                    alt="Logo actual"
-                    className="bo-brandingLogo-image"
-                    data-testid="config-contacto-logo-preview"
-                  />
-                ) : (
-                  <span className="bo-brandingLogo-fallback" data-slot="logo-empty" aria-hidden="true">
-                    <ImagePlus size={42} strokeWidth={1.6} className="bo-brandingLogo-fallbackIcon" />
-                  </span>
-                )}
-                {branding.uploading ? (
-                  <span className="bo-brandingLogo-status" data-slot="logo-uploading-status">
-                    <Loader2 size={28} className="bo-brandingLogo-iconSpin" />
-                  </span>
-                ) : null}
-              </div>
+                <div className="bo-brandingLogo-preview" data-slot="logo-preview-wrapper">
+                  {branding.branding.logoUrl && !logoError ? (
+                    <img
+                      src={
+                        branding.branding.logoUrl.includes("?")
+                          ? branding.branding.logoUrl + (logoPreviewNonce ? `&_n=${logoPreviewNonce}` : "")
+                          : `${branding.branding.logoUrl}${logoPreviewNonce ? `?v=${logoPreviewNonce}` : ""}`
+                      }
+                      alt="Logo actual"
+                      className="bo-brandingLogo-image"
+                      data-testid="config-contacto-logo-preview"
+                      onError={() => setLogoError(true)}
+                    />
+                  ) : branding.branding.logoUrl && logoError ? (
+                    <span className="bo-brandingLogo-fallback" data-slot="logo-empty" aria-hidden="true">
+                      <ImagePlus size={42} strokeWidth={1.6} className="bo-brandingLogo-fallbackIcon" />
+                    </span>
+                  ) : !branding.loaded ? (
+                    <span className="bo-brandingLogo-status" data-slot="logo-loading-status">
+                      <Loader2 size={28} className="bo-brandingLogo-iconSpin" />
+                    </span>
+                  ) : (
+                    <span className="bo-brandingLogo-fallback" data-slot="logo-empty" aria-hidden="true">
+                      <ImagePlus size={42} strokeWidth={1.6} className="bo-brandingLogo-fallbackIcon" />
+                    </span>
+                  )}
+                  {branding.uploading ? (
+                    <span className="bo-brandingLogo-status" data-slot="logo-uploading-status">
+                      <Loader2 size={28} className="bo-brandingLogo-iconSpin" />
+                    </span>
+                  ) : null}
+                </div>
             </ImageDropInput>
             <div className="bo-brandingLogo-actions">
               <button
