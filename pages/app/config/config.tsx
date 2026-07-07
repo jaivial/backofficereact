@@ -144,10 +144,7 @@ export default function Page() {
     },
   );
 
-  const contentTabFromQuery =
-    typeof window !== "undefined"
-      ? (new URLSearchParams(window.location.search).get("content") as ContentTab | null)
-      : null;
+  const contentTabFromQuery = pageContext.urlParsed.search.content as ContentTab | null | undefined;
   const [contentTab, setContentTab] = useState<ContentTab>(contentTabFromQuery ?? "restaurante");
 
   const contentTabs = useMemo<TabItem[]>(

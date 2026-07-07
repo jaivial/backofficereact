@@ -63,6 +63,8 @@ function FoodTypePage() {
     pageActive,
     pageVisibilityLoading,
     showPageVisibilityToggle,
+    showImages,
+    setShowImages,
     foodType,
     totalPages,
     showPagerBtns,
@@ -126,6 +128,20 @@ function FoodTypePage() {
               </div>
             )}
           </div>
+
+          <div className="bo-foodPageVisibility" data-ui="food-show-images-toggle">
+            <div className="bo-foodPageVisibilityRow" data-ui="food-show-images-toggle-row">
+              <span className="bo-foodPageVisibilityTitle" data-slot="@foodType-showImagesLabel">
+                Mostrar imagenes
+              </span>
+              <Switch
+                checked={showImages}
+                onCheckedChange={setShowImages}
+                data-ui="food-show-images-switch"
+                aria-label="mostrar imagenes"
+              />
+            </div>
+          </div>
         </div>
 
         <FoodFilters
@@ -179,6 +195,7 @@ function FoodTypePage() {
           showPagerBtns={showPagerBtns}
           singularLabel={singularLabel}
           listLabel={listLabel}
+          showMedia={showImages}
           onOpenDetail={onOpenDetail}
           onOpenEdit={onOpenEdit}
           onDelete={(item) => setDeleteConfirm({ open: true, item })}

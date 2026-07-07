@@ -446,6 +446,48 @@
   justify-content: center;
 }
 
+/* Filtros reservas: alinear los selects a la izquierda y envolver
+   el selector de tamaño de página con su etiqueta. */
+.bo-filters .bo-selectBtn {
+  justify-content: flex-start;
+}
+
+.bo-filters .bo-selectBtn .bo-selectLabelWrap {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.bo-filters .bo-selectBtn .bo-selectLabel {
+  text-align: left;
+}
+
+.bo-filters .bo-reservasCountSelect {
+  justify-content: flex-start;
+}
+
+.bo-filterRow--selects:has(.bo-filterRow--count) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: row;
+}
+
+.bo-filterRow--count {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--bo-space-2);
+  min-width: 0;
+  width: 100%;
+  padding-left: 0.5rem;
+  grid-column: 1 / -1;
+}
+
+.bo-filterRow--countLabel {
+  font-size: var(--bo-text-sm);
+  font-weight: 650;
+  color: var(--bo-muted);
+  white-space: nowrap;
+}
+
 .bo-actionBtn {
   display: inline-flex;
   align-items: center;

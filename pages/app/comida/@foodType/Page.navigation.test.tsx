@@ -64,8 +64,10 @@ vi.mock("./hooks/useFoodTypePage", () => ({
     onCreateCategory: vi.fn(),
     onDeleteConfirm: vi.fn(),
     onToggle: vi.fn(),
-  }),
-}));
+    showImages: true,
+    setShowImages: vi.fn(),
+   }),
+ }));
 
 vi.mock("../../../../state/atoms", () => ({
   sessionAtom: { init: null },

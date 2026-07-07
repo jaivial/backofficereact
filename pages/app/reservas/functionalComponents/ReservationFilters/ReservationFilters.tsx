@@ -90,18 +90,21 @@ export function ReservationFilters({
           <Select value={status} onChange={onStatusChange} options={statusOptions} size="sm" ariaLabel="Estado" data-ui="status-select" />
           <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" data-ui="sort-select" />
           <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Dirección" data-ui="dir-select" />
-          <Select
-            value={String(count)}
-            onChange={onCountChange}
-            options={pageSizeOptions}
-            size="sm"
-            ariaLabel="Tamaño página"
-            className="bo-reservasCountSelect"
-            style={{ width: 60 }}
-            menuMinWidthPx={60}
-            listClassName="bo-bookingSearchCountList"
-            data-ui="count-select"
-          />
+          <label className="bo-filterRow--count" data-ui="count-label">
+            <span className="bo-filterRow--countLabel">Resultados por página:</span>
+            <Select
+              value={String(count)}
+              onChange={onCountChange}
+              options={pageSizeOptions}
+              size="sm"
+              ariaLabel="Tamaño página"
+              className="bo-reservasCountSelect"
+              style={{ width: 60 }}
+              menuMinWidthPx={60}
+              listClassName="bo-bookingSearchCountList"
+              data-ui="count-select"
+            />
+          </label>
         </div>
         <div className="bo-filterRow bo-filterRow--actions" data-ui="filter-actions">
           <div className="bo-search" data-ui="search-box">
