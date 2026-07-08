@@ -858,6 +858,7 @@ async function start() {
 
   // Dev: attach Vite dev server middlewares for HMR.
   let vite: Awaited<ReturnType<typeof createViteServer>> | null = null;
+  let devServer: https.Server | null = null;
   if (!isProd) {
     const certPath = resolveAppPath(appRoot, process.env.TLS_CERT_PATH ?? "");
     const keyPath = resolveAppPath(appRoot, process.env.TLS_KEY_PATH ?? "");
@@ -867,11 +868,31 @@ async function start() {
     const cert = readTLSFile(certPath);
     const key = readTLSFile(keyPath);
 
+    // Create the HTTPS server up-front so Vite's HMR websocket can share it.
+    // This keeps HMR on the same port/origin as the app (3010), so a reverse
+    // proxy (nginx) only needs to proxy one port with WebSocket upgrade.
+    devServer = https.createServer({ cert, key }, app);
+
     vite = await createViteServer({
       root: appRoot,
-      // In middleware mode Vite runs its HMR websocket server on a separate port.
-      // When the page is served over HTTPS the client uses `wss://...`, so we need TLS here too.
-      server: { middlewareMode: true, https: { cert, key } },
+      server: {
+        middlewareMode: true,
+        https: { cert, key },
+        // Share the app's HTTPS server for the HMR websocket. When served behind a
+        // reverse proxy on a public HTTPS host, HMR_CLIENT_HOST/PORT tell the client
+        // to connect back through the proxy (wss://<host>:443/) instead of the
+        // internal port; nginx's `location /` upgrade forwards it to this server.
+        hmr: {
+          server: devServer,
+          ...(process.env.HMR_CLIENT_HOST
+            ? {
+                protocol: process.env.HMR_CLIENT_PROTOCOL ?? "wss",
+                host: process.env.HMR_CLIENT_HOST,
+                clientPort: Number(process.env.HMR_CLIENT_PORT ?? 443),
+              }
+            : {}),
+        },
+      },
       appType: "custom",
     });
     app.use(vite.middlewares);
@@ -1148,7 +1169,7 @@ async function start() {
     return;
   }
 
-  const server = https.createServer(
+  const server = devServer ?? https.createServer(
     {
       cert: readTLSFile(resolveAppPath(appRoot, process.env.TLS_CERT_PATH ?? "")),
       key: readTLSFile(resolveAppPath(appRoot, process.env.TLS_KEY_PATH ?? "")),

@@ -71,6 +71,7 @@ export default defineConfig({
       "0.0.0.0",
       "localhost",
       ".trycloudflare.com",
+      ".menustudioai.com",
     ],
   },
 });

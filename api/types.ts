@@ -366,6 +366,11 @@ export type ConfigDayStatus = {
   isOpen: boolean;
 };
 
+export type ConfigDayRangeResult = {
+  dates: string[];
+  isOpen: boolean;
+};
+
 export type OpeningMode = "morning" | "night" | "both";
 
 export type WeekdayOpen = {

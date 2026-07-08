@@ -351,96 +351,104 @@ export function BookingEditor({
           <div className="bo-panelTitle" data-slot="bookingEditor-panelTitle">Datos</div>
           <div className="bo-panelMeta" data-slot="bookingEditor-panelMeta">{draft.special_menu ? "Menú de grupo" : "Reserva"}</div>
         </div>
-        <div className="bo-panelBody bo-bookingPanelBody--customer" style={{ display: "grid", gap: 12 }} data-slot="bookingEditor-bookingPanelBody--customer">
-          <div className="bo-row bo-bookingRow bo-bookingRow--schedule" data-slot="booking-editor-schedule">
+        <div className="bo-panelBody bo-bookingPanelBody--customer" style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignContent: "center", alignItems: "center", maxWidth: 500, margin: "0 auto", gap: 12 }} data-slot="bookingEditor-bookingPanelBody--customer">
+          <div className="bo-row bo-bookingRow bo-bookingRow--schedule" style={{ width: "100%", justifyContent: "center" }} data-slot="booking-editor-schedule">
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--date" data-slot="booking-editor-date">
-              <div className="bo-label" data-slot="bookingEditor-label">Fecha</div>
+              <div className="bo-label" style={{ textAlign: "left" }} data-slot="bookingEditor-label">Fecha</div>
               <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
             </div>
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time" data-slot="booking-editor-time">
-              <div className="bo-label" data-slot="bookingEditor-label">Hora</div>
+              <div className="bo-label" style={{ textAlign: "left" }} data-slot="bookingEditor-label">Hora</div>
               <TimePicker value={draft.reservation_time} onChange={(v) => setField("reservation_time", v)} ariaLabel="Hora" />
             </div>
-            <CounterField
-              className="bo-bookingField bo-bookingField--party"
-              label="Pax"
-              value={draft.party_size || 1}
-              min={1}
-              max={10000}
-              onChange={(v) => setField("party_size", v)}
-            />
           </div>
 
-          <div className="bo-row bo-bookingRow bo-bookingRow--contact" data-slot="booking-editor-contact">
-            <div className="bo-field bo-bookingField bo-bookingField--client" style={{ flex: "1 1 320px" }} data-slot="booking-editor-client">
-              <div className="bo-label" data-slot="bookingEditor-label">Cliente</div>
-              <input className="bo-input bo-input--sm" value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} data-slot="booking-editor-client-input" />
-            </div>
-            <div className="bo-field bo-bookingField bo-bookingField--phone" style={{ flex: "1 1 280px" }} data-slot="booking-editor-phone">
-              <div className="bo-label" data-slot="bookingEditor-label">Teléfono</div>
-              <div className="bo-phone" data-slot="booking-editor-phone-group">
-                <Select
-                  className="bo-selectBtn--sm bo-phoneCC"
-                  size="sm"
-                  value={draft.contact_phone_country_code}
-                  onChange={(v) => setField("contact_phone_country_code", v)}
-                  ariaLabel="Prefijo"
-                  options={phoneCodeOptions}
-                />
-                <input
-                  className="bo-input bo-input--sm bo-phoneNum"
-                  inputMode="tel"
-                  value={draft.contact_phone}
-                  onChange={(e) => setField("contact_phone", e.target.value)}
-                  aria-label="Teléfono"
-                  data-slot="booking-editor-phone-input"
-                />
-              </div>
-            </div>
-            <div className="bo-field bo-bookingField bo-bookingField--email" style={{ flex: "1 1 320px" }} data-slot="booking-editor-email">
-              <div className="bo-label" data-slot="bookingEditor-label">Email (opcional)</div>
-              <input className="bo-input bo-input--sm" value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} data-slot="booking-editor-email-input" />
-            </div>
+          <CounterField
+            className="bo-bookingField bo-bookingField--party"
+            style={{ width: "100%" }}
+            label="Pax"
+            value={draft.party_size || 1}
+            min={1}
+            max={10000}
+            onChange={(v) => setField("party_size", v)}
+          />
+
+          <div className="bo-field bo-bookingField bo-bookingField--client" style={{ width: "100%" }} data-slot="booking-editor-client">
+            <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">Cliente</div>
+            <input className="bo-input bo-input--sm" style={{ textAlign: "center", width: "100%" }} value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} data-slot="booking-editor-client-input" />
           </div>
 
-          <div className="bo-row bo-bookingRow bo-bookingRow--extras" data-slot="booking-editor-extras">
-            <div className="bo-field bo-bookingField bo-bookingField--table" data-slot="booking-editor-table">
-              <div className="bo-label" data-slot="bookingEditor-label">Mesa</div>
-              <input
-                className="bo-input bo-input--sm"
-                style={{ width: 110 }}
-                value={draft.table_number}
-                onChange={(e) => setField("table_number", e.target.value)}
-                data-slot="booking-editor-table-input"
-              />
-            </div>
-            <CounterField
-              className="bo-bookingField bo-bookingField--strollers"
-              label="Carros"
-              value={draft.babyStrollers || 0}
-              min={0}
-              max={100}
-              onChange={(v) => setField("babyStrollers", v)}
-            />
-            <CounterField
-              className="bo-bookingField bo-bookingField--highchairs"
-              label="Tronas"
-              value={draft.highChairs || 0}
-              min={0}
-              max={100}
-              onChange={(v) => setField("highChairs", v)}
-            />
-            <div className="bo-field bo-bookingField bo-bookingField--salon" style={{ flex: "1 1 260px" }} data-slot="booking-editor-salon">
-              <div className="bo-label" data-slot="bookingEditor-label">Salón</div>
+          <div className="bo-field bo-bookingField bo-bookingField--phone" style={{ width: "100%" }} data-slot="booking-editor-phone">
+            <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">Teléfono</div>
+            <div className="bo-phone" style={{ justifyContent: "center" }} data-slot="booking-editor-phone-group">
               <Select
-                className="bo-selectBtn--sm"
+                className="bo-selectBtn--sm bo-phoneCC"
+                style={{ display: "flex", justifyContent: "center" }}
                 size="sm"
-                value={draft.preferred_floor_number != null ? String(draft.preferred_floor_number) : ""}
-                onChange={(v) => setField("preferred_floor_number", v ? Number(v) : null)}
-                options={floorOptions}
-                ariaLabel="Salón"
+                value={draft.contact_phone_country_code}
+                onChange={(v) => setField("contact_phone_country_code", v)}
+                ariaLabel="Prefijo"
+                options={phoneCodeOptions}
+              />
+              <input
+                className="bo-input bo-input--sm bo-phoneNum"
+                style={{ textAlign: "center" }}
+                inputMode="tel"
+                value={draft.contact_phone}
+                onChange={(e) => setField("contact_phone", e.target.value)}
+                aria-label="Teléfono"
+                data-slot="booking-editor-phone-input"
               />
             </div>
+          </div>
+
+          <div className="bo-field bo-bookingField bo-bookingField--email" style={{ width: "100%" }} data-slot="booking-editor-email">
+            <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">Email (opcional)</div>
+            <input className="bo-input bo-input--sm" style={{ textAlign: "center", width: "100%" }} value={draft.contact_email} onChange={(e) => setField("contact_email", e.target.value)} data-slot="booking-editor-email-input" />
+          </div>
+
+          <CounterField
+            className="bo-bookingField bo-bookingField--strollers"
+            style={{ width: "100%" }}
+            label="Carros"
+            value={draft.babyStrollers || 0}
+            min={0}
+            max={100}
+            onChange={(v) => setField("babyStrollers", v)}
+          />
+
+          <CounterField
+            className="bo-bookingField bo-bookingField--highchairs"
+            style={{ width: "100%" }}
+            label="Tronas"
+            value={draft.highChairs || 0}
+            min={0}
+            max={100}
+            onChange={(v) => setField("highChairs", v)}
+          />
+
+          <div className="bo-field bo-bookingField bo-bookingField--salon" style={{ width: "100%" }} data-slot="booking-editor-salon">
+            <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">Salón</div>
+            <Select
+              className="bo-selectBtn--sm"
+              style={{ width: "100%", display: "flex", justifyContent: "center" }}
+              size="sm"
+              value={draft.preferred_floor_number != null ? String(draft.preferred_floor_number) : ""}
+              onChange={(v) => setField("preferred_floor_number", v ? Number(v) : null)}
+              options={floorOptions}
+              ariaLabel="Salón"
+            />
+          </div>
+
+          <div className="bo-field bo-bookingField bo-bookingField--table" style={{ width: "100%" }} data-slot="booking-editor-table">
+            <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">Mesa</div>
+            <input
+              className="bo-input bo-input--sm"
+              style={{ width: 110, textAlign: "center", display: "block", margin: "0 auto" }}
+              value={draft.table_number}
+              onChange={(e) => setField("table_number", e.target.value)}
+              data-slot="booking-editor-table-input"
+            />
           </div>
         </div>
       </div>
@@ -678,6 +686,7 @@ function CounterField({
   max,
   onChange,
   className,
+  style,
 }: {
   label: string;
   value: number;
@@ -685,11 +694,13 @@ function CounterField({
   max: number;
   onChange: (next: number) => void;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   const safeValue = clampInt(Number(value || 0), min, max);
   return (
-    <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")} data-slot="bookingEditor-div">
-      <div className="bo-label" data-slot="bookingEditor-label">{label}</div>
+    <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")} style={style} data-slot="bookingEditor-div">
+      <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">{label}</div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
       <div className="bo-counter" data-slot={`booking-editor-counter-${label.toLowerCase()}`}>
         <button
           type="button"
@@ -719,6 +730,7 @@ function CounterField({
         >
           <Plus size={16} strokeWidth={2} />
         </button>
+      </div>
       </div>
     </div>
   );
