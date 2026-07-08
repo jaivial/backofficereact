@@ -12,6 +12,9 @@ interface UseFilterOptionsOptions {
 }
 
 export function useFilterOptions({ foodType, items, categories }: UseFilterOptionsOptions) {
+  const safeItems = Array.isArray(items) ? items : [];
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
   const tipoOptions = useMemo(() => {
     const byValue = new Map<string, string>();
     const tipoList = FOOD_TYPE_TIPO_OPTIONS[foodType];
@@ -20,7 +23,7 @@ export function useFilterOptions({ foodType, items, categories }: UseFilterOptio
         byValue.set(option.value, option.label);
       });
     }
-    items.forEach((item) => {
+    safeItems.forEach((item) => {
       const value = String(item.tipo || "").trim();
       if (!value || byValue.has(value)) return;
       byValue.set(value, value);
@@ -29,20 +32,19 @@ export function useFilterOptions({ foodType, items, categories }: UseFilterOptio
       .sort((a, b) => a[1].localeCompare(b[1]))
       .map(([value, label]) => ({ value, label }));
     return [{ value: "", label: "Todos los tipos" }, ...ordered];
-  }, [foodType, items]);
+  }, [foodType, safeItems]);
 
   const categoryOptions = useMemo(() => {
     const options = [{ value: "", label: "Todas las categorias" }];
-    if (!Array.isArray(categories)) return options;
-    categories.forEach((category) => {
+    safeCategories.forEach((category) => {
       options.push({ value: String(category.id), label: category.name });
     });
     return options;
-  }, [categories]);
+  }, [safeCategories]);
 
   const alergenoOptions = useMemo(() => {
     const values = new Set<string>();
-    items.forEach((item) => {
+    safeItems.forEach((item) => {
       const food = item as FoodItem;
       if (Array.isArray(food.alergenos)) {
         food.alergenos.forEach((alergeno) => {
@@ -52,7 +54,7 @@ export function useFilterOptions({ foodType, items, categories }: UseFilterOptio
       }
     });
     return [{ value: "", label: "Todos los alergenos" }, ...Array.from(values).sort().map((value) => ({ value, label: value }))];
-  }, [items]);
+  }, [safeItems]);
 
   return { tipoOptions, categoryOptions, alergenoOptions };
 }

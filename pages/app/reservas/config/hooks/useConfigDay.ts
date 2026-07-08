@@ -253,6 +253,30 @@ export function useConfigDay({
     }
   }, [api.config, date, day, pushSuccess, pushToast, setBusy, setError, setDay]);
 
+  const setDayRange = useCallback(async (dates: string[], isOpen: boolean) => {
+    if (!dates.length) return false;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api.config.setDayRange(dates, isOpen);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudieron actualizar los días" });
+        return false;
+      }
+      // Refresh the currently selected day if it falls within the applied range.
+      if (dates.includes(date)) {
+        setDay((prev) => (prev ? { ...prev, isOpen } : prev));
+      }
+      pushSuccess(isOpen ? "Días abiertos" : "Días cerrados");
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudieron actualizar los días");
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }, [api.config, date, pushSuccess, pushToast, setBusy, setError, setDay]);
+
   const saveDailyLimit = useCallback(
     async (nextLimit: number) => {
       const normalized = clampDailyLimit(nextLimit);
@@ -450,6 +474,7 @@ export function useConfigDay({
     handleMandatoryMenuToggle,
     onDateChange,
     toggleDay,
+    setDayRange,
     saveDailyLimit,
     saveDailyLimitFromDraft,
     stepDailyLimit,

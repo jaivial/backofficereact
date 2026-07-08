@@ -397,6 +397,7 @@
 .bo-bookingSearch {
   width: fit-content;
   margin-inline: auto;
+  margin-top: 1rem;
   margin-bottom: var(--bo-space-4);
   padding: var(--bo-space-3) var(--bo-space-4);
   border-radius: var(--bo-radius-lg);
@@ -404,6 +405,7 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.06)),
     var(--bo-surface);
   border: 1px solid var(--bo-border);
+  box-shadow: var(--bo-shadow-soft);
 }
 
 .bo-bookingSearchFields {
@@ -440,6 +442,15 @@
   min-width: 0;
   max-width: none;
   justify-content: center;
+}
+
+.bo-bookingSearchCountRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-2);
+  width: 100%;
+  min-width: 0;
 }
 
 .bo-bookingSearchCountList .bo-selectItem {
@@ -539,8 +550,9 @@
 
 @media (max-width: 579px) {
   .bo-bookingSearch {
-    max-width: 400px;
+    max-width: 100%;
     width: 100%;
+    padding-inline: 1rem;
     margin-bottom: var(--bo-space-4);
   }
 
@@ -558,10 +570,6 @@
     width: 100%;
   }
 
-  .bo-bookingSearch .bo-selectWrapper {
-    margin: 0 auto;
-  }
-
   .bo-bookingSearchCount {
     max-width: none;
   }
@@ -572,44 +580,61 @@
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass {
-    width: 95vw;
-    max-width: 95vw;
+    width: 100%;
+    max-width: 100%;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalCell {
-    min-height: clamp(48px, 11vw, 72px);
-    padding: clamp(5px, 1.8vw, 12px) clamp(4px, 1.6vw, 10px);
+    /* Square cell tracks the grid column width; content scales with the cell
+       (container query units) so cells and text resize together as width shrinks. */
+    min-height: 0;
+    padding: clamp(2px, 1.4vw, 10px) clamp(2px, 1.2vw, 8px);
+    gap: 1px;
+    overflow: hidden;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalNum {
-    font-size: clamp(15px, 4.6vw, 22px);
+    font-size: clamp(11px, 40cqi, 26px);
+    line-height: 0.95;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub {
-    font-size: clamp(11px, 3vw, 15px);
-    gap: 3px;
+    font-size: clamp(8px, 26cqi, 18px);
+    gap: clamp(1px, 4cqi, 4px);
+    line-height: 0.95;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalRatio {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub .bo-ico {
-    width: clamp(13px, 3.4vw, 17px);
-    height: clamp(13px, 3.4vw, 17px);
+    width: clamp(11px, 26cqi, 17px);
+    height: clamp(11px, 26cqi, 17px);
+    flex: none;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalDows {
-    font-size: clamp(11px, 3vw, 14px);
-    gap: clamp(3px, 1.6vw, 8px);
+    font-size: clamp(11px, 3.4cqi, 14px);
+    gap: clamp(3px, 1.6cqi, 8px);
     padding: 3px 0;
   }
 
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalGrid {
-    gap: clamp(4px, 2vw, 9px);
+    gap: clamp(3px, 1.6cqi, 8px);
   }
 
   .bo-reservasSide {
-    width: 95vw;
-    max-width: 95vw;
+    width: 100%;
+    max-width: 100%;
   }
 }
+
 
 .bo-mcal {
   border-radius: var(--bo-radius-lg);
@@ -621,6 +646,8 @@
   padding: 14px;
   min-width: 0;
   overflow: hidden;
+  container-type: inline-size;
+  container-name: mcal;
 }
 
 .bo-mcalHead {
@@ -669,6 +696,7 @@
 .bo-mcalCell {
   aspect-ratio: 1 / 1;
   min-height: clamp(34px, 8.2vw, 56px);
+  container-type: inline-size;
   border-radius: clamp(10px, 2.2vw, 16px);
   border: 1px solid var(--bo-border);
   background: rgba(255, 255, 255, 0.02);
@@ -681,6 +709,20 @@
   text-align: center;
   cursor: pointer;
   transition: transform 120ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+/* When a calendar cell gets too short to hold both the day number and the
+   occupancy sub-row without clipping, hide the sub-row and center the number.
+   Uses the cell's own size (it is a size container) so this is independent of
+   viewport width. */
+@container (max-width: 30px) {
+  .bo-mcal--glass .bo-mcalCell .bo-mcalSub {
+    display: none;
+  }
+
+  .bo-mcal--glass .bo-mcalCell {
+    justify-content: center;
+  }
 }
 
 .bo-mcalCell:hover {

@@ -18,7 +18,7 @@ import { FoodList } from "./functionalComponents/FoodList";
 
 function FoodTypePage() {
   const pageContext = usePageContext();
-  const data = (pageContext.data ?? {
+  const data = {
     foodType: "platos" as const,
     items: [],
     categories: [],
@@ -27,7 +27,8 @@ function FoodTypePage() {
     total: 0,
     filters: { search: "", tipo: "", active: "all" as const, category: "", alergeno: "", suplemento: "all" as const },
     error: null,
-  }) as Data;
+    ...(pageContext.data ?? {}),
+  } as Data;
   useErrorToast(data.error);
 
   const {

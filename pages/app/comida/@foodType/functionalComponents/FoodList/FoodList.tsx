@@ -52,6 +52,8 @@ export function FoodList({
   listLabel,
   showMedia = true,
 }: FoodListProps) {
+  const safeItems = Array.isArray(items) ? items : [];
+
   if (loading) {
     return (
       <div className="bo-foodLoading" data-ui="food-list-loading">
@@ -60,7 +62,7 @@ export function FoodList({
     );
   }
 
-  if (items.length === 0) {
+  if (safeItems.length === 0) {
     return (
       <div className="bo-foodEmpty" data-ui="food-list-empty">
         <p data-role="food-list-empty-text">No hay {listLabel.toLowerCase()} con estos filtros.</p>
@@ -72,7 +74,7 @@ export function FoodList({
   return (
     <>
       <div className="bo-foodGrid pb-4" role="list" data-ui="food-list-grid">
-        {items.map((item) => (
+        {safeItems.map((item) => (
           <FoodItemCard
             key={item.num}
             item={item}
