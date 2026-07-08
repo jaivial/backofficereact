@@ -519,6 +519,32 @@
   gap: var(--bo-space-2);
 }
 
+/* Range calendar rendered inside a modal (in normal flow, not a popover). */
+.bo-closeRangeCal {
+  width: 280px;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.bo-closeRangeCal .bo-calDay {
+  margin: 0;
+}
+
+.bo-closeRangeModalBody {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-closeRangeModal .bo-modalActions {
+  display: flex;
+  justify-content: flex-end;
+  padding-inline: 0;
+}
+
+.bo-closeRangeModal .bo-modalActions .bo-btn {
+  margin: 0 !important;
+}
+
 .bo-calDay--empty {
   cursor: default;
 }

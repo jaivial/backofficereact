@@ -21,6 +21,7 @@ import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
+import { CloseDateRangeModal } from "../../../../ui/widgets/CloseDateRangeModal";
 import { Panel } from "../../../../ui/shell/Panel";
 import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 
@@ -70,6 +71,7 @@ export default function Page() {
   const [mandatoryMenuBusy, setMandatoryMenuBusy] = useState(false);
 
   const [draftLimit, setDraftLimit] = useState(() => String(data.dailyLimit?.limit ?? 45));
+  const [rangeModalOpen, setRangeModalOpen] = useState(false);
 
   const {
     loadAll,
@@ -78,6 +80,7 @@ export default function Page() {
     handleMandatoryMenuToggle,
     onDateChange: onDateChangeCallback,
     toggleDay,
+    setDayRange,
     saveDailyLimit,
     saveDailyLimitFromDraft,
     stepDailyLimit,
@@ -231,8 +234,20 @@ export default function Page() {
           day={day}
           busy={busy}
           onToggleDay={toggleDay}
+          onRangeAction={() => setRangeModalOpen(true)}
           bodyClassName={day.isOpen ? undefined : "bo-configDayLimitRow--single"}
           data-ui="day-panel"
+        />
+        <CloseDateRangeModal
+          open={rangeModalOpen}
+          onClose={() => setRangeModalOpen(false)}
+          busy={busy}
+          action={day.isOpen ? "close" : "open"}
+          anchorDate={date}
+          onConfirm={async (dates) => {
+            const ok = await setDayRange(dates, !day.isOpen);
+            if (ok) setRangeModalOpen(false);
+          }}
         />
 
         <AnimatePresence initial={false}>
@@ -240,7 +255,7 @@ export default function Page() {
             <motion.div
               data-ui="config-daily-limit-panel"
               key="config-daily-limit-panel"
-              className="bo-dailyLimitPanel !shadow-md !w-fit p-4 px-8 bo-panel mx-auto"
+              className="bo-dailyLimitPanel bo-dayFitPanel p-4 px-14 bo-panel bo-dayStatePanel mx-auto"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}

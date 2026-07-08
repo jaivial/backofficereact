@@ -14,6 +14,9 @@ type ReservationDayStateBlockProps = {
   label?: string;
   hideAction?: boolean;
   className?: string;
+  /** Opens the range modal; when set a secondary button is rendered below the toggle. */
+  onRangeAction?: () => void;
+  rangeActionLabel?: string;
 };
 
 type ReservationDayPanelProps = ReservationDayStateBlockProps & {
@@ -45,8 +48,11 @@ export function ReservationDayStateBlock({
   label = "Estado del día",
   hideAction = false,
   className,
+  onRangeAction,
+  rangeActionLabel,
 }: ReservationDayStateBlockProps) {
   const buttonLabel = actionLabel ?? (actionMode === "openOnly" ? "Abrir día" : day.isOpen ? "Cerrar día" : "Abrir día");
+  const rangeLabel = rangeActionLabel ?? (day.isOpen ? "Cerrar rango de fechas" : "Abrir rango de fechas");
 
   return (
     <div className={cn("bo-configDayState flex flex-col !justify-center !items-center !gap-4 pt-4", className)} data-slot="reservation-day-state-block">
@@ -59,6 +65,11 @@ export function ReservationDayStateBlock({
       {!hideAction && onToggleDay ? (
         <button className="bo-btn bo-btn--primary bo-btn--fit" type="button" onClick={onToggleDay} disabled={busy} data-testid="reservation-day-toggle-btn">
           {buttonLabel}
+        </button>
+      ) : null}
+      {!hideAction && onRangeAction ? (
+        <button className="bo-btn bo-btn--ghost bo-btn--fit" type="button" onClick={onRangeAction} disabled={busy} data-testid="reservation-day-range-btn">
+          {rangeLabel}
         </button>
       ) : null}
     </div>
@@ -79,9 +90,11 @@ export function ReservationDayPanel({
   rightSlot,
   panelClassName,
   bodyClassName,
+  onRangeAction,
+  rangeActionLabel,
 }: ReservationDayPanelProps) {
   return (
-    <div className={cn("bo-panel", "bo-dayStatePanel", "!w-fit py-4 px-14 !mx-auto", panelClassName)} data-slot="reservation-day-panel">
+    <div className={cn("bo-panel", "bo-dayStatePanel", "bo-dayFitPanel", "py-4 px-14 !mx-auto", panelClassName)} data-slot="reservation-day-panel">
       <div className={cn("bo-panelBody", "bo-configDayLimitRow", "!flex !flex-col gap-2 !justify-center !items-center", bodyClassName)} data-slot="reservation-day-panel-body">
         <ReservationDayStateBlock
           day={day}
@@ -92,6 +105,8 @@ export function ReservationDayPanel({
           description={description}
           label={label}
           hideAction={hideAction}
+          onRangeAction={onRangeAction}
+          rangeActionLabel={rangeActionLabel}
         />
         {rightSlot}
       </div>

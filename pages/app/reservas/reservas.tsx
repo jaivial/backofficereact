@@ -552,8 +552,6 @@ export default function Page() {
 
   return (
     <section aria-label="Reservas" data-testid="reservas-section">
-      <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} />
-
       <AnimatePresence initial={false}>
         {!searchMode ? (
           <motion.div key="reservas-grid" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={searchFadeTransition}>
@@ -603,6 +601,7 @@ export default function Page() {
             <AnimatePresence mode="wait" initial={false}>
               {isDayOpen ? (
                 <motion.div key="reservas-open-content" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
+                  <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} />
                   <BookingsViewTabs
                     date={date}
                     activeTab={viewTab}
@@ -666,6 +665,7 @@ export default function Page() {
       <AnimatePresence initial={false}>
         {searchMode ? (
           <motion.div key="search-results" initial={reduceMotion ? { opacity: 0 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 0 } : { opacity: 0 }} transition={searchFadeTransition}>
+            <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} />
             <SearchResultsTable
             searchResults={searchResults}
             searchPage={searchPage}

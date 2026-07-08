@@ -50,6 +50,13 @@
   width: 100%;
 }
 
+/* Reservation day panel + config daily-limit panel share the same footprint:
+   size to content but keep a common min-width so both render equally wide. */
+.bo-dayFitPanel {
+  width: fit-content;
+  min-width: min(100%, 22rem);
+}
+
 .bo-tableMapTopControls {
   position: absolute;
   top: var(--bo-space-4);

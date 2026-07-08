@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
 
-import { formatISODate, parseISODate } from "../lib/format";
+import { RangeCalendar, sortedRange, useRangeCalendar } from "./RangeCalendar";
 
 type Pos = { top: number; left: number };
 type Placement = "bottom" | "top";
@@ -20,34 +20,12 @@ type DateRangePickerProps = {
   disabled?: boolean;
 };
 
-type RangeDraft = {
-  from: string;
-  to: string;
-};
-
 function portalEl(): HTMLElement | null {
   return document.getElementById("bo-portal") || document.body;
 }
 
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
-}
-
-function monthLabel(year: number, month0: number): string {
-  const d = new Date(Date.UTC(year, month0, 1));
-  return d.toLocaleString("es-ES", { month: "long", year: "numeric" });
-}
-
-function buildMonthGrid(year: number, month0: number) {
-  const first = new Date(Date.UTC(year, month0, 1));
-  const firstDow = (first.getUTCDay() + 6) % 7;
-  const daysInMonth = new Date(Date.UTC(year, month0 + 1, 0)).getUTCDate();
-  const cells: Array<{ day: number | null; iso: string | null }> = [];
-  for (let i = 0; i < firstDow; i++) cells.push({ day: null, iso: null });
-  for (let d = 1; d <= daysInMonth; d++) {
-    cells.push({ day: d, iso: formatISODate(new Date(Date.UTC(year, month0, d))) });
-  }
-  return cells;
 }
 
 function formatRangeLabel(from: string, to: string): string {
@@ -72,13 +50,6 @@ function formatRangeLabel(from: string, to: string): string {
   return `${fromText} - ${toText}`;
 }
 
-function sortedRange(from: string, to: string): RangeDraft {
-  if (!from) return { from: "", to: "" };
-  if (!to) return { from, to: "" };
-  if (to < from) return { from: to, to: from };
-  return { from, to };
-}
-
 export function DateRangePicker({
   from,
   to,
@@ -92,16 +63,14 @@ export function DateRangePicker({
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const [placement, setPlacement] = useState<Placement>("bottom");
-  const [draft, setDraft] = useState<RangeDraft>(() => sortedRange(from, to));
+
+  const { draft, viewYear, viewMonth0, prevMonth, nextMonth, selectDay, clear: clearDraft, resetTo } =
+    useRangeCalendar({ from, to });
 
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
   const root = useMemo(() => (typeof document !== "undefined" ? portalEl() : null), []);
   const reduceMotion = useReducedMotion();
-
-  const anchorDate = useMemo(() => parseISODate(from) ?? new Date(), [from]);
-  const [viewYear, setViewYear] = useState(anchorDate.getUTCFullYear());
-  const [viewMonth0, setViewMonth0] = useState(anchorDate.getUTCMonth());
 
   useEffect(() => {
     if (disabled) setOpen(false);
@@ -109,12 +78,8 @@ export function DateRangePicker({
 
   useEffect(() => {
     if (!open) return;
-    const next = sortedRange(from, to);
-    setDraft(next);
-    const focusDate = parseISODate(next.from) ?? new Date();
-    setViewYear(focusDate.getUTCFullYear());
-    setViewMonth0(focusDate.getUTCMonth());
-  }, [from, open, to]);
+    resetTo({ from, to });
+  }, [from, open, resetTo, to]);
 
   const reposition = useCallback(() => {
     const el = btnRef.current;
@@ -187,34 +152,6 @@ export function DateRangePicker({
     };
   }, [close, open]);
 
-  const prevMonth = useCallback(() => {
-    setViewMonth0((m) => {
-      if (m === 0) {
-        setViewYear((y) => y - 1);
-        return 11;
-      }
-      return m - 1;
-    });
-  }, []);
-
-  const nextMonth = useCallback(() => {
-    setViewMonth0((m) => {
-      if (m === 11) {
-        setViewYear((y) => y + 1);
-        return 0;
-      }
-      return m + 1;
-    });
-  }, []);
-
-  const onSelectDay = useCallback((iso: string) => {
-    setDraft((curr) => {
-      if (!curr.from || curr.to) return { from: iso, to: "" };
-      if (iso < curr.from) return { from: iso, to: curr.from };
-      return { from: curr.from, to: iso };
-    });
-  }, []);
-
   const apply = useCallback(() => {
     const normalized = sortedRange(draft.from, draft.to || draft.from);
     onChange(normalized);
@@ -222,16 +159,12 @@ export function DateRangePicker({
   }, [close, draft.from, draft.to, onChange]);
 
   const clear = useCallback(() => {
-    setDraft({ from: "", to: "" });
+    clearDraft();
     onChange({ from: "", to: "" });
     close();
-  }, [close, onChange]);
+  }, [clearDraft, close, onChange]);
 
-  const hasDraft = Boolean(draft.from);
   const canApply = Boolean(draft.from);
-  const fromISO = draft.from;
-  const toISO = draft.to || draft.from;
-  const grid = useMemo(() => buildMonthGrid(viewYear, viewMonth0), [viewMonth0, viewYear]);
   const label = useMemo(() => formatRangeLabel(from, to), [from, to]);
 
   const pop = open && pos && root ? (
@@ -249,46 +182,15 @@ export function DateRangePicker({
           aria-label="Selector de rango de fechas"
           data-ui="date-range-picker-popover"
         >
-          <div className="bo-dateHead" data-ui="date-range-picker-header">
-            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={prevMonth} aria-label="Mes anterior" data-ui="date-range-picker-prev-btn">
-              <ChevronLeft size={18} strokeWidth={1.8} />
-            </button>
-            <div className="bo-dateTitle" data-ui="date-range-picker-month-label">{monthLabel(viewYear, viewMonth0)}</div>
-            <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={nextMonth} aria-label="Mes siguiente" data-ui="date-range-picker-next-btn">
-              <ChevronRight size={18} strokeWidth={1.8} />
-            </button>
-          </div>
-          <div className="bo-calDows" aria-hidden="true" data-ui="date-range-picker-weekdays">
-            <div data-ui="date-range-picker-weekday">L</div>
-            <div data-ui="date-range-picker-weekday">M</div>
-            <div data-ui="date-range-picker-weekday">M</div>
-            <div data-ui="date-range-picker-weekday">J</div>
-            <div data-ui="date-range-picker-weekday">V</div>
-            <div data-ui="date-range-picker-weekday">S</div>
-            <div data-ui="date-range-picker-weekday">D</div>
-          </div>
-          <div className="bo-calGrid" aria-label="Calendario de rango" data-ui="date-range-picker-grid">
-            {grid.map((c, idx) => {
-              if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui="date-range-picker-empty-cell" />;
-              const iso = c.iso;
-              const isStart = hasDraft && iso === fromISO;
-              const isEnd = hasDraft && iso === toISO;
-              const isInRange = hasDraft && iso > fromISO && iso < toISO;
-              const cls = [
-                "bo-calDay",
-                isInRange ? "is-inRange" : "",
-                isStart ? "is-rangeStart" : "",
-                isEnd ? "is-rangeEnd" : "",
-              ]
-                .filter(Boolean)
-                .join(" ");
-              return (
-                <button key={iso} type="button" className={cls} onClick={() => onSelectDay(iso)} data-ui="date-range-picker-day" data-date={iso}>
-                  {c.day}
-                </button>
-              );
-            })}
-          </div>
+          <RangeCalendar
+            draft={draft}
+            viewYear={viewYear}
+            viewMonth0={viewMonth0}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+            onSelectDay={selectDay}
+            uiPrefix="date-range-picker"
+          />
           <div className="bo-dateRangeActions" data-ui="date-range-picker-actions">
             <button type="button" className="bo-btn bo-btn--sm bo-btn--ghost" onClick={clear} data-ui="date-range-picker-clear-btn">
               Limpiar
@@ -297,7 +199,7 @@ export function DateRangePicker({
               Aplicar
             </button>
           </div>
-        </motion.div>,
+        </motion.div>
       </AnimatePresence>,
       root,
     )

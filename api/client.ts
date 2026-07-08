@@ -6,6 +6,7 @@ import type {
   ConfigDefaults,
   ConfigDailyLimit,
   ConfigDayStatus,
+  ConfigDayRangeResult,
   ConfigMesasDeDos,
   ConfigMesasDeTres,
   ConfigFloor,
@@ -251,7 +252,12 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
   ];
 
   function includesAnyHint(haystack: string, hints: string[]): boolean {
-    return hints.some((hint) => haystack.includes(hint));
+    // Match hints as whole words only. A substring match (e.g. "te" inside
+    // "tomate"/"teriyaki") wrongly reclassified many platos as cafes/bebidas.
+    return hints.some((hint) => {
+      const escaped = hint.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`(^|\\s)${escaped}(\\s|$)`).test(haystack);
+    });
   }
 
   function classifyFallbackFoodItem(item: FoodItem): FallbackComidaCategory {
@@ -1672,6 +1678,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ date, isOpen }),
+        });
+      },
+      async setDayRange(dates: string[], isOpen: boolean): Promise<APISuccess<ConfigDayRangeResult> | APIError> {
+        return json("/api/admin/config/day", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ dates, isOpen, rangeDates: true }),
         });
       },
       async getOpeningHours(date: string): Promise<APISuccess<ConfigOpeningHours> | APIError> {

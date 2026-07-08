@@ -129,18 +129,21 @@ export function BookingSearch({ onSearch, onClear, busy, reduceMotion }: Booking
             data-slot="search-phone"
           />
         </div>
-        <Select
-          value={String(count)}
-          onChange={onCountChange}
-          options={COUNT_OPTIONS}
-          size="sm"
-          ariaLabel="Resultados por página"
-          disabled={busy}
-          className="bo-bookingSearchCount"
-          style={{ width: 60, overflow: "hidden" }}
-          menuMinWidthPx={60}
-          listClassName="bo-bookingSearchCountList"
-        />
+        <div className="bo-bookingSearchCountRow" data-slot="search-count-row">
+          <span className="bo-filterRow--countLabel" data-slot="search-count-label">Resultados por pagina</span>
+          <Select
+            value={String(count)}
+            onChange={onCountChange}
+            options={COUNT_OPTIONS}
+            size="sm"
+            ariaLabel="Resultados por página"
+            disabled={busy}
+            className="bo-bookingSearchCount"
+            style={{ width: 60, overflow: "hidden" }}
+            menuMinWidthPx={60}
+            listClassName="bo-bookingSearchCountList"
+          />
+        </div>
         {hasInput ? (
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
