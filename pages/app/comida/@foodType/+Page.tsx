@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
@@ -15,9 +15,15 @@ import type { Data } from "./+data";
 import { useFoodTypePage } from "./hooks/useFoodTypePage";
 import { useFilterOptions } from "./hooks/useFilterOptions";
 import { FoodList } from "./functionalComponents/FoodList";
+import { useBreadcrumbFadeout } from "../_components/hooks/useBreadcrumbFadeout";
 
 function FoodTypePage() {
   const pageContext = usePageContext();
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Fade-out before breadcrumb navigation (prevents Vike empty-page bug)
+  useBreadcrumbFadeout(sectionRef);
+
   const data = {
     foodType: "platos" as const,
     items: [],
@@ -101,7 +107,12 @@ function FoodTypePage() {
   const showItemModal = foodType !== "vinos";
 
   return (
-    <section aria-label={`Carta ${listLabel}`} className="bo-foodPage" data-role="food-type-page">
+    <section
+      ref={sectionRef}
+      aria-label={`Carta ${listLabel}`}
+      className={`bo-foodPage${pageContext.isClientSideNavigation ? " is-navigating" : ""}`}
+      data-role="food-type-page"
+    >
       <div className="bo-container" data-slot="@foodType-container">
         <Breadcrumbs items={breadcrumbs} />
 
@@ -130,19 +141,6 @@ function FoodTypePage() {
             )}
           </div>
 
-          <div className="bo-foodPageVisibility" data-ui="food-show-images-toggle">
-            <div className="bo-foodPageVisibilityRow" data-ui="food-show-images-toggle-row">
-              <span className="bo-foodPageVisibilityTitle" data-slot="@foodType-showImagesLabel">
-                Mostrar imagenes
-              </span>
-              <Switch
-                checked={showImages}
-                onCheckedChange={setShowImages}
-                data-ui="food-show-images-switch"
-                aria-label="mostrar imagenes"
-              />
-            </div>
-          </div>
         </div>
 
         <FoodFilters
@@ -182,6 +180,8 @@ function FoodTypePage() {
           }}
           onReset={onResetFilters}
           count={total}
+          showImages={showImages}
+          onShowImagesChange={setShowImages}
         />
 
         <FoodList

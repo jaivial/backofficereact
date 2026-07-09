@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, type RefObject } from "react";
 import { ImagePlus, Loader2, Sparkles, Upload, X } from "lucide-react";
 
 type WineImageAdvisorProps = {
@@ -6,6 +6,7 @@ type WineImageAdvisorProps = {
   uploading: boolean;
   generating: boolean;
   disabled?: boolean;
+  fileInputRef?: RefObject<HTMLInputElement | null>;
   onUpload: (file: File) => Promise<string | null>;
   onGenerateAI: (file: File) => Promise<boolean>;
 };
@@ -15,10 +16,12 @@ export function WineImageAdvisor({
   uploading,
   generating,
   disabled,
+  fileInputRef: externalInputRef,
   onUpload,
   onGenerateAI,
 }: WineImageAdvisorProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const internalInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = externalInputRef ?? internalInputRef;
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -55,20 +58,20 @@ export function WineImageAdvisor({
   const busy = uploading || generating;
 
   return (
-    <div data-ui="wine-image-advisor" className="flex flex-col items-center gap-3">
+    <div data-ui="wine-image-advisor" className="flex flex-col items-center">
       <div
         data-role="wine-image-preview"
-        className="relative w-full aspect-square rounded-xl overflow-hidden bg-[var(--bo-surface-2)] border border-[var(--bo-border)] flex items-center justify-center"
+        className="relative w-full aspect-[9/16] rounded-xl overflow-hidden bg-[var(--bo-surface-2)] border border-[var(--bo-border)]"
       >
         {imageUrl ? (
           <img
             src={imageUrl}
             alt="Imagen del vino"
             data-role="wine-image-img"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         ) : (
-          <div data-role="wine-image-placeholder" className="flex flex-col items-center gap-2 text-[var(--bo-muted)]">
+          <div data-role="wine-image-placeholder" className="w-full h-full flex flex-col items-center justify-center gap-2 text-[var(--bo-muted)]">
             <ImagePlus size={32} data-slot="wine-image-placeholder-icon" />
             <span data-slot="wine-image-placeholder-text" className="text-xs">Sin imagen</span>
           </div>
@@ -92,20 +95,6 @@ export function WineImageAdvisor({
         data-role="wine-image-file-input"
         disabled={disabled || busy}
       />
-
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={disabled || busy}
-        data-role="wine-image-select-btn"
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-          bg-[var(--bo-surface-2)] text-[var(--bo-text)] border border-[var(--bo-border)]
-          hover:bg-[var(--bo-surface-3)] transition-colors duration-150
-          disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <Upload size={14} data-slot="wine-image-select-icon" />
-        {imageUrl ? "Cambiar imagen" : "Subir imagen"}
-      </button>
 
       {advisorOpen && previewUrl && (
         <div

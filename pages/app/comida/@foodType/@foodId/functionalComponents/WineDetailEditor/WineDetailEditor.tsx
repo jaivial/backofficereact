@@ -1,10 +1,13 @@
-import React, { useCallback, useMemo } from "react";
-import { ChevronLeft, Loader2, Save, Wine } from "lucide-react";
+import React, { useCallback, useMemo, useRef } from "react";
+import { Loader2, Save, Upload, Wine } from "lucide-react";
 
-import { FOOD_TYPE_LABELS } from "../../../../_components/foodTypes";
 import { Select } from "../../../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../../../ui/shadcn/Switch";
 import { Panel } from "../../../../../../../ui/shell/Panel";
+import { Breadcrumbs } from "../../../../../../../ui/nav/Breadcrumbs";
+import type { BreadcrumbItem } from "../../../../../../../ui/nav/Breadcrumbs";
+import { FOOD_TYPE_LABELS } from "../../../../_components/foodTypes";
+import { useBreadcrumbFadeout } from "../../../../_components/hooks/useBreadcrumbFadeout";
 import type { WineDetailEditorProps } from "./types";
 import { WINE_TIPO_OPTIONS } from "./constants";
 import { useWineForm } from "./hooks/useWineForm";
@@ -13,7 +16,12 @@ import { useWineAIWebSocket } from "./hooks/useWineAIWebSocket";
 import { WineImageAdvisor } from "./ui/WineImageAdvisor";
 
 export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps) {
-  const { form, saving, dirty, canSave, createdId, setField, save } = useWineForm(vino, isNew);
+  const sectionRef = useRef<HTMLElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fade-out before breadcrumb navigation
+  useBreadcrumbFadeout(sectionRef);
+  const { form, saving, canSave, createdId, setField, save } = useWineForm(vino, isNew);
   const {
     uploading,
     generating,
@@ -23,6 +31,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
     updateFromWS,
     setGeneratingFromWS,
   } = useWineImage(vino);
+  const busy = uploading || generating;
 
   useWineAIWebSocket({
     wineNum: vino?.num ?? null,
@@ -57,25 +66,30 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
     [],
   );
 
+  const foodTypeLabel = FOOD_TYPE_LABELS.vinos;
+  const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
+    const items: BreadcrumbItem[] = [
+      { label: "Carta", href: "/app/comida" },
+      { label: foodTypeLabel, href: "/app/comida/vinos" },
+    ];
+    if (vino && !isNew) {
+      items.push({ label: vino.nombre || `#${vino.num}` });
+    }
+    return items;
+  }, [vino, isNew, foodTypeLabel]);
+
   return (
     <section
+      ref={sectionRef}
       aria-label="Detalle de vino"
       data-role="wine-detail-editor"
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-6 bo-fadeout"
     >
       <div
         data-ui="wine-detail-topbar"
         className="flex items-center justify-between"
       >
-        <button
-          className="bo-menuBackBtn"
-          type="button"
-          onClick={() => window.location.assign("/app/comida/vinos")}
-          data-role="wine-detail-back-btn"
-        >
-          <ChevronLeft size={16} data-role="wine-detail-back-icon" />
-          Volver a Vinos
-        </button>
+        <Breadcrumbs items={breadcrumbItems} className="bo-breadcrumb--truncate" />
         <span
           className={`bo-badge bo-badge--sm ${form.active ? "bo-badge--active" : "bo-badge--inactive"}`}
           data-role="wine-detail-status-badge"
@@ -90,7 +104,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
       >
         <div
           data-slot="wine-detail-media"
-          className="w-full max-w-[180px] rounded-lg overflow-hidden bg-[var(--bo-surface-2)] aspect-square"
+          className="w-full max-w-[160px] rounded-lg overflow-hidden bg-[var(--bo-surface-2)]"
         >
           {vino && !isNew ? (
             <WineImageAdvisor
@@ -100,6 +114,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               disabled={saving}
               onUpload={uploadImage}
               onGenerateAI={uploadImageAI}
+              fileInputRef={fileInputRef}
             />
           ) : (
             <div
@@ -112,20 +127,27 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
           )}
         </div>
 
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={saving || busy}
+          data-role="wine-image-select-btn"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+            bg-[var(--bo-surface-2)] text-[var(--bo-text)] border border-[var(--bo-border)]
+            hover:bg-[var(--bo-surface-3)] transition-colors duration-150
+            disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Upload size={14} data-slot="wine-image-select-icon" />
+          {imageUrl ? "Cambiar imagen" : "Subir imagen"}
+        </button>
+
         <div
           data-slot="wine-detail-hero-body"
           className="w-full flex items-center justify-between text-sm"
         >
           <div
-            data-role="wine-detail-eyebrow"
-            className="font-medium text-[var(--bo-muted)] uppercase tracking-wider"
-          >
-            {FOOD_TYPE_LABELS.vinos}
-            {vino && !isNew ? ` · #${vino.num}` : " · Nuevo"}
-          </div>
-          <div
             data-ui="wine-detail-price-wrap"
-            className="text-xl font-semibold tabular-nums text-[var(--bo-accent)] tracking-tight"
+            className="w-full text-xl font-semibold tabular-nums text-[var(--bo-accent)] tracking-tight"
           >
             {new Intl.NumberFormat("es-ES", {
               style: "currency",
@@ -138,17 +160,9 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
       <Panel
         data-ui="wine-detail-editor"
         className="bo-foodDetailPanel bo-foodDetailQuickEditor"
-        headClassName="bo-foodDetailQuickHead"
+        headClassName="bo-foodDetailQuickHead flex-col items-stretch gap-1"
         title={isNew ? "Nuevo vino" : "Editar vino"}
         meta={isNew ? "Rellena los datos para crear un nuevo vino." : "Modifica los campos y guarda los cambios."}
-        actions={
-          <span
-            className={`bo-badge bo-badge--sm ${dirty ? "bo-badge--warning" : "bo-badge--muted"}`}
-            data-role="wine-detail-dirty-badge"
-          >
-            {dirty ? "Cambios sin guardar" : "Sin cambios"}
-          </span>
-        }
       >
         <div data-slot="wine-detail-editor-body">
           <div
@@ -319,7 +333,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
             </div>
 
             <label
-              className="bo-field bo-foodDetailQuickDescription"
+              className="bo-field bo-foodDetailQuickDescription mb-4"
               data-slot="wine-detail-description-field"
             >
               <span
@@ -345,7 +359,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
           className="bo-foodDetailEditorActions"
         >
           <button
-            className="bo-btn bo-btn--primary"
+            className="bo-btn bo-btn--primary gap-2"
             type="button"
             onClick={onInternalSave}
             disabled={!canSave}
@@ -354,13 +368,19 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
             data-role="wine-detail-save-btn"
           >
             {saving ? (
-              <Loader2
-                size={14}
-                className="bo-foodDetailSpinIcon"
-                data-role="wine-detail-save-spinner"
-              />
+              <>
+                <Loader2
+                  size={14}
+                  className="bo-foodDetailSpinIcon"
+                  data-role="wine-detail-save-spinner"
+                />
+                <span data-role="wine-detail-saving-text">Guardando...</span>
+              </>
             ) : (
-              <Save size={14} data-role="wine-detail-save-icon" />
+              <>
+                <Save size={14} data-role="wine-detail-save-icon" />
+                <span data-role="wine-detail-save-text">Guardar</span>
+              </>
             )}
           </button>
         </div>

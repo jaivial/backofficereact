@@ -2,6 +2,30 @@
 .bo-foodPage {
   position: relative;
   padding-bottom: 98px;
+  transition: opacity 0.25s ease;
+}
+
+.bo-foodPage.is-navigating {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Body-scoped fadeout (breadcrumb fadeout uses document.body to avoid
+   React className reconciliation overwriting the class mid-fade). */
+body.is-navigating .bo-foodPage,
+body.is-navigating .bo-fadeout {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Shared breadcrumb fade-out (used by list + detail pages) */
+.bo-fadeout {
+  transition: opacity 0.25s ease;
+}
+
+.bo-fadeout.is-navigating {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .bo-foodHome {
@@ -106,6 +130,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  margin-top: 16px;
 }
 
 .bo-foodPageVisibilityRow {
@@ -256,6 +281,18 @@
   background: linear-gradient(160deg, color-mix(in srgb, var(--bo-surface) 94%, transparent), color-mix(in srgb, var(--bo-shell) 90%, transparent));
 }
 
+.bo-foodFilter--images {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bo-foodFilter--images .bo-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bo-muted);
+}
+
 .bo-foodFiltersHead {
   display: flex;
   align-items: center;
@@ -269,6 +306,36 @@
   cursor: pointer;
   border-radius: var(--bo-radius-sm);
   transition: background 0.15s ease;
+}
+
+.bo-foodFiltersExtras {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.bo-foodFiltersShowImages {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--bo-surface) 96%, transparent),
+    color-mix(in srgb, var(--bo-shell) 90%, transparent)
+  );
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--bo-bg) 18%, transparent);
+}
+
+.bo-foodFiltersShowImagesLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bo-muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .bo-foodFiltersHead:hover {
@@ -412,7 +479,9 @@
   min-width: 132px;
 }
 
-.bo-foodMemberCard {
+/* Specificity 0,2,0 so it always beats .bo-memberCard { display: grid }
+   regardless of stylesheet injection order (Vite dev / HMR). */
+.bo-memberCard.bo-foodMemberCard {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -424,6 +493,26 @@
 
 .bo-foodMemberCard.is-clickable {
   cursor: pointer;
+}
+
+.bo-memberCard.bo-foodMemberCard--horizontal {
+  display: flex;
+  flex-direction: row;
+}
+
+.bo-foodMemberCard--horizontal .bo-foodMemberMedia {
+  width: 120px;
+  aspect-ratio: 9 / 16;
+  flex-shrink: 0;
+}
+
+.bo-foodMemberCard--horizontal .bo-foodMemberMedia img {
+  object-fit: contain;
+}
+
+.bo-foodMemberCard--horizontal .bo-foodMemberBody {
+  flex: 1;
+  min-width: 0;
 }
 
 .bo-foodMemberCard:focus-visible {
@@ -1510,5 +1599,51 @@
   .bo-foodDetailEyebrow {
     font-size: 11px;
   }
+}
+
+/* ── Mobile touch-device overrides ── */
+@media (hover: none) and (pointer: coarse) {
+  .bo-foodFiltersHead:hover,
+  .bo-foodFiltersHead:active {
+    background: transparent;
+  }
+
+  :root[data-theme="light"] .bo-foodFiltersHead:hover,
+  :root[data-theme="light"] .bo-foodFiltersHead:active {
+    background: transparent;
+  }
+
+  .bo-foodFilter .bo-input,
+  .bo-foodFilter .bo-selectWrapper,
+  .bo-foodFilter .bo-selectBtn {
+    width: 100%;
+    display: flex;
+  }
+
+  .bo-foodFilter .bo-selectBtn {
+    justify-content: flex-start;
+  }
+
+  .bo-foodFilter .bo-selectLabelWrap,
+  .bo-foodFilter .bo-selectLabel {
+    text-align: left;
+  }
+
+  /* Alinear verticalmente icono y texto en label de buscar */
+  .bo-foodFilter--search .bo-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Wine cards: keep horizontal on mobile, smaller image */
+  .bo-foodMemberCard--horizontal .bo-foodMemberMedia {
+    width: 90px;
+  }
+}
+
+/* Limpiar alineado a la derecha */
+.bo-foodFilterActions {
+  justify-content: flex-end;
 }
 
