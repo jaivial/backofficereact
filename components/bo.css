@@ -66,6 +66,7 @@
 @import "./styles/features/facturas/invoice-filters.css";
 @import "./styles/features/facturas/invoice-table.css";
 @import "./styles/features/facturas/invoice-modals.css";
+@import "./styles/features/facturas/invoice-details-modal.css";
 
 /* ── Components: Accordion ────────────────────────────── */
 @import "./styles/components/accordion.css";
