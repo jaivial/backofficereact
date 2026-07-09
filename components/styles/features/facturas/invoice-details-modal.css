@@ -1,0 +1,335 @@
+/* Invoice Details Modal */
+
+.bo-invoiceDetails {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+}
+
+.bo-invoiceDetailsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-invoiceDetailsHeaderLeft {
+  min-width: 0;
+  flex: 1;
+}
+
+.bo-invoiceDetailsNumber {
+  font-size: 11px;
+  color: var(--bo-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bo-invoiceDetailsAmount {
+  font-size: 22px;
+  font-weight: 780;
+  color: var(--bo-text);
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+.bo-invoiceDetailsStatus {
+  flex-shrink: 0;
+}
+
+.bo-invoiceDetailsBody {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+.bo-invoiceDetailsColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.bo-invoiceDetailsColumns > * {
+  min-width: 0;
+}
+
+.bo-invoiceDetailsSection {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-invoiceDetailsSection:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.bo-invoiceDetailsSectionTitle {
+  font-size: 11px;
+  color: var(--bo-accent);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.bo-detailRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
+}
+
+.bo-detailRow__icon {
+  color: var(--bo-muted);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-detailRow__label {
+  color: var(--bo-faint);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.bo-detailRow__value {
+  color: var(--bo-text);
+  font-weight: 650;
+  word-break: break-word;
+  text-align: right;
+  flex: 1;
+}
+
+.bo-detailRow__value--long {
+  white-space: pre-wrap;
+}
+
+.bo-invoiceDetailsPayment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-invoiceDetailsPaymentBar {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-invoiceDetailsPaymentText {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 5px;
+  gap: 8px;
+}
+
+.bo-invoiceDetailsPaymentTrack {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bo-border);
+  overflow: hidden;
+}
+
+.bo-invoiceDetailsPaymentFill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--bo-accent);
+  transition: width 0.3s ease;
+}
+
+.bo-invoiceDetailsPaymentFill--complete {
+  background: var(--bo-accent-2);
+}
+
+.bo-invoiceDetailsLineItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.bo-invoiceDetailsLineItem + .bo-invoiceDetailsLineItem {
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-invoiceDetailsLineItem__desc {
+  color: var(--bo-text);
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-invoiceDetailsLineItem__price {
+  color: var(--bo-text);
+  font-weight: 650;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.bo-invoiceDetailsLineItemIva {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-invoiceDetailsTotal {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0 0;
+  font-size: 15px;
+  font-weight: 780;
+  color: var(--bo-text);
+  border-top: 2px solid var(--bo-border);
+  margin-top: 6px;
+}
+
+.bo-invoiceDetailsNotes {
+  font-size: 13px;
+  color: var(--bo-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bo-invoiceDetailsAttachmentLink {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  color: var(--bo-accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  word-break: break-all;
+  max-width: 100%;
+}
+
+.bo-invoiceDetailsTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bo-invoiceDetailsTag {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  color: var(--bo-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bo-invoiceDetailsActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-invoiceDetailsActions .bo-btn {
+  flex-shrink: 0;
+}
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .bo-invoiceDetailsColumns {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .bo-detailRow {
+    flex-wrap: wrap;
+    padding: 10px 0;
+    gap: 4px;
+  }
+
+  .bo-detailRow__icon {
+    margin-top: 1px;
+  }
+
+  .bo-detailRow__label {
+    min-width: 0;
+    flex-basis: calc(100% - 26px);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: 26px;
+    margin-top: -22px;
+  }
+
+  .bo-detailRow__value {
+    flex-basis: calc(100% - 26px);
+    margin-left: 26px;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .bo-invoiceDetailsSection {
+    margin-top: 18px;
+    padding-top: 16px;
+  }
+
+  .bo-invoiceDetailsSectionTitle {
+    margin-bottom: 6px;
+  }
+
+  .bo-invoiceDetailsAmount {
+    font-size: 24px;
+  }
+
+  .bo-invoiceDetailsHeader {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .bo-invoiceDetailsActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .bo-invoiceDetailsActions .bo-btn {
+    width: 100%;
+  }
+
+  .bo-invoiceDetailsLineItem {
+    padding: 8px 0;
+  }
+
+  .bo-invoiceDetailsTotal {
+    font-size: 16px;
+    padding-top: 12px;
+  }
+
+  .bo-invoiceDetailsPaymentText {
+    font-size: 11px;
+  }
+}

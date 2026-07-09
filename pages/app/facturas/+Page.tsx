@@ -15,6 +15,7 @@ import { InvoiceForm } from "./_components/InvoiceForm";
 import { SendEmailModal } from "./_components/SendEmailModal";
 import { SendWhatsAppModal } from "./_components/SendWhatsAppModal";
 import { BatchSendModal } from "./_components/BatchSendModal";
+import { InvoiceDetailsModal } from "./_components/InvoiceDetailsModal";
 
 type PageData = {
   invoices: Invoice[];
@@ -76,6 +77,9 @@ export default function Page() {
 
   // Send WhatsApp modal state
   const [whatsappInvoice, setWhatsappInvoice] = useState<Invoice | null>(null);
+
+  // Invoice details modal state
+  const [detailsInvoice, setDetailsInvoice] = useState<Invoice | null>(null);
 
   // Batch send modal state
   const [batchSendInvoices, setBatchSendInvoices] = useState<Invoice[]>([]);
@@ -288,9 +292,27 @@ export default function Page() {
   );
 
   // Handle send email - opens the send email modal
-  const handleSendEmail = useCallback((invoice: Invoice) => {
+  const handleSendEmail = useCallback(async (invoice: Invoice) => {
+    // Check email settings before opening modal
+    try {
+      const res = await api.getEmailProviderConfig();
+      if (res.success) {
+        const data = res as any;
+        if (data.isComplete === false) {
+          const fields = (data.missingFields || []).join(", ");
+          pushToast({
+            kind: "error",
+            title: "Email no configurado",
+            message: `Faltan campos: ${fields || "configuraci\u00f3n de email incompleta"}. Ve a Ajustes \u2192 Email para configurarlo.`,
+          });
+          return;
+        }
+      }
+    } catch {
+      // If check fails, allow modal to open anyway
+    }
     setEmailInvoice(invoice);
-  }, []);
+  }, [api, pushToast]);
 
   // Handle email sent - updates the invoice in the list
   const handleEmailSent = useCallback((updatedInvoice: Invoice) => {
@@ -306,9 +328,27 @@ export default function Page() {
   }, []);
 
   // Handle send WhatsApp - opens the send WhatsApp modal
-  const handleSendWhatsApp = useCallback((invoice: Invoice) => {
+  const handleSendWhatsApp = useCallback(async (invoice: Invoice) => {
+    // Check email settings before opening modal
+    try {
+      const res = await api.getEmailProviderConfig();
+      if (res.success) {
+        const data = res as any;
+        if (data.isComplete === false) {
+          const fields = (data.missingFields || []).join(", ");
+          pushToast({
+            kind: "error",
+            title: "Email no configurado",
+            message: `Faltan campos: ${fields || "configuraci\u00f3n de email incompleta"}. Ve a Ajustes \u2192 Email para configurarlo.`,
+          });
+          return;
+        }
+      }
+    } catch {
+      // If check fails, allow modal to open anyway
+    }
     setWhatsappInvoice(invoice);
-  }, []);
+  }, [api, pushToast]);
 
   // Handle WhatsApp sent - updates the invoice in the list
   const handleWhatsAppSent = useCallback((updatedInvoice: Invoice) => {
@@ -489,7 +529,7 @@ export default function Page() {
             onBulkMerge={() => {}}
             onBulkSendEmail={handleBulkSendEmail}
             onPrintAllVisible={() => {}}
-            onPreview={() => {}}
+            onPreview={(inv) => setDetailsInvoice(inv)}
             onViewCustomerHistory={() => {}}
             onShowHistory={() => {}}
             onViewNotes={() => {}}
@@ -534,6 +574,21 @@ export default function Page() {
         invoice={whatsappInvoice}
         onClose={handleCloseWhatsApp}
         onSent={handleWhatsAppSent}
+      />
+
+      {/* Invoice Details Modal */}
+      <InvoiceDetailsModal
+        open={!!detailsInvoice}
+        invoice={detailsInvoice}
+        onClose={() => setDetailsInvoice(null)}
+        onSendEmail={(inv) => {
+          setDetailsInvoice(null);
+          handleSendEmail(inv);
+        }}
+        onSendWhatsApp={(inv) => {
+          setDetailsInvoice(null);
+          handleSendWhatsApp(inv);
+        }}
       />
 
       {/* Batch Send Modal */}

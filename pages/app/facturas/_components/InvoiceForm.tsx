@@ -1718,7 +1718,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
           <Eye size={16} />
           Vista previa
         </button>
-        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!isValid || isSubmitting} title="Enviar factura (Ctrl+S)" data-testid="invoice-submit-btn">
+        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!customerEmail.trim() || !isValid || isSubmitting} title={!customerEmail.trim() ? "Se requiere email del cliente para enviar" : "Enviar factura (Ctrl+S)"} data-testid="invoice-submit-btn">
           <Send size={16} />
           Enviar
         </button>

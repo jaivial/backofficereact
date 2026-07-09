@@ -33,13 +33,18 @@
 }
 
 /* Responsive filters */
-@media (max-width: 768px) {
+@media (max-width: 639px) {
   .bo-invoiceFiltersGrid {
     grid-template-columns: 1fr;
   }
 
-  .bo-invoiceFilter--search {
+  .bo-invoiceFilter--search,
+  .bo-invoiceFilter--datePresets {
     grid-column: span 1;
+  }
+
+  .bo-invoiceFiltersGrid > * {
+    width: 100%;
   }
 
   .bo-searchWithDropdown {
@@ -47,6 +52,26 @@
   }
 
   .bo-searchWithDropdown .bo-searchBySelect {
+    width: 100%;
+  }
+
+  .bo-invoiceFiltersFoot,
+  .bo-invoiceFiltersSummary,
+  .bo-invoiceFiltersActions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .bo-invoiceFiltersFoot {
+    gap: 12px;
+  }
+
+  .bo-invoiceFiltersActions {
+    gap: 8px;
+  }
+
+  .bo-invoiceFiltersActions .bo-btn {
     width: 100%;
   }
 }
@@ -286,5 +311,19 @@
 
 .bo-invoiceClearBtn.is-hidden {
   display: none;
+}
+
+/* Mobile overrides (placed at end to win cascade against base .bo-invoiceFilter--datePresets rule) */
+@media (max-width: 639px) {
+  .bo-invoiceFilter--datePresets,
+  .bo-invoiceFilter--search {
+    grid-column: span 1;
+  }
+
+  .bo-invoiceFiltersGrid .bo-selectBtn {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
 }
 
