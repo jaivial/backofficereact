@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -17,6 +17,7 @@ import { ConfigRestauranteContent as ConfigRestaurante } from "./functionalCompo
 import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/ConfigContacto/ConfigContacto";
 import { BookingManager } from "./booking/BookingManager";
 import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/ConfigLegalPages";
+import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -25,7 +26,7 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia";
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -145,6 +146,8 @@ export default function Page() {
     },
   );
 
+  const isRoot = (pageContext.bo?.session?.user?.role ?? "") === "root";
+
   const contentTabFromQuery = pageContext.urlParsed.search.content as ContentTab | null | undefined;
   const [contentTab, setContentTab] = useState<ContentTab>(contentTabFromQuery ?? "restaurante");
 
@@ -174,8 +177,16 @@ export default function Page() {
         href: "#legal-pages",
         icon: <Scale className="bo-ico" />,
       },
+      ...(isRoot
+        ? [{
+            id: "ia",
+            label: "IA",
+            href: "#ia",
+            icon: <Sparkles className="bo-ico" />,
+          } as TabItem]
+        : []),
     ],
-    [],
+    [isRoot],
   );
 
   useErrorToast(error);
@@ -260,7 +271,9 @@ export default function Page() {
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="bo-stack"
         >
-          {contentTab === "restaurante" ? (
+          {contentTab === "ia" ? (
+            isRoot ? <ConfigAIImage /> : null
+          ) : contentTab === "restaurante" ? (
             <ConfigRestaurante
               defaults={defaults}
               floors={floors}

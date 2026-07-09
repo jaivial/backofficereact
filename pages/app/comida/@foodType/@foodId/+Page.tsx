@@ -13,8 +13,9 @@ import { useFoodDetailPage } from "./hooks/useFoodDetailPage";
 import { FoodDetailHero } from "./functionalComponents/FoodDetailHero";
 import { FoodDetailQuickEditor } from "./functionalComponents/FoodDetailQuickEditor";
 import { useBreadcrumbFadeout } from "../../_components/hooks/useBreadcrumbFadeout";
-import { FoodDetailAllergens } from "./functionalComponents/FoodDetailAllergens";
 import { FoodDetailAllergenModal } from "./functionalComponents/FoodDetailAllergenModal";
+import type { LucideIcon } from "lucide-react";
+import { FOOD_TYPE_ICONS } from "./constants";
 import { FoodDetailAIAdvisor } from "./functionalComponents/FoodDetailAIAdvisor";
 import { formatEuro, normalizeToCardAllergens } from "./helpers";
 
@@ -49,7 +50,6 @@ function FoodDetailPage() {
     quickAllergens,
     fileInputRef,
     quickName, setQuickName,
-    quickTitulo, setQuickTitulo,
     quickTipo, setQuickTipo,
     quickPrecio, setQuickPrecio,
     quickSuplemento, setQuickSuplemento,
@@ -57,10 +57,10 @@ function FoodDetailPage() {
     quickCategoria, setQuickCategoria,
     quickDescripcion, setQuickDescripcion,
     quickActive, setQuickActive,
-    quickDirty,
     quickCanSave,
     quickTipoOptions,
     quickCategorySelectOptions,
+    onQuickSave,
     onWineSave,
     openAllergenModal,
     onToggleAllergenAndPersist,
@@ -130,6 +130,11 @@ function FoodDetailPage() {
     return String((item as any).foto_url || "").trim();
   }, [item]);
 
+  const heroIcon = useMemo(() =>
+    (FOOD_TYPE_ICONS[foodType as keyof typeof FOOD_TYPE_ICONS] || (() => null)) as LucideIcon,
+    [foodType],
+  );
+
   // Early return for wine must happen AFTER all hooks to comply with Rules of Hooks.
   // Otherwise Vike's page transitions can trigger a mismatch when the component is
   // re-rendered mid-exit with a different pageContext where isWine is false.
@@ -172,21 +177,46 @@ function FoodDetailPage() {
             uploading={uploading}
             aiBusy={aiBusy}
             supportsQuickEditor={supportsQuickEditor || isNew}
-            heroBadges={isNew ? [] : heroBadges}
             fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>}
             onImageSelect={handleImageSelect}
             onImageUpdate={handleImageUpdate}
           />
+
+          {/* ── Title + badges head above quick editor ── */}
+          {item && !isWine ? (
+            <div className="bo-panelHead bo-foodDetailQuickHead flex-col items-stretch gap-1" data-ui="food-detail-editor-head">
+              <div className="flex items-center gap-2 min-w-0" data-ui="food-detail-editor-title-row">
+                <heroIcon
+                  className="bo-foodDetailTypeIcon shrink-0"
+                  size={18}
+                  aria-hidden="true"
+                  data-ui="food-detail-editor-title-icon"
+                />
+                <span className="truncate" data-role="food-detail-editor-title">{title}</span>
+              </div>
+              {heroBadges.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5" data-slot="food-detail-editor-badge-row">
+                  {heroBadges.map((badge) => (
+                    <span
+                      key={badge.id}
+                      className={`bo-badge ${badge.className}`}
+                      data-role="food-detail-editor-badge"
+                    >
+                      {badge.label}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {supportsQuickEditor && (currentFoodItem || isNew) ? (
             <FoodDetailQuickEditor
               isPlate={isPlate}
               isBebida={isBebida}
               savingQuick={savingQuick}
-              quickDirty={quickDirty}
               quickCanSave={quickCanSave}
               quickName={quickName}
-              quickTitulo={quickTitulo}
               quickTipo={quickTipo}
               quickPrecio={quickPrecio}
               quickSuplemento={quickSuplemento}
@@ -198,7 +228,6 @@ function FoodDetailPage() {
               quickTipoOptions={quickTipoOptions}
               quickCategorySelectOptions={quickCategorySelectOptions}
               onQuickNameChange={setQuickName}
-              onQuickTituloChange={setQuickTitulo}
               onQuickTipoChange={setQuickTipo}
               onQuickPrecioChange={setQuickPrecio}
               onQuickSuplementoChange={setQuickSuplemento}
@@ -206,18 +235,14 @@ function FoodDetailPage() {
               onQuickCategoriaChange={setQuickCategoria}
               onQuickDescripcionChange={setQuickDescripcion}
               onQuickActiveChange={setQuickActive}
-              onQuickSave={handleAIEnhance}
+              onQuickSave={onQuickSave}
               onAddCategoryClick={() => setBebidaCatModalOpen(true)}
+              allergenList={allergenList}
+              savingAllergens={savingAllergens}
+              onOpenAllergenModal={openAllergenModal}
+              onToggleAllergen={onToggleAllergenAndPersist}
             />
           ) : null}
-
-          <FoodDetailAllergens
-            allergenList={allergenList}
-            supportsQuickEditor={supportsQuickEditor}
-            savingAllergens={savingAllergens}
-            onOpenAllergenModal={openAllergenModal}
-            onToggleAllergen={onToggleAllergenAndPersist}
-          />
 
           {supportsQuickEditor ? (
             <FoodDetailAllergenModal
