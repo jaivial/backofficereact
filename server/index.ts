@@ -1053,11 +1053,15 @@ async function start() {
 
       // Normalize reservas routes: always keep `?date=YYYY-MM-DD` present.
       // This avoids "no date selected" UI states on first load and keeps the URL stable.
-      const reservasPath = req.path.startsWith("/m/app/reservas")
-        ? req.path.replace("/m/app/reservas", "/app/reservas")
-        : req.path.startsWith("/app/reservas")
-        ? req.path
-        : null;
+      // Skip for Vike pageContext data requests — the redirect would break Vike's
+      // client-side data fetching which expects JSON, not a 302 HTML redirect.
+      const reservasPath = !pageContextRequest && (
+        req.path.startsWith("/m/app/reservas")
+          ? req.path.replace("/m/app/reservas", "/app/reservas")
+          : req.path.startsWith("/app/reservas")
+          ? req.path
+          : null
+      );
       if (reservasPath) {
         const url = new URL(req.originalUrl, "https://local");
         const cur = url.searchParams.get("date");

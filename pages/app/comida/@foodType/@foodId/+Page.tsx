@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 
 import { Breadcrumbs } from "../../../../../ui/nav/Breadcrumbs";
 import type { BreadcrumbItem } from "../../../../../ui/nav/Breadcrumbs";
@@ -12,12 +12,18 @@ import type { HeroBadge } from "./types";
 import { useFoodDetailPage } from "./hooks/useFoodDetailPage";
 import { FoodDetailHero } from "./functionalComponents/FoodDetailHero";
 import { FoodDetailQuickEditor } from "./functionalComponents/FoodDetailQuickEditor";
+import { useBreadcrumbFadeout } from "../../_components/hooks/useBreadcrumbFadeout";
 import { FoodDetailAllergens } from "./functionalComponents/FoodDetailAllergens";
 import { FoodDetailAllergenModal } from "./functionalComponents/FoodDetailAllergenModal";
 import { FoodDetailAIAdvisor } from "./functionalComponents/FoodDetailAIAdvisor";
 import { formatEuro, normalizeToCardAllergens } from "./helpers";
 
 function FoodDetailPage() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Fade-out before breadcrumb navigation
+  useBreadcrumbFadeout(sectionRef);
+
   const {
     item,
     foodType,
@@ -68,15 +74,10 @@ function FoodDetailPage() {
     isNew,
   } = useFoodDetailPage();
 
-  if (isWine) {
-    return (
-      <WineDetailEditor
-        vino={item as import("../../../../../api/types").Vino}
-        isNew={false}
-        onSave={onWineSave}
-      />
-    );
-  }
+  // ⚠ All hooks MUST be called unconditionally, before any early return.
+  // Vike can re-render this component mid-transition with different pageContext,
+  // and React will throw "Hooks order changed" if hooks after an early return
+  // were not called in the previous render.
 
   const title = useMemo(() => {
     if (!item && !isNew) return "Detalle no disponible";
@@ -129,8 +130,21 @@ function FoodDetailPage() {
     return String((item as any).foto_url || "").trim();
   }, [item]);
 
+  // Early return for wine must happen AFTER all hooks to comply with Rules of Hooks.
+  // Otherwise Vike's page transitions can trigger a mismatch when the component is
+  // re-rendered mid-exit with a different pageContext where isWine is false.
+  if (isWine) {
+    return (
+      <WineDetailEditor
+        vino={item as import("../../../../../api/types").Vino}
+        isNew={false}
+        onSave={onWineSave}
+      />
+    );
+  }
+
   return (
-    <section aria-label="Detalle comida" className="bo-content-grid bo-memberDetailPage bo-foodDetailPage" data-role="food-detail-page">
+    <section ref={sectionRef} aria-label="Detalle comida" className="bo-content-grid bo-memberDetailPage bo-foodDetailPage bo-fadeout" data-role="food-detail-page">
       <div className="bo-foodDetailTopbar" data-ui="food-detail-topbar">
         <Breadcrumbs items={breadcrumbs} />
         {item ? (

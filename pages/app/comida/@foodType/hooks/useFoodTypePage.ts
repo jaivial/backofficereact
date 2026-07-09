@@ -310,6 +310,8 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   }, [api, foodType, pushToast]);
 
   return {
+    items,
+    categories,
     pageActive,
     pageVisibilityLoading,
     showPageVisibilityToggle,
