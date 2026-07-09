@@ -178,6 +178,7 @@ export const Breadcrumbs = memo(function Breadcrumbs({
                   href={item.href}
                   data-testid={`breadcrumb-${label.toLowerCase()}`}
                   data-role="breadcrumb-link"
+                  data-vike="false"
                 >
                   {label}
                 </a>

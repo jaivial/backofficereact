@@ -687,19 +687,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
     },
     platos: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ items: FoodItem[]; total?: number; page?: number; limit?: number }> | APIError> {
-        return listComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia", params, true, "platos");
+        return listComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia", params, false, "platos");
       },
       async create(input: ComidaWriteInput): Promise<APISuccess<{ num: number }> | APIError> {
-        return createComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia/dishes", input, "PRINCIPAL", true);
+        return createComidaWithFallback("/api/admin/platos", "/api/admin/menus/dia/dishes", input, "PRINCIPAL", false);
       },
       async patch(id: number, patch: ComidaPatchInput): Promise<APISuccess | APIError> {
-        return patchComidaWithFallback(`/api/admin/platos/${id}`, `/api/admin/menus/dia/dishes/${id}`, patch, "PRINCIPAL", true);
+        return patchComidaWithFallback(`/api/admin/platos/${id}`, `/api/admin/menus/dia/dishes/${id}`, patch, "PRINCIPAL", false);
       },
       async delete(id: number): Promise<APISuccess | APIError> {
-        return deleteComidaWithFallback(`/api/admin/platos/${id}`, `/api/admin/menus/dia/dishes/${id}`, true);
+        return deleteComidaWithFallback(`/api/admin/platos/${id}`, `/api/admin/menus/dia/dishes/${id}`, false);
       },
       async toggle(id: number, active = true): Promise<APISuccess<{ active: boolean }> | APIError> {
-        return toggleComidaWithFallback(`/api/admin/platos/${id}/toggle`, `/api/admin/menus/dia/dishes/${id}`, active, true);
+        return toggleComidaWithFallback(`/api/admin/platos/${id}/toggle`, `/api/admin/menus/dia/dishes/${id}`, active, false);
       },
       async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
         const res = await comidaApi.platos.list({ page: 1, limit: 500 });

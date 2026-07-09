@@ -22,6 +22,7 @@ type FoodDishCardProps = {
   className?: string;
   bodyClassName?: string;
   debugId?: string;
+  horizontal?: boolean;
 };
 
 export const FoodDishCard = React.memo(function FoodDishCard({
@@ -43,6 +44,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
   className,
   bodyClassName,
   debugId,
+  horizontal,
 }: FoodDishCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const renderCountRef = useRef(0);
@@ -99,7 +101,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
   return (
     <article
       data-ui="dish-card"
-      className={cn("bo-memberCard bo-foodMemberCard", clickable && "is-clickable", className)}
+      className={cn("bo-memberCard bo-foodMemberCard", clickable && "is-clickable", horizontal && "bo-foodMemberCard--horizontal", className)}
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
       aria-label={clickable ? openAriaLabel || `Abrir detalle de ${title}` : undefined}

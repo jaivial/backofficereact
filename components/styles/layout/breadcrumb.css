@@ -118,3 +118,21 @@
 :root[data-theme="light"] .bo-breadcrumbSeparator {
   color: rgba(15, 18, 30, 0.28);
 }
+
+/* Truncation: last item ellipsis when container narrow */
+.bo-breadcrumb--truncate {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.bo-breadcrumb--truncate .bo-breadcrumbList {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.bo-breadcrumb--truncate .bo-breadcrumbCurrent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}

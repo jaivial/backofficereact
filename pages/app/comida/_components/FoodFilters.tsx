@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Filter, FilterX, Search } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Select } from "../../../../ui/inputs/Select";
+import { Switch } from "../../../../ui/shadcn/Switch";
 import type { FoodType } from "./foodTypes";
 import type { ActiveFilter, SuplementoFilter } from "../@foodType/types";
 
@@ -30,6 +31,8 @@ interface FoodFiltersProps {
   onSuplementoChange: (value: SuplementoFilter) => void;
   onReset: () => void;
   count: number;
+  showImages: boolean;
+  onShowImagesChange: (value: boolean) => void;
 }
 
 const ACTIVE_OPTIONS: { value: ActiveFilter; label: string }[] = [
@@ -63,6 +66,8 @@ export const FoodFilters = React.memo(function FoodFilters({
   onSuplementoChange,
   onReset,
   count,
+  showImages,
+  onShowImagesChange,
 }: FoodFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -94,16 +99,18 @@ export const FoodFilters = React.memo(function FoodFilters({
           <span data-role="food-filters-label">Filtros</span>
           <span className="bo-foodFiltersCount" data-role="food-filters-count">({count})</span>
         </div>
-        <button
-          className="bo-btn bo-btn--ghost bo-btn--sm bo-foodFiltersToggle"
-          type="button"
-          onClick={toggleExpanded}
-          aria-expanded={isExpanded}
-          aria-label={isExpanded ? "Colapsar filtros" : "Expandir filtros"}
-          data-ui="food-filters-toggle-btn"
-        >
-          {isExpanded ? <ChevronUp size={15} data-ui="food-filters-toggle-icon-up" /> : <ChevronDown size={15} data-ui="food-filters-toggle-icon-down" />}
-        </button>
+        <div className="bo-foodFiltersExtras" data-ui="food-filters-extras">
+          <button
+            className="bo-btn bo-btn--ghost bo-btn--sm bo-foodFiltersToggle"
+            type="button"
+            onClick={toggleExpanded}
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? "Colapsar filtros" : "Expandir filtros"}
+            data-ui="food-filters-toggle-btn"
+          >
+            {isExpanded ? <ChevronUp size={15} data-ui="food-filters-toggle-icon-up" /> : <ChevronDown size={15} data-ui="food-filters-toggle-icon-down" />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence initial={false}>
@@ -133,6 +140,16 @@ export const FoodFilters = React.memo(function FoodFilters({
                     data-role="food-filters-search-input"
                   />
                 </div>
+              </div>
+
+              <div className="bo-field bo-foodFilter bo-foodFilter--images" data-slot="food-filters-images">
+                <span className="bo-label">Mostrar imagenes</span>
+                <Switch
+                  checked={showImages}
+                  onCheckedChange={onShowImagesChange}
+                  data-ui="food-show-images-switch"
+                  aria-label="mostrar imagenes"
+                />
               </div>
 
               <div className="bo-field bo-foodFilter bo-foodFilter--tipo" data-slot="food-filters-tipo">
