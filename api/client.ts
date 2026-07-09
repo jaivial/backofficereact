@@ -458,6 +458,10 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
   }
 
   const comidaApi = {
+    // Whether the AI image config is fully usable (activation + key + i2i model).
+    async aiImageStatus(): Promise<APISuccess<{ valid: boolean }> | APIError> {
+      return json("/api/admin/comida/ai-image/status", { method: "GET" });
+    },
     postres: {
       async list(params?: ComidaListParams): Promise<APISuccess<{ postres: Postre[]; total?: number; page?: number; limit?: number }> | APIError> {
         return json(withQuery("/api/admin/postres", normalizeComidaListParams(params)), { method: "GET" });
@@ -712,6 +716,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         const form = new FormData();
         form.append("image", file, file.name || "comida-ai.webp");
         return json(`/api/admin/comida/platos/${id}/image/ai`, { method: "POST", body: form });
+      },
+      async uploadImage(id: number, file: File): Promise<APISuccess<{ foto_url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "plato-image.webp");
+        return json(`/api/admin/comida/platos/${id}/image`, { method: "POST", body: form });
       },
       categories: {
         async list(): Promise<APISuccess<{ categories: FoodCategory[] }> | APIError> {
@@ -1789,6 +1798,20 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       },
       async setEmailProviderConfig(input: Partial<import("./types").EmailProviderConfig>): Promise<APISuccess<{ config: import("./types").EmailProviderConfig }> | APIError> {
         return json("/api/admin/config/email-provider", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      // AI image provider configuration (root-only).
+      async getAIImageProviders(): Promise<APISuccess<{ providers: import("./types").AIImageProvider[]; models: import("./types").AIImageModel[] }> | APIError> {
+        return json("/api/admin/config/ai-image/providers", { method: "GET" });
+      },
+      async getAIImageConfig(): Promise<APISuccess<{ config: import("./types").AIImageConfig }> | APIError> {
+        return json("/api/admin/config/ai-image", { method: "GET" });
+      },
+      async setAIImageConfig(input: import("./types").AIImageConfigInput): Promise<APISuccess<{ config: import("./types").AIImageConfig }> | APIError> {
+        return json("/api/admin/config/ai-image", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),

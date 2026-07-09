@@ -50,7 +50,8 @@ async function loginViaAPI(
   }
 
   // bo_session is HttpOnly — read it from the browser context, not document.cookie
-  const cookies = await browserPage.context().cookies("https://localhost");
+  const cookieDomain = new URL(baseURL).hostname;
+  const cookies = await browserPage.context().cookies(cookieDomain);
   const boSession = cookies.find((c) => c.name === "bo_session");
   if (!boSession) {
     throw new Error("No bo_session cookie found after login");
@@ -62,6 +63,11 @@ async function loginViaAPI(
 export default async function globalSetup(
   config: FullConfig
 ): Promise<void> {
+  if (process.env.PLAYWRIGHT_SKIP_GLOBAL_SETUP === "1") {
+    console.log("[global-setup] Skipped via PLAYWRIGHT_SKIP_GLOBAL_SETUP=1");
+    return;
+  }
+
   const baseURL =
     (config.projects[0]?.use?.baseURL as string | undefined) ??
     (process.env.BACKOFFICE_URL ?? "https://localhost:3001");

@@ -1543,7 +1543,6 @@
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  border: 1px solid var(--bo-border-2);
   display: grid;
   place-items: center;
   font-size: 11px;
