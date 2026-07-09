@@ -1827,6 +1827,37 @@ export type MenuSelectorItem = {
   menu_type: string;
 };
 
+export type AIImageProvider = {
+  slug: string;
+  label: string;
+  baseUrl: string;
+  docsUrl?: string;
+};
+
+export type AIImageModel = {
+  providerSlug: string;
+  slug: string;
+  label: string;
+  mode: "t2i" | "i2i";
+};
+
+export type AIImageConfig = {
+  providerSlug: string;
+  hasApiKey: boolean;
+  apiKeyMask?: string;
+  t2iModelSlug?: string;
+  i2iModelSlug?: string;
+  isActive: boolean;
+};
+
+export type AIImageConfigInput = {
+  providerSlug?: string;
+  apiKey?: string;
+  t2iModelSlug?: string;
+  i2iModelSlug?: string;
+  isActive?: boolean;
+};
+
 export type EmailProviderConfig = {
   id: number;
   provider: "smtp" | "gmail";

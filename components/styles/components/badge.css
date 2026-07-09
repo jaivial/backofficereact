@@ -60,7 +60,7 @@
 .bo-badge--yellow {
   border-color: rgba(255, 223, 132, 0.35);
   background: rgba(255, 223, 132, 0.14);
-  color: rgba(255, 237, 176, 0.95);
+  color: #fff6ed;
 }
 
 :root[data-theme="light"] .bo-badge--yellow {

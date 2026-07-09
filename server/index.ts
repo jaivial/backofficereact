@@ -465,7 +465,7 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws")) return;
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
       let upstreamPath = "";

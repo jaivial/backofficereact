@@ -23,6 +23,11 @@ type DetailEventHandler = (msg: ComidaAIWSMessage) => void;
 
 let singletonWs: WebSocket | null = null;
 let singletonListeners: Set<(event: ComidaAIWSMessage) => void> = new Set();
+let reconnectAttempts = 0;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+const MAX_RECONNECT_ATTEMPTS = 6;
+const BASE_RECONNECT_DELAY_MS = 3000;
+const MAX_RECONNECT_DELAY_MS = 60000;
 
 /**
  * Registers a listener with the module-level singleton WebSocket.
@@ -47,17 +52,42 @@ function broadcastToListeners(event: ComidaAIWSMessage): void {
 /**
  * Ensures the singleton WebSocket is open. Idempotent — no-op if already connected.
  */
+function scheduleReconnect(): void {
+  if (reconnectTimer !== null) return;
+  if (singletonListeners.size === 0) return;
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) return;
+
+  // Exponential backoff with cap
+  const delay = Math.min(
+    BASE_RECONNECT_DELAY_MS * 2 ** reconnectAttempts,
+    MAX_RECONNECT_DELAY_MS,
+  );
+  reconnectAttempts += 1;
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null;
+    ensureSingletonConnected();
+  }, delay);
+}
+
 function ensureSingletonConnected(): void {
-  if (singletonWs && singletonWs.readyState === WebSocket.OPEN) return;
+  if (singletonWs && (singletonWs.readyState === WebSocket.OPEN || singletonWs.readyState === WebSocket.CONNECTING)) return;
 
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
   const host = window.location.host;
   const wsUrl = `${proto}//${host}/api/admin/comida/ws`;
 
-  const ws = new WebSocket(wsUrl);
+  let ws: WebSocket;
+  try {
+    ws = new WebSocket(wsUrl);
+  } catch {
+    scheduleReconnect();
+    return;
+  }
   singletonWs = ws;
 
-  ws.onopen = () => {};
+  ws.onopen = () => {
+    reconnectAttempts = 0;
+  };
 
   ws.onmessage = (ev) => {
     try {
@@ -74,11 +104,20 @@ function ensureSingletonConnected(): void {
 
   ws.onclose = () => {
     singletonWs = null;
-    // Reconnect after delay if there are still listeners
-    if (singletonListeners.size > 0) {
-      setTimeout(ensureSingletonConnected, 3000);
-    }
+    // Reconnect with exponential backoff if there are still listeners
+    scheduleReconnect();
   };
+}
+
+/**
+ * Resets the reconnect state so a fresh consumer can retry from scratch.
+ */
+function resetReconnectState(): void {
+  reconnectAttempts = 0;
+  if (reconnectTimer !== null) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -176,6 +215,9 @@ export function useComidaAIUnified(options: UseComidaAIUnifiedOptions = {}) {
 
   const shouldHandle = useCallback(
     (msg: ComidaAIWSMessage): boolean => {
+      // Connection lifecycle messages are always forwarded (used by consumers to
+      // re-sync on reconnect), regardless of scope/item filtering.
+      if (msg.type === "hello" || msg.type === "connected") return true;
       if (scope === "list") return isListEvent(msg);
       if (scope === "detail") return isDetailEvent(msg, itemNum);
       // scope === "all"
@@ -185,6 +227,9 @@ export function useComidaAIUnified(options: UseComidaAIUnifiedOptions = {}) {
   );
 
   useEffect(() => {
+    // A fresh consumer mounting is a good signal to retry from scratch
+    // if a previous run had exhausted its reconnection budget.
+    if (!singletonWs) resetReconnectState();
     // Ensure the singleton WS is running
     ensureSingletonConnected();
 

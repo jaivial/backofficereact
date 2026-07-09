@@ -14,7 +14,6 @@ import { compressImageToWebP, isValidImageFile } from "../../../../../../lib/ima
 
 export interface QuickFormState {
   name: string;
-  titulo: string;
   tipo: string;
   precio: string;
   suplemento: string;
@@ -49,10 +48,10 @@ export function useFoodDetailPage() {
   const [showAIAdvisor, setShowAIAdvisor] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiConfigValid, setAiConfigValid] = useState(false);
 
   // Quick form state
   const [quickName, setQuickName] = useState("");
-  const [quickTitulo, setQuickTitulo] = useState("");
   const [quickTipo, setQuickTipo] = useState("");
   const [quickPrecio, setQuickPrecio] = useState("");
   const [quickSuplemento, setQuickSuplemento] = useState("");
@@ -72,18 +71,46 @@ export function useFoodDetailPage() {
 
   // WebSocket for AI events
   const itemNum = item ? (item as FoodItem).num : null;
-  const showAdvisorForType = isBebida || isCafe;
+  const showAdvisorForType = isBebida || isCafe || isPlate;
+
+  // Whether AI image config is valid (activation + key + i2i model). Gates the
+  // "Mejorar con IA" advisor: if invalid, uploads go straight through.
+  useEffect(() => {
+    if (!showAdvisorForType) {
+      setAiConfigValid(false);
+      return;
+    }
+    let active = true;
+    void api.comida.aiImageStatus()
+      .then((res) => { if (active) setAiConfigValid(!!(res.success && (res as any).valid)); })
+      .catch(() => { if (active) setAiConfigValid(false); });
+    return () => { active = false; };
+  }, [api.comida, showAdvisorForType]);
+
+  // Refs let the (stable) WebSocket onEvent handler reach the latest state/helpers
+  // without re-subscribing the listener on every render.
+  const aiGeneratingRef = useRef(false);
+  const resyncRef = useRef<() => void>(() => {});
+  useEffect(() => { aiGeneratingRef.current = aiGenerating; }, [aiGenerating]);
 
   useComidaAIUnified({
     scope: "detail",
     itemNum,
     onEvent: useCallback((msg: ComidaAIWSMessage) => {
-      if (msg.type === "comida_ai_completed") {
+      if (msg.type === "comida_ai_started") {
+        setAiGenerating(true);
+      } else if (msg.type === "comida_ai_completed") {
         // AI generation done - update image and stop skeleton
         setAiGenerating(false);
         if (msg.foto_url) {
           setItemState((prev) => prev ? { ...prev, foto_url: msg.foto_url } : prev);
         }
+      } else if (msg.type === "comida_ai_failed") {
+        setAiGenerating(false);
+      } else if (msg.type === "hello" || msg.type === "connected") {
+        // (Re)connected: if a generation was in flight, re-sync once to catch a
+        // completion event that may have been missed while the socket was down.
+        if (aiGeneratingRef.current) resyncRef.current();
       }
     }, []),
   });
@@ -100,10 +127,28 @@ export function useFoodDetailPage() {
     }
   }, [data.item]);
 
+  // One-shot re-sync helper: fetch the current item once and reconcile the
+  // generating/skeleton state. Used only when the WebSocket (re)connects while a
+  // generation is in flight, to catch a completion event missed while offline.
+  // (No polling loop — realtime updates come from the WebSocket.)
+  const resyncItemOnce = useCallback(async () => {
+    if (!supportsQuickEditor || !itemNum) return;
+    let res: { success: boolean; item?: FoodItem };
+    if (isPlate) res = await api.comida.platos.get(itemNum);
+    else if (isBebida) res = await api.comida.bebidas.get(itemNum);
+    else if (isCafe) res = await api.comida.cafes.get(itemNum);
+    else return;
+    if (!res.success || !res.item) return;
+    const fresh = res.item as FoodItem;
+    setItemState(fresh);
+    if (!(fresh as any).ai_generating) setAiGenerating(false);
+  }, [api.comida.platos, api.comida.bebidas, api.comida.cafes, isPlate, isBebida, isCafe, itemNum, supportsQuickEditor]);
+
+  useEffect(() => { resyncRef.current = () => { void resyncItemOnce(); }; }, [resyncItemOnce]);
+
   const syncQuickFromItem = useCallback((nextItem: FoodItem | null) => {
     if (!nextItem) {
       setQuickName("");
-      setQuickTitulo("");
       setQuickTipo("");
       setQuickPrecio("0.00");
       setQuickSuplemento("0.00");
@@ -116,7 +161,6 @@ export function useFoodDetailPage() {
     }
     const suplementoValue = Number(nextItem.suplemento || 0);
     setQuickName(String(nextItem.nombre || ""));
-    setQuickTitulo(String(nextItem.titulo || ""));
     setQuickTipo(String(nextItem.tipo || ""));
     setQuickPrecio(toMoneyInput(nextItem.precio));
     setQuickSuplemento(toMoneyInput(suplementoValue));
@@ -211,7 +255,6 @@ export function useFoodDetailPage() {
     const categoryCheck = (isPlate || isBebida) ? quickCategoria.trim() !== currentCategoryValue.trim() : false;
     return (
       quickName.trim() !== String(currentFoodItem.nombre || "").trim()
-      || quickTitulo.trim() !== String(currentFoodItem.titulo || "").trim()
       || (isPlate ? quickTipo.trim() !== String(currentFoodItem.tipo || "").trim() : false)
       || quickDescripcion.trim() !== String(currentFoodItem.descripcion || "").trim()
       || categoryCheck
@@ -234,7 +277,6 @@ export function useFoodDetailPage() {
     quickPrecio,
     quickPriceNumber,
     quickSuppEffectiveNumber,
-    quickTitulo,
     quickTipo,
   ]);
   const quickCanSave = useMemo(() => {
@@ -270,7 +312,6 @@ export function useFoodDetailPage() {
 
     const basePayload: Record<string, unknown> = {
       nombre: quickName.trim() || (isPlate ? "Nuevo plato" : isBebida ? "Nueva bebida" : "Nuevo cafe"),
-      titulo: quickTitulo.trim(),
       tipo: isPlate ? (quickTipo.trim() || "PRINCIPAL") : (isCafe ? "CAFE" : isBebida ? "REFRESCO" : ""),
       precio: precioNumber,
       suplemento: suplementoNumber ?? 0,
@@ -372,7 +413,6 @@ export function useFoodDetailPage() {
         const fallbackItem: FoodItem = {
           ...currentFoodItem!,
           nombre: String((basePayload.nombre as string | undefined) ?? currentFoodItem!.nombre),
-          titulo: String((basePayload.titulo as string | undefined) ?? currentFoodItem!.titulo ?? ""),
           tipo: String((basePayload.tipo as string | undefined) ?? currentFoodItem!.tipo),
           precio: Number((basePayload.precio as number | undefined) ?? currentFoodItem!.precio ?? 0),
           suplemento: Number((basePayload.suplemento as number | undefined) ?? currentFoodItem!.suplemento ?? 0),
@@ -411,7 +451,6 @@ export function useFoodDetailPage() {
     quickName,
     quickPrecio,
     quickSuplemento,
-    quickTitulo,
     quickTipo,
     syncQuickFromItem,
   ]);
@@ -498,10 +537,10 @@ export function useFoodDetailPage() {
     setQuickCategoria(category.value);
   }, []);
 
-  // Upload image directly (no AI) for existing items (cafes/bebidas only)
+  // Upload image directly (no AI) for existing items (platos/cafes/bebidas)
   // If preCompressed is provided, skip recompression (already compressed by caller)
   const handleImageUpdate = useCallback(async (file: File, preCompressed?: string) => {
-    if (!currentFoodItem || (!isBebida && !isCafe)) return;
+    if (!currentFoodItem || (!isBebida && !isCafe && !isPlate)) return;
     setUploading(true);
     try {
       // Use pre-compressed data if available, otherwise compress now
@@ -517,7 +556,7 @@ export function useFoodDetailPage() {
       const blob = new Blob([byteArray], { type: "image/webp" });
       const webpFile = new File([blob], "item.webp", { type: "image/webp" });
 
-      const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
+      const targetApi = isBebida ? api.comida.bebidas : isPlate ? api.comida.platos : api.comida.cafes;
       const res = await targetApi.uploadImage(currentFoodItem.num, webpFile);
       if (!res.success) {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar la imagen" });
@@ -532,7 +571,7 @@ export function useFoodDetailPage() {
     } finally {
       setUploading(false);
     }
-  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, isBebida, isCafe, pushToast]);
+  }, [api.comida.bebidas, api.comida.cafes, api.comida.platos, currentFoodItem, isBebida, isCafe, isPlate, pushToast]);
 
 
   const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -548,24 +587,26 @@ export function useFoodDetailPage() {
     try {
       const compressed = await compressImageToWebP(file, 80);
       setImageBase64(compressed);
+      setImagePreview(compressed);
 
-      // Existing item: upload immediately — show URL when done, no AI advisor
-      if (!data.isNew && currentFoodItem) {
-        await handleImageUpdate(file, compressed);
+      // Offer the AI advisor only when the AI config is valid (activation + key
+      // + i2i model). Otherwise skip straight to a normal upload.
+      if (showAdvisorForType && aiConfigValid) {
+        setShowAIAdvisor(true);
         return;
       }
 
-      // New item: show preview + AI advisor
-      setImagePreview(compressed);
-      if (showAdvisorForType) {
-        setShowAIAdvisor(true);
+      // No AI (invalid config or unsupported type): upload directly for existing
+      // items; for new items keep the preview so it can be saved on create.
+      if (!data.isNew && currentFoodItem) {
+        await handleImageUpdate(file, compressed);
       }
     } catch {
       pushToast({ kind: "error", title: "Error", message: "No se pudo procesar la imagen" });
     } finally {
       setUploading(false);
     }
-  }, [currentFoodItem, data.isNew, handleImageUpdate, pushToast, showAdvisorForType]);
+  }, [aiConfigValid, currentFoodItem, data.isNew, handleImageUpdate, pushToast, showAdvisorForType]);
 
   const runAIEnhance = useCallback(async (targetNum: number) => {
     setAiBusy(true);
@@ -573,7 +614,7 @@ export function useFoodDetailPage() {
     setShowAIAdvisor(false);
 
     try {
-      const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
+      const targetApi = isBebida ? api.comida.bebidas : isPlate ? api.comida.platos : api.comida.cafes;
       const b64 = imageBase64?.split(",")[1];
       if (!b64) throw new Error("No image data");
 
@@ -596,7 +637,7 @@ export function useFoodDetailPage() {
     } finally {
       setAiBusy(false);
     }
-  }, [api.comida.bebidas, api.comida.cafes, imageBase64, isBebida, pushToast]);
+  }, [api.comida.bebidas, api.comida.cafes, api.comida.platos, imageBase64, isBebida, isPlate, pushToast]);
 
   const handleAIAdvisorClose = useCallback(() => {
     setShowAIAdvisor(false);
@@ -604,8 +645,8 @@ export function useFoodDetailPage() {
 
   const handleAIContinueWithout = useCallback(() => {
     setShowAIAdvisor(false);
-    // For existing items (cafes/bebidas only): upload directly without AI
-    if (!data.isNew && currentFoodItem && imagePreview && (isBebida || isCafe)) {
+    // For existing items (platos/cafes/bebidas): upload directly without AI
+    if (!data.isNew && currentFoodItem && imagePreview && (isBebida || isCafe || isPlate)) {
       void (async () => {
         if (!imageBase64) return;
         const b64 = imageBase64.split(",")[1];
@@ -617,7 +658,7 @@ export function useFoodDetailPage() {
         }
         const blob = new Blob([byteArray], { type: "image/webp" });
         const webpFile = new File([blob], "item.webp", { type: "image/webp" });
-        const targetApi = isBebida ? api.comida.bebidas : api.comida.cafes;
+        const targetApi = isBebida ? api.comida.bebidas : isPlate ? api.comida.platos : api.comida.cafes;
         const res = await targetApi.uploadImage(currentFoodItem.num, webpFile);
         if (res.success) {
           setItemState((prev) => prev ? { ...prev, foto_url: (res as any).foto_url } : prev);
@@ -630,7 +671,7 @@ export function useFoodDetailPage() {
     }
     setImageBase64(null);
     setImagePreview(null);
-  }, [api.comida.bebidas, api.comida.cafes, currentFoodItem, data.isNew, imageBase64, imagePreview, isBebida, isCafe, pushToast]);
+  }, [api.comida.bebidas, api.comida.cafes, api.comida.platos, currentFoodItem, data.isNew, imageBase64, imagePreview, isBebida, isCafe, isPlate, pushToast]);
 
   const handleAIEnhance = useCallback(() => {
     if (!currentFoodItem) return;
@@ -660,7 +701,6 @@ export function useFoodDetailPage() {
     aiGenerating,
     // Quick form state
     quickName, setQuickName,
-    quickTitulo, setQuickTitulo,
     quickTipo, setQuickTipo,
     quickPrecio, setQuickPrecio,
     quickSuplemento, setQuickSuplemento,

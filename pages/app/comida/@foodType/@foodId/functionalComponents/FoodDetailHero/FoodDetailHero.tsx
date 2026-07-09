@@ -1,11 +1,9 @@
-import React, { useMemo, type ChangeEvent } from "react";
+import React, { type ChangeEvent } from "react";
 import { Camera, ImagePlus, Loader2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import type { FoodItem, Vino } from "../../../../../../../api/types";
-import type { HeroBadge } from "../../types";
 import { FOOD_TYPE_ICONS } from "../../constants";
-import { FOOD_TYPE_LABELS } from "../../../../_components/foodTypes";
 import { formatEuro } from "../../helpers";
 
 interface FoodDetailHeroProps {
@@ -17,7 +15,6 @@ interface FoodDetailHeroProps {
   uploading: boolean;
   aiBusy: boolean;
   supportsQuickEditor: boolean;
-  heroBadges: HeroBadge[];
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   onImageSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   onImageUpdate?: (file: File) => void;
@@ -32,7 +29,6 @@ export function FoodDetailHero({
   uploading,
   aiBusy,
   supportsQuickEditor,
-  heroBadges,
   fileInputRef,
   onImageSelect,
   onImageUpdate,
@@ -47,18 +43,14 @@ export function FoodDetailHero({
     fileInputRef.current?.click();
   };
 
-  const eyebrow = `${FOOD_TYPE_LABELS[foodType as keyof typeof FOOD_TYPE_LABELS] ?? foodType} · #${
-    item?.num ?? "—"
-  }`;
-
   return (
     <div
       className="bo-panel bo-foodDetailHero"
       data-ui="food-detail-hero"
     >
-      {/* ── Media column ── */}
+      {/* ── Media column (1:1 square) ── */}
       <div
-        className={`bo-foodDetailMedia${showHoverOverlay ? " bo-foodDetailMedia--editable" : ""}`}
+        className={`bo-foodDetailMedia aspect-square${showHoverOverlay ? " bo-foodDetailMedia--editable" : ""}`}
         data-slot="food-detail-media"
         onClick={showHoverOverlay ? handleOverlayClick : undefined}
         role={showHoverOverlay ? "button" : undefined}
@@ -162,45 +154,11 @@ export function FoodDetailHero({
         data-role="food-detail-file-input"
       />
 
-      {/* ── Info column ── */}
+      {/* ── Info column (price only — title+badges moved to quick editor) ── */}
       <div
         className="bo-foodDetailHeroBody"
         data-slot="food-detail-hero-body"
       >
-        <div
-          className="bo-foodDetailHeroIdentity"
-          data-slot="food-detail-hero-identity"
-        >
-          <div className="bo-foodDetailEyebrow" data-role="food-detail-eyebrow">
-            {eyebrow}
-          </div>
-          <div className="bo-foodDetailTitleRow" data-ui="food-detail-title-row">
-            <TypeIcon
-              className="bo-foodDetailTypeIcon"
-              size={18}
-              aria-hidden="true"
-              data-ui="food-detail-title-icon"
-            />
-            <div
-              className="bo-panelTitle bo-foodDetailTitle"
-              data-role="food-detail-title"
-            >
-              {title}
-            </div>
-          </div>
-          <div className="bo-foodDetailBadgeRow" data-slot="food-detail-badge-row">
-            {heroBadges.map((badge) => (
-              <span
-                key={badge.id}
-                className={`bo-badge ${badge.className}`}
-                data-role="food-detail-hero-badge"
-              >
-                {badge.label}
-              </span>
-            ))}
-          </div>
-        </div>
-
         {foodType !== "platos" ? (
           <div
             className="bo-foodDetailPriceWrap"

@@ -1052,34 +1052,27 @@ body.is-navigating .bo-fadeout {
 }
 
 .bo-foodDetailHero {
-  display: grid;
-  grid-template-columns: minmax(180px, 300px) minmax(0, 1fr);
-  gap: var(--bo-space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bo-space-3);
   padding: var(--bo-space-3);
-  align-items: stretch;
   position: relative;
-  overflow: hidden;
-  border-color: color-mix(in srgb, var(--bo-accent) 22%, var(--bo-border-2) 78%);
-  background:
-    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--bo-accent) 22%, transparent), transparent 42%),
-    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--bo-accent-2) 18%, transparent), transparent 56%),
-    linear-gradient(180deg, color-mix(in srgb, var(--bo-surface-2) 92%, transparent), color-mix(in srgb, var(--bo-surface) 96%, transparent)),
-    var(--bo-surface);
+  background: none;
+  box-shadow: none;
+  border: none;
 }
 
 :root[data-theme="light"] .bo-foodDetailHero {
-  border-color: color-mix(in srgb, var(--bo-accent) 26%, var(--bo-border) 74%);
-  background:
-    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--bo-accent) 16%, transparent), transparent 42%),
-    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--bo-accent-2) 14%, transparent), transparent 56%),
-    linear-gradient(180deg, color-mix(in srgb, var(--bo-surface-2) 96%, transparent), color-mix(in srgb, var(--bo-surface) 100%, transparent)),
-    var(--bo-surface);
+  background: none;
+  box-shadow: none;
+  border: none;
 }
 
 .bo-foodDetailMedia {
   width: 100%;
-  height: 100%;
-  min-height: clamp(220px, 28vw, 320px);
+  max-width: 200px;
+  aspect-ratio: 1 / 1;
   border-radius: var(--bo-radius-lg);
   border: 1px solid var(--bo-border-2);
   background:
@@ -1114,7 +1107,7 @@ body.is-navigating .bo-fadeout {
   height: 100%;
   display: grid;
   place-items: center;
-  color: var(--bo-faint);
+  color: rgb(94 99 123);
 }
 
 /* Hover overlay on food detail media — appears on image hover */
@@ -1171,60 +1164,21 @@ body.is-navigating .bo-fadeout {
 /* Photo action button */
 .bo-foodDetailPhotoBtn {
   width: 100%;
-  max-width: 280px;
-  margin-inline: auto;
-  margin-block-start: var(--bo-space-3);
+  max-width: 220px;
   justify-content: center;
 }
 
 .bo-foodDetailHeroBody {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: var(--bo-space-4);
-  min-width: 0;
-  padding-block: 2px;
-  /* Center content on mobile */
-  justify-items: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bo-space-2);
   text-align: center;
 }
 
 .bo-foodDetailHeroIdentity {
-  display: grid;
-  gap: var(--bo-space-2);
-  min-width: 0;
-}
-
-.bo-foodDetailEyebrow {
-  font-size: var(--bo-text-sm);
-  font-weight: var(--bo-weight-medium);
-  color: var(--bo-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.bo-foodDetailTitleRow {
-  display: flex;
-  align-items: center;
-  gap: var(--bo-space-2);
-  min-width: 0;
-}
-
-.bo-foodDetailTypeIcon {
-  color: var(--bo-accent);
-  flex-shrink: 0;
-}
-
-.bo-foodDetailTitle {
-  margin: 0;
-  font-size: clamp(var(--bo-text-lg), 2.2vw, var(--bo-text-2xl));
-  line-height: var(--bo-leading-tight);
-  overflow-wrap: anywhere;
-}
-
-.bo-foodDetailBadgeRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: none;
 }
 
 .bo-foodDetailPriceWrap {
@@ -1357,6 +1311,51 @@ body.is-navigating .bo-fadeout {
   gap: var(--bo-space-3);
 }
 
+.bo-foodDetailQuickGrid .bo-field--full,
+.bo-foodDetailQuickGrid .bo-foodDetailQuickStatus--full,
+.bo-foodDetailQuickGrid .bo-foodDetailQuickDescription,
+.bo-foodDetailQuickGrid .bo-foodDetailQuickAlergenos {
+  grid-column: 1 / -1;
+}
+
+/* Tighter price field — label + input closer */
+.bo-foodDetailQuickGrid [data-slot="food-detail-quick-precio-field"] {
+  gap: 4px;
+}
+
+/* Alergenos section inside form */
+.bo-foodDetailQuickAlergenos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Minimal X button on allergen pills */
+.bo-tagItemRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--bo-muted);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.bo-tagItemRemove:hover {
+  color: var(--bo-text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="light"] .bo-tagItemRemove:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
 .bo-foodDetailQuickDescription {
   grid-column: 1 / -1;
 }
@@ -1368,6 +1367,10 @@ body.is-navigating .bo-fadeout {
 .bo-foodDetailSelect {
   width: 100%;
   justify-content: space-between;
+}
+
+.bo-foodDetailSelect .bo-selectLabel {
+  text-align: start;
 }
 
 .bo-foodDetailQuickStatus {
@@ -1407,10 +1410,16 @@ body.is-navigating .bo-fadeout {
   gap: var(--bo-space-2);
   padding: var(--bo-space-2) var(--bo-space-3) var(--bo-space-3);
   border-top: 1px solid var(--bo-border);
-  background: var(--bo-surface);
+  background: none;
   border-bottom-left-radius: var(--bo-radius-lg);
   border-bottom-right-radius: var(--bo-radius-lg);
 }
+
+:root[data-theme="light"] .bo-foodDetailEditorActions {
+  background: none;
+}
+
+.bo-hidden { display: none; }
 
 .bo-foodDetailSpinIcon {
   animation: bo-food-detail-spin 0.8s linear infinite;
@@ -1433,24 +1442,8 @@ body.is-navigating .bo-fadeout {
 }
 
 @media (max-width: 1100px) {
-  .bo-foodDetailHero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--bo-space-4);
-  }
-
   .bo-foodDetailMedia {
-    min-height: 210px;
-    max-height: 320px;
-    max-width: 360px;
-    width: 100%;
-  }
-
-  .bo-foodDetailHeroBody {
-    justify-items: center;
-    text-align: center;
-    gap: var(--bo-space-3);
+    max-width: 180px;
   }
 
   .bo-foodDetailBodyGrid {
@@ -1519,21 +1512,11 @@ body.is-navigating .bo-fadeout {
   }
 
   .bo-foodDetailHero {
-    gap: var(--bo-space-3);
+    gap: var(--bo-space-2);
   }
 
   .bo-foodDetailMedia {
-    min-height: 180px;
-    max-height: 240px;
-    max-width: 280px;
-  }
-
-  .bo-foodDetailTitle {
-    font-size: var(--bo-text-lg);
-  }
-
-  .bo-foodDetailHeroBody {
-    gap: var(--bo-space-2);
+    max-width: 160px;
   }
 
   .bo-foodDetailFactsGrid {
@@ -1591,13 +1574,7 @@ body.is-navigating .bo-fadeout {
   }
 
   .bo-foodDetailMedia {
-    min-height: 150px;
-    max-height: 200px;
-    max-width: 240px;
-  }
-
-  .bo-foodDetailEyebrow {
-    font-size: 11px;
+    max-width: 140px;
   }
 }
 

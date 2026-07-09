@@ -32,7 +32,6 @@ function normalizePostre(item: any): FoodItem {
     nombre: String(item?.nombre || item?.descripcion || ""),
     precio: Number(item?.precio || 0),
     descripcion: String(item?.descripcion || ""),
-    titulo: "",
     suplemento: 0,
     alergenos: Array.isArray(item?.alergenos) ? item.alergenos : [],
     active: !!item?.active,
