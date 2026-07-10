@@ -17,6 +17,7 @@ type FoodDishCardProps = {
   onMediaAction?: () => void;
   mediaActionAriaLabel?: string;
   mediaActionDisabled?: boolean;
+  showTitleRow?: boolean;
   footerActions?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
@@ -39,6 +40,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
   onMediaAction,
   mediaActionAriaLabel,
   mediaActionDisabled,
+  showTitleRow = true,
   footerActions,
   children,
   className,
@@ -149,10 +151,12 @@ export const FoodDishCard = React.memo(function FoodDishCard({
       ) : null}
 
       <div data-ui="dish-card-body" className={cn("bo-foodMemberBody", bodyClassName)}>
-        <div data-ui="dish-card-title-row" className="bo-foodMemberTitleRow">
-          <h3 data-role="dish-card-title" className="bo-foodMemberTitle">{title}</h3>
-          {inactive ? <span data-role="dish-card-inactive-badge" className="bo-badge bo-badge--danger">Inactivo</span> : null}
-        </div>
+        {showTitleRow ? (
+          <div data-ui="dish-card-title-row" className="bo-foodMemberTitleRow">
+            <h3 data-role="dish-card-title" className="bo-foodMemberTitle">{title}</h3>
+            {inactive ? <span data-role="dish-card-inactive-badge" className="bo-badge bo-badge--danger">Inactivo</span> : null}
+          </div>
+        ) : null}
 
         {primaryMeta ? <div data-ui="dish-card-meta" className="bo-foodMemberMeta">{primaryMeta}</div> : null}
         {secondaryMeta ? <div data-ui="dish-card-submeta" className="bo-foodMemberSubMeta">{secondaryMeta}</div> : null}

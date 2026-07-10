@@ -6,9 +6,15 @@ import type { EditorSection } from "../../types/menuEditor.types";
 import type { DishCatalogItem } from "../../../../../../api/types";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
 import { MenuItemEditor } from "../MenuItemEditor/MenuItemEditor";
+import { ALLERGENS } from "../../constants/menuEditor.constants";
 import { useDragControls } from "motion/react";
 
 export type SectionDishTab = "active" | "inactive" | "annotations";
+
+const ALLERGEN_ALIASES: Record<string, string> = {
+  lacteos: "leche",
+  frutos_secos: "frutos de cascara",
+};
 
 export type MenuSectionEditorProps = {
   sec: EditorSection;
@@ -356,7 +362,15 @@ export function MenuSectionEditor({
                       >
                         <span className="bo-dishSearchResultTitle" data-slot="menuSectionEditor-dishSearchResultTitle">{item.title}</span>
                         {item.allergens && item.allergens.length > 0 ? (
-                          <span className="bo-dishSearchResultAllergens" data-slot="menuSectionEditor-dishSearchResultAllergens">{item.allergens.join(", ")}</span>
+                          <span className="bo-dishSearchResultAllergens" aria-label="Alergenos" data-slot="menuSectionEditor-dishSearchResultAllergens">
+                            {item.allergens.map((allergen) => {
+                              const key = allergen.trim().toLowerCase();
+                              const entry = ALLERGENS.find((item) => item.key.toLowerCase() === (ALLERGEN_ALIASES[key] ?? key));
+                              if (!entry) return null;
+                              const Icon = entry.icon;
+                              return <span key={`${entry.key}-${allergen}`} className="bo-dishSearchResultAllergenIcon" title={entry.key}><Icon size={14} aria-hidden="true" /></span>;
+                            })}
+                          </span>
                         ) : null}
                       </button>
                     ))}

@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, Plus, Upload, X } from "lucide-react";
+import { Bean, CircleDot, Egg, Fish, FlaskConical, ImagePlus, LeafyGreen, Milk, Nut, Plus, Shell, Shrimp, Sprout, Upload, X } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
 import type { FoodItem } from "../../../../api/types";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { compressImageToWebP, formatFileSize, isValidImageFile } from "../../../../lib/imageCompressor";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { FOOD_TYPE_TIPO_OPTIONS, type FoodType } from "./foodTypes";
 import { Select } from "../../../../ui/inputs/Select";
+import { Switch } from "../../../../ui/shadcn/Switch";
 import { BeverageCategoryModal } from "./BeverageCategoryModal";
 
 interface FoodItemModalProps {
@@ -21,20 +23,20 @@ interface FoodItemModalProps {
 }
 
 const ALERGEN_OPTIONS = [
-  { value: "gluten", label: "Gluten" },
-  { value: "crustaceos", label: "Crustaceos" },
-  { value: "huevos", label: "Huevos" },
-  { value: "pescado", label: "Pescado" },
-  { value: "cacahuetes", label: "Cacahuetes" },
-  { value: "soja", label: "Soja" },
-  { value: "lacteos", label: "Lacteos" },
-  { value: "frutos_secos", label: "Frutos secos" },
-  { value: "apio", label: "Apio" },
-  { value: "mostaza", label: "Mostaza" },
-  { value: "sesamo", label: "Sesamo" },
-  { value: "sulfitos", label: "Sulfitos" },
-  { value: "altramuces", label: "Altramuces" },
-  { value: "moluscos", label: "Moluscos" },
+  { value: "gluten", label: "Gluten", icon: Bean },
+  { value: "crustaceos", label: "Crustaceos", icon: Shrimp },
+  { value: "huevos", label: "Huevos", icon: Egg },
+  { value: "pescado", label: "Pescado", icon: Fish },
+  { value: "cacahuetes", label: "Cacahuetes", icon: Nut },
+  { value: "soja", label: "Soja", icon: Bean },
+  { value: "lacteos", label: "Lacteos", icon: Milk },
+  { value: "frutos_secos", label: "Frutos secos", icon: Nut },
+  { value: "apio", label: "Apio", icon: LeafyGreen },
+  { value: "mostaza", label: "Mostaza", icon: Sprout },
+  { value: "sesamo", label: "Sesamo", icon: CircleDot },
+  { value: "sulfitos", label: "Sulfitos", icon: FlaskConical },
+  { value: "altramuces", label: "Altramuces", icon: Bean },
+  { value: "moluscos", label: "Moluscos", icon: Shell },
 ];
 
 const TIPO_OPTIONS = FOOD_TYPE_TIPO_OPTIONS;
@@ -70,6 +72,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const [tipo, setTipo] = useState("");
   const [precio, setPrecio] = useState("");
   const [suplemento, setSuplemento] = useState("");
+  const [hasSuplemento, setHasSuplemento] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [categoria, setCategoria] = useState("");
@@ -79,12 +82,15 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [bebidaCategories, setBebidaCategories] = useState<Array<{ value: string; label: string }>>([]);
+  const [platoCategories, setPlatoCategories] = useState<Array<{ value: string; label: string }>>([]);
   const [bebidaCatModalOpen, setBebidaCatModalOpen] = useState(false);
   const [showAIAdvisor, setShowAIAdvisor] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [pendingAIEnhance, setPendingAIEnhance] = useState(false);
+  const [aiConfigValid, setAIConfigValid] = useState(false);
 
   const isPostre = foodType === "postres";
+  const isPlato = foodType === "platos";
   const supportsAlergenos = foodType === "platos" || foodType === "postres";
   const supportsCategoria = foodType === "platos" || foodType === "bebidas";
   const supportsSuplemento = foodType === "platos";
@@ -92,11 +98,21 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const showAdvisorForType = AI_ADVISOR_FOOD_TYPES.has(foodType);
 
   useEffect(() => {
+    if (!api.comida.aiImageStatus) return;
+    let active = true;
+    void api.comida.aiImageStatus()
+      .then((res) => { if (active) setAIConfigValid(!!(res.success && res.valid)); })
+      .catch(() => { if (active) setAIConfigValid(false); });
+    return () => { active = false; };
+  }, [api.comida]);
+
+  useEffect(() => {
     if (item) {
       setNombre(item.nombre || "");
       setTipo(item.tipo || TIPO_OPTIONS[foodType]?.[0]?.value || "");
       setPrecio(item.precio?.toString() || "");
       setSuplemento(item.suplemento?.toString() || "");
+      setHasSuplemento(Number(item.suplemento || 0) > 0);
       setTitulo(item.titulo || "");
       setDescripcion(item.descripcion || item.nombre || "");
       setCategoria(item.category_id ? String(item.category_id) : (item.categoria || ""));
@@ -108,13 +124,14 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     }
     setNombre("");
     setTipo(TIPO_OPTIONS[foodType]?.[0]?.value || "");
-    setPrecio("");
+    setPrecio(isPlato ? "0.00" : "");
     setSuplemento("");
+    setHasSuplemento(false);
     setTitulo("");
     setDescripcion("");
     setCategoria("");
     setAlergenos([]);
-    setActive(true);
+    setActive(!isPlato);
     setImageBase64(null);
     setImagePreview(null);
     setShowAIAdvisor(false);
@@ -138,11 +155,25 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     return () => { cancelled = true; };
   }, [api.comida.bebidas.categories, isBebida, open]);
 
+  useEffect(() => {
+    if (!open || !isPlato) return;
+    let cancelled = false;
+    api.comida.platos.categories
+      .list()
+      .then((res) => {
+        if (cancelled || !res.success) return;
+        setPlatoCategories((res.categories || []).map((c) => ({ value: String(c.id), label: c.name })));
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [api.comida.platos.categories, isPlato, open]);
+
   const effectiveCategoryOptions = useMemo(() => {
     if (!supportsCategoria) return [];
     if (isBebida) return bebidaCategories;
+    if (isPlato) return platoCategories.length ? platoCategories : categoryOptions;
     return categoryOptions;
-  }, [supportsCategoria, isBebida, bebidaCategories, categoryOptions]);
+  }, [supportsCategoria, isBebida, isPlato, bebidaCategories, platoCategories, categoryOptions]);
 
   const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -160,13 +191,13 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       setImagePreview(compressed);
       const bytes = Math.ceil((compressed.split(",")[1]?.length || 0) * 0.75);
       pushToast({ kind: "success", title: "Imagen comprimida", message: `Tamano: ${formatFileSize(bytes)}` });
-      if (showAdvisorForType) setShowAIAdvisor(true);
+      if (showAdvisorForType && aiConfigValid) setShowAIAdvisor(true);
     } catch {
       pushToast({ kind: "error", title: "Error", message: "No se pudo procesar la imagen" });
     } finally {
       setUploading(false);
     }
-  }, [pushToast, showAdvisorForType]);
+  }, [aiConfigValid, pushToast, showAdvisorForType]);
 
   const handleRemoveImage = useCallback(() => {
     setImageBase64("");
@@ -198,7 +229,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       pushToast({ kind: "error", title: "Error", message: "Precio invalido" });
       return null;
     }
-    const suplementoNum = supportsSuplemento ? Number(suplemento || 0) : 0;
+    const suplementoNum = supportsSuplemento && hasSuplemento ? Number(suplemento || 0) : 0;
 
     setSaving(true);
     try {
@@ -307,6 +338,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     effectiveCategoryOptions,
     descripcion,
     foodType,
+    hasSuplemento,
     imageBase64,
     imagePreview,
     isPostre,
@@ -464,7 +496,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                 />
               </div>
 
-              {!isPostre ? (
+              {!isPostre && !isPlato ? (
                 <div data-ui="food-modal-field-titulo" className="bo-field">
                   <label data-role="food-modal-label-titulo" className="bo-label" htmlFor="titulo">
                     Titulo (opcional)
@@ -482,23 +514,20 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               ) : null}
 
               <div data-ui="food-modal-field-row" className="bo-fieldRow">
-                {supportsCategoria ? (
+                {isPlato ? (
+                  <div data-ui="food-modal-field-tipo" className="bo-field">
+                    <label data-role="food-modal-label-tipo" className="bo-label">Tipo</label>
+                    <Select value={tipo} onChange={setTipo} options={TIPO_OPTIONS.platos} ariaLabel="Tipo del plato" />
+                  </div>
+                ) : null}
+
+                {supportsCategoria && !isBebida ? (
                   <div data-ui="food-modal-field-categoria" className="bo-field">
-                    <div data-ui="food-modal-category-head" className="bo-foodModalCategoryHead flex items-center gap-2 mb-2">
+                    <div data-ui="food-modal-category-head" className="bo-foodModalCategoryHead flex items-center gap-2">
                       <label data-role="food-modal-label-categoria" className="bo-label m-0">
                         Categoria
                       </label>
-                      {isBebida ? (
-                        <button
-                          data-role="food-modal-add-category-btn"
-                          type="button"
-                          className="bo-btn bo-btn--ghost bo-btn--sm"
-                          onClick={() => setBebidaCatModalOpen(true)}
-                        >
-                          <Plus size={14} />
-                          Añadir categoria
-                        </button>
-                      ) : onRequestCreateCategory ? (
+                      {onRequestCreateCategory ? (
                         <button
                           data-role="food-modal-add-category-btn"
                           type="button"
@@ -539,25 +568,55 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                   </div>
                 ) : null}
 
-                {supportsSuplemento ? (
-                  <div data-ui="food-modal-field-suplemento" className="bo-field">
-                    <label data-role="food-modal-label-suplemento" className="bo-label" htmlFor="suplemento">
-                      Suplemento
-                    </label>
-                    <input
-                      data-role="food-modal-input-suplemento"
-                      id="suplemento"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="bo-input"
-                      value={suplemento}
-                      onChange={(e) => setSuplemento(e.target.value)}
-                      placeholder="0.00"
-                    />
-                  </div>
-                ) : null}
               </div>
+
+              {isBebida && supportsCategoria ? (
+                <div data-ui="food-modal-field-categoria" className="bo-field">
+                  <label data-role="food-modal-label-categoria" className="bo-label">Categoria</label>
+                  <Select
+                    value={categoria}
+                    onChange={setCategoria}
+                    options={[{ value: "", label: "Sin categoria" }, ...effectiveCategoryOptions]}
+                    ariaLabel="Categoria"
+                  />
+                  <button
+                    data-role="food-modal-add-category-btn"
+                    type="button"
+                    className="bo-btn bo-btn--ghost bo-btn--sm mt-2 w-fit"
+                    onClick={() => setBebidaCatModalOpen(true)}
+                  >
+                    <Plus size={14} />
+                    Añadir categoria
+                  </button>
+                </div>
+              ) : null}
+
+              {supportsSuplemento ? (
+                <div data-ui="food-modal-field-suplemento" className="bo-field bo-foodModalSupplementField">
+                  <div data-ui="food-modal-supplement-head" className="flex items-center justify-center gap-2">
+                    <span data-role="food-modal-label-suplemento" className="bo-label m-0">Tiene suplemento</span>
+                    <Switch
+                      checked={hasSuplemento}
+                      onCheckedChange={setHasSuplemento}
+                      aria-label="Activar suplemento"
+                      data-role="food-modal-supplement-toggle"
+                    />
+                    {hasSuplemento ? (
+                      <input
+                        data-role="food-modal-input-suplemento"
+                        id="suplemento"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="bo-input max-w-28"
+                        value={suplemento}
+                        onChange={(e) => setSuplemento(e.target.value)}
+                        placeholder="0.00"
+                      />
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
 
               {!isPostre ? (
                 <div data-ui="food-modal-field-detalle" className="bo-field">
@@ -579,32 +638,42 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               {supportsAlergenos ? (
                 <div data-ui="food-modal-field-alergenos" className="bo-field">
                   <label data-role="food-modal-label-alergenos" className="bo-label">Alergenos</label>
-                  <div data-slot="food-modal-alergenos-list" className="bo-foodModal-alergenos">
-                    {ALERGEN_OPTIONS.map((opt) => (
-                      <label data-role="food-modal-alergeno-label" key={opt.value} className="bo-checkboxLabel">
-                        <input
-                          data-role="food-modal-alergeno-checkbox"
-                          type="checkbox"
-                          checked={alergenos.includes(opt.value)}
-                          onChange={() => handleAlergenoToggle(opt.value)}
-                        />
-                        <span data-role="food-modal-alergeno-text">{opt.label}</span>
-                      </label>
-                    ))}
+                  <div data-slot="food-modal-alergenos-list" className="bo-allergenGrid">
+                    {ALERGEN_OPTIONS.map(({ value, label, icon: Icon }) => {
+                      const selected = alergenos.includes(value);
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          className={`bo-allergenCircle ${selected ? "is-selected" : "is-unselected"}`}
+                          onClick={() => handleAlergenoToggle(value)}
+                          aria-label={label}
+                          aria-pressed={selected}
+                          data-role="food-modal-alergeno-option"
+                          data-allergen={value}
+                          data-state={selected ? "selected" : "unselected"}
+                        >
+                          <span className="bo-allergenCircleIcon" data-role="food-modal-alergeno-icon">
+                            <Icon size={16} data-role="food-modal-alergeno-icon-svg" />
+                          </span>
+                          <span className="bo-allergenCircleLabel" data-role="food-modal-alergeno-text">{label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ) : null}
 
               <div data-ui="food-modal-field-active" className="bo-field">
-                <label data-role="food-modal-label-active" className="bo-checkboxLabel">
-                  <input
-                    data-role="food-modal-checkbox-active"
-                    type="checkbox"
+                <div data-ui="food-modal-visibility-row" className="bo-foodModalCategoryHead flex items-center gap-2">
+                  <span data-role="food-modal-label-active" className="bo-label m-0">Visible en carta</span>
+                  <Switch
                     checked={active}
-                    onChange={(e) => setActive(e.target.checked)}
+                    onCheckedChange={setActive}
+                    aria-label="Cambiar visibilidad del elemento"
+                    data-role="food-modal-visibility-switch"
                   />
-                  <span data-role="food-modal-active-text">Activo</span>
-                </label>
+                </div>
               </div>
             </div>
           </div>
@@ -613,7 +682,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             <button data-role="food-modal-cancel-btn" type="button" className="bo-btn bo-btn--ghost" onClick={onClose} disabled={saving}>
               Cancelar
             </button>
-            <button data-role="food-modal-submit-btn" type="submit" className="bo-btn bo-btn--primary" disabled={saving}>
+            <button data-role="food-modal-submit-btn" type="submit" className="bo-btn bo-btn--primary mx-0" disabled={saving}>
               {saving ? (
                 <>
                   <div data-ui="food-modal-submit-spinner" className="bo-spinner bo-spinner--sm" />
@@ -637,75 +706,50 @@ export const FoodItemModal = React.memo(function FoodItemModal({
         />
       ) : null}
 
-      {showAIAdvisor && imagePreview ? (
-        <div
-          data-role="food-modal-ai-advisor-overlay"
-          className="fixed inset-0 z-[210] flex items-center justify-center bg-black/60"
-          onClick={(e) => { if (e.target === e.currentTarget) handleAIAdvisorClose(); }}
-        >
-          <div
-            data-ui="food-modal-ai-advisor-content"
-            className="bg-[var(--bo-surface)] rounded-2xl border border-[var(--bo-border)] shadow-xl max-w-md w-full mx-4 overflow-hidden"
-          >
-            <div data-slot="food-modal-ai-advisor-header" className="flex items-center justify-between p-4 border-b border-[var(--bo-border)]">
-              <span data-role="food-modal-ai-advisor-title" className="text-sm font-semibold text-[var(--bo-text)]">
-                Asesor IA de imagen
-              </span>
-              <button
-                type="button"
-                onClick={handleAIAdvisorClose}
-                data-role="food-modal-ai-advisor-close"
-                className="p-1 rounded-lg hover:bg-[var(--bo-surface-2)] transition-colors duration-150"
-                disabled={aiBusy}
-              >
-                <X size={16} className="text-[var(--bo-muted)]" data-role="food-modal-ai-advisor-close-icon" />
-              </button>
-            </div>
-
-            <div data-slot="food-modal-ai-advisor-preview" className="p-4">
-              <img
-                src={imagePreview}
-                alt="Vista previa"
-                data-role="food-modal-ai-advisor-preview-img"
-                className="w-full aspect-square object-cover rounded-xl"
-              />
-            </div>
-
-            <div data-slot="food-modal-ai-advisor-actions" className="flex gap-3 p-4 border-t border-[var(--bo-border)]">
-              <button
-                type="button"
-                onClick={handleAIContinueWithout}
-                disabled={aiBusy}
-                data-role="food-modal-ai-advisor-without-btn"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
-                  bg-[var(--bo-surface-2)] text-[var(--bo-text)] border border-[var(--bo-border)]
-                  hover:bg-[var(--bo-surface-3)] transition-colors duration-150
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Upload size={14} data-slot="upload-icon" />
-                Continuar sin mejorar
-              </button>
-              <button
-                type="button"
-                onClick={handleAIEnhance}
-                disabled={aiBusy || saving}
-                title={saving ? "Guardando elemento..." : undefined}
-                data-role="food-modal-ai-advisor-enhance-btn"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
-                  bg-purple-950/40 border-white/20 border-solid !border-[0.5px] hover:bg-purple-500/20 hover:cursor-pointer text-white
-                  hover:opacity-90 transition-opacity duration-150
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {aiBusy ? (
-                  <div className="animate-spin h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full" data-slot="ai-spinner" />
-                ) : (
-                  "Mejorar con IA"
-                )}
-              </button>
-            </div>
+      <Modal open={showAIAdvisor && !!imagePreview} title="Asesor IA de imagen" onClose={aiBusy ? () => undefined : () => handleAIAdvisorClose()} widthPx={620}>
+        <ModalHeader title="Asesor IA de imagen" onClose={aiBusy ? () => undefined : () => handleAIAdvisorClose()} />
+        <div className="bo-modalBody bo-dishAIAdvisorBody" data-slot="food-modal-ai-advisor-body">
+          <div className="bo-dishAIAdvisorCopy" data-slot="food-modal-ai-advisor-copy">
+            <p className="bo-dishAIAdvisorLead" data-slot="food-modal-ai-advisor-lead">
+              Mejorar esta foto con IA puede elevar la presentacion y hacer la carta mas atractiva para el cliente.
+            </p>
+            <p className="bo-dishAIAdvisorHint" data-slot="food-modal-ai-advisor-hint">
+              Imagen optimizada para subir · WebP.
+            </p>
+          </div>
+          <div className="bo-dishAIAdvisorPreviewWrap" data-slot="food-modal-ai-advisor-preview">
+            <img className="bo-dishAIAdvisorPreview" src={imagePreview} alt="Previsualizacion de imagen optimizada" />
           </div>
         </div>
-      ) : null}
+        <div className="bo-modalActions bo-dishAIAdvisorActions" data-slot="food-modal-ai-advisor-actions">
+          <button
+            className="bo-btn bo-btn--advisorSecondary"
+            type="button"
+            onClick={handleAIContinueWithout}
+            disabled={aiBusy}
+            data-role="food-modal-ai-advisor-without-btn"
+          >
+            Continuar sin mejorar
+          </button>
+          <button
+            className="bo-btn bo-btn--advisorPrimary"
+            type="button"
+            onClick={handleAIEnhance}
+            disabled={aiBusy || saving}
+            aria-label={aiBusy ? "Mejorando con IA" : "Mejorar con IA"}
+            data-role="food-modal-ai-advisor-enhance-btn"
+          >
+            {aiBusy ? (
+              <>
+                <div className="animate-spin h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full" data-slot="ai-spinner" />
+                Mejorando con IA...
+              </>
+            ) : (
+              "Mejorar con IA"
+            )}
+          </button>
+        </div>
+      </Modal>
     </>
   );
 });

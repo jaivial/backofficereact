@@ -13,7 +13,7 @@
 }
 
 .bo-menuWizardPage .bo-memberCard.bo-dishCard--horizontal {
-  padding: 14px 0;
+  padding: 14px;
 }
 
 .bo-menuWizardTop {
@@ -816,8 +816,13 @@
   will-change: transform;
 }
 
+.bo-menuWizardPage textarea {
+  field-sizing: content;
+}
+
 .bo-dishCard {
   min-height: 100%;
+  padding-inline: 14px;
 }
 
 .bo-dishCard .bo-foodMemberMedia {
@@ -987,17 +992,47 @@
 
 .bo-dishRowInlineControls {
   display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--bo-space-2);
+}
+
+.bo-dishAllergenText {
+  display: none;
+}
+
+@media (min-width: 641px) {
+  .bo-dishAllergenText {
+    display: inline;
+  }
+}
+
+.bo-dishSupplementRow {
+  display: flex;
   align-items: center;
   gap: var(--bo-space-2);
-  flex-wrap: wrap;
+}
+
+.bo-dishSupplementInputWrap {
+  position: relative;
 }
 
 .bo-suppInput {
-  width: 50px;
+  width: 82px;
+  padding-right: 24px;
 }
 
 .bo-dishRowInlineControls .bo-suppInput {
   margin: 0;
+}
+
+.bo-dishSupplementCurrency {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  transform: translateY(-50%);
+  color: var(--bo-muted);
+  pointer-events: none;
 }
 
 .bo-dishCard .bo-foodMemberActions {
@@ -1026,6 +1061,13 @@
   border-radius: 10px;
 }
 
+.bo-dishAllergenIconBtn {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  padding: 1rem;
+}
+
 .bo-dishIconOnlyBtn svg,
 .bo-dishAllergenIconBtn svg,
 .bo-dishDeleteIconBtn svg {
@@ -1035,18 +1077,41 @@
 
 .bo-allergenRow {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+.bo-allergenRowLabel {
+  margin: 0;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+  font-weight: 700;
+}
+
+.bo-allergenBadges {
+  display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
 .bo-allergenPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border-radius: 999px;
-  border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 24%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 8%, var(--bo-surface-2));
   font-size: 11px;
   color: var(--bo-muted);
-  padding: 3px 8px;
+  padding: 4px 9px;
   line-height: 1.2;
+}
+
+.bo-allergenPill svg {
+  flex: 0 0 auto;
+  color: var(--bo-accent-2);
 }
 
 .bo-menuDishPreviewCard {
@@ -1171,8 +1236,70 @@
 }
 
 .bo-dishSearchResults {
+  width: 95%;
+  max-width: none;
+  align-self: center;
+  margin: 0 auto;
+  max-height: min(280px, 42vh);
+  display: grid;
+  gap: 4px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--bo-accent) 10%, transparent), transparent 52%),
+    var(--bo-surface-2);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-dishSearchResultItem {
   width: 100%;
-  max-width: 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface) 82%, transparent);
+  color: var(--bo-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--bo-transition-base) var(--bo-ease), border-color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-dishSearchResultItem:hover,
+.bo-dishSearchResultItem:focus-visible {
+  border-color: color-mix(in srgb, var(--bo-accent) 42%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface));
+  outline: none;
+}
+
+.bo-dishSearchResultTitle {
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+  font-weight: 700;
+}
+
+.bo-dishSearchResultAllergens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bo-dishSearchResultAllergenIcon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 28%, var(--bo-border));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bo-accent) 10%, transparent);
+  color: var(--bo-accent-2);
 }
 
 /* Main-limit counter: borderless container, constrained controls. */
@@ -1723,7 +1850,7 @@
   }
 }
 
-@media (min-width: 981px) and (max-width: 1280px) {
+@media (min-width: 981px) and (max-width: 1281px) {
   .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal {
     display: block;
     grid-template-columns: none;
@@ -1972,6 +2099,99 @@
     flex-direction: column;
     align-items: flex-end;
     justify-content: space-between;
+  }
+}
+
+@media (min-width: 1282px) {
+  .bo-menuWizardFinal {
+    grid-template-columns: minmax(0, 0.6fr) minmax(320px, 0.88fr);
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal {
+    display: block;
+    grid-template-columns: none;
+    align-items: initial;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberMedia,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberMedia {
+    width: 100%;
+    max-width: 511px;
+    max-height: 287px;
+    aspect-ratio: 511 / 287;
+    justify-self: center;
+    margin: 0 auto;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    width: 100% !important;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+    gap: var(--bo-space-2);
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-dishTitleTextarea,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-checkRow,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-textarea,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-dishPriceRow,
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-dishFieldsSide,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-dishTitleTextarea,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-checkRow,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-textarea,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-dishPriceRow,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFields > .bo-dishFieldsSide {
+    grid-area: auto;
+    justify-self: auto;
+    align-self: auto;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFieldsSide,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent .bo-dishFieldsSide {
+    display: block;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    margin-top: var(--bo-space-1);
+    height: auto;
+    align-self: auto;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
+    flex-direction: row;
+  }
+
+  .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter,
+  .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
+    width: 100%;
   }
 }
 

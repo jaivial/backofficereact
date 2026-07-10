@@ -41,7 +41,7 @@ vi.mock("./hooks/useFoodTypePage", () => ({
     setSuplementoFilter: vi.fn(),
     loading: false,
     processing: false,
-    modalOpen: false,
+    modalOpen: true,
     setModalOpen: vi.fn(),
     editingItem: null,
     categoryModalOpen: false,
@@ -137,15 +137,10 @@ describe("Wine list page navigation (Task #2)", () => {
     (window as any).location = { assign: assignSpy };
   });
 
-  it("FAB (+) button navigates to /app/comida/vinos/new instead of opening modal", () => {
+  it("renders WineModal for vinos create", () => {
     render(<Page />);
 
-    const fab = screen.getByRole("button", { name: /anadir vino/i });
-    expect(fab).toBeTruthy();
-
-    fireEvent.click(fab);
-
-    expect(assignSpy).toHaveBeenCalledWith("/app/comida/vinos/new");
+    expect(screen.getByRole("dialog", { name: "Nuevo vino" })).toHaveClass("bo-modal", "bo-modal--glass");
   });
 
   it("clicking edit on a wine card navigates to /app/comida/vinos/{id}", () => {
@@ -161,9 +156,4 @@ describe("Wine list page navigation (Task #2)", () => {
     }
   });
 
-  it("does not render WineModal for vinos foodType", () => {
-    const { container } = render(<Page />);
-    const modal = container.querySelector("[data-role='wine-modal']");
-    expect(modal).toBeNull();
-  });
 });

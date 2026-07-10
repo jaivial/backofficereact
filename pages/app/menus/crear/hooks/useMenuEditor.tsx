@@ -1184,7 +1184,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
       const dish: EditorDish = {
         clientId: uid("dish"),
         id: undefined,
-        catalog_dish_id: fromCatalog?.id,
+        // comida_items IDs are not menu_dishes_catalog IDs; persist a snapshot instead.
+        catalog_dish_id: undefined,
         title: fromCatalog?.title || "Nuevo plato",
         description: fromCatalog?.description || "",
         description_enabled: (fromCatalog?.description || "").trim().length > 0,

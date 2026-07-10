@@ -8,6 +8,7 @@ import type { BreadcrumbItem } from "../../../../ui/nav/Breadcrumbs";
 import { FoodFilters } from "../_components/FoodFilters";
 import { FoodItemModal } from "../_components/FoodItemModal";
 import { FoodCategoryModal } from "../_components/FoodCategoryModal";
+import { WineModal } from "../_components/WineModal";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { FOOD_TYPE_LABELS, FOOD_TYPE_SINGULAR } from "../_components/foodTypes";
 import type { FoodType } from "../_components/foodTypes";
@@ -110,7 +111,7 @@ function FoodTypePage() {
     <section
       ref={sectionRef}
       aria-label={`Carta ${listLabel}`}
-      className={`bo-foodPage${pageContext.isClientSideNavigation ? " is-navigating" : ""}`}
+      className="bo-foodPage"
       data-role="food-type-page"
     >
       <div className="bo-container" data-slot="@foodType-container">
@@ -219,7 +220,16 @@ function FoodTypePage() {
           }}
           onSave={onSaveItem}
         />
-      ) : null}
+      ) : (
+        <WineModal
+          open={modalOpen}
+          wine={editingItem as import("../../../../api/types").Vino | null}
+          onClose={() => {
+            if (!processing) setModalOpen(false);
+          }}
+          onSave={onSaveItem}
+        />
+      )}
 
       <FoodCategoryModal
         open={foodType === "platos" && categoryModalOpen}
