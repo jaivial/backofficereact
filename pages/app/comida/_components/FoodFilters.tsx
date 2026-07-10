@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Filter, FilterX, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, Filter, FilterX } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Select } from "../../../../ui/inputs/Select";
@@ -126,10 +126,7 @@ export const FoodFilters = React.memo(function FoodFilters({
           >
             <div className="bo-foodFiltersGrid bo-foodFiltersGrid--extended" data-ui="food-filters-grid">
               <div className="bo-field bo-foodFilter bo-foodFilter--search" data-slot="food-filters-search">
-                <span className="bo-label" data-role="food-filters-search-label">
-                  <Search size={14} data-ui="food-filters-search-icon" />
-                  Buscar
-                </span>
+                <span className="bo-label" data-role="food-filters-search-label">Buscar</span>
                 <div className="bo-input-wrapper" data-ui="food-filters-search-input-wrapper">
                   <input
                     className="bo-input"
@@ -143,7 +140,7 @@ export const FoodFilters = React.memo(function FoodFilters({
               </div>
 
               <div className="bo-field bo-foodFilter bo-foodFilter--images" data-slot="food-filters-images">
-                <span className="bo-label">Mostrar imagenes</span>
+                <span className="bo-label" data-role="food-filters-images-label">Mostrar imagenes</span>
                 <Switch
                   checked={showImages}
                   onCheckedChange={onShowImagesChange}

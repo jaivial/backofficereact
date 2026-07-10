@@ -54,6 +54,7 @@ describe("FoodList", () => {
     const { container } = render(<FoodList {...makeProps({ loading: true })} />);
     const loading = container.querySelector('[data-ui="food-list-loading"]');
     expect(loading).toBeInTheDocument();
+    expect(container.querySelector('[data-role="food-list-create-btn"]')).toBeInTheDocument();
   });
 
   it("shows empty state text when no items", () => {
@@ -63,6 +64,7 @@ describe("FoodList", () => {
     expect(emptyText).toBeInTheDocument();
     expect(emptyHint).toBeInTheDocument();
     expect(emptyHint!.textContent).toMatch(/boton \+/);
+    expect(container.querySelector('[data-role="food-list-create-btn"]')).toBeInTheDocument();
   });
 
   it("renders pager info with correct page text", () => {

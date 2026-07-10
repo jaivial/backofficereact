@@ -6,7 +6,7 @@ import { expectAllElementsHaveDataAttr } from "../../../../lib/test/assertDataAt
 vi.mock("../../../../api/client", () => ({
   createClient: () => ({
     comida: {
-      platos: { create: vi.fn(), patch: vi.fn() },
+      platos: { create: vi.fn(), patch: vi.fn(), categories: { list: vi.fn(() => new Promise(() => {})) } },
       bebidas: { create: vi.fn(), patch: vi.fn() },
       cafes: { create: vi.fn(), patch: vi.fn() },
       postres: { create: vi.fn(), patch: vi.fn() },

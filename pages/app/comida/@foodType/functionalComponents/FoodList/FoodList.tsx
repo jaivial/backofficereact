@@ -53,21 +53,35 @@ export function FoodList({
   showMedia = true,
 }: FoodListProps) {
   const safeItems = Array.isArray(items) ? items : [];
+  const createButton = (
+    <FloatingActionButton
+      icon={<Plus size={24} data-role="food-list-create-icon" />}
+      aria-label={`Anadir ${singularLabel}`}
+      onClick={onOpenCreate}
+      data-role="food-list-create-btn"
+    />
+  );
 
   if (loading) {
     return (
-      <div className="bo-foodLoading" data-ui="food-list-loading">
-        <LoadingSpinner centered size="sm" label="Cargando..." />
-      </div>
+      <>
+        <div className="bo-foodLoading" data-ui="food-list-loading">
+          <LoadingSpinner centered size="sm" label="Cargando..." />
+        </div>
+        {createButton}
+      </>
     );
   }
 
   if (safeItems.length === 0) {
     return (
-      <div className="bo-foodEmpty" data-ui="food-list-empty">
-        <p data-role="food-list-empty-text">No hay {listLabel.toLowerCase()} con estos filtros.</p>
-        <p data-role="food-list-empty-hint">Usa el boton + para anadir el primer {singularLabel}.</p>
-      </div>
+      <>
+        <div className="bo-foodEmpty" data-ui="food-list-empty">
+          <p data-role="food-list-empty-text">No hay {listLabel.toLowerCase()} con estos filtros.</p>
+          <p data-role="food-list-empty-hint">Usa el boton + para anadir el primer {singularLabel}.</p>
+        </div>
+        {createButton}
+      </>
     );
   }
 
@@ -132,12 +146,7 @@ export function FoodList({
         </div>
       </div>
 
-      <FloatingActionButton
-        icon={<Plus size={24} data-role="food-list-create-icon" />}
-        aria-label={`Anadir ${singularLabel}`}
-        onClick={onOpenCreate}
-        data-role="food-list-create-btn"
-      />
+      {createButton}
     </>
   );
 }

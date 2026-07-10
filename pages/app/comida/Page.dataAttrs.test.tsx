@@ -8,4 +8,13 @@ describe("Comida hub page data-* attributes", () => {
     const { container } = render(<Page />);
     expectAllElementsHaveDataAttr(container);
   });
+
+  it("renders category cards as native links", () => {
+    const { getByRole } = render(<Page />);
+
+    expect(getByRole("link", { name: "Abrir Platos" }).getAttribute("href")).toBe("/app/comida/platos");
+    expect(getByRole("link", { name: "Abrir Bebidas" }).getAttribute("href")).toBe("/app/comida/bebidas");
+    expect(getByRole("link", { name: "Abrir Cafes" }).getAttribute("href")).toBe("/app/comida/cafes");
+    expect(getByRole("link", { name: "Abrir Vinos" }).getAttribute("href")).toBe("/app/comida/vinos");
+  });
 });

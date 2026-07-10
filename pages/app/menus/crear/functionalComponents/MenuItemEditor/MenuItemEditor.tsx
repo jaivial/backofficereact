@@ -1,11 +1,12 @@
 import React, { useCallback, useLayoutEffect, useRef } from "react";
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2, Wheat } from "lucide-react";
 import { useDragControls } from "motion/react";
 import { Reorder } from "motion/react";
 import type { EditorDish } from "../../types/menuEditor.types";
 import { formatEuro, toNumOrNull } from "../../helpers/menuEditor.helpers";
 import { FoodDishCard } from "../../../../../../ui/widgets/food/FoodDishCard";
 import { Switch } from "../../../../../../ui/shadcn/Switch";
+import { ALLERGENS } from "../../constants/menuEditor.constants";
 
 export type MenuItemEditorProps = {
   sectionClientId: string;
@@ -23,27 +24,6 @@ export type MenuItemEditorProps = {
   reorderTransition?: any;
   reorderWhileDrag?: any;
 };
-
-function WheatOffIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="2" x2="22" y1="2" y2="22" />
-      <path d="M10 4v16" />
-      <path d="m2 22 10-10" />
-    </svg>
-  );
-}
 
 function ReorderItemContainer({ as = "div", value, className, transition, whileDrag, children }: {
   as?: "div" | "article";
@@ -113,6 +93,7 @@ export function MenuItemEditor({
           imageUrl={dish.foto_url}
           showMedia={showDishImages}
           mediaLoading={mediaLoading}
+          showTitleRow={false}
           onMediaAction={() => pickDishImage(sectionClientId, dish.clientId)}
           mediaActionAriaLabel={`Subir imagen para ${dishLabel}`}
           inactive={!dish.active}
@@ -126,7 +107,8 @@ export function MenuItemEditor({
                 onClick={() => setAllergenModal({ open: true, sectionClientId, dishClientId: dish.clientId })}
                 data-testid={`menu-item-editor-allergen-btn-${dish.clientId}`}
               >
-                <WheatOffIcon size={14} />
+                <Wheat size={16} data-slot="menuItemEditor-allergenIcon" />
+                <span className="bo-dishAllergenText" data-slot="menuItemEditor-allergenText">Editar alergenos</span>
               </button>
               <button
                 className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
@@ -219,40 +201,38 @@ export function MenuItemEditor({
                 </div>
               ) : null}
               <div className="bo-dishFieldsSide" data-slot="menuItemEditor-dishFieldsSide">
-                {dish.allergens.length > 0 ? (
-                  <div className="bo-allergenRow" data-slot="menuItemEditor-allergenRow">
-                    {dish.allergens.map((name) => (
-                      <span key={`${dish.clientId}-${name}`} className="bo-allergenPill" data-slot="menuItemEditor-allergenPill">{name}</span>
-                    ))}
-                  </div>
-                ) : null}
                 <div className="bo-dishRow" data-slot="menuItemEditor-dishRow">
                   <div className="bo-dishRowInlineControls" data-slot="menuItemEditor-dishRowInlineControls">
-                    <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
-                      <Switch
-                        checked={dish.supplement_enabled}
-                        onCheckedChange={(checked) => {
-                          updateDish(sectionClientId, dish.clientId, {
-                            supplement_enabled: checked,
-                            supplement_price: checked ? dish.supplement_price : null,
-                          });
-                        }}
-                        data-testid={`menu-item-editor-supplement-switch-${dish.clientId}`}
-                      />
-                      <span data-slot="menuItemEditor-nto">Suplemento</span>
-                    </label>
-                    {dish.supplement_enabled ? (
-                      <input
-                        className="bo-input bo-suppInput"
-                        inputMode="decimal"
-                        value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
-                        onChange={(e) =>
-                          updateDish(sectionClientId, dish.clientId, { supplement_price: toNumOrNull(e.target.value) })
-                        }
-                        placeholder="€"
-                        data-testid={`menu-item-editor-supplement-input-${dish.clientId}`}
-                      />
-                    ) : null}
+                    <div className="bo-dishSupplementRow" data-slot="menuItemEditor-supplementRow">
+                      <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
+                        <Switch
+                          checked={dish.supplement_enabled}
+                          onCheckedChange={(checked) => {
+                            updateDish(sectionClientId, dish.clientId, {
+                              supplement_enabled: checked,
+                              supplement_price: checked ? dish.supplement_price : null,
+                            });
+                          }}
+                          data-testid={`menu-item-editor-supplement-switch-${dish.clientId}`}
+                        />
+                        <span data-slot="menuItemEditor-nto">Suplemento</span>
+                      </label>
+                      {dish.supplement_enabled ? (
+                        <div className="bo-dishSupplementInputWrap" data-slot="menuItemEditor-supplementInputWrap">
+                          <input
+                            className="bo-input bo-suppInput"
+                            inputMode="decimal"
+                            value={dish.supplement_price == null ? "" : String(dish.supplement_price)}
+                            onChange={(e) =>
+                              updateDish(sectionClientId, dish.clientId, { supplement_price: toNumOrNull(e.target.value) })
+                            }
+                            placeholder="0.00"
+                            data-testid={`menu-item-editor-supplement-input-${dish.clientId}`}
+                          />
+                          <span className="bo-dishSupplementCurrency" aria-hidden="true" data-slot="menuItemEditor-supplementCurrency">€</span>
+                        </div>
+                      ) : null}
+                    </div>
                     <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
                       <Switch
                         checked={dish.same_day_booking_blocked ?? false}
@@ -267,6 +247,23 @@ export function MenuItemEditor({
                   </div>
                 </div>
               </div>
+              {dish.allergens.length > 0 ? (
+                <div className="bo-allergenRow" data-slot="menuItemEditor-allergenRow">
+                  <span className="bo-label bo-allergenRowLabel" data-slot="menuItemEditor-allergenLabel">Alergenos</span>
+                  <div className="bo-allergenBadges" data-slot="menuItemEditor-allergenBadges">
+                    {dish.allergens.map((name) => {
+                      const entry = ALLERGENS.find((item) => item.key === name);
+                      const Icon = entry?.icon;
+                      return (
+                        <span key={`${dish.clientId}-${name}`} className="bo-allergenPill" title={name} data-slot="menuItemEditor-allergenPill">
+                          {Icon ? <Icon size={14} aria-hidden="true" /> : null}
+                          <span>{name}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </FoodDishCard>

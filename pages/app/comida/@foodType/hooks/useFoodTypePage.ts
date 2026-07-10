@@ -52,7 +52,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   // Wire WebSocket for real-time AI image generation status
   const handleAIWSEvent = useCallback(
     (event: ComidaAIWSMessage) => {
-      if (!event.item_id) return;
+      if (!event.item_id || (event.tipo && event.tipo !== foodType)) return;
       if (event.type === "comida_ai_started") {
         setItems((prev) =>
           prev.map((item) =>
@@ -77,7 +77,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
         );
       }
     },
-    [],
+    [foodType],
   );
 
   useComidaAIUnified({ scope: "list", onEvent: handleAIWSEvent });
@@ -221,12 +221,9 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   }, []);
 
   const onOpenCreate = useCallback(() => {
-    if (foodType === "vinos") {
-      window.location.assign(`/app/comida/vinos/new`);
-      return;
-    }
-    window.location.assign(`/app/comida/${foodType}/new`);
-  }, [foodType]);
+    setEditingItem(null);
+    setModalOpen(true);
+  }, []);
 
   const onOpenEdit = useCallback((item: ListItem) => {
     if (foodType === "vinos") {
