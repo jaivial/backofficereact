@@ -101,4 +101,14 @@ describe("useFoodTypePage", () => {
     const { result } = renderHook(() => useFoodTypePage({ data: defaultData }));
     expect(result.current.loading).toBe(true);
   });
+
+  it.each(["bebidas", "cafes", "vinos"] as const)("opens %s create modal", async (foodType) => {
+    const { result } = renderHook(() => useFoodTypePage({ data: { ...defaultData, foodType } as any }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => result.current.onOpenCreate());
+
+    expect(result.current.modalOpen).toBe(true);
+    expect(result.current.editingItem).toBeNull();
+  });
 });

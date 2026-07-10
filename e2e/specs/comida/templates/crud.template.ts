@@ -101,28 +101,16 @@ export function extractIdFromURL(url: string): string | null {
 
 export function redTests(params: CRUDTestParams): void {
   test.describe(`${params.foodType} RED tests`, () => {
-    test("FAB navigates to /app/comida/{type}/new (not a modal)", async ({
-      adminPage,
-    }) => {
+    test("FAB opens create modal without navigation", async ({ adminPage }) => {
       await adminPage.goto(params.listPagePath);
       await adminPage.waitForLoadState("networkidle");
 
       const fab = adminPage.locator(params.addButtonSelector);
-      if ((await fab.count()) === 0) {
-        // No FAB yet — this is the expected RED state
-        expect(await fab.count()).toBe(0);
-        return;
-      }
-
+      await expect(fab).toBeVisible();
       await fab.click();
-      await adminPage.waitForTimeout(500);
 
-      // Should navigate to a new page URL, not open a modal
-      const url = adminPage.url();
-      expect(url).toContain(`/comida/${params.urlPath}/new`);
-      expect(
-        await adminPage.locator("[role='dialog'], [data-ui='modal']").count()
-      ).toBe(0);
+      await expect(adminPage).toHaveURL(new RegExp(`${params.listPagePath}$`));
+      await expect(adminPage.locator("[role='dialog']")).toBeVisible();
     });
 
     test("form validates required fields before submission", async ({

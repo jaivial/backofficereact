@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ImagePlus, Upload, X } from "lucide-react";
 
+import { Select } from "../../../../ui/inputs/Select";
+import { Switch } from "../../../../ui/shadcn/Switch";
+
 import { createClient } from "../../../../api/client";
 import type { Vino } from "../../../../api/types";
 import { useToasts } from "../../../../ui/feedback/useToasts";
@@ -255,19 +258,14 @@ export const WineModal = React.memo(function WineModal({
                 <label className="bo-label" htmlFor="tipo" data-ui="wine-modal-label-tipo">
                   Tipo
                 </label>
-                <select
-                  id="tipo"
-                  className="bo-select"
+                <Select
                   value={tipo}
-                  onChange={(e) => setTipo(e.target.value)}
+                  onChange={setTipo}
+                  options={WINE_TYPE_OPTIONS}
+                  ariaLabel="Tipo de vino"
+                  className="w-full"
                   data-role="wine-modal-select-tipo"
-                >
-                  {WINE_TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} data-role="wine-modal-option-tipo">
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div className="bo-field" data-ui="wine-modal-field-precio">
@@ -305,25 +303,25 @@ export const WineModal = React.memo(function WineModal({
               />
             </div>
 
-            <div className="bo-fieldRow" data-ui="wine-modal-field-row-do-ano-grad">
-              <div className="bo-field" data-ui="wine-modal-field-denominacion">
-                <label className="bo-label" htmlFor="denominacion" data-ui="wine-modal-label-denominacion">
-                  Denominacion de Origen
-                </label>
-                <input
-                  id="denominacion"
-                  type="text"
-                  className="bo-input"
-                  value={denominacionOrigen}
-                  onChange={(e) => setDenominacionOrigen(e.target.value)}
-                  placeholder="D.O. Rioja, D.O. Ribera..."
-                  data-role="wine-modal-input-denominacion"
-                />
-              </div>
+            <div className="bo-field" data-ui="wine-modal-field-denominacion" style={{ gridColumn: "1 / -1" }}>
+              <label className="bo-label" htmlFor="denominacion" data-ui="wine-modal-label-denominacion">
+                Denominacion de Origen
+              </label>
+              <input
+                id="denominacion"
+                type="text"
+                className="bo-input"
+                value={denominacionOrigen}
+                onChange={(e) => setDenominacionOrigen(e.target.value)}
+                placeholder="D.O. Rioja, D.O. Ribera..."
+                data-role="wine-modal-input-denominacion"
+              />
+            </div>
 
+            <div className="bo-fieldRow" data-ui="wine-modal-field-row-ano-grad">
               <div className="bo-field" data-ui="wine-modal-field-anyo">
                 <label className="bo-label" htmlFor="anyo" data-ui="wine-modal-label-anyo">
-                  Ano
+                  Año
                 </label>
                 <input
                   id="anyo"
@@ -371,16 +369,16 @@ export const WineModal = React.memo(function WineModal({
               />
             </div>
 
-            <div className="bo-field" data-ui="wine-modal-field-active">
-              <label className="bo-checkboxLabel" data-ui="wine-modal-label-active">
-                <input
-                  type="checkbox"
+            <div data-ui="wine-modal-field-active" className="bo-field">
+              <div data-ui="wine-modal-visibility-row" className="bo-foodModalCategoryHead flex items-center gap-2">
+                <span data-role="wine-modal-label-active" className="bo-label m-0">Visible en carta</span>
+                <Switch
                   checked={active}
-                  onChange={(e) => setActive(e.target.checked)}
-                  data-role="wine-modal-checkbox-active"
+                  onCheckedChange={setActive}
+                  aria-label="Cambiar visibilidad del vino"
+                  data-role="wine-modal-visibility-switch"
                 />
-                <span data-ui="wine-modal-active-text">Activo</span>
-              </label>
+              </div>
             </div>
           </div>
         </div>

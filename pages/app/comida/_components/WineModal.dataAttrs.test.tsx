@@ -14,7 +14,7 @@ vi.mock("../../../../api/client", () => ({
 describe("WineModal data-* attributes", () => {
   it("all rendered HTML elements have a semantic data-* attribute when open with no wine", () => {
     const { container } = render(
-      <WineModal open={true} wine={null} onClose={vi.fn()} onSave={vi.fn()}>,
+      <WineModal open={true} wine={null} onClose={vi.fn()} onSave={vi.fn()} />,
     );
     const portal = container.querySelector("[data-role='dialog']") || container;
     expectAllElementsHaveDataAttr(portal as HTMLElement);
@@ -35,7 +35,7 @@ describe("WineModal data-* attributes", () => {
       has_foto: false,
     };
     const { container } = render(
-      <WineModal open={true} wine={wine} onClose={vi.fn()} onSave={vi.fn()}>,
+      <WineModal open={true} wine={wine} onClose={vi.fn()} onSave={vi.fn()} />,
     );
     const portal = container.querySelector("[data-role='dialog']") || container;
     expectAllElementsHaveDataAttr(portal as HTMLElement);

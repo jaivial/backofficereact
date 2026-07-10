@@ -128,9 +128,9 @@ function resetReconnectState(): void {
  * Returns true when the message should be forwarded to a "list" consumer.
  * List events are those that carry a restaurant-level signal (not tied to a specific item).
  */
-function isListEvent(msg: ComidaAIWSMessage): boolean {
-  // If item_id is set, it's a detail-scoped event
-  if (msg.item_id !== undefined) return false;
+function isListEvent(_msg: ComidaAIWSMessage): boolean {
+  // List pages own many item cards, so they must receive per-item lifecycle
+  // events and reconcile them locally without a page reload.
   return true;
 }
 

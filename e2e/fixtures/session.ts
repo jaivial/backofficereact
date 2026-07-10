@@ -44,7 +44,7 @@ export const test = base
         await context.addCookies([{
           name: "bo_session",
           value: sessionCookie,
-          domain: "localhost",
+          domain: new URL(process.env.BACKOFFICE_URL || "https://localhost:3001").hostname,
           path: "/",
           httpOnly: true,
           secure: true,
