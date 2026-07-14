@@ -14,7 +14,6 @@ import { clampDailyLimit, mergeHoursByOpeningMode, sortServiceHours, toggleHour 
 import type { useToasts } from "../../../../../ui/feedback/useToasts";
 
 interface UseConfigDayOptions {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   api: any;
   date: string;
   day: ConfigDayStatus | null;
@@ -265,7 +264,7 @@ export function useConfigDay({
       }
       // Refresh the currently selected day if it falls within the applied range.
       if (dates.includes(date)) {
-        setDay((prev) => (prev ? { ...prev, isOpen } : prev));
+        setDay(day ? { ...day, isOpen } : day);
       }
       pushSuccess(isOpen ? "Días abiertos" : "Días cerrados");
       return true;

@@ -109,6 +109,40 @@ test.describe("Authentication", () => {
 
       await context.close();
     });
+
+    test("uses split images only above 768px", async ({ browser }) => {
+      const desktop = await browser.newContext({
+        viewport: { width: 769, height: 800 },
+        ignoreHTTPSErrors: true,
+      });
+      const desktopPage = await desktop.newPage();
+      await desktopPage.goto("/login", { waitUntil: "domcontentloaded" });
+
+      const formPane = desktopPage.getByTestId("login-form-pane");
+      const imagePane = desktopPage.getByTestId("login-image-pane");
+      await expect(imagePane).toBeVisible();
+      const [formBox, imageBox] = await Promise.all([
+        formPane.boundingBox(),
+        imagePane.boundingBox(),
+      ]);
+      expect(formBox?.width).toBeCloseTo(imageBox?.width ?? 0, 0);
+
+      const initialImage = await imagePane.getAttribute("data-image-index");
+      await expect(imagePane).not.toHaveAttribute("data-image-index", initialImage ?? "", {
+        timeout: 3_000,
+      });
+      await desktop.close();
+
+      const mobile = await browser.newContext({
+        viewport: { width: 768, height: 800 },
+        ignoreHTTPSErrors: true,
+      });
+      const mobilePage = await mobile.newPage();
+      await mobilePage.goto("/login", { waitUntil: "domcontentloaded" });
+      await expect(mobilePage.getByTestId("login-image-pane")).toBeHidden();
+      await expect(mobilePage.getByTestId("login-form")).toBeVisible();
+      await mobile.close();
+    });
   });
 
   test.describe("Protected routes", () => {

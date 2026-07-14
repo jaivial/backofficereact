@@ -2,7 +2,7 @@
  * Quick debug test to capture exact console errors
  * when navigating FROM wine detail page ➜ reservas.
  */
-import { test as base, expect } from "@playwright/test";
+import { test as base, expect, type ConsoleMessage, type Response } from "@playwright/test";
 
 const BASE_URL = process.env.BACKOFFICE_URL || "https://localhost:3010";
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@villacarmen.com";
@@ -30,7 +30,7 @@ const test = base.extend<{ page: any }>({
 test("capture wine page errors then navigate", async ({ page }) => {
   // 1. Collect ALL console messages
   const consoleLogs: string[] = [];
-  page.on("console", msg => {
+  page.on("console", (msg: ConsoleMessage) => {
     const text = msg.text();
     const type = msg.type();
     if (type === "error" || type === "warning") {
@@ -40,7 +40,7 @@ test("capture wine page errors then navigate", async ({ page }) => {
 
   // 2. Track network responses
   const responses: any[] = [];
-  page.on("response", async (res) => {
+  page.on("response", async (res: Response) => {
     if (res.status() >= 400 || res.url().includes(".pageContext")) {
       const body = await res.text().catch(() => "(no body)");
       responses.push({

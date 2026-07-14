@@ -149,17 +149,17 @@ export default function Page() {
   useEffect(() => {
     if (!dailyLimit) return;
     setDraftLimit(String(dailyLimit.limit));
-  }, [dailyLimit?.limit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dailyLimit?.limit]);
 
   useEffect(() => {
     if (!openingHours) return;
     setOpeningModeDraft(openingHours.openingMode);
-  }, [openingHours?.openingMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [openingHours?.openingMode]);
 
   // Load mandatory menu config on mount
   useEffect(() => {
     void loadMandatoryMenuConfigFromApi(date);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadMandatoryMenuConfigFromApi = useCallback(
     async (d: string) => {
@@ -337,7 +337,7 @@ export default function Page() {
             <motion.div
               data-ui="open-sections"
               key="config-open-sections"
-              className="bo-stack"
+              className="bo-stack w-full max-w-[768px] mx-auto"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}

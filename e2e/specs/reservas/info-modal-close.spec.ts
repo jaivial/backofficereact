@@ -140,7 +140,6 @@ test.describe("Reservas Config - Info Modal", () => {
 
   test("modal closes on mobile viewport via Cerrar", async ({ browser }) => {
     const context = await browser.newContext({
-      ...browser.browserType().executionContext()?.constructor?.prototype,
       ignoreHTTPSErrors: true,
       viewport: { width: 390, height: 844 },
       isMobile: true,

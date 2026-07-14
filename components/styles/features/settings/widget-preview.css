@@ -248,6 +248,13 @@
   padding-bottom: 0;
 }
 
+@media (max-width: 768px) {
+  .bo-reservasModal--details,
+  .bo-reservasModal--edit {
+    max-height: 95dvh;
+  }
+}
+
 .bo-modal.bo-modal--glass.bo-reservasModal.bo-reservasModal--details .bo-panelHead,
 .bo-modal.bo-modal--glass.bo-reservasModal.bo-reservasModal--details .bo-panelBody {
   padding-inline: 0;
@@ -285,10 +292,90 @@
 .bo-modalActions--reservas.bo-bookingEditorFooter .bo-btn--primary {
   margin: 0;
 }
+
+.bo-bookingEditorActions--create {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--bo-space-1);
+}
+
+.bo-bookingEditorRequiredHint {
+  color: var(--bo-faint);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-normal);
+  text-align: center;
+}
+
+.bo-bookingSubmissionOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: var(--bo-space-4);
+  background: color-mix(in srgb, var(--bo-bg) 80%, transparent);
+}
+
+.bo-bookingSubmissionLoading {
+  display: grid;
+  justify-items: center;
+  gap: var(--bo-space-3);
+}
+
+.bo-bookingSubmissionLoadingText {
+  color: var(--bo-text);
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-bookingSubmissionSuccess {
+  display: grid;
+  justify-items: center;
+  gap: var(--bo-space-2);
+  width: min(100%, 420px);
+  padding: var(--bo-space-5);
+  border: 1px solid var(--bo-border-2);
+  border-radius: var(--bo-radius-lg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bo-accent-2) 12%, transparent), transparent),
+    var(--bo-surface-2);
+  box-shadow: var(--bo-shadow);
+  text-align: center;
+}
+
+.bo-bookingSubmissionSuccessIcon {
+  color: var(--bo-color-success);
+}
+
+.bo-bookingSubmissionSuccessTitle {
+  color: var(--bo-text);
+  font-size: var(--bo-text-lg);
+  font-weight: var(--bo-weight-bold);
+}
+
+.bo-bookingSubmissionSuccessName {
+  color: var(--bo-text);
+  font-size: var(--bo-text-base);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-bookingSubmissionSuccessInfo {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-normal);
+}
+
 .bo-bookingEditor--stickyFooter {
   display: flex;
   flex-direction: column;
   min-height: 100%;
+}
+
+@media (min-width: 769px) {
+  .bo-reservaAddPage {
+    width: min(100%, 1100px);
+    margin-inline: auto;
+  }
 }
 
 .bo-bookingEditorBody {
@@ -311,6 +398,14 @@
   align-items: center;
 }
 
+.bo-bookingChoiceSelectorRow {
+  display: flex;
+  flex: 1 1 0px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .bo-selectBtn.bo-bookingChoiceSelect {
   flex: 1 1 0px;
 }
@@ -329,8 +424,107 @@
 }
 
 .bo-bookingChoiceServings {
-  width: 96px;
+  width: auto;
+  display: flex;
+  justify-content: center;
   text-align: center;
+}
+
+@media (min-width: 769px) {
+  .bo-bookingPanel--menu > .bo-panelBody,
+  .bo-bookingPanel--arroz > .bo-panelBody {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .bo-bookingPanel--menu button:not(.bo-actionBtn):not(.bo-counterBtn),
+  .bo-bookingPanel--menu a.bo-btn,
+  .bo-bookingPanel--arroz button:not(.bo-actionBtn):not(.bo-counterBtn),
+  .bo-bookingPanel--arroz a.bo-btn {
+    width: fit-content;
+  }
+
+  .bo-bookingPanel--menu .bo-bookingBinaryChips,
+  .bo-bookingPanel--arroz .bo-bookingBinaryChips,
+  .bo-bookingPanel--menu [data-slot="booking-editor-menu-select-field"],
+  .bo-bookingPanel--menu [data-slot="booking-editor-menu-principales"],
+  .bo-bookingPanel--arroz [data-slot="booking-editor-arroz-content"] {
+    width: fit-content;
+    max-width: 100%;
+    align-self: center;
+  }
+
+  .bo-bookingPanel--menu [data-slot="booking-editor-menu-select-field"],
+  .bo-bookingPanel--menu [data-slot="booking-editor-menu-principales"] {
+    justify-items: center;
+  }
+
+  .bo-bookingPanel--menu [data-slot="booking-editor-menu-empty"],
+  .bo-bookingPanel--arroz [data-slot="booking-editor-arroz-empty"] {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .bo-bookingPanel--menu .bo-bookingChoiceRow,
+  .bo-bookingPanel--arroz .bo-bookingChoiceRow,
+  .bo-bookingPanel--menu .bo-bookingChoiceSelectorRow,
+  .bo-bookingPanel--arroz .bo-bookingChoiceSelectorRow,
+  .bo-bookingPanel--menu .bo-bookingChoiceActions,
+  .bo-bookingPanel--arroz .bo-bookingChoiceActions {
+    width: fit-content;
+    flex: 0 0 auto;
+  }
+
+  .bo-bookingPanel--menu .bo-bookingChoiceRow,
+  .bo-bookingPanel--arroz .bo-bookingChoiceRow {
+    justify-content: center;
+  }
+
+  .bo-bookingPanel--menu .bo-bookingChoiceSelect,
+  .bo-bookingPanel--arroz .bo-bookingChoiceSelect,
+  .bo-bookingPanel--menu .bo-selectWrapper,
+  .bo-bookingPanel--arroz .bo-selectWrapper {
+    width: fit-content;
+    flex: 0 0 auto;
+  }
+
+  .bo-bookingPanel--arroz [data-slot="booking-editor-add-arroz"] {
+    justify-self: center;
+    align-self: center;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  [data-slot="booking-editor-menu-select-field"] > .bo-selectWrapper > .bo-selectBtn {
+    width: 100%;
+    text-align: start;
+  }
+
+  [data-slot="booking-editor-menu-principales"] .bo-bookingChoiceRow,
+  [data-slot="booking-editor-arroz-content"] .bo-bookingChoiceRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  [data-slot="booking-editor-menu-principales"] .bo-bookingChoiceSelectorRow,
+  [data-slot="booking-editor-arroz-content"] .bo-bookingChoiceSelectorRow {
+    width: 100%;
+  }
+
+  [data-slot="booking-editor-menu-principales"] .bo-selectBtn.bo-bookingChoiceSelect,
+  [data-slot="booking-editor-arroz-content"] .bo-selectBtn.bo-bookingChoiceSelect {
+    width: 100%;
+    max-width: 100%;
+    text-align: start;
+  }
+
+  [data-slot="booking-editor-menu-principales"] .bo-bookingChoiceActions,
+  [data-slot="booking-editor-arroz-content"] .bo-bookingChoiceActions {
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 @media (max-width: 550px) {
@@ -659,4 +853,3 @@
 .bo-btn--advisorSecondary:hover:not(:disabled) {
   color: var(--bo-muted);
 }
-

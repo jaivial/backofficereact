@@ -59,7 +59,12 @@ test.describe("Miembros - Create Member", () => {
   test("create member via API returns correct schema", async ({ adminPage }) => {
     const api = new TestApiClient(adminPage);
 
-    const response = await api.post("/api/admin/members", {
+    const response = await api.post<{
+      success: boolean;
+      member: { id: number; firstName: string };
+      user: { created: boolean };
+      provisioning: { hasContact: boolean };
+    }>("/api/admin/members", {
       firstName: `APITest${ts}`,
       lastName: `APITest${ts}`,
       email: `e2e-api-member-${ts}@test.com`,

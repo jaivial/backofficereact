@@ -33,11 +33,29 @@
 .bo-app--page {
   width: 100%;
   height: 100vh;
-  height: 100svh;
+  height: 100dvh;
+  min-height: 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.10)),
     var(--bo-shell);
   overflow: hidden;
+}
+
+/* Dynamic viewport tracks the visible area while mobile keyboards open/close. */
+.bo-mobile-shell {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+.bo-mobile-shell > main {
+  min-height: 0;
+}
+
+.bo-mobile-page,
+.bo-mobile-login {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .bo-sidebar {
@@ -176,8 +194,8 @@
   gap: 10px;
   flex-wrap: nowrap;
   position: absolute;
-  top: max(0px, env(safe-area-inset-top));
-  right: max(12px, env(safe-area-inset-right));
+  top: 0;
+  right: 12px;
   z-index: 160;
   max-width: calc(100vw - 24px);
   padding: 0;

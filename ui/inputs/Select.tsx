@@ -12,6 +12,7 @@ export function Select({
   options,
   size,
   ariaLabel,
+  placeholder,
   className,
   style,
   disabled,
@@ -25,6 +26,7 @@ export function Select({
   options: Option[];
   size?: "sm" | "md";
   ariaLabel?: string;
+  placeholder?: string;
   className?: string;
   style?: React.CSSProperties;
   disabled?: boolean;
@@ -42,7 +44,10 @@ export function Select({
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  const selected = useMemo(() => options.find((o) => o.value === value) || options[0], [options, value]);
+  const selected = useMemo(
+    () => options.find((o) => o.value === value) ?? (placeholder ? undefined : options[0]),
+    [options, placeholder, value],
+  );
   const btnClass = size === "sm" ? "bo-selectBtn bo-selectBtn--sm" : "bo-selectBtn";
 
   const close = useCallback(() => setOpen(false), []);
@@ -171,7 +176,7 @@ export function Select({
               {selected.icon}
             </span>
           ) : null}
-          <span className="bo-selectLabel !max-w-[200px]" data-ui="select-selected-label">{selected?.label ?? ""}</span>
+          <span className="bo-selectLabel !max-w-[200px]" data-ui="select-selected-label">{selected?.label ?? placeholder ?? ""}</span>
         </span>
         <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
       </button>

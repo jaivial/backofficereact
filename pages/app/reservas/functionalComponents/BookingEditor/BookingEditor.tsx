@@ -114,15 +114,15 @@ export function BookingEditor({
 
   const principalesItems = useMemo(() => principalesItemsFromMenu(menuDetail), [menuDetail]);
   const menuOptions = useMemo(
-    () => [{ value: "", label: "Selecciona…" }, ...menus.map((m) => ({ value: String(m.id), label: `${m.menu_title} · ${m.price}€` }))],
+    () => menus.map((m) => ({ value: String(m.id), label: `${m.menu_title} · ${m.price}€` })),
     [menus],
   );
   const principalOptions = useMemo(
-    () => [{ value: "", label: "Selecciona…" }, ...principalesItems.map((it) => ({ value: it, label: it }))],
+    () => principalesItems.map((it) => ({ value: it, label: it })),
     [principalesItems],
   );
   const arrozOptions = useMemo(
-    () => [{ value: "", label: "Selecciona…" }, ...riceTypes.map((t) => ({ value: t, label: t }))],
+    () => riceTypes.map((t) => ({ value: t, label: t })),
     [riceTypes],
   );
   const floorOptions = useMemo(() => {
@@ -208,9 +208,18 @@ export function BookingEditor({
 
   const remainingArroz = useMemo(() => Math.max(0, (draft.party_size || 0) - sumServings(draft.arroz)), [draft.arroz, draft.party_size]);
   const remainingPrincipales = useMemo(
-    () => Math.max(0, (draft.party_size || 0) - sumServings(draft.principales)),
+    () => Math.max(0, (draft.party_size || 0) - sumServings(draft.principales.filter((row) => row.name))),
     [draft.party_size, draft.principales],
   );
+  const requiredFieldsComplete = useMemo(() => {
+    const date = String(draft.reservation_date || "").trim();
+    const time = String(draft.reservation_time || "").trim();
+    const name = String(draft.customer_name || "").trim();
+    const phone = normalizePhoneParts(draft.contact_phone_country_code, draft.contact_phone);
+    const menuId = Number(draft.menu_de_grupo_id || 0);
+
+    return /^\d{4}-\d{2}-\d{2}$/.test(date) && Boolean(time) && Boolean(name) && Boolean(phone) && (!draft.special_menu || menuId > 0);
+  }, [draft]);
 
   const setField = useCallback(<K extends keyof BookingEditorDraft>(key: K, value: BookingEditorDraft[K]) => {
     setDraft((p) => ({ ...p, [key]: value }));
@@ -235,18 +244,16 @@ export function BookingEditor({
       setDraft((p) => {
         if (!v) return { ...p, arroz_enabled: false, arroz: [] };
         // Ensure at least one row.
-        const firstType = (riceTypes[0] || "").trim();
-        const row: RiceRow = { type: firstType, servings: 2 };
-        return { ...p, arroz_enabled: true, arroz: p.arroz.length ? p.arroz : (firstType ? [row] : []) };
+        const row: RiceRow = { type: "", servings: 2 };
+        return { ...p, arroz_enabled: true, arroz: p.arroz.length ? p.arroz : (riceTypes.length ? [row] : []) };
       });
     },
     [riceTypes],
   );
 
   const addRiceRow = useCallback(() => {
-    const firstType = (riceTypes[0] || "").trim();
-    setDraft((p) => ({ ...p, arroz: [...p.arroz, { type: firstType, servings: 2 }] }));
-  }, [riceTypes]);
+    setDraft((p) => ({ ...p, arroz: [...p.arroz, { type: "", servings: 2 }] }));
+  }, []);
 
   const removeRiceRow = useCallback((idx: number) => {
     setDraft((p) => ({ ...p, arroz: p.arroz.filter((_, i) => i !== idx) }));
@@ -260,9 +267,8 @@ export function BookingEditor({
   }, []);
 
   const addPrincipalRow = useCallback(() => {
-    const first = (principalesItems[0] || "").trim();
-    setDraft((p) => ({ ...p, principales: [...p.principales, { name: first, servings: 1 }] }));
-  }, [principalesItems]);
+    setDraft((p) => ({ ...p, principales: [...p.principales, { name: "", servings: 1 }] }));
+  }, []);
 
   const removePrincipalRow = useCallback((idx: number) => {
     setDraft((p) => ({ ...p, principales: p.principales.filter((_, i) => i !== idx) }));
@@ -341,6 +347,9 @@ export function BookingEditor({
     await onSubmit(payload);
   }, [draft, onSubmit]);
 
+  const isCreate = submitLabel === "Crear";
+  const submitDisabled = busy || (isCreate && !requiredFieldsComplete);
+
   return (
     <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }} data-slot="bookingEditor-div">
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
@@ -374,7 +383,7 @@ export function BookingEditor({
           />
 
           <div className="bo-field bo-bookingField bo-bookingField--client" style={{ width: "100%" }} data-slot="booking-editor-client">
-            <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">Cliente</div>
+            <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">Nombre cliente</div>
             <input className="bo-input bo-input--sm" style={{ textAlign: "center", width: "100%" }} value={draft.customer_name} onChange={(e) => setField("customer_name", e.target.value)} data-slot="booking-editor-client-input" />
           </div>
 
@@ -453,7 +462,7 @@ export function BookingEditor({
         </div>
       </div>
 
-      <Panel data-slot="bookingEditor-panel" title="Menú de grupo" meta={draft.special_menu ? "Sí" : "No"}>
+      <Panel className="bo-bookingPanel--menu" data-slot="bookingEditor-panel" title="Menú de grupo" meta={draft.special_menu ? "Sí" : "No"}>
           <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo" data-slot="booking-editor-menu-toggle">
             <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy} data-slot="booking-editor-menu-no">
               No
@@ -493,7 +502,7 @@ export function BookingEditor({
               <a
                 className="bo-btn bo-btn--primary"
                 href="/app/menus"
-                style={{ justifySelf: "start", textDecoration: "none" }}
+                style={{ justifySelf: "center", textDecoration: "none" }}
                 data-slot="booking-editor-menu-create-link"
               >
                 <Plus size={18} strokeWidth={1.8} /> Crear menú de grupo
@@ -514,55 +523,67 @@ export function BookingEditor({
                 <Select
                   className="bo-selectBtn--sm"
                   size="sm"
-                  style={{ width: "100%" }}
+                  style={{ width: "fit-content" }}
                   value={draft.menu_de_grupo_id ? String(draft.menu_de_grupo_id) : ""}
                   onChange={(v) => setField("menu_de_grupo_id", v ? Number(v) : null)}
                   options={menuOptions}
+                  placeholder="Selecciona…"
                   ariaLabel="Seleccionar menú"
                 />
               </div>
 
-              <div className="bo-mutedText" data-slot="bookingEditor-mutedText">Principales (restantes: {remainingPrincipales})</div>
-              <div style={{ display: "grid", gap: 8 }} data-slot="bookingEditor-div">
-                {draft.principales.map((row, idx) => (
-                  <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
-                    <Select
-                      className="bo-selectBtn--sm bo-bookingChoiceSelect"
-                      size="sm"
-                      style={{ flex: "1 1 0px" }}
-                      value={row.name}
-                      onChange={(v) => updatePrincipalRow(idx, { name: v })}
-                      options={principalOptions}
-                      ariaLabel="Principal"
-                    />
-                    <div className="bo-bookingChoiceActions" data-slot="bookingEditor-bookingChoiceActions">
-                      <InlineCounter
-                        label="Raciones"
-                        value={row.servings || 0}
-                        onChange={(v) => updatePrincipalRow(idx, { servings: v })}
-                        min={0}
-                        max={draft.party_size}
-                        disabled={busy}
-                        className="bo-bookingChoiceServings"
-                      />
-                      <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy} data-slot={`booking-editor-remove-principal-${idx}`}>
-                        <Trash2 size={18} strokeWidth={1.8} />
+              {draft.menu_de_grupo_id ? (
+                <div style={{ display: "grid", gap: 10 }} data-slot="booking-editor-menu-principales">
+                  <div className="bo-mutedText" data-slot="bookingEditor-mutedText">Principales (restantes: {remainingPrincipales})</div>
+                  <div style={{ display: "grid", gap: 8 }} data-slot="bookingEditor-div">
+                    {draft.principales.map((row, idx) => (
+                      <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
+                        <div className="bo-bookingChoiceSelectorRow" data-slot="booking-editor-principal-selector-row">
+                          <Select
+                            className="bo-selectBtn--sm bo-bookingChoiceSelect"
+                            size="sm"
+                            style={{ flex: "0 0 auto" }}
+                            value={row.name}
+                            onChange={(v) => updatePrincipalRow(idx, { name: v, servings: Math.min(row.servings, row.name ? remainingPrincipales + row.servings : remainingPrincipales) })}
+                            options={principalOptions}
+                            placeholder="Selecciona…"
+                            ariaLabel="Principal"
+                          />
+                          <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy} data-slot={`booking-editor-remove-principal-${idx}`}>
+                            <Trash2 size={18} strokeWidth={1.8} />
+                          </button>
+                        </div>
+                        {row.name ? (
+                          <div className="bo-bookingChoiceActions" data-slot="bookingEditor-bookingChoiceActions">
+                            <InlineCounter
+                              label="Raciones"
+                              value={row.servings || 0}
+                              onChange={(v) => updatePrincipalRow(idx, { servings: v })}
+                              min={0}
+                              max={Math.max(0, remainingPrincipales + row.servings)}
+                              disabled={busy}
+                              className="bo-bookingChoiceServings"
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                    {remainingPrincipales > 0 ? (
+                      <button type="button" className="bo-btn bo-btn--ghost" onClick={addPrincipalRow} disabled={busy || !principalesItems.length} data-slot="booking-editor-add-principal">
+                        <Plus size={18} strokeWidth={1.8} /> Añadir principal
                       </button>
-                    </div>
+                    ) : null}
+                    {!principalesItems.length ? <div className="bo-mutedText" data-slot="booking-editor-no-principales-message">Este menú no tiene lista de principales.</div> : null}
                   </div>
-                ))}
-                <button type="button" className="bo-btn bo-btn--ghost" onClick={addPrincipalRow} disabled={busy || !principalesItems.length} data-slot="booking-editor-add-principal">
-                  <Plus size={18} strokeWidth={1.8} /> Añadir principal
-                </button>
-                {!principalesItems.length ? <div className="bo-mutedText">Este menú no tiene lista de principales.</div> : null}
-              </div>
+                </div>
+              ) : null}
             </motion.div>
           ) : null}
           </AnimatePresence>
       </Panel>
 
       {!draft.special_menu ? (
-        <Panel data-slot="bookingEditor-panel" title="Arroz" meta={draft.arroz_enabled ? "Sí" : "No"}>
+        <Panel className="bo-bookingPanel--arroz" data-slot="bookingEditor-panel" title="Arroz" meta={draft.arroz_enabled ? "Sí" : "No"}>
             <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="¿Desea arroz?" data-slot="booking-editor-arroz-toggle">
               <button type="button" className={`bo-chip${draft.arroz_enabled ? "" : " is-on"}`} onClick={() => toggleArroz(false)} disabled={busy} data-slot="booking-editor-arroz-no">
                 No
@@ -601,7 +622,7 @@ export function BookingEditor({
                 <a
                   className="bo-btn bo-btn--primary"
                   href="/app/comida"
-                  style={{ justifySelf: "start", textDecoration: "none" }}
+                  style={{ justifySelf: "center", textDecoration: "none" }}
                   data-slot="booking-editor-arroz-create-link"
                 >
                   <Plus size={18} strokeWidth={1.8} /> Añadir tipo de arroz
@@ -615,34 +636,39 @@ export function BookingEditor({
                 animate={{ opacity: 1 }}
                 exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
-                data-slot="bookingEditor-div"
+                data-slot="booking-editor-arroz-content"
               >
                 <div className="bo-mutedText">Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div>
                 {draft.arroz.map((row, idx) => (
                   <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
-                    <Select
-                      className="bo-selectBtn--sm bo-bookingChoiceSelect"
-                      size="sm"
-                      style={{ flex: "1 1 0px" }}
-                      value={row.type}
-                      onChange={(v) => updateRiceRow(idx, { type: v })}
-                      options={arrozOptions}
-                      ariaLabel="Tipo de arroz"
-                    />
-                    <div className="bo-bookingChoiceActions" data-slot="bookingEditor-bookingChoiceActions">
-                      <InlineCounter
-                        label="Raciones"
-                        value={row.servings || 0}
-                        onChange={(v) => updateRiceRow(idx, { servings: v })}
-                        min={0}
-                        max={draft.party_size}
-                        disabled={busy}
-                        className="bo-bookingChoiceServings"
+                    <div className="bo-bookingChoiceSelectorRow" data-slot="booking-editor-rice-selector-row">
+                      <Select
+                        className="bo-selectBtn--sm bo-bookingChoiceSelect"
+                        size="sm"
+                        style={{ flex: "0 0 auto" }}
+                        value={row.type}
+                        onChange={(v) => updateRiceRow(idx, { type: v })}
+                        options={arrozOptions}
+                        placeholder="Selecciona…"
+                        ariaLabel="Tipo de arroz"
                       />
                       <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy} data-slot={`booking-editor-remove-arroz-${idx}`}>
                         <Trash2 size={18} strokeWidth={1.8} />
                       </button>
                     </div>
+                    {row.type ? (
+                      <div className="bo-bookingChoiceActions" data-slot="bookingEditor-bookingChoiceActions">
+                        <InlineCounter
+                          label="Raciones"
+                          value={row.servings || 0}
+                          onChange={(v) => updateRiceRow(idx, { servings: v })}
+                          min={0}
+                          max={draft.party_size}
+                          disabled={busy}
+                          className="bo-bookingChoiceServings"
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 ))}
                 <button type="button" className="bo-btn bo-btn--ghost" onClick={addRiceRow} disabled={busy || !riceTypes.length} data-slot="booking-editor-add-arroz">
@@ -662,8 +688,8 @@ export function BookingEditor({
       </div>
 
       <div
-        className={stickyFooter ? "bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" : "bo-row"}
-        style={stickyFooter ? undefined : { justifyContent: "flex-end" }}
+        className={stickyFooter ? "bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" : `bo-row${isCreate ? " bo-bookingEditorActions--create" : ""}`}
+        style={stickyFooter ? undefined : { justifyContent: isCreate ? "center" : "flex-end" }}
         data-slot="booking-editor-actions"
       >
         {onCancel ? (
@@ -671,9 +697,10 @@ export function BookingEditor({
             Cerrar
           </button>
         ) : null}
-        <button className="bo-btn bo-btn--primary" type="button" onClick={() => void submit()} disabled={busy} data-slot="booking-editor-submit">
+        <button className="bo-btn bo-btn--primary" type="button" onClick={() => void submit()} disabled={submitDisabled} data-slot="booking-editor-submit">
           {submitLabel}
         </button>
+        {isCreate && !requiredFieldsComplete ? <div className="bo-bookingEditorRequiredHint" data-slot="booking-editor-required-hint">Por favor rellena los campos obligatorios</div> : null}
       </div>
     </div>
   );

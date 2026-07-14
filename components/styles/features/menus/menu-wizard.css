@@ -710,6 +710,12 @@
   min-width: 0;
 }
 
+.bo-accordionHeadRight {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
 .bo-sectionDishTabs {
   display: flex;
   align-items: center;
@@ -1756,100 +1762,6 @@
   }
 }
 
-@media (min-width: 769px) and (max-width: 980px) {
-  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberBody.bo-dishCardBody {
-    grid-template-columns: minmax(0, 1fr) 40px;
-    grid-template-areas:
-      "title footer"
-      "editor footer";
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishEditorContent {
-    grid-template-columns: minmax(0, 1fr);
-    column-gap: 0;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishCardHead {
-    flex-direction: row;
-    justify-content: flex-start;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(150px, 0.8fr);
-    grid-template-areas:
-      "title side"
-      "descriptionToggle side"
-      "descriptionInput side"
-      "price price";
-    column-gap: var(--bo-space-2);
-    align-items: start;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishTitleTextarea {
-    grid-area: title;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-checkRow {
-    grid-area: descriptionToggle;
-    justify-self: flex-start;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-textarea:not(.bo-dishTitleTextarea) {
-    grid-area: descriptionInput;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishPriceRow {
-    grid-area: price;
-    margin-bottom: 0;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide {
-    grid-area: side;
-    display: grid;
-    gap: var(--bo-space-2);
-    align-content: start;
-    justify-items: start;
-    min-width: 0;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-allergenRow {
-    justify-content: flex-start;
-    align-content: flex-start;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide > .bo-dishRow {
-    justify-self: flex-start;
-    align-self: start;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide .bo-dishRowInlineControls {
-    flex-wrap: nowrap;
-    align-items: center;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
-    align-items: flex-end;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPrice,
-  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
-    display: none;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberActions,
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline,
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
-    height: 100%;
-  }
-
-  .bo-memberCard.bo-dishCard--horizontal .bo-dishRowActionsInline--split {
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
-}
-
 @media (min-width: 981px) and (max-width: 1281px) {
   .bo-menuWizardFinal.is-previewOpen .bo-memberCard.bo-dishCard--horizontal {
     display: block;
@@ -2217,8 +2129,8 @@
   .bo-menuFab {
     width: 54px;
     height: 54px;
-    right: calc(12px + env(safe-area-inset-right));
-    bottom: calc(72px + env(safe-area-inset-bottom));
+    right: 12px;
+    bottom: 72px;
   }
 
   .bo-previewHead {
@@ -2227,7 +2139,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 980px) {
   .bo-memberCard.bo-dishCard--horizontal {
     display: block;
     grid-template-columns: none;
@@ -2277,7 +2189,9 @@
   .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberPriceSpacer {
     display: block;
   }
+}
 
+@media (max-width: 768px) {
   .bo-sectionDishTab {
     min-width: 40px;
     padding: 0 var(--bo-space-2);
@@ -2314,8 +2228,8 @@
 
   .bo-menuV2Card {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 12px;
+    gap: 18px;
+    padding: 20px;
   }
 
   .bo-menuWizardPanel {
@@ -2474,4 +2388,3 @@
     filter: none;
   }
 }
-

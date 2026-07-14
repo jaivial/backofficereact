@@ -23,7 +23,7 @@ function initStore(theme: ThemeMode, session: BOSession | null, movingExpiration
 function MobileLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePageContext().urlPathname ?? "/";
   return (
-    <div className="bo-mobile-shell flex flex-col h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]" data-slot="Layout-text-[hsl(var(-">
+    <div className="bo-mobile-shell flex flex-col bg-[hsl(var(--background))] text-[hsl(var(--foreground))]" data-slot="mobile-shell">
       {/* Content area with bottom nav padding */}
       <main className="flex-1 overflow-y-auto pb-20" data-testid="mobile-layout-main">
         {children}
@@ -42,7 +42,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const store = React.useMemo(
     () => initStore(initialTheme, initialSession, initialMovingExpirationDate),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

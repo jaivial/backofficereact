@@ -27,6 +27,8 @@ describe("FoodFilters data-* attributes", () => {
         onSuplementoChange={noop}
         onReset={noop}
         count={10}
+        showImages={true}
+        onShowImagesChange={noop}
       />,
     );
     expectAllElementsHaveDataAttr(container);
@@ -53,6 +55,8 @@ describe("FoodFilters data-* attributes", () => {
         onSuplementoChange={noop}
         onReset={noop}
         count={10}
+        showImages={true}
+        onShowImagesChange={noop}
       />,
     );
     fireEvent.click(getByRole("button", { name: /expandir filtros/i }));

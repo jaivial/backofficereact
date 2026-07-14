@@ -392,7 +392,7 @@ function assertNoCriticalErrors(capture: ConsoleCapture) {
       totalNetworkErrors: capture.networkErrors.length,
     },
   };
-});
+}
 
 test.describe("AI Image Skeleton - Real SignalR Events", () => {
   test("detail page shows skeleton when comida_ai_started event is received", async ({ adminPage }) => {

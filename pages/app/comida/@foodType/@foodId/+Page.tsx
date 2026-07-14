@@ -130,7 +130,7 @@ function FoodDetailPage() {
     return String((item as any).foto_url || "").trim();
   }, [item]);
 
-  const heroIcon = useMemo(() =>
+  const HeroIcon = useMemo(() =>
     (FOOD_TYPE_ICONS[foodType as keyof typeof FOOD_TYPE_ICONS] || (() => null)) as LucideIcon,
     [foodType],
   );
@@ -186,7 +186,7 @@ function FoodDetailPage() {
           {item && !isWine ? (
             <div className="bo-panelHead bo-foodDetailQuickHead flex-col items-stretch gap-1" data-ui="food-detail-editor-head">
               <div className="flex items-center gap-2 min-w-0" data-ui="food-detail-editor-title-row">
-                <heroIcon
+                <HeroIcon
                   className="bo-foodDetailTypeIcon shrink-0"
                   size={18}
                   aria-hidden="true"

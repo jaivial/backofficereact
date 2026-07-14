@@ -25,22 +25,30 @@
 }
 
 .bo-invoiceFiltersGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding-top: 8px;
   padding-bottom: 16px;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.bo-invoiceFilterRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.bo-invoiceFilterRow > * {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Responsive filters */
 @media (max-width: 639px) {
-  .bo-invoiceFiltersGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .bo-invoiceFilter--search,
-  .bo-invoiceFilter--datePresets {
-    grid-column: span 1;
+  .bo-invoiceFilterRow {
+    flex-direction: column;
   }
 
   .bo-invoiceFiltersGrid > * {
@@ -80,10 +88,6 @@
   min-width: 0;
 }
 
-.bo-invoiceFilter--search {
-  grid-column: span 2;
-}
-
 .bo-searchWithDropdown {
   display: flex;
   gap: 8px;
@@ -107,42 +111,6 @@
 .bo-invoiceFilter--category,
 .bo-invoiceFilter--tag {
   min-width: 150px;
-}
-
-.bo-invoiceFilter--datePresets {
-  grid-column: 1 / -1;
-}
-
-.bo-datePresetButtons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.bo-datePresetBtn {
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: var(--bo-radius-sm);
-  border: 1px solid var(--bo-border);
-  background: var(--bo-surface);
-  color: var(--bo-muted);
-  cursor: pointer;
-  transition:
-    border-color var(--bo-transition-base) var(--bo-ease),
-    background-color var(--bo-transition-base) var(--bo-ease),
-    color var(--bo-transition-base) var(--bo-ease);
-}
-
-.bo-datePresetBtn:hover {
-  border-color: var(--bo-primary);
-  color: var(--bo-primary);
-}
-
-.bo-datePresetBtn.is-active {
-  background: var(--bo-primary);
-  border-color: var(--bo-primary);
-  color: var(--bo-fg-inverted);
 }
 
 .bo-invoiceFiltersFoot {
@@ -313,13 +281,8 @@
   display: none;
 }
 
-/* Mobile overrides (placed at end to win cascade against base .bo-invoiceFilter--datePresets rule) */
+/* Mobile overrides */
 @media (max-width: 639px) {
-  .bo-invoiceFilter--datePresets,
-  .bo-invoiceFilter--search {
-    grid-column: span 1;
-  }
-
   .bo-invoiceFiltersGrid .bo-selectBtn {
     width: 100%;
     justify-content: flex-start;

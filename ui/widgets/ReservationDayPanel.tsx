@@ -63,7 +63,7 @@ export function ReservationDayStateBlock({
       </div>
       {description ? <div className="bo-mutedText" data-slot="reservation-day-description">{description}</div> : null}
       {!hideAction && onToggleDay ? (
-        <button className="bo-btn bo-btn--primary bo-btn--fit" type="button" onClick={onToggleDay} disabled={busy} data-testid="reservation-day-toggle-btn">
+        <button className="bo-btn bo-btn--primary" type="button" onClick={onToggleDay} disabled={busy} data-testid="reservation-day-toggle-btn">
           {buttonLabel}
         </button>
       ) : null}

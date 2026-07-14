@@ -9,12 +9,14 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { Select } from "../../../ui/inputs/Select";
 import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
+import { Modal } from "../../../ui/overlays/Modal";
 import { FloatingActionButton } from "../../../ui/actions/FloatingActionButton";
 import { cn } from "../../../ui/shadcn/utils";
 import { MenuSummaryCard } from "../../../ui/widgets/menus/MenuSummaryCard";
 import { MenuTypeChangeModal } from "../../../ui/widgets/menus/MenuTypeChangeModal";
 import { MenuTypePanelGrid } from "../../../ui/widgets/menus/MenuTypePanelGrid";
 import { MENU_TYPE_ORDER, menuTypeLabel } from "../../../ui/widgets/menus/menuPresentation";
+import { CrearPage } from "./crear/crear";
 
 type PageData = {
   menus: GroupMenuV2Summary[];
@@ -195,6 +197,7 @@ export default function Page() {
   const [togglingMenuId, setTogglingMenuId] = useState<number | null>(null);
   const [deletingMenuId, setDeletingMenuId] = useState<number | null>(null);
   const [changingMenuTypeId, setChangingMenuTypeId] = useState<number | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const error = data.error;
   // Ensure menus is always an array to prevent iteration errors
@@ -215,10 +218,12 @@ export default function Page() {
 
   const disableGlobalActions = deletingMenuId !== null || changingMenuTypeId !== null;
 
-  const openEditor = useCallback((id?: number) => {
-    const url = id ? `/app/menus/crear?menuId=${encodeURIComponent(String(id))}` : "/app/menus/crear";
-    window.location.href = url;
+  const openEditor = useCallback((id: number) => {
+    window.location.href = `/app/menus/crear?menuId=${encodeURIComponent(String(id))}`;
   }, []);
+
+  const openCreateModal = useCallback(() => setCreateModalOpen(true), []);
+  const closeCreateModal = useCallback(() => setCreateModalOpen(false), []);
 
   const onToggleActive = useCallback(
     async (menuId: number) => {
@@ -449,7 +454,11 @@ export default function Page() {
         </>
       )}
 
-      <FloatingActionButton aria-label="Crear menu" onClick={() => openEditor()} data-testid="menus-page-create-button" />
+      <FloatingActionButton aria-label="Crear menu" onClick={openCreateModal} data-testid="menus-page-create-button" />
+
+      <Modal open={createModalOpen} title="Crear menu" onClose={closeCreateModal} widthPx={1400}>
+        <CrearPage onClose={closeCreateModal} />
+      </Modal>
 
       <ConfirmDialog
         open={confirmDel.open}

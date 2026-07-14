@@ -61,6 +61,7 @@ export default function Page() {
 
   // Filters state
   const [searchText, setSearchText] = useState("");
+  const [searchBy, setSearchBy] = useState<"name" | "email" | "invoice_number">("name");
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | "">("");
   const [dateType, setDateType] = useState<"invoice_date" | "reservation_date">("invoice_date");
   const [dateFrom, setDateFrom] = useState("");
@@ -110,6 +111,7 @@ export default function Page() {
     try {
       const params: InvoiceListParams = {
         search: searchText || undefined,
+        search_by: searchBy,
         status: statusFilter || undefined,
         date_type: dateType,
         date_from: dateFrom || undefined,
@@ -145,6 +147,11 @@ export default function Page() {
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchText(value);
+    setPage(1);
+  }, []);
+
+  const handleSearchByChange = useCallback((value: "name" | "email" | "invoice_number") => {
+    setSearchBy(value);
     setPage(1);
   }, []);
 
@@ -295,7 +302,7 @@ export default function Page() {
   const handleSendEmail = useCallback(async (invoice: Invoice) => {
     // Check email settings before opening modal
     try {
-      const res = await api.getEmailProviderConfig();
+      const res = await api.config.getEmailProviderConfig();
       if (res.success) {
         const data = res as any;
         if (data.isComplete === false) {
@@ -331,7 +338,7 @@ export default function Page() {
   const handleSendWhatsApp = useCallback(async (invoice: Invoice) => {
     // Check email settings before opening modal
     try {
-      const res = await api.getEmailProviderConfig();
+      const res = await api.config.getEmailProviderConfig();
       if (res.success) {
         const data = res as any;
         if (data.isComplete === false) {
@@ -482,6 +489,8 @@ export default function Page() {
         <div className="bo-facturasSummary" data-slot="facturas-facturasSummary">
           <InvoiceFilters
             searchText={searchText}
+            searchBy={searchBy}
+            onSearchByChange={handleSearchByChange}
             statusFilter={statusFilter}
             dateType={dateType}
             dateFrom={dateFrom}

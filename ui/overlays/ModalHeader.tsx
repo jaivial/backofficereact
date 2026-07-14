@@ -2,7 +2,7 @@ import React, { type HTMLAttributes, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "../shadcn/utils";
 
-type ModalHeaderProps = HTMLAttributes<HTMLDivElement> & {
+type ModalHeaderProps = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
   title: ReactNode;
   onClose: () => void;
   closeLabel?: string;

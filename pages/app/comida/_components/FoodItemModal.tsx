@@ -718,7 +718,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
             </p>
           </div>
           <div className="bo-dishAIAdvisorPreviewWrap" data-slot="food-modal-ai-advisor-preview">
-            <img className="bo-dishAIAdvisorPreview" src={imagePreview} alt="Previsualizacion de imagen optimizada" />
+            <img className="bo-dishAIAdvisorPreview" src={imagePreview || ""} alt="Previsualizacion de imagen optimizada" />
           </div>
         </div>
         <div className="bo-modalActions bo-dishAIAdvisorActions" data-slot="food-modal-ai-advisor-actions">

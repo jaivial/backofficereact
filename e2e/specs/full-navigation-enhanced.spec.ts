@@ -117,7 +117,7 @@ async function waitForPageReady(page: Page, selectors?: string[]): Promise<boole
  * Discover tabs on the current page
  */
 async function discoverTabs(page: Page): Promise<string[]> {
-  const tabs: string[] = new Set();
+  const tabs = new Set<string>();
 
   // Strategy 1: role="tab"
   const roleTabs = await page.locator("[role='tab']").allTextContents();

@@ -711,7 +711,7 @@ export const SITE_BUILDER_PAGE_STYLES = `
 .bo-siteBuilderToggleRight {
   position: fixed;
   right: var(--bo-space-4);
-  bottom: calc(var(--bo-space-4) + env(safe-area-inset-bottom));
+  bottom: var(--bo-space-4);
   width: 40px;
   height: 40px;
   border: 1px solid var(--bo-border);
