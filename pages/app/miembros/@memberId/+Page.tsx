@@ -14,6 +14,7 @@ import { PhoneInput } from "../../../../ui/inputs/PhoneInput";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { imageToWebpMax200KB } from "../../../../ui/lib/imageFile";
 import { composePhoneE164, splitStoredPhone } from "../../../../ui/lib/phone";
+import { Breadcrumbs } from "../../../../ui/nav/Breadcrumbs";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
 import { Panel } from "../../../../ui/shell/Panel";
 import { formatElapsedHHMMSS, useMemberLive } from "./_shared/realtime";
@@ -188,6 +189,7 @@ export default function Page() {
 
   return (
     <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-detail-section">
+      <Breadcrumbs items={[{ label: "Miembros", href: "/app/miembros" }, { label: memberName || "Detalle" }]} />
       {!member ? (
         <Panel data-slot="@memberId-panel" title="Miembro no disponible" meta="No se pudo cargar el detalle del miembro solicitado." />
       ) : (

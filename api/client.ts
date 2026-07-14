@@ -2,6 +2,8 @@ import type {
   APIError,
   APISuccess,
   Booking,
+  CancelledBookingItem,
+  ModifiedBookingItem,
   BOSession,
   ConfigDefaults,
   ConfigDailyLimit,
@@ -1040,6 +1042,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(patch),
         });
       },
+      async setPhone(id: number, phone: string): Promise<APISuccess<{ member: Member }> | APIError> {
+        return json(`/api/admin/members/${id}/phone`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ phone }),
+        });
+      },
       async uploadAvatar(id: number, file: File | Blob): Promise<APISuccess<{ member: Member; avatarUrl: string }> | APIError> {
         const form = new FormData();
         const filename = file instanceof File && file.name ? file.name : "avatar.webp";
@@ -1791,6 +1800,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
+        });
+      },
+      async checkRestaurantWebsite(website: string): Promise<APISuccess<{ website: string }> | APIError> {
+        return json("/api/admin/config/check-website", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ website }),
         });
       },
       async getEmailProviderConfig(): Promise<APISuccess<{ config: import("./types").EmailProviderConfig }> | APIError> {
