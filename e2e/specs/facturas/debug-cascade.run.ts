@@ -41,7 +41,7 @@ async function main(): Promise<void> {
       const { matchedCSSRules, inlineStyle, attributesStyle, inherited } = await client.send("CSS.getMatchedStylesForNode", { nodeId: nodeIds[0] });
 
       console.log("=== ALL MATCHED CSS RULES ===");
-      for (const r of matchedCSSRules) {
+      for (const r of matchedCSSRules ?? []) {
         const m = r as any;
         const media = (m.rule.media?.map((mm: any) => mm.text).join(",")) || "no-media";
         const origin = m.rule.origin;

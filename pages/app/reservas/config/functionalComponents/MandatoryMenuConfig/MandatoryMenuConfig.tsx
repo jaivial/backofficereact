@@ -25,7 +25,7 @@ export function MandatoryMenuConfig({
     <motion.div
       data-ui="mandatory-menus-panel"
       key="config-mandatory-menus"
-      className="bo-panel overflow-hidden"
+      className="bo-panel overflow-hidden w-full max-w-[768px] mx-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

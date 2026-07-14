@@ -5,6 +5,11 @@ export type ContactoContentProps = {
   busy: boolean;
   setBusy: (v: boolean) => void;
   setError: (v: string | null) => void;
-  api: { config: { setRestaurantInfo: (patch: Partial<RestaurantInfo>) => Promise<{ success: boolean; message?: string; restaurantInfo?: RestaurantInfo }> } };
-  pushToast: (t: { kind: "success"; title: string; message: string }) => void;
+  api: {
+    config: {
+      setRestaurantInfo: (patch: Partial<RestaurantInfo>) => Promise<{ success: boolean; message?: string; restaurantInfo?: RestaurantInfo }>;
+      checkRestaurantWebsite: (website: string) => Promise<{ success: boolean; message?: string; website?: string }>;
+    };
+  };
+  pushToast: (t: { kind: "success" | "error"; title: string; message?: string }) => void;
 };

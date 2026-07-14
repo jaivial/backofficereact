@@ -994,7 +994,7 @@ async function start() {
       const isAppRoot = req.path === "/app" || req.path === "/app/" || req.path === "/m" || req.path === "/m/";
       const isApp = isAppRoot || req.path.startsWith("/app/") || req.path.startsWith("/m/app/");
       if (isApp && !session && !pageContextRequest) {
-        res.redirect(302, "/m/login");
+        res.redirect(302, "/login");
         return;
       }
       if (req.path === "/change-password" && !session && !pageContextRequest) {

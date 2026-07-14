@@ -11,6 +11,7 @@ import type { BOSession } from "../../api/types";
 const SESSION_CACHE_FILE = "test-results/.session-cache.json";
 
 export { expect, devices };
+export type { Page } from "@playwright/test";
 
 interface CachedSession {
   bo_session: string;

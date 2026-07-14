@@ -3,7 +3,7 @@ import { pad2 } from "../utils";
 
 export type HorariosCalendarTab = "miembros" | "reservas";
 
-import type { TabItem } from "../ui/nav/Tabs";
+import type { TabItem } from "../../../../ui/nav/Tabs";
 
 export const MY_SCHEDULE_VIEW_TAB_ITEMS: TabItem[] = [
   { id: "diario", label: "Diario", href: "#", icon: null },

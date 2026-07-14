@@ -131,6 +131,7 @@ export type MenuDish = {
   tipo: string;
   alergenos: string[];
   active: boolean;
+  descripcion_english?: string;
 };
 
 export type MenuTable = {
@@ -145,6 +146,7 @@ export type Postre = {
   alergenos: string[];
   active: boolean;
   precio?: number;
+  descripcion_english?: string;
 };
 
 export type Vino = {
@@ -163,6 +165,11 @@ export type Vino = {
   ai_requested_img?: boolean;
   ai_generating_img?: boolean;
   ai_generated_img?: string | null;
+  nombre_english?: string;
+  descripcion_english?: string;
+  bodega_english?: string;
+  denominacion_origen_english?: string;
+  tipo_english?: string;
 };
 
 export type FoodItem = {
@@ -181,6 +188,11 @@ export type FoodItem = {
   category_id?: number | null;
   category_slug?: string;
   ai_generating?: boolean;
+  nombre_english?: string;
+  descripcion_english?: string;
+  titulo_english?: string;
+  tipo_english?: string;
+  categoria_english?: string;
 };
 
 export type ComidaTipo = "vinos" | "cafes" | "postres" | "platos" | "bebidas";
@@ -440,6 +452,7 @@ export type RestaurantInfo = {
   direccion: string;
   telefono: string;
   email: string;
+  website: string;
   cif: string;
   direccionFacturacion: string;
   clasificacion: "persona_fisica" | "sociedad";

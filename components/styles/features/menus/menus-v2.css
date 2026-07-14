@@ -124,11 +124,11 @@
 }
 
 .bo-menuV2Card {
-  padding: 14px;
+  padding: 24px;
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px 16px;
+  gap: 20px;
   align-items: start;
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 160ms ease;
@@ -146,7 +146,7 @@
 .bo-menuV2Main {
   min-width: 0;
   display: grid;
-  gap: 10px;
+  gap: 20px;
 }
 
 .bo-menuV2TitleRow {
@@ -169,7 +169,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
@@ -212,7 +212,7 @@
 
 .bo-menuV2Aside {
   display: grid;
-  gap: 8px;
+  gap: 16px;
   justify-items: end;
   align-content: start;
 }
@@ -220,7 +220,7 @@
 .bo-menuV2StatusCtrl {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -234,7 +234,7 @@
 
 .bo-menuV2Actions {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   justify-content: flex-end;
 }
 
@@ -364,8 +364,8 @@
 
 .bo-menuFab {
   position: fixed;
-  right: calc(18px + env(safe-area-inset-right));
-  bottom: calc(20px + env(safe-area-inset-bottom));
+  right: 18px;
+  bottom: 20px;
   width: 58px;
   height: 58px;
   border-radius: 999px;
@@ -390,4 +390,3 @@
 .bo-menuFab:active {
   transform: translateY(0);
 }
-

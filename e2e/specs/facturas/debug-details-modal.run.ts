@@ -42,7 +42,7 @@ async function main(): Promise<void> {
 
     // Inspect modal layout
     const info = await page.evaluate(() => {
-      const dialog = document.querySelector('[role="dialog"]');
+      const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
       if (!dialog) return null;
       const cs = window.getComputedStyle(dialog);
 

@@ -192,7 +192,7 @@ function ReorderSectionDragWrapper({ value, className, children }: { value: stri
   );
 }
 
-export function CrearPage() {
+export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   const H = useMenuEditor();
   useErrorToast(H.error);
 
@@ -270,7 +270,7 @@ export function CrearPage() {
   return (
     <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
       <div className="bo-menuWizardTop" data-slot="crear-menuWizardTop">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={() => (window.location.href = "/app/menus")} data-testid="menu-crear-back-to-menus">
+        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose ?? (() => (window.location.href = "/app/menus"))} data-testid="menu-crear-back-to-menus">
           <ArrowLeft size={16} /> Volver a menus
         </button>
         <div className={`bo-saveTag is-${saveState}`} data-slot="crear-div">
@@ -291,7 +291,7 @@ export function CrearPage() {
           <p className="bo-typeIntro" data-slot="crear-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
           <div className="bo-typeGrid" data-slot="crear-typeGrid">
             {H.isSpecial !== undefined && menuTypeOptions.map((opt) => {
-              const optData = MENU_TYPES.find((p: any) => p.value === opt.value) || { icon: Settings2, description: "" };
+              const optData = MENU_TYPES.find((p) => p.value === opt.value) ?? MENU_TYPES[0];
               const Icon = optData.icon || Settings2;
               const isSelected = menuType === opt.value;
               return (
@@ -624,8 +624,8 @@ export function CrearPage() {
                         <PlusMinusCounter
                           label="Numero maximo de principales por mesa"
                           value={Math.max(1, Number.parseInt(mainLimitNum || "1", 10) || 1)}
-                          onDecrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) - 1)))}
-                          onIncrease={() => setMainLimitNum((prev) => String(Math.max(1, (Number.parseInt(prev || "1", 10) || 1) + 1)))}
+                          onDecrease={() => setMainLimitNum(String(Math.max(1, (Number.parseInt(mainLimitNum || "1", 10) || 1) - 1)))}
+                          onIncrease={() => setMainLimitNum(String(Math.max(1, (Number.parseInt(mainLimitNum || "1", 10) || 1) + 1)))}
                           canDecrease={(Number.parseInt(mainLimitNum || "1", 10) || 1) > 1}
                           decrementAriaLabel="Reducir numero maximo de principales por mesa"
                           incrementAriaLabel="Aumentar numero maximo de principales por mesa"

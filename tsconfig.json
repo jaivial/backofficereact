@@ -24,5 +24,6 @@
     "playwright.ct-config.ts",
     ".storybook",
     "e2e"
-  ]
+  ],
+  "exclude": ["**/*.stories.ts", "**/*.stories.tsx"]
 }

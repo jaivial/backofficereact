@@ -34,7 +34,7 @@ export function FoodDetailHero({
   onImageUpdate,
 }: FoodDetailHeroProps) {
   const TypeIcon =
-    FOOD_TYPE_ICONS[foodType as keyof typeof FOOD_TYPE_ICONS] || ((() => null) as LucideIcon);
+    FOOD_TYPE_ICONS[foodType as keyof typeof FOOD_TYPE_ICONS] || ((() => null) as unknown as LucideIcon);
   const busy = uploading || aiBusy;
   const hasImage = Boolean(imageUrl);
   const showHoverOverlay = supportsQuickEditor && hasImage && onImageUpdate;

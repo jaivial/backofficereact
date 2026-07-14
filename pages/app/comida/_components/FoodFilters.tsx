@@ -100,6 +100,15 @@ export const FoodFilters = React.memo(function FoodFilters({
           <span className="bo-foodFiltersCount" data-role="food-filters-count">({count})</span>
         </div>
         <div className="bo-foodFiltersExtras" data-ui="food-filters-extras">
+          <div className="bo-foodFilter bo-foodFilter--images" data-slot="food-filters-images">
+            <span className="bo-label" data-role="food-filters-images-label">Mostrar imagenes</span>
+            <Switch
+              checked={showImages}
+              onCheckedChange={onShowImagesChange}
+              data-ui="food-show-images-switch"
+              aria-label="mostrar imagenes"
+            />
+          </div>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm bo-foodFiltersToggle"
             type="button"
@@ -137,16 +146,6 @@ export const FoodFilters = React.memo(function FoodFilters({
                     data-role="food-filters-search-input"
                   />
                 </div>
-              </div>
-
-              <div className="bo-field bo-foodFilter bo-foodFilter--images" data-slot="food-filters-images">
-                <span className="bo-label" data-role="food-filters-images-label">Mostrar imagenes</span>
-                <Switch
-                  checked={showImages}
-                  onCheckedChange={onShowImagesChange}
-                  data-ui="food-show-images-switch"
-                  aria-label="mostrar imagenes"
-                />
               </div>
 
               <div className="bo-field bo-foodFilter bo-foodFilter--tipo" data-slot="food-filters-tipo">

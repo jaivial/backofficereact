@@ -388,9 +388,22 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
             <div className="bo-invoiceFiltersGrid" data-slot="invoiceFilters-invoiceFiltersGrid">
+              {/* Row 1: Buscar — Select left, input right */}
               <label className="bo-field bo-invoiceFilter bo-invoiceFilter--search" data-slot="invoiceFilters-invoiceFilter--search">
                 <span className="bo-label" data-slot="invoiceFilters-label">Buscar</span>
                 <div className="bo-searchWithDropdown" data-slot="invoiceFilters-searchWithDropdown">
+                  <Select
+                    value={searchBy}
+                    onChange={(value) => onSearchByChange(value as SearchByOption)}
+                    options={[
+                      { value: "name", label: "Nombre" },
+                      { value: "email", label: "Email" },
+                      { value: "invoice_number", label: "N. Factura" },
+                    ]}
+                    ariaLabel="Buscar por"
+                    className="bo-searchBySelect"
+                    data-testid="invoice-filter-searchby-select"
+                  />
                   <input
                     ref={searchInputRef}
                     className="bo-input"
@@ -405,43 +418,35 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                     onChange={(e) => onSearchChange(e.target.value)}
                     data-testid="invoice-filter-search-input"
                   />
-                  <Select
-                    value={searchBy}
-                    onChange={(value) => onSearchByChange(value as SearchByOption)}
-                    options={[
-                      { value: "name", label: "Nombre" },
-                      { value: "email", label: "Email" },
-                      { value: "invoice_number", label: "N. Factura" },
-                    ]}
-                    ariaLabel="Buscar por"
-                    className="bo-searchBySelect"
-                    data-testid="invoice-filter-searchby-select"
-                  />
                 </div>
               </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--status" data-slot="invoiceFilters-invoiceFilter--status">
-                <span className="bo-label" data-slot="invoiceFilters-label">Estado</span>
-                <Select
-                  value={statusFilter}
-                  onChange={(value) => onStatusFilterChange(value as InvoiceStatus | "")}
-                  options={statusOptions}
-                  ariaLabel="Estado"
-                  data-testid="invoice-filter-status-select"
-                />
-              </label>
+              {/* Row 2: Estado + Categoria */}
+              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-estadoCategoriaRow">
+                <label className="bo-field bo-invoiceFilter bo-invoiceFilter--status" data-slot="invoiceFilters-invoiceFilter--status">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Estado</span>
+                  <Select
+                    value={statusFilter}
+                    onChange={(value) => onStatusFilterChange(value as InvoiceStatus | "")}
+                    options={statusOptions}
+                    ariaLabel="Estado"
+                    data-testid="invoice-filter-status-select"
+                  />
+                </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--category" data-slot="invoiceFilters-invoiceFilter--category">
-                <span className="bo-label" data-slot="invoiceFilters-label">Categoria</span>
-                <Select
-                  value={categoryFilter}
-                  onChange={(value) => onCategoryFilterChange(value as InvoiceCategory | "")}
-                  options={categoryOptions}
-                  ariaLabel="Categoria"
-                  data-testid="invoice-filter-category-select"
-                />
-              </label>
+                <label className="bo-field bo-invoiceFilter bo-invoiceFilter--category" data-slot="invoiceFilters-invoiceFilter--category">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Categoria</span>
+                  <Select
+                    value={categoryFilter}
+                    onChange={(value) => onCategoryFilterChange(value as InvoiceCategory | "")}
+                    options={categoryOptions}
+                    ariaLabel="Categoria"
+                    data-testid="invoice-filter-category-select"
+                  />
+                </label>
+              </div>
 
+              {/* Row 3: Etiqueta */}
               <label className="bo-field bo-invoiceFilter bo-invoiceFilter--tag" data-slot="invoiceFilters-invoiceFilter--tag">
                 <span className="bo-label" data-slot="invoiceFilters-label">Etiqueta</span>
                 <input
@@ -454,138 +459,97 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--sort" data-slot="invoiceFilters-invoiceFilter--sort">
-                <span className="bo-label" data-slot="invoiceFilters-label">Ordenar</span>
-                <Select
-                  value={sortBy}
-                  onChange={onSortByChange}
-                  options={sortOptions}
-                  ariaLabel="Ordenar"
-                  data-testid="invoice-filter-sort-select"
-                />
-              </label>
+              {/* Row 4: Tipo de fecha + Periodo */}
+              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-tipoFechaPeriodoRow">
+                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--dateType" data-slot="invoiceFilters-invoiceFilter--dateType">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Tipo de fecha</span>
+                  <Select
+                    value={dateType}
+                    onChange={(value) => onDateTypeChange(value as "invoice_date" | "reservation_date")}
+                    options={[
+                      { value: "invoice_date", label: "Fecha factura" },
+                      { value: "reservation_date", label: "Fecha reserva" },
+                    ]}
+                    ariaLabel="Tipo de fecha"
+                    data-testid="invoice-filter-datetype-select"
+                  />
+                </div>
 
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--dateType" data-slot="invoiceFilters-invoiceFilter--dateType">
-                <span className="bo-label" data-slot="invoiceFilters-label">Tipo de fecha</span>
-                <Select
-                  value={dateType}
-                  onChange={(value) => onDateTypeChange(value as "invoice_date" | "reservation_date")}
-                  options={[
-                    { value: "invoice_date", label: "Fecha factura" },
-                    { value: "reservation_date", label: "Fecha reserva" },
-                  ]}
-                  ariaLabel="Tipo de fecha"
-                  data-testid="invoice-filter-datetype-select"
-                />
-              </div>
-
-              {/* Date Range Presets */}
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--datePresets" data-slot="invoiceFilters-invoiceFilter--datePresets">
-                <span className="bo-label" data-slot="invoiceFilters-label">Periodo</span>
-                <div className="bo-datePresetButtons" data-slot="invoiceFilters-datePresetButtons">
-                  <button
-                    type="button"
-                    className={`bo-datePresetBtn ${datePreset === "today" ? "is-active" : ""}`}
-                    onClick={() => handlePresetClick("today")}
-                    data-testid="invoice-filter-datepreset-today-btn"
-                  >
-                    Hoy
-                  </button>
-                  <button
-                    type="button"
-                    className={`bo-datePresetBtn ${datePreset === "this_week" ? "is-active" : ""}`}
-                    onClick={() => handlePresetClick("this_week")}
-                    data-testid="invoice-filter-datepreset-this-week-btn"
-                  >
-                    Esta semana
-                  </button>
-                  <button
-                    type="button"
-                    className={`bo-datePresetBtn ${datePreset === "this_month" ? "is-active" : ""}`}
-                    onClick={() => handlePresetClick("this_month")}
-                    data-testid="invoice-filter-datepreset-this-month-btn"
-                  >
-                    Este mes
-                  </button>
-                  <button
-                    type="button"
-                    className={`bo-datePresetBtn ${datePreset === "last_month" ? "is-active" : ""}`}
-                    onClick={() => handlePresetClick("last_month")}
-                    data-testid="invoice-filter-datepreset-last-month-btn"
-                  >
-                    Ultimo mes
-                  </button>
-                  <button
-                    type="button"
-                    className={`bo-datePresetBtn ${datePreset === "this_year" ? "is-active" : ""}`}
-                    onClick={() => handlePresetClick("this_year")}
-                    data-testid="invoice-filter-datepreset-this-year-btn"
-                  >
-                    Este año
-                  </button>
-                  <button
-                    type="button"
-                    className={`bo-datePresetBtn ${datePreset === "custom" || showCustomDatePicker ? "is-active" : ""}`}
-                    onClick={() => handlePresetClick("custom")}
-                    data-testid="invoice-filter-datepreset-custom-btn"
-                  >
-                    Personalizado
-                  </button>
+                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--datePresets" data-slot="invoiceFilters-invoiceFilter--datePresets">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Periodo</span>
+                  <Select
+                    value={datePreset}
+                    onChange={(value) => handlePresetClick(value as DatePreset)}
+                    options={[
+                      { value: "", label: "Seleccionar periodo" },
+                      { value: "today", label: "Hoy" },
+                      { value: "this_week", label: "Esta semana" },
+                      { value: "this_month", label: "Este mes" },
+                      { value: "last_month", label: "Último mes" },
+                      { value: "this_year", label: "Este año" },
+                      { value: "custom", label: "Personalizado" },
+                    ]}
+                    ariaLabel="Periodo"
+                    data-testid="invoice-filter-period-select"
+                  />
                 </div>
               </div>
 
               {/* Custom Date Range Pickers - shown when "Personalizado" is selected */}
               {(showCustomDatePicker || datePreset === "custom") && (
-                <>
-                  <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateFrom" data-slot="invoiceFilters-invoiceFilter--dateFrom">
+                <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-customDateRow">
+                  <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--customDateFrom">
                     <span className="bo-label" data-slot="invoiceFilters-label">Desde</span>
                     <DatePicker value={dateFrom || ""} onChange={handleDateFromChangeInternal} data-testid="invoice-filter-datefrom-picker" />
                   </label>
 
-                  <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateTo" data-slot="invoiceFilters-invoiceFilter--dateTo">
+                  <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--customDateTo">
                     <span className="bo-label" data-slot="invoiceFilters-label">Hasta</span>
                     <DatePicker value={dateTo || ""} onChange={handleDateToChangeInternal} data-testid="invoice-filter-dateto-picker" />
                   </label>
-                </>
+                </div>
               )}
 
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isReservation" data-slot="invoiceFilters-invoiceFilter--isReservation">
-                <span className="bo-label" data-slot="invoiceFilters-label">Reserva</span>
-                <Select
-                  value={isReservation === null ? "" : isReservation ? "true" : "false"}
-                  onChange={(value) => {
-                    if (value === "") onIsReservationChange(null);
-                    else onIsReservationChange(value === "true");
-                  }}
-                  options={[
-                    { value: "", label: "Todos" },
-                    { value: "true", label: "Con reserva" },
-                    { value: "false", label: "Sin reserva" },
-                  ]}
-                  ariaLabel="Reserva"
-                  data-testid="invoice-filter-reservation-select"
-                />
+              {/* Row 5: Reserva + Nota de credito */}
+              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-reservaCreditoRow">
+                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isReservation" data-slot="invoiceFilters-invoiceFilter--isReservation">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Reserva</span>
+                  <Select
+                    value={isReservation === null ? "" : isReservation ? "true" : "false"}
+                    onChange={(value) => {
+                      if (value === "") onIsReservationChange(null);
+                      else onIsReservationChange(value === "true");
+                    }}
+                    options={[
+                      { value: "", label: "Todos" },
+                      { value: "true", label: "Con reserva" },
+                      { value: "false", label: "Sin reserva" },
+                    ]}
+                    ariaLabel="Reserva"
+                    data-testid="invoice-filter-reservation-select"
+                  />
+                </div>
+
+                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isCreditNote" data-slot="invoiceFilters-invoiceFilter--isCreditNote">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Nota de credito</span>
+                  <Select
+                    value={isCreditNote === null ? "" : isCreditNote ? "true" : "false"}
+                    onChange={(value) => {
+                      if (value === "") onIsCreditNoteChange(null);
+                      else onIsCreditNoteChange(value === "true");
+                    }}
+                    options={[
+                      { value: "", label: "Todos" },
+                      { value: "true", label: "Solo notas de credito" },
+                      { value: "false", label: "Solo facturas" },
+                    ]}
+                    ariaLabel="Nota de credito"
+                    data-testid="invoice-filter-creditnote-select"
+                  />
+                </div>
               </div>
 
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isCreditNote" data-slot="invoiceFilters-invoiceFilter--isCreditNote">
-                <span className="bo-label" data-slot="invoiceFilters-label">Nota de credito</span>
-                <Select
-                  value={isCreditNote === null ? "" : isCreditNote ? "true" : "false"}
-                  onChange={(value) => {
-                    if (value === "") onIsCreditNoteChange(null);
-                    else onIsCreditNoteChange(value === "true");
-                  }}
-                  options={[
-                    { value: "", label: "Todos" },
-                    { value: "true", label: "Solo notas de credito" },
-                    { value: "false", label: "Solo facturas" },
-                  ]}
-                  ariaLabel="Nota de credito"
-                  data-testid="invoice-filter-creditnote-select"
-                />
-              </div>
-
-              {/* Due Date Filters */}
+              {/* Row 6: Vencimiento */}
               <div className="bo-field bo-invoiceFilter bo-invoiceFilter--dueDate" data-slot="invoiceFilters-invoiceFilter--dueDate">
                 <span className="bo-label" data-slot="invoiceFilters-label">Vencimiento</span>
                 <Select
@@ -604,14 +568,29 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 />
               </div>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateFrom" data-slot="invoiceFilters-invoiceFilter--dateFrom">
-                <span className="bo-label" data-slot="invoiceFilters-label">Desde vencimiento</span>
-                <DatePicker value={dueDateFrom || ""} onChange={onDueDateFromChange} data-testid="invoice-filter-duedatefrom-picker" />
-              </label>
+              {/* Row 7: Desde vencimiento + Hasta vencimiento */}
+              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-vencimientoRow">
+                <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--dueDateFrom">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Desde vencimiento</span>
+                  <DatePicker value={dueDateFrom || ""} onChange={onDueDateFromChange} data-testid="invoice-filter-duedatefrom-picker" />
+                </label>
 
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--dateTo" data-slot="invoiceFilters-invoiceFilter--dateTo">
-                <span className="bo-label" data-slot="invoiceFilters-label">Hasta vencimiento</span>
-                <DatePicker value={dueDateTo || ""} onChange={onDueDateToChange} data-testid="invoice-filter-duedateto-picker" />
+                <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--dueDateTo">
+                  <span className="bo-label" data-slot="invoiceFilters-label">Hasta vencimiento</span>
+                  <DatePicker value={dueDateTo || ""} onChange={onDueDateToChange} data-testid="invoice-filter-duedateto-picker" />
+                </label>
+              </div>
+
+              {/* Row 8: Ordenar */}
+              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--sort" data-slot="invoiceFilters-invoiceFilter--sort">
+                <span className="bo-label" data-slot="invoiceFilters-label">Ordenar</span>
+                <Select
+                  value={sortBy}
+                  onChange={onSortByChange}
+                  options={sortOptions}
+                  ariaLabel="Ordenar"
+                  data-testid="invoice-filter-sort-select"
+                />
               </label>
             </div>
 

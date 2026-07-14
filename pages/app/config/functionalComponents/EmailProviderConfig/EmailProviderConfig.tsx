@@ -39,7 +39,6 @@ function EmailProviderConfigInner({ config, setField, save, load, saving, pushTo
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isSmtp = config.provider === "smtp";

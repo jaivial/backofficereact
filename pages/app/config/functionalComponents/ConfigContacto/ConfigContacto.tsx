@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, Loader2, Upload } from "lucide-react";
+import { CircleAlert, CheckCircle2, ImagePlus, Loader2, Upload } from "lucide-react";
 
 import type { RestaurantInfo } from "../../../../../api/types";
 import { readAPIMessage } from "../../../config/helpers/configHelpers";
@@ -12,6 +12,14 @@ import EmailProviderConfigInner from "../EmailProviderConfig/EmailProviderConfig
 import { useEmailProviderConfig } from "../EmailProviderConfig/hooks/useEmailProviderConfig";
 import { useBranding } from "./hooks/useBranding";
 
+function normalizeWebsiteInput(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^https:\/\//i.test(trimmed)) return trimmed;
+  if (/^http:\/\//i.test(trimmed)) return trimmed.replace(/^http:\/\//i, "https://");
+  return `https://${trimmed}`;
+}
+
 export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, api, pushToast }: ContactoContentProps) {
   const [info, setInfo] = useState<RestaurantInfo>(initialInfo);
   const [savedInfo, setSavedInfo] = useState<RestaurantInfo>(initialInfo);
@@ -22,6 +30,31 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
   const [logoPreviewNonce, setLogoPreviewNonce] = useState(0);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const [logoError, setLogoError] = useState(false);
+  const [websiteCheck, setWebsiteCheck] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const websiteCheckRequest = useRef(0);
+
+  useEffect(() => {
+    const website = info.website.trim();
+    const requestId = ++websiteCheckRequest.current;
+    if (!website) {
+      setWebsiteCheck("idle");
+      return;
+    }
+
+    setWebsiteCheck("idle");
+    const timer = window.setTimeout(async () => {
+      setWebsiteCheck("loading");
+      try {
+        const res = await api.config.checkRestaurantWebsite(website);
+        if (requestId !== websiteCheckRequest.current) return;
+        setWebsiteCheck(res.success ? "success" : "error");
+      } catch {
+        if (requestId === websiteCheckRequest.current) setWebsiteCheck("error");
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [api.config, info.website]);
 
   // Sync when initialInfo changes (e.g. after page reload)
   useEffect(() => {
@@ -141,7 +174,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
     setInfo((prev) => ({ ...prev, clasificacion: value as "persona_fisica" | "sociedad" }));
   }, []);
 
-  const contactoFields: (keyof RestaurantInfo)[] = ["direccion", "telefono", "email"];
+  const contactoFields: (keyof RestaurantInfo)[] = ["direccion", "telefono", "email", "website"];
   const fiscalFields: (keyof RestaurantInfo)[] = ["cif", "direccionFacturacion", "clasificacion"];
   const contactoDirty = contactoFields.some((f) => info[f] !== savedInfo[f]);
   const fiscalDirty = fiscalFields.some((f) => info[f] !== savedInfo[f]);
@@ -308,6 +341,35 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             />
           </div>
 
+          <div className="bo-field bo-websiteField" data-ui="config-contacto-website-field" data-slot="config-contacto-website-field">
+            <label className="bo-label" htmlFor="config-contacto-website" data-slot="configContacto-label">
+              Dominio web del restaurante
+            </label>
+            <div className="bo-inputWithStatus">
+              <input
+                id="config-contacto-website"
+                type="text"
+                inputMode="url"
+                className={`bo-input${websiteCheck === "error" ? " bo-input--error" : ""}`}
+                value={info.website}
+                onChange={(e) => handleField("website", e.target.value)}
+                onBlur={(e) => handleField("website", normalizeWebsiteInput(e.target.value))}
+                disabled={busy}
+                placeholder="https://www.restaurante.com"
+                aria-label="Dominio web del restaurante"
+                data-testid="config-contacto-website-input"
+              />
+              <span
+                className={`bo-inputStatus bo-inputStatus--${websiteCheck}`}
+                aria-live="polite"
+                aria-label={websiteCheck === "loading" ? "Comprobando web" : websiteCheck === "success" ? "Web válida" : websiteCheck === "error" ? "Web no válida" : undefined}
+              >
+                {websiteCheck === "loading" ? <Loader2 size={18} className="bo-spin" aria-hidden="true" /> : null}
+                {websiteCheck === "success" ? <CheckCircle2 size={18} aria-hidden="true" /> : null}
+                {websiteCheck === "error" ? <CircleAlert size={18} aria-hidden="true" /> : null}
+              </span>
+            </div>
+          </div>
 
         <p className="bo-help" data-slot="config-contacto-email-helper">
           Estos datos aparecen en el email de confirmación.

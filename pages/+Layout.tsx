@@ -42,7 +42,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const store = useMemo(
     () => initStore(initialTheme, initialSession, initialMovingExpirationDate),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

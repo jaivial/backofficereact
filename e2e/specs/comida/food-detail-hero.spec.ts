@@ -10,7 +10,7 @@
  *
  * Uses form login (no global-setup dependency).
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -31,10 +31,10 @@ const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123";
 const WINE_URL = `${BASE}/app/comida/vinos/39`;
 const PLATO_URL = `${BASE}/app/comida/platos/125`;
 
-async function login(page) {
+async function login(page: Page) {
   // Login via API, set cookie, then go to desktop page
   await page.goto(`${BASE}/m/login`, { waitUntil: "load", timeout: 30_000 });
-  const res = await page.evaluate(async ({ url, email, password }) => {
+  const res = await page.evaluate(async ({ url, email, password }: { url: string; email: string; password: string }) => {
     const r = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
