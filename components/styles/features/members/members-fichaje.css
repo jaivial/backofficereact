@@ -239,6 +239,173 @@
   gap: 10px;
 }
 
+.bo-memberWhatsAppButton {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--bo-success) 22%, var(--bo-border));
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--bo-success) 8%, transparent);
+  color: color-mix(in srgb, var(--bo-success) 72%, var(--bo-text));
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.bo-memberWhatsAppButton:hover {
+  border-color: color-mix(in srgb, var(--bo-success) 42%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-success) 15%, transparent);
+  color: color-mix(in srgb, var(--bo-success) 84%, var(--bo-text));
+}
+
+.bo-memberWhatsAppButton:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--bo-success) 70%, var(--bo-text));
+  outline-offset: 2px;
+}
+
+.bo-memberWhatsAppModal {
+  padding: 10px 2px 2px;
+  color: var(--bo-text);
+}
+
+.bo-memberWhatsAppContent,
+.bo-memberWhatsAppPremium,
+.bo-memberPhoneSetup {
+  display: grid;
+  gap: 16px;
+}
+
+.bo-memberWhatsAppPremium {
+  text-align: center;
+}
+
+.bo-memberWhatsAppHeading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bo-memberWhatsAppHeading h2,
+.bo-memberWhatsAppPremium h2 {
+  margin: 0;
+  color: var(--bo-text);
+  font-size: 16px;
+  font-weight: 720;
+}
+
+.bo-memberWhatsAppHeading p,
+.bo-memberWhatsAppPremium > p {
+  margin: 3px 0 0;
+  color: var(--bo-muted);
+  font-size: 12px;
+}
+
+.bo-memberWhatsAppHeroIcon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: inline-grid;
+  place-items: center;
+  margin-inline: auto;
+  border: 1px solid color-mix(in srgb, var(--bo-success) 26%, var(--bo-border));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--bo-success) 10%, var(--bo-surface));
+  color: color-mix(in srgb, var(--bo-success) 78%, var(--bo-text));
+}
+
+.bo-memberWhatsAppHeading .bo-memberWhatsAppHeroIcon {
+  margin-inline: 0;
+}
+
+.bo-memberPhoneNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--bo-warning) 30%, var(--bo-border));
+  border-radius: var(--bo-radius-sm);
+  background: var(--bo-warning-bg);
+  color: color-mix(in srgb, var(--bo-warning) 70%, var(--bo-text));
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.bo-memberPhoneNotice svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.bo-memberWhatsAppLabel {
+  display: block;
+  margin-bottom: -10px;
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.bo-memberPhoneError {
+  color: var(--bo-text-danger);
+  font-size: 12px;
+}
+
+.bo-memberWhatsAppTextarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.bo-memberWhatsAppActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.bo-memberWhatsAppActions .bo-btn,
+.bo-memberWhatsAppFullButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bo-memberWhatsAppFullButton {
+  width: 100%;
+}
+
+.bo-memberWhatsAppPrice {
+  padding: 16px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface-3);
+  text-align: left;
+}
+
+.bo-memberWhatsAppPrice > div {
+  color: var(--bo-text);
+  font-size: 20px;
+  font-weight: 740;
+}
+
+.bo-memberWhatsAppPrice span,
+.bo-memberWhatsAppPrice ul {
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.bo-memberWhatsAppPrice ul {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding-left: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-memberWhatsAppButton {
+    transition: none;
+  }
+}
+
 .bo-memberMeta {
   font-size: 12px;
   color: var(--bo-muted);

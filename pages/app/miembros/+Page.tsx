@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { ShieldUser, MessageCircle } from "lucide-react";
+import { CircleAlert, Loader2, MessageCircle, Phone, Send, ShieldUser } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import type { Member, RoleCatalogItem, RoleUserItem } from "../../../api/types";
@@ -13,6 +13,8 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { createClient } from "../../../api/client";
 import { Button } from "../../../ui/shadcn/button";
+import { PhoneInput } from "../../../ui/inputs/PhoneInput";
+import { composePhoneE164, splitStoredPhone } from "../../../ui/lib/phone";
 import { Modal } from "../../../ui/overlays/Modal";
 import { MemberCreateModal, type CreateMemberInput } from "./functionalComponents/MemberCreateModal/MemberCreateModal";
 
@@ -34,7 +36,7 @@ function normalizeEmail(v: string | null | undefined): string {
 export default function Page() {
   const pageContext = usePageContext();
   const raw = (pageContext.data ?? {}) as Partial<Data>;
-  const members = Array.isArray(raw.members) ? raw.members : [];
+  const initialMembers = Array.isArray(raw.members) ? raw.members : [];
   const users = Array.isArray(raw.users) ? raw.users : [];
   const roles = Array.isArray(raw.roles) ? raw.roles : [];
   const initialError = typeof raw.error === "string" ? raw.error : null;
@@ -44,10 +46,15 @@ export default function Page() {
   const client = useMemo(() => createClient({ baseUrl: "" }), []);
   const session = useAtomValue(sessionAtom);
 
+  const [members, setMembers] = useState<Member[]>(initialMembers);
   const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [phoneCountryCode, setPhoneCountryCode] = useState("34");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [phoneSaving, setPhoneSaving] = useState(false);
   const [needsSubscription, setNeedsSubscription] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -102,10 +109,41 @@ export default function Page() {
 
   const handleOpenWhatsApp = (e: React.MouseEvent, member: Member) => {
     e.stopPropagation();
+    const phone = splitStoredPhone(member.whatsappNumber || member.phone);
     setSelectedMember(member);
+    setPhoneCountryCode(phone.countryCode);
+    setPhoneNumber(phone.national);
+    setPhoneError(null);
     setNeedsSubscription(false);
     setMessage(`Hola ${member.firstName}, `);
     setWhatsappModalOpen(true);
+  };
+
+  const handleAddPhone = async () => {
+    if (!selectedMember) return;
+    const phone = composePhoneE164(phoneCountryCode, phoneNumber);
+    if (!phone) {
+      setPhoneError("Introduce un número de teléfono válido.");
+      return;
+    }
+
+    setPhoneSaving(true);
+    setPhoneError(null);
+    try {
+      const res = await client.members.setPhone(selectedMember.id, phone);
+      if (!res.success) {
+        setPhoneError(res.message || "No se pudo guardar el teléfono.");
+        return;
+      }
+      setSelectedMember(res.member);
+      setMembers((current) => current.map((member) => member.id === res.member.id ? res.member : member));
+      setLocalMembers((current) => current.map((member) => member.id === res.member.id ? res.member : member));
+      addToast({ title: "Teléfono guardado", description: "Ya puedes enviar el mensaje por WhatsApp." });
+    } catch (err) {
+      setPhoneError(err instanceof Error ? err.message : "No se pudo guardar el teléfono.");
+    } finally {
+      setPhoneSaving(false);
+    }
   };
 
   const handleSendWhatsApp = async () => {
@@ -193,7 +231,7 @@ export default function Page() {
               <ShieldUser size={16} strokeWidth={1.8} />
               {members.length + localMembers.length} miembros
             </div>
-            <Button variant="primary" size="sm" data-testid="add-member-button" onClick={() => setCreateModalOpen(true)}>
+            <Button variant="default" size="sm" data-testid="add-member-button" onClick={() => setCreateModalOpen(true)}>
               + Añadir miembro
             </Button>
           </div>
@@ -204,11 +242,17 @@ export default function Page() {
         {[...members, ...localMembers].map((member) => {
           const roleMeta = memberRoleMeta(member);
           return (
-            <button
+            <div
               key={member.id}
-              type="button"
+              role="link"
+              tabIndex={0}
               className="bo-memberCard"
               onClick={() => window.location.assign(`/app/miembros/${member.id}`)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                window.location.assign(`/app/miembros/${member.id}`);
+              }}
             >
               <div className="bo-memberCardTop">
                 <Avatar className="bo-memberAvatar">
@@ -239,15 +283,19 @@ export default function Page() {
                   <span className="bo-memberMeta">Contrato semanal</span>
                   <span className="bo-badge bo-memberHours">{member.weeklyContractHours.toFixed(2)} h</span>
                 </div>
-                <button 
+                <button
+                  type="button"
                   onClick={(e) => handleOpenWhatsApp(e, member)}
-                  className="p-2 rounded-full hover:bg-green-500/20 text-slate-400 hover:text-green-400 transition-colors"
-                  aria-label="Enviar WhatsApp"
+                  className="bo-memberWhatsAppButton"
+                  aria-label={`Enviar WhatsApp a ${fullName(member)}`}
+                  data-member-id={member.id}
+                  data-user-id={member.boUserId ?? undefined}
+                  data-has-phone={Boolean(member.whatsappNumber || member.phone)}
                 >
-                  <MessageCircle size={18} />
+                  <MessageCircle size={18} strokeWidth={1.8} />
                 </button>
               </div>
-            </button>
+            </div>
           );
         })}
 
@@ -261,51 +309,77 @@ export default function Page() {
         ) : null}
       </div>
 
-      <Modal open={whatsappModalOpen} onOpenChange={setWhatsappModalOpen}>
-        <div className="p-6 max-w-md w-full">
+      <Modal open={whatsappModalOpen} title="WhatsApp" onClose={() => setWhatsappModalOpen(false)}>
+        <div className="bo-memberWhatsAppModal" data-member-id={selectedMember?.id} data-user-id={selectedMember?.boUserId ?? undefined}>
           {needsSubscription ? (
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-green-400 mb-4">
-                <MessageCircle size={32} />
+            <div className="bo-memberWhatsAppPremium">
+              <div className="bo-memberWhatsAppHeroIcon" aria-hidden="true">
+                <MessageCircle size={28} strokeWidth={1.8} />
               </div>
-              <h2 className="text-xl font-bold text-slate-100">WhatsApp Premium Pack</h2>
-              <p className="text-slate-400 text-sm">
-                Desbloquea la capacidad de enviar mensajes de WhatsApp directamente a tu personal. 
-                Ideal para avisos de turnos y comunicaciones importantes.
-              </p>
-              <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 my-4">
-                <div className="text-2xl font-bold text-slate-100 mb-1">29.99 € <span className="text-sm text-slate-400 font-normal">/ mes</span></div>
-                <ul className="text-sm text-left text-slate-300 space-y-2 mt-4">
-                  <li>✓ Mensajes ilimitados al staff</li>
-                  <li>✓ Integración con cuenta de empresa central</li>
-                  <li>✓ Sin necesidad de escanear QR</li>
+              <h2>WhatsApp Premium Pack</h2>
+              <p>Envía avisos de turnos y comunicaciones directamente a tu equipo.</p>
+              <div className="bo-memberWhatsAppPrice">
+                <div>29.99 € <span>/ mes</span></div>
+                <ul>
+                  <li>Mensajes ilimitados al staff</li>
+                  <li>Cuenta de empresa central</li>
+                  <li>Sin escanear QR</li>
                 </ul>
               </div>
-              <Button variant="primary" className="w-full" onClick={handleSubscribe} disabled={subscribing}>
-                {subscribing ? "Activando..." : "Suscribirse y Continuar"}
+              <Button variant="default" className="bo-memberWhatsAppFullButton" onClick={handleSubscribe} disabled={subscribing}>
+                {subscribing ? <Loader2 size={16} className="bo-spin" /> : <MessageCircle size={16} />}
+                {subscribing ? "Activando..." : "Suscribirse y continuar"}
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-100">Mensaje para {selectedMember?.firstName}</h2>
+            <div className="bo-memberWhatsAppContent">
+              <div className="bo-memberWhatsAppHeading">
+                <div className="bo-memberWhatsAppHeroIcon" aria-hidden="true">
+                  <MessageCircle size={22} strokeWidth={1.8} />
+                </div>
+                <div>
+                  <h2>Mensaje para {selectedMember?.firstName}</h2>
+                  <p>{selectedMember ? fullName(selectedMember) : "Miembro"}</p>
+                </div>
+              </div>
               {!selectedMember?.whatsappNumber ? (
-                <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 p-3 rounded text-sm">
-                  Este miembro no tiene un número de WhatsApp configurado en su perfil.
+                <div className="bo-memberPhoneSetup">
+                  <div className="bo-memberPhoneNotice" role="status">
+                    <CircleAlert size={18} strokeWidth={1.8} aria-hidden="true" />
+                    <span>Este miembro no tiene un número de WhatsApp configurado en su perfil.</span>
+                  </div>
+                  <label className="bo-memberWhatsAppLabel">Añadir teléfono</label>
+                  <PhoneInput
+                    countryCode={phoneCountryCode}
+                    number={phoneNumber}
+                    onCountryCodeChange={setPhoneCountryCode}
+                    onNumberChange={setPhoneNumber}
+                    disabled={phoneSaving}
+                    numberAriaLabel={`Teléfono de ${selectedMember?.firstName || "miembro"}`}
+                  />
+                  {phoneError ? <div className="bo-memberPhoneError" role="alert">{phoneError}</div> : null}
+                  <div className="bo-memberWhatsAppActions">
+                    <Button variant="secondary" onClick={() => setWhatsappModalOpen(false)} disabled={phoneSaving}>Cancelar</Button>
+                    <Button variant="default" onClick={handleAddPhone} disabled={phoneSaving || !phoneNumber.trim()} data-member-id={selectedMember?.id} data-user-id={selectedMember?.boUserId ?? undefined}>
+                      {phoneSaving ? <Loader2 size={16} className="bo-spin" /> : <Phone size={16} strokeWidth={1.8} />}
+                      {phoneSaving ? "Guardando..." : "Guardar teléfono"}
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Mensaje</label>
-                    <textarea 
-                      className="w-full h-32 bg-slate-900 border border-slate-700 rounded-lg p-3 text-slate-200 text-sm focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex justify-end gap-3 pt-2">
+                  <label className="bo-memberWhatsAppLabel" htmlFor="member-whatsapp-message">Mensaje</label>
+                  <textarea
+                    id="member-whatsapp-message"
+                    className="bo-textarea bo-memberWhatsAppTextarea"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                  <div className="bo-memberWhatsAppActions">
                     <Button variant="secondary" onClick={() => setWhatsappModalOpen(false)}>Cancelar</Button>
-                    <Button variant="primary" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
-                      {sending ? "Enviando..." : "Enviar por WhatsApp"}
+                    <Button variant="default" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
+                      {sending ? <Loader2 size={16} className="bo-spin" /> : <Send size={16} strokeWidth={1.8} />}
+                      {sending ? "Enviando..." : "Enviar"}
                     </Button>
                   </div>
                 </>
