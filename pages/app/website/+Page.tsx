@@ -205,7 +205,7 @@ export default function WebsiteBuilderPage() {
               <div className="p-4 flex items-center justify-between">
                 <span className="font-medium text-slate-200">{tmpl.name}</span>
                 <Button 
-                  variant={config?.template_id === tmpl.id ? "primary" : "secondary"}
+                  variant={config?.template_id === tmpl.id ? "default" : "secondary"}
                   size="sm"
                   onClick={() => handleSave({ template_id: tmpl.id, custom_html: null })}
                 >
@@ -231,7 +231,7 @@ export default function WebsiteBuilderPage() {
               />
               <div className="mt-4 flex justify-end">
                 <Button 
-                  variant="primary" 
+                  variant="default"
                   onClick={handleAIGenerate}
                   disabled={!prompt.trim() || generating}
                 >
@@ -300,7 +300,7 @@ export default function WebsiteBuilderPage() {
                   <div className="text-right">
                     <div className="text-xl font-bold text-slate-100">{domainResult.marked_price.toFixed(2)} {domainResult.currency} <span className="text-sm text-slate-400 font-normal">/ año</span></div>
                     <Button 
-                      variant="primary" 
+                      variant="default"
                       className="mt-2 w-full" 
                       onClick={handleRegisterDomain}
                       disabled={registeringDomain}

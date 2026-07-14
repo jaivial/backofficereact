@@ -1699,10 +1699,11 @@ export function useMenuEditor(): UseMenuEditorReturn {
     syncRequestSeqRef.current = 0;
     setHydrated(true);
 
-    if (data.menu?.id) {
+    const loadedMenuId = data.menu?.id;
+    if (loadedMenuId) {
       void (async () => {
         try {
-          const res = await api.menus.gruposV2.getSameDayBooking(data.menu.id);
+          const res = await api.menus.gruposV2.getSameDayBooking(loadedMenuId);
           if (res.success && Array.isArray(res.dish_ids)) {
             const blockedSet = new Set<number>(res.dish_ids);
             sameDayBookingBlockedRef.current = blockedSet;
@@ -1723,7 +1724,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
         } catch { /* ignore */ }
       })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // --- Preview dock timer effect ---

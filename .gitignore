@@ -19,3 +19,4 @@ pnpm-debug.log*
 # Test artifacts
 test-results/
 storybook-static/
+*.build-*.mjs

@@ -14,8 +14,8 @@ import { generateDateRange, getWeekGroups } from "../../helpers";
 import { fullName } from "../../../../../../lib/member";
 
 const MEMBER_VIEW_TAB_ITEMS = [
-  { id: "diario", label: "Diario" },
-  { id: "semanal", label: "Semanal" },
+  { id: "diario", label: "Diario", href: "#" },
+  { id: "semanal", label: "Semanal", href: "#" },
 ];
 
 const MEMBER_FILTER_VIEW_KEY = "bo_horarios_preview_member_view";

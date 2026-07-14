@@ -101,7 +101,7 @@ export default function MobileFichajePage() {
   if (!session) return null;
 
   return (
-    <div className="flex flex-col gap-6 p-4 min-h-screen" data-ui="mobile-fichaje">
+    <div className="bo-mobile-page flex flex-col gap-6 p-4" data-ui="mobile-fichaje">
       {/* Header */}
       <header className="pt-2" data-ui="mobile-fichaje-header">
         <h1 className="text-xl font-bold text-[hsl(var(--foreground))]" data-ui="mobile-fichaje-title">Fichaje</h1>

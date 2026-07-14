@@ -26,8 +26,7 @@ function formatElapsed(totalSeconds: number): string {
 }
 
 export function Topbar({
-  // ponytail: title kept for caller compat, no longer rendered
-  title: _title,
+  title,
   breadcrumbs,
   className,
 }: {
@@ -138,6 +137,7 @@ export function Topbar({
   return (
     <header className={cn("bo-topbar", className)} aria-label="Topbar" data-testid="topbar" data-ui="topbar">
       <div className="bo-topbarHeading bo-topbarHeading--actionsInline" data-slot="topbar-heading">
+        {title ? <h1 className="bo-title" data-role="topbar-title">{title}</h1> : null}
         {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} data-slot="topbar-breadcrumbs" /> : null}
       </div>
       <div className="bo-actions bo-topbarActions" data-slot="topbar-actions">

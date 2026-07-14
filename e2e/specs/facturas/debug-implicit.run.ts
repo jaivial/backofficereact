@@ -60,7 +60,10 @@ async function main(): Promise<void> {
     });
 
     await page.waitForTimeout(150);
-    const finalCols = await page.evaluate(() => window.getComputedStyle(document.querySelector('.bo-invoiceFiltersGrid')).gridTemplateColumns);
+    const finalCols = await page.evaluate(() => {
+      const element = document.querySelector<HTMLElement>('.bo-invoiceFiltersGrid');
+      return element ? window.getComputedStyle(element).gridTemplateColumns : "";
+    });
     console.log("Initial computed (display: block):");
     console.log(JSON.stringify(result, null, 2));
     console.log("\nFinal columns after setting 200px:", finalCols);

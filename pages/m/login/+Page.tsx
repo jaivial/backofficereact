@@ -28,7 +28,7 @@ export default function MobileLoginPage() {
 
   return (
     <div
-      className="bo-mobile-login min-h-screen flex flex-col items-center justify-center px-6 bg-[hsl(var(--background))]"
+      className="bo-mobile-login flex flex-col items-center justify-center px-6 bg-[hsl(var(--background))]"
       data-ui="mobile-login"
     >
       {/* Logo / Branding */}

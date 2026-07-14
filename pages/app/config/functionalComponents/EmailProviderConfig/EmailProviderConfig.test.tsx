@@ -25,7 +25,6 @@ function makeConfig(overrides = {}) {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderWithProps(props: any = {}) {
   const merged = {
     config: makeConfig(),

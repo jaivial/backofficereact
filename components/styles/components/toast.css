@@ -2,7 +2,7 @@
 .bo-toastWrap {
   position: fixed;
   z-index: 90;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: 16px;
   right: 16px;
   display: grid;
   gap: 10px;
@@ -322,8 +322,8 @@ body:has(.bo-app--page) {
     justify-content: flex-end;
     width: auto;
     gap: var(--bo-space-2);
-    top: max(0px, env(safe-area-inset-top));
-    right: max(8px, env(safe-area-inset-right));
+    top: 0;
+    right: 8px;
     max-width: calc(100vw - 16px);
     padding: 0;
   }
@@ -343,7 +343,7 @@ body:has(.bo-app--page) {
     flex-direction: row;
     justify-content: center;
     gap: 0;
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    padding: 10px 12px;
     border-right: 0;
     border-top: 1px solid var(--bo-border);
     overflow: visible;
@@ -434,4 +434,3 @@ body:has(.bo-app--page) {
     box-shadow: 0 10px 24px rgba(185, 168, 255, 0.16);
   }
 }
-

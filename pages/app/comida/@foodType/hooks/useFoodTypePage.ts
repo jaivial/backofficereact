@@ -309,6 +309,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   return {
     items,
     categories,
+    page,
     pageActive,
     pageVisibilityLoading,
     showPageVisibilityToggle,

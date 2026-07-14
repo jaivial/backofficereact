@@ -394,6 +394,81 @@
   }
 }
 
+@media (min-width: 1025px) {
+  .bo-reservasGrid:not(.bo-reservasGrid--closed) {
+    grid-template-columns: minmax(0, 500px) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass {
+    max-width: 500px;
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalCell {
+    min-height: 52px;
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalNum {
+    font-size: var(--bo-text-lg);
+    line-height: var(--bo-leading-tight);
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub {
+    font-size: var(--bo-text-sm);
+    line-height: var(--bo-leading-tight);
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub .bo-ico {
+    width: var(--bo-text-lg);
+    height: var(--bo-text-lg);
+  }
+
+  .bo-reservasSide {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: stretch;
+    align-content: stretch;
+  }
+
+  .bo-filterRow .bo-search {
+    min-width: 0;
+  }
+
+  .bo-filterRow .bo-search .bo-input {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1400px) {
+  .bo-reservasSide {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 920px) {
+  .bo-reservasGrid:not(.bo-reservasGrid--closed) {
+    grid-template-columns: 1fr;
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass {
+    max-width: none;
+  }
+}
+
+@media (min-width: 580px) and (max-width: 920px) {
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalNum {
+    font-size: var(--bo-text-lg);
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub {
+    font-size: var(--bo-text-sm);
+  }
+
+  .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub .bo-ico {
+    width: var(--bo-text-lg);
+    height: var(--bo-text-lg);
+  }
+}
+
 .bo-bookingSearch {
   width: fit-content;
   margin-inline: auto;
@@ -822,4 +897,3 @@
 :root[data-theme="light"] .bo-mcalCell.is-closed .bo-mcalSub {
   color: rgba(20, 21, 26, 0.68);
 }
-

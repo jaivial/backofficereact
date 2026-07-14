@@ -29,6 +29,43 @@
   font-weight: 650;
 }
 
+.bo-websiteField,
+.bo-websiteField .bo-inputWithStatus {
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
+}
+
+.bo-inputWithStatus {
+  position: relative;
+}
+
+.bo-inputWithStatus .bo-input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.bo-inputStatus {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: inline-flex;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.bo-inputStatus--success {
+  color: var(--bo-color-success);
+}
+
+.bo-inputStatus--error {
+  color: var(--bo-color-danger);
+}
+
+.bo-inputStatus--loading {
+  color: var(--bo-accent);
+}
+
 .bo-input {
   height: 40px;
   min-height: 40px;

@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     if (nodeIds.length > 0) {
       const { matchedCSSRules } = await client.send("CSS.getMatchedStylesForNode", { nodeId: nodeIds[0] });
       console.log("\n--- Matched CSS rules for .bo-invoiceFiltersGrid ---");
-      for (const r of matchedCSSRules) {
+      for (const r of matchedCSSRules ?? []) {
         const media = (r as any).rule.media?.map((m: any) => m.text).join(",") || "no-media";
         const sel = (r as any).rule.selectorList.text;
         console.log(`[media: ${media}] ${sel}`);

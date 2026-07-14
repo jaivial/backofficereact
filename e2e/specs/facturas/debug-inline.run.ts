@@ -82,7 +82,7 @@ async function main(): Promise<void> {
     if (nodeIds.length > 0) {
       const { matchedCSSRules } = await client.send("CSS.getMatchedStylesForNode", { nodeId: nodeIds[0] });
       console.log("\nFinal matched rules (origin & selector):");
-      for (const r of matchedCSSRules) {
+      for (const r of matchedCSSRules ?? []) {
         const m = r as any;
         const sel = m.rule.selectorList.text;
         const gridProp = m.rule.style.cssProperties.find((p: any) => p.name === "grid-template-columns");
