@@ -2496,27 +2496,6 @@
   font-weight: 700;
 }
 
-.bo-horariosPreviewGrid {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.bo-horariosPreviewBlock {
-  display: grid;
-  gap: 10px;
-}
-
-.bo-horariosPreviewCards {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
-
-.bo-horariosPreviewCards .bo-memberCard {
-  cursor: pointer;
-}
-
 .bo-memberCard--live {
   border-color: color-mix(in srgb, var(--bo-accent-2) 35%, var(--bo-border));
   box-shadow:
@@ -2897,10 +2876,6 @@
   }
 
   .bo-horariosWheels {
-    grid-template-columns: 1fr;
-  }
-
-  .bo-horariosPreviewGrid {
     grid-template-columns: 1fr;
   }
 

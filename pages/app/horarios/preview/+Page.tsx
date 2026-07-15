@@ -17,8 +17,6 @@ import { fullName, todayISO } from "./utils";
 import { usePreviewView } from "./hooks/usePreviewView";
 import { usePreviewDate } from "./hooks/usePreviewDate";
 import { PreviewCounters } from "./functionalComponents/PreviewCounters/PreviewCounters";
-import { LiveMembersGrid } from "./functionalComponents/LiveMembersGrid/LiveMembersGrid";
-import { IdleMembersGrid } from "./functionalComponents/IdleMembersGrid/IdleMembersGrid";
 import { MemberFilterView } from "./functionalComponents/MemberFilterView";
 
 export default function Page() {
@@ -34,7 +32,7 @@ export default function Page() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const [view, setView] = usePreviewView("grid", VIEW_STORAGE_KEY);
+  const [view, setView] = usePreviewView("table", VIEW_STORAGE_KEY);
   const { date, schedules, busy, error, onDateChange } = usePreviewDate(
     data.date || todayISO(),
     data.schedules || [],
@@ -89,7 +87,7 @@ export default function Page() {
   }, []);
 
   const onViewChange = useCallback(
-    (id: string) => setView(id as "grid" | "table" | "member"),
+    (id: string) => setView(id as "table" | "member"),
     [setView],
   );
 
@@ -134,22 +132,7 @@ export default function Page() {
       >
           <PreviewCounters liveCount={liveMembers.length} idleCount={idleMembers.length} />
 
-          {view === "grid" ? (
-            <div data-ui="previewGrid" className="bo-horariosPreviewGrid">
-              <LiveMembersGrid
-                members={liveMembers}
-                activeEntriesForDate={activeEntriesForDate}
-                schedulesByMember={schedulesByMember}
-                tick={tick}
-                onMemberClick={onMemberClick}
-              />
-              <IdleMembersGrid
-                members={idleMembers}
-                schedulesByMember={schedulesByMember}
-                onMemberClick={onMemberClick}
-              />
-            </div>
-          ) : view === "table" ? (
+          {view === "table" ? (
             <HorariosRosterTable
               rows={rosterRows}
               nowMs={tick}
