@@ -1663,7 +1663,8 @@
   gap: 14px;
   grid-template-columns: 1fr;
   width: 100%;
-  max-width: 100%;
+  max-width: 768px;
+  margin-inline: auto;
   min-width: 0;
 }
 
@@ -2189,7 +2190,8 @@
   gap: 14px;
   grid-template-columns: 1fr;
   width: 100%;
-  max-width: 100%;
+  max-width: 768px;
+  margin-inline: auto;
   min-width: 0;
 }
 

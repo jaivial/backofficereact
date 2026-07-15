@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Search } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
+import { ScrollArea } from "../layout/ScrollArea";
 
 type Option = { value: string; label: string; icon?: React.ReactNode };
 
@@ -161,27 +162,29 @@ export function SearchableSelect({
                     aria-label="Buscar"
                   />
                 </div>
-                <div className="overflow-y-auto" style={{ maxHeight: `${maxHeight - 46}px` }}>
-                  {filtered.length === 0 ? (
-                    <div className="px-3 py-3 text-sm text-[var(--bo-muted)]" data-role="searchable-select-empty">
-                      {emptyText ?? "Sin resultados"}
-                    </div>
-                  ) : (
-                    filtered.map((o) => (
-                      <button
-                        key={o.value}
-                        type="button"
-                        className={cn("bo-selectItem", o.value === value && "is-selected")}
-                        role="option"
-                        aria-selected={o.value === value}
-                        onClick={() => { onChange(o.value); close(); btnRef.current?.focus(); }}
-                        data-role="searchable-select-option"
-                      >
-                        {o.icon ? <span className="bo-selectItemIcon" aria-hidden="true">{o.icon}</span> : null}
-                        <span data-ui="select-item-label">{o.label}</span>
-                      </button>
-                    ))
-                  )}
+                <div style={{ maxHeight: `${maxHeight - 46}px` }}>
+                  <ScrollArea dataSlot="searchable-select-list">
+                    {filtered.length === 0 ? (
+                      <div className="px-3 py-3 text-sm text-[var(--bo-muted)]" data-role="searchable-select-empty">
+                        {emptyText ?? "Sin resultados"}
+                      </div>
+                    ) : (
+                      filtered.map((o) => (
+                        <button
+                          key={o.value}
+                          type="button"
+                          className={cn("bo-selectItem", o.value === value && "is-selected")}
+                          role="option"
+                          aria-selected={o.value === value}
+                          onClick={() => { onChange(o.value); close(); btnRef.current?.focus(); }}
+                          data-role="searchable-select-option"
+                        >
+                          {o.icon ? <span className="bo-selectItemIcon" aria-hidden="true">{o.icon}</span> : null}
+                          <span data-ui="select-item-label">{o.label}</span>
+                        </button>
+                      ))
+                    )}
+                  </ScrollArea>
                 </div>
               </motion.div>
             )}

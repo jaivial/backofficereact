@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { MoreVertical } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
+import { ScrollArea } from "../layout/ScrollArea";
 
 type MenuItem = {
   id: string;
@@ -229,31 +230,31 @@ export function DropdownMenu({
             minWidth: pos.minWidth,
             maxWidth: pos.maxWidth,
             maxHeight: pos.maxHeight,
-            overflowY: "auto",
-            overscrollBehavior: "contain",
             transformOrigin: pos.direction === "up" ? "bottom left" : "top left",
             visibility: pos.ready ? "visible" : "hidden",
           }}
           data-ui="dropdown-menu"
         >
-          {items.map((it) => (
-            <button
-              key={it.id}
-              data-menuitem
-              type="button"
-              className={cn("bo-menuItem", it.tone === "danger" && "is-danger")}
-              role="menuitem"
-              onClick={() => {
-                close();
-                it.onSelect();
-              }}
-              data-ui="dropdown-menu-item"
-              data-item-id={it.id}
-            >
-              {it.icon ? <span className="bo-menuIcon" aria-hidden="true">{it.icon}</span> : null}
-              <span className="bo-menuLabel" data-slot="dropdownMenu-menuLabel">{it.label}</span>
-            </button>
-          ))}
+          <ScrollArea dataSlot="dropdown-menu-list">
+            {items.map((it) => (
+              <button
+                key={it.id}
+                data-menuitem
+                type="button"
+                className={cn("bo-menuItem", it.tone === "danger" && "is-danger")}
+                role="menuitem"
+                onClick={() => {
+                  close();
+                  it.onSelect();
+                }}
+                data-ui="dropdown-menu-item"
+                data-item-id={it.id}
+              >
+                {it.icon ? <span className="bo-menuIcon" aria-hidden="true">{it.icon}</span> : null}
+                <span className="bo-menuLabel" data-slot="dropdownMenu-menuLabel">{it.label}</span>
+              </button>
+            ))}
+          </ScrollArea>
         </motion.div>,
       </AnimatePresence>,
       root,

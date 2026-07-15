@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect, useMemo } from "react";
 import { X, Send, Loader2, Mail, User, FileText, AlertCircle, CheckCircle, XCircle, RotateCcw, Check } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { useToasts } from "../../../../ui/feedback/useToasts";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { Invoice } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
 
@@ -254,7 +255,8 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
             </div>
 
             {/* Results List */}
-            <div className="bo-batchSendResults" data-slot="batch-send-results">
+            <ScrollArea dataSlot="batch-send-results">
+              <div className="bo-batchSendResults">
               <h4 data-slot="batch-send-results-title">Detalles</h4>
               <div className="bo-batchSendResultsList" data-slot="batch-send-results-list">
                 {results.map((result) => (
@@ -280,6 +282,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                 ))}
               </div>
             </div>
+            </ScrollArea>
 
             {/* Retry Button */}
             {summary.failed > 0 && (

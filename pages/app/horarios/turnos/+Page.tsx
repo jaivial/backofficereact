@@ -1,19 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { CalendarClock, Play, Search, Square } from "lucide-react";
+import { ArrowRight, CalendarClock, CalendarDays, Clock, Play, Search, Square } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
 import type { FichajeActiveEntry, FichajeSchedule, Member, TimeEntry } from "../../../../api/types";
+
+type EditableTimeEntry = {
+  id: number;
+  startTime: string;
+  endTime: string | null;
+  minutesWorked: number;
+  source: string;
+  isLive: boolean;
+};
 import { fichajeRealtimeAtom } from "../../../../state/atoms";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
-import { DatePicker } from "../../../../ui/inputs/DatePicker";
-import { MemberPicker, type MemberPickerItem } from "../../../../ui/widgets/MemberPicker";
-import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
-import { TimeEntriesEditor, type EditableTimeEntry } from "../../../../ui/widgets/TimeEntriesEditor";
 import { useToasts } from "../../../../ui/feedback/useToasts";
+import { CalendarModal } from "./functionalComponents/CalendarModal/CalendarModal";
+import { MemberFilterView } from "./functionalComponents/MemberFilterView/MemberFilterView";
+import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { HorariosRosterTable, type HorariosRosterRow, type HorariosRosterTableView } from "../../../../ui/widgets/HorariosRosterTable";
 import { Panel } from "../../../../ui/shell/Panel";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
 import { cn } from "../../../../ui/shadcn/utils";
 import { fullName } from "../../../../lib/member";
 
@@ -48,16 +57,37 @@ function toHHMMFromNow(): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+function formatDateLabel(iso: string): string {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return iso;
+  const yyyy = Number(m[1]), mm = Number(m[2]), dd = Number(m[3]);
+  if (!Number.isFinite(yyyy) || !Number.isFinite(mm) || !Number.isFinite(dd)) return iso;
+  return new Date(yyyy, mm - 1, dd).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0) return "??";
+  return (parts[0][0] + (parts[parts.length - 1]?.[0] ?? "")).toUpperCase();
+}
+
+function scheduleHours(startTime: string, endTime: string): string {
+  const s = startTime.split(":").map(Number);
+  const e = endTime.split(":").map(Number);
+  if (!s[0] || !e[0]) return "";
+  const mins = (e[0] * 60 + e[1]) - (s[0] * 60 + s[1]);
+  if (mins <= 0) return "";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
 function todayISO(): string {
   const d = new Date();
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
-}
-
-function totalMinutes(entries: EditableTimeEntry[]): number {
-  return entries.reduce((acc, it) => acc + Math.max(0, it.minutesWorked), 0);
 }
 
 export default function Page() {
@@ -70,11 +100,11 @@ export default function Page() {
   }) as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const realtime = useAtomValue(fichajeRealtimeAtom);
-  const { pushToast } = useToasts();
 
   const [date, setDate] = useState(data.date || todayISO());
-  const [schedules, setSchedules] = useState<FichajeSchedule[]>(data.schedules || []);
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
+  const [schedules, setSchedules] = useState<FichajeSchedule[]>(data.schedules || []);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(() => {
     const raw = Number(pageContext.urlParsed?.search?.memberId ?? 0);
     if (Number.isFinite(raw) && raw > 0) return raw;
@@ -85,6 +115,7 @@ export default function Page() {
   const [busyEntryId, setBusyEntryId] = useState<number | null>(null);
   const [busyFichaje, setBusyFichaje] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
+  const { pushToast } = useToasts();
   useErrorToast(error);
   const [view, setView] = useState<HorariosRosterTableView>(() => {
     try {
@@ -117,20 +148,6 @@ export default function Page() {
     }
     return out;
   }, [date, realtime.activeEntriesByMember]);
-
-  const pickerItems = useMemo<MemberPickerItem[]>(() => {
-    const filtered = membersSorted.filter((member) => {
-      const query = memberSearch.trim().toLowerCase();
-      if (!query) return true;
-      return fullName(member).toLowerCase().includes(query);
-    });
-    return filtered.map((member) => ({
-      id: member.id,
-      name: fullName(member),
-      meta: scheduleByMember.has(member.id) ? "Asignado" : "Sin horario",
-      live: activeEntriesForDate.has(member.id),
-    }));
-  }, [activeEntriesForDate, memberSearch, membersSorted, scheduleByMember]);
 
   const selectedMember = useMemo(
     () => membersSorted.find((member) => member.id === selectedMemberId) || null,
@@ -387,7 +404,23 @@ export default function Page() {
         meta="Editar tiempo registrado por miembro y fecha."
         actions={
           <div className="bo-horariosPreviewActions" data-testid="horarios-turnos-actions">
-            <DatePicker value={date} onChange={(nextDate) => void selectDate(nextDate)} />
+            <button
+              type="button"
+              className="bo-dateBtn bo-dateBtn--glass"
+              onClick={() => setCalendarModalOpen(true)}
+              data-testid="horarios-turnos-calendar-btn"
+            >
+              <CalendarDays size={18} strokeWidth={1.8} />
+              <span className="bo-dateBtnLabel">{formatDateLabel(date)}</span>
+            </button>
+            <CalendarModal
+              open={calendarModalOpen}
+              onClose={() => setCalendarModalOpen(false)}
+              onSelectDate={(nextDate) => void selectDate(nextDate)}
+              year={Number(date.split("-")[0])}
+              month={Number(date.split("-")[1])}
+              currentDate={date}
+            />
             <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Cambiar vista" data-testid="horarios-turnos-view-tabs">
               <button
                 type="button"
@@ -415,23 +448,81 @@ export default function Page() {
                   <span className="bo-tabLabel" data-slot="turnos-tabLabel">Tabla</span>
                 </span>
               </button>
+              <button
+                type="button"
+                className={cn("bo-tab", view === "member" && "is-active")}
+                role="tab"
+                aria-selected={view === "member"}
+                onClick={() => setView("member")}
+                data-testid="horarios-turnos-view-member"
+              >
+                {view === "member" ? <span className="bo-tabIndicator" /> : null}
+                <span className="bo-tabInner" data-slot="turnos-tabInner">
+                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Miembro</span>
+                </span>
+              </button>
             </div>
           </div>
         }
-        bodyClassName={cn("bo-turnosBody", view === "table" && "bo-turnosBody--table")}
+        bodyClassName="bo-turnosBody"
       >
 
           {view === "grid" ? (
-            <MemberPicker
-              title="Miembros"
-              searchValue={memberSearch}
-              onSearchChange={setMemberSearch}
-              items={pickerItems}
-              selectedId={selectedMemberId}
-              onSelect={(memberId) => void selectMember(memberId)}
-              emptyLabel="Sin miembros para mostrar."
-            />
-          ) : (
+          <div className="flex flex-wrap justify-center gap-3">
+            {membersSorted.map((member) => {
+              const sched = scheduleByMember.get(member.id);
+              const isLive = activeEntriesForDate.has(member.id);
+              return (
+                <div
+                  key={member.id}
+                  className="flex flex-col justify-between rounded-xl bg-transparent p-4 w-[calc(25%-12px)] min-w-[200px] h-[120px] transition-colors duration-200"
+                  style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+                  data-testid="turnos-member-card"
+                >
+                  <div className="flex items-center gap-3" data-ui="card-header">
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="w-10 h-10 rounded-full">
+                        {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
+                        <AvatarFallback className="text-xs font-bold">{initials(fullName(member))}</AvatarFallback>
+                      </Avatar>
+                      {isLive ? (
+                        <span
+                          className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--bo-bg)]"
+                          style={{ background: "var(--bo-color-success)" }}
+                          data-ui="card-live-dot"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold leading-tight truncate text-[var(--bo-text)]">
+                        {fullName(member)}
+                      </div>
+                      <div className="text-[11px] leading-tight mt-0.5 text-[var(--bo-faint)]">
+                        {isLive ? "En curso" : sched ? "Programado" : "Sin asignar"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-2" data-ui="card-footer">
+                    {sched ? (
+                      <>
+                        <div className="flex items-center gap-1.5" data-ui="card-times">
+                          <Clock size={13} strokeWidth={1.8} className="text-[var(--bo-muted)]" />
+                          <span className="text-xs font-semibold tabular-nums text-[var(--bo-text)]">{sched.startTime}</span>
+                          <ArrowRight size={11} strokeWidth={1.8} className="text-[var(--bo-faint)]" />
+                          <span className="text-xs font-semibold tabular-nums text-[var(--bo-text)]">{sched.endTime}</span>
+                        </div>
+                        <span className="text-[11px] font-medium text-[var(--bo-muted)]">{scheduleHours(sched.startTime, sched.endTime)}</span>
+                      </>
+                    ) : (
+                      <span className="text-[11px] text-[var(--bo-faint)] italic">Sin horario</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          ) : view === "table" ? (
             <section className="bo-turnosRoster" aria-label="Tabla de miembros" data-testid="horarios-turnos-roster">
               <div className="bo-turnosRosterHead" data-testid="horarios-turnos-roster-head">
                 <div className="bo-panelTitle" data-testid="horarios-turnos-roster-title">Miembros</div>
@@ -456,58 +547,9 @@ export default function Page() {
                 ariaLabel="Tabla de horarios (turnos)"
               />
             </section>
-          )}
-
-          <section className="bo-turnosEditor" aria-label="Editor de turnos" data-testid="horarios-turnos-editor">
-            <div className="bo-turnosEditorHead" data-testid="horarios-turnos-editor-head">
-              <div className="bo-panelTitle" data-testid="horarios-turnos-editor-member">{selectedMember ? fullName(selectedMember) : "Selecciona un miembro"}</div>
-              <div className="bo-turnosEditorMeta" data-testid="horarios-turnos-editor-schedule">
-                {selectedSchedule ? `Horario asignado: ${selectedSchedule.startTime} - ${selectedSchedule.endTime}` : "Sin horario asignado para este dia"}
-              </div>
-            </div>
-
-            {selectedMember && selectedSchedule && !isMemberActive && (
-              <div className="bo-turnosFichajeSection" data-testid="horarios-turnos-fichaje-section">
-                <button
-                  className="bo-btn bo-btn--primary bo-btn--fit"
-                  type="button"
-                  onClick={startFichaje}
-                  disabled={busyFichaje || !selectedSchedule}
-                  data-testid="horarios-turnos-fichaje-start"
-                >
-                  <Play size={14} strokeWidth={1.8} />
-                  Iniciar turno
-                </button>
-              </div>
-            )}
-
-            {selectedMember && isMemberActive && (
-              <div className="bo-turnosFichajeSection bo-turnosFichajeSection--active" data-testid="horarios-turnos-fichaje-active">
-                <div className="bo-turnosFichajeActive" data-testid="horarios-turnos-fichaje-status">
-                  <span className="bo-badge bo-badge--success" data-slot="turnos-badge--success">En curso</span>
-                </div>
-                <button
-                  className="bo-btn bo-btn--danger bo-btn--fit"
-                  type="button"
-                  onClick={stopFichaje}
-                  disabled={busyFichaje}
-                  data-testid="horarios-turnos-fichaje-stop"
-                >
-                  <Square size={14} strokeWidth={1.8} />
-                  Terminar turno
-                </button>
-              </div>
-            )}
-
-            <TimeEntriesEditor
-              entries={editableEntries}
-              busyEntryId={busyEntryId}
-              onShiftStart={onShiftStart}
-              onShiftEnd={onShiftEnd}
-              onCloseLive={onCloseLive}
-            />
-            <div className="bo-turnosTotal" data-testid="horarios-turnos-total">Total del dia: {Math.round((totalMinutes(editableEntries) / 60) * 100) / 100} h</div>
-          </section>
+          ) : view === "member" ? (
+            <MemberFilterView members={membersSorted} />
+          ) : null}
         </Panel>
 
       {shiftModalMember ? (

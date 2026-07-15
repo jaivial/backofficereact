@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { Check, Loader2, Mail, Pencil, RefreshCcw, Upload } from "lucide-react";
+import { Loader2, Mail, Pencil, RefreshCcw, Upload } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
@@ -15,8 +15,11 @@ import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { imageToWebpMax200KB } from "../../../../ui/lib/imageFile";
 import { composePhoneE164, splitStoredPhone } from "../../../../ui/lib/phone";
 import { Breadcrumbs } from "../../../../ui/nav/Breadcrumbs";
+import { Select } from "../../../../ui/inputs/Select";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
 import { Panel } from "../../../../ui/shell/Panel";
+import { RoleIcon } from "../../../../ui/widgets/roles/RoleIcon";
+import type { MemberRoleInfo } from "./+data";
 import { formatElapsedHHMMSS, useMemberLive } from "./_shared/realtime";
 
 function initials(member: Member | null): string {
@@ -66,6 +69,8 @@ export default function Page() {
   const [bankAccount, setBankAccount] = useState(toInputValue(data.member?.bankAccount));
   const [phoneCountryCode, setPhoneCountryCode] = useState(initialPhone.countryCode);
   const [phoneNumber, setPhoneNumber] = useState(initialPhone.national);
+  const [memberRole, setMemberRole] = useState<MemberRoleInfo | null>(data.memberRole);
+  const [roleSlug, setRoleSlug] = useState(data.memberRole?.slug ?? "");
 
   const { liveEntry, tick } = useMemberLive(member?.id);
 
@@ -103,6 +108,22 @@ export default function Page() {
       const split = splitStoredPhone(res.member.phone);
       setPhoneCountryCode(split.countryCode);
       setPhoneNumber(split.national);
+
+      if (roleSlug && member.boUserId != null && memberRole && roleSlug !== memberRole.slug) {
+        const actorImportance = session?.user?.roleImportance ?? 0;
+        if (actorImportance <= memberRole.importance) {
+          setError("No puedes cambiar el rol de este miembro");
+          return;
+        }
+        const roleRes = await api.roles.setUserRole(member.boUserId, roleSlug);
+        if (!roleRes.success) {
+          setError(roleRes.message || "No se pudo actualizar el rol");
+          return;
+        }
+        const label = data.roles.find((r) => r.slug === roleSlug)?.label ?? roleSlug;
+        setMemberRole({ slug: roleSlug, label, importance: roleRes.user.roleImportance });
+      }
+
       setEditing(false);
       pushToast({ kind: "success", title: "Guardado" });
     } catch (err) {
@@ -110,7 +131,7 @@ export default function Page() {
     } finally {
       setSaving(false);
     }
-  }, [api.members, bankAccount, dni, email, firstName, lastName, member, phoneCountryCode, phoneNumber, pushToast]);
+  }, [api.members, api.roles, bankAccount, data.roles, dni, email, firstName, lastName, member, memberRole, phoneCountryCode, phoneNumber, pushToast, roleSlug, session]);
 
   const onAvatarSelect = useCallback(
     async (rawFile: File) => {
@@ -187,6 +208,21 @@ export default function Page() {
   const currentEmail = normalizeEmail(session?.user?.email);
   const isSelfMember = !!member && (member.isCurrentUser || (currentEmail !== "" && normalizeEmail(member.email) === currentEmail));
 
+  const actorImportance = session?.user?.roleImportance ?? 0;
+  const memberRoleIconKey = memberRole ? data.roles.find((r) => r.slug === memberRole.slug)?.iconKey ?? null : null;
+  const canChangeRole = !!member && member.boUserId != null && !isSelfMember && !!memberRole && actorImportance > memberRole.importance;
+  const roleOptions = useMemo(
+    () =>
+      data.roles
+        .filter((r) => r.importance < actorImportance)
+        .map((r) => ({
+          value: r.slug,
+          label: r.label,
+          icon: <RoleIcon roleSlug={r.slug} iconKey={r.iconKey} size={15} strokeWidth={1.8} />,
+        })),
+    [data.roles, actorImportance],
+  );
+
   return (
     <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-detail-section">
       <Breadcrumbs items={[{ label: "Miembros", href: "/app/miembros" }, { label: memberName || "Detalle" }]} />
@@ -194,6 +230,36 @@ export default function Page() {
         <Panel data-slot="@memberId-panel" title="Miembro no disponible" meta="No se pudo cargar el detalle del miembro solicitado." />
       ) : (
         <>
+          <div className="bo-memberHeroActions" data-slot="@memberId-memberHeroActions">
+            {!editing ? (
+              <>
+                <button
+                  className="bo-btn bo-btn--ghost"
+                  type="button"
+                  data-testid="miembro-detail-resend-invitation-button"
+                  onClick={() => setConfirmResendOpen(true)}
+                  disabled={saving || avatarBusy || resendBusy || resetBusy}
+                >
+                  <RefreshCcw size={14} strokeWidth={1.8} />
+                  Reenviar invitación
+                </button>
+                <button
+                  className="bo-btn bo-btn--ghost"
+                  type="button"
+                  data-testid="miembro-detail-reset-password-button"
+                  onClick={() => setConfirmResetOpen(true)}
+                  disabled={saving || avatarBusy || resendBusy || resetBusy}
+                >
+                  <Mail size={14} strokeWidth={1.8} />
+                  Recuperar contraseña
+                </button>
+              </>
+            ) : null}
+            <button className="bo-btn bo-btn--ghost" type="button" data-testid="miembro-detail-edit-button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
+              <Pencil size={14} strokeWidth={1.8} />
+              {editing ? "Cancelar" : "Editar"}
+            </button>
+          </div>
           <div className="bo-panel bo-memberHero" data-slot="@memberId-memberHero">
             <div className="bo-panelHead bo-memberHeroHead" data-slot="@memberId-memberHeroHead">
               <div className="bo-memberHeroIdentity" data-slot="@memberId-memberHeroIdentity">
@@ -215,41 +281,15 @@ export default function Page() {
                   <div className="bo-memberHeroTitleRow" data-slot="@memberId-memberHeroTitleRow">
                     <div className="bo-panelTitle bo-memberHeroTitle" data-slot="@memberId-memberHeroTitle">{memberName || `Miembro #${member.id}`}</div>
                     {isSelfMember ? <span className="bo-badge bo-badge--self">Tu</span> : null}
+                    {memberRole ? (
+                      <span className="bo-badge bo-badge--role" data-slot="@memberId-roleBadge">
+                        <RoleIcon roleSlug={memberRole.slug} iconKey={memberRoleIconKey} size={13} strokeWidth={1.8} />
+                        {memberRole.label}
+                      </span>
+                    ) : null}
                   </div>
                   <div className="bo-panelMeta" data-slot="@memberId-panelMeta">Haz clic o arrastra una imagen sobre el avatar para actualizar la foto de perfil.</div>
                 </div>
-              </div>
-              <div className="bo-memberHeroActions" data-slot="@memberId-memberHeroActions">
-                <button
-                  className="bo-btn bo-btn--ghost flex-wrap !text-wrap !h-fit !py-4"
-                  type="button"
-                  data-testid="miembro-detail-resend-invitation-button"
-                  onClick={() => setConfirmResendOpen(true)}
-                  disabled={saving || avatarBusy || resendBusy || resetBusy}
-                >
-                  <RefreshCcw size={14} strokeWidth={1.8} />
-                  Reenviar invitación
-                </button>
-                <button
-                  className="bo-btn bo-btn--ghost flex-wrap !text-wrap !h-fit !py-4"
-                  type="button"
-                  data-testid="miembro-detail-reset-password-button"
-                  onClick={() => setConfirmResetOpen(true)}
-                  disabled={saving || avatarBusy || resendBusy || resetBusy}
-                >
-                  <Mail size={14} strokeWidth={1.8} />
-                  Recuperar contraseña
-                </button>
-                <button className="bo-btn bo-btn--ghost" type="button" data-testid="miembro-detail-edit-button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
-                  <Pencil size={14} strokeWidth={1.8} />
-                  {editing ? "Cancelar" : "Editar"}
-                </button>
-                {editing ? (
-                  <button className="bo-btn bo-btn--primary flex-wrap !text-wrap !h-fit !py-4" type="button" data-testid="miembro-detail-save-button" onClick={onSave} disabled={saving || avatarBusy}>
-                    <Check size={14} strokeWidth={1.8} />
-                    {saving ? "Guardando..." : "Guardar cambios"}
-                  </button>
-                ) : null}
               </div>
             </div>
             <div className="bo-panelBody" data-slot="@memberId-panelBody">
@@ -294,6 +334,33 @@ export default function Page() {
                   <span className="bo-label" data-slot="@memberId-label">DNI (opcional)</span>
                   <input id="dni" className="bo-input" data-testid="miembro-detail-dni-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
                 </label>
+                <label className="bo-field" data-slot="@memberId-field">
+                  <span className="bo-label" data-slot="@memberId-label">Rol</span>
+                  {editing && canChangeRole ? (
+                    <Select
+                      value={roleSlug}
+                      onChange={setRoleSlug}
+                      options={roleOptions}
+                      ariaLabel="Seleccionar rol"
+                      disabled={saving || avatarBusy}
+                      listMaxHeightPx={220}
+                    />
+                  ) : (
+                    <div className="bo-memberRoleReadonly" data-slot="@memberId-roleReadonly" data-testid="miembro-detail-role-readonly">
+                      {memberRole ? (
+                        <span className="bo-memberRoleReadonlyValue">
+                          <RoleIcon roleSlug={memberRole.slug} iconKey={memberRoleIconKey} size={15} strokeWidth={1.8} />
+                          {memberRole.label}
+                        </span>
+                      ) : (
+                        <span className="bo-memberRoleReadonlyValue bo-memberRoleReadonlyValue--empty">Sin rol</span>
+                      )}
+                      {editing && !canChangeRole && memberRole ? (
+                        <span className="bo-memberRoleHint">No puedes cambiar el rol de este miembro</span>
+                      ) : null}
+                    </div>
+                  )}
+                </label>
                 <label className="bo-field bo-field--wide" data-slot="@memberId-field--wide">
                   <span className="bo-label" data-slot="@memberId-label">Numero de cuenta (opcional)</span>
                   <input id="bankAccount" className="bo-input" data-testid="miembro-detail-bankaccount-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
@@ -310,6 +377,14 @@ export default function Page() {
                 </label>
               </div>
             </Panel>
+
+            {editing ? (
+              <div className="bo-memberEditFooter" data-slot="@memberId-editFooter">
+                <button className="bo-btn bo-btn--primary" type="button" data-testid="miembro-detail-save-button" onClick={onSave} disabled={saving || avatarBusy}>
+                  {saving ? "Guardando..." : "Guardar cambios"}
+                </button>
+              </div>
+            ) : null}
         </>
       )}
 

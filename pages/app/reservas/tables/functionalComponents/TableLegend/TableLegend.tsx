@@ -5,6 +5,7 @@ import { DropdownMenu } from "../../../../../../ui/inputs/DropdownMenu";
 import { Select } from "../../../../../../ui/inputs/Select";
 import { formatHHMM } from "../../../../../../ui/lib/format";
 import { Tabs, type TabItem } from "../../../../../../ui/nav/Tabs";
+import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import type { Booking, TableMapItem } from "../../../../../../api/types";
 import type { BookingState } from "../../types/tables";
 import { todayISO } from "../../helpers/tables";
@@ -301,6 +302,7 @@ export function TableLegend({
         />
 
         <div data-ui="sheet-content" className="bo-tableMapSheetContent">
+          <ScrollArea dataSlot="table-legend-sheet-content">
           {sheetTab === "reservas" ? (
             <div data-ui="reservations-section" className="bo-tableMapSection">
               <div data-slot="reservations-header" className="bo-tableMapSectionHeader">
@@ -535,6 +537,7 @@ export function TableLegend({
               )}
             </AnimatePresence>
           )}
+        </ScrollArea>
         </div>
       </div>
     </aside>

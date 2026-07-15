@@ -7,7 +7,6 @@ import type { Member, MemberStats } from "../../../../../api/types";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
-import { DatePicker } from "../../../../../ui/inputs/DatePicker";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { applyLiveToStats, formatElapsedHHMMSS, useMemberLive } from "../_shared/realtime";
 
@@ -39,7 +38,7 @@ export default function Page() {
 
   const [member, setMember] = useState<Member | null>(data.member);
   const [stats, setStats] = useState<MemberStats | null>(data.initialStats);
-  const [date, setDate] = useState(data.date || todayISO());
+  const date = data.date || todayISO();
   const [weeklyContractHours, setWeeklyContractHours] = useState(String(data.member?.weeklyContractHours ?? 40));
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -106,16 +105,6 @@ export default function Page() {
               <div className="bo-panelMeta" data-slot="contrato-panelMeta">Ajusta horas semanales y seguimiento del periodo.</div>
             </div>
             <div className="bo-memberStatsControls" data-slot="contrato-memberStatsControls">
-              <label className="bo-field bo-memberControl" data-slot="miembro-contrato-fecha-label">
-                <span className="bo-label" data-slot="contrato-label">Fecha</span>
-                <DatePicker
-                  value={date}
-                  onChange={(nextDate) => {
-                    setDate(nextDate);
-                    void reloadStats(nextDate);
-                  }}
-                />
-              </label>
               <button className="bo-actionBtn bo-memberRefreshBtn" type="button" data-testid="miembro-contrato-refresh-button" onClick={() => void reloadStats(date)} disabled={loading} aria-label="Recargar contrato">
                 <RefreshCcw size={14} className={`bo-memberRefreshIcon${loading ? " is-spinning" : ""}`} />
               </button>

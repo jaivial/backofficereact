@@ -18,6 +18,7 @@ import { downloadReservationsPDF } from "../../../ui/lib/reservationsPdf";
 import logoUrl from "../../../ui/assets/logopdf.webp";
 import { MonthCalendar } from "../../../ui/widgets/MonthCalendar";
 import { DonutOccupancy } from "../../../ui/widgets/DonutOccupancy";
+import { ScrollArea } from "../../../ui/layout/ScrollArea";
 import { ReservationDayPanel } from "../../../ui/widgets/ReservationDayPanel";
 import { Modal } from "../../../ui/overlays/Modal";
 import { BookingEditor, type BookingEditorDraft } from "./functionalComponents/BookingEditor/BookingEditor";
@@ -683,9 +684,9 @@ export default function Page() {
 
       <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details">
         <ModalHeader title="Reserva completa" onClose={closeDetails} />
-        <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
+        <ScrollArea dataSlot="reservas-modalOutline"><div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {details.booking && <BookingDetailsPanel booking={details.booking} floors={floors} />}
-        </div>
+        </div></ScrollArea>
         <div className="bo-modalActions bo-modalActions--reservas" data-slot="reservas-page-details-actions">
           <button className="bo-btn bo-btn--ghost" type="button" onClick={closeDetails} data-testid="reservas-page-details-close-btn">Cerrar</button>
           {details.booking && (
@@ -696,11 +697,11 @@ export default function Page() {
 
       <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit">
         <ModalHeader title="Editar reserva" onClose={closeEdit} />
-        <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
+        <ScrollArea dataSlot="reservas-modalOutline-edit"><div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {edit.booking && editInitial ? (
             <BookingEditor api={api} initial={editInitial} busy={busy} submitLabel="Guardar" onSubmit={submitEdit} onCancel={closeEdit} stickyFooter floors={floors} />
           ) : <InlineAlert kind="info" title="Cargando" message="Preparando editor..." />}
-        </div>
+        </div></ScrollArea>
       </Modal>
     </section>
   );

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { X, Clock, User, FileText, Edit3, Send, Copy, Trash2, History } from "lucide-react";
 import type { InvoiceHistory, InvoiceHistoryAction } from "../../../../api/types";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import { createClient } from "../../../../api/client";
 
 interface InvoiceHistoryModalProps {
@@ -129,7 +130,8 @@ export function InvoiceHistoryModal({
           </button>
         </div>
 
-        <div className="bo-modal-body" data-slot="invoice-history-body">
+        <ScrollArea dataSlot="invoice-history-body">
+          <div className="bo-modal-body">
           {invoiceNumber && (
             <div className="bo-historyInvoiceInfo" data-slot="invoice-history-info">
               <strong>Factura:</strong> {invoiceNumber}
@@ -218,6 +220,7 @@ export function InvoiceHistoryModal({
             </div>
           )}
         </div>
+        </ScrollArea>
       </div>
     </div>
   );

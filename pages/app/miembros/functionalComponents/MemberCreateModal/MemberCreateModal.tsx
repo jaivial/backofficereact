@@ -10,6 +10,7 @@ import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../../../ui/shell/Avatar";
 import { RoleIcon } from "../../../../../ui/widgets/roles/RoleIcon";
+import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
 
 export type CreateMemberInput = {
   firstName: string;
@@ -109,7 +110,7 @@ export function MemberCreateModal({
     <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate">
       <ModalHeader title="Añadir miembro" onClose={onClose} />
 
-      <div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="memberCreateModal-modalOutline">
+      <ScrollArea dataSlot="memberCreateModal-scrollArea" className="h-full"><div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="memberCreateModal-modalOutline">
         <Panel className="bo-memberCreatePanel" data-slot="memberCreateModal-memberCreatePanel"
           title="Datos de acceso y perfil"
           bodyClassName="bo-memberCreateBody"
@@ -209,6 +210,7 @@ export function MemberCreateModal({
             {error ? <div className="bo-inlineError">{error}</div> : null}
         </Panel>
       </div>
+      </ScrollArea>
 
       <div className="bo-modalActions" data-slot="memberCreateModal-modalActions">
         <button className="bo-btn bo-btn--ghost" type="button" data-testid="member-create-cancel-button" onClick={onClose} disabled={busy}>
