@@ -1863,6 +1863,37 @@ export type AIImageConfig = {
   isActive: boolean;
 };
 
+export type BotTenantConfig = {
+  model: string;
+  language_default: string;
+  tone: string;
+  greeting_style: string;
+  disable_attachments: boolean;
+  custom_instructions: string;
+  contact_phone: string;
+  rules: string;
+};
+
+export type BotRestaurantData = {
+  brandName: string;
+  phone: string;
+  address: string;
+  email: string;
+  website: string;
+  menuUrl: string;
+  riceTypes: string[] | null;
+  hours: string;
+  dailyLimit: number;
+};
+
+export type BotSettingsResponse = {
+  config: BotTenantConfig;
+  promptPreview: string;
+  defaultModel: string;
+  defaultRules: string;
+  restaurant: BotRestaurantData;
+};
+
 export type AIImageConfigInput = {
   providerSlug?: string;
   apiKey?: string;

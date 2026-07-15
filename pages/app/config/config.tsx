@@ -18,6 +18,7 @@ import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/
 import { BookingManager } from "./booking/BookingManager";
 import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/ConfigLegalPages";
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
+import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -273,7 +274,15 @@ export default function Page() {
           className="bo-stack"
         >
           {contentTab === "ia" ? (
-            isRoot ? <ConfigAIImage /> : null
+            isRoot ? (
+              <>
+                <ConfigAIImage />
+                <ConfigWhatsAppBot
+                  restaurants={pageContext.bo?.session?.restaurants ?? []}
+                  activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
+                />
+              </>
+            ) : null
           ) : contentTab === "restaurante" ? (
             <ConfigRestaurante
               defaults={defaults}
