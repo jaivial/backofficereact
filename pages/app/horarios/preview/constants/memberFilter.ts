@@ -6,7 +6,6 @@ export const MEMBER_VIEW_TAB_ITEMS: TabItem[] = [
 ];
 
 export const MAIN_VIEW_TAB_ITEMS: TabItem[] = [
-  { id: "grid", label: "Grid", href: "#", icon: null },
   { id: "table", label: "Tabla", href: "#", icon: null },
   { id: "member", label: "Miembro", href: "#", icon: null },
 ];
