@@ -28,6 +28,7 @@
 /* ── Components (continued) ───────────────────────────── */
 @import "./styles/components/alert.css";
 @import "./styles/components/toast.css";
+@import "./styles/components/scroll-area.css";
 @import "./styles/components/tabs.css";
 
 /* ── Features: Reservas — Table Map ───────────────────── */

@@ -1,0 +1,62 @@
+/* ScrollArea — custom scrollbar, native-feel drag, bo-theme aware */
+
+.bo-scrollAreaViewport {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bo-scrollAreaViewport::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.bo-scrollBar {
+  width: 10px;
+  background: transparent;
+  transition: opacity var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-scrollBar:hover,
+.bo-scrollBar:active {
+  opacity: 1;
+}
+
+.bo-scrollThumb {
+  width: 6px;
+  margin: 0 auto;
+  border-radius: var(--bo-radius-full);
+  background: rgba(255, 255, 255, 0.12);
+  min-height: 28px;
+  transition: background-color var(--bo-transition-base) var(--bo-ease);
+  cursor: grab;
+}
+
+.bo-scrollThumb:hover {
+  background: rgba(255, 255, 255, 0.20);
+}
+
+.bo-scrollThumb.is-dragging,
+.bo-scrollThumb:active {
+  cursor: grabbing;
+  background: rgba(185, 168, 255, 0.35);
+}
+
+:root[data-theme="light"] .bo-scrollThumb {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+:root[data-theme="light"] .bo-scrollThumb:hover {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+:root[data-theme="light"] .bo-scrollThumb.is-dragging,
+:root[data-theme="light"] .bo-scrollThumb:active {
+  background: rgba(124, 92, 231, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-scrollThumb {
+    transition: none;
+  }
+}

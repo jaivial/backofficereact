@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { ScrollArea } from "../layout/ScrollArea";
 import { cn } from "../shadcn/utils";
 
 type Option = { value: string; label: string; icon?: React.ReactNode };
@@ -130,6 +131,8 @@ export function Select({
   }, [activeIdx, open]);
 
   const maxHeight = typeof listMaxHeightPx === "number" ? listMaxHeightPx : Math.min(320, options.length * 44 + 12);
+  const contentEstimate = options.length * 44 + 16;
+  const listHeight = Math.min(maxHeight, contentEstimate);
   const minWidth = typeof menuMinWidthPx === "number" ? menuMinWidthPx : 180;
 
   const [listPosition, setListPosition] = useState({ top: 0, left: 0, width: 0 });
@@ -200,38 +203,43 @@ export function Select({
                   left: `${listPosition.left}px`,
                   width: `${listPosition.width}px`,
                   maxHeight: `${maxHeight}px`,
+                  height: `${listHeight}px`,
                 }}
                 data-ui="select-listbox"
               >
-                {options.map((o, idx) => {
-                  const isSel = o.value === value;
-                  const isAct = idx === activeIdx;
-                  return (
-                    <button
-                      key={o.value}
-                      type="button"
-                      className={cn("bo-selectItem", isSel && "is-selected", isAct && "is-active")}
-                      role="option"
-                      aria-selected={isSel}
-                      tabIndex={idx === activeIdx ? 0 : -1}
-                      data-opt={idx}
-                      onMouseEnter={() => setActiveIdx(idx)}
-                      onClick={() => {
-                        onChange(o.value);
-                        close();
-                        btnRef.current?.focus();
-                      }}
-                      data-role="select-option"
-                    >
-                      {o.icon ? (
-                        <span className="bo-selectItemIcon" aria-hidden="true" data-ui="select-item-icon">
-                          {o.icon}
-                        </span>
-                      ) : null}
-                      <span data-ui="select-item-label">{o.label}</span>
-                    </button>
-                  );
-                })}
+                <ScrollArea dataSlot="select-list-scroll">
+                  <div className="grid gap-0.5">
+                    {options.map((o, idx) => {
+                      const isSel = o.value === value;
+                      const isAct = idx === activeIdx;
+                      return (
+                        <button
+                          key={o.value}
+                          type="button"
+                          className={cn("bo-selectItem", isSel && "is-selected", isAct && "is-active")}
+                          role="option"
+                          aria-selected={isSel}
+                          tabIndex={idx === activeIdx ? 0 : -1}
+                          data-opt={idx}
+                          onMouseEnter={() => setActiveIdx(idx)}
+                          onClick={() => {
+                            onChange(o.value);
+                            close();
+                            btnRef.current?.focus();
+                          }}
+                          data-role="select-option"
+                        >
+                          {o.icon ? (
+                            <span className="bo-selectItemIcon" aria-hidden="true" data-ui="select-item-icon">
+                              {o.icon}
+                            </span>
+                          ) : null}
+                          <span data-ui="select-item-label">{o.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
               </motion.div>
             )}
           </AnimatePresence>,
