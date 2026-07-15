@@ -765,7 +765,7 @@
 }
 
 .bo-modal--memberCreate .bo-modalOutline {
-  overflow: auto;
+  overflow: hidden;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -898,14 +898,7 @@
   .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel {
     min-height: 0;
     max-height: 100%;
-    overflow: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel::-webkit-scrollbar {
-    width: 0;
-    height: 0;
+    overflow: hidden;
   }
 
   .bo-modal--roleDetail .bo-roleAssignBox {
@@ -916,14 +909,7 @@
   .bo-modal--roleDetail .bo-roleAssignBox .bo-roleModalUserList {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .bo-modal--roleDetail .bo-roleAssignBox .bo-roleModalUserList::-webkit-scrollbar {
-    width: 0;
-    height: 0;
+    overflow: hidden;
   }
 }
 
@@ -943,9 +929,17 @@
   gap: var(--bo-space-4);
 }
 
+.bo-memberDetailRoute > div {
+  width: 100%;
+  max-width: 768px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
 .bo-tabs--memberDetail {
   width: fit-content;
   max-width: 100%;
+  margin: 0 auto;
 }
 
 .bo-memberHeroHead {
@@ -1051,11 +1045,22 @@
 }
 
 .bo-memberHeroActions {
-  margin-left: auto;
+  justify-self: end;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.bo-memberHeroActions .bo-btn {
+  width: 190px;
+  height: 38px;
+  padding-block: 0;
+  justify-content: center;
+  font-size: 12px;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .bo-memberHeroStats {
@@ -1308,6 +1313,49 @@
   color: var(--bo-text);
 }
 
+.bo-badge--role {
+  gap: 6px;
+  border-color: rgba(147, 239, 231, 0.32);
+  background: rgba(147, 239, 231, 0.12);
+  color: var(--bo-text);
+}
+
+.bo-memberRoleReadonly {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 40px;
+  justify-content: center;
+}
+
+.bo-memberRoleReadonlyValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bo-text);
+}
+
+.bo-memberRoleReadonlyValue--empty {
+  color: var(--bo-faint);
+  font-weight: 500;
+}
+
+.bo-memberRoleHint {
+  font-size: 12px;
+  color: var(--bo-faint);
+}
+
+.bo-memberEditFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bo-memberEditFooter .bo-btn {
+  font-size: 13px;
+}
+
 .bo-memberQuarterNote {
   font-size: 12px;
   color: var(--bo-faint);
@@ -1552,7 +1600,8 @@
 }
 
 .bo-fichajeAdminPanel {
-  width: min(1100px, 100%);
+  width: min(768px, 100%);
+  max-width: 768px;
   margin-inline: auto;
 }
 
@@ -1574,6 +1623,9 @@
   background: rgba(255, 255, 255, 0.02);
   display: grid;
   gap: 14px;
+  align-self: center;
+  justify-items: center;
+  text-align: center;
 }
 
 .bo-fichajeAdminMember {
@@ -1583,17 +1635,19 @@
 
 .bo-fichajeAdminIdle {
   display: grid;
-  justify-items: start;
+  justify-items: center;
 }
 
 .bo-fichajeAdminSchedule {
   display: grid;
   gap: 10px;
+  width: 100%;
 }
 
 .bo-fichajeAdminScheduleTitle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -1601,6 +1655,7 @@
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
 }
 
 .bo-horariosPage {
@@ -1673,7 +1728,7 @@
 
 .bo-horariosMembersPanel .bo-horariosMemberList {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 @media (min-width: 1024px) {
@@ -1691,7 +1746,7 @@
 
   .bo-horariosMembersPanel .bo-horariosMemberList {
     min-height: 0;
-    overflow-y: auto;
+    overflow: hidden;
   }
 }
 
@@ -1870,7 +1925,7 @@
 .bo-horariosMemberList {
   display: grid;
   gap: 8px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .bo-horariosMemberBtn {
@@ -2570,10 +2625,9 @@
 }
 
 .bo-turnosBody {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: 280px minmax(0, 1fr);
-  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   width: 100%;
   min-width: 0;
 }
@@ -2584,6 +2638,7 @@
 
 .bo-turnosRoster {
   min-width: 0;
+  width: 100%;
   display: grid;
   gap: var(--bo-space-3);
 }
@@ -2654,13 +2709,9 @@
 
 .bo-memberPickerList {
   min-height: 0;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   display: grid;
   gap: 8px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .bo-memberPickerList::-webkit-scrollbar {
@@ -2791,6 +2842,16 @@
 .bo-timeAdjust {
   display: grid;
   gap: 6px;
+}
+
+.bo-fichajeAdminWork [data-slot="time-adjust"],
+.bo-fichajeAdminWork [data-slot="time-adjust"].bo-timeAdjust--glass {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .bo-timeAdjustLabel {
@@ -2966,15 +3027,7 @@
   .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel,
   .bo-modal--roleDetail .bo-roleAssignBox {
     max-height: 500px;
-    overflow: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .bo-modal--roleDetail .bo-roleModalGrid>.bo-panel::-webkit-scrollbar,
-  .bo-modal--roleDetail .bo-roleAssignBox::-webkit-scrollbar {
-    width: 0;
-    height: 0;
+    overflow: hidden;
   }
 
   .bo-roleUserSelect {
@@ -3041,6 +3094,7 @@
   }
 
   .bo-memberHeroActions {
+    justify-self: stretch;
     width: 100%;
     margin-left: 0;
   }
