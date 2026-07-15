@@ -485,6 +485,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
       { key: "status", label: "Estado", visible: true, priority: 1, sortable: false },
       { key: "is_reservation", label: "Tipo", visible: true, priority: 2, sortable: false },
       { key: "deposit", label: "Deposito", visible: true, priority: 2, sortable: false },
+      { key: "category", label: "Categoria", visible: true, priority: 2, sortable: false },
       { key: "attachment", label: "", visible: true, priority: 3, sortable: false },
       { key: "actions", label: "", visible: true, priority: 3, sortable: false },
     ],
@@ -680,6 +681,10 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                       sortDirection={sortDirection}
                       onSort={onSort}
                     />
+                  ) : col.key === "actions" ? (
+                    <span className="bo-srOnly" data-slot="invoiceTable-actionsHeaderLabel">Acciones</span>
+                  ) : col.key === "attachment" ? (
+                    <span className="bo-srOnly" data-slot="invoiceTable-attachmentHeaderLabel">Adjuntos</span>
                   ) : (
                     col.label
                   )}
@@ -823,7 +828,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     </div>
                   ) : null}
                 </td>
-                <td className={`col-actions`} data-slot="invoice-table-cell">
+                <td className={`col-actions`} data-label="Acciones" data-slot="invoice-table-cell">
                   <div className="bo-tableActions" data-slot="invoiceTable-tableActions">
                     <DropdownMenu
                       label={`Acciones de factura ${invoice.invoice_number || invoice.id}`}
@@ -894,6 +899,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               <td className="col-status" data-label="Estado" data-slot="invoice-table-cell"></td>
               <td className="col-is_reservation" data-label="Tipo" data-slot="invoice-table-cell"></td>
               <td className="col-deposit" data-label="Deposito" data-slot="invoice-table-cell"></td>
+              <td className="col-category" data-label="Categoria" data-slot="invoice-table-cell"></td>
               <td className="col-attachment" data-label="" data-slot="invoice-table-cell"></td>
               <td className="col-actions" data-label="" data-slot="invoice-table-cell"></td>
             </tr>
