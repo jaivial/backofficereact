@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import {
   type ImportColumnMapping,
   type ImportFieldType,
@@ -771,7 +772,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
         </div>
 
         {/* Body */}
-        <div className="bo-modal-body bo-importWizardBody" data-slot="importWizard-importWizardBody">
+        <ScrollArea dataSlot="importWizard-modal-body"><div className="bo-modal-body bo-importWizardBody" data-slot="importWizard-importWizardBody">
           {/* Step 1: Upload */}
           {currentStep === "upload" && (
             <div className="bo-importWizardUpload" data-slot="importWizard-importWizardUpload">
@@ -1047,7 +1048,8 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
               {importResult.errors.length > 0 && (
                 <div className="bo-importWizardResultErrors" data-slot="importWizard-importWizardResultErrors">
                   <h4 data-slot="importWizard-res">Errores:</h4>
-                  <div className="bo-importWizardResultErrorsList" data-slot="importWizard-importWizardResultErrorsList">
+                  <ScrollArea dataSlot="importWizard-result-errors">
+                    <div className="bo-importWizardResultErrorsList">
                     {importResult.errors.slice(0, 10).map((err, i) => (
                       <div key={i} className="bo-importWizardResultErrorItem" data-slot="importWizard-importWizardResultErrorItem">
                         Fila {err.row}: {err.message}
@@ -1059,11 +1061,13 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                       </div>
                     )}
                   </div>
+                  </ScrollArea>
                 </div>
               )}
             </div>
           )}
         </div>
+        </ScrollArea>
 
         {/* Footer */}
         <div className="bo-modal-footer bo-importWizardFooter" data-slot="importWizard-importWizardFooter">

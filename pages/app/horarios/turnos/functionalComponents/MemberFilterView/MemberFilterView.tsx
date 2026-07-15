@@ -6,6 +6,8 @@ import type { Member, FichajeSchedule } from "../../../../../../api/types";
 import type { MemberFilterViewProps } from "./types";
 
 import { Tabs } from "../../../../../../ui/nav/Tabs";
+import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
+import { ChevronButton } from "../../../../../../ui/widgets/ChevronButton";
 import { DateRangePicker } from "../../../../../../ui/inputs/DateRangePicker";
 import { DailyScheduleCard } from "./DailyScheduleCard";
 import { WeeklyScheduleTable } from "./WeeklyScheduleTable";
@@ -123,6 +125,25 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
     setDateTo(next.to);
   }, []);
 
+  const rangeDays = useMemo(() => {
+    if (!dateFrom || !dateTo) return 1;
+    const f = new Date(dateFrom);
+    const t = new Date(dateTo);
+    return Math.max(1, Math.round((t.getTime() - f.getTime()) / 86400000) + 1);
+  }, [dateFrom, dateTo]);
+
+  const handlePrevRange = useCallback(() => {
+    if (!dateFrom || !dateTo) return;
+    setDateFrom(addDays(dateFrom, -rangeDays));
+    setDateTo(addDays(dateTo, -rangeDays));
+  }, [dateFrom, dateTo, rangeDays]);
+
+  const handleNextRange = useCallback(() => {
+    if (!dateFrom || !dateTo) return;
+    setDateFrom(addDays(dateFrom, rangeDays));
+    setDateTo(addDays(dateTo, rangeDays));
+  }, [dateFrom, dateTo, rangeDays]);
+
   const handleViewChange = useCallback((id: string) => {
     setView(id as "diario" | "semanal");
   }, []);
@@ -174,7 +195,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       `}</style>
     <div
       data-ui="memberFilterView"
-      className={`flex flex-col md:flex-row gap-4 ${className}`}
+      className={`flex flex-col md:flex-row gap-4 w-full ${className}`}
     >
       {/* Member selector sidebar */}
       <aside
@@ -209,29 +230,31 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           />
         </div>
 
-        <div data-slot="memberList" className="space-y-1 max-h-64 overflow-y-auto">
-          {filteredMembers.map((member) => (
-            <button
-              key={member.id}
-              data-ui="memberOption"
-              type="button"
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-150 border border-transparent ${
-                selectedMemberId === member.id
-                  ? "is-selected bg-purple-100 border-purple-200 text-purple-700 font-medium"
-                  : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
-              onClick={() => handleMemberSelect(member.id)}
-            >
-              {fullName(member)}
-            </button>
-          ))}
+        <ScrollArea dataSlot="memberList" maxHeight={256}>
+          <div className="space-y-1">
+            {filteredMembers.map((member) => (
+              <button
+                key={member.id}
+                data-ui="memberOption"
+                type="button"
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-150 border border-transparent ${
+                  selectedMemberId === member.id
+                    ? "is-selected bg-purple-100 border-purple-200 text-purple-700 font-medium"
+                    : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+                onClick={() => handleMemberSelect(member.id)}
+              >
+                {fullName(member)}
+              </button>
+            ))}
 
-          {filteredMembers.length === 0 ? (
-            <div data-ui="emptyState" className="text-center py-4 text-sm text-zinc-400">
-              Sin resultados
-            </div>
-          ) : null}
-        </div>
+            {filteredMembers.length === 0 ? (
+              <div data-ui="emptyState" className="text-center py-4 text-sm text-zinc-400">
+                Sin resultados
+              </div>
+            ) : null}
+          </div>
+        </ScrollArea>
       </aside>
 
       {/* Schedule display area */}
@@ -243,6 +266,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
         >
           <div data-slot="dateRange" className="flex items-center gap-2">
             <CalendarRange data-slot="icon" size={16} strokeWidth={1.8} className="dark:text-white/60 text-purple-400" aria-hidden="true" />
+            <ChevronButton direction="left" ariaLabel="Rango anterior" onClick={handlePrevRange} />
             <DateRangePicker
               from={dateFrom}
               to={dateTo}
@@ -250,6 +274,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               buttonLabel="Rango de fechas"
               ariaLabel="Seleccionar rango de fechas"
             />
+            <ChevronButton direction="right" ariaLabel="Siguiente rango" onClick={handleNextRange} />
           </div>
 
           <div data-slot="viewTabs" className="flex-1 flex justify-end">

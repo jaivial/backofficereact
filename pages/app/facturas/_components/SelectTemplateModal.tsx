@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { X, FileText, Plus, Search, Loader2, Trash2, Edit, Copy } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { useToasts } from "../../../../ui/feedback/useToasts";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { InvoiceTemplate, InvoiceTemplateInput, PaymentMethod } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
 
@@ -123,7 +124,8 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
             </div>
 
             {/* Templates list */}
-            <div className="bo-templateList" data-slot="select-template-list">
+            <ScrollArea dataSlot="select-template-list">
+              <div className="bo-templateList">
               {loading ? (
                 <div className="bo-templateLoading" data-slot="select-template-loading">
                   <Loader2 size={24} className="bo-spin bo-spin--sm" />
@@ -189,6 +191,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 ))
               )}
             </div>
+            </ScrollArea>
           </>
         ) : (
           <TemplateForm
@@ -331,7 +334,8 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
         </button>
       </div>
 
-      <div className="bo-templateFormBody" data-slot="select-template-form-body">
+      <ScrollArea dataSlot="select-template-form-body">
+        <div className="bo-templateFormBody">
         {/* Template name */}
         <div className="bo-field" data-slot="select-template-field-name">
           <label className="bo-label" data-slot="selectTemplateModal-label">Nombre de la plantilla *</label>
@@ -461,6 +465,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
           <label htmlFor="isActive" data-slot="selectTemplateModal-iva">Plantilla activa</label>
         </div>
       </div>
+      </ScrollArea>
 
       <div className="bo-templateFormActions" data-slot="select-template-form-actions">
         <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={saving} data-testid="select-template-cancel-btn">

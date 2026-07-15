@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Info, Users } from "lucide-react";
 
 import { cn } from "../../shadcn/utils";
+import { ScrollArea } from "../../layout/ScrollArea";
 
 import type { Member, RoleCatalogItem, RoleUserItem } from "../../../api/types";
 import { roleLabel } from "../../../lib/rbac";
@@ -188,7 +189,7 @@ export function RoleDetailModal({
                   <div className="bo-panelMeta" data-slot="roleDetailModal-panelMeta">{membersInRole.length} miembros</div>
                 </div>
               </div>
-              <div className="bo-panelBody bo-roleModalUserList" data-slot="roleDetailModal-roleModalUserList">
+              <ScrollArea dataSlot="roleDetailModal-roleModalUserList"><div className="bo-panelBody bo-roleModalUserList" data-slot="roleDetailModal-roleModalUserList">
                 {membersInRole.map((member) => {
                   const blockedByImportance = !canManageUser(actorImportance, member.roleImportance);
                   const isBusy = member.userId !== null && busyUserId === member.userId;
@@ -225,6 +226,7 @@ export function RoleDetailModal({
 
                 {membersInRole.length === 0 ? <div className="bo-mutedText">Ningún miembro tiene este rol.</div> : null}
               </div>
+            </ScrollArea>
             </div>
 
             <div className="bo-roleAssignBox" data-slot="roleDetailModal-roleAssignBox">
@@ -236,7 +238,7 @@ export function RoleDetailModal({
                 <span className="bo-mutedText" data-slot="roleDetailModal-mutedText">{selectedCount} seleccionados</span>
               </div>
 
-              <div className="bo-roleModalUserList" data-slot="roleDetailModal-roleModalUserList">
+              <ScrollArea dataSlot="roleDetailModal-roleModalUserList"><div className="bo-roleModalUserList" data-slot="roleDetailModal-roleModalUserList">
                 {membersOutRole.map((member) => {
                   const checked = selectedMemberIds.includes(member.memberId);
                   const blockedByUser = !canManageUser(actorImportance, member.roleImportance);
@@ -280,6 +282,7 @@ export function RoleDetailModal({
 
                 {membersOutRole.length === 0 ? <div className="bo-mutedText">No hay más miembros disponibles.</div> : null}
               </div>
+            </ScrollArea>
 
               <div className="bo-roleModalAssignFoot" data-slot="roleDetailModal-roleModalAssignFoot">
                 <button

@@ -3,6 +3,7 @@ import { Search, X, Calendar, Users, Clock } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { Select } from "../../../../ui/inputs/Select";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { ReservationSearchResult } from "../../../../api/types";
 
 type FillFromReservationModalProps = {
@@ -189,7 +190,8 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
             </div>
           </div>
 
-          <div className="bo-reservationResults" data-slot="reservation-results">
+          <ScrollArea dataSlot="reservation-results">
+            <div className="bo-reservationResults">
             {loading ? (
               <div className="bo-reservationLoading" data-slot="reservation-loading">
                 <div className="bo-spinner" data-slot="fillFromReservationModal-spinner" />
@@ -236,6 +238,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
               </div>
             )}
           </div>
+          </ScrollArea>
         </div>
     </Modal>
   );

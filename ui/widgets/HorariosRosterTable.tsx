@@ -1,7 +1,7 @@
 import { cn } from "../shadcn/utils";
 import type { FichajeSchedule, Member } from "../../api/types";
 
-export type HorariosRosterTableView = "grid" | "table";
+export type HorariosRosterTableView = "grid" | "table" | "member";
 
 export type HorariosRosterRow = {
   member: Member;

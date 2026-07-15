@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { X, File, Image, FileText, Download, Trash2, Archive, Loader2, Eye } from "lucide-react";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { InvoiceAttachment } from "../../../../api/types";
 
 type AttachmentsModalProps = {
@@ -83,7 +84,8 @@ export function AttachmentsModal({
             </button>
           </div>
 
-          <div className="bo-attachmentsModalBody" data-slot="attachments-modal-body">
+          <ScrollArea dataSlot="attachments-modal-body">
+            <div className="bo-attachmentsModalBody">
             {attachments.length === 0 ? (
               <div className="bo-attachmentsEmpty" data-slot="attachments-empty">
                 <File size={48} className="bo-attachmentsEmptyIcon" />
@@ -148,6 +150,7 @@ export function AttachmentsModal({
               </ul>
             )}
           </div>
+          </ScrollArea>
 
           {attachments.length > 0 && (
             <div className="bo-attachmentsModalFooter" data-slot="attachments-modal-footer">
@@ -187,13 +190,15 @@ export function AttachmentsModal({
                 <X size={18} />
               </button>
             </div>
-            <div className="bo-previewModalBody" data-slot="preview-modal-body">
+            <ScrollArea dataSlot="preview-modal-body">
+              <div className="bo-previewModalBody">
               {previewingAttachment.mime_type.startsWith("image/") ? (
                 <img src={previewingAttachment.url} alt={previewingAttachment.original_name} className="bo-previewImage" />
               ) : previewingAttachment.mime_type === "application/pdf" ? (
                 <iframe src={previewingAttachment.url} title={previewingAttachment.original_name} className="bo-previewPdf" />
               ) : null}
             </div>
+            </ScrollArea>
             <div className="bo-previewModalFooter" data-slot="preview-modal-footer">
               <button className="bo-btn bo-btn--primary" onClick={() => handleDownloadSingle(previewingAttachment)} data-testid="attachments-preview-download-button">
                 <Download size={16} />

@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 
 import { cn } from "../shadcn/utils";
@@ -16,6 +17,8 @@ type MonthCalendarProps = {
   onNextMonth: () => void;
   loading: boolean;
   className?: string;
+  /** Optional per-day tooltip content shown on hover/tap. Return null to skip a day. */
+  renderDayTooltip?: (dateISO: string) => React.ReactNode;
 };
 
 type MonthCalendarCell =
@@ -68,10 +71,16 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
   cells,
   onSelectDate,
   loading,
+  onDayEnter,
+  onDayLeave,
+  setCellRef,
 }: {
   cells: MonthCalendarCell[];
   onSelectDate: (dateISO: string) => void;
   loading: boolean;
+  onDayEnter?: (dateISO: string) => void;
+  onDayLeave?: () => void;
+  setCellRef?: (dateISO: string, el: HTMLButtonElement | null) => void;
 }) {
   const handleSelectDate = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -80,6 +89,14 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
       if (dateISO) onSelectDate(dateISO);
     },
     [loading, onSelectDate],
+  );
+
+  const handleEnter = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const dateISO = event.currentTarget.dataset.date;
+      if (dateISO) onDayEnter?.(dateISO);
+    },
+    [onDayEnter],
   );
 
   return (
@@ -92,6 +109,7 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
         return (
           <button
             key={cell.key}
+            ref={setCellRef ? (el) => setCellRef(cell.dateISO, el) : undefined}
             className={cell.className}
             type="button"
             role="gridcell"
@@ -100,6 +118,8 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
             data-date={cell.dateISO}
             data-testid={`month-calendar-day-${cell.day}`}
             onClick={handleSelectDate}
+            onMouseEnter={onDayEnter ? handleEnter : undefined}
+            onMouseLeave={onDayLeave}
             data-slot="month-calendar-day-cell"
           >
             <div className="bo-mcalNum" data-slot="month-calendar-day-number">{cell.day}</div>
@@ -115,13 +135,36 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
 
 MonthCalendarGrid.displayName = "MonthCalendarGrid";
 
-function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, loading, className }: MonthCalendarProps) {
+function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, loading, className, renderDayTooltip }: MonthCalendarProps) {
   // "today" is cosmetic only — compute it client-side to avoid SSR hydration mismatch
   // caused by server (UTC) and browser (local) timezone differences crossing midnight.
   const [today, setToday] = useState<string | null>(null);
   useEffect(() => {
     setToday(todayISO());
   }, []);
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);
+  const cellRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+
+  const setCellRef = useCallback((dateISO: string, el: HTMLButtonElement | null) => {
+    if (el) cellRefs.current.set(dateISO, el);
+    else cellRefs.current.delete(dateISO);
+  }, []);
+
+  const handleDayEnter = useCallback((dateISO: string) => {
+    const btn = cellRefs.current.get(dateISO);
+    if (!btn) return;
+    setHoveredDate(dateISO);
+    const rect = btn.getBoundingClientRect();
+    setPopoverPos({ top: rect.bottom + 4, left: Math.max(8, rect.left) });
+  }, []);
+
+  const handleDayLeave = useCallback(() => {
+    setHoveredDate(null);
+    setPopoverPos(null);
+  }, []);
+
+  const tooltipContent = renderDayTooltip && hoveredDate ? renderDayTooltip(hoveredDate) : null;
   const monthLabel = useMemo(() => `${monthNameES(month)} ${year}`, [month, year]);
   const handlePrevMonth = useCallback(() => {
     if (loading) return;
@@ -207,7 +250,23 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
         ))}
       </div>
 
-      <MonthCalendarGrid cells={cells} onSelectDate={onSelectDate} loading={loading} />
+      <MonthCalendarGrid
+        cells={cells}
+        onSelectDate={onSelectDate}
+        loading={loading}
+        onDayEnter={renderDayTooltip ? handleDayEnter : undefined}
+        onDayLeave={renderDayTooltip ? handleDayLeave : undefined}
+        setCellRef={renderDayTooltip ? setCellRef : undefined}
+      />
+
+      {typeof document !== "undefined" && tooltipContent && popoverPos
+        ? createPortal(
+            <div className="fixed z-[10000]" style={{ top: popoverPos.top, left: popoverPos.left }} data-slot="month-calendar-tooltip">
+              {tooltipContent}
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

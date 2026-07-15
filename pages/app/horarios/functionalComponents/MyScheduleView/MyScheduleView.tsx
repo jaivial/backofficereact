@@ -6,9 +6,9 @@ import type { FichajeSchedule } from "../../../../../api/types";
 import { DateRangePicker } from "../../../../../ui/inputs/DateRangePicker";
 import { Tabs } from "../../../../../ui/nav/Tabs";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
-import { DailyScheduleCard } from "../../preview/functionalComponents/MemberFilterView/DailyScheduleCard";
-import { WeeklyScheduleTable } from "../../preview/functionalComponents/MemberFilterView/WeeklyScheduleTable";
-import { generateDateRange, getWeekGroups } from "../../preview/helpers";
+import { DailyScheduleCard } from "../../turnos/functionalComponents/MemberFilterView/DailyScheduleCard";
+import { WeeklyScheduleTable } from "../../turnos/functionalComponents/MemberFilterView/WeeklyScheduleTable";
+import { generateDateRange, getWeekGroups } from "../../turnos/helpers";
 import { addDays, todayISO } from "../../utils";
 import { MY_SCHEDULE_VIEW_KEY, MY_SCHEDULE_VIEW_TAB_ITEMS } from "../../constants";
 

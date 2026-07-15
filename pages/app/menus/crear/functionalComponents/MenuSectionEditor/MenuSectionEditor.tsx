@@ -5,6 +5,7 @@ import { Reorder } from "motion/react";
 import type { EditorSection } from "../../types/menuEditor.types";
 import type { DishCatalogItem } from "../../../../../../api/types";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
+import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import { MenuItemEditor } from "../MenuItemEditor/MenuItemEditor";
 import { ALLERGENS } from "../../constants/menuEditor.constants";
 import { useDragControls } from "motion/react";
@@ -349,7 +350,7 @@ export function MenuSectionEditor({
                   />
                 </div>
                 {searchTerm.trim().length >= 2 && searchItems.length > 0 ? (
-                  <div className="bo-dishSearchResults" role="listbox" aria-label="Resultados de busqueda" data-testid={`menu-section-editor-search-results-${sec.clientId}`}>
+                  <ScrollArea dataSlot="menu-section-editor-search-results"><div className="bo-dishSearchResults" role="listbox" aria-label="Resultados de busqueda" data-testid={`menu-section-editor-search-results-${sec.clientId}`}>
                     {searchItems.map((item) => (
                       <button
                         key={item.id}
@@ -375,6 +376,7 @@ export function MenuSectionEditor({
                       </button>
                     ))}
                   </div>
+                </ScrollArea>
                 ) : null}
                 <button
                   className="bo-btn bo-btn--ghost bo-btn--sm"

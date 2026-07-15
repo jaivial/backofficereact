@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../shadcn/utils";
+import { ScrollArea } from "../../layout/ScrollArea";
 
 interface MobileBottomSheetProps {
   open: boolean;
@@ -95,8 +96,10 @@ export function MobileBottomSheet({
             )}
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-5" data-ui="mobile-sheet-content">
-              {children}
+            <div className="flex-1 p-5" data-ui="mobile-sheet-content">
+              <ScrollArea dataSlot="mobile-bottom-sheet-content">
+                {children}
+              </ScrollArea>
             </div>
           </motion.div>
         </>

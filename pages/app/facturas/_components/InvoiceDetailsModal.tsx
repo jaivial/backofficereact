@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { User, Mail, Phone, Calendar, FileText, Hash, Tag as TagIcon, CreditCard, MapPin, BadgeCheck, Clock, Users, ExternalLink, Download, Send, MessageCircle } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { Invoice, InvoiceStatus } from "../../../../api/types";
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
 import { INVOICE_STATUS_CONFIG } from "../types/invoice";
@@ -72,7 +73,8 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
     <Modal open={open} title="Detalles de factura" onClose={onClose} size="md">
       <ModalHeader title="Detalles de factura" onClose={onClose} />
       <div className="bo-invoiceDetails">
-        <div className="bo-invoiceDetailsBody">
+        <ScrollArea dataSlot="invoice-details-body">
+          <div className="bo-invoiceDetailsBody">
           {/* Status & number header */}
           <div className="bo-invoiceDetailsHeader">
             <div className="bo-invoiceDetailsHeaderLeft">
@@ -207,6 +209,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
             </div>
           )}
         </div>
+        </ScrollArea>
 
         {/* Action buttons at the bottom */}
         {hasActions && (

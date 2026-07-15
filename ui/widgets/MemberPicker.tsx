@@ -2,6 +2,7 @@ import React from "react";
 import { Search } from "lucide-react";
 
 import { cn } from "../shadcn/utils";
+import { ScrollArea } from "../layout/ScrollArea";
 
 export type MemberPickerItem = {
   id: number;
@@ -48,7 +49,7 @@ export function MemberPicker({
         />
       </label>
 
-      <div className="bo-memberPickerList" data-slot="member-picker-list">
+      <ScrollArea dataSlot="member-picker-list"><div className="bo-memberPickerList" data-slot="member-picker-list">
         {items.map((item) => (
           <button
             key={item.id}
@@ -67,6 +68,7 @@ export function MemberPicker({
 
         {items.length === 0 ? <div className="bo-mutedText bo-memberPickerEmpty" data-slot="member-picker-empty">{emptyLabel}</div> : null}
       </div>
+      </ScrollArea>
     </aside>
   );
 }

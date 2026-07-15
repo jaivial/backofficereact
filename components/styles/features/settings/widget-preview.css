@@ -276,7 +276,6 @@
 .bo-reservasModal .bo-modalOutline {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
 }
 
 .bo-reservasModal--details .bo-modalActions--reservas {
@@ -678,7 +677,6 @@
 .bo-reservasModal--edit .bo-bookingEditorBody {
   display: grid;
   gap: 14px;
-  overflow: auto;
   padding-bottom: 14px;
 }
 

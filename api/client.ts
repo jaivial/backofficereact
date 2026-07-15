@@ -18,6 +18,7 @@ import type {
   TableMapItem,
   WeekdayOpen,
   DashboardMetrics,
+  HorariosCalendarResponse,
   CalendarDay,
   DishCatalogItem,
   GroupMenu,
@@ -1273,6 +1274,10 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async month(params: { year: number; month: number }): Promise<APISuccess<{ year: number; month: number; days: HorarioMonthPoint[] }> | APIError> {
         const q = new URLSearchParams({ year: String(params.year), month: String(params.month) });
         return json(`/api/admin/horarios/month?${q.toString()}`, { method: "GET" });
+      },
+      async calendar(params: { year: number; month: number }): Promise<APISuccess<HorariosCalendarResponse> | APIError> {
+        const q = new URLSearchParams({ year: String(params.year), month: String(params.month) });
+        return json(`/api/admin/horarios/calendar?${q.toString()}`, { method: "GET" });
       },
       async assign(input: { date: string; memberId: number; startTime: string; endTime: string }): Promise<APISuccess<{ schedule: FichajeSchedule }> | APIError> {
         return json("/api/admin/horarios", {
