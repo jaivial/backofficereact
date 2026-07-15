@@ -1,19 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function usePreviewView(defaultView: "grid" | "table" | "member" = "grid", storageKey: string) {
-  const [view, setView] = useState<"grid" | "table" | "member">(() => {
+  // Initialise to the SSR default so the first client render matches the
+  // server-rendered markup. Reading localStorage here would cause a hydration
+  // mismatch that breaks portaled popovers (e.g. the date pickers).
+  const [view, setView] = useState<"grid" | "table" | "member">(defaultView);
+  const hydrated = useRef(false);
+
+  useEffect(() => {
     try {
-      if (typeof window !== "undefined") {
-        const stored = window.localStorage.getItem(storageKey);
-        if (stored === "table" || stored === "grid" || stored === "member") return stored;
-      }
+      const stored = window.localStorage.getItem(storageKey);
+      if (stored === "table" || stored === "grid" || stored === "member") setView(stored);
     } catch {
       // ignore
     }
-    return defaultView;
-  });
+    hydrated.current = true;
+  }, [storageKey]);
 
   useEffect(() => {
+    if (!hydrated.current) return;
     try {
       window.localStorage.setItem(storageKey, view);
     } catch {
