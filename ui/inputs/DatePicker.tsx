@@ -32,6 +32,14 @@ function monthLabel(year: number, month0: number): string {
   return d.toLocaleString("es-ES", { month: "long", year: "numeric" });
 }
 
+function formatDateLabel(iso: string): string {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return iso;
+  const yyyy = Number(m[1]), mm = Number(m[2]), dd = Number(m[3]);
+  if (!Number.isFinite(yyyy) || !Number.isFinite(mm) || !Number.isFinite(dd)) return iso;
+  return new Date(yyyy, mm - 1, dd).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 function buildMonthGrid(year: number, month0: number) {
   // Week starts Monday.
   const first = new Date(Date.UTC(year, month0, 1));
@@ -70,7 +78,10 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
     if (!el) return;
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
-    const top = r.bottom + 8;
+    const vh = window.innerHeight;
+    const popH = 320;
+    const spaceBelow = vh - r.bottom - 8;
+    const top = spaceBelow < popH ? Math.max(8, r.top - 8 - popH) : r.bottom + 8;
     const left = clamp(r.left + popoverOffsetX, 8, vw - 280 - 8);
     setPos({ top, left });
   }, [open, popoverOffsetX]);
@@ -83,7 +94,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (ev: MouseEvent) => {
+    const onDown = (ev: PointerEvent) => {
       const t = ev.target as Node | null;
       if (!t) return;
       if (btnRef.current?.contains(t)) return;
@@ -93,10 +104,10 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") close();
     };
-    window.addEventListener("mousedown", onDown);
+    window.addEventListener("pointerdown", onDown);
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("keydown", onKey);
     };
   }, [close, open]);
@@ -219,7 +230,7 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
         data-testid={dataTestId}
       >
         <CalendarDays size={18} strokeWidth={1.8} />
-        <span className="bo-dateBtnLabel" data-slot="datePicker-dateBtnLabel">{value}</span>
+        <span className="bo-dateBtnLabel" data-slot="datePicker-dateBtnLabel">{formatDateLabel(value)}</span>
       </button>
       {pop}
     </>

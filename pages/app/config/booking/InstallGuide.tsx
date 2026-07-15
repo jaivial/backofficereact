@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 
 const CDN_BASE = "https://cdn.newvillacarmen.com/booking-widget";
 const SCRIPT_TAG = (restaurantId: string) =>
@@ -74,12 +75,13 @@ export function InstallGuide({ restaurantId }: { restaurantId: string }) {
               {step.description}
             </div>
           </div>
-          <div className="bo-install-codeBlock" data-ui="install-code-block">
+          <ScrollArea dataSlot="install-code-block"><div className="bo-install-codeBlock" data-ui="install-code-block">
             <pre className="bo-install-code" data-ui="install-code">
               <code data-ui="install-code-content">{step.code}</code>
             </pre>
             <CopyButton code={step.code} />
           </div>
+        </ScrollArea>
         </div>
       ))}
 

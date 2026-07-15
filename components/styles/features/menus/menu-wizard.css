@@ -1249,7 +1249,6 @@
   max-height: min(280px, 42vh);
   display: grid;
   gap: 4px;
-  overflow-y: auto;
   padding: 6px;
   border: 1px solid var(--bo-border-2);
   border-radius: var(--bo-radius-md);

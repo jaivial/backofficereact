@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { X, Loader2, AlertTriangle, Check, User } from "lucide-react";
 import type { Invoice, InvoiceMergeInput } from "../../../../api/types";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
 
 type MergeInvoicesModalProps = {
@@ -99,7 +100,8 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           {/* Selected invoices list */}
           <div className="bo-mergeList" data-slot="merge-invoice-list">
             <h4 data-slot="mergeInvoicesModal-nar">Facturas a fusionar</h4>
-            <div className="bo-mergeListItems" data-slot="merge-invoice-list-items">
+            <ScrollArea dataSlot="merge-invoice-list-items">
+              <div className="bo-mergeListItems">
               {invoices.map((inv) => (
                 <div key={inv.id} className="bo-mergeListItem" data-slot="merge-invoice-list-item">
                   <div className="bo-mergeListItemMain" data-slot="merge-invoice-list-item-main">
@@ -116,6 +118,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
                 </div>
               ))}
             </div>
+            </ScrollArea>
           </div>
 
           {/* Different customers warning */}

@@ -450,7 +450,6 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 .bo-tableMapSheetContent {
-  overflow-y: auto;
   overflow-x: hidden;
   display: grid;
   gap: var(--bo-space-3);
@@ -1057,7 +1056,6 @@ body.is-dragging .bo-tableMapFlowWrap {
   display: grid;
   gap: var(--bo-space-4);
   max-height: min(72vh, 690px);
-  overflow: auto;
 }
 
 .bo-tableMapDrawSection {
@@ -1677,8 +1675,6 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableEditorGrid {
   flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
   margin-top: var(--bo-space-3);
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1910,8 +1906,6 @@ body.is-dragging .bo-tableMapFlowWrap {
     grid-template-columns: 1fr;
     gap: var(--bo-space-3);
     min-height: 0;
-    overflow-y: auto;
-    scrollbar-width: thin;
   }
 
   .bo-tableEditorPreviewWrap {

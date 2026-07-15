@@ -11,6 +11,7 @@ import { Select } from "../../../../../ui/inputs/Select";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { InlineCounter } from "../../../../../ui/widgets/InlineCounter";
 import { Panel } from "../../../../../ui/shell/Panel";
+import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
 
 import { principalesItemsFromMenu, type PrincipalesRow, type RiceRow } from "./bookingDraft";
 
@@ -353,7 +354,7 @@ export function BookingEditor({
   return (
     <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }} data-slot="bookingEditor-div">
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
-      <div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`} data-slot="bookingEditor-div">
+      <ScrollArea dataSlot="booking-editor-body"><div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`} data-slot="bookingEditor-div">
 
       <div className="bo-panel bo-bookingPanel--customer" data-slot="bookingEditor-bookingPanel--customer">
         <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
@@ -686,6 +687,7 @@ export function BookingEditor({
         </Panel>
       ) : null}
       </div>
+      </ScrollArea>
 
       <div
         className={stickyFooter ? "bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" : `bo-row${isCreate ? " bo-bookingEditorActions--create" : ""}`}

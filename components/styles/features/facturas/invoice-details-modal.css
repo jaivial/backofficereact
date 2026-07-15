@@ -46,7 +46,6 @@
 
 .bo-invoiceDetailsBody {
   flex: 1;
-  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-right: 4px;
 }

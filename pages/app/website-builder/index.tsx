@@ -4,6 +4,7 @@ import { DndProvider, useDrag, useDrop, type DragSourceMonitor, type DropTargetM
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { websiteBuilderApi } from '../../../api/website-builder';
 import type { Website, WebsitePage, WebsitePageSection, WebsiteComponent, WebsiteSectionComponent } from '../../../api/website-builder-types';
+import { ScrollArea } from '../../../ui/layout/ScrollArea';
 
 // Types for local UI state
 interface UIComponent {
@@ -151,18 +152,21 @@ export default function WebsiteBuilder() {
         <div className="flex h-[calc(100vh-60px)]" data-slot="website-builder-h-[calc(100vh-60px)]">
           {/* Sidebar - Component Library */}
           {!previewMode && (
-            <aside className="w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto" data-ui="sidebar">
+            <aside className="w-64 bg-slate-800 border-r border-slate-700" data-ui="sidebar">
+              <ScrollArea dataSlot="website-builder-sidebar">
               <div className="p-4" data-slot="website-builder-p-4">
                 <h2 className="text-sm font-semibold text-slate-300 mb-3" data-slot="website-builder-mb-3">
                   Components
                 </h2>
                 <ComponentLibrary />
               </div>
+            </ScrollArea>
             </aside>
           )}
 
           {/* Main Canvas */}
-          <main className="flex-1 overflow-y-auto bg-slate-900" data-ui="canvas">
+          <main className="flex-1 bg-slate-900" data-ui="canvas">
+            <ScrollArea dataSlot="website-builder-canvas">
             {previewMode ? (
               <WebsitePreview website={website} currentPage={currentPage} />
             ) : (
@@ -176,17 +180,20 @@ export default function WebsiteBuilder() {
                 onRefresh={loadWebsite}
               />
             )}
+            </ScrollArea>
           </main>
 
           {/* Right Sidebar - Properties Panel */}
           {!previewMode && selectedComponent && (
-            <aside className="w-80 bg-slate-800 border-l border-slate-700 overflow-y-auto" data-ui="properties-panel">
-              <div className="p-4" data-slot="website-builder-p-4">
-                <h2 className="text-sm font-semibold text-slate-300 mb-3" data-slot="website-builder-mb-3">
-                  Properties
-                </h2>
-                <PropertiesPanel componentId={selectedComponent} onUpdate={loadWebsite} />
-              </div>
+            <aside className="w-80 bg-slate-800 border-l border-slate-700" data-ui="properties-panel">
+              <ScrollArea dataSlot="website-builder-properties">
+                <div className="p-4" data-slot="website-builder-p-4">
+                  <h2 className="text-sm font-semibold text-slate-300 mb-3" data-slot="website-builder-mb-3">
+                    Properties
+                  </h2>
+                  <PropertiesPanel componentId={selectedComponent} onUpdate={loadWebsite} />
+                </div>
+              </ScrollArea>
             </aside>
           )}
         </div>

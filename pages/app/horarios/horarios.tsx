@@ -5,10 +5,11 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CalendarClock, CalendarDays, UserRoundPlus, Users } from "lucide-react";
 
 import { createClient } from "../../../api/client";
-import type { CalendarDay, FichajeActiveEntry, FichajeSchedule, HorarioMonthPoint, Member } from "../../../api/types";
+import type { CalendarDay, FichajeActiveEntry, FichajeSchedule, HorarioMonthPoint, HorariosCalendarDay, Member } from "../../../api/types";
 import { fichajeRealtimeAtom } from "../../../state/atoms";
 import type { Data } from "./+data";
 import { MonthCalendar } from "../../../ui/widgets/MonthCalendar";
+import { ScheduleDayTooltip } from "../../../ui/widgets/ScheduleDayTooltip";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { diffLabel, elapsedForEntry, fullName, fromMinutes, monthCalendarData, splitHHMM, todayISO, toMinutes } from "./utils";
@@ -16,6 +17,7 @@ import { HOUR_OPTIONS, MINUTE_OPTIONS, HorariosCalendarTab } from "./constants";
 import { MyScheduleView } from "./functionalComponents/MyScheduleView/MyScheduleView";
 import { ScheduleModal } from "./functionalComponents/ScheduleModal/ScheduleModal";
 import { Panel } from "../../../ui/shell/Panel";
+import { ScrollArea } from "../../../ui/layout/ScrollArea";
 import { cn } from "../../../ui/shadcn/utils";
 
 export default function Page() {
@@ -59,6 +61,7 @@ function AdminHorariosView({ data }: { data: Data }) {
   const [members] = useState<Member[]>(data.members);
   const [schedules, setSchedules] = useState<FichajeSchedule[]>(data.schedules);
   const [monthDays, setMonthDays] = useState<HorarioMonthPoint[]>(data.monthDays);
+  const [calendarDetail, setCalendarDetail] = useState<HorariosCalendarDay[]>([]);
   const [bookingMonthDays, setBookingMonthDays] = useState<CalendarDay[]>(data.bookingMonthDays);
   const [calendarTab, setCalendarTab] = useState<HorariosCalendarTab>("miembros");
   const [memberSearch, setMemberSearch] = useState("");
@@ -171,6 +174,22 @@ function AdminHorariosView({ data }: { data: Data }) {
     },
     [api.horarios],
   );
+
+  const loadCalendarDetail = useCallback(
+    async (y: number, m: number) => {
+      try {
+        const res = await api.horarios.calendar({ year: y, month: m });
+        if (res.success) setCalendarDetail(res.days);
+      } catch {
+        // tooltip detail is non-critical
+      }
+    },
+    [api.horarios],
+  );
+
+  useEffect(() => {
+    void loadCalendarDetail(year, month);
+  }, [loadCalendarDetail, year, month]);
 
   const loadBookingMonth = useCallback(
     async (y: number, m: number) => {
@@ -299,6 +318,21 @@ function AdminHorariosView({ data }: { data: Data }) {
   );
 
   const activeCalendarDays = calendarTab === "miembros" ? calendarDays : bookingMonthDays;
+
+  const calendarDetailByDate = useMemo(() => {
+    const map = new Map<string, HorariosCalendarDay>();
+    for (const day of calendarDetail) map.set(day.date, day);
+    return map;
+  }, [calendarDetail]);
+
+  const renderDayTooltip = useCallback(
+    (dateISO: string) => {
+      const dayData = calendarDetailByDate.get(dateISO);
+      if (!dayData) return null;
+      return <ScheduleDayTooltip dayData={dayData} />;
+    },
+    [calendarDetailByDate],
+  );
   const calendarTransition = reduceMotion ? { duration: 0 } : { duration: 0.6, ease: "easeInOut" as const };
   const calendarRowStyle = useMemo(
     () =>
@@ -383,6 +417,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                       onPrevMonth={() => void moveMonth(-1)}
                       onNextMonth={() => void moveMonth(1)}
                       loading={busy}
+                      renderDayTooltip={calendarTab === "miembros" ? renderDayTooltip : undefined}
                       data-slot="month-calendar"
                     />
                   </motion.div>
@@ -405,7 +440,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                     data-slot="member-search-input"
                   />
                 </div>
-                <div className="bo-horariosMemberList" data-slot="member-list">
+                <ScrollArea dataSlot="member-list"><div className="bo-horariosMemberList" data-slot="member-list">
                   {filteredMembers.map((member) => (
                     <button
                       key={member.id}
@@ -432,6 +467,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                     </div>
                   ) : null}
                 </div>
+              </ScrollArea>
               </div>
             </div>
         </Panel>

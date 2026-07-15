@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { X, FileText, Calendar, CreditCard, TrendingUp, Mail, Phone, Loader2 } from "lucide-react";
 import type { Invoice, InvoiceStatus } from "../../../../api/types";
 import { Modal } from "../../../../ui/overlays/Modal";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 
 type CustomerHistoryModalProps = {
   open: boolean;
@@ -212,7 +213,8 @@ export function CustomerHistoryModal({
         {!loading && !error && invoices.length > 0 && (
           <div className="bo-customerHistoryInvoices" data-slot="customer-history-invoices">
             <h4 className="bo-customerHistoryInvoicesTitle" data-slot="customerHistoryModal-customerHistoryInvoicesTitle">Historial de facturas</h4>
-            <div className="bo-customerHistoryInvoicesList" data-slot="customer-history-invoices-list">
+            <ScrollArea dataSlot="customer-history-invoices-list">
+              <div className="bo-customerHistoryInvoicesList">
               {invoices
                 .sort((a, b) => new Date(b.invoice_date).getTime() - new Date(a.invoice_date).getTime())
                 .map((invoice) => (
@@ -241,6 +243,7 @@ export function CustomerHistoryModal({
                   </div>
                 ))}
             </div>
+            </ScrollArea>
           </div>
         )}
 

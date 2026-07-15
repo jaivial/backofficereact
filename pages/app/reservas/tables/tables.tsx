@@ -35,6 +35,7 @@ import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { Select } from "../../../../ui/inputs/Select";
 import { formatHHMM } from "../../../../ui/lib/format";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
+import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { MonthCalendar } from "../../../../ui/widgets/MonthCalendar";
@@ -2357,6 +2358,7 @@ export default function TableManagerPage() {
                   <button data-ui="close-draw-panel-btn" className="bo-btn bo-btn--ghost" type="button" onClick={closeDrawPanel}>Cerrar</button>
                 </div>
                 <div data-slot="draw-panel-body" className="bo-tableMapDrawPanelBody">
+                    <ScrollArea dataSlot="draw-panel-body">
                   <div data-ui="draw-hint" className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
 
                   <div data-ui="limit-section" className="bo-tableMapDrawSection">
@@ -2531,6 +2533,7 @@ export default function TableManagerPage() {
                       <div data-ui="no-element-hint" className="bo-tableMapDrawHint">Selecciona un elemento del mapa para cambiar su visual.</div>
                     )}
                   </div>
+                </ScrollArea>
                 </div>
               </aside>
 
@@ -2625,6 +2628,7 @@ export default function TableManagerPage() {
                   />
 
                   <div data-ui="sheet-content" className="bo-tableMapSheetContent">
+                      <ScrollArea dataSlot="sheet-content">
                     {sheetTab === "reservas" ? (
                       <div data-ui="reservations-section" className="bo-tableMapSection">
                         <div data-slot="reservations-header" className="bo-tableMapSectionHeader">
@@ -2952,6 +2956,7 @@ export default function TableManagerPage() {
                         )}
                       </AnimatePresence>
                     )}
+                  </ScrollArea>
                   </div>
                 </div>
               </aside>
@@ -2960,6 +2965,7 @@ export default function TableManagerPage() {
                 <ModalHeader data-slot="modal-head" data-ui="modal-title" title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} />
 
                 <div data-ui="editor-grid" className="bo-tableEditorGrid">
+                    <ScrollArea dataSlot="editor-grid">
                   <div data-slot="editor-preview" className="bo-tableEditorPreviewWrap">
                     <div data-ui="rotate-controls" className="bo-tableEditorRotate" role="group" aria-label="Giro de mesa">
                       <button
@@ -3126,6 +3132,7 @@ export default function TableManagerPage() {
                       canIncrease={draft.capacity < 16}
                     />
                   </div>
+                </ScrollArea>
                 </div>
 
                 <div data-ui="editor-modal-actions-wrapper" className="bo-tableEditorActionsWrap">

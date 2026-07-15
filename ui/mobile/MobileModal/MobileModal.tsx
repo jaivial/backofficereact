@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../shadcn/utils";
+import { ScrollArea } from "../../layout/ScrollArea";
 
 interface MobileModalProps {
   open: boolean;
@@ -90,8 +91,10 @@ export function MobileModal({
               )}
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-5" data-ui="mobile-modal-content">
-                {children}
+              <div className="flex-1 p-5" data-ui="mobile-modal-content">
+                <ScrollArea dataSlot="mobile-modal-content">
+                  {children}
+                </ScrollArea>
               </div>
             </div>
           </motion.div>

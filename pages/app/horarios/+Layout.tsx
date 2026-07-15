@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarClock, Eye, Clock3 } from "lucide-react";
+import { CalendarClock, Clock3 } from "lucide-react";
 import { useAtomValue } from "jotai";
 
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
@@ -12,7 +12,7 @@ const TAB_FADE_DURATION_MS = 420;
 const TAB_NAV_DELAY_MS = 500;
 const TAB_NAVIGATION_WAIT_MS = Math.max(0, TAB_NAV_DELAY_MS - TAB_FADE_DURATION_MS);
 
-type HorariosTabId = "horarios" | "preview" | "turnos" | "mis-horarios";
+type HorariosTabId = "horarios" | "turnos" | "mis-horarios";
 
 function todayISO(): string {
   const d = new Date();
@@ -24,7 +24,6 @@ function todayISO(): string {
 
 function activeTabId(pathname: string, isAdmin: boolean): HorariosTabId {
   if (!isAdmin) return "mis-horarios";
-  if (pathname.startsWith("/app/horarios/preview")) return "preview";
   if (pathname.startsWith("/app/horarios/turnos")) return "turnos";
   return "horarios";
 }
@@ -60,7 +59,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
     return [
       { id: "horarios", label: "Horarios", href: `/app/horarios${qs}`, icon: <CalendarClock className="bo-ico" /> },
-      { id: "preview", label: "Preview", href: `/app/horarios/preview${qs}`, icon: <Eye className="bo-ico" /> },
       { id: "turnos", label: "Turnos", href: `/app/horarios/turnos${qs}`, icon: <Clock3 className="bo-ico" /> },
     ];
   }, [isAdmin, qs]);

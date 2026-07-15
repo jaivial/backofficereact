@@ -138,7 +138,6 @@
 
 .bo-batchSendResults {
   max-height: 300px;
-  overflow-y: auto;
 }
 
 .bo-batchSendResults h4 {

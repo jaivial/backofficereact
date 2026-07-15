@@ -689,6 +689,30 @@ export type HorarioMonthPoint = {
   date: string;
   assignedCount: number;
 };
+export type HorariosCalendarSchedule = {
+  startTime: string;
+  endTime: string;
+};
+
+export type HorariosCalendarDayWorker = {
+  memberId: number;
+  memberName: string;
+  photoUrl: string;
+  schedules: HorariosCalendarSchedule[];
+};
+
+export type HorariosCalendarDay = {
+  date: string;
+  workers: HorariosCalendarDayWorker[];
+};
+
+export type HorariosCalendarResponse = {
+  success: boolean;
+  year: number;
+  month: number;
+  totalMembers: number;
+  days: HorariosCalendarDay[];
+};
 
 // Currency types
 export type CurrencyCode = "EUR" | "USD" | "GBP";
