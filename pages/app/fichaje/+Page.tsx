@@ -486,10 +486,9 @@ export default function Page() {
             </div>
           </div>
         }
-        bodyClassName="bo-fichajeAdminBody"
         data-testid="fichaje-admin-panel"
       >
-        <div data-testid="fichaje-admin-body">
+        <div className="bo-fichajeAdminBody" data-testid="fichaje-admin-body">
           <MemberPicker
             title="Miembros"
             searchValue={memberSearch}
