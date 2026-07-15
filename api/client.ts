@@ -1833,6 +1833,25 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // WhatsApp bot settings per restaurant (root-only, IA tab).
+      async getBotSettings(restaurantId: number): Promise<APISuccess<import("./types").BotSettingsResponse> | APIError> {
+        return json(`/api/admin/bot/settings/${restaurantId}`, { method: "GET" });
+      },
+      async saveBotSettings(restaurantId: number, input: import("./types").BotTenantConfig): Promise<APISuccess<import("./types").BotSettingsResponse> | APIError> {
+        return json(`/api/admin/bot/settings/${restaurantId}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      // Renders the system prompt for a draft config without saving it.
+      async previewBotSettings(restaurantId: number, input: import("./types").BotTenantConfig): Promise<APISuccess<import("./types").BotSettingsResponse> | APIError> {
+        return json(`/api/admin/bot/settings/${restaurantId}/preview`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
       async getMandatoryMenus(date: string): Promise<APISuccess<import("./types").MandatoryMenuConfig> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/mandatory-menus?${q.toString()}`, { method: "GET" });
