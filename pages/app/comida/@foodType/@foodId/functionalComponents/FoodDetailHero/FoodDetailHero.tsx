@@ -69,7 +69,7 @@ export function FoodDetailHero({
       >
         {aiGenerating ? (
           <div
-            className="bo-foodDetailMediaSkeleton flex items-center justify-center"
+            className="bo-foodMemberMediaSkeleton flex flex-col items-center justify-center gap-2"
             data-role="food-detail-image-skeleton"
           >
             <Loader2
@@ -77,6 +77,9 @@ export function FoodDetailHero({
               className="bo-foodDetailSpinIcon animate-spin"
               data-role="food-detail-skeleton-spinner"
             />
+            <span className="bo-foodDetailOverlayLabel" data-role="food-detail-skeleton-label">
+              Mejorando imagen con IA...
+            </span>
           </div>
         ) : hasImage ? (
           <>
