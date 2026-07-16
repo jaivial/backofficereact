@@ -47,7 +47,9 @@ export function useFoodDetailPage() {
   const [uploading, setUploading] = useState(false);
   const [showAIAdvisor, setShowAIAdvisor] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
-  const [aiGenerating, setAiGenerating] = useState(false);
+  // Seed from SSR flag so first paint shows the skeleton (not the pre-improved
+  // image B) when a job is already in flight on reload.
+  const [aiGenerating, setAiGenerating] = useState(!!(data.item as any)?.ai_generating);
   const [aiConfigValid, setAiConfigValid] = useState(false);
 
   // Quick form state
