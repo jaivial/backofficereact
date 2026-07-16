@@ -1066,6 +1066,27 @@ body.is-navigating .bo-fadeout {
 
 .bo-foodDetailPage {
   gap: var(--bo-space-4);
+  /* Cap grid track so long titles/breadcrumbs truncate instead of overflowing x-axis (<540px) */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bo-foodDetailPage [data-ui="food-detail-editor-title-row"] {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bo-foodDetailPage [data-role="food-detail-editor-title"] {
+  min-width: 0;
+}
+
+.bo-foodDetailPage .bo-breadcrumbCurrent {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-foodDetailPage [data-ui="food-detail-editor-head"] {
+  padding-top: 0;
 }
 
 .bo-foodDetailTopbar {
@@ -1082,6 +1103,7 @@ body.is-navigating .bo-fadeout {
   align-items: center;
   gap: var(--bo-space-3);
   padding: var(--bo-space-3);
+  padding-bottom: 0;
   position: relative;
   background: none;
   box-shadow: none;
@@ -1096,7 +1118,7 @@ body.is-navigating .bo-fadeout {
 
 .bo-foodDetailMedia {
   width: 100%;
-  max-width: 200px;
+  max-width: 360px;
   aspect-ratio: 1 / 1;
   border-radius: var(--bo-radius-lg);
   border: 1px solid var(--bo-border-2);
@@ -1468,7 +1490,7 @@ body.is-navigating .bo-fadeout {
 
 @media (max-width: 1100px) {
   .bo-foodDetailMedia {
-    max-width: 180px;
+    max-width: 320px;
   }
 
   .bo-foodDetailBodyGrid {
@@ -1541,7 +1563,7 @@ body.is-navigating .bo-fadeout {
   }
 
   .bo-foodDetailMedia {
-    max-width: 160px;
+    max-width: 320px;
   }
 
   .bo-foodDetailFactsGrid {
@@ -1599,7 +1621,7 @@ body.is-navigating .bo-fadeout {
   }
 
   .bo-foodDetailMedia {
-    max-width: 140px;
+    max-width: 320px;
   }
 }
 
