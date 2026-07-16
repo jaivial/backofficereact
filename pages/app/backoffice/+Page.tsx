@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "../../../state/atoms";
-import { ChefHat } from "lucide-react";
 
 import type { SidebarItem } from "../../../lib/rbac";
 import { sidebarItemsForRole } from "../../../lib/rbac";
@@ -53,7 +52,7 @@ export default function Page() {
           <div className="bo-homeRing bo-homeRing--inner" aria-hidden="true" data-ui="ring-inner" />
 
           <div className="bo-homeCenter" aria-hidden="true" data-ui="orbit-center">
-            <ChefHat className="bo-homeCenterIcon" />
+            <img className="bo-homeCenterLogo" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="" />
           </div>
 
           {orbitItems.map((item, index) => (

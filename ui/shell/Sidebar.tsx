@@ -86,6 +86,9 @@ export function Sidebar({
 
   return (
     <aside className={cn("bo-sidebar", className)} aria-label="Sidebar" data-testid="sidebar" data-ui="sidebar">
+      <div className="bo-brand" aria-label="Villa Carmen">
+        <img className="bo-logo-img" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="Villa Carmen" />
+      </div>
 
       <nav className="bo-nav bo-navDesktop" aria-label="Navigation" data-testid="sidebar-nav-desktop" data-slot="sidebar-nav-desktop">
         {items.map((item) => {
