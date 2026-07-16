@@ -419,33 +419,10 @@
   }
 }
 
-@media (max-width: 1024px) {
-  .bo-invoiceForm {
-    gap: var(--bo-space-4);
-  }
-
-  .bo-invoiceFormTopGrid {
-    gap: var(--bo-space-4);
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .bo-invoiceFormTopGrid>.bo-invoiceFormSection {
-    flex: 1 1 calc(50% - var(--bo-space-4));
-    min-width: 320px;
-  }
-
-  .bo-invoiceFormTopGrid>.bo-invoiceFormSection:first-child {
-    flex-basis: 53%;
-  }
-
-  .bo-invoiceFormTopGrid>.bo-invoiceFormSection:last-child {
-    flex-basis: 47%;
-  }
-}
-
-/* Responsive */
-@media (max-width: 900px) {
+/* Invoice form: collapse to a single column on mobile. The multi-column row
+   layout (and stacked sections) is defined in invoice-form.css and applies for
+   all wider viewports, including tablets/small laptops (≥1025px). */
+@media (max-width: 768px) {
   .bo-invoiceFormGrid {
     grid-template-columns: 1fr;
   }
@@ -464,17 +441,6 @@
   .bo-invoiceFormHeaderActions {
     width: 100%;
     justify-content: flex-start;
-  }
-
-  .bo-invoiceFormRow {
-    grid-template-columns: 1fr;
-  }
-
-  .bo-invoiceFormRow--reservation,
-  .bo-invoiceFormRow--invoiceDates,
-  .bo-invoiceFormRow--invoiceNumber,
-  .bo-invoiceFormRow--category {
-    grid-template-columns: 1fr;
   }
 
   .bo-invoiceFormRow--lineItems .bo-lineItemsTableHeader,
@@ -497,6 +463,19 @@
 
   .bo-ivaSummaryItem--total .bo-ivaSummaryValue {
     font-size: 18px;
+  }
+}
+
+/* Field pairs stay in rows down to 520px; collapse below that. */
+@media (max-width: 520px) {
+  .bo-invoiceFormRow,
+  .bo-invoiceFormRow--single,
+  .bo-invoiceFormRow--singleCenter,
+  .bo-invoiceFormRow--phoneDni,
+  .bo-invoiceFormRow--amount,
+  .bo-invoiceFormRow--reservation,
+  .bo-invoiceFormRow--invoiceNumber {
+    grid-template-columns: 1fr;
   }
 }
 

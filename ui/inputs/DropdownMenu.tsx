@@ -112,6 +112,7 @@ export function DropdownMenu({
   items,
   triggerContent,
   triggerClassName,
+  triggerDataSlot,
   menuMinWidthPx,
   className,
   menuClassName,
@@ -120,6 +121,7 @@ export function DropdownMenu({
   items: MenuItem[];
   triggerContent?: React.ReactNode;
   triggerClassName?: string;
+  triggerDataSlot?: string;
   menuMinWidthPx?: number;
   className?: string;
   menuClassName?: string;
@@ -208,6 +210,7 @@ export function DropdownMenu({
       aria-label={label}
       onClick={toggle}
       data-ui="dropdown-trigger"
+      data-slot={triggerDataSlot}
     >
       {triggerContent || <MoreVertical size={18} strokeWidth={1.8} />}
     </button>

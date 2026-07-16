@@ -5,6 +5,20 @@ import { usePageContext } from "vike-react/usePageContext";
 function registerServiceWorker() {
   if (typeof window === "undefined") return;
   if (!("serviceWorker" in navigator)) return;
+
+  // In development the cache-first service worker serves stale JS/CSS and HTML,
+  // which hides source changes (Vite HMR already handles freshness). Unregister
+  // any previously-installed worker and clear its caches instead of registering.
+  if (import.meta.env.DEV) {
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((reg) => reg.unregister());
+    });
+    if ("caches" in window) {
+      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+    }
+    return;
+  }
+
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js")

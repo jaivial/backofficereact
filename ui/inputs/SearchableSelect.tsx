@@ -7,6 +7,15 @@ import { ScrollArea } from "../layout/ScrollArea";
 
 type Option = { value: string; label: string; icon?: React.ReactNode };
 
+// Lowercase + strip diacritics so "Valencia" matches "València", "malaga" matches "Málaga", etc.
+function normalizeText(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 export function SearchableSelect({
   value,
   onChange,
@@ -18,6 +27,7 @@ export function SearchableSelect({
   className,
   disabled,
   menuMinWidthPx,
+  maxRender,
   "data-testid": dataTestId,
 }: {
   value: string;
@@ -30,6 +40,8 @@ export function SearchableSelect({
   className?: string;
   disabled?: boolean;
   menuMinWidthPx?: number;
+  /** Cap the number of options rendered at once (search still runs over all options). */
+  maxRender?: number;
   "data-testid"?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -44,10 +56,16 @@ export function SearchableSelect({
   const selected = useMemo(() => options.find((o) => o.value === value) || null, [options, value]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = normalizeText(query);
     if (!q) return options;
-    return options.filter((o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q));
+    return options.filter((o) => normalizeText(o.label).includes(q) || normalizeText(o.value).includes(q));
   }, [options, query]);
+
+  const visible = useMemo(
+    () => (typeof maxRender === "number" && filtered.length > maxRender ? filtered.slice(0, maxRender) : filtered),
+    [filtered, maxRender],
+  );
+  const truncatedCount = filtered.length - visible.length;
 
   const close = useCallback(() => {
     setOpen(false);
@@ -148,7 +166,7 @@ export function SearchableSelect({
                 }}
                 data-ui="searchable-select-listbox"
               >
-                <div className="flex items-center gap-2 px-2 py-2 border-b border-[var(--bo-border)] sticky top-0 bg-[var(--bo-surface)]">
+                <div className="flex-none flex items-center gap-2 px-2 py-2 border-b border-[var(--bo-border)] bg-[var(--bo-surface)]">
                   <Search size={14} className="text-[var(--bo-muted)] shrink-0" aria-hidden="true" />
                   <input
                     ref={searchRef}
@@ -162,14 +180,13 @@ export function SearchableSelect({
                     aria-label="Buscar"
                   />
                 </div>
-                <div style={{ maxHeight: `${maxHeight - 46}px` }}>
-                  <ScrollArea dataSlot="searchable-select-list">
-                    {filtered.length === 0 ? (
+                <ScrollArea dataSlot="searchable-select-list" className="flex-1 min-h-0" maxHeight={maxHeight - 46}>
+                  {filtered.length === 0 ? (
                       <div className="px-3 py-3 text-sm text-[var(--bo-muted)]" data-role="searchable-select-empty">
                         {emptyText ?? "Sin resultados"}
                       </div>
                     ) : (
-                      filtered.map((o) => (
+                      visible.map((o) => (
                         <button
                           key={o.value}
                           type="button"
@@ -184,8 +201,12 @@ export function SearchableSelect({
                         </button>
                       ))
                     )}
-                  </ScrollArea>
-                </div>
+                    {truncatedCount > 0 ? (
+                      <div className="px-3 py-2 text-xs text-[var(--bo-muted)] border-t border-[var(--bo-border)]" data-role="searchable-select-truncated">
+                        {`Mostrando ${visible.length} de ${filtered.length}. Escribe para filtrar…`}
+                      </div>
+                    ) : null}
+                </ScrollArea>
               </motion.div>
             )}
           </AnimatePresence>,

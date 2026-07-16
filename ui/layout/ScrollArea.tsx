@@ -127,6 +127,7 @@ export function ScrollArea({
       <div
         ref={viewportRef}
         className="bo-scrollAreaViewport h-full w-full overflow-auto overscroll-contain"
+        style={resolvedMaxHeight ? { maxHeight: resolvedMaxHeight } : undefined}
         data-slot="scroll-area-viewport"
       >
         {children}

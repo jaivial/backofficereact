@@ -141,3 +141,31 @@
   gap: 14px;
 }
 
+.bo-facturasPage .bo-tabs--facturas {
+  margin: 0 auto;
+}
+
+.bo-facturasPage [role="tabpanel"] {
+  width: 100%;
+}
+
+.bo-facturasPage [role="tabpanel"] > * {
+  max-width: 768px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.bo-facturasPage .bo-facturasSummary {
+  max-width: none;
+}
+
+.bo-facturasPage .bo-facturasSummary > *:not(.bo-tableWrap) {
+  max-width: 768px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.bo-facturasPage .bo-tableWrap {
+  max-width: none;
+}
+
