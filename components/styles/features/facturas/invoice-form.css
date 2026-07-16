@@ -449,6 +449,7 @@
 /* Invoice Form */
 .bo-invoiceForm {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(12px, 1.8vw, 16px);
   width: 100%;
   min-width: 0;
@@ -538,25 +539,28 @@
 
 .bo-invoiceFormGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--bo-space-5);
   min-width: 0;
 }
 
 .bo-invoiceFormTopGrid {
   display: flex;
+  flex-direction: column;
   gap: var(--bo-space-6);
-  align-items: start;
+  align-items: stretch;
   min-width: 0;
 }
 
 .bo-invoiceFormTopGrid>.bo-invoiceFormSection {
   flex: 1 1 0;
+  width: 100%;
   min-width: 0;
 }
 
 .bo-invoiceFormSection {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   min-width: 0;
 }
@@ -570,9 +574,33 @@
 
 .bo-invoiceFormRow {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--bo-space-3);
   align-items: start;
+  min-width: 0;
+}
+
+/* Let selects/inputs shrink into their grid tracks instead of overflowing
+   the row on narrow widths (the SearchableSelect wrapper is min-width:auto and
+   its label doesn't truncate by default). */
+.bo-invoiceForm .bo-selectWrapper,
+.bo-invoiceForm .bo-selectLabelWrap {
+  min-width: 0;
+}
+
+.bo-invoiceForm .bo-selectBtn {
+  width: 100%;
+}
+
+.bo-invoiceForm .bo-selectLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* PDF template cards (Basico/Moderno/Clasico) must shrink, not overflow. */
+.bo-invoiceForm .bo-pdfTemplateCard--inline {
   min-width: 0;
 }
 
@@ -582,23 +610,45 @@
   min-width: 0;
 }
 
-.bo-invoiceFormRow--dni {
-  display: flex;
-  align-items: center;
-  gap: var(--bo-space-3);
-  flex-wrap: wrap;
+.bo-invoiceFormRow--single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.bo-invoiceFormRow--dni .bo-field--switch {
+.bo-invoiceFormRow--singleCenter {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.bo-invoiceFormRow--singleCenter>.bo-field {
+  max-width: 360px;
+  width: 100%;
+}
+
+.bo-invoiceFormRow--phoneDni {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: end;
+}
+
+.bo-invoiceFormRow--amount {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.bo-field--dniCif {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--bo-space-3);
+  align-items: end;
+  min-width: 0;
+}
+
+.bo-field--dniCif>.bo-field--switch--compact {
   padding-bottom: 0;
+  white-space: nowrap;
+  align-self: end;
 }
 
 .bo-invoiceFormRow--reservation {
   grid-template-columns: repeat(3, 1fr);
-}
-
-.bo-invoiceFormRow--invoiceDates {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .bo-invoiceFormRow--iva {
@@ -1051,14 +1101,18 @@
 .bo-tagInputWrapper {
   display: flex;
   gap: 8px;
+  align-items: stretch;
 }
 
 .bo-tagInputWrapper .bo-input {
   flex: 1;
 }
 
-.bo-invoiceFormRow--category {
-  grid-template-columns: repeat(2, 1fr);
+.bo-tagAddBtn {
+  height: 40px;
+  min-height: 40px;
+  flex-shrink: 0;
+  padding: 0 14px;
 }
 
 .bo-invoiceFormRow--tags {
@@ -1175,64 +1229,70 @@
 }
 
 
-/* ── Mobile ─────────────────────────────────────────── */
+/* ── Narrow form (viewport ≤768px) ────────────────────
+   The form is width-capped at 768px, so at viewports ≥1025px it stays ~700px
+   wide and the multi-column rows fit cleanly. On tablets/large phones
+   (≤768px) the header, sections, line items and actions stack, but the field
+   pairs stay in rows down to 520px; below 520px every row collapses to a
+   single column. Viewport `@media` (not a container query) is used here so the
+   layout stays stable across viewport widths. */
 @media (max-width: 768px) {
   /* Stack the two-column header */
-  .bo-invoiceFormHeader {
+  .bo-invoiceForm .bo-invoiceFormHeader {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .bo-invoiceFormHeaderActions {
+  .bo-invoiceForm .bo-invoiceFormHeaderActions {
     justify-content: stretch;
     width: 100%;
+    flex-wrap: wrap;
   }
 
-  .bo-invoiceFormHeaderActions .bo-btn {
-    flex: 1;
+  .bo-invoiceForm .bo-invoiceFormHeaderActions .bo-btn {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
-  /* Collapse top grid (customer info + invoice details side by side) */
-  .bo-invoiceFormTopGrid {
+  /* Stack the two top sections: "Datos de la factura" below "Datos del cliente" */
+  .bo-invoiceForm .bo-invoiceFormTopGrid {
     flex-direction: column;
     gap: var(--bo-space-4);
+    flex-wrap: nowrap;
+    align-items: stretch;
   }
 
-  /* All multi-column rows → single column */
-  .bo-invoiceFormRow {
-    grid-template-columns: 1fr;
-  }
-
-  .bo-invoiceFormRow--reservation,
-  .bo-invoiceFormRow--invoiceDates,
-  .bo-invoiceFormRow--category,
-  .bo-invoiceFormRow--iva {
-    grid-template-columns: 1fr;
+  .bo-invoiceForm .bo-invoiceFormTopGrid > .bo-invoiceFormSection {
+    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   /* Line items: hide desktop header, stack as cards */
-  .bo-lineItemsTableHeader {
+  .bo-invoiceForm .bo-lineItemsTableHeader {
     display: none;
   }
 
-  .bo-lineItemsTableRow {
-    grid-template-columns: 1fr;
+  .bo-invoiceForm .bo-lineItemsTableRow {
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
     padding: 12px;
     border: 1px solid var(--bo-border);
     border-radius: 12px;
     margin-bottom: 8px;
     background: var(--bo-surface);
+    min-width: 0;
   }
 
-  .bo-lineItemCell {
+  .bo-invoiceForm .bo-lineItemCell {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 4px 0;
+    min-width: 0;
   }
 
-  .bo-lineItemCell::before {
+  .bo-invoiceForm .bo-lineItemCell::before {
     content: attr(data-label);
     font-size: 11px;
     font-weight: 650;
@@ -1243,24 +1303,60 @@
     flex-shrink: 0;
   }
 
-  .bo-lineItemCell--actions {
+  .bo-invoiceForm .bo-lineItemCell--actions {
     justify-content: flex-end;
     padding-top: 8px;
     margin-top: 4px;
     border-top: 1px solid var(--bo-border);
   }
 
-  .bo-lineItemCell--actions::before {
+  .bo-invoiceForm .bo-lineItemCell--actions::before {
     display: none;
   }
 
   /* Form actions: full-width stacked */
-  .bo-invoiceFormActions {
+  .bo-invoiceForm .bo-invoiceFormActions {
     flex-direction: column;
     gap: 10px;
   }
 
-  .bo-invoiceFormActions .bo-btn {
+  .bo-invoiceForm .bo-invoiceFormActions .bo-btn {
     width: 100%;
+  }
+}
+
+/* ── Narrow (viewport ≤600px) ───────────────────────────
+   The three-column rows (Importe/Moneda/IVA and the reservation row) get too
+   cramped before the two-column pairs do, so collapse them first. */
+/* ── Very narrow (viewport ≤520px) ──────────────────────
+   Below 520px the form is too narrow for side-by-side fields, so every
+   multi-column row collapses to a single column. */
+@media (max-width: 520px) {
+  .bo-invoiceForm .bo-invoiceFormRow,
+  .bo-invoiceForm .bo-invoiceFormRow--single,
+  .bo-invoiceForm .bo-invoiceFormRow--singleCenter,
+  .bo-invoiceForm .bo-invoiceFormRow--phoneDni,
+  .bo-invoiceForm .bo-invoiceFormRow--amount,
+  .bo-invoiceForm .bo-invoiceFormRow--reservation,
+  .bo-invoiceForm .bo-invoiceFormRow--iva {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bo-invoiceForm .bo-invoiceFormRow--singleCenter {
+    justify-items: stretch;
+  }
+
+  .bo-invoiceForm .bo-invoiceFormRow--singleCenter>.bo-field {
+    max-width: none;
+  }
+
+  .bo-invoiceForm .bo-field--dniCif {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--bo-space-2);
+  }
+
+  /* PDF template cards wrap instead of overflowing on very narrow screens. */
+  .bo-invoiceForm .bo-pdfTemplateOptions--inline {
+    flex-wrap: wrap;
   }
 }

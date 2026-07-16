@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { useAtomValue } from "jotai";
-import { sessionAtom } from "../../../state/atoms";
 import { createClient } from "../../../api/client";
 import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput } from "../../../api/types";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
@@ -49,8 +47,6 @@ export default function Page() {
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
-  const session = useAtomValue(sessionAtom);
-  const currentUserId = session?.user?.id;
 
   const error = data.error;
   const [invoices, setInvoices] = useState<Invoice[]>(data.invoices || []);
@@ -460,7 +456,6 @@ export default function Page() {
         .bo-facturasFormContainer{padding:0 8px!important}
         /* ── Form ── */
         .bo-invoiceFormTopGrid{flex-direction:column;gap:var(--bo-space-4)}
-        .bo-invoiceFormRow,.bo-invoiceFormRow--reservation,.bo-invoiceFormRow--invoiceDates,.bo-invoiceFormRow--category,.bo-invoiceFormRow--iva{grid-template-columns:1fr!important}
         .bo-invoiceFormHeader{flex-direction:column;align-items:stretch}
         .bo-invoiceFormHeaderActions{width:100%}
         .bo-invoiceFormHeaderActions .bo-btn{flex:1}
@@ -482,6 +477,10 @@ export default function Page() {
         .bo-modalActions .bo-btn{width:100%}
         .bo-modalBody{max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
         .bo-invoicePreviewGrid{grid-template-columns:1fr!important}
+      }
+      @media (max-width: 520px) {
+        /* Field pairs stay in rows down to 520px; collapse below that. */
+        .bo-invoiceFormRow,.bo-invoiceFormRow--single,.bo-invoiceFormRow--singleCenter,.bo-invoiceFormRow--phoneDni,.bo-invoiceFormRow--amount,.bo-invoiceFormRow--reservation,.bo-invoiceFormRow--iva{grid-template-columns:1fr!important}
       }`}</style>
       <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab} />
       {activeTab === "resumen" ? (
@@ -561,7 +560,6 @@ export default function Page() {
                   onSave={handleSaveInvoice}
                   onCancel={handleCancelEdit}
                   searchReservations={searchReservations}
-                  currentUserId={currentUserId}
                 />
             </Panel>
           </div>
