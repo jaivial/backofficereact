@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from "react";
-import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, Tag, Plus, XCircle, List, MessageSquare, Eye } from "lucide-react";
+import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, Tag, Plus, XCircle, List, Eye } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
+import { SearchableSelect } from "../../../../ui/inputs/SearchableSelect";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
+import { SPAIN_PROVINCES, SPAIN_MUNICIPIOS_BY_PROVINCE } from "../constants/spainLocations";
+import { PROVINCE_NAME_BY_CODE, PROVINCE_CODE_BY_NAME, allMunicipios, provinceCodeForMunicipio } from "../constants/spainLocations.helpers";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { FillFromReservationModal } from "./FillFromReservationModal";
 import { SelectTemplateModal } from "./SelectTemplateModal";
 import { InvoicePdfPreviewModal } from "./InvoicePdfPreviewModal";
 import { LineItems, type LineItemsRef } from "./LineItems";
-import { CommentsPanel } from "./CommentsPanel";
 import type { Invoice, InvoiceInput, InvoiceStatus, PaymentMethod, ReservationSearchResult, InvoiceTemplate, CurrencyCode, InvoiceCategory, PdfTemplateType, InvoiceLineItem, InvoiceLineItemInput, InvoiceDepositType } from "../../../../api/types";
 import { CURRENCY_OPTIONS, CURRENCY_SYMBOLS, DEFAULT_CURRENCY_RATES, convertCurrency, INVOICE_CATEGORY_OPTIONS, PDF_TEMPLATE_OPTIONS, INVOICE_DEPOSIT_TYPE_OPTIONS } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
@@ -33,7 +35,6 @@ type InvoiceFormProps = {
     time?: string;
   }) => Promise<ReservationSearchResult[]>;
   api?: ReturnType<typeof createClient>;
-  currentUserId?: number;
 };
 
 type AutoSaveStatus = "idle" | "saving" | "saved" | "error";
@@ -234,7 +235,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function InvoiceForm({ invoice, isDuplicate, isSubmitting = false, onSave, onCancel, searchReservations, api, currentUserId }: InvoiceFormProps, ref) {
+export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function InvoiceForm({ invoice, isDuplicate, isSubmitting = false, onSave, onCancel, searchReservations, api }: InvoiceFormProps, ref) {
   const { pushToast } = useToasts();
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -272,6 +273,47 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   const [customerAddressCity, setCustomerAddressCity] = useState(invoice?.customer_address_city || "");
   const [customerAddressProvince, setCustomerAddressProvince] = useState(invoice?.customer_address_province || "");
   const [customerAddressCountry, setCustomerAddressCountry] = useState(invoice?.customer_address_country || "España");
+
+  // Localidad / Provincia dropdowns (linked, searchable, all Spanish options)
+  const selectedProvinceCode = PROVINCE_CODE_BY_NAME[customerAddressProvince];
+
+  const provinceOptions = useMemo(() => {
+    const opts = SPAIN_PROVINCES.map((p) => ({ value: p.name, label: p.name }));
+    if (customerAddressProvince && !PROVINCE_CODE_BY_NAME[customerAddressProvince]) {
+      opts.unshift({ value: customerAddressProvince, label: customerAddressProvince });
+    }
+    return opts;
+  }, [customerAddressProvince]);
+
+  const cityOptions = useMemo(() => {
+    const list = selectedProvinceCode
+      ? SPAIN_MUNICIPIOS_BY_PROVINCE[selectedProvinceCode] ?? []
+      : allMunicipios();
+    const opts = list.map((name) => ({ value: name, label: name }));
+    if (customerAddressCity && !list.includes(customerAddressCity)) {
+      opts.unshift({ value: customerAddressCity, label: customerAddressCity });
+    }
+    return opts;
+  }, [selectedProvinceCode, customerAddressCity]);
+
+  const handleProvinceChange = useCallback(
+    (name: string) => {
+      setCustomerAddressProvince(name);
+      const code = PROVINCE_CODE_BY_NAME[name];
+      // Clear the city if it no longer belongs to the newly selected province
+      if (code && customerAddressCity && !(SPAIN_MUNICIPIOS_BY_PROVINCE[code] ?? []).includes(customerAddressCity)) {
+        setCustomerAddressCity("");
+      }
+    },
+    [customerAddressCity],
+  );
+
+  const handleCityChange = useCallback((name: string) => {
+    setCustomerAddressCity(name);
+    const code = provinceCodeForMunicipio(name);
+    if (code) setCustomerAddressProvince(PROVINCE_NAME_BY_CODE[code]);
+  }, []);
+
   const [amount, setAmount] = useState(invoice?.amount?.toString() || "");
   const [currency, setCurrency] = useState<CurrencyCode>(invoice?.currency || "EUR");
   const [ivaRate, setIvaRate] = useState(invoice?.iva_rate?.toString() || "10");
@@ -1007,7 +1049,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </label>
             </div>
 
-            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--single" data-slot="invoiceForm-invoiceFormRow--single">
               <label className={`bo-field ${hasError("customerEmail") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-email-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Email *</span>
                 <input
@@ -1027,7 +1069,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   </span>
                 )}
               </label>
+            </div>
 
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--phoneDni" data-slot="invoiceForm-invoiceFormRow--phoneDni">
               <label className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-phone-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Teléfono</span>
                 <input
@@ -1046,36 +1090,36 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   </span>
                 )}
               </label>
-            </div>
 
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--dni" data-slot="invoiceForm-invoiceFormRow--dni">
-              <div className="bo-field bo-field--switch" data-slot="invoiceForm-field--switch">
-                <span className="bo-label" data-slot="invoiceForm-label">CIF</span>
-                <Switch checked={useDni} onCheckedChange={setUseDni} data-testid="invoice-dni-toggle" />
-                <span className="bo-label" data-slot="invoiceForm-label">DNI</span>
+              <div className="bo-field bo-field--dniCif" data-slot="invoiceForm-field--dniCif">
+                <div className="bo-field bo-field--switch bo-field--switch--compact" data-slot="invoiceForm-field--switch">
+                  <span className="bo-label" data-slot="invoiceForm-label">CIF</span>
+                  <Switch checked={useDni} onCheckedChange={setUseDni} data-testid="invoice-dni-toggle" />
+                  <span className="bo-label" data-slot="invoiceForm-label">DNI</span>
+                </div>
+
+                <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-dni-cif-label">
+                  <span className="bo-label" data-slot="invoiceForm-label">{useDni ? "DNI" : "CIF"}</span>
+                  <input
+                    className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
+                    type="text"
+                    value={customerDniCif}
+                    onChange={(e) => setCustomerDniCif(e.target.value)}
+                    onBlur={() => handleBlur("customerDniCif")}
+                    aria-describedby={hasError("customerDniCif") ? "customerDniCif-error" : undefined}
+                    aria-invalid={hasError("customerDniCif")}
+                    data-testid="invoice-dni-cif-input"
+                  />
+                  {hasError("customerDniCif") && (
+                    <span className="bo-fieldError" id="customerDniCif-error" role="alert" data-slot="invoiceForm-fieldError">
+                      {getError("customerDniCif")}
+                    </span>
+                  )}
+                </label>
               </div>
-
-              <label className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-dni-cif-label">
-                <span className="bo-label" data-slot="invoiceForm-label">{useDni ? "DNI" : "CIF"}</span>
-                <input
-                  className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
-                  type="text"
-                  value={customerDniCif}
-                  onChange={(e) => setCustomerDniCif(e.target.value)}
-                  onBlur={() => handleBlur("customerDniCif")}
-                  aria-describedby={hasError("customerDniCif") ? "customerDniCif-error" : undefined}
-                  aria-invalid={hasError("customerDniCif")}
-                  data-testid="invoice-dni-cif-input"
-                />
-                {hasError("customerDniCif") && (
-                  <span className="bo-fieldError" id="customerDniCif-error" role="alert" data-slot="invoiceForm-fieldError">
-                    {getError("customerDniCif")}
-                  </span>
-                )}
-              </label>
             </div>
 
-            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--single" data-slot="invoiceForm-invoiceFormRow--single">
               <label className="bo-field" data-slot="invoice-form-customer-address-street-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Calle</span>
                 <input
@@ -1086,7 +1130,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   data-testid="invoice-street-input"
                 />
               </label>
+            </div>
 
+            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
               <label className="bo-field bo-field--number" data-slot="invoice-form-customer-address-number-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Número</span>
                 <input
@@ -1097,9 +1143,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   data-testid="invoice-number-input"
                 />
               </label>
-            </div>
 
-            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
               <label className={`bo-field ${hasError("customerAddressPostalCode") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-postal-code-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Código Postal</span>
                 <input
@@ -1118,31 +1162,40 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   </span>
                 )}
               </label>
+            </div>
 
+            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
               <label className="bo-field" data-slot="invoice-form-customer-city-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Localidad</span>
-                <input
-                  className="bo-input"
-                  type="text"
+                <SearchableSelect
                   value={customerAddressCity}
-                  onChange={(e) => setCustomerAddressCity(e.target.value)}
+                  onChange={handleCityChange}
+                  options={cityOptions}
+                  ariaLabel="Localidad"
+                  placeholder="Selecciona una localidad"
+                  searchPlaceholder="Buscar localidad..."
+                  emptyText="Sin localidades"
+                  maxRender={200}
                   data-testid="invoice-city-input"
+                />
+              </label>
+
+              <label className="bo-field" data-slot="invoice-form-customer-province-label">
+                <span className="bo-label" data-slot="invoiceForm-label">Provincia</span>
+                <SearchableSelect
+                  value={customerAddressProvince}
+                  onChange={handleProvinceChange}
+                  options={provinceOptions}
+                  ariaLabel="Provincia"
+                  placeholder="Selecciona una provincia"
+                  searchPlaceholder="Buscar provincia..."
+                  emptyText="Sin provincias"
+                  data-testid="invoice-province-input"
                 />
               </label>
             </div>
 
-            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
-              <label className="bo-field" data-slot="invoice-form-customer-province-label">
-                <span className="bo-label" data-slot="invoiceForm-label">Provincia</span>
-                <input
-                  className="bo-input"
-                  type="text"
-                  value={customerAddressProvince}
-                  onChange={(e) => setCustomerAddressProvince(e.target.value)}
-                  data-testid="invoice-province-input"
-                />
-              </label>
-
+            <div className="bo-invoiceFormRow bo-invoiceFormRow--single" data-slot="invoiceForm-invoiceFormRow--single">
               <label className="bo-field" data-slot="invoice-form-customer-country-label">
                 <span className="bo-label" data-slot="invoiceForm-label">País</span>
                 <input
@@ -1216,115 +1269,116 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 )}
               </div>
             ) : (
-              <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
-                <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`} data-slot="invoice-form-amount-label">
-                  <span className="bo-label" data-slot="invoiceForm-label">Importe *</span>
-                  <input
-                    className={`bo-input ${hasError("amount") ? "bo-input--error" : ""}`}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    onBlur={() => handleBlur("amount")}
-                    required
-                    aria-describedby={`iva-help${hasError("amount") ? " amount-error" : ""}`}
-                    aria-invalid={hasError("amount")}
-                    data-testid="invoice-amount-input"
-                  />
-                  {hasError("amount") && (
-                    <span className="bo-fieldError" id="amount-error" role="alert" data-slot="invoiceForm-fieldError">
-                      {getError("amount")}
-                    </span>
-                  )}
-                </label>
-
-                <label className="bo-field" data-slot="invoice-form-currency-label">
-                  <span className="bo-label" data-slot="invoiceForm-label">Moneda</span>
-                  <Select
-                    value={currency}
-                    onChange={(value) => setCurrency(value as CurrencyCode)}
-                    options={CURRENCY_OPTIONS}
-                    ariaLabel="Moneda"
-                    data-testid="invoice-currency-select"
-                  />
-                </label>
-
-                <label className="bo-field" data-slot="invoice-form-iva-rate-label">
-                  <span className="bo-label" data-slot="invoiceForm-label">IVA (%)</span>
-                  <input
-                    className="bo-input"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    value={ivaRate}
-                    onChange={(e) => setIvaRate(e.target.value)}
-                    aria-describedby="iva-help"
-                    data-testid="invoice-iva-rate-input"
-                  />
-                </label>
-
-                <label className="bo-field" data-slot="invoice-form-payment-method-label">
-                  <span className="bo-label" data-slot="invoiceForm-label">Método de pago</span>
-                  <Select
-                    value={paymentMethod}
-                    onChange={(value) => setPaymentMethod(value as PaymentMethod | "")}
-                    options={PAYMENT_METHOD_OPTIONS}
-                    ariaLabel="Método de pago"
-                    data-testid="invoice-payment-method-select"
-                  />
-                </label>
-              </div>
-            )}
-
-            {/* Discount Section */}
-            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
-              <label className="bo-field" data-slot="invoice-form-discount-type-label">
-                <span className="bo-label" data-slot="invoiceForm-label">Tipo de descuento</span>
-                <Select
-                  value={discountType}
-                  onChange={(value) => setDiscountType(value as "percentage" | "fixed" | "")}
-                  options={[
-                    { value: "", label: "Sin descuento" },
-                    { value: "percentage", label: "Porcentaje (%)" },
-                    { value: "fixed", label: "Importe fijo" },
-                  ]}
-                  ariaLabel="Tipo de descuento"
-                  data-testid="invoice-discount-type-select"
-                />
-              </label>
-
-              {discountType && (
-                <>
-                  <label className="bo-field" data-slot="invoice-form-discount-value-label">
-                    <span className="bo-label" data-slot="invoiceForm-label">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
+              <>
+                <div className="bo-invoiceFormRow bo-invoiceFormRow--amount" data-slot="invoiceForm-invoiceFormRow--amount">
+                  <label className={`bo-field ${hasError("amount") ? "bo-field--error" : ""}`} data-slot="invoice-form-amount-label">
+                    <span className="bo-label" data-slot="invoiceForm-label">Importe *</span>
                     <input
-                      className="bo-input"
+                      className={`bo-input ${hasError("amount") ? "bo-input--error" : ""}`}
                       type="number"
                       step="0.01"
                       min="0"
-                      value={discountValue}
-                      onChange={(e) => setDiscountValue(e.target.value)}
-                      placeholder={discountType === "percentage" ? "10" : "50.00"}
-                      data-testid="invoice-discount-value-input"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      onBlur={() => handleBlur("amount")}
+                      required
+                      aria-describedby={`iva-help${hasError("amount") ? " amount-error" : ""}`}
+                      aria-invalid={hasError("amount")}
+                      data-testid="invoice-amount-input"
+                    />
+                    {hasError("amount") && (
+                      <span className="bo-fieldError" id="amount-error" role="alert" data-slot="invoiceForm-fieldError">
+                        {getError("amount")}
+                      </span>
+                    )}
+                  </label>
+
+                  <label className="bo-field" data-slot="invoice-form-currency-label">
+                    <span className="bo-label" data-slot="invoiceForm-label">Moneda</span>
+                    <Select
+                      value={currency}
+                      onChange={(value) => setCurrency(value as CurrencyCode)}
+                      options={CURRENCY_OPTIONS}
+                      ariaLabel="Moneda"
+                      data-testid="invoice-currency-select"
                     />
                   </label>
 
-                  <label className="bo-field" data-slot="invoice-form-discount-reason-label">
-                    <span className="bo-label" data-slot="invoiceForm-label">Razon del descuento</span>
+                  <label className="bo-field" data-slot="invoice-form-iva-rate-label">
+                    <span className="bo-label" data-slot="invoiceForm-label">IVA (%)</span>
                     <input
                       className="bo-input"
-                      type="text"
-                      value={discountReason}
-                      onChange={(e) => setDiscountReason(e.target.value)}
-                      placeholder="Descuento por..."
-                      data-testid="invoice-discount-reason-input"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      value={ivaRate}
+                      onChange={(e) => setIvaRate(e.target.value)}
+                      aria-describedby="iva-help"
+                      data-testid="invoice-iva-rate-input"
                     />
                   </label>
-                </>
-              )}
-            </div>
+                </div>
+
+                <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
+                  <label className="bo-field" data-slot="invoice-form-payment-method-label">
+                    <span className="bo-label" data-slot="invoiceForm-label">Método de pago</span>
+                    <Select
+                      value={paymentMethod}
+                      onChange={(value) => setPaymentMethod(value as PaymentMethod | "")}
+                      options={PAYMENT_METHOD_OPTIONS}
+                      ariaLabel="Método de pago"
+                      data-testid="invoice-payment-method-select"
+                    />
+                  </label>
+
+                  <label className="bo-field" data-slot="invoice-form-discount-type-label">
+                    <span className="bo-label" data-slot="invoiceForm-label">Tipo de descuento</span>
+                    <Select
+                      value={discountType}
+                      onChange={(value) => setDiscountType(value as "percentage" | "fixed" | "")}
+                      options={[
+                        { value: "", label: "Sin descuento" },
+                        { value: "percentage", label: "Porcentaje (%)" },
+                        { value: "fixed", label: "Importe fijo" },
+                      ]}
+                      ariaLabel="Tipo de descuento"
+                      data-testid="invoice-discount-type-select"
+                    />
+                  </label>
+                </div>
+
+                {discountType && (
+                  <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
+                    <label className="bo-field" data-slot="invoice-form-discount-value-label">
+                      <span className="bo-label" data-slot="invoiceForm-label">{discountType === "percentage" ? "Porcentaje (%)" : "Importe"}</span>
+                      <input
+                        className="bo-input"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={discountValue}
+                        onChange={(e) => setDiscountValue(e.target.value)}
+                        placeholder={discountType === "percentage" ? "10" : "50.00"}
+                        data-testid="invoice-discount-value-input"
+                      />
+                    </label>
+
+                    <label className="bo-field" data-slot="invoice-form-discount-reason-label">
+                      <span className="bo-label" data-slot="invoiceForm-label">Razon del descuento</span>
+                      <input
+                        className="bo-input"
+                        type="text"
+                        value={discountReason}
+                        onChange={(e) => setDiscountReason(e.target.value)}
+                        placeholder="Descuento por..."
+                        data-testid="invoice-discount-reason-input"
+                      />
+                    </label>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* IVA Summary */}
             <div className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="iva-help" data-slot="invoiceForm-invoiceFormRow--iva">
@@ -1372,7 +1426,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
               </div>
             )}
 
-            <div className="bo-invoiceFormRow bo-invoiceFormRow--invoiceDates" data-slot="invoiceForm-invoiceFormRow--invoiceDates">
+            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
               <label className="bo-field" data-slot="invoice-form-invoice-date-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Fecha de factura *</span>
                 <DatePicker value={invoiceDate} onChange={setInvoiceDate} data-testid="invoice-date-input" />
@@ -1388,7 +1442,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   data-testid="invoice-payment-terms-select"
                 />
               </label>
+            </div>
 
+            <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
               <label className="bo-field" data-slot="invoice-form-due-date-label">
                 <span className="bo-label" data-slot="invoiceForm-label">Fecha de vencimiento</span>
                 <DatePicker value={dueDate} onChange={setDueDate} data-testid="invoice-due-date-input" />
@@ -1408,7 +1464,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         <div className="bo-invoiceFormSection" data-slot="invoiceForm-invoiceFormSection">
           <h3 className="bo-invoiceFormSectionTitle" data-slot="invoice-form-section-estado-config">Estado y configuración</h3>
 
-          <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
+          <div className="bo-invoiceFormRow bo-invoiceFormRow--singleCenter" data-slot="invoiceForm-invoiceFormRow--singleCenter">
             <label className="bo-field" data-slot="invoice-form-status-label">
               <span className="bo-label" data-slot="invoiceForm-label">Estado</span>
               <Select
@@ -1533,8 +1589,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </label>
           </div>
 
-          {/* Category and Tags */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--category" data-slot="invoiceForm-invoiceFormRow--category">
+          {/* Category and Deposit Type */}
+          <div className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
             <label className="bo-field" data-slot="invoice-form-category-label">
               <span className="bo-label" data-slot="invoiceForm-label">Categoría</span>
               <Select
@@ -1548,6 +1604,20 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 data-testid="invoice-category-select"
               />
             </label>
+
+            <label className="bo-field" data-slot="invoice-form-deposit-type-label">
+              <span className="bo-label" data-slot="invoiceForm-label">Tipo de anticipo/seña</span>
+              <Select
+                value={depositType}
+                onChange={(value) => setDepositType(value as InvoiceDepositType | "")}
+                options={[
+                  { value: "", label: "No es anticipo ni seña" },
+                  ...INVOICE_DEPOSIT_TYPE_OPTIONS,
+                ]}
+                ariaLabel="Tipo de anticipo/seña"
+                data-testid="invoice-deposit-type-select"
+              />
+            </label>
           </div>
 
           {/* Tags */}
@@ -1555,22 +1625,6 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <label className="bo-field" data-slot="invoice-form-tags-label">
               <span className="bo-label" data-slot="invoiceForm-label">Etiquetas</span>
               <div className="bo-tagsInput" data-slot="invoiceForm-tagsInput">
-                <div className="bo-tagsList" data-slot="invoiceForm-tagsList">
-                  {tags.map((tag, index) => (
-                    <span key={index} className="bo-tagItem" data-slot="invoiceForm-tagItem">
-                      {tag}
-                      <button
-                        type="button"
-                        className="bo-tagRemove"
-                        onClick={() => setTags(tags.filter((_, i) => i !== index))}
-                        aria-label={`Eliminar etiqueta ${tag}`}
-                        data-testid={`invoice-tag-remove-${tag}-btn`}
-                      >
-                        <XCircle size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
                 <div className="bo-tagInputWrapper" data-slot="invoiceForm-tagInputWrapper">
                   <input
                     className="bo-input"
@@ -1593,7 +1647,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   />
                   <button
                     type="button"
-                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    className="bo-btn bo-btn--ghost bo-tagAddBtn"
                     onClick={() => {
                       if (newTag.trim() && !tags.includes(newTag.trim())) {
                         setTags([...tags, newTag.trim()]);
@@ -1607,24 +1661,23 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     <Plus size={14} />
                   </button>
                 </div>
+                <div className="bo-tagsList" data-slot="invoiceForm-tagsList">
+                  {tags.map((tag, index) => (
+                    <span key={index} className="bo-tagItem" data-slot="invoiceForm-tagItem">
+                      {tag}
+                      <button
+                        type="button"
+                        className="bo-tagRemove"
+                        onClick={() => setTags(tags.filter((_, i) => i !== index))}
+                        aria-label={`Eliminar etiqueta ${tag}`}
+                        data-testid={`invoice-tag-remove-${tag}-btn`}
+                      >
+                        <XCircle size={14} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
-            </label>
-          </div>
-
-          {/* Deposit Tracking Section */}
-          <div className="bo-invoiceFormRow bo-invoiceFormRow--deposit" data-slot="invoiceForm-invoiceFormRow--deposit">
-            <label className="bo-field" data-slot="invoice-form-deposit-type-label">
-              <span className="bo-label" data-slot="invoiceForm-label">Tipo de anticipo/seña</span>
-              <Select
-                value={depositType}
-                onChange={(value) => setDepositType(value as InvoiceDepositType | "")}
-                options={[
-                  { value: "", label: "No es anticipo ni seña" },
-                  ...INVOICE_DEPOSIT_TYPE_OPTIONS,
-                ]}
-                ariaLabel="Tipo de anticipo/seña"
-                data-testid="invoice-deposit-type-select"
-              />
             </label>
           </div>
 
@@ -1684,21 +1737,6 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </>
           )}
         </div>
-
-        {/* Comments section - only show for existing invoices */}
-        {invoice && invoice.id && (
-          <div className="bo-invoiceFormSection bo-invoiceFormSection--comments" data-slot="invoiceForm-invoiceFormSection--comments">
-            <h3 className="bo-invoiceFormSectionTitle" data-slot="invoice-form-section-comentarios">
-              <MessageSquare size={18} />
-              Comentarios
-            </h3>
-            <CommentsPanel
-              invoiceId={invoice.id}
-              currentUserId={currentUserId || 0}
-              api={api}
-            />
-          </div>
-        )}
       </div>
 
       {/* Form actions */}
