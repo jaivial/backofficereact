@@ -28,6 +28,8 @@ import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 import { useMenuEditor } from "./hooks/useMenuEditor";
 import { MenuPreview } from "./functionalComponents/MenuPreview/MenuPreview";
 import { MenuPublishPanel } from "./functionalComponents/MenuPublishPanel/MenuPublishPanel";
+import { MenuSliderPanel, deriveSliderPreview } from "./functionalComponents/MenuSliderPanel/MenuSliderPanel";
+import type { SliderPreviewState } from "./functionalComponents/MenuSliderPanel/MenuSliderPanel";
 import { MenuPricing } from "./functionalComponents/MenuPricing/MenuPricing";
 import { MenuSectionEditor } from "./functionalComponents/MenuSectionEditor/MenuSectionEditor";
 import { DishImageAdvisorModalComponent } from "./functionalComponents/DishImageAdvisorModal/DishImageAdvisorModal";
@@ -197,7 +199,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   useErrorToast(H.error);
 
   const {
-    error, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
+    error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
     showMenuPreviewImage, sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement,
     beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, specialMenuImage,
     menuPreviewImageBusy, specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
@@ -234,6 +236,17 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   } = H;
 
   const { pushToast } = useToasts();
+  const [sliderPreview, setSliderPreview] = useState<SliderPreviewState>(() => deriveSliderPreview(initialSlider));
+  const sliderPreviewMenuPayload = useMemo(
+    () => ({ ...previewMenuPayload, slider_mode: sliderPreview.mode, slider_images: sliderPreview.images }),
+    [previewMenuPayload, sliderPreview],
+  );
+
+  useEffect(() => {
+    const win = previewFrameRef.current?.contentWindow;
+    if (!win || previewThemeLoading || previewNeedsUpgrade) return;
+    win.postMessage({ type: "vc_preview:update", theme_id: previewThemeId, menu_type: menuType || "closed_conventional", menu: sliderPreviewMenuPayload }, "*");
+  }, [menuType, previewFrameRef, previewNeedsUpgrade, previewThemeId, previewThemeLoading, sliderPreviewMenuPayload]);
 
   const paneLayoutTransition = useMemo(
     () => shouldReduceMotion
@@ -509,6 +522,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     <Select className="bo-menuSettingSelect" value={showDishImages ? "with_image" : "without_image"} onChange={(value) => setShowDishImages(value === "with_image")} options={dishVisibilityOptions} size="sm" ariaLabel="Visibilidad de platos en preview" />
                   </div>
                 ) : null}
+                {!isSpecial ? <MenuSliderPanel menuId={menuId} initialSlider={initialSlider} onSliderChange={setSliderPreview} /> : null}
                 <div className="bo-field" data-slot="crear-field">
                   <div className="bo-label" data-slot="crear-label">Añadir foto preview</div>
                   <Select className="bo-menuSettingSelect" value={showMenuPreviewImage ? "with_preview" : "without_preview"} onChange={(value) => setShowMenuPreviewImage(value === "with_preview")} options={menuPreviewVisibilityOptions} size="sm" ariaLabel="Visibilidad de foto preview en editor final" />
@@ -660,7 +674,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
             previewThemeLabel={previewThemeLabel}
             previewThemeId={previewThemeId}
             menuType={menuType}
-            previewMenuPayload={previewMenuPayload}
+            previewMenuPayload={sliderPreviewMenuPayload}
             previewUrl={previewUrl}
             mobileTab={mobileTab}
             onMobileTabChange={setMobileTab}

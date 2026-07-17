@@ -75,6 +75,7 @@
   let heroSliderPrevTimeout = null;
   let dishLightboxNode = null;
   let dishLightboxEscHandler = null;
+  let lastPreviewSignature = "";
 
   function normalizeThemeAlias(rawTheme) {
     const raw = String(rawTheme || "").trim().toLowerCase();
@@ -688,7 +689,15 @@
     return '<div class="menuHeroSlider" aria-label="Imágenes de comida"' + autoAttr + '><div class="menuHeroSliderStage" aria-hidden="true"><img src="' + escapeHtml(src) + '" alt="" class="' + activeCls + '" loading="eager" decoding="async" /></div></div>';
   }
 
-  function startHeroSliderIfPresent() {
+  function heroSliderPaths(menu) {
+    if (String(menu && menu.slider_mode || "").trim() === "hidden") return [];
+    if (Array.isArray(menu && menu.slider_images)) {
+      return menu.slider_images.map(function (path) { return String(path || "").trim(); }).filter(Boolean);
+    }
+    return HERO_SLIDER_IMAGES.slice();
+  }
+
+  function startHeroSliderIfPresent(paths) {
     clearHeroSliderTimers();
     const slider = root.querySelector('[data-vc-menu-slider="1"]');
     if (!slider) return;
@@ -696,13 +705,14 @@
     if (!stage) return;
 
     const reduced = prefersReducedMotion();
-    const paths = HERO_SLIDER_IMAGES.slice();
+    const usablePaths = Array.isArray(paths) ? paths : HERO_SLIDER_IMAGES.slice();
+    if (usablePaths.length === 0) return;
     const bad = {};
     let active = 0;
     let prev = null;
 
     function appendShot(idx, cls) {
-      const src = paths[idx];
+      const src = usablePaths[idx];
       if (!src) return;
       const img = document.createElement("img");
       img.src = src;
@@ -717,21 +727,21 @@
     }
 
     function findNextIndex(from) {
-      if (paths.length <= 1) return from;
-      for (let step = 1; step <= paths.length; step += 1) {
-        const idx = (from + step) % paths.length;
+      if (usablePaths.length <= 1) return from;
+      for (let step = 1; step <= usablePaths.length; step += 1) {
+        const idx = (from + step) % usablePaths.length;
         if (!bad[idx]) return idx;
       }
       return from;
     }
 
     function preloadNext() {
-      if (paths.length <= 1) return;
+      if (usablePaths.length <= 1) return;
       const next = findNextIndex(active);
       if (next === active) return;
       const img = new Image();
       img.decoding = "async";
-      img.src = paths[next];
+      img.src = usablePaths[next];
     }
 
     function draw() {
@@ -749,8 +759,8 @@
         window.clearTimeout(heroSliderPrevTimeout);
       }
       heroSliderPrevTimeout = window.setTimeout(function () {
+        stage.querySelector(".menuHeroShot.is-prev")?.remove();
         prev = null;
-        draw();
         heroSliderPrevTimeout = null;
       }, 1100);
     }
@@ -780,7 +790,7 @@
 
     draw();
     preloadNext();
-    if (!reduced && paths.length > 1) {
+    if (!reduced && usablePaths.length > 1) {
       heroSliderInterval = window.setInterval(advance, 3500);
     }
   }
@@ -830,15 +840,19 @@
       });
       const emptyState = hasContent ? "" : '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay contenido disponible.</p></div>';
       const priceCard = renderMenuPriceCardVC(formatMenuPrice(menu.price));
-      const initialHeroSrc = HERO_SLIDER_IMAGES[0] || HERO_DEFAULT_IMAGE;
+      const heroPaths = heroSliderPaths(menu);
+      const initialHeroSrc = heroPaths[0] || HERO_DEFAULT_IMAGE;
       const initialHeroClass = prefersReducedMotion() ? "menuHeroShot is-active is-reduced" : "menuHeroShot is-active";
+      const heroMedia = heroPaths.length
+        ? '<section class="menuHeroMedia"><div class="container"><div class="menuHeroSlider" aria-label="Imágenes de comida" data-vc-menu-slider="1"><div class="menuHeroSliderStage" aria-hidden="true"><img src="' + escapeHtml(initialHeroSrc) + '" alt="" class="' + initialHeroClass + '" loading="eager" decoding="async" /></div></div></div></section>'
+        : "";
 
       const menuBody = sectionBlocks + emptyState + priceCard;
 
       return mountVillaTemplate({
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
         MENU_SUBTITLE: escapeHtml(menu.menu_subtitle[0] || "Jueves y viernes (no festivos)"),
-        MENU_HERO_SHOTS: '<img src="' + escapeHtml(initialHeroSrc) + '" alt="" class="' + initialHeroClass + '" loading="eager" decoding="async" />',
+        MENU_HERO_MEDIA: heroMedia,
         MENU_BODY: menuBody,
         ALLERGENS_LEGEND: renderAllergensLegendVC(),
         CURRENT_YEAR: String(new Date().getFullYear()),
@@ -1087,7 +1101,7 @@
       if (rendered) {
         attachDishCardImageFallbackHandlers();
         attachDishCardLightboxHandlers();
-        startHeroSliderIfPresent();
+        startHeroSliderIfPresent(heroSliderPaths(menu));
         return;
       }
     }
@@ -1107,6 +1121,14 @@
     }
   }
 
+  function previewSignature(themeId, menuType, menu) {
+    try {
+      return JSON.stringify([normalizeThemeId(themeId), safeType(menuType), menu || null]);
+    } catch (_err) {
+      return "";
+    }
+  }
+
   async function applyTheme(themeId, menuType) {
     state.themeId = normalizeThemeId(themeId);
     state.menuType = safeType(menuType);
@@ -1122,15 +1144,19 @@
     if (!msg || typeof msg !== "object") return;
 
     if (msg.type === "vc_preview:init") {
+      const signature = previewSignature(msg.theme_id || "villa-carmen", msg.menu_type || "closed_conventional", msg.menu);
+      if (signature && signature === lastPreviewSignature) return;
+      lastPreviewSignature = signature;
+      state.menu = msg.menu || state.menu;
       applyTheme(msg.theme_id || "villa-carmen", msg.menu_type || "closed_conventional");
-      if (msg.menu) {
-        state.menu = msg.menu;
-        render();
-      }
       return;
     }
 
     if (msg.type === "vc_preview:update") {
+      const signature = previewSignature(msg.theme_id || state.themeId, msg.menu_type || state.menuType, msg.menu || state.menu);
+      if (signature && signature === lastPreviewSignature) return;
+      lastPreviewSignature = signature;
+      state.menu = msg.menu || state.menu;
       if (msg.theme_id && normalizeThemeId(msg.theme_id) !== state.themeId) {
         applyTheme(msg.theme_id, msg.menu_type || state.menuType).then(function () {
           state.menu = msg.menu || state.menu;
