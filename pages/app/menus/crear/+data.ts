@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../../api/client";
-import type { GroupMenuV2 } from "../../../../api/types";
+import type { GroupMenuV2, MenuSlider } from "../../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -18,17 +18,22 @@ export async function data(pageContext: PageContextServer) {
   const menuId = Number(rawMenuId);
 
   let menu: GroupMenuV2 | null = null;
+  let slider: MenuSlider | null = null;
   let error: string | null = null;
 
   if (Number.isFinite(menuId) && menuId > 0) {
     try {
-      const res = await api.menus.gruposV2.get(menuId);
-      if (res.success) menu = res.menu;
-      else error = res.message || "No se pudo cargar el menu";
+      const [menuRes, sliderRes] = await Promise.all([
+        api.menus.gruposV2.get(menuId),
+        api.menus.gruposV2.getSlider(menuId).catch(() => null),
+      ]);
+      if (menuRes.success) menu = menuRes.menu;
+      else error = menuRes.message || "No se pudo cargar el menu";
+      if (sliderRes?.success) slider = sliderRes.slider;
     } catch (e) {
       error = e instanceof Error ? e.message : "No se pudo cargar el menu";
     }
   }
 
-  return { menu, error };
+  return { menu, slider, error };
 }

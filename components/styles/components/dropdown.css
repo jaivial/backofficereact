@@ -97,6 +97,12 @@
   text-align: start;
 }
 
+[data-ui="dropdown-trigger"] span,
+[data-role="select-trigger"] span,
+[data-role="searchable-select-trigger"] span {
+  text-align: start;
+}
+
 .bo-selectChev {
   color: var(--bo-muted);
 }

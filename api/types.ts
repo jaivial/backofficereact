@@ -338,6 +338,23 @@ export type GroupMenuV2MenuPreview = {
   ai_generated_img?: string | null;
 };
 
+export type SliderMode = "default" | "custom" | "both" | "hidden";
+
+export type MenuSliderImage = {
+  id: number;
+  image_url: string;
+  position: number;
+  is_default: boolean;
+  created_at: string;
+};
+
+export type MenuSlider = {
+  show_slider: boolean;
+  mode: SliderMode;
+  ai_enabled: boolean;
+  images: MenuSliderImage[];
+};
+
 export type GroupMenuV2 = {
   id: number;
   menu_title: string;

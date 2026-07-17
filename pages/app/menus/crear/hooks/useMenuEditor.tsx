@@ -8,6 +8,7 @@ import type {
   DishCatalogItem,
   GroupMenuV2,
   GroupMenuV2Section,
+  MenuSlider,
 } from "../../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
 import { processSpecialMenuFile } from "../../../../../lib/specialMenuUpload";
@@ -65,6 +66,7 @@ import {
 export type UseMenuEditorReturn = {
   // State
   error: string | null;
+  initialSlider: MenuSlider | null;
   menuId: number | null;
   isDraft: boolean;
   step: number;
@@ -239,9 +241,10 @@ export type UseMenuEditorReturn = {
 
 export function useMenuEditor(): UseMenuEditorReturn {
   const pageContext = usePageContext();
-  const data = pageContext.data as { menu: GroupMenuV2 | null; error: string | null };
+  const data = pageContext.data as { menu: GroupMenuV2 | null; slider?: MenuSlider | null; error: string | null };
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
+  const initialSlider = data.slider ?? null;
   const initialMenuPreviewState = useMemo(() => resolveMenuPreviewState(data.menu), []);
 
   const [error, setError] = useState<string | null>(data.error);
@@ -967,13 +970,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
     return () => { cancelled = true; };
   }, [api]);
 
-  // --- preview postMessage ---
-  useEffect(() => {
-    if (previewThemeLoading || previewNeedsUpgrade) return;
-    const win = previewFrameRef.current?.contentWindow;
-    if (!win) return;
-    win.postMessage({ type: "vc_preview:update", theme_id: previewThemeId, menu_type: menuType || "closed_conventional", menu: previewMenuPayload }, "*");
-  }, [menuType, previewMenuPayload, previewThemeId, previewThemeLoading, previewNeedsUpgrade]);
+  // Preview updates are sent by CrearPage, which adds hydrated slider data to
+  // the payload before posting. Keeping one owner prevents duplicate iframe renders.
 
   // --- createDraftAndContinue ---
   const createDraftAndContinue = useCallback(async () => {
@@ -1808,7 +1806,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
 
   return {
     // State
-    error, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
+    error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
     showMenuPreviewImage, menuPreviewImageUrl, menuPreviewAIRequested, menuPreviewAIGenerating,
     sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement, beverageSupplementPrice,
     minPartySize, mainLimit, mainLimitNum, comments, specialMenuImage, menuPreviewImageBusy,

@@ -23,6 +23,9 @@ import type {
   DishCatalogItem,
   GroupMenu,
   GroupMenuV2,
+  MenuSlider,
+  MenuSliderImage,
+  SliderMode,
   GroupMenuV2Dish,
   GroupMenuV2Section,
   GroupMenuV2Summary,
@@ -1449,6 +1452,37 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         },
         async get(id: number): Promise<APISuccess<{ menu: GroupMenuV2 }> | APIError> {
           return json(`/api/admin/group-menus-v2/${id}`, { method: "GET" });
+        },
+        async getSlider(id: number): Promise<APISuccess<{ slider: MenuSlider }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/slider`, { method: "GET" });
+        },
+        async patchSlider(id: number, mode: SliderMode): Promise<APISuccess<{ mode: SliderMode }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/slider`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ mode }),
+          });
+        },
+        async uploadSliderImage(id: number, file: File): Promise<APISuccess<{ image: MenuSliderImage }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || "slider.webp");
+          return json(`/api/admin/group-menus-v2/${id}/slider/images`, { method: "POST", body: form });
+        },
+        async deleteSliderImage(id: number, imageId: number): Promise<APISuccess | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/slider/images/${imageId}`, { method: "DELETE" });
+        },
+        async reorderSliderImages(id: number, imageIds: number[]): Promise<APISuccess | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/slider/images`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ image_ids: imageIds }),
+          });
+        },
+        async generateSliderAIImage(id: number, file: File, generationId: string): Promise<APISuccess<{ message?: string; menu_id: number; generation_id: string }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || "slider-ai.webp");
+          form.append("generation_id", generationId);
+          return json(`/api/admin/group-menus-v2/${id}/slider/images/ai`, { method: "POST", body: form });
         },
         async patchBasics(
           id: number,
