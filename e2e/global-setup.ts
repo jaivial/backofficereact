@@ -49,9 +49,9 @@ async function loginViaAPI(
     throw new Error(`Login failed: ${loginResult.message}`);
   }
 
-  // bo_session is HttpOnly — read it from the browser context, not document.cookie
-  const cookieDomain = new URL(baseURL).hostname;
-  const cookies = await browserPage.context().cookies(cookieDomain);
+  // bo_session is HttpOnly — read it from the browser context, not document.cookie.
+  // cookies() expects URLs (or no arg), not a bare hostname.
+  const cookies = await browserPage.context().cookies(baseURL);
   const boSession = cookies.find((c) => c.name === "bo_session");
   if (!boSession) {
     throw new Error("No bo_session cookie found after login");
