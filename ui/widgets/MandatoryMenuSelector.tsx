@@ -116,23 +116,23 @@ export function MandatoryMenuSelector({
   }
 
   return (
-    <div className={cn("flex flex-col gap-3", className)} data-ui="mandatory-menu-selector" data-slot="mandatory-menu-selector">
+    <div className={cn("flex flex-col", className)} data-ui="mandatory-menu-selector" data-slot="mandatory-menu-selector">
       {/* Header row - hidden on mobile */}
-      <div className="hidden sm:flex flex-row items-center gap-3 px-3 py-1 text-xs text-(--bo-muted) uppercase tracking-wide" data-slot="mandatory-menu-selector-header">
-        <div className="flex-1" data-slot="mandatory-menu-selector-header-menu">Menú</div>
-        <div className="w-36 text-center" data-slot="mandatory-menu-selector-header-main">Principales</div>
+      <div className="hidden sm:flex flex-row items-center justify-center gap-2 px-3 py-1 text-xs text-(--bo-muted) uppercase tracking-wide" data-slot="mandatory-menu-selector-header">
+        <div className="min-w-[200px]" data-slot="mandatory-menu-selector-header-menu">Menú</div>
+        <div className="w-11 text-center" data-slot="mandatory-menu-selector-header-main">Principales</div>
         <div className="w-10" data-slot="mandatory-menu-selector-header-actions"></div>
       </div>
 
       {selectedMenus.map((menu, idx) => (
         <div
           key={`${menu.id}-${idx}`}
-          className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-3 rounded-lg bg-(--bo-surface-2) border border-(--bo-border)"
+          className="flex flex-col sm:flex-row sm:items-center justify-center gap-2 px-3 pb-3 rounded-lg bg-(--bo-surface-2) border border-(--bo-border)"
           data-ui="menu-row"
           data-row-index={idx}
         >
           {/* Menu selector - centered on mobile */}
-          <div className="flex flex-col items-center sm:items-start flex-1 min-w-0 w-full" data-slot="mandatory-menu-selector-menu-field">
+          <div className="flex flex-col items-center sm:items-start min-w-0 w-full sm:w-fit" data-slot="mandatory-menu-selector-menu-field">
             <Select
               value={String(menu.id)}
               onChange={(v) => handleMenuSelect(idx, v)}
@@ -148,18 +148,19 @@ export function MandatoryMenuSelector({
           </div>
 
           {/* Checkbox - centered on mobile and desktop */}
-          <div className="flex items-center justify-center gap-2 sm:w-36" data-slot="mandatory-menu-selector-checkbox-field">
+          <div className="flex items-center justify-center gap-2 sm:w-auto" data-slot="mandatory-menu-selector-checkbox-field">
             <label
-              className="flex items-center gap-2 cursor-pointer"
+              className="bo-checkboxContainer gap-2 min-h-11 min-w-11 p-2 rounded-lg"
               data-ui="choose-main-label"
             >
               <input
                 type="checkbox"
                 checked={menuChooseMain.includes(menu.id)}
                 onChange={(e) => handleChooseMainToggle(menu.id, e.target.checked)}
-                className="bo-checkbox"
+                aria-label={`Marcar principales para ${menu.menu_title}`}
                 data-ui="choose-main-checkbox"
               />
+              <span className="bo-checkboxMark" aria-hidden="true" data-ui="choose-main-checkbox-mark" />
               <span className="text-sm text-(--bo-text) sm:hidden" data-slot="mandatory-menu-selector-checkbox-label">Principales</span>
             </label>
           </div>

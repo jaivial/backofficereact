@@ -87,14 +87,15 @@ export function MandatoryMenuConfig({
 
             {/* Booking option */}
             <div className="flex sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-(--bo-surface-2) border border-(--bo-border) w-fit mx-auto flex-row-reverse items-center" data-ui="mandatory-booking-row">
-              <label className="flex items-center gap-3 cursor-pointer" data-ui="mandatory-booking-label">
+              <label className="bo-checkboxContainer gap-3" data-ui="mandatory-booking-label">
                 <input
                   type="checkbox"
                   checked={mandatoryBooking}
                   onChange={(e) => onBookingChange(e.target.checked)}
-                  className="bo-checkbox"
+                  aria-label="Reserva obligatoria"
                   data-ui="mandatory-booking-checkbox"
                 />
+                <span className="bo-checkboxMark" aria-hidden="true" data-ui="mandatory-booking-checkbox-mark" />
                 <div data-slot="booking-label-text">
                   <span className="text-sm font-medium text-(--bo-text) block" data-role="booking-title">Reserva obligatoria</span>
                   <span className="text-xs text-(--bo-muted)" data-role="booking-desc">El cliente debe seleccionar menú para continuar</span>

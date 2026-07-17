@@ -11,35 +11,46 @@
   position: absolute;
   opacity: 0;
   cursor: pointer;
-  height: 0;
-  width: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .bo-checkboxMark {
-  width: 18px;
-  height: 18px;
-  background-color: var(--bo-bg-primary);
-  border: 2px solid var(--bo-border);
-  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--bo-surface-3);
+  border: 1px solid var(--bo-border-2);
+  border-radius: var(--bo-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  flex: 0 0 auto;
+  transition: background-color var(--bo-transition-base) var(--bo-ease),
+    border-color var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease);
 }
 
 .bo-checkboxContainer:hover .bo-checkboxMark {
-  border-color: var(--bo-primary);
+  border-color: var(--bo-accent);
+  background-color: var(--bo-surface-2);
 }
 
-/* Focus state for checkbox - WCAG accessibility */
-.bo-checkboxContainer:focus-visible .bo-checkboxMark {
+/* Focus the visible mark when the native input receives keyboard focus. */
+.bo-checkboxContainer input:focus-visible + .bo-checkboxMark {
   outline: 2px solid var(--bo-accent);
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--bo-primary-alpha);
 }
 
-.bo-checkboxContainer input:checked~.bo-checkboxMark {
-  background-color: var(--bo-primary);
-  border-color: var(--bo-primary);
+.bo-checkboxContainer input:checked ~ .bo-checkboxMark {
+  background-color: var(--bo-accent);
+  border-color: var(--bo-accent);
+  box-shadow: 0 4px 12px var(--bo-primary-alpha);
 }
 
 .bo-checkboxMark::after {
@@ -47,14 +58,19 @@
   display: none;
   width: 5px;
   height: 9px;
-  border: solid white;
+  border: solid var(--bo-shell);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
   margin-bottom: 2px;
 }
 
-.bo-checkboxContainer input:checked~.bo-checkboxMark::after {
+.bo-checkboxContainer input:checked ~ .bo-checkboxMark::after {
   display: block;
+}
+
+.bo-checkboxContainer input:disabled ~ .bo-checkboxMark {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .bo-checkboxContainer--header .bo-checkboxMark {
