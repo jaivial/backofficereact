@@ -73,6 +73,25 @@ describe("MandatoryMenuSelector", () => {
     expect(screen.getAllByTestId("trash-icon")).toHaveLength(2);
   });
 
+  it("renders an accessible custom checkbox for principales", () => {
+    const { container } = render(
+      React.createElement(MandatoryMenuSelector, {
+        ...defaultProps,
+        selectedMenuIds: [1],
+        menuChooseMain: [],
+        onChange: defaultProps.onChange,
+      }),
+    );
+
+    const checkbox = queryByDataUI(container, "choose-main-checkbox") as HTMLInputElement;
+    expect(checkbox).toHaveAttribute("type", "checkbox");
+    expect(checkbox).toHaveAttribute("aria-label", "Marcar principales para Menu del Dia");
+    expect(queryByDataUI(container, "choose-main-checkbox-mark")).toBeInTheDocument();
+
+    fireEvent.click(checkbox);
+    expect(defaultProps.onChange).toHaveBeenCalledWith([1], [1]);
+  });
+
   it("shows no menus message when menus array is empty", () => {
     const { container } = render(
       React.createElement(MandatoryMenuSelector, {
