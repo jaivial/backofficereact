@@ -1935,6 +1935,27 @@ export type BotSettingsResponse = {
   restaurant: BotRestaurantData;
 };
 
+export type WhatsAppConnection = {
+  status: string;
+  connected: boolean;
+  instance_name?: string;
+  provider_instance_id?: string | null;
+  server_base_url?: string;
+  phone?: string;
+  qr?: string;
+  pair_code?: string;
+  updated_at?: string | null;
+  warning?: string;
+};
+
+export type WhatsAppConnectionResponse = {
+  success: boolean;
+  connected: boolean;
+  message?: string;
+  code?: string;
+  connection?: WhatsAppConnection | null;
+};
+
 export type AIImageConfigInput = {
   providerSlug?: string;
   apiKey?: string;

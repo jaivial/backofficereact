@@ -1,0 +1,80 @@
+/* WhatsApp bot connection / QR onboarding panel. */
+[data-ui="whatsapp-connection"] .bo-panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+[data-ui="whatsapp-connection"] .bo-panelHeader h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+}
+[data-ui="whatsapp-connection"] .bo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+[data-ui="whatsapp-connection"] .bo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  border: 1px solid var(--bo-border, rgba(255, 255, 255, 0.12));
+}
+[data-ui="whatsapp-connection"] .bo-badge--ok {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+  border-color: rgba(22, 163, 74, 0.3);
+}
+[data-ui="whatsapp-connection"] .bo-badge--muted {
+  color: var(--bo-muted, #9aa0aa);
+  background: transparent;
+}
+[data-ui="whatsapp-connection"] .bo-qrWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+[data-ui="whatsapp-connection"] .bo-qr {
+  width: 240px;
+  height: 240px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+  box-shadow: var(--bo-shadow-soft, 0 6px 20px rgba(0, 0, 0, 0.15));
+}
+[data-ui="whatsapp-connection"] .bo-pairCode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 24px;
+  font-weight: 780;
+  letter-spacing: 4px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--bo-border, rgba(255, 255, 255, 0.16));
+  text-align: center;
+}
+[data-ui="whatsapp-connection"] .bo-spin {
+  animation: bo-wa-spin 0.9s linear infinite;
+  vertical-align: -2px;
+}
+@keyframes bo-wa-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-ui="whatsapp-connection"] .bo-spin {
+    animation: none;
+  }
+}
