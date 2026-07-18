@@ -19,6 +19,7 @@ import { BookingManager } from "./booking/BookingManager";
 import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/ConfigLegalPages";
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
+import { WhatsAppConnection } from "./functionalComponents/ConfigWhatsAppBot/WhatsAppConnection";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -277,6 +278,7 @@ export default function Page() {
             isRoot ? (
               <>
                 <ConfigAIImage />
+                <WhatsAppConnection />
                 <ConfigWhatsAppBot
                   restaurants={pageContext.bo?.session?.restaurants ?? []}
                   activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}

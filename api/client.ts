@@ -1121,6 +1121,44 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify({}),
         });
       },
+      // ===== WhatsApp bot: subscription + on-demand UAZAPI connection =====
+      async whatsappSubscribe(
+        input: { amount?: number; currency?: string } = {},
+      ): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
+        return json("/api/admin/members/whatsapp/subscribe", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async whatsappConnect(
+        input: { phone?: string } = {},
+      ): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
+        return json("/api/admin/members/whatsapp/connect", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async whatsappConnection(): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
+        return json("/api/admin/members/whatsapp/connection", { method: "GET" });
+      },
+      async whatsappDisconnect(
+        input: { delete_instance?: boolean } = {},
+      ): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
+        return json("/api/admin/members/whatsapp/disconnect", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async whatsappCancel(): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
+        return json("/api/admin/members/whatsapp/cancel", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
     },
     invitations: {
       async validate(token: string): Promise<APISuccess<{ invitation: MemberInvitationPreview }> | APIError> {
