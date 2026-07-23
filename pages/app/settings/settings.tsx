@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../api/client";
@@ -16,7 +16,6 @@ import { IntegrationsPanel } from "./functionalComponents/IntegrationsPanel/Inte
 import { BrandingPanel } from "./functionalComponents/BrandingPanel/BrandingPanel";
 import { WebsitePanel } from "./functionalComponents/WebsitePanel/WebsitePanel";
 import { InvoiceNumberingPanel } from "./functionalComponents/InvoiceNumberingPanel/InvoiceNumberingPanel";
-import { RenumberPanel } from "./functionalComponents/RenumberPanel/RenumberPanel";
 import { PdfTemplatePanel } from "./functionalComponents/PdfTemplatePanel/PdfTemplatePanel";
 
 function defaultWebsiteMenuTemplates(): RestaurantWebsiteMenuTemplatesConfig {
@@ -87,21 +86,7 @@ export default function Page() {
     () => Object.keys((data.websiteMenuTemplates?.overrides || {})).length > 0,
   );
 
-  // Renumbering state
-  const [renumberStartingNumber, setRenumberStartingNumber] = useState(invoiceSettings.nextNumber);
-  const [renumberGenerateByDate, setRenumberGenerateByDate] = useState(false);
-  const [renumberDateFormat, setRenumberDateFormat] = useState("YYYY");
-  const [renumberPreview, setRenumberPreview] = useState<import("../../../api/types").InvoiceRenumberPreview[] | null>(null);
-  const [renumberHistory, setRenumberHistory] = useState<import("../../../api/types").InvoiceRenumberAudit[]>([]);
-  const [renumberLoading, setRenumberLoading] = useState(false);
-  const [showConfirmApply, setShowConfirmApply] = useState(false);
-
   useErrorToast(error);
-
-  // Load renumber history on mount
-  useEffect(() => {
-    loadRenumberHistory();
-  }, []);
 
   const reload = useCallback(async () => {
     setBusy(true);
@@ -212,69 +197,6 @@ export default function Page() {
     }
   }, [api, pushToast, websiteMenuTemplates, websiteTemplateUsePerType]);
 
-  const previewRenumber = useCallback(async () => {
-    setRenumberLoading(true);
-    setError(null);
-    try {
-      const res = await api.invoices.previewRenumber({
-        startingNumber: renumberStartingNumber,
-        generateByDate: renumberGenerateByDate,
-        dateFormat: renumberGenerateByDate ? renumberDateFormat : undefined,
-      });
-      if (!res.success) {
-        setRenumberPreview(null);
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo previsualizar" });
-        return;
-      }
-      setRenumberPreview(res.preview || []);
-      pushToast({ kind: "success", title: "Previsualizacion lista", message: `${res.preview?.length || 0} facturas seran renumeradas` });
-    } catch (e) {
-      setRenumberPreview(null);
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo previsualizar" });
-    } finally {
-      setRenumberLoading(false);
-    }
-  }, [api, renumberStartingNumber, renumberGenerateByDate, renumberDateFormat, pushToast]);
-
-  const applyRenumber = useCallback(async () => {
-    setRenumberLoading(true);
-    setError(null);
-    try {
-      const res = await api.invoices.applyRenumber({
-        startingNumber: renumberStartingNumber,
-        generateByDate: renumberGenerateByDate,
-        dateFormat: renumberGenerateByDate ? renumberDateFormat : undefined,
-      });
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo aplicar" });
-        return;
-      }
-      setRenumberPreview(null);
-      setShowConfirmApply(false);
-      const newNextNumber = renumberGenerateByDate
-        ? renumberStartingNumber
-        : renumberStartingNumber + (res.preview?.length || 0);
-      setInvoiceSettings((prev) => ({ ...prev, nextNumber: newNextNumber }));
-      loadRenumberHistory();
-      pushToast({ kind: "success", title: "Renumeracion completada", message: `${res.applied_count} facturas renumeradas` });
-    } catch (e) {
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo aplicar" });
-    } finally {
-      setRenumberLoading(false);
-    }
-  }, [api, renumberStartingNumber, renumberGenerateByDate, renumberDateFormat, pushToast]);
-
-  const loadRenumberHistory = useCallback(async () => {
-    try {
-      const res = await api.invoices.getRenumberHistory();
-      if (res.success) {
-        setRenumberHistory(res.audits || []);
-      }
-    } catch (e) {
-      console.error("Failed to load renumber history:", e);
-    }
-  }, [api]);
-
   return (
     <section aria-label="Ajustes" data-ui="settings-page">
       <PageToolbar
@@ -315,21 +237,6 @@ export default function Page() {
           busy={busy}
           onSettingsChange={setInvoiceSettings}
           onSave={saveInvoiceSettings}
-        />
-        <RenumberPanel
-          renumberStartingNumber={renumberStartingNumber}
-          renumberGenerateByDate={renumberGenerateByDate}
-          renumberDateFormat={renumberDateFormat}
-          renumberPreview={renumberPreview}
-          renumberHistory={renumberHistory}
-          renumberLoading={renumberLoading}
-          showConfirmApply={showConfirmApply}
-          onStartingNumberChange={setRenumberStartingNumber}
-          onGenerateByDateChange={setRenumberGenerateByDate}
-          onDateFormatChange={setRenumberDateFormat}
-          onPreview={previewRenumber}
-          onApply={applyRenumber}
-          onShowConfirmChange={setShowConfirmApply}
         />
         <PdfTemplatePanel
           invoiceSettings={invoiceSettings}
