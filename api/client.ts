@@ -1121,16 +1121,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify({}),
         });
       },
-      // ===== WhatsApp bot: subscription + on-demand UAZAPI connection =====
-      async whatsappSubscribe(
-        input: { amount?: number; currency?: string } = {},
-      ): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
-        return json("/api/admin/members/whatsapp/subscribe", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(input),
-        });
-      },
+      // ===== WhatsApp bot connection =====
       async whatsappConnect(
         input: { phone?: string } = {},
       ): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
@@ -1150,13 +1141,6 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
-        });
-      },
-      async whatsappCancel(): Promise<import("./types").WhatsAppConnectionResponse | APIError> {
-        return json("/api/admin/members/whatsapp/cancel", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({}),
         });
       },
     },
@@ -2167,26 +2151,6 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
       },
 
-      // Invoice Renumbering
-      async previewRenumber(input: import("./types").InvoiceRenumberInput): Promise<APISuccess<{ preview: import("./types").InvoiceRenumberPreview[] }> | APIError> {
-        return json("/api/admin/invoices/renumber/preview", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(input),
-        });
-      },
-
-      async applyRenumber(input: import("./types").InvoiceRenumberInput): Promise<import("./types").InvoiceRenumberResult | import("./types").APIError> {
-        return json("/api/admin/invoices/renumber/apply", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(input),
-        });
-      },
-
-      async getRenumberHistory(): Promise<import("./types").InvoiceRenumberAuditListResponse | import("./types").APIError> {
-        return json("/api/admin/invoices/renumber/history", { method: "GET" });
-      },
     },
 
     invoiceTemplates: {

@@ -465,7 +465,7 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws")) return;
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
       let upstreamPath = "";
@@ -499,6 +499,7 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
         else if (typeof v === "string") headers[k] = v;
       }
       headers.host = new URL(backendOrigin).host;
+      headers["x-forwarded-host"] = req.headers.host || "";
 
       const upstreamWS = new WebSocket(upstreamURL, { headers });
       const hasSessionCookie = typeof headers.cookie === "string" && headers.cookie.includes("bo_session=");

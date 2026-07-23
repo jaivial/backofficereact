@@ -1208,50 +1208,6 @@ export type InvoiceHistoryListResponse = {
 };
 
 // Invoice Renumbering Types
-export type InvoiceRenumberPreview = {
-  invoice_id: number;
-  current_number: string | null;
-  new_number: string;
-  invoice_date: string;
-  customer_name: string;
-  amount: number;
-  status: InvoiceStatus;
-};
-
-export type InvoiceRenumberInput = {
-  startingNumber: number;
-  generateByDate: boolean;
-  dateFormat?: string; // e.g., "YYYY" for yearly, "YYYY-MM" for monthly
-};
-
-export type InvoiceRenumberResult = {
-  success: boolean;
-  message?: string;
-  preview?: InvoiceRenumberPreview[];
-  applied_count?: number;
-  errors?: string[];
-};
-
-export type InvoiceRenumberAudit = {
-  id: number;
-  restaurant_id: number;
-  previous_format: string;
-  new_format: string;
-  starting_number: number;
-  generate_by_date: boolean;
-  date_format?: string;
-  affected_invoices: number;
-  performed_by: number;
-  performed_by_name: string;
-  performed_at: string;
-};
-
-export type InvoiceRenumberAuditListResponse = {
-  success: boolean;
-  audits: InvoiceRenumberAudit[];
-  total: number;
-};
-
 // Reminder Types
 export type ReminderStatus = "pending" | "sent" | "failed";
 
@@ -1938,18 +1894,16 @@ export type BotSettingsResponse = {
 export type WhatsAppConnection = {
   status: string;
   connected: boolean;
-  instance_name?: string;
-  provider_instance_id?: string | null;
-  server_base_url?: string;
-  phone?: string;
-  qr?: string;
-  pair_code?: string;
+  phone?: string | null;
+  qr?: string | null;
+  pair_code?: string | null;
   updated_at?: string | null;
   warning?: string;
 };
 
 export type WhatsAppConnectionResponse = {
   success: boolean;
+  entitled: boolean;
   connected: boolean;
   message?: string;
   code?: string;
