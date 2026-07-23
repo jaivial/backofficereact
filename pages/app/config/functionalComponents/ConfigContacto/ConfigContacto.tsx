@@ -11,6 +11,7 @@ import { ImageDropInput } from "../../../../../ui/inputs/ImageDropInput";
 import EmailProviderConfigInner from "../EmailProviderConfig/EmailProviderConfig";
 import { useEmailProviderConfig } from "../EmailProviderConfig/hooks/useEmailProviderConfig";
 import { useBranding } from "./hooks/useBranding";
+import { WhatsAppConnection } from "../WhatsAppConnection/WhatsAppConnection";
 
 function normalizeWebsiteInput(value: string): string {
   const trimmed = value.trim();
@@ -397,6 +398,8 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             ) : null}
           </div>
       </Panel>
+
+      <WhatsAppConnection />
 
       <Panel title="Información fiscal" meta="Datos para facturación" bodyClassName="bo-stack" data-ui="config-contacto-fiscal-panel" data-slot="config-contacto-fiscal-panel">
           <div className="bo-field" data-ui="config-contacto-cif-field" data-slot="config-contacto-cif-field">
