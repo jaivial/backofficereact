@@ -49,7 +49,7 @@ export function DonutOccupancy({
       data-testid="donut-occupancy"
     >
       <div className="bo-donutSvg" aria-hidden="true" data-slot="donut-chart">
-        <svg viewBox="0 0 120 120" width="120" height="120">
+        <svg viewBox="0 0 120 120" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
           <circle className="bo-donutTrack" cx="60" cy="60" r="44" fill="none" strokeWidth="10" />
           <circle
             className="bo-donutArc"
@@ -97,4 +97,3 @@ export function DonutOccupancy({
     </section>
   );
 }
-

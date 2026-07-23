@@ -444,6 +444,134 @@
   }
 }
 
+/* 921px–1400px: the side is a single column, so the donut card is full-width
+   but the base (>=580px) rules leave a tiny 100px chart with the legend
+   packed to the left. Rebalance into a side-by-side layout that fills the
+   width: bigger chart on the left, legend stretched to fill the rest with
+   values aligned to the right edge, all vertically centered. */
+@media (min-width: 921px) and (max-width: 1400px) {
+  .bo-reservasSide .bo-donut {
+    grid-template-columns: minmax(140px, auto) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--bo-space-4);
+    padding: var(--bo-space-4);
+    overflow: visible;
+  }
+
+  .bo-reservasSide .bo-donutSvg {
+    width: clamp(120px, 14vw, 160px);
+    max-width: 160px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .bo-reservasSide .bo-donutCenter {
+    inset: 0;
+    gap: 2px;
+  }
+
+  .bo-reservasSide .bo-donutPct {
+    font-size: var(--bo-text-xl);
+    line-height: 1.1;
+  }
+
+  .bo-reservasSide .bo-donutMeta {
+    font-size: var(--bo-text-sm);
+    line-height: 1.2;
+  }
+
+  .bo-reservasSide .bo-donutLegend {
+    display: grid;
+    gap: var(--bo-space-2);
+    justify-content: stretch;
+    justify-items: stretch;
+    align-content: center;
+    min-width: 0;
+  }
+
+  .bo-reservasSide .bo-donutRow {
+    grid-template-columns: 12px auto auto;
+    justify-content: center;
+    column-gap: 8px;
+    width: 100%;
+  }
+
+  .bo-reservasSide .bo-donutVal {
+    font-size: var(--bo-text-base);
+  }
+
+  .bo-reservasSide .bo-donutHint {
+    font-size: var(--bo-text-xs);
+  }
+}
+
+/* >1400px: the side becomes a 2-col grid and the donut card stretches to
+   full height next to the filters. Rearrange the donut into a centered,
+   stacked layout with a larger chart so it fills the available space. */
+@media (min-width: 1400px) {
+  .bo-reservasSide .bo-donut {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    justify-items: center;
+    align-content: center;
+    justify-content: center;
+    gap: var(--bo-space-4);
+    padding: var(--bo-space-5);
+    text-align: center;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .bo-reservasSide .bo-donutSvg {
+    width: min(100%, 200px);
+    max-width: 200px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    margin-inline: auto;
+  }
+
+  .bo-reservasSide .bo-donutCenter {
+    inset: 0;
+    gap: 2px;
+  }
+
+  .bo-reservasSide .bo-donutPct {
+    font-size: var(--bo-text-2xl);
+    line-height: 1.1;
+  }
+
+  .bo-reservasSide .bo-donutMeta {
+    font-size: var(--bo-text-sm);
+    line-height: 1.2;
+  }
+
+  .bo-reservasSide .bo-donutLegend {
+    display: grid;
+    width: 100%;
+    max-width: 280px;
+    gap: var(--bo-space-2);
+    justify-content: stretch;
+    justify-items: stretch;
+    align-content: center;
+  }
+
+  .bo-reservasSide .bo-donutRow {
+    grid-template-columns: 12px auto auto;
+    justify-content: center;
+    column-gap: 8px;
+    width: 100%;
+  }
+
+  .bo-reservasSide .bo-donutVal {
+    font-size: var(--bo-text-base);
+  }
+
+  .bo-reservasSide .bo-donutHint {
+    font-size: var(--bo-text-xs);
+    text-align: center;
+  }
+}
+
 @media (max-width: 920px) {
   .bo-reservasGrid:not(.bo-reservasGrid--closed) {
     grid-template-columns: 1fr;
@@ -466,6 +594,68 @@
   .bo-reservasGrid > .bo-mcal.bo-mcal--glass .bo-mcalSub .bo-ico {
     width: var(--bo-text-lg);
     height: var(--bo-text-lg);
+  }
+
+  /* Below 920px the grid is single-column, so the donut card is full-width.
+     Re-enable the legend (it was hidden at 580–650px) and rebalance into a
+     side-by-side layout that fills the width: a larger chart on the left and
+     the legend stretched across the rest with values aligned to the right. */
+  .bo-reservasSide .bo-donut {
+    grid-template-columns: minmax(140px, auto) minmax(0, 1fr);
+    align-items: center;
+    justify-items: stretch;
+    text-align: left;
+    gap: var(--bo-space-4);
+    padding: var(--bo-space-4);
+    overflow: visible;
+    width: 100%;
+  }
+
+  .bo-reservasSide .bo-donutSvg {
+    width: clamp(120px, 16vw, 160px);
+    max-width: 160px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    margin-inline: 0;
+  }
+
+  .bo-reservasSide .bo-donutCenter {
+    inset: 0;
+    gap: 2px;
+  }
+
+  .bo-reservasSide .bo-donutPct {
+    font-size: var(--bo-text-xl);
+    line-height: 1.1;
+  }
+
+  .bo-reservasSide .bo-donutMeta {
+    font-size: var(--bo-text-sm);
+    line-height: 1.2;
+  }
+
+  .bo-reservasSide .bo-donutLegend {
+    display: grid;
+    gap: var(--bo-space-2);
+    justify-content: stretch;
+    justify-items: stretch;
+    align-content: center;
+    min-width: 0;
+  }
+
+  .bo-reservasSide .bo-donutRow {
+    grid-template-columns: 12px auto auto;
+    justify-content: center;
+    column-gap: 8px;
+    width: 100%;
+  }
+
+  .bo-reservasSide .bo-donutVal {
+    font-size: var(--bo-text-base);
+  }
+
+  .bo-reservasSide .bo-donutHint {
+    font-size: var(--bo-text-xs);
   }
 }
 

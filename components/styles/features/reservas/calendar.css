@@ -159,46 +159,98 @@
 }
 
 .bo-donut {
-  width: auto;
+  width: 100%;
   border-radius: var(--bo-radius-lg);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
     var(--bo-surface-2);
   border: 1px solid var(--bo-border);
   box-shadow: var(--bo-shadow-soft);
-  padding: 14px;
+  padding: clamp(12px, 2.4vw, 18px);
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
+  gap: clamp(12px, 2.4vw, 20px);
   align-items: center;
   min-width: 0;
+  container-type: inline-size;
 }
 
-@media (max-width: 520px) {
+/* Wide: donut and legend share space, both stretch to fill */
+@container (min-width: 360px) {
+  .bo-donut {
+    grid-template-columns: minmax(120px, 34%) minmax(0, 1fr);
+  }
+}
+
+/* Narrow: stack vertically and let each block fill the full width */
+@container (max-width: 300px) {
   .bo-donut {
     grid-template-columns: 1fr;
-    place-items: center;
+    justify-items: center;
     text-align: center;
   }
-}
 
-@media (min-width: 580px) and (max-width: 650px) {
-  .bo-reservasSide .bo-donutLegend,
-  .bo-reservasSide .bo-donutHint {
-    display: none;
+  .bo-donutLegend {
+    width: 100%;
   }
 }
 
-@media (max-width: 480px) {
+/* Fallback for browsers without container queries */
+@supports not (container-type: inline-size) {
+  @media (max-width: 520px) {
+    .bo-donut {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .bo-donutLegend {
+      width: 100%;
+    }
+  }
+}
+
+/* Large screens: give the widget more breathing room and presence */
+@media (min-width: 1400px) {
+  .bo-donut {
+    grid-template-columns: minmax(160px, 40%) minmax(0, 1fr);
+    gap: 28px;
+    padding: 22px 26px;
+  }
+
+  .bo-donutSvg {
+    max-width: 176px;
+  }
+
+  .bo-donutPct {
+    font-size: var(--bo-text-2xl, 28px);
+  }
+
+  .bo-donutMeta {
+    font-size: var(--bo-text-base, 15px);
+  }
+
   .bo-donutLegend {
-    display: none;
+    gap: 12px;
+  }
+
+  .bo-donutLegend .bo-mutedText,
+  .bo-donutLegend .bo-donutHint {
+    font-size: 14px;
+  }
+
+  .bo-donutVal {
+    font-size: 15px;
   }
 }
 
 .bo-donutSvg {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  max-width: 140px;
+  min-width: 92px;
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
   display: grid;
   place-items: center;
 }
@@ -252,12 +304,12 @@
 
 .bo-donutLegend {
   display: grid;
-  gap: 8px;
+  gap: clamp(6px, 1.4vw, 10px);
   align-content: center;
-  justify-content: center;
-  align-items: normal;
-  justify-items: normal;
+  justify-content: stretch;
+  justify-items: stretch;
   min-width: 0;
+  width: 100%;
 }
 
 .bo-donutLegend .bo-mutedText {
@@ -270,10 +322,13 @@
 
 .bo-donutRow {
   display: grid;
-  grid-template-columns: 12px 1fr auto;
-  gap: 10px;
+  grid-template-columns: 12px auto auto;
+  justify-content: center;
+  column-gap: 8px;
+  row-gap: clamp(6px, 1.4vw, 10px);
   align-items: center;
   min-width: 0;
+  width: 100%;
 }
 
 .bo-donutVal {
@@ -316,4 +371,3 @@
   color: var(--bo-faint);
   font-weight: 650;
 }
-
