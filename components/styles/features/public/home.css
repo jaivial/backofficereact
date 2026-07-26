@@ -425,7 +425,10 @@
   }
 
   .bo-homeOrbit {
-    --bo-home-mobile-radius: 170px;
+    /* Radius must leave room for the node AND its label pill, or the side
+       nodes ("Carta") get clipped by the viewport edge. Half the orbit box
+       (46vw) minus the widest label half-width. */
+    --bo-home-mobile-radius: min(150px, calc(46vw - 42px));
     --bo-home-mobile-node: calc(var(--bo-space-8) + var(--bo-space-3));
     /* 60px */
     width: min(92vw, 380px);

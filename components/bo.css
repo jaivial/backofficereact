@@ -100,3 +100,6 @@
 
 /* ── Features: Config — Contacto branding logo ───────── */
 @import "./styles/features/contacto/branding-logo.css";
+
+/* ── Base: Mobile Safari corrections (must stay last) ─── */
+@import "./styles/base/mobile-safari.css";
