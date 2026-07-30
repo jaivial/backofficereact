@@ -336,6 +336,9 @@ export function POSSellScreen() {
               sentKitchenQuantities={register.sentKitchenQuantities}
               onSelectTicket={register.switchTicket}
               onMoveLine={moveLineToTarget}
+              onMergeSplitTickets={() => void register.mergeSplitTickets()}
+              onDeleteEmptyTicket={(t) => void register.voidEmptyTicket(t)}
+              busy={register.busy}
             />
             <POSKeypad value={keypadValue} onChange={setKeypadValue} contextLabel={contextLabel} onConfirm={confirmKeypad} confirmLabel="OK" onMultiplier={handleKeypadMultiplier} multiplierQty={keypadMultiplierQty} onClearMultiplier={clearKeypadMultiplier} />
           </div>

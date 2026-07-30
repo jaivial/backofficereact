@@ -142,6 +142,31 @@ export function usePOSRegister() {
   const createSplitTicket = useCallback(async () => { if (!visit) return; try { const data = await request<{ ticket: Ticket }>(`/visits/${visit.id}/tickets`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) }); setSplitTickets((current) => [...current, data.ticket]); setSplitTargetId(data.ticket.id); setMessage("Cuenta separada creada."); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo separar cuenta"); } }, [visit]);
   const moveLine = useCallback(async (line: TicketLine, quantity = line.quantity) => { if (!ticket || !splitTargetId) return; const moved = Math.min(Math.round(quantity), line.quantity); if (moved <= 0) return; try { const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: splitTargetId, quantity: moved, idempotencyKey: crypto.randomUUID() }) }); setTicket(data.sourceTicket); setSplitTickets((current) => current.map((entry) => entry.id === data.sourceTicket.id ? data.sourceTicket : entry.id === data.targetTicket.id ? data.targetTicket : entry)); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo mover línea"); } }, [splitTargetId, ticket]);
 
+  const mergeSplitTickets = useCallback(async () => {
+    if (!ticket || openSplitTickets.length <= 1) return false;
+    if (commandInFlight.current.has("merge-splits")) return false;
+    commandInFlight.current.add("merge-splits");
+    setBusy(true); setError("");
+    try {
+      const sourceTickets = openSplitTickets.filter((t) => t.id !== ticket.id);
+      let currentTicket = ticket;
+      for (const sourceTicket of sourceTickets) {
+        const activeLines = sourceTicket.lines.filter((line) => line.status !== "VOIDED");
+        for (const line of activeLines) {
+          const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${sourceTicket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: ticket.id, quantity: line.quantity, idempotencyKey: crypto.randomUUID() }) });
+          currentTicket = data.targetTicket;
+        }
+        await request(`/tickets/${sourceTicket.id}/void`, { method: "POST", body: JSON.stringify({ reason: "Cuentas reagrupadas" }) });
+      }
+      setTicket(currentTicket);
+      setSplitTickets([currentTicket]);
+      setSplitTargetId(0);
+      setMessage("Cuentas reagrupadas.");
+      return true;
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron reagrupar las cuentas"); return false; }
+    finally { commandInFlight.current.delete("merge-splits"); setBusy(false); }
+  }, [openSplitTickets, ticket]);
+
   const clearRegister = useCallback(() => {
     setTicket(null); setVisit(null); setSplitTickets([]); setSplitTargetId(0);
     setSentKitchenQuantities({}); setCash(""); setCard(""); setCardReference(""); setTipCents(0);
@@ -384,7 +409,7 @@ export function usePOSRegister() {
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
-    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, addProduct,
+    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct,
     setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, checkout,
   };
 }

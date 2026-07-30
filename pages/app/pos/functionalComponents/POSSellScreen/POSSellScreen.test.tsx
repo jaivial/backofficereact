@@ -13,7 +13,7 @@ vi.mock("lucide-react", async () => {
   const icon = (name: string) => (props: Record<string, unknown>) => createElement("span", { "data-icon": name, ...props });
   return {
     ArrowRightLeft: icon("arrow-right-left"), Delete: icon("delete"), LayoutGrid: icon("layout-grid"), Maximize2: icon("maximize"), Minimize2: icon("minimize"),
-    Minus: icon("minus"), Plus: icon("plus"), Receipt: icon("receipt"), Trash2: icon("trash"), Users: icon("users"), X: icon("x"), UtensilsCrossed: icon("utensils"), Upload: icon("upload"), MoreVertical: icon("more"),
+    Merge: icon("merge"), Minus: icon("minus"), Plus: icon("plus"), Receipt: icon("receipt"), Trash2: icon("trash"), Users: icon("users"), X: icon("x"), UtensilsCrossed: icon("utensils"), Upload: icon("upload"), MoreVertical: icon("more"),
   };
 });
 
@@ -55,6 +55,12 @@ describe("POSSellScreen", () => {
       if (url.endsWith("/tags")) return new Response(JSON.stringify({ success: true, items: [{ id: 2, name: "Sin gluten", isActive: true }] }));
       if (url.endsWith("/visits/10/merge") && init?.method === "POST") return new Response(JSON.stringify({ success: true, ticket: { id: 11, version: 5, status: "OPEN", lines: [], totalGrossCents: 0 }, covers: 5 }));
       if (url.includes("/adjustments") && init?.method === "POST") return new Response(JSON.stringify({ success: true, ticket: { id: 11, version: 6, status: "OPEN", lines: [{ id: 12, productId: 3, productName: "Agua", quantity: 1, unitPriceGrossCents: 250, lineTotalGrossCents: 250, status: "ACTIVE" }], totalGrossCents: 275 } }));
+      if (url.includes("/tickets/21/lines/31/move") && init?.method === "POST") return new Response(JSON.stringify({
+        success: true,
+        sourceTicket: { id: 21, version: 3, status: "OPEN", lines: [], totalGrossCents: 0 },
+        targetTicket: { id: 11, version: 5, status: "OPEN", lines: [{ id: 31, productId: 3, productName: "Agua", quantity: 1, unitPriceGrossCents: 250, lineTotalGrossCents: 250, status: "ACTIVE" }], totalGrossCents: 250 },
+      }));
+      if (url.includes("/tickets/21/void") && init?.method === "POST") return new Response(JSON.stringify({ success: true, ticket: { id: 21, version: 4, status: "VOIDED", lines: [], totalGrossCents: 0 } }));
       return new Response(JSON.stringify({ success: true, items: [] }));
     }));
   });
@@ -398,6 +404,27 @@ describe("POSSellScreen", () => {
     fireEvent.click(screen.getByTestId("pos-split-tab-21"));
     await waitFor(() => expect(screen.getByTestId("pos-split-tab-21")).toHaveAttribute("aria-selected", "true"));
     expect(screen.getByTestId("pos-line-31")).toBeInTheDocument();
+  });
+
+  it("reagrupar button merges all split tickets back into one", async () => {
+    render(<Provider><POSSellScreen /></Provider>);
+    fireEvent.click(await screen.findByTestId("pos-rail-mesa"));
+    fireEvent.click(await screen.findByText("Mesa 1"));
+    fireEvent.click(screen.getByTestId("pos-open-visit"));
+    await waitFor(() => expect(screen.getByTestId("pos-ticket-panel")).toHaveTextContent("Cuenta"));
+    fireEvent.click(screen.getByTestId("pos-product-3"));
+    await screen.findByTestId("pos-line-12");
+
+    fireEvent.click(screen.getByTestId("pos-rail-separar-comanda"));
+    expect(await screen.findByTestId("pos-split-tab-21")).toBeInTheDocument();
+    expect(await screen.findByTestId("pos-split-merge")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("pos-line-move-12"));
+    await waitFor(() => expect(screen.queryByTestId("pos-line-12")).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId("pos-split-merge"));
+    await waitFor(() => expect(screen.queryByTestId("pos-split-tab-21")).not.toBeInTheDocument());
+    expect(screen.queryByTestId("pos-split-merge")).not.toBeInTheDocument();
   });
 
   it("descuento applies a percentage of the ticket total with a reason", async () => {
