@@ -1,0 +1,9 @@
+import React from "react";
+import { beforeEach,describe,expect,it,vi } from "vitest";
+import { fireEvent,render,screen,waitFor } from "@testing-library/react";
+import { ProductionLabourPanel } from "./ProductionLabourPanel";
+
+describe("ProductionLabourPanel",()=>{
+ beforeEach(()=>{vi.stubGlobal("crypto",{randomUUID:()=>"allocation-1"});vi.stubGlobal("fetch",vi.fn(async(input:RequestInfo|URL,init?:RequestInit)=>{const url=String(input);if(url.endsWith("/production-orders"))return new Response(JSON.stringify({success:true,items:[{id:8,recipeName:"Masa",batches:2,standardLabourCost:12,actualMinutes:0,actualCost:null,actualCostComplete:false}]}));if(url.endsWith("/production-labour/entries"))return new Response(JSON.stringify({success:true,items:[{id:9,workDate:"2026-07-27",memberName:"Ana",remainingMinutes:180}]}));if(url.endsWith("/production-orders/8/labour")&&!init?.method)return new Response(JSON.stringify({success:true,items:[],actualMinutes:0,actualCost:null,costComplete:false}));if(url.endsWith("/production-orders/8/labour")&&init?.method==="POST")return new Response(JSON.stringify({success:true,id:1,costComplete:true}),{status:201});return new Response(JSON.stringify({success:false}),{status:404})}))});
+ it("allocates closed fichaje time to production",async()=>{render(<ProductionLabourPanel/>);fireEvent.change(await screen.findByTestId("production-labour-order"),{target:{value:"8"}});fireEvent.change(await screen.findByTestId("production-labour-entry"),{target:{value:"9"}});fireEvent.change(screen.getByTestId("production-labour-minutes"),{target:{value:"60"}});fireEvent.click(screen.getByTestId("production-labour-save"));await waitFor(()=>expect(fetch).toHaveBeenCalledWith("/api/admin/stock/production-orders/8/labour",expect.objectContaining({method:"POST",body:expect.stringContaining('"timeEntryId":9')})))})
+});

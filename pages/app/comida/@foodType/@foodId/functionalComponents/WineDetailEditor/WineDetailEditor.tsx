@@ -1,4 +1,6 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import { type ProductionType } from "../../../../_components/TechnicalSheet/ProductionTypeToggle";
+import { ProductionTypeSection } from "../../../../_components/TechnicalSheet/ProductionTypeSection";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Save, Upload, Wine } from "lucide-react";
 
 import { Select } from "../../../../../../../ui/inputs/Select";
@@ -32,6 +34,24 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
     setGeneratingFromWS,
   } = useWineImage(vino);
   const busy = uploading || generating;
+
+  // Wine keeps its own copy of the stock link so the toggle can update without
+  // waiting for a full page reload.
+  const [productionType, setProductionType] = useState<ProductionType>(
+    vino?.production_type === "MANUFACTURED" ? "MANUFACTURED" : "RAW",
+  );
+  const [stockRecipeId, setStockRecipeId] = useState<number | null>(vino?.stock_recipe_id ?? null);
+  const [sheetPickerOpen, setSheetPickerOpen] = useState(false);
+  const [sheetEditorOpen, setSheetEditorOpen] = useState(false);
+
+  // Re-seed only when a DIFFERENT wine is opened. Re-seeding on every change of
+  // the prop would undo a save the user just made: the page keeps its own copy
+  // of the wine and does not refetch after this write, so the stale prop would
+  // overwrite the confirmed new value.
+  useEffect(() => {
+    setProductionType(vino?.production_type === "MANUFACTURED" ? "MANUFACTURED" : "RAW");
+    setStockRecipeId(vino?.stock_recipe_id ?? null);
+  }, [vino?.num]);
 
   useWineAIWebSocket({
     wineNum: vino?.num ?? null,
@@ -354,6 +374,22 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
           </div>
         </div>
 
+          <ProductionTypeSection
+            itemId={vino ? vino.num : null}
+            productionType={productionType}
+            stockRecipeId={stockRecipeId}
+            productName={vino?.nombre ?? form.nombre}
+            source="vinos"
+            onChange={(next) => {
+              setProductionType(next);
+              if (next === "RAW") setStockRecipeId(null);
+            }}
+            onSheetLinked={(sheetId) => {
+              setStockRecipeId(sheetId);
+              setProductionType("MANUFACTURED");
+            }}
+          />
+
         <div
           data-slot="wine-detail-editor-actions"
           className="bo-foodDetailEditorActions"
@@ -385,6 +421,8 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
           </button>
         </div>
       </Panel>
+
+
     </section>
   );
 }

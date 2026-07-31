@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../api/client";
-import type { FichajeSchedule, FichajeState, Member } from "../../../api/types";
+import type { FichajeSchedule, FichajeState, LabourCostReport, Member } from "../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -28,11 +28,14 @@ export async function data(pageContext: PageContextServer) {
   let state: FichajeState | null = null;
   let members: Member[] = [];
   let schedules: FichajeSchedule[] = [];
+  let labourCost: LabourCostReport | null = null;
   let error: string | null = null;
 
   try {
     if (isAdminView) {
-      const [stateRes, membersRes, schedulesRes] = await Promise.all([api.fichaje.getState(), api.members.list(), api.horarios.list(date)]);
+      const canViewLabourCost = roleImportance >= 90;
+      const monthStart = `${date.slice(0,7)}-01`;
+      const [stateRes, membersRes, schedulesRes, labourRes] = await Promise.all([api.fichaje.getState(), api.members.list(), api.horarios.list(date), canViewLabourCost ? api.fichaje.getLabourCost({from:monthStart,to:date}) : Promise.resolve(null)]);
       if (stateRes.success) state = stateRes.state;
       else error = stateRes.message || "No se pudo cargar el estado de fichaje";
 
@@ -41,6 +44,7 @@ export async function data(pageContext: PageContextServer) {
 
       if (schedulesRes.success) schedules = schedulesRes.schedules;
       else if (!error) error = schedulesRes.message || "No se pudieron cargar horarios";
+      if (labourRes?.success) labourCost=labourRes;
     } else {
       const res = await api.fichaje.getState();
       if (res.success) state = res.state;
@@ -50,5 +54,5 @@ export async function data(pageContext: PageContextServer) {
     error = err instanceof Error ? err.message : "No se pudo cargar el estado de fichaje";
   }
 
-  return { date, isAdminView, state, members, schedules, error };
+  return { date, isAdminView, canViewLabourCost:roleImportance>=90, labourCost, state, members, schedules, error };
 }

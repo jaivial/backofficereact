@@ -20,12 +20,16 @@ vi.mock("lucide-react", () => ({
   Home: () => <span data-testid="icon-home" />,
   Settings: () => <span data-testid="icon-settings" />,
   Ellipsis: () => <span data-testid="icon-ellipsis" />,
+  Boxes: () => <span data-testid="icon-boxes" />,
+  MonitorSmartphone: () => <span data-testid="icon-pos" />,
 }));
 
 vi.mock("../../lib/rbac", () => ({
   sidebarItemsForRole: () => [
     { key: "reservas", label: "Reservas", href: "/app/reservas" },
     { key: "menus", label: "Menus", href: "/app/menus" },
+    { key: "stock", label: "Stock", href: "/app/stock" },
+    { key: "pos", label: "TPV", href: "/app/pos" },
   ],
 }));
 
@@ -44,6 +48,12 @@ describe("Sidebar", () => {
     render(<Sidebar pathname="/app" role="admin" />);
     const sidebar = screen.getByLabelText("Sidebar");
     expect(sidebar).toBeInTheDocument();
+  });
+
+  it("renders stock and POS in desktop and mobile navigation", () => {
+    render(<Sidebar pathname="/app" role="admin" />);
+    expect(screen.getAllByTestId("nav-link-Stock")).toHaveLength(2);
+    expect(screen.getAllByTestId("nav-link-TPV")).toHaveLength(2);
   });
 
   it("applies className prop", () => {

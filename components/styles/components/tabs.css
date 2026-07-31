@@ -32,6 +32,19 @@
   flex-shrink: 0;
 }
 
+/* Below the tablet breakpoint `min-width: max-content` made the strip wider
+   than the viewport while `overflow-x: visible` stopped it scrolling, so the
+   last tab was clipped off-screen and unreachable. Icons-only tabs fit, so
+   drop the max-content floor and let the base overflow-x: auto do its job. */
+@media (max-width: 895px) {
+  .bo-tabs--reservas,
+  .bo-tabs--horarios {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
 .bo-tabs::-webkit-scrollbar {
   height: 0;
 }

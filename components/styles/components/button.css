@@ -75,6 +75,19 @@
   align-self: start;
 }
 
+/* Square, icon-only button. The class was already used in several places with
+   no rule behind it, so those buttons inherited full text padding. 44px keeps
+   the touch target accessible even though there is no label. */
+.bo-btn--icon {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
 .bo-spin {
   animation: bo-spin 0.9s linear infinite;
 }

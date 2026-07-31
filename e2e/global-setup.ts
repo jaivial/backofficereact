@@ -2,7 +2,7 @@
  * Global Playwright setup - runs once before all e2e tests.
  * Handles session caching across test runs.
  *
- * Uses Bun's built-in env loading (--env-file in playwright.config.ts).
+ * Loads credentials through Playwright config from local .env files.
  * Session is stored in a cache file so tests can reuse it.
  */
 import { chromium, type FullConfig } from "@playwright/test";
@@ -17,8 +17,8 @@ interface CachedSession {
 const SESSION_CACHE_FILE = "test-results/.session-cache.json";
 const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@hotmail.com";
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123123";
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || "";
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || process.env.BOOTSTRAP_ADMIN_PASSWORD || "";
 
 async function loginViaAPI(
   browserPage: import("@playwright/test").Page,
@@ -66,6 +66,10 @@ export default async function globalSetup(
   if (process.env.PLAYWRIGHT_SKIP_GLOBAL_SETUP === "1") {
     console.log("[global-setup] Skipped via PLAYWRIGHT_SKIP_GLOBAL_SETUP=1");
     return;
+  }
+
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    throw new Error("Set E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD in backoffice/.env");
   }
 
   const baseURL =

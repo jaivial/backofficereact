@@ -1,0 +1,14 @@
+export type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string };
+export type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean };
+export type Table = { id: number; name: string; capacity: number; occupied: boolean; areaId?: number; areaName?: string };
+export type TicketLine = { id: number; productId?: number | null; productName: string; quantity: number; unitPriceGrossCents: number; lineTotalGrossCents: number; vatRate?: number; status?: string; notes?: string; comped?: boolean; compReason?: string; tagIds?: number[] };
+export type Ticket = { id: number; ticketNumber?: string; version: number; status?: string; lines: TicketLine[]; subtotalGrossCents?: number; discountCents?: number; surchargeCents?: number; tipCents?: number; taxCents?: number; totalGrossCents: number; operatorMemberId?: number | null; note?: string };
+export type Visit = { id: number; channel?: string; tableId?: number | null; tableName?: string; covers: number; status?: string; totalGrossCents?: number; parked?: boolean; parkedNote?: string; customerName?: string; customerTaxId?: string; ticket?: Ticket; tickets?: Ticket[] };
+export type VisitSummary = Pick<Visit, "id" | "channel" | "tableId" | "tableName" | "covers" | "status" | "totalGrossCents" | "parked" | "parkedNote"> & { openedAt?: string; lineCount?: number };
+export type Tag = { id: number; name: string; color?: string; scope?: string; isActive?: boolean };
+export type Area = { id: number; name: string };
+export type Operator = { id: number; displayName: string; isActive?: boolean };
+export type ShiftSummary = { id: number; status: string; openedAt?: string; closedAt?: string | null };
+export type RestaurantProfile = { name: string; taxId?: string; address?: string; phone?: string; email?: string; logoUrl?: string };
+export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null };
+export type Reservation = { id: number; customerName: string; reservationDate: string; reservationTime: string; partySize: number; status: string; visitId?: number | null; visitStatus?: string | null };

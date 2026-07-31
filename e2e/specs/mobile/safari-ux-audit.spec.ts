@@ -37,6 +37,8 @@ const ROUTES = [
   "/app/comida/postres",
   "/app/comida/bebidas",
   "/app/comida/cafes",
+  "/app/pos",
+  "/app/stock",
   "/app/menus",
   "/app/menus/crear",
   "/app/miembros",
@@ -116,9 +118,14 @@ async function auditDom(page: Page) {
     // React Flow's attribution link is required by its licence and is not ours
     // to resize.
     const isVendorAttribution = (el: Element) => !!el.closest(".react-flow__attribution");
+    // Objects drawn onto the floor-plan canvas (walls, obstacles, table nodes)
+    // are diagram content on a pan/zoom surface, not chrome: their on-screen
+    // size is whatever the user drew at the current zoom, so the tap-target and
+    // type floors do not apply.
+    const isCanvasObject = (el: Element) => !!el.closest(".react-flow__viewport");
 
     for (const el of els) {
-      if (inWidgetPreview(el) || isVendorAttribution(el)) continue;
+      if (inWidgetPreview(el) || isVendorAttribution(el) || isCanvasObject(el)) continue;
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) continue;
       const cs = getComputedStyle(el);

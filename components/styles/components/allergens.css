@@ -1,0 +1,52 @@
+.bo-allergenList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bo-allergenItem {
+  display: inline-flex;
+}
+
+.bo-allergenIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+}
+
+.bo-allergenToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: var(--bo-surface-2);
+  cursor: pointer;
+}
+
+.bo-allergenToggle:hover:not(:disabled) {
+  border-color: var(--bo-accent);
+}
+
+.bo-allergenToggle:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+/* Derived allergens are locked: signalled by cursor and border, never colour alone. */
+.bo-allergenToggle:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.bo-allergenList .bo-allergenItem[data-derived="true"] .bo-allergenIcon {
+  opacity: 1;
+}

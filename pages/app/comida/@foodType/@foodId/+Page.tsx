@@ -32,6 +32,7 @@ function FoodDetailPage() {
     isBebida,
     isWine,
     supportsQuickEditor,
+    isPostre,
     itemNum,
     currentFoodItem,
     categoriesLoading,
@@ -241,6 +242,10 @@ function FoodDetailPage() {
               savingAllergens={savingAllergens}
               onOpenAllergenModal={openAllergenModal}
               onToggleAllergen={onToggleAllergenAndPersist}
+              itemId={isNew ? null : itemNum}
+              productionType={currentFoodItem?.production_type === "MANUFACTURED" ? "MANUFACTURED" : "RAW"}
+              source={isPostre ? "postres" : "comida"}
+              stockRecipeId={currentFoodItem?.stock_recipe_id ?? null}
             />
           ) : null}
 

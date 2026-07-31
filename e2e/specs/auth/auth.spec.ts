@@ -110,13 +110,18 @@ test.describe("Authentication", () => {
       await context.close();
     });
 
-    test("uses split images only above 768px", async ({ browser }) => {
+    test("uses one responsive image only above 768px", async ({ browser }) => {
       const desktop = await browser.newContext({
         viewport: { width: 769, height: 800 },
         ignoreHTTPSErrors: true,
       });
       const desktopPage = await desktop.newPage();
+      const desktopHeroRequests: string[] = [];
+      desktopPage.on("request", (request) => {
+        if (request.url().includes("/media/login/login-hero.")) desktopHeroRequests.push(request.url());
+      });
       await desktopPage.goto("/login", { waitUntil: "domcontentloaded" });
+      await desktopPage.waitForLoadState("networkidle");
 
       const formPane = desktopPage.getByTestId("login-form-pane");
       const imagePane = desktopPage.getByTestId("login-image-pane");
@@ -127,10 +132,12 @@ test.describe("Authentication", () => {
       ]);
       expect(formBox?.width).toBeCloseTo(imageBox?.width ?? 0, 0);
 
-      const initialImage = await imagePane.getAttribute("data-image-index");
-      await expect(imagePane).not.toHaveAttribute("data-image-index", initialImage ?? "", {
-        timeout: 3_000,
-      });
+      await expect(imagePane.locator("img")).toHaveCount(1);
+      await expect(imagePane.locator('source[type="image/webp"]')).toHaveAttribute(
+        "srcset",
+        "/media/login/login-hero.webp",
+      );
+      expect(desktopHeroRequests).toHaveLength(1);
       await desktop.close();
 
       const mobile = await browser.newContext({
@@ -138,9 +145,15 @@ test.describe("Authentication", () => {
         ignoreHTTPSErrors: true,
       });
       const mobilePage = await mobile.newPage();
+      const mobileHeroRequests: string[] = [];
+      mobilePage.on("request", (request) => {
+        if (request.url().includes("/media/login/login-hero.")) mobileHeroRequests.push(request.url());
+      });
       await mobilePage.goto("/login", { waitUntil: "domcontentloaded" });
+      await mobilePage.waitForLoadState("networkidle");
       await expect(mobilePage.getByTestId("login-image-pane")).toBeHidden();
       await expect(mobilePage.getByTestId("login-form")).toBeVisible();
+      expect(mobileHeroRequests).toHaveLength(0);
       await mobile.close();
     });
   });

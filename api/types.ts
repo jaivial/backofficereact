@@ -118,6 +118,99 @@ export type InvoiceDashboardMetrics = {
   weekSentCount: number;
 };
 
+export type AnalyticsGranularity = "day" | "week" | "month" | "quarter" | "year";
+
+export type AnalyticsOverviewParams = {
+  from: string;
+  to: string;
+  granularity: AnalyticsGranularity;
+  compare?: "previous";
+};
+
+export type AnalyticsRefreshRequest = Pick<AnalyticsOverviewParams, "from" | "to">;
+
+export type AnalyticsCostCoverage = {
+  knownQuantity: number;
+  totalQuantity: number;
+  percent: number;
+};
+
+export type AnalyticsSummary = {
+  invoicedRevenueEUR: number;
+  posRevenueEUR: number;
+  posRefundsEUR: number;
+  totalRevenueEUR: number;
+  costOfGoodsEUR: number | null;
+  costOfGoodsLabel: string;
+  stockPurchasesEUR: number | null;
+  stockPurchasesLabel: string;
+  wasteCostEUR: number | null;
+  wasteCostLabel: string;
+  identifiedPeople: number;
+  wasteQuantity: number;
+  costCoverage: AnalyticsCostCoverage;
+  stockPurchaseCoverage: AnalyticsCostCoverage;
+};
+
+export type AnalyticsSeriesPoint = {
+  from: string;
+  to: string;
+  summary: AnalyticsSummary;
+};
+
+export type AnalyticsComparison = {
+  from: string;
+  to: string;
+  summary: AnalyticsSummary;
+  deltaPercent: Record<string, number>;
+};
+
+export type AnalyticsWasteBreakdownEntry = {
+  reason: string;
+  quantity: number;
+  knownCostEUR: number;
+  unknownQuantity: number;
+  costLabel: string;
+};
+
+export type AnalyticsDataQuality = {
+  currency: "EUR";
+  nonEurDocuments: number;
+  unidentifiedDocuments: number;
+  costCoverage: AnalyticsCostCoverage;
+  unknownCostQuantity: number;
+  stockPurchaseCoverage: AnalyticsCostCoverage;
+  unknownPurchaseQuantity: number;
+  wasteCostCoverage: AnalyticsCostCoverage;
+  unknownWasteQuantity: number;
+  refreshRequired: boolean;
+};
+
+export type AnalyticsOverviewPayload = {
+  currency: "EUR";
+  from: string;
+  to: string;
+  granularity: AnalyticsGranularity;
+  summary: AnalyticsSummary;
+  comparison: AnalyticsComparison | null;
+  series: AnalyticsSeriesPoint[];
+  wasteBreakdown: AnalyticsWasteBreakdownEntry[];
+  dataQuality: AnalyticsDataQuality;
+};
+
+export type AnalyticsOverview = APISuccess<AnalyticsOverviewPayload>;
+
+export type AnalyticsRefreshPayload = {
+  runId: number;
+  rowsWritten: number;
+  from: string;
+  to: string;
+  mode: "idempotent_selected_range_rebuild";
+  outbox: false;
+};
+
+export type AnalyticsRefreshResponse = APISuccess<AnalyticsRefreshPayload> | APIError;
+
 export type MenuVisibilityItem = {
   menuKey: string;
   menuName: string;
@@ -162,6 +255,11 @@ export type Vino = {
   active: boolean;
   has_foto: boolean;
   foto_url?: string;
+  /** Wine can be produced too (sangria, house preparations), so it carries the
+   *  same stock link as comida items. */
+  production_type?: "RAW" | "MANUFACTURED";
+  stock_recipe_id?: number | null;
+  stock_item_id?: number | null;
   ai_requested_img?: boolean;
   ai_generating_img?: boolean;
   ai_generated_img?: string | null;
@@ -188,6 +286,10 @@ export type FoodItem = {
   category_id?: number | null;
   category_slug?: string;
   ai_generating?: boolean;
+  /** RAW = bought and sold as-is; MANUFACTURED = produced from a technical sheet. */
+  production_type?: "RAW" | "MANUFACTURED";
+  stock_recipe_id?: number | null;
+  stock_item_id?: number | null;
   nombre_english?: string;
   descripcion_english?: string;
   titulo_english?: string;
@@ -490,6 +592,7 @@ export type TableMapItem = {
   style_preset: string;
   texture_image_url: string;
   metadata?: Record<string, unknown>;
+  pos_visit?: { visit_id: number; covers: number; opened_at: string };
   updated_at?: string;
 };
 
@@ -532,6 +635,29 @@ export type Member = {
   photoUrl: string | null;
   weeklyContractHours: number;
   isCurrentUser?: boolean;
+};
+
+export type MemberCompensation = {
+  id: number;
+  payType: "MONTHLY" | "HOURLY";
+  grossAmount: number;
+  monthlyHours: number | null;
+  employerCostPct: number;
+  effectiveHourlyCost: number;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  notes: string | null;
+};
+
+export type MemberCompensationInput = Omit<MemberCompensation, "id" | "effectiveHourlyCost">;
+
+export type LabourCostReport = {
+  from: string;
+  to: string;
+  totalMinutes: number;
+  totalCost: number;
+  missingCompensationMembers: string[];
+  members: { memberId: number; name: string; minutesWorked: number; cost: number; missingCompensation: boolean }[];
 };
 
 export type DeliveryAttempt = {
@@ -1941,6 +2067,13 @@ export type WidgetSettings = {
   muted_color: string;
   font_stack: string;
 };
+
+export type POSSettings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit: boolean; requireOpenShift: boolean; receiptPrefix: string };
+export type POSProduct = { id: number; name: string; sku?: string; categoryName?: string; priceGrossCents: number; vatRate: number; isActive: boolean };
+export type POSTicketLine = { id: number; productId?: number | null; productName: string; quantity: number; unitPriceGrossCents: number; vatRate: number; discountCents: number; lineTotalGrossCents: number; notes?: string; status: "ACTIVE" | "VOIDED" };
+export type POSTicket = { id: number; ticketNumber: string; status: "OPEN" | "PAID" | "VOIDED" | "PARTIALLY_REFUNDED" | "REFUNDED"; subtotalGrossCents: number; discountCents: number; taxCents: number; totalGrossCents: number; paidCents: number; refundedCents: number; version: number; lines: POSTicketLine[] };
+export type POSVisit = { id: number; channel: "DINE_IN" | "TAKEAWAY" | "DELIVERY"; tableId?: number | null; tableName?: string; covers: number; serviceDate: string; serviceType: "LUNCH" | "DINNER" | "OTHER"; status: "OPEN" | "CLOSED" | "CANCELLED"; version: number; tickets?: POSTicket[] };
+export type POSBootstrap = { success: true; settings: POSSettings; products: POSProduct[]; tables: Array<{ id: number; name: string; capacity: number; occupied: boolean }>; visits: POSVisit[] };
 
 export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos";
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { useAtom, useAtomValue } from "jotai";
 
-import { createClient } from "../../api/client";
+import { createFichajeStateClient } from "../../api/fichaje-state-client";
 import type { FichajeActiveEntry, FichajeSchedule, FichajeState } from "../../api/types";
 import { fichajeRealtimeAtom, sessionAtom } from "../../state/atoms";
 
@@ -40,7 +40,7 @@ function toActiveEntriesByMember(raw: unknown): Record<number, FichajeActiveEntr
 export function FichajeRealtimeBridge() {
   const session = useAtomValue(sessionAtom);
   const [, setState] = useAtom(fichajeRealtimeAtom);
-  const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const api = useMemo(() => createFichajeStateClient({ baseUrl: "" }), []);
   const retryRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export function FichajeRealtimeBridge() {
 
     const syncNow = async () => {
       try {
-        const res = await api.fichaje.getState();
+        const res = await api.getState();
         if (closed || !res.success) return;
         mergeFromState(res.state);
       } catch {
@@ -215,7 +215,7 @@ export function FichajeRealtimeBridge() {
       try {
         // Preflight access with the same backend guard used by WS.
         // If forbidden/unauthorized, skip WS connect and avoid retry/log spam.
-        const res = await api.fichaje.getState();
+        const res = await api.getState();
         if (closed) return;
         if (!res.success) {
           setState((prev) => ({

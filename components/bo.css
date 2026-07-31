@@ -17,6 +17,7 @@
 @import "./styles/components/button.css";
 @import "./styles/layout/toolbar.css";
 @import "./styles/components/dropdown.css";
+@import "./styles/components/popover.css";
 @import "./styles/components/modal.css";
 
 /* ── Features: Reservas ───────────────────────────────── */
@@ -25,6 +26,7 @@
 @import "./styles/features/settings/widget-preview.css";
 @import "./styles/features/settings/whatsapp-connection.css";
 @import "./styles/features/reservas/shift-modal.css";
+@import "./styles/features/pos/sell-screen.css";
 
 /* ── Components (continued) ───────────────────────────── */
 @import "./styles/components/alert.css";
@@ -49,6 +51,7 @@
 
 /* ── Components: Badge & Chip ─────────────────────────── */
 @import "./styles/components/badge.css";
+@import "./styles/components/allergens.css";
 
 /* ── Components: Switch ───────────────────────────────── */
 @import "./styles/components/switch.css";
@@ -75,6 +78,10 @@
 
 /* ── Features: Menus — Food Management ────────────────── */
 @import "./styles/features/menus/food-management.css";
+
+/* ── Features: Stock Control ───────────────────────────── */
+@import "./styles/features/stock/stock-page.css";
+@import "./styles/features/comida/technical-sheets.css";
 
 /* ── Features: Communication ──────────────────────────── */
 @import "./styles/features/communication/email-modal.css";

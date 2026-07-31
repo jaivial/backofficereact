@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot } from "lucide-react";
+import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone } from "lucide-react";
 
 import type { SidebarItemKey } from "../../lib/rbac";
 import { sidebarItemsForRole } from "../../lib/rbac";
 import { cn } from "../shadcn/utils";
 import { NavLink } from "../nav/NavLink";
 
-const MOBILE_PRIMARY_ORDER: SidebarItemKey[] = ["reservas", "menus", "comida"];
+const MOBILE_PRIMARY_ORDER: SidebarItemKey[] = ["reservas", "stock", "pos"];
 
 function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
   switch (key) {
@@ -16,6 +16,10 @@ function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
       return <UtensilsCrossed size={size} strokeWidth={strokeWidth} />;
     case "comida":
       return <CookingPot size={size} strokeWidth={strokeWidth} />;
+    case "stock":
+      return <Boxes size={size} strokeWidth={strokeWidth} data-ui="sidebar-stock-icon" />;
+    case "pos":
+      return <MonitorSmartphone size={size} strokeWidth={strokeWidth} data-ui="sidebar-pos-icon" />;
     case "miembros":
       return <ShieldUser size={size} strokeWidth={strokeWidth} />;
     case "ajustes":
@@ -30,6 +34,8 @@ function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
       return <FileText size={size} strokeWidth={strokeWidth} />;
     case "reportes":
       return <BarChart3 size={size} strokeWidth={strokeWidth} />;
+    case "estadisticas":
+      return <BarChart3 size={size} strokeWidth={strokeWidth} data-ui="sidebar-estadisticas-icon" />;
     case "estado_cuenta":
       return <Receipt size={size} strokeWidth={strokeWidth} />;
     default:

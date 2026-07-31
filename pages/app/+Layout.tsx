@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import { sessionAtom } from "../../state/atoms";
+import { posFullscreenAtom, sessionAtom } from "../../state/atoms";
 import { Sidebar } from "../../ui/shell/Sidebar";
 import { Topbar } from "../../ui/shell/Topbar";
 
@@ -14,6 +14,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const reduceMotion = useReducedMotion();
   const pathname = pageContext.urlPathname ?? "/";
   const isReservasTables = pathname.startsWith("/app/reservas/tables");
+  const posFullscreen = useAtomValue(posFullscreenAtom) && pathname.startsWith("/app/pos");
+  const immersive = isReservasTables || posFullscreen;
   const prevRestaurant = useRef<number | null>(null);
 
   useEffect(() => {
@@ -44,14 +46,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="bo-app bo-app--page" data-slot="Layout-app--page">
-      <Sidebar
-        pathname={pathname}
-        role={session.user.role}
-        sectionAccess={session.user.sectionAccess}
-        roleImportance={session.user.roleImportance}
-      />
-      <main className={`bo-main${isReservasTables ? " bo-main--immersive" : ""}`} data-testid="app-layout-main">
-        {isReservasTables ? null : <Topbar />}
+      {posFullscreen ? null : (
+        <Sidebar
+          pathname={pathname}
+          role={session.user.role}
+          sectionAccess={session.user.sectionAccess}
+          roleImportance={session.user.roleImportance}
+        />
+      )}
+      <main className={`bo-main${immersive ? " bo-main--immersive" : ""}${posFullscreen ? " bo-main--pos-fullscreen" : ""}`} data-testid="app-layout-main">
+        {immersive ? null : <Topbar />}
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

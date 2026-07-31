@@ -242,7 +242,7 @@ export default function Page() {
   return (
     <>
       <style>{`@media (max-width: 640px) { .bo-main:has([data-testid="config-section"]) { padding: 0 1rem 2rem !important } .bo-install-code, .bo-install-code code { white-space: pre-wrap !important; word-break: break-all !important; overflow-x: auto !important; max-width: 100% !important } }`}</style>
-    <section aria-label="Configuración" className="max-w-3xl mx-auto max-sm:mx-0 max-sm:px-0" data-testid="config-section">
+    <section aria-label="Configuración" className="w-full max-w-3xl mx-auto max-sm:mx-0 max-sm:px-0" data-testid="config-section">
       <Tabs
         tabs={contentTabs}
         activeId={contentTab}
