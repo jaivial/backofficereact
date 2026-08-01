@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  autonomoQuota,
   computeIncomeTax,
   computeIva,
   computeSimulation,
@@ -68,6 +69,24 @@ describe("computeIncomeTax", () => {
     expect(result.taxDue).toBe(0);
     expect(result.taxableBase).toBe(0);
   });
+
+  it("applies micropyme 19/21% for sl_micro (2026)", () => {
+    const result = computeIncomeTax(60_000, "sl_micro");
+    expect(result.taxDue).toBeCloseTo(50_000 * 0.19 + 10_000 * 0.21);
+    expect(result.slices.length).toBe(2);
+    expect(result.slices[0].rate).toBe(0.19);
+    expect(result.slices[1].rate).toBe(0.21);
+  });
+});
+
+describe("autonomoQuota (RETA 2026)", () => {
+  it("uses tier by net monthly income", () => {
+    expect(autonomoQuota(600)).toBe(200);
+    expect(autonomoQuota(670)).toBe(220); // boundary: 670 falls into tier 2
+    expect(autonomoQuota(1_400)).toBe(294);
+    expect(autonomoQuota(4_924)).toBe(530);
+    expect(autonomoQuota(7_000)).toBe(590);
+  });
 });
 
 describe("computeSimulation", () => {
@@ -79,8 +98,10 @@ describe("computeSimulation", () => {
     expect(result.iva.ivaDue).toBeGreaterThanOrEqual(0);
   });
 
-  it("includes social security for autónomo when enabled", () => {
+  it("includes RETA tier-based social security for autónomo when enabled", () => {
     const result = computeSimulation(100_000, defaultAssumptions, "autonomo");
+    // taxableBase ≈ 59.091 €/año → 4.924 €/mes → tramo 530 € → 6.360 €/año
+    expect(result.socialSecurity).toBeCloseTo(530 * 12);
     expect(result.socialSecurity).toBeGreaterThan(0);
   });
 

@@ -34,10 +34,14 @@ test.describe("Statistics page production smoke", () => {
       const response = await fetch("/api/admin/analytics/overview?from=2026-07-01&to=2026-07-30&granularity=day&compare=previous", {
         credentials: "include",
       });
-      return { status: response.status, body: await response.text() };
+      return { status: response.status, body: await response.json() };
     });
-    const analyticsBody = analyticsApi.status >= 400 ? analyticsApi.body.slice(0, 1000) : "<ok>";
+    const analyticsBody = analyticsApi.status >= 400 ? JSON.stringify(analyticsApi.body).slice(0, 1000) : "<ok>";
     console.log(`[statistics-e2e] analytics-api status=${analyticsApi.status} body=${analyticsBody}`);
+    expect(analyticsApi.status, analyticsBody).toBeLessThan(400);
+    expect(analyticsApi.body?.success, analyticsBody).toBe(true);
+    expect(analyticsApi.body?.summary?.totalRevenueEUR, analyticsBody).toBeGreaterThan(0);
+    expect(analyticsApi.body?.summary?.stockPurchasesEUR, analyticsBody).toBeGreaterThan(0);
 
     const serverErrors: string[] = [];
     page.on("response", async (response) => {
@@ -65,6 +69,12 @@ test.describe("Statistics page production smoke", () => {
     console.log(`[statistics-e2e] response=${status} finalUrl=${page.url()}`);
     expect(page.url()).toContain("/app/estadisticas");
     await expect(page.getByRole("heading", { name: "Estadísticas" })).toBeVisible();
+    const taxSimulation = page.locator('[data-ui="analytics-tax-simulation"]');
+    await expect(taxSimulation).toBeVisible();
+    const taxBandValue = taxSimulation.locator('[data-testid="tax-band"] [data-ui$="-value"]');
+    await expect(taxBandValue).not.toHaveText("N/D");
+    const totalTaxesValue = taxSimulation.locator('[data-testid="tax-total-taxes"] [data-ui$="-value"]');
+    await expect(totalTaxesValue).not.toHaveText("N/D");
 
     expect(serverErrors, serverErrors.join("\n\n")).toEqual([]);
   });
