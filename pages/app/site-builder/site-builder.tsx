@@ -6,13 +6,15 @@ import { Settings } from "lucide-react";
 import "../../../components/bo.css";
 
 import { useSiteBuilder } from "./hooks/useSiteBuilder";
+import { useSiteBuilderRealtime } from "../../../ui/site-builder/SiteBuilderRealtimeBridge";
 import { BlockPalette } from "./functionalComponents/BlockPalette/BlockPalette";
 import { PageTree } from "./functionalComponents/PageTree/PageTree";
 import { SiteSettings } from "./functionalComponents/SiteSettings/SiteSettings";
 import { BlockEditor } from "./functionalComponents/BlockEditor/BlockEditor";
 import { SITE_BUILDER_PAGE_STYLES } from "./helpers/siteBuilder.styles";
 
-function SiteBuilderEditorPage() {
+function SiteBuilderEditorPage({ data }: { data?: any }) {
+  const { send: wsSend } = useSiteBuilderRealtime();
   const {
     // State
     site,
@@ -61,7 +63,10 @@ function SiteBuilderEditorPage() {
     handleDropZoneDragOver,
     handleDropOnPlacement,
     handleSwitchPage,
-  } = useSiteBuilder();
+  } = useSiteBuilder({
+    initialData: data ?? null,
+    wsSend,
+  });
 
   if (loading) {
     return (
