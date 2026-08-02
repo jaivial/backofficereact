@@ -5,7 +5,7 @@ import {
   computeIncomeTax,
   computeIva,
   computeSimulation,
-  findGrossBand,
+  findBillingBand,
   IVA_DEFAULT,
   type EntityType,
   type TaxAssumptions,
@@ -29,12 +29,55 @@ describe("computeIva", () => {
   });
 });
 
-describe("findGrossBand", () => {
-  it("returns micro band below 100k", () => {
-    expect(findGrossBand(80_000).label).toBe("Micro");
+describe("findBillingBand (tramo de gravamen por entidad)", () => {
+  it("uses the progressive IRPF bracket for autónomo based on taxable base", () => {
+    const band = findBillingBand(30_000, "autonomo");
+    expect(band.label).toBe("IRPF · 30 %");
+    expect(band.detail).toContain("20.200");
+    expect(band.brackets).toHaveLength(6);
+    expect(band.brackets.filter((b) => b.active)).toHaveLength(1);
+    expect(band.brackets.find((b) => b.active)?.id).toBe("irpf-2");
   });
-  it("returns grande band above 500k", () => {
-    expect(findGrossBand(900_000).label).toBe("Grande");
+
+  it("maps autónomo base to the correct IRPF bracket at edges", () => {
+    expect(findBillingBand(12_449, "autonomo").label).toBe("IRPF · 19 %");
+    expect(findBillingBand(12_450, "autonomo").label).toBe("IRPF · 24 %");
+    expect(findBillingBand(299_999, "autonomo").label).toBe("IRPF · 45 %");
+    expect(findBillingBand(300_000, "autonomo").label).toBe("IRPF · 47 %");
+    expect(findBillingBand(300_001, "autonomo").label).toBe("IRPF · 47 %");
+  });
+
+  it("applies general 25% for SL and SA", () => {
+    for (const entityType of ["sl", "sa"] as const) {
+      const band = findBillingBand(100_000, entityType);
+      expect(band.label).toBe("IS · 25 %");
+      expect(band.brackets).toHaveLength(1);
+      expect(band.brackets[0].active).toBe(true);
+    }
+  });
+
+  it("uses 15/25% brackets for new company in first profit year", () => {
+    const below = findBillingBand(100_000, "sl_new", true);
+    expect(below.label).toBe("IS · 15 %");
+    expect(below.brackets.find((b) => b.active)?.id).toBe("new-15");
+
+    const above = findBillingBand(400_000, "sl_new", true);
+    expect(above.label).toBe("IS · 15/25 %");
+    expect(above.brackets.find((b) => b.active)?.id).toBe("new-25");
+  });
+
+  it("falls back to general 25% for new company after the first profit year", () => {
+    expect(findBillingBand(400_000, "sl_new", false).label).toBe("IS · 25 %");
+  });
+
+  it("applies micropyme 19/21% brackets", () => {
+    expect(findBillingBand(30_000, "sl_micro").label).toBe("IS · 19 %");
+    expect(findBillingBand(60_000, "sl_micro").label).toBe("IS · 19/21 %");
+    expect(findBillingBand(60_000, "sl_micro").brackets.find((b) => b.active)?.id).toBe("micro-21");
+  });
+
+  it("clamps negative bases to zero", () => {
+    expect(findBillingBand(-5_000, "autonomo").label).toBe("IRPF · 19 %");
   });
 });
 

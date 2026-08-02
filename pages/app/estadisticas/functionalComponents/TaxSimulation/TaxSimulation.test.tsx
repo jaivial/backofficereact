@@ -75,6 +75,8 @@ describe("TaxSimulation entity type wiring", () => {
     });
     // The income tax label flips from the society path and the totals move.
     expect(document.querySelector('[data-ui="tax-tax-income"]')?.textContent ?? "").toContain("Impuesto de Sociedades");
+    // The billing bracket switches from the micropyme scale to the 25% general one.
+    expect(document.querySelector('[data-ui="tax-band-card"]')?.textContent ?? "").toContain("IS · 25 %");
 
     const netAfter = (document.querySelector('[data-testid="tax-net-summary-value"]')?.textContent ?? "").trim();
     const taxesAfter = (document.querySelector('[data-testid="tax-total-taxes"]')?.textContent ?? "").trim();
@@ -93,6 +95,8 @@ describe("TaxSimulation entity type wiring", () => {
     await waitFor(() => {
       expect(document.querySelector('[data-ui="tax-entity-description"]')?.textContent ?? "").toContain("IRPF");
     });
+    // For autónomos the bracket card shows the progressive IRPF scale, not the IS one.
+    expect(document.querySelector('[data-ui="tax-band-card"]')?.textContent ?? "").toContain("IRPF ·");
 
     // Changing tabs must NOT persist: getRestaurantInfo is only called once on mount.
     const { createClient } = await import("../../../../../api/client");

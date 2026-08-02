@@ -7,12 +7,11 @@ import { createClient } from "../../../../../api/client";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { Tabs } from "../../../../../ui/nav/Tabs";
 import {
-  bandPositionPercent,
   computeSimulation,
   ENTITY_DESCRIPTIONS,
-  findGrossBand,
-  GROSS_BANDS,
+  findBillingBand,
   IVA_DEFAULT,
+  type BillingBand,
   type EntityType,
   type TaxAssumptions,
 } from "./taxCalc";
@@ -99,8 +98,10 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
     [grossRevenue, assumptions, entityType, firstProfitYear],
   );
 
-  const band = useMemo(() => findGrossBand(grossRevenue), [grossRevenue]);
-  const bandPct = useMemo(() => bandPositionPercent(grossRevenue), [grossRevenue]);
+  const band = useMemo(
+    () => findBillingBand(simulation.incomeTax.taxableBase, entityType, firstProfitYear),
+    [simulation.incomeTax.taxableBase, entityType, firstProfitYear],
+  );
 
   const assumptionsSummary = useMemo(() => {
     const parts: string[] = [];
@@ -165,8 +166,6 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
     () => (popover && popover.target === "flow" ? flowSegments.find((segment) => segment.key === popover.key) ?? null : null),
     [popover, flowSegments],
   );
-
-  const bandLabel = useMemo(() => band.to === null ? `${fmt(band.from)} €+` : `${fmt(band.from)} – ${fmt(band.to)}`, [band]);
 
   return (
     <section className={cn("rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)] sm:p-6", className)} data-ui={dataUi ?? "tax-simulation"}>
@@ -334,7 +333,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-ui="tax-stats">
         <StatCard label="Ingresos brutos" value={fmt(simulation.gross)} detail={grossIncludesIva ? "IVA incluido" : "Base imponible"} icon={<ReceiptText className="h-4 w-4" aria-hidden="true" />} testId="tax-gross" data-ui="tax-gross-card" />
         <div className="cursor-help" onMouseEnter={handleBandEnter} onMouseLeave={handlePopoverLeave} data-ui="tax-band-card-wrap">
-          <StatCard label="Tramo de facturación" value={band.label} detail={bandLabel} icon={<TrendingUp className="h-4 w-4" aria-hidden="true" />} testId="tax-band" data-ui="tax-band-card" />
+          <StatCard label="Tramo de gravamen" value={band.label} detail={band.detail} icon={<TrendingUp className="h-4 w-4" aria-hidden="true" />} testId="tax-band" data-ui="tax-band-card" />
         </div>
         <StatCard label="Total impuestos" value={fmt(simulation.totalTaxes)} detail={`IVA + ${entityType === "autonomo" ? "IRPF" : "IS"}${simulation.socialSecurity > 0 ? " + SS" : ""}`} icon={<Percent className="h-4 w-4" aria-hidden="true" />} testId="tax-total-taxes" tone="danger" data-ui="tax-total-taxes-card" />
         <StatCard label="Neto estimado" value={fmt(simulation.net)} detail={`${fmtPct(simulation.keptRate * 100)} de los ingresos`} icon={<Wallet className="h-4 w-4" aria-hidden="true" />} testId="tax-net" tone="success" data-ui="tax-net-card" />
@@ -412,7 +411,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
             {popover.target === "flow" && hoveredFlowSegment ? (
               <FlowPopover segment={hoveredFlowSegment} gross={simulation.gross} data-ui="tax-popover-flow" />
             ) : null}
-            {popover.target === "band" ? <BandPopover currentGross={grossRevenue} currentBand={band} data-ui="tax-popover-band" /> : null}
+            {popover.target === "band" ? <BandPopover band={band} data-ui="tax-popover-band" /> : null}
           </div>,
           document.body,
         )
@@ -443,39 +442,34 @@ function FlowPopover({ segment, gross, "data-ui": dataUi }: { segment: { key: st
   );
 }
 
-function BandPopover({ currentGross, currentBand, "data-ui": dataUi }: { currentGross: number; currentBand: { label: string; from: number; to: number | null }; "data-ui"?: string }) {
+function BandPopover({ band, "data-ui": dataUi }: { band: BillingBand; "data-ui"?: string }) {
   return (
     <div className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-3 shadow-[var(--bo-shadow-soft)]" data-ui={dataUi}>
       <div className="flex items-center gap-2" data-ui={`${dataUi}-head`}>
         <TrendingUp className="h-4 w-4 text-[var(--bo-accent)]" aria-hidden="true" data-ui={`${dataUi}-icon`} />
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--bo-muted)]" data-ui={`${dataUi}-label`}>Tramos de facturación</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--bo-muted)]" data-ui={`${dataUi}-label`}>Tramos de gravamen</span>
       </div>
       <div className="mt-2 flex flex-col gap-1" data-ui={`${dataUi}-list`}>
-        {GROSS_BANDS.map((item) => {
-          const active = item.label === currentBand.label;
-          return (
-            <div
-              key={item.label}
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-lg border px-2.5 py-1.5 text-sm",
-                active ? "border-[var(--bo-accent)] bg-[var(--bo-bg-selected)] text-[var(--bo-text)]" : "border-transparent text-[var(--bo-muted)]",
-              )}
-              aria-current={active ? "true" : undefined}
-              data-ui={`${dataUi}-band-${item.label.toLowerCase()}`}
-            >
-              <div className="flex min-w-0 items-center gap-2" data-ui={`${dataUi}-band-name-${item.label.toLowerCase()}`}>
-                {active ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--bo-accent)]" aria-hidden="true" data-ui={`${dataUi}-band-active-dot`} /> : null}
-                <span className="truncate font-medium" data-ui={`${dataUi}-band-label-${item.label.toLowerCase()}`}>{item.label}</span>
-              </div>
-              <span className="shrink-0 text-xs text-[var(--bo-faint)]" data-ui={`${dataUi}-band-range-${item.label.toLowerCase()}`}>
-                {item.to === null ? `${fmt(item.from)} €+` : `${fmt(item.from)} – ${fmt(item.to)}`}
-              </span>
+        {band.brackets.map((item) => (
+          <div
+            key={item.id}
+            className={cn(
+              "flex items-center justify-between gap-3 rounded-lg border px-2.5 py-1.5 text-sm",
+              item.active ? "border-[var(--bo-accent)] bg-[var(--bo-bg-selected)] text-[var(--bo-text)]" : "border-transparent text-[var(--bo-muted)]",
+            )}
+            aria-current={item.active ? "true" : undefined}
+            data-ui={`${dataUi}-band-${item.id}`}
+          >
+            <div className="flex min-w-0 items-center gap-2" data-ui={`${dataUi}-band-name-${item.id}`}>
+              {item.active ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--bo-accent)]" aria-hidden="true" data-ui={`${dataUi}-band-active-dot`} /> : null}
+              <span className="truncate font-medium" data-ui={`${dataUi}-band-label-${item.id}`}>{item.label}</span>
             </div>
-          );
-        })}
+            <span className="shrink-0 text-xs text-[var(--bo-faint)]" data-ui={`${dataUi}-band-rate-${item.id}`}>{item.rateLabel}</span>
+          </div>
+        ))}
       </div>
       <p className="mt-2 text-xs leading-4 text-[var(--bo-faint)]" data-ui={`${dataUi}-hint`}>
-        Estás en <strong className="font-semibold text-[var(--bo-accent)]" data-ui={`${dataUi}-current`}>{currentBand.label}</strong> con {fmt(currentGross)} brutos.
+        Tu base imponible está en <strong className="font-semibold text-[var(--bo-accent)]" data-ui={`${dataUi}-current`}>{band.label}</strong>.
       </p>
     </div>
   );

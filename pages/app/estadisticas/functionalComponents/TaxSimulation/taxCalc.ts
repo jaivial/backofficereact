@@ -69,19 +69,26 @@ export const IVA_DEFAULT: IvaAssumption = {
   foodShare: 0.78,
 };
 
-export const GROSS_BANDS = [
-  { label: "Micro", from: 0, to: 100_000 },
-  { label: "Pequeña", from: 100_000, to: 250_000 },
-  { label: "Media", from: 250_000, to: 500_000 },
-  { label: "Grande", from: 500_000, to: null },
-] as const;
+export interface BillingBracket {
+  id: string;
+  label: string;
+  rateLabel: string;
+  active: boolean;
+}
+
+export interface BillingBand {
+  id: string;
+  label: string;
+  detail: string;
+  brackets: BillingBracket[];
+}
 
 // Escala IRPF conjunta (estatal + autonómica media) de la campaña de la renta
 // 2025/2026, la vigente para 2026 (tablas actualizadas a 25/6/2026, p. ej.
 // TaxDown; la AEAT publica el cuadro de retención IRPF 2026). La parte estatal es
 // 9,5–24,5 % y la autonómica media ~9,5 %; la parte autonómica real varía por
 // CCAA (tope ~45 % Madrid – ~54 % Valencia).
-const IRPF_BRACKETS_COMBINED_2026: Array<{ from: number; to: number | null; rate: number }> = [
+export const IRPF_BRACKETS_2026: Array<{ from: number; to: number | null; rate: number }> = [
   { from: 0, to: 12_450, rate: 0.19 },
   { from: 12_450, to: 20_200, rate: 0.24 },
   { from: 20_200, to: 35_200, rate: 0.3 },
@@ -117,13 +124,79 @@ export function autonomoQuota(netMonthly: number): number {
   return RETA_2026.find((tier) => tier.to === null || netMonthly < tier.to)?.quota ?? RETA_2026[RETA_2026.length - 1].quota;
 }
 
-export function findGrossBand(gross: number): { label: string; from: number; to: number | null } {
-  return GROSS_BANDS.find((band) => band.to === null || gross < band.to) ?? GROSS_BANDS[GROSS_BANDS.length - 1];
+export function billingBrackets(entityType: EntityType, firstProfitYear: boolean): Array<Omit<BillingBracket, "active">> {
+  if (entityType === "autonomo") {
+    return IRPF_BRACKETS_2026.map((b, i) => ({
+      id: `irpf-${i}`,
+      label:
+        b.to === null
+          ? `Más de ${b.from.toLocaleString("es-ES")} €`
+          : `${b.from.toLocaleString("es-ES")} – ${b.to.toLocaleString("es-ES")} €`,
+      rateLabel: `${Math.round(b.rate * 100)} %`,
+    }));
+  }
+  if (entityType === "sl_micro") {
+    return [
+      { id: "micro-19", label: "Primeros 50.000 €", rateLabel: "19 %" },
+      { id: "micro-21", label: "Exceso sobre 50.000 €", rateLabel: "21 %" },
+    ];
+  }
+  if (entityType === "sl_new" && firstProfitYear) {
+    return [
+      { id: "new-15", label: "Primeros 300.000 €", rateLabel: "15 %" },
+      { id: "new-25", label: "Exceso sobre 300.000 €", rateLabel: "25 %" },
+    ];
+  }
+  return [{ id: "general-25", label: "Tipo general sobre la base", rateLabel: "25 %" }];
 }
 
-export function bandPositionPercent(gross: number): number {
-  const max = 500_000;
-  return Math.min(100, (gross / max) * 100);
+// El "tramo de gravamen" es la escala que aplica según el tipo de entidad:
+// IRPF progresivo para autónomos (sobre la base imponible), e Impuesto de
+// Sociedades (25 % general, 15/25 % nueva creación, 19/21 % micropyme) para
+// sociedades. Depende de entityType y firstProfitYear, no solo de la facturación.
+export function findBillingBand(base: number, entityType: EntityType, firstProfitYear = false): BillingBand {
+  const safeBase = Math.max(0, base);
+  const brackets = billingBrackets(entityType, firstProfitYear);
+
+  const activeId = (() => {
+    if (entityType === "autonomo") {
+      for (let i = 0; i < IRPF_BRACKETS_2026.length; i++) {
+        const b = IRPF_BRACKETS_2026[i];
+        if (b.to === null || safeBase < b.to) return `irpf-${i}`;
+      }
+      return `irpf-${IRPF_BRACKETS_2026.length - 1}`;
+    }
+    if (entityType === "sl_micro") return safeBase <= 50_000 ? "micro-19" : "micro-21";
+    if (entityType === "sl_new" && firstProfitYear) return safeBase <= 300_000 ? "new-15" : "new-25";
+    return "general-25";
+  })();
+
+  const active = brackets.find((b) => b.id === activeId);
+  const activeLabel = active?.label ?? brackets[brackets.length - 1].label;
+  const activeRate = active?.rateLabel ?? "";
+
+  let label: string;
+  let detail: string;
+  if (entityType === "autonomo") {
+    label = `IRPF · ${activeRate}`;
+    detail = `${activeLabel} de base imponible`;
+  } else if (entityType === "sl_micro") {
+    label = safeBase <= 50_000 ? "IS · 19 %" : "IS · 19/21 %";
+    detail = safeBase <= 50_000 ? "Primeros 50.000 € de base al 19 %" : "50.000 € al 19 % + exceso al 21 %";
+  } else if (entityType === "sl_new" && firstProfitYear) {
+    label = safeBase <= 300_000 ? "IS · 15 %" : "IS · 15/25 %";
+    detail = safeBase <= 300_000 ? "Primeros 300.000 € de base al 15 %" : "300.000 € al 15 % + exceso al 25 %";
+  } else {
+    label = "IS · 25 %";
+    detail = "Tipo general (Ley 27/2014, art. 29)";
+  }
+
+  return {
+    id: activeId,
+    label,
+    detail,
+    brackets: brackets.map((b) => ({ ...b, active: b.id === activeId })),
+  };
 }
 
 export function computeIva(gross: number, iva: IvaAssumption): IvaBreakdown {
@@ -168,7 +241,7 @@ export function computeIvaFromBase(base: number, iva: IvaAssumption): IvaBreakdo
 function progressiveIrfp(taxableBase: number): { tax: number; slices: TaxBracketSlice[] } {
   let tax = 0;
   const slices: TaxBracketSlice[] = [];
-  for (const bracket of IRPF_BRACKETS_COMBINED_2026) {
+  for (const bracket of IRPF_BRACKETS_2026) {
     if (taxableBase <= bracket.from) break;
     const taxable = Math.min(taxableBase, bracket.to ?? Number.POSITIVE_INFINITY) - bracket.from;
     const sliceTax = taxable * bracket.rate;
