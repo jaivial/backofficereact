@@ -6,6 +6,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, Line
 import type { AnalyticsCategoryRevenue, AnalyticsDayOfWeek, AnalyticsGranularity, AnalyticsHourly, AnalyticsOverview, AnalyticsOverviewParams, AnalyticsPaymentMethod, AnalyticsSummary, AnalyticsTopItem } from "../../../../../api/types";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "../../../../../ui/shadcn/chart";
 import { cn } from "../../../../../ui/shadcn/utils";
+import { Card } from "../../../../../ui/shell/Card";
 import { TaxSimulation } from "../TaxSimulation/TaxSimulation";
 
 const GRANULARITY_OPTIONS: Array<{ value: AnalyticsGranularity; label: string }> = [
@@ -258,7 +259,7 @@ export function AnalyticsDashboard({
       </header>
 
       {/* Collapsible Filters */}
-      <div className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] shadow-[var(--bo-shadow-soft)]" data-ui="analytics-filters-accordion">
+      <Card variant="glass" data-ui="analytics-filters-accordion">
         <div className="flex items-center justify-between gap-4 p-4" data-ui="analytics-filters-header">
           <div className="flex items-center gap-3" data-ui="analytics-filters-title">
             <Filter size={15} className="text-[var(--bo-muted)]" data-ui="analytics-filters-icon" />
@@ -370,7 +371,7 @@ export function AnalyticsDashboard({
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </div>
+      </Card>
 
       {loading ? <LoadingState data-ui="analytics-loading-state" /> : null}
       {!loading && error ? <ErrorState message={error} data-ui="analytics-error-state" /> : null}
@@ -468,7 +469,7 @@ export function AnalyticsDashboard({
                       const total = paymentSeries.reduce((acc, item) => acc + item.amount, 0);
                       const pct = total > 0 ? (entry.amount / total) * 100 : 0;
                       return (
-                        <div key={entry.method} className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-3" data-ui={`analytics-payment-total-${index}`}>
+                        <Card key={entry.method} variant="glass" data-ui={`analytics-payment-total-${index}`}>
                           <div className="flex items-center justify-between gap-3" data-ui={`analytics-payment-total-row-${index}`}>
                             <div className="flex min-w-0 items-center gap-2.5" data-ui={`analytics-payment-total-name-${index}`}>
                               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} aria-hidden="true" data-ui={`analytics-payment-total-dot-${index}`} />
@@ -483,7 +484,7 @@ export function AnalyticsDashboard({
                           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bo-border)]" data-ui={`analytics-payment-total-bar-${index}`}>
                             <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} data-ui={`analytics-payment-total-bar-fill-${index}`} />
                           </div>
-                        </div>
+                        </Card>
                       );
                     })}
                   </div>
@@ -646,19 +647,19 @@ function ChartEmpty({ message }: { message: string }) {
 
 function EmptyDataState() {
   return (
-    <section className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-8 text-center shadow-[var(--bo-shadow-soft)]" data-testid="analytics-empty-state" data-ui="analytics-empty-state">
+    <Card variant="glass" className="text-center" data-testid="analytics-empty-state" data-ui="analytics-empty-state">
       <BarChart3 className="mx-auto h-8 w-8 text-[var(--bo-faint)]" aria-hidden="true" />
       <h2 className="mt-3 font-semibold">Sin datos en el periodo</h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--bo-muted)]">
         No hay facturas, tickets de TPV ni rollups para el rango seleccionado. Ajusta las fechas o pulsa “Actualizar” para regenerar los rollups.
       </p>
-    </section>
+    </Card>
   );
 }
 
 function KpiCard({ label, value, detail, testId, icon, trend }: { label: string; value: string; detail: string; testId: string; icon: React.ReactNode; trend?: string | null }) {
   return (
-    <article className="flex min-h-[142px] flex-col justify-between rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)]" data-testid={testId}>
+    <Card variant="glass" className="flex h-full flex-col justify-between" style={{ minHeight: 142 }} data-testid={testId}>
       <div className="flex items-start justify-between gap-3">
         <span className="text-xs font-medium uppercase tracking-wide text-[var(--bo-muted)]">{label}</span>
         <span className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true">{icon}</span>
@@ -668,13 +669,13 @@ function KpiCard({ label, value, detail, testId, icon, trend }: { label: string;
         <p className="mt-1 text-xs leading-5 text-[var(--bo-muted)]">{detail}</p>
         {trend ? <p className={cn("mt-2 text-xs font-medium", trend.startsWith("-") ? "text-[var(--bo-on-surface-danger)]" : "text-[var(--bo-on-surface-success)]")}>{trend}</p> : null}
       </div>
-    </article>
+    </Card>
   );
 }
 
 function AnalyticsPanel({ title, description, icon, testId, children }: { title: string; description: string; icon: React.ReactNode; testId: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)] sm:p-5" data-testid={testId}>
+    <Card variant="glass" data-testid={testId}>
       <div className="mb-4">
         <div className="flex items-center gap-3">
           <span className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true">{icon}</span>
@@ -683,13 +684,13 @@ function AnalyticsPanel({ title, description, icon, testId, children }: { title:
         <p className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">{description}</p>
       </div>
       {children}
-    </section>
+    </Card>
   );
 }
 
 function QualityPanel({ summary, quality }: { summary: AnalyticsSummary; quality: AnalyticsOverview["dataQuality"] }) {
   return (
-    <section className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)] sm:p-5" data-testid="analytics-quality">
+    <Card variant="glass" data-testid="analytics-quality">
       <div className="mb-4">
         <div className="flex items-center gap-3">
           <span className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true"><Database className="h-4 w-4" /></span>
@@ -703,7 +704,7 @@ function QualityPanel({ summary, quality }: { summary: AnalyticsSummary; quality
         <QualityMetric label="Cobertura merma" value={`${formatNumber(quality.wasteCostCoverage.percent)}%`} detail={`${formatNumber(quality.unknownWasteQuantity)} unidades sin coste`} />
         <QualityMetric label="Documentos sin identidad" value={formatNumber(quality.unidentifiedDocuments)} detail="No cuentan como personas identificadas" />
       </div>
-      <div className="mt-4 rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-3">
+      <Card variant="glass" className="mt-4">
         <div className="flex items-center justify-between gap-3 text-xs">
           <span className="text-[var(--bo-muted)]">Coste stock presentado</span>
           <strong className="font-semibold">{knownCost(summary.costOfGoodsEUR, summary.costOfGoodsLabel)}</strong>
@@ -712,25 +713,25 @@ function QualityPanel({ summary, quality }: { summary: AnalyticsSummary; quality
           <span className="text-[var(--bo-muted)]">Coste merma presentado</span>
           <strong className="font-semibold" data-testid="analytics-waste-cost">{knownCost(summary.wasteCostEUR, summary.wasteCostLabel)}</strong>
         </div>
-      </div>
+      </Card>
       {quality.refreshRequired ? <p className="mt-3 text-xs font-medium text-[var(--bo-on-surface-warning)]" role="status">Actualización recomendada para completar rollups del periodo.</p> : null}
-    </section>
+    </Card>
   );
 }
 
 function QualityMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-3">
+    <Card variant="glass">
       <div className="text-xs text-[var(--bo-muted)]">{label}</div>
       <div className="mt-1 text-lg font-semibold">{value}</div>
       <div className="mt-1 text-xs text-[var(--bo-faint)]">{detail}</div>
-    </div>
+    </Card>
   );
 }
 
 function WasteBreakdown({ overview }: { overview: AnalyticsOverview }) {
   return (
-    <section className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)] sm:p-5" data-testid="analytics-waste-breakdown">
+    <Card variant="glass" data-testid="analytics-waste-breakdown">
       <div className="mb-4">
         <div className="flex items-center gap-3">
           <span className="rounded-lg bg-[var(--bo-warning-bg)] p-2 text-[var(--bo-on-surface-warning)]" aria-hidden="true"><AlertTriangle className="h-4 w-4" /></span>
@@ -760,7 +761,7 @@ function WasteBreakdown({ overview }: { overview: AnalyticsOverview }) {
           </table>
         </div>
       ) : <p className="text-sm text-[var(--bo-muted)]">Sin merma registrada en periodo.</p>}
-    </section>
+    </Card>
   );
 }
 
@@ -768,7 +769,7 @@ function ComparisonPanel({ overview }: { overview: AnalyticsOverview }) {
   const comparison = overview.comparison;
   if (!comparison) return null;
   return (
-    <section className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)] sm:p-5" data-testid="analytics-comparison">
+    <Card variant="glass" data-testid="analytics-comparison">
       <div className="mb-4">
         <h2 className="font-semibold" style={{ margin: 0 }}>Periodo anterior</h2>
         <p className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">{comparison.from} → {comparison.to}</p>
@@ -779,24 +780,24 @@ function ComparisonPanel({ overview }: { overview: AnalyticsOverview }) {
         <ComparisonMetric label="Ingresos facturados" value={formatCurrency(comparison.summary.invoicedRevenueEUR)} delta={comparison.deltaPercent.invoicedRevenueEUR} />
         <ComparisonMetric label="Ingresos TPV" value={formatCurrency(comparison.summary.posRevenueEUR)} delta={comparison.deltaPercent.posRevenueEUR} />
       </div>
-    </section>
+    </Card>
   );
 }
 
 function ComparisonMetric({ label, value, delta }: { label: string; value: string; delta?: number }) {
   const hasDelta = typeof delta === "number" && Number.isFinite(delta);
   return (
-    <div className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-3">
+    <Card variant="glass">
       <div className="text-xs text-[var(--bo-muted)]">{label}</div>
       <div className="mt-1 text-lg font-semibold">{value}</div>
       {hasDelta ? <div className={cn("mt-1 text-xs font-medium", delta >= 0 ? "text-[var(--bo-on-surface-success)]" : "text-[var(--bo-on-surface-danger)]")}>{delta >= 0 ? "+" : ""}{formatNumber(delta)}%</div> : null}
-    </div>
+    </Card>
   );
 }
 
 function DataQualityNote({ quality }: { quality: AnalyticsOverview["dataQuality"] }) {
   return (
-    <section className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)] sm:p-5">
+    <Card variant="glass">
       <div className="mb-4">
         <div className="flex items-center gap-3">
           <Database className="h-4 w-4 shrink-0 text-[var(--bo-accent-2)]" aria-hidden="true" />
@@ -809,7 +810,7 @@ function DataQualityNote({ quality }: { quality: AnalyticsOverview["dataQuality"
           Documentos no EUR: {formatNumber(quality.nonEurDocuments)}. Documentos sin identidad: {formatNumber(quality.unidentifiedDocuments)}.
         </p>
       </div>
-    </section>
+    </Card>
   );
 }
 
@@ -831,7 +832,7 @@ function LoadingState() {
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <section className="rounded-2xl border border-[var(--bo-color-danger)]/40 bg-[var(--bo-surface)] p-5" role="alert" data-testid="analytics-error">
+    <Card variant="glass" role="alert" data-testid="analytics-error">
       <div>
         <div className="flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--bo-on-surface-danger)]" aria-hidden="true" />
@@ -839,6 +840,6 @@ function ErrorState({ message }: { message: string }) {
         </div>
         <p className="mt-[0.4rem] text-sm text-[var(--bo-muted)]">{message}</p>
       </div>
-    </section>
+    </Card>
   );
 }

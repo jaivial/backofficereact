@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { createClient } from "../../../../../api/client";
 import { cn } from "../../../../../ui/shadcn/utils";
+import { Card } from "../../../../../ui/shell/Card";
 import { Tabs } from "../../../../../ui/nav/Tabs";
 import {
   computeSimulation,
@@ -168,7 +169,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
   );
 
   return (
-    <section className={cn("rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4 shadow-[var(--bo-shadow-soft)] sm:p-6", className)} data-ui={dataUi ?? "tax-simulation"}>
+    <Card variant="glass" className={className} data-ui={dataUi ?? "tax-simulation"}>
       {/* Header */}
       <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -198,9 +199,9 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
       </div>
 
       {/* Entity description */}
-      <div className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] px-3 py-2.5 text-xs leading-5 text-[var(--bo-muted)]" data-ui="tax-entity-description">
+      <Card variant="glass" className="text-xs leading-5 text-[var(--bo-muted)]" data-ui="tax-entity-description">
         {ENTITY_DESCRIPTIONS[entityType]}
-      </div>
+      </Card>
 
       {/* Assumptions collapsible — glass style matching entity tabs */}
       <div className="bo-tabs bo-tabs--glass mt-4 flex w-full flex-col items-stretch gap-0 overflow-visible rounded-xl" style={{ padding: 0 }} data-ui="tax-assumptions">
@@ -297,7 +298,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
       </div>
 
       {/* Money flow bar */}
-      <div className="mt-5 rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-4" data-ui="tax-flow">
+      <Card variant="glass" className="mt-5" data-ui="tax-flow">
         <div className="flex flex-wrap items-center justify-between gap-2" data-ui="tax-flow-head">
           <span className="text-xs font-semibold uppercase tracking-wide text-[var(--bo-muted)]" data-ui="tax-flow-title">¿A dónde va cada euro?</span>
           <span className="text-xs text-[var(--bo-faint)]" data-ui="tax-flow-gross">{fmt(simulation.gross)} de ingresos brutos</span>
@@ -327,7 +328,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Stat cards */}
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-ui="tax-stats">
@@ -342,7 +343,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
       {/* Detail sections */}
       <div className="mt-5 grid gap-5 lg:grid-cols-2" data-ui="tax-detail-grid">
         {/* IVA breakdown */}
-        <div className="rounded-xl border border-[var(--bo-border)] p-4" data-ui="tax-iva-section">
+        <Card variant="glass" data-ui="tax-iva-section">
           <h3 className="text-sm font-semibold" style={{ margin: 0 }} data-ui="tax-iva-title">Desglose del IVA</h3>
           <div className="mt-3 flex flex-col gap-2" data-ui="tax-iva-list">
             <DetailRow label="Base imponible" value={fmt(simulation.iva.base)} note="Importe sin IVA" data-ui="tax-iva-base" />
@@ -355,10 +356,10 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
               {fmt(Math.abs(simulation.iva.ivaDue))}
             </strong>
           </div>
-        </div>
+        </Card>
 
         {/* Taxes breakdown */}
-        <div className="rounded-xl border border-[var(--bo-border)] p-4" data-ui="tax-taxes-section">
+        <Card variant="glass" data-ui="tax-taxes-section">
           <h3 className="text-sm font-semibold" style={{ margin: 0 }} data-ui="tax-taxes-title">Impuestos aplicados</h3>
           <div className="mt-3 flex flex-col gap-2" data-ui="tax-taxes-list">
             <DetailRow label="IVA a liquidar" value={fmt(ivaDue)} note={ivaIsPositive ? "Repercutido − soportado" : "Crédito a favor"} data-ui="tax-tax-iva" />
@@ -369,11 +370,11 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
             <span className="text-xs text-[var(--bo-muted)]" data-ui="tax-tax-total-label">Total impuestos</span>
             <strong className="font-semibold text-[var(--bo-on-surface-danger)]" data-ui="tax-tax-total-value">{fmt(simulation.totalTaxes)}</strong>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Net summary */}
-      <div className="mt-5 rounded-2xl border border-[var(--bo-accent)]/40 bg-[var(--bo-bg-selected)]/40 p-4" data-ui="tax-net-summary">
+      <Card variant="glass" className="mt-5" data-ui="tax-net-summary">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" data-ui="tax-net-summary-row">
           <div data-ui="tax-net-summary-copy">
             <div className="flex items-center gap-2 text-xs font-medium text-[var(--bo-muted)]" data-ui="tax-net-summary-label">
@@ -389,7 +390,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
             <span className="text-sm font-medium text-[var(--bo-accent-2)]" data-ui="tax-net-summary-rate">{fmtPct(simulation.keptRate * 100)} retenido</span>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Disclaimer */}
       <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[var(--bo-faint)]" data-ui="tax-disclaimer">
@@ -416,7 +417,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
           document.body,
         )
       ) : null}
-    </section>
+    </Card>
   );
 }
 
@@ -478,14 +479,14 @@ function BandPopover({ band, "data-ui": dataUi }: { band: BillingBand; "data-ui"
 function StatCard({ label, value, detail, icon, testId, tone, "data-ui": dataUi }: { label: string; value: string; detail: string; icon: React.ReactNode; testId: string; tone?: "success" | "danger"; "data-ui"?: string }) {
   const valueClass = tone === "success" ? "text-[var(--bo-on-surface-success)]" : tone === "danger" ? "text-[var(--bo-on-surface-danger)]" : "text-[var(--bo-text)]";
   return (
-    <div className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-4" data-testid={testId} data-ui={dataUi}>
+    <Card variant="glass" className="h-full" data-testid={testId} data-ui={dataUi}>
       <div className="flex items-center justify-between gap-2" data-ui={`${dataUi}-head`}>
         <span className="text-xs font-medium text-[var(--bo-muted)]" data-ui={`${dataUi}-label`}>{label}</span>
         <span className="rounded-lg bg-[var(--bo-bg-selected)] p-1.5 text-[var(--bo-accent)]" aria-hidden="true" data-ui={`${dataUi}-icon`}>{icon}</span>
       </div>
       <div className={cn("mt-2 text-2xl font-semibold tracking-tight", valueClass)} data-ui={`${dataUi}-value`}>{value}</div>
       <div className="mt-1 text-xs text-[var(--bo-faint)]" data-ui={`${dataUi}-detail`}>{detail}</div>
-    </div>
+    </Card>
   );
 }
 
