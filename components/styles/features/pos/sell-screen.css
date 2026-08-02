@@ -683,3 +683,478 @@
   margin: 4px 0;
   background: var(--bo-border);
 }
+
+/* ========================================================================== */
+/* Responsive POS layout                                                     */
+/*                                                                            */
+/* The selling screen is mounted inside both the normal app shell and the    */
+/* immersive shell. Keep the layout itself responsible for sizing and let    */
+/* each scrollable panel own its overflow. This prevents the keypad's         */
+/* intrinsic button dimensions from pushing the catalogue over the register. */
+/* ========================================================================== */
+
+[data-ui="pos-page"] {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--bo-space-3);
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+[data-ui="pos-header"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--bo-space-3);
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+[data-ui="pos-heading"] {
+  min-width: 0;
+}
+
+[data-ui="pos-mode"] {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+[data-ui="pos-page"] > [data-ui="pos-error"],
+[data-ui="pos-page"] > [data-ui="pos-message"] {
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The immersive shell previously used overflow:hidden, which made the lower
+   POS panels unreachable on short screens. Fullscreen still fills the viewport
+   but the POS page is allowed to scroll when the content is taller than it. */
+.bo-main--pos-fullscreen {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.pos-sell {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  max-width: 100%;
+}
+
+.pos-sell__body,
+.pos-sell__work,
+.pos-sell__row {
+  min-width: 0;
+}
+
+.pos-sell__body {
+  overflow: hidden;
+}
+
+.pos-sell__row--register {
+  flex: 0 1 42%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pos-sell__row--catalog {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pos-ticketPanel,
+.pos-keypad {
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pos-ticketPanel {
+  height: 100%;
+}
+
+.pos-keypad {
+  height: 100%;
+}
+
+.pos-keypad__body,
+.pos-keypad__grid,
+.pos-keypad__calcCol {
+  min-height: 0;
+}
+
+.pos-keypad__body {
+  flex: 1 1 auto;
+}
+
+.pos-keypad__body > .pos-keypad__grid {
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.pos-keypad__key {
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.pos-keypad__calcOp {
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+/* Dense desktop/tablet layout. The rail and keypad shrink before the work
+   area does, so the ticket and product grids never paint over one another. */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .pos-sell__row--register {
+    grid-template-columns: minmax(0, 1fr) minmax(224px, 260px);
+  }
+
+  .pos-sell__row--catalog {
+    grid-template-columns: 168px minmax(0, 1fr);
+  }
+
+  .pos-rail {
+    width: 196px;
+  }
+
+  .pos-products {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  }
+}
+
+/* Tablet and phone: use a deliberate vertical flow. Each region has its own
+   content height, so a long ticket or catalogue extends the page instead of
+   being clipped by a fixed flex row. */
+@media (max-width: 900px) {
+  [data-ui="pos-header"] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  [data-ui="pos-heading"] {
+    grid-column: 1 / -1;
+  }
+
+  [data-ui="pos-mode"] {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  [data-ui="pos-header"] .pos-sectionMenuBtn {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  [data-ui="pos-page"] {
+    flex: 0 0 auto;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .pos-sell {
+    flex: 0 0 auto;
+    height: auto;
+  }
+
+  .pos-sell__body {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .pos-sell__work {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .pos-sell__row--register,
+  .pos-sell__row--catalog {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .pos-sell__row--register {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--bo-space-3);
+  }
+
+  .pos-sell__row--catalog {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pos-ticketPanel,
+  .pos-keypad {
+    height: auto;
+    overflow: visible;
+  }
+
+  .pos-ticketPanel {
+    min-height: 12rem;
+  }
+
+  .pos-ticketPanel__lines {
+    max-height: 42dvh;
+  }
+
+  .pos-keypad__body {
+    flex: 0 0 auto;
+  }
+
+  .pos-keypad__body > .pos-keypad__grid {
+    grid-auto-rows: minmax(56px, auto);
+    grid-template-rows: repeat(4, minmax(56px, auto));
+  }
+
+  .pos-keypad__key,
+  .pos-keypad__calcOp {
+    min-height: 56px;
+  }
+
+  .pos-categories {
+    max-height: none;
+    overflow-y: visible;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  }
+
+  .pos-products {
+    min-height: 12rem;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .pos-rail {
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  [data-ui="pos-page"] {
+    gap: var(--bo-space-2);
+  }
+
+  .pos-sell__top {
+    gap: var(--bo-space-2);
+  }
+
+  .pos-sell__alert,
+  .pos-sell__status {
+    width: 100%;
+  }
+
+  .pos-ticketPanel,
+  .pos-keypad,
+  .pos-categories,
+  .pos-products,
+  .pos-rail {
+    border-radius: var(--bo-radius-md);
+    padding: var(--bo-space-2);
+  }
+
+  .pos-line {
+    flex-wrap: wrap;
+    gap: var(--bo-space-2);
+  }
+
+  .pos-line__main {
+    order: 2;
+    flex-basis: calc(100% - 112px);
+  }
+
+  .pos-line__total {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .pos-line__note,
+  .pos-line__tags {
+    order: 4;
+  }
+
+  .pos-line__void,
+  .pos-line__move {
+    order: 5;
+  }
+
+  .pos-modalBackdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: max(10px, env(safe-area-inset-top, 0px)) 10px max(10px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .pos-modal {
+    max-height: calc(100dvh - 20px);
+    padding: var(--bo-space-3);
+  }
+
+  .pos-modal__modes {
+    flex-wrap: wrap;
+  }
+
+  .pos-modal__modes .pos-modal__secondary {
+    min-width: 0;
+  }
+
+  /* The section menu is portalled to body. Keep its full menu inside the
+     viewport instead of letting the anchored popover extend below a short
+     phone screen, where Playwright and touch users cannot reach the options. */
+  .bo-popover[data-testid="pos-section-popover"] {
+    top: max(8px, env(safe-area-inset-top, 0px)) !important;
+    left: 8px !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px);
+  }
+}
+
+/* Responsive rules for the non-selling POS sections. The React screens use a
+   mix of Tailwind utilities and vanilla feature CSS, so these selectors keep
+   long product names, reports and admin forms inside their cards. */
+[data-ui="pos-catalog"],
+[data-ui="pos-stock"],
+[data-ui="pos-reports"],
+[data-ui="pos-settings"],
+[data-ui="kds-root"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-ui="pos-catalog"] article,
+[data-ui="pos-stock"] article,
+[data-ui="pos-reports"] article,
+[data-ui="pos-settings"] article,
+[data-ui="kds-ticket"] {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+[data-ui="pos-catalog-product"],
+[data-ui="pos-import-item"],
+[data-ui="pos-sales-row"],
+[data-ui="pos-covers-row"],
+[data-ui="kds-ticket-header"],
+[data-ui="kds-line"] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+[data-ui="pos-catalog-product"],
+[data-ui="pos-import-item"],
+[data-ui="pos-sales-row"],
+[data-ui="pos-covers-row"] {
+  flex-wrap: wrap;
+  gap: var(--bo-space-2);
+}
+
+[data-ui="pos-catalog-name"],
+[data-ui="pos-import-name"],
+[data-ui="pos-sales-key"],
+[data-ui="pos-covers-key"],
+[data-ui="kds-ticket-heading"] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+[data-ui="pos-import-actions"],
+[data-ui="pos-accounting-links"],
+[data-ui="kitchen-station-create"],
+[data-ui="kitchen-route-create"] {
+  flex-wrap: wrap;
+}
+
+[data-ui="pos-settings-fields"] > label,
+[data-ui="pos-settings-fields"] input,
+[data-ui="pos-settings-fields"] select,
+[data-ui="pos-mapping-fields"] input,
+[data-ui="pos-mapping-fields"] select,
+[data-ui="pos-admin-product-fields"] input,
+[data-ui="pos-admin-product-fields"] select,
+[data-ui="pos-admin-refund-fields"] input,
+[data-ui="pos-admin-refund-fields"] select,
+[data-ui="pos-admin-cover-fields"] input,
+[data-ui="pos-admin-cover-fields"] select,
+[data-ui="pos-admin-period-fields"] input,
+[data-ui="pos-admin-period-fields"] select,
+[data-ui="kitchen-route-create"] select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-ui="pos-settings-fields"] input,
+[data-ui="pos-settings-fields"] select,
+[data-ui="pos-mapping-fields"] input,
+[data-ui="pos-mapping-fields"] select {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  [data-ui="pos-catalog"],
+  [data-ui="pos-stock"],
+  [data-ui="pos-reports"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-ui="pos-catalog"] > *,
+  [data-ui="pos-stock"] > *,
+  [data-ui="pos-reports"] > * {
+    grid-column: auto !important;
+  }
+
+  [data-ui="pos-import-actions"] > button,
+  [data-ui="pos-accounting-links"] > a,
+  [data-ui="pos-settings"] > button {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+
+  [data-ui="pos-admin-product-fields"],
+  [data-ui="pos-admin-refund-fields"],
+  [data-ui="pos-admin-cover-fields"],
+  [data-ui="pos-admin-period-fields"],
+  [data-ui="kitchen-route-create"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  [data-ui="pos-admin-product-fields"] > *,
+  [data-ui="pos-admin-refund-fields"] > *,
+  [data-ui="pos-admin-cover-fields"] > *,
+  [data-ui="pos-admin-period-fields"] > *,
+  [data-ui="kitchen-route-create"] > * {
+    min-width: 0;
+    width: 100%;
+  }
+
+  [data-ui="pos-admin-category-form"] {
+    flex-wrap: wrap;
+  }
+
+  [data-ui="pos-admin-category-form"] > * {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  [data-ui="pos-admin-product-row"],
+  [data-ui="kitchen-route"] {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--bo-space-2);
+  }
+
+  [data-ui="pos-admin-product-actions"] {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
