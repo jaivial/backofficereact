@@ -145,6 +145,7 @@ export default function Page() {
       cif: "",
       direccionFacturacion: "",
       clasificacion: "sociedad",
+                  tipoEmpresa: "sl",
     },
   );
 
@@ -304,6 +305,7 @@ export default function Page() {
                   cif: "",
                   direccionFacturacion: "",
                   clasificacion: "sociedad",
+                  tipoEmpresa: "sl",
                 }
               }
               busy={busy}

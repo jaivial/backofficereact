@@ -191,11 +191,13 @@ export function generateMockOverview(options?: {
     series,
     wasteBreakdown,
     dataQuality,
+    topItems: MOCK_TOP_ITEMS.map((item) => ({ name: item.name, quantity: item.quantity, revenueEUR: item.revenue })),
+    paymentMethods: MOCK_PAYMENT_METHODS.map((entry) => ({ method: entry.method, amountEUR: entry.amount, count: entry.count })),
+    dayOfWeek: MOCK_DAY_OF_WEEK.map((entry) => ({ day: entry.day, revenueEUR: entry.revenue, covers: entry.covers })),
+    hourlyDistribution: MOCK_HOURLY_DISTRIBUTION.map((entry) => ({ hour: entry.hour, covers: entry.covers, revenueEUR: entry.revenue })),
+    revenueByCategory: MOCK_REVENUE_BY_CATEGORY.map((entry) => ({ category: entry.category, amountEUR: entry.amount, percentage: entry.percentage })),
   };
 }
-
-// Pre-generated mock for immediate use
-export const MOCK_OVERVIEW = generateMockOverview({ granularity: "day", periodCount: 30, includeComparison: true });
 
 // Additional mock data for extra charts
 export type RevenueByCategory = { category: string; amount: number; percentage: number };
@@ -266,3 +268,6 @@ export const MOCK_MARGINS: MarginCategory[] = [
   { category: "Postres", revenue: 8560, cost: 1712, margin: 6848, marginPct: 80 },
   { category: "Bebidas", revenue: 4520, cost: 1356, margin: 3164, marginPct: 70 },
 ];
+
+// Pre-generated mock for immediate use (declared after the arrays it references)
+export const MOCK_OVERVIEW = generateMockOverview({ granularity: "day", periodCount: 30, includeComparison: true });

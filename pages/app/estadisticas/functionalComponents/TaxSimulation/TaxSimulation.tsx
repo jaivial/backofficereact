@@ -1,8 +1,9 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Building2, Calculator, ChevronDown, ChevronUp, Landmark, Percent, ReceiptText, SlidersHorizontal, TrendingUp, UserRound, Wallet } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
+import { createClient } from "../../../../../api/client";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { Tabs } from "../../../../../ui/nav/Tabs";
 import {
@@ -51,6 +52,27 @@ interface TaxSimulationProps {
 
 export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-ui": dataUi }: TaxSimulationProps) {
   const [entityType, setEntityType] = useState<EntityType>("sl");
+  const userTouchedEntityRef = useRef(false);
+
+  // Default the entity type to the one saved in Settings (per restaurant).
+  // The user can still switch tabs here without persisting that change.
+  useEffect(() => {
+    let cancelled = false;
+    const api = createClient({ baseUrl: "" });
+    api.config
+      .getRestaurantInfo()
+      .then((response) => {
+        if (cancelled || !response.success || userTouchedEntityRef.current) return;
+        setEntityType(response.restaurantInfo.tipoEmpresa);
+      })
+      .catch(() => {
+        // Keep the default when the settings endpoint is unavailable.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [firstProfitYear, setFirstProfitYear] = useState(false);
   const [grossIncludesIva, setGrossIncludesIva] = useState(true);
   const [includeSocialSecurity, setIncludeSocialSecurity] = useState(true);
@@ -166,7 +188,10 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
             mode="button"
             ariaLabel="Tipo de entidad"
             activeId={entityType}
-            onNavigate={(_href, id) => setEntityType(id as EntityType)}
+            onNavigate={(_href, id) => {
+              userTouchedEntityRef.current = true;
+              setEntityType(id as EntityType);
+            }}
             className="bo-tabs--reservas w-full flex-row rounded-xl lg:w-auto"
             tabs={ENTITY_OPTIONS.map((option) => ({ id: option.value, label: option.label, href: "#", icon: option.icon }))}
           />

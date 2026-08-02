@@ -86,6 +86,11 @@ const overview = {
     },
   ],
   wasteBreakdown: [{ reason: "RECIPE_WASTE", quantity: 3, knownCostEUR: 8, unknownQuantity: 1, costLabel: "N/D" }],
+  topItems: [{ name: "Vino tinto", quantity: 4, revenueEUR: 60 }],
+  paymentMethods: [{ method: "Tarjeta", amountEUR: 800, count: 12 }],
+  dayOfWeek: [{ day: "Vie", revenueEUR: 400, covers: 18 }],
+  hourlyDistribution: [{ hour: "21:00", covers: 14, revenueEUR: 300 }],
+  revenueByCategory: [{ category: "Vinos", amountEUR: 500, percentage: 33.33 }],
   dataQuality: {
     currency: "EUR",
     nonEurDocuments: 0,
@@ -141,8 +146,8 @@ describe("AnalyticsDashboard", () => {
     expect(screen.getByTestId("analytics-waste-cost")).toHaveTextContent("N/D");
   });
 
-  it("renders error state and falls back to mock data when empty", () => {
-    const emptyOverview = { ...overview, summary: { ...overview.summary, totalRevenueEUR: 0, identifiedPeople: 0, wasteQuantity: 0, costOfGoodsEUR: null, stockPurchasesEUR: null, wasteCostEUR: null, costCoverage: { knownQuantity: 0, totalQuantity: 0, percent: 0 }, stockPurchaseCoverage: { knownQuantity: 0, totalQuantity: 0, percent: 0 } }, series: [], wasteBreakdown: [], dataQuality: { ...overview.dataQuality, refreshRequired: true } };
+  it("renders error state and explicit empty state when there is no data", () => {
+    const emptyOverview = { ...overview, summary: { ...overview.summary, totalRevenueEUR: 0, identifiedPeople: 0, wasteQuantity: 0, costOfGoodsEUR: null, stockPurchasesEUR: null, wasteCostEUR: null, costCoverage: { knownQuantity: 0, totalQuantity: 0, percent: 0 }, stockPurchaseCoverage: { knownQuantity: 0, totalQuantity: 0, percent: 0 } }, series: [], wasteBreakdown: [], topItems: [], paymentMethods: [], dayOfWeek: [], hourlyDistribution: [], revenueByCategory: [], dataQuality: { ...overview.dataQuality, refreshRequired: true } };
     const { rerender } = render(
       React.createElement(AnalyticsDashboard, {
         overview: emptyOverview,
@@ -153,7 +158,7 @@ describe("AnalyticsDashboard", () => {
         onRefresh: vi.fn(),
       }),
     );
-    expect(screen.getByTestId("analytics-populated")).toBeInTheDocument();
+    expect(screen.getByTestId("analytics-empty-state")).toBeInTheDocument();
 
     rerender(
       React.createElement(AnalyticsDashboard, {
@@ -177,7 +182,8 @@ describe("AnalyticsDashboard", () => {
         onRefresh: vi.fn(),
       }),
     );
-    expect(screen.getByTestId("analytics-populated")).toBeInTheDocument();
+    expect(screen.queryByTestId("analytics-populated")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("analytics-empty-state")).not.toBeInTheDocument();
   });
 
   it("changes filters and refreshes selected range", () => {

@@ -3,19 +3,10 @@ import { AlertTriangle, BarChart3, ChevronDown, ChevronUp, Database, Filter, Fil
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, RadialBar, RadialBarChart, XAxis, YAxis } from "recharts";
 
-import type { AnalyticsGranularity, AnalyticsOverview, AnalyticsOverviewParams, AnalyticsSummary } from "../../../../../api/types";
+import type { AnalyticsCategoryRevenue, AnalyticsDayOfWeek, AnalyticsGranularity, AnalyticsHourly, AnalyticsOverview, AnalyticsOverviewParams, AnalyticsPaymentMethod, AnalyticsSummary, AnalyticsTopItem } from "../../../../../api/types";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "../../../../../ui/shadcn/chart";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { TaxSimulation } from "../TaxSimulation/TaxSimulation";
-import {
-  generateMockOverview,
-  MOCK_DAY_OF_WEEK,
-  MOCK_HOURLY_DISTRIBUTION,
-  MOCK_MARGINS,
-  MOCK_PAYMENT_METHODS,
-  MOCK_REVENUE_BY_CATEGORY,
-  MOCK_TOP_ITEMS,
-} from "../../mockData";
 
 const GRANULARITY_OPTIONS: Array<{ value: AnalyticsGranularity; label: string }> = [
   { value: "day", label: "Día" },
@@ -61,11 +52,6 @@ const dayChartConfig = {
 const hourlyChartConfig = {
   covers: { label: "Comensales", color: "var(--bo-accent)" },
   revenue: { label: "Ingresos", color: "var(--bo-accent-2)" },
-};
-
-const marginChartConfig = {
-  margin: { label: "Margen", color: "#4ade80" },
-  cost: { label: "Coste", color: "#f87171" },
 };
 
 // Cast recharts components to avoid TS issues
@@ -150,41 +136,71 @@ export function AnalyticsDashboard({
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  // Use mock data if no real data
-  const overview = useMemo(() => {
-    if (realOverview && hasOverviewData(realOverview)) return realOverview;
-    return generateMockOverview({ granularity: params.granularity, includeComparison: params.compare === "previous" });
-  }, [realOverview, params.granularity, params.compare]);
+  // Real data only: no synthetic fallbacks. If the backend returns no data
+  // for the period, the dashboard shows an explicit empty state.
+  const overview = realOverview;
+  const hasAnyData = useMemo(() => Boolean(overview && hasOverviewData(overview)), [overview]);
 
-  const summary = overview.summary;
+  const summary = overview?.summary ?? null;
 
   const revenueSeries = useMemo(
-    () => overview.series.map((point) => ({
+    () => (overview?.series ?? []).map((point) => ({
       period: formatDateLabel(point.from),
       invoiced: point.summary.invoicedRevenueEUR,
       pos: point.summary.posRevenueEUR,
     })),
-    [overview.series],
+    [overview],
   );
 
   const stockSeries = useMemo(
-    () => overview.series.map((point) => ({
+    () => (overview?.series ?? []).map((point) => ({
       period: formatDateLabel(point.from),
       purchases: point.summary.stockPurchasesEUR,
       stockCost: point.summary.costOfGoodsEUR,
       wasteCost: point.summary.wasteCostEUR,
     })),
-    [overview.series],
+    [overview],
   );
 
-  const averageSpend = summary.identifiedPeople > 0 ? summary.totalRevenueEUR / summary.identifiedPeople : null;
+  const averageSpend = (summary?.identifiedPeople ?? 0) > 0 && summary ? summary.totalRevenueEUR / summary.identifiedPeople : null;
+
+  // Breakdown datasets come straight from the backend. Empty arrays are
+  // rendered as explicit empty states instead of invented numbers.
+  const categorySeries = useMemo(
+    () => (overview?.revenueByCategory ?? []).map((entry: AnalyticsCategoryRevenue) => ({ category: entry.category, amount: entry.amountEUR })),
+    [overview],
+  );
+
+  const paymentSeries = useMemo(
+    () => (overview?.paymentMethods ?? []).map((entry: AnalyticsPaymentMethod) => ({ method: entry.method, amount: entry.amountEUR, count: entry.count })),
+    [overview],
+  );
+
+  const daySeries = useMemo(
+    () => (overview?.dayOfWeek ?? []).map((entry: AnalyticsDayOfWeek) => ({ day: entry.day, revenue: entry.revenueEUR, covers: entry.covers })),
+    [overview],
+  );
+
+  const hourlySeries = useMemo(
+    () => (overview?.hourlyDistribution ?? []).map((entry: AnalyticsHourly) => ({ hour: entry.hour, covers: entry.covers, revenue: entry.revenueEUR })),
+    [overview],
+  );
+
+  const topItems = useMemo(
+    () => (overview?.topItems ?? []).map((entry: AnalyticsTopItem) => ({ name: entry.name, quantity: entry.quantity, revenue: entry.revenueEUR })),
+    [overview],
+  );
 
   // Coverage data for radial chart
-  const coverageData = useMemo(() => [
-    { name: "Coste stock", value: overview.dataQuality.costCoverage.percent, fill: CHART_COLORS.primary },
-    { name: "Compras", value: overview.dataQuality.stockPurchaseCoverage.percent, fill: CHART_COLORS.secondary },
-    { name: "Merma", value: overview.dataQuality.wasteCostCoverage.percent, fill: CHART_COLORS.tertiary },
-  ], [overview.dataQuality]);
+  const coverageData = useMemo(() => {
+    const quality = overview?.dataQuality;
+    if (!quality) return [];
+    return [
+      { name: "Coste stock", value: quality.costCoverage.percent, fill: CHART_COLORS.primary },
+      { name: "Compras", value: quality.stockPurchaseCoverage.percent, fill: CHART_COLORS.secondary },
+      { name: "Merma", value: quality.wasteCostCoverage.percent, fill: CHART_COLORS.tertiary },
+    ];
+  }, [overview]);
 
   const handleDateChange = useCallback(
     (key: "from" | "to", value: string) => {
@@ -360,14 +376,15 @@ export function AnalyticsDashboard({
       {!loading && error ? <ErrorState message={error} data-ui="analytics-error-state" /> : null}
 
       {!loading && !error && overview ? (
-        <div className="flex flex-col gap-5" data-testid="analytics-populated" data-ui="analytics-populated">
+        hasAnyData ? (
+          <div className="flex flex-col gap-5" data-testid="analytics-populated" data-ui="analytics-populated">
           {/* KPI Cards */}
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" data-ui="analytics-kpis">
-            <KpiCard label="Ingresos facturados" value={formatCurrency(summary.invoicedRevenueEUR)} detail="Facturas emitidas en EUR" testId="analytics-invoiced-revenue" icon={<Receipt className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("invoicedRevenueEUR", overview.comparison)} />
-            <KpiCard label="Ingresos TPV" value={formatCurrency(summary.posRevenueEUR)} detail="Ventas punto de venta en EUR" testId="analytics-pos-revenue" icon={<ShoppingCart className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("posRevenueEUR", overview.comparison)} />
-            <KpiCard label="Personas identificadas" value={formatNumber(summary.identifiedPeople)} detail="Personas únicas con identidad" testId="analytics-identified-people" icon={<Users className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("identifiedPeople", overview.comparison)} />
+            <KpiCard label="Ingresos facturados" value={formatCurrency(overview.summary.invoicedRevenueEUR)} detail="Facturas emitidas en EUR" testId="analytics-invoiced-revenue" icon={<Receipt className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("invoicedRevenueEUR", overview.comparison)} />
+            <KpiCard label="Ingresos TPV" value={formatCurrency(overview.summary.posRevenueEUR)} detail="Ventas punto de venta en EUR" testId="analytics-pos-revenue" icon={<ShoppingCart className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("posRevenueEUR", overview.comparison)} />
+            <KpiCard label="Personas identificadas" value={formatNumber(overview.summary.identifiedPeople)} detail="Personas únicas con identidad" testId="analytics-identified-people" icon={<Users className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("identifiedPeople", overview.comparison)} />
             <KpiCard label="Gasto medio identificado" value={formatCurrency(averageSpend)} detail="Ingresos totales / personas identificadas" testId="analytics-average-spend" icon={<WalletCards className="h-4 w-4" aria-hidden="true" />} />
-            <KpiCard label="Compras de stock" value={knownCost(summary.stockPurchasesEUR, summary.stockPurchasesLabel)} detail="Gasto conocido de compras" testId="analytics-stock-purchases" icon={<Database className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("stockPurchasesEUR", overview.comparison)} />
+            <KpiCard label="Compras de stock" value={knownCost(overview.summary.stockPurchasesEUR, overview.summary.stockPurchasesLabel)} detail="Gasto conocido de compras" testId="analytics-stock-purchases" icon={<Database className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("stockPurchasesEUR", overview.comparison)} />
           </div>
 
           {/* Row 1: Revenue Area + Quality Panel */}
@@ -396,113 +413,125 @@ export function AnalyticsDashboard({
               </ChartContainer>
             </AnalyticsPanel>
 
-            <QualityPanel summary={summary} quality={overview.dataQuality} />
+            <QualityPanel summary={overview.summary} quality={overview.dataQuality} />
           </div>
 
           {/* Row 2: Revenue by Category (Bar) standalone */}
           <div className="grid gap-5" data-ui="analytics-category-row">
             <AnalyticsPanel title="Ingresos por categoría" description="Distribución de ventas por tipo de producto." icon={<Utensils className="h-4 w-4" aria-hidden="true" />} testId="analytics-category-panel">
-              <ChartContainer className="h-72 min-h-60" config={categoryChartConfig} id="analytics-category" data-testid="analytics-category-chart">
-                <BarChartPrimitive data={MOCK_REVENUE_BY_CATEGORY} layout="vertical" margin={{ top: 12, right: 12, left: 80, bottom: 0 }}>
-                  <CartesianGridPrimitive horizontal={false} stroke="var(--bo-border)" />
-                  <XAxisPrimitive type="number" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${(value / 1000).toFixed(0)}k €`} />
-                  <YAxisPrimitive type="category" dataKey="category" tickLine={false} axisLine={false} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} width={75} />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent formatter={(value) => tooltipFormatter(value)} />} />
-                  <BarPrimitive dataKey="amount" fill="var(--bo-accent)" radius={[0, 4, 4, 0]} />
-                </BarChartPrimitive>
-              </ChartContainer>
+              {categorySeries.length ? (
+                <ChartContainer className="h-72 min-h-60" config={categoryChartConfig} id="analytics-category" data-testid="analytics-category-chart">
+                  <BarChartPrimitive data={categorySeries} layout="vertical" margin={{ top: 12, right: 12, left: 80, bottom: 0 }}>
+                    <CartesianGridPrimitive horizontal={false} stroke="var(--bo-border)" />
+                    <XAxisPrimitive type="number" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${(value / 1000).toFixed(0)}k €`} />
+                    <YAxisPrimitive type="category" dataKey="category" tickLine={false} axisLine={false} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} width={75} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent formatter={(value) => tooltipFormatter(value)} />} />
+                    <BarPrimitive dataKey="amount" fill="var(--bo-accent)" radius={[0, 4, 4, 0]} />
+                  </BarChartPrimitive>
+                </ChartContainer>
+              ) : <ChartEmpty message="Sin ventas por categoría en el periodo." />}
             </AnalyticsPanel>
           </div>
 
           {/* Row 3: Payment Methods (Pie) + Payment Totals */}
           <div className="grid gap-5 lg:grid-cols-2" data-ui="analytics-payment-row">
             <AnalyticsPanel title="Métodos de pago" description="Distribución por forma de pago." icon={<PieChartIcon className="h-4 w-4" aria-hidden="true" />} testId="analytics-payment-panel">
-              <ChartContainer className="h-72 min-h-60" config={{}} id="analytics-payment" data-testid="analytics-payment-chart">
-                <PieChartPrimitive>
-                  <PiePrimitive
-                    data={MOCK_PAYMENT_METHODS}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={100}
-                    innerRadius={40}
-                    dataKey="amount"
-                    nameKey="method"
-                    label={({ method, percent }: { method: string; percent: number }) => `${method} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {MOCK_PAYMENT_METHODS.map((entry, index) => (
-                      <CellPrimitive key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </PiePrimitive>
-                  <ChartTooltip content={<ChartTooltipContent formatter={(value) => tooltipFormatter(value)} />} />
-                </PieChartPrimitive>
-              </ChartContainer>
+              {paymentSeries.length ? (
+                <ChartContainer className="h-72 min-h-60" config={{}} id="analytics-payment" data-testid="analytics-payment-chart">
+                  <PieChartPrimitive>
+                    <PiePrimitive
+                      data={paymentSeries}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={100}
+                      innerRadius={40}
+                      dataKey="amount"
+                      nameKey="method"
+                      label={({ method, percent }: { method: string; percent: number }) => `${method} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {paymentSeries.map((entry, index) => (
+                        <CellPrimitive key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </PiePrimitive>
+                    <ChartTooltip content={<ChartTooltipContent formatter={(value) => tooltipFormatter(value)} />} />
+                  </PieChartPrimitive>
+                </ChartContainer>
+              ) : <ChartEmpty message="Sin pagos capturados en el periodo." />}
             </AnalyticsPanel>
 
             <AnalyticsPanel title="Totales por método de pago" description="Importe y operaciones por forma de pago en el periodo." icon={<WalletCards className="h-4 w-4" aria-hidden="true" />} testId="analytics-payment-totals-panel">
-              <div className="flex flex-col gap-2" data-ui="analytics-payment-totals-list">
-                {MOCK_PAYMENT_METHODS.map((entry, index) => {
-                  const total = MOCK_PAYMENT_METHODS.reduce((acc, item) => acc + item.amount, 0);
-                  const pct = total > 0 ? (entry.amount / total) * 100 : 0;
-                  return (
-                    <div key={entry.method} className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-3" data-ui={`analytics-payment-total-${index}`}>
-                      <div className="flex items-center justify-between gap-3" data-ui={`analytics-payment-total-row-${index}`}>
-                        <div className="flex min-w-0 items-center gap-2.5" data-ui={`analytics-payment-total-name-${index}`}>
-                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} aria-hidden="true" data-ui={`analytics-payment-total-dot-${index}`} />
-                          <span className="truncate text-sm font-medium" data-ui={`analytics-payment-total-label-${index}`}>{entry.method}</span>
+              {paymentSeries.length ? (
+                <>
+                  <div className="flex flex-col gap-2" data-ui="analytics-payment-totals-list">
+                    {paymentSeries.map((entry, index) => {
+                      const total = paymentSeries.reduce((acc, item) => acc + item.amount, 0);
+                      const pct = total > 0 ? (entry.amount / total) * 100 : 0;
+                      return (
+                        <div key={entry.method} className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface-3)] p-3" data-ui={`analytics-payment-total-${index}`}>
+                          <div className="flex items-center justify-between gap-3" data-ui={`analytics-payment-total-row-${index}`}>
+                            <div className="flex min-w-0 items-center gap-2.5" data-ui={`analytics-payment-total-name-${index}`}>
+                              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} aria-hidden="true" data-ui={`analytics-payment-total-dot-${index}`} />
+                              <span className="truncate text-sm font-medium" data-ui={`analytics-payment-total-label-${index}`}>{entry.method}</span>
+                            </div>
+                            <span className="shrink-0 text-sm font-semibold" data-ui={`analytics-payment-total-value-${index}`}>{formatCurrency(entry.amount)}</span>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between gap-3 text-xs" data-ui={`analytics-payment-total-meta-${index}`}>
+                            <span className="text-[var(--bo-muted)]" data-ui={`analytics-payment-total-count-${index}`}>{formatNumber(entry.count)} operaciones</span>
+                            <span className="text-[var(--bo-faint)]" data-ui={`analytics-payment-total-pct-${index}`}>{formatNumber(pct)}% del total</span>
+                          </div>
+                          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bo-border)]" data-ui={`analytics-payment-total-bar-${index}`}>
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} data-ui={`analytics-payment-total-bar-fill-${index}`} />
+                          </div>
                         </div>
-                        <span className="shrink-0 text-sm font-semibold" data-ui={`analytics-payment-total-value-${index}`}>{formatCurrency(entry.amount)}</span>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between gap-3 text-xs" data-ui={`analytics-payment-total-meta-${index}`}>
-                        <span className="text-[var(--bo-muted)]" data-ui={`analytics-payment-total-count-${index}`}>{formatNumber(entry.count)} operaciones</span>
-                        <span className="text-[var(--bo-faint)]" data-ui={`analytics-payment-total-pct-${index}`}>{formatNumber(pct)}% del total</span>
-                      </div>
-                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bo-border)]" data-ui={`analytics-payment-total-bar-${index}`}>
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} data-ui={`analytics-payment-total-bar-fill-${index}`} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-3 flex items-center justify-between border-t border-[var(--bo-border)] pt-3" data-ui="analytics-payment-total-footer">
-                <span className="text-sm text-[var(--bo-muted)]" data-ui="analytics-payment-total-footer-label">Total periodo</span>
-                <strong className="text-sm font-semibold" data-ui="analytics-payment-total-footer-value">
-                  {formatCurrency(MOCK_PAYMENT_METHODS.reduce((acc, item) => acc + item.amount, 0))}
-                </strong>
-              </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-[var(--bo-border)] pt-3" data-ui="analytics-payment-total-footer">
+                    <span className="text-sm text-[var(--bo-muted)]" data-ui="analytics-payment-total-footer-label">Total periodo</span>
+                    <strong className="text-sm font-semibold" data-ui="analytics-payment-total-footer-value">
+                      {formatCurrency(paymentSeries.reduce((acc, item) => acc + item.amount, 0))}
+                    </strong>
+                  </div>
+                </>
+              ) : <ChartEmpty message="Sin pagos capturados en el periodo." />}
             </AnalyticsPanel>
           </div>
 
           {/* Row 3: Day of Week (Bar) + Hourly Distribution (Line) */}
           <div className="grid gap-5 lg:grid-cols-2" data-ui="analytics-time-row">
             <AnalyticsPanel title="Rendimiento por día" description="Ingresos y comensales por día de la semana." icon={<BarChart3 className="h-4 w-4" aria-hidden="true" />} testId="analytics-day-panel">
-              <ChartContainer className="h-72 min-h-60" config={dayChartConfig} id="analytics-day" data-testid="analytics-day-chart">
-                <BarChartPrimitive data={MOCK_DAY_OF_WEEK} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
-                  <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
-                  <XAxisPrimitive dataKey="day" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
-                  <YAxisPrimitive yAxisId="left" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${value} €`} />
-                  <YAxisPrimitive yAxisId="right" orientation="right" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <BarPrimitive yAxisId="left" dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
-                  <BarPrimitive yAxisId="right" dataKey="covers" fill="var(--color-covers)" radius={[4, 4, 0, 0]} />
-                </BarChartPrimitive>
-              </ChartContainer>
+              {daySeries.length ? (
+                <ChartContainer className="h-72 min-h-60" config={dayChartConfig} id="analytics-day" data-testid="analytics-day-chart">
+                  <BarChartPrimitive data={daySeries} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
+                    <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
+                    <XAxisPrimitive dataKey="day" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
+                    <YAxisPrimitive yAxisId="left" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${value} €`} />
+                    <YAxisPrimitive yAxisId="right" orientation="right" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                    <BarPrimitive yAxisId="left" dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+                    <BarPrimitive yAxisId="right" dataKey="covers" fill="var(--color-covers)" radius={[4, 4, 0, 0]} />
+                  </BarChartPrimitive>
+                </ChartContainer>
+              ) : <ChartEmpty message="Sin visitas cerradas con pago en el periodo." />}
             </AnalyticsPanel>
 
             <AnalyticsPanel title="Distribución horaria" description="Comensales e ingresos por hora del servicio." icon={<TrendingUp className="h-4 w-4" aria-hidden="true" />} testId="analytics-hourly-panel">
-              <ChartContainer className="h-72 min-h-60" config={hourlyChartConfig} id="analytics-hourly" data-testid="analytics-hourly-chart">
-                <LineChartPrimitive data={MOCK_HOURLY_DISTRIBUTION} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
-                  <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
-                  <XAxisPrimitive dataKey="hour" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
-                  <YAxisPrimitive yAxisId="left" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
-                  <YAxisPrimitive yAxisId="right" orientation="right" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${value} €`} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <LinePrimitive yAxisId="left" type="monotone" dataKey="covers" stroke="var(--color-covers)" strokeWidth={2} dot={{ fill: "var(--color-covers)", r: 3 }} />
-                  <LinePrimitive yAxisId="right" type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={2} dot={{ fill: "var(--color-revenue)", r: 3 }} />
-                </LineChartPrimitive>
-              </ChartContainer>
+              {hourlySeries.length ? (
+                <ChartContainer className="h-72 min-h-60" config={hourlyChartConfig} id="analytics-hourly" data-testid="analytics-hourly-chart">
+                  <LineChartPrimitive data={hourlySeries} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
+                    <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
+                    <XAxisPrimitive dataKey="hour" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
+                    <YAxisPrimitive yAxisId="left" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
+                    <YAxisPrimitive yAxisId="right" orientation="right" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${value} €`} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                    <LinePrimitive yAxisId="left" type="monotone" dataKey="covers" stroke="var(--color-covers)" strokeWidth={2} dot={{ fill: "var(--color-covers)", r: 3 }} />
+                    <LinePrimitive yAxisId="right" type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={2} dot={{ fill: "var(--color-revenue)", r: 3 }} />
+                  </LineChartPrimitive>
+                </ChartContainer>
+              ) : <ChartEmpty message="Sin visitas con ticket pagado en el periodo." />}
             </AnalyticsPanel>
           </div>
 
@@ -538,17 +567,7 @@ export function AnalyticsDashboard({
             </AnalyticsPanel>
 
             <AnalyticsPanel title="Análisis de márgenes" description="Margen bruto por categoría de producto." icon={<TrendingUp className="h-4 w-4" aria-hidden="true" />} testId="analytics-margin-panel">
-              <ChartContainer className="h-72 min-h-60" config={marginChartConfig} id="analytics-margin" data-testid="analytics-margin-chart">
-                <BarChartPrimitive data={MOCK_MARGINS} layout="vertical" margin={{ top: 12, right: 12, left: 80, bottom: 0 }}>
-                  <CartesianGridPrimitive horizontal={false} stroke="var(--bo-border)" />
-                  <XAxisPrimitive type="number" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${(value / 1000).toFixed(0)}k €`} />
-                  <YAxisPrimitive type="category" dataKey="category" tickLine={false} axisLine={false} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} width={75} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <BarPrimitive dataKey="margin" stackId="a" fill="var(--color-margin)" radius={[0, 0, 0, 0]} />
-                  <BarPrimitive dataKey="cost" stackId="a" fill="var(--color-cost)" radius={[0, 4, 4, 0]} />
-                </BarChartPrimitive>
-              </ChartContainer>
+              <ChartEmpty message="El margen por categoría aún no está disponible; usa el simulador fiscal para estimar el resultado." />
             </AnalyticsPanel>
           </div>
 
@@ -565,26 +584,28 @@ export function AnalyticsDashboard({
             </AnalyticsPanel>
 
             <AnalyticsPanel title="Top productos" description="Productos más vendidos del periodo." icon={<Utensils className="h-4 w-4" aria-hidden="true" />} testId="analytics-top-items-panel">
-              <div className="max-h-64 overflow-y-auto" data-ui="analytics-top-items-list">
-                <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 border-b border-[var(--bo-border)] bg-[var(--bo-surface)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">
-                    <tr>
-                      <th className="pb-3 pr-3 font-medium">Producto</th>
-                      <th className="pb-3 pr-3 font-medium text-right">Uds</th>
-                      <th className="pb-3 font-medium text-right">Ingresos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MOCK_TOP_ITEMS.map((item, index) => (
-                      <tr className="border-b border-[var(--bo-border)] last:border-0" key={index}>
-                        <td className="py-2.5 pr-3 font-medium">{item.name}</td>
-                        <td className="py-2.5 pr-3 text-right text-[var(--bo-muted)]">{item.quantity}</td>
-                        <td className="py-2.5 text-right font-medium">{formatCurrency(item.revenue)}</td>
+              {topItems.length ? (
+                <div className="max-h-64 overflow-y-auto" data-ui="analytics-top-items-list">
+                  <table className="w-full text-left text-sm">
+                    <thead className="sticky top-0 border-b border-[var(--bo-border)] bg-[var(--bo-surface)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">
+                      <tr>
+                        <th className="pb-3 pr-3 font-medium">Producto</th>
+                        <th className="pb-3 pr-3 font-medium text-right">Uds</th>
+                        <th className="pb-3 font-medium text-right">Ingresos</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {topItems.map((item, index) => (
+                        <tr className="border-b border-[var(--bo-border)] last:border-0" key={index}>
+                          <td className="py-2.5 pr-3 font-medium">{item.name}</td>
+                          <td className="py-2.5 pr-3 text-right text-[var(--bo-muted)]">{formatNumber(item.quantity)}</td>
+                          <td className="py-2.5 text-right font-medium">{formatCurrency(item.revenue)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : <ChartEmpty message="Sin ventas de producto en el periodo." />}
             </AnalyticsPanel>
 
             <WasteBreakdown overview={overview} />
@@ -593,8 +614,8 @@ export function AnalyticsDashboard({
           {/* Row 6: Tax simulation */}
           <div data-ui="analytics-tax-row">
             <TaxSimulation
-              grossRevenue={summary.totalRevenueEUR}
-              stockPurchases={summary.stockPurchasesEUR ?? 0}
+              grossRevenue={overview.summary.totalRevenueEUR}
+              stockPurchases={overview.summary.stockPurchasesEUR ?? 0}
               data-ui="analytics-tax-simulation"
             />
           </div>
@@ -607,7 +628,30 @@ export function AnalyticsDashboard({
             </div>
           ) : null}
         </div>
+        ) : (
+          <EmptyDataState />
+        )
       ) : null}
+    </section>
+  );
+}
+
+function ChartEmpty({ message }: { message: string }) {
+  return (
+    <div className="flex h-72 min-h-60 items-center justify-center rounded-xl border border-dashed border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-6 text-center text-sm leading-6 text-[var(--bo-muted)]" data-ui="analytics-chart-empty">
+      {message}
+    </div>
+  );
+}
+
+function EmptyDataState() {
+  return (
+    <section className="rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-8 text-center shadow-[var(--bo-shadow-soft)]" data-testid="analytics-empty-state" data-ui="analytics-empty-state">
+      <BarChart3 className="mx-auto h-8 w-8 text-[var(--bo-faint)]" aria-hidden="true" />
+      <h2 className="mt-3 font-semibold">Sin datos en el periodo</h2>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--bo-muted)]">
+        No hay facturas, tickets de TPV ni rollups para el rango seleccionado. Ajusta las fechas o pulsa “Actualizar” para regenerar los rollups.
+      </p>
     </section>
   );
 }

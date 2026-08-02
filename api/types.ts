@@ -173,6 +173,36 @@ export type AnalyticsWasteBreakdownEntry = {
   costLabel: string;
 };
 
+export type AnalyticsTopItem = {
+  name: string;
+  quantity: number;
+  revenueEUR: number;
+};
+
+export type AnalyticsPaymentMethod = {
+  method: string;
+  amountEUR: number;
+  count: number;
+};
+
+export type AnalyticsDayOfWeek = {
+  day: string;
+  revenueEUR: number;
+  covers: number;
+};
+
+export type AnalyticsHourly = {
+  hour: string;
+  covers: number;
+  revenueEUR: number;
+};
+
+export type AnalyticsCategoryRevenue = {
+  category: string;
+  amountEUR: number;
+  percentage: number;
+};
+
 export type AnalyticsDataQuality = {
   currency: "EUR";
   nonEurDocuments: number;
@@ -196,6 +226,11 @@ export type AnalyticsOverviewPayload = {
   series: AnalyticsSeriesPoint[];
   wasteBreakdown: AnalyticsWasteBreakdownEntry[];
   dataQuality: AnalyticsDataQuality;
+  topItems: AnalyticsTopItem[];
+  paymentMethods: AnalyticsPaymentMethod[];
+  dayOfWeek: AnalyticsDayOfWeek[];
+  hourlyDistribution: AnalyticsHourly[];
+  revenueByCategory: AnalyticsCategoryRevenue[];
 };
 
 export type AnalyticsOverview = APISuccess<AnalyticsOverviewPayload>;
@@ -575,6 +610,7 @@ export type RestaurantInfo = {
   cif: string;
   direccionFacturacion: string;
   clasificacion: "persona_fisica" | "sociedad";
+  tipoEmpresa: "autonomo" | "sl" | "sl_new" | "sl_micro" | "sa";
 };
 
 export type TableMapItem = {
