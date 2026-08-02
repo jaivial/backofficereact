@@ -176,8 +176,6 @@ export function Forky3DViewer({ state }: { state: ForkyState }) {
   );
 }
 
-useGLTF.preload(FORKY_MODEL_URL, false, true);
-
 export function preloadForkyModel(): void {
   useGLTF.preload(FORKY_MODEL_URL, false, true);
 }

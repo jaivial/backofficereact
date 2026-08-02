@@ -64,6 +64,17 @@ describe("Forky widget", () => {
     expect(button.querySelector("img")).toHaveAttribute("src", "/assets/forky/forky-preview.png");
   });
 
+  it("prefetches the viewer when the button receives focus", async () => {
+    const preloadForkyModel = vi.fn();
+    vi.doMock("./Forky3DViewer", () => ({
+      Forky3DViewer: () => <div data-testid="forky-canvas" />,
+      preloadForkyModel,
+    }));
+    render(<ForkyButton />);
+    fireEvent.focus(screen.getByTestId("forky-button"));
+    await vi.waitFor(() => expect(preloadForkyModel).toHaveBeenCalled());
+  });
+
   it("opens the full-viewport dialog on click and closes on Escape", async () => {
     render(
       <>
