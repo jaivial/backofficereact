@@ -76,12 +76,11 @@ export const GROSS_BANDS = [
   { label: "Grande", from: 500_000, to: null },
 ] as const;
 
-// Escala IRPF conjunta (estatal + autonómica media) vigente en 2025, usada como
-// estimación para 2026. La parte estatal es 9,5–24,5 % y la autonómica media
-// ~9,5 %; varía por CCAA (tope ~45 % Madrid – ~54 % Valencia). La reforma fiscal
-// 2026 en tramitación puede ajustar estos tipos; no hay fuente oficial publicada
-// que podamos verificar aquí, por lo que se mantiene la escala 2025 como
-// aproximación conservadora.
+// Escala IRPF conjunta (estatal + autonómica media) de la campaña de la renta
+// 2025/2026, la vigente para 2026 (tablas actualizadas a 25/6/2026, p. ej.
+// TaxDown; la AEAT publica el cuadro de retención IRPF 2026). La parte estatal es
+// 9,5–24,5 % y la autonómica media ~9,5 %; la parte autonómica real varía por
+// CCAA (tope ~45 % Madrid – ~54 % Valencia).
 const IRPF_BRACKETS_COMBINED_2026: Array<{ from: number; to: number | null; rate: number }> = [
   { from: 0, to: 12_450, rate: 0.19 },
   { from: 12_450, to: 20_200, rate: 0.24 },
@@ -93,7 +92,9 @@ const IRPF_BRACKETS_COMBINED_2026: Array<{ from: number; to: number | null; rate
 
 export const TAX_YEAR = 2026;
 
-// Cuota RETA por rendimiento neto mensual — 2026 (congelada a 2025, RDL 16/2025). 15 tramos.
+// Cuota RETA por rendimiento neto mensual — 2026. 15 tramos, cuotas base SIN MEI.
+// RDL 3/2026 + Orden PJC/297/2026 (BOE-A-2026-7296) mantienen la tabla de 2025
+// congelada; el MEI sube al 0,9 % y añade ~6–46 €/mes según la base de cotización.
 export const RETA_2026: Array<{ from: number; to: number | null; quota: number }> = [
   { from: 0, to: 670, quota: 200 },
   { from: 670, to: 900, quota: 220 },
