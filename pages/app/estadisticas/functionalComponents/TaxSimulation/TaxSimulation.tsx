@@ -396,7 +396,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
       <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[var(--bo-faint)]" data-ui="tax-disclaimer">
         <Percent className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         <span>
-          Estimación orientativa basada en tipos 2026 (IRPF 19–47% progresivo — estatal + media autonómica, IS 25% · 21/19% micropyme · 15% nueva creación, IVA 10% comida / 21% bebidas, cuota autónomos RETA por tramo 200–590 €/mes). No incluye mínimo personal ni deducciones. No es asesoramiento fiscal.
+          Estimación orientativa. Tipos de sociedades confirmados: IS 25% general, 15% nueva creación (Ley 27/2014, art. 29) y 19/21% micropyme (Ley 7/2024). IRPF: escala conjunta estatal + autonómica media vigente en 2025 (19–47%), usada como aproximación 2026 hasta que se publique la escala oficial. IVA 10% comida / 21% bebidas, cuota autónomos RETA por tramo 200–590 €/mes. No incluye mínimo personal ni deducciones. No es asesoramiento fiscal.
         </span>
       </p>
 

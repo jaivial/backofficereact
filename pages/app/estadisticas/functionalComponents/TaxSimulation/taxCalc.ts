@@ -12,7 +12,7 @@ export const ENTITY_DESCRIPTIONS: Record<EntityType, string> = {
   autonomo: "IRPF progresivo por tramos + cuota de autónomos (Seguridad Social)",
   sl: "Impuesto de Sociedades al 25% sobre el beneficio",
   sl_new: "Impuesto de Sociedades al 15% sobre los primeros 300.000 € (2 primeros ejercicios con beneficios)",
-  sl_micro: "Impuesto de Sociedades al 19% sobre los primeros 50.000 € y 21% sobre el resto (INCN < 1 M €, 2026)",
+  sl_micro: "Impuesto de Sociedades al 19% sobre los primeros 50.000 € y 21% sobre el resto (INCN < 1 M €, Ley 7/2024)",
   sa: "Impuesto de Sociedades al 25% sobre el beneficio",
 };
 
@@ -76,8 +76,12 @@ export const GROSS_BANDS = [
   { label: "Grande", from: 500_000, to: null },
 ] as const;
 
-// Escala IRPF 2026 = estatal (9,5–24,5 %) + media autonómica (~9,5 %). Aproximación:
-// la parte autonómica real varía por CCAA (tope 45 % Madrid – 54 % Valencia).
+// Escala IRPF conjunta (estatal + autonómica media) vigente en 2025, usada como
+// estimación para 2026. La parte estatal es 9,5–24,5 % y la autonómica media
+// ~9,5 %; varía por CCAA (tope ~45 % Madrid – ~54 % Valencia). La reforma fiscal
+// 2026 en tramitación puede ajustar estos tipos; no hay fuente oficial publicada
+// que podamos verificar aquí, por lo que se mantiene la escala 2025 como
+// aproximación conservadora.
 const IRPF_BRACKETS_COMBINED_2026: Array<{ from: number; to: number | null; rate: number }> = [
   { from: 0, to: 12_450, rate: 0.19 },
   { from: 12_450, to: 20_200, rate: 0.24 },
