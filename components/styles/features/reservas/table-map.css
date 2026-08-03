@@ -1829,9 +1829,25 @@ body.is-dragging .bo-tableMapFlowWrap {
   flex: 1 1 0;
   min-height: 0;
   margin-top: var(--bo-space-3);
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-tableEditorGridScroll {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.bo-tableEditorColumns {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--bo-space-4);
+  align-items: stretch;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: var(--bo-space-4);
 }
 
 .bo-tableEditorPreviewWrap {
@@ -2048,16 +2064,17 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 /* Medium screens / small laptops: keep two columns but tighter */
 @media (min-width: 921px) and (max-width: 1100px) {
-  .bo-tableEditorGrid {
+  .bo-tableEditorColumns {
+    max-width: 820px;
     gap: var(--bo-space-3);
   }
 
   .bo-tableEditorPreviewWrap {
-    min-height: 280px;
+    min-height: 300px;
   }
 
   .bo-tableEditorConfig {
-    margin: var(--bo-space-2);
+    margin: 0;
     padding: var(--bo-space-3);
   }
 
@@ -2066,7 +2083,7 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 }
 
-/* Tablets / phones: stack preview and config vertically */
+/* Tablets / phones: stack preview and config vertically, centered */
 @media (max-width: 920px) {
   .bo-modal.bo-tableEditorModal {
     max-height: 94vh;
@@ -2077,10 +2094,15 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 
   .bo-tableEditorGrid {
+    margin-top: var(--bo-space-2);
+  }
+
+  .bo-tableEditorColumns {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
     gap: var(--bo-space-3);
-    min-height: 0;
+    max-width: 480px;
+    min-height: 100%;
+    align-content: center;
   }
 
   .bo-tableEditorPreviewWrap {
@@ -2159,6 +2181,11 @@ body.is-dragging .bo-tableMapFlowWrap {
     max-height: 96vh;
     height: 96vh;
     padding: var(--bo-space-2);
+  }
+
+  .bo-tableEditorColumns {
+    max-width: 100%;
+    padding-bottom: var(--bo-space-3);
   }
 
   .bo-tableEditorPreviewWrap {

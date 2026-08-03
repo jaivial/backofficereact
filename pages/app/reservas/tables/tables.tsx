@@ -3142,7 +3142,8 @@ export default function TableManagerPage() {
                 <ModalHeader data-slot="modal-head" data-ui="modal-title" title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} />
 
                 <div data-ui="editor-grid" className="bo-tableEditorGrid">
-                    <ScrollArea dataSlot="editor-grid">
+                    <ScrollArea dataSlot="editor-grid" className="bo-tableEditorGridScroll">
+                  <div data-slot="editor-columns" className="bo-tableEditorColumns">
                   <div data-slot="editor-preview" className="bo-tableEditorPreviewWrap">
                     <div data-ui="rotate-controls" className="bo-tableEditorRotate" role="group" aria-label="Giro de mesa">
                       <button
@@ -3308,6 +3309,7 @@ export default function TableManagerPage() {
                       canDecrease={draft.capacity > 2}
                       canIncrease={draft.capacity < 16}
                     />
+                  </div>
                   </div>
                 </ScrollArea>
                 </div>
