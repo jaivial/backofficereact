@@ -86,6 +86,25 @@
   gap: var(--bo-space-2);
 }
 
+/* shadcn edit/read mode toggle (edit-mode-switch) */
+.bo-tableMapTopRight .bo-tableMapEditToggle {
+  width: 44px;
+  height: 24px;
+  margin-top: 10px;
+  flex-shrink: 0;
+}
+.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked {
+  background: color-mix(in srgb, var(--bo-accent) 40%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent) 62%, transparent);
+}
+.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked .bo-sc-switchThumb {
+  background: var(--bo-accent-3);
+}
+.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked .bo-sc-switchIcon--left,
+.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked .bo-sc-switchIcon--right {
+  color: var(--bo-surface);
+}
+
 .bo-tableMapFloorTabs {
   display: flex;
   gap: var(--bo-space-2);

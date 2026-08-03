@@ -15,7 +15,7 @@ import ReactFlow, {
 } from "reactflow";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-  CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical,
+  CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, Eye, FileText, GripVertical,
   Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
   Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
@@ -33,6 +33,7 @@ import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { Select } from "../../../../ui/inputs/Select";
+import { Switch } from "../../../../ui/shadcn/Switch";
 import { formatHHMM } from "../../../../ui/lib/format";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { ScrollArea } from "../../../../ui/layout/ScrollArea";
@@ -320,7 +321,8 @@ export default function TableManagerPage() {
   const [bookingStates, setBookingStates] = useState<Record<string, BookingState>>({});
   const [drawElements, setDrawElements] = useState<DrawElement[]>([]);
   const [sheetTab, setSheetTab] = useState<"reservas" | "mesas">("reservas");
-  const [mapMode, setMapMode] = useState<"tables" | "draw">("tables");
+  const [editMode, setEditMode] = useState(false);
+  const [drawPanelDismissed, setDrawPanelDismissed] = useState(false);
   const [lineDrawing, setLineDrawing] = useState<{ points: LinePoint[]; isDrawing: boolean }>({ points: [], isDrawing: false });
   const [isEditingLimitArea, setIsEditingLimitArea] = useState(false);
   const [draggingLimitVertexIndex, setDraggingLimitVertexIndex] = useState<number | null>(null);
@@ -684,7 +686,8 @@ export default function TableManagerPage() {
     setSelectedTableId(null);
     setSelectedDrawElementId(null);
     setEditorOpen(false);
-    setMapMode("tables");
+    setEditMode(false);
+    setDrawPanelDismissed(true);
   }, [day?.isOpen]);
 
   useEffect(() => {
@@ -866,7 +869,7 @@ export default function TableManagerPage() {
         ...drawElements.map((item) => ({
           id: item.id,
           type: "drawElement",
-          draggable: mapMode === "draw",
+          draggable: editMode,
           position: { x: item.x, y: item.y },
           data: {
             id: item.id,
@@ -878,12 +881,12 @@ export default function TableManagerPage() {
             width: item.width,
             height: item.height,
             rotationDeg: item.rotationDeg,
-            editable: mapMode === "draw",
+            editable: editMode,
           } as DrawNodeData,
         })),
       ],
     );
-  }, [assignMode, drawElements, mapMode, selectedDrawElementId, selectedTableId, setNodes, tableOccupancyMap, visibleTables]);
+  }, [assignMode, drawElements, editMode, selectedDrawElementId, selectedTableId, setNodes, tableOccupancyMap, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -1058,7 +1061,7 @@ export default function TableManagerPage() {
             }
 
             if (node.type === "drawElement") {
-              if (mapMode !== "draw") {
+              if (!editMode) {
                 node.position = prevNode.position;
                 continue;
               }
@@ -1096,7 +1099,7 @@ export default function TableManagerPage() {
             const nextHeight = Math.max(24, Number(c.dimensions?.height || prevData.height));
             const rotationDeg = Number.isFinite(prevData.rotationDeg) ? prevData.rotationDeg : 0;
 
-            if (mapMode !== "draw") {
+            if (!editMode) {
               node.data = { ...node.data, width: prevData.width, height: prevData.height };
               continue;
             }
@@ -1160,7 +1163,7 @@ export default function TableManagerPage() {
             }
 
             if (node.type === "drawElement") {
-              if (mapMode !== "draw") {
+              if (!editMode) {
                 node.position = prevNode.position;
                 continue;
               }
@@ -1197,7 +1200,7 @@ export default function TableManagerPage() {
           if (!updatedNode?.position) continue;
 
           if (String(c.id).startsWith("draw-") && updatedNode.type === "drawElement") {
-            if (mapMode !== "draw") continue;
+            if (!editMode) continue;
             const x = Math.round(updatedNode.position.x);
             const y = Math.round(updatedNode.position.y);
             let changed = false;
@@ -1220,7 +1223,7 @@ export default function TableManagerPage() {
           }
         }
         if (c.type === "dimensions" && String(c.id).startsWith("draw-")) {
-          if (mapMode !== "draw") continue;
+          if (!editMode) continue;
           if (c.resizing !== false) continue;
           const updatedNode = nextNodesSnapshot.find((n) => n.id === c.id);
           if (!updatedNode || updatedNode.type !== "drawElement") continue;
@@ -1251,7 +1254,7 @@ export default function TableManagerPage() {
         void savePosition(save.id, save.x, save.y);
       }
     },
-    [lineDrawing.isDrawing, mapMode, queuePersistLayout, savePosition, setNodes],
+    [editMode, lineDrawing.isDrawing, queuePersistLayout, savePosition, setNodes],
   );
 
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
@@ -1595,7 +1598,8 @@ export default function TableManagerPage() {
       setDrawElements(updated);
       setSelectedDrawElementId(next.id);
       queuePersistLayout(updated, bookingStatesRef.current, activeLimitPoints);
-      setMapMode("draw");
+      setEditMode(true);
+      setDrawPanelDismissed(false);
       setMenuVisible(false);
     },
     [lineDrawing.isDrawing, lineDrawing.points, pushToast, queuePersistLayout],
@@ -1867,27 +1871,48 @@ export default function TableManagerPage() {
     };
   }, []);
 
-  const onToggleDrawMode = useCallback(() => {
-    setMapMode((prev) => {
-      const next = prev === "draw" ? "tables" : "draw";
-      if (next !== "draw") {
-        setSelectedDrawElementId(null);
-        setIsEditingLimitArea(false);
-        setDraggingLimitVertexIndex(null);
-        limitEditHistoryRef.current = [];
-      }
-      return next;
-    });
+  const handleEditModeChange = useCallback((next: boolean) => {
+    if (next) {
+      setEditMode(true);
+      setDrawPanelDismissed(false);
+    } else {
+      setEditMode(false);
+      setSelectedDrawElementId(null);
+      setIsEditingLimitArea(false);
+      setDraggingLimitVertexIndex(null);
+      limitEditHistoryRef.current = [];
+      setDrawPanelDismissed(true);
+    }
     setDrawPanelHover(false);
     setMenuVisible(false);
   }, []);
+
+  const onToggleDrawMode = useCallback(() => {
+    if (editMode && !drawPanelDismissed) {
+      // Panel open + edit mode: switch back to read mode.
+      setEditMode(false);
+      setSelectedDrawElementId(null);
+      setIsEditingLimitArea(false);
+      setDraggingLimitVertexIndex(null);
+      limitEditHistoryRef.current = [];
+      setDrawPanelDismissed(true);
+    } else if (editMode) {
+      // Edit mode with the panel dismissed: reopen the panel, keep editing.
+      setDrawPanelDismissed(false);
+    } else {
+      setEditMode(true);
+      setDrawPanelDismissed(false);
+    }
+    setDrawPanelHover(false);
+    setMenuVisible(false);
+  }, [drawPanelDismissed, editMode]);
 
   const closeDrawPanel = useCallback(() => {
     setSelectedDrawElementId(null);
     setIsEditingLimitArea(false);
     setDraggingLimitVertexIndex(null);
     limitEditHistoryRef.current = [];
-    setMapMode("tables");
+    setDrawPanelDismissed(true);
     setDrawPanelHover(false);
   }, []);
 
@@ -1897,7 +1922,8 @@ export default function TableManagerPage() {
     limitEditHistoryRef.current = [];
     setLineDrawing({ points: [], isDrawing: true });
     lineDrawingPointsRef.current = [];
-    setMapMode("draw");
+    setEditMode(true);
+    setDrawPanelDismissed(false);
     setMenuVisible(false);
     setDrawPanelHover(false);
   }, []);
@@ -1944,7 +1970,8 @@ export default function TableManagerPage() {
     if (!hasClosedLimitArea(lineDrawing.points) || lineDrawing.isDrawing) return;
     limitEditHistoryRef.current = [];
     setIsEditingLimitArea(true);
-    setMapMode("draw");
+    setEditMode(true);
+    setDrawPanelDismissed(false);
     setMenuVisible(false);
   }, [lineDrawing.isDrawing, lineDrawing.points]);
 
@@ -2112,7 +2139,7 @@ export default function TableManagerPage() {
                             <span data-ui="menu-icon" className="bo-menuIcon" aria-hidden="true">
                               <Pencil size={16} strokeWidth={1.8} />
                             </span>
-                            <span data-ui="menu-label" className="bo-menuLabel">{mapMode === "draw" ? "Salir de dibujo" : "Dibujar"}</span>
+                            <span data-ui="menu-label" className="bo-menuLabel">{editMode ? "Salir de dibujo" : "Dibujar"}</span>
                           </button>
                         </div>
 
@@ -2150,6 +2177,16 @@ export default function TableManagerPage() {
                   </AnimatePresence>
                 </div>
                 <div data-ui="top-right" className="bo-tableMapTopRight">
+                  <Switch
+                    data-ui="edit-mode-toggle"
+                    checked={editMode}
+                    onCheckedChange={handleEditModeChange}
+                    aria-label={editMode ? "Modo edicion activado" : "Modo lectura activado"}
+                    title={editMode ? "Modo edicion (desactivar para solo lectura)" : "Modo lectura (activar para editar)"}
+                    startIcon={<Pencil size={12} strokeWidth={2.2} />}
+                    endIcon={<Eye size={12} strokeWidth={2.2} />}
+                    className="bo-tableMapEditToggle"
+                  />
                   <button
                     data-ui="add-table-top-btn"
                     className="bo-actionBtn bo-actionBtn--glass"
@@ -2167,7 +2204,7 @@ export default function TableManagerPage() {
                   >
                     <button
                       data-ui="draw-mode-btn"
-                      className={`bo-actionBtn bo-actionBtn--glass${mapMode === "draw" ? " is-active" : ""}`}
+                      className={`bo-actionBtn bo-actionBtn--glass${editMode ? " is-active" : ""}`}
                       type="button"
                       aria-label="Modo dibujo"
                       onClick={onToggleDrawMode}
@@ -2222,7 +2259,7 @@ export default function TableManagerPage() {
                       return;
                     }
                     if (node.type === "drawElement") {
-                      if (mapMode !== "draw") return;
+                      if (!editMode) return;
                       setSelectedDrawElementId((prev) => (prev === node.id ? null : node.id));
                     }
                   }}
@@ -2242,7 +2279,7 @@ export default function TableManagerPage() {
                   fitView
                   fitViewOptions={DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS}
                   minZoom={0.08}
-                  nodesDraggable={interactionMode === "select"}
+                  nodesDraggable={editMode}
                   panOnDrag={interactionMode === "pan"}
                   selectionOnDrag={interactionMode === "select"}
                   selectNodesOnDrag={false}
@@ -2250,7 +2287,7 @@ export default function TableManagerPage() {
                     if (node.type === "restaurantTable" && node.position) {
                       void savePosition(node.id, node.position.x, node.position.y);
                     }
-                    if (node.type === "drawElement" && node.position && mapMode === "draw") {
+                    if (node.type === "drawElement" && node.position && editMode) {
                       const x = Math.round(node.position.x);
                       const y = Math.round(node.position.y);
                       setDrawElements((prev) =>
@@ -2299,7 +2336,7 @@ export default function TableManagerPage() {
                       left: 0,
                       width: "100%",
                       height: "100%",
-                      pointerEvents: isEditingLimitArea && mapMode === "draw" ? "auto" : "none",
+                      pointerEvents: isEditingLimitArea && editMode ? "auto" : "none",
                       overflow: "visible",
                     }}
                   >
@@ -2309,13 +2346,13 @@ export default function TableManagerPage() {
                           data-ui="line-vertex"
                           cx={point.x}
                           cy={point.y}
-                          r={isEditingLimitArea && mapMode === "draw" ? 9 : 6}
-                          fill={isEditingLimitArea && mapMode === "draw" ? "color-mix(in srgb, var(--bo-accent) 70%, var(--bo-surface))" : "var(--bo-accent)"}
+                          r={isEditingLimitArea && editMode ? 9 : 6}
+                          fill={isEditingLimitArea && editMode ? "color-mix(in srgb, var(--bo-accent) 70%, var(--bo-surface))" : "var(--bo-accent)"}
                           stroke="var(--bo-surface)"
                           strokeWidth={2}
                           style={{
-                            cursor: isEditingLimitArea && mapMode === "draw" ? "grab" : "default",
-                            pointerEvents: isEditingLimitArea && mapMode === "draw" ? "all" : "none",
+                            cursor: isEditingLimitArea && editMode ? "grab" : "default",
+                            pointerEvents: isEditingLimitArea && editMode ? "all" : "none",
                           }}
                           onMouseDown={(event) => onLimitVertexMouseDown(idx, event)}
                         />
@@ -2348,7 +2385,7 @@ export default function TableManagerPage() {
 
               <aside
                 data-ui="draw-panel"
-                className={`bo-tableMapDrawPanel${(mapMode === "draw" && !lineDrawing.isDrawing) || drawPanelHover ? " is-open" : ""}`}
+                className={`bo-tableMapDrawPanel${(editMode && !drawPanelDismissed && !lineDrawing.isDrawing) || drawPanelHover ? " is-open" : ""}`}
                 aria-label="Panel de dibujo"
                 onMouseEnter={openDrawPanelHover}
                 onMouseLeave={closeDrawPanelHoverSoon}
