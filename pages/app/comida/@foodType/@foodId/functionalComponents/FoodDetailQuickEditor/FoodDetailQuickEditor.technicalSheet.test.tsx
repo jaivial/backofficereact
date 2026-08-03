@@ -68,9 +68,10 @@ describe("FoodDetailQuickEditor technical sheet section", () => {
     expect(screen.getByRole("radio", { name: /preparado/i })).toBeTruthy();
   });
 
-  it("shows the saved production type rather than always defaulting to bought", () => {
+  it("shows the saved production type rather than always defaulting to bought", async () => {
     render(<FoodDetailQuickEditor {...BASE_PROPS} itemId={7} productionType="MANUFACTURED" stockRecipeId={42} />);
     expect(screen.getByRole("radio", { name: /preparado/i }).getAttribute("aria-checked")).toBe("true");
+    await waitFor(() => expect(screen.getByRole("tab", { name: /informaci/i })).toBeTruthy());
   });
 
   it("opens the sheet tabs directly for an elaborated dish", async () => {

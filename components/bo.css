@@ -108,5 +108,8 @@
 /* ── Features: Config — Contacto branding logo ───────── */
 @import "./styles/features/contacto/branding-logo.css";
 
+/* ── Features: Platform (superadmin) ──────────────────── */
+@import "./styles/features/plataforma/plataforma.css";
+
 /* ── Base: Mobile Safari corrections (must stay last) ─── */
 @import "./styles/base/mobile-safari.css";

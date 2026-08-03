@@ -22,6 +22,7 @@ vi.mock("lucide-react", () => ({
   Ellipsis: () => <span data-testid="icon-ellipsis" />,
   Boxes: () => <span data-testid="icon-boxes" />,
   MonitorSmartphone: () => <span data-testid="icon-pos" />,
+  Server: () => <span data-testid="icon-server" />,
 }));
 
 vi.mock("../../lib/rbac", () => ({
@@ -68,5 +69,14 @@ describe("Sidebar", () => {
     const sidebar = screen.getByLabelText("Sidebar");
     expect(sidebar).toHaveClass("bo-sidebar");
     expect(sidebar.className).toBe("bo-sidebar");
+  });
+
+  it("navigates to the main home when the app logo is clicked", () => {
+    render(<Sidebar pathname="/app/comida" role="admin" />);
+
+    const logo = screen.getByTestId("sidebar-logo");
+    expect(logo).toHaveAttribute("href", "/app/backoffice");
+    expect(logo).toHaveAttribute("aria-label", "Ir al inicio de Villa Carmen");
+    expect(logo.querySelector("img")).toHaveAttribute("alt", "Villa Carmen");
   });
 });

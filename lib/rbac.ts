@@ -1,9 +1,9 @@
 export type BORole = string;
 
-export type BOSection = "reservas" | "menus" | "comida" | "stock" | "pos" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estadisticas" | "estado_cuenta" | "website" | "site-builder";
+export type BOSection = "reservas" | "menus" | "comida" | "stock" | "pos" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estadisticas" | "estado_cuenta" | "website" | "site-builder" | "plataforma";
 
 export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
-  root: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder"],
+  root: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder", "plataforma"],
   admin: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder"],
   metre: ["reservas", "menus", "comida", "fichaje", "facturas"],
   jefe_cocina: ["reservas", "menus", "comida", "fichaje", "horarios"],
@@ -37,6 +37,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "fichaje", href: "/app/fichaje", label: "Fichaje" },
   { key: "facturas", href: "/app/facturas", label: "Facturas" },
   { key: "estadisticas", href: "/app/estadisticas", label: "Estadisticas" },
+  { key: "plataforma", href: "/app/plataforma", label: "Plataforma" },
 ];
 
 const SECTION_HOME: Record<BOSection, string> = {
@@ -55,6 +56,7 @@ const SECTION_HOME: Record<BOSection, string> = {
   reportes: "/app/reportes",
   estadisticas: "/app/estadisticas",
   estado_cuenta: "/app/estado-cuenta",
+  plataforma: "/app/plataforma",
 };
 
 const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "pos", "stock", "miembros", "horarios", "fichaje", "facturas", "estadisticas"];
@@ -76,7 +78,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 function isSection(value: string): value is BOSection {
-  return value === "reservas" || value === "menus" || value === "comida" || value === "stock" || value === "pos" || value === "ajustes" || value === "website" || value === "site-builder" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas" || value === "reportes" || value === "estadisticas" || value === "estado_cuenta";
+  return value === "reservas" || value === "menus" || value === "comida" || value === "stock" || value === "pos" || value === "ajustes" || value === "website" || value === "site-builder" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas" || value === "reportes" || value === "estadisticas" || value === "estado_cuenta" || value === "plataforma";
 }
 
 function normalizeSectionAccess(sectionAccessRaw: string[] | null | undefined): BOSection[] {
@@ -100,8 +102,9 @@ export function normalizeRole(roleRaw: string | null | undefined): BORole {
 }
 
 function sectionAllowedByImportance(section: BOSection, roleImportanceRaw?: number | null): boolean {
-  if (section !== "miembros") return true;
+  if (section !== "miembros" && section !== "plataforma") return true;
   if (typeof roleImportanceRaw !== "number") return true;
+  if (section === "plataforma") return roleImportanceRaw >= 100;
   return roleImportanceRaw >= 90;
 }
 
@@ -139,7 +142,9 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/pos")) return "pos";
   if (pathname.startsWith("/app/settings")) return "ajustes";
   if (pathname.startsWith("/app/website")) return "website";
-  if (pathname.startsWith("/app/site-builder")) return "site-builder";
+  // /app/site-builder is the website editor; backend grants the "website" section
+  // (no separate "site-builder" grant), so map here to avoid a false redirect.
+  if (pathname.startsWith("/app/site-builder")) return "website";
   if (pathname.startsWith("/app/miembros")) return "miembros";
   // /app/miembros/mi-horario is a special route for viewing own schedule
   if (pathname === "/app/miembros/mi-horario") return "horarios";
@@ -149,6 +154,7 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/reportes")) return "reportes";
   if (pathname.startsWith("/app/estadisticas")) return "estadisticas";
   if (pathname.startsWith("/app/estado-cuenta")) return "estado_cuenta";
+  if (pathname.startsWith("/app/plataforma")) return "plataforma";
   return null;
 }
 

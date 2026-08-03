@@ -1,8 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, useEffect } from "react";
 
-import { ForkyButton } from "./ForkyButton";
+const preloadForkyModel = vi.fn();
+
+import { advanceForkyAutoCycle, ForkyButton } from "./ForkyButton";
 import { ForkyModal } from "./ForkyModal";
+import { setForkyVisualState } from "./forkyStatus";
 
 vi.mock("./forkyRuntime", () => ({
   ForkyRuntimeProvider: ({ children }: { children: React.ReactNode }) => (
@@ -12,10 +16,15 @@ vi.mock("./forkyRuntime", () => ({
 
 vi.mock("./forkyStatus", () => ({
   useForkyVisualState: () => "idle",
+  setForkyVisualState: vi.fn(),
 }));
 
 vi.mock("./Forky3DViewer", () => ({
-  Forky3DViewer: () => <div data-testid="forky-canvas" />,
+  Forky3DViewer: ({ onAssetsReady }: { onAssetsReady?: () => void }) => {
+    useEffect(() => onAssetsReady?.(), [onAssetsReady]);
+    return <div data-testid="forky-canvas" />;
+  },
+  preloadForkyModel,
 }));
 
 vi.mock("@assistant-ui/react", () => ({
@@ -48,11 +57,15 @@ vi.mock("@assistant-ui/react-markdown", () => ({
 }));
 
 afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.mocked(setForkyVisualState).mockClear();
+  preloadForkyModel.mockClear();
   document.body.innerHTML = "";
 });
 
 describe("Forky widget", () => {
-  it("renders the floating button with an accessible label", () => {
+  it("renders the floating button with an accessible label", async () => {
     render(
       <>
         <ForkyButton />
@@ -60,19 +73,40 @@ describe("Forky widget", () => {
       </>
     );
     const button = screen.getByTestId("forky-button");
+    const host = screen.getByTestId("forky-floating-host");
     expect(button).toHaveAttribute("aria-label", "Abrir asistente Forky");
-    expect(button.querySelector("img")).toHaveAttribute("src", "/assets/forky/forky-preview.png");
+    expect(host).toHaveClass("right-6", "bottom-6", "h-60", "w-60");
+    expect(button).not.toHaveClass("rounded-full");
+    expect(button).toHaveStyle({ borderRadius: "0px", boxShadow: "none" });
+    await waitFor(() => expect(screen.getByTestId("forky-canvas")).toBeDefined());
+    expect(button.querySelector("img")).toBeNull();
   });
 
   it("prefetches the viewer when the button receives focus", async () => {
-    const preloadForkyModel = vi.fn();
-    vi.doMock("./Forky3DViewer", () => ({
-      Forky3DViewer: () => <div data-testid="forky-canvas" />,
-      preloadForkyModel,
-    }));
     render(<ForkyButton />);
-    fireEvent.focus(screen.getByTestId("forky-button"));
-    await vi.waitFor(() => expect(preloadForkyModel).toHaveBeenCalled());
+    await act(async () => {
+      fireEvent.focus(screen.getByTestId("forky-button"));
+      await vi.waitFor(() => expect(preloadForkyModel).toHaveBeenCalled());
+    });
+    await waitFor(() => expect(screen.getByTestId("forky-canvas")).toBeDefined());
+  });
+
+  it("cycles through all six GLB states every five seconds while closed", async () => {
+    const setState = vi.mocked(setForkyVisualState);
+
+    render(<ForkyButton />);
+    await waitFor(() => expect(screen.getByTestId("forky-canvas")).toBeDefined());
+    let index = 0;
+    for (let step = 0; step < 6; step += 1) index = advanceForkyAutoCycle(index);
+
+    expect(setState.mock.calls.map(([state]) => state)).toEqual([
+      "greet",
+      "talk",
+      "think",
+      "happy",
+      "bend_active",
+      "idle",
+    ]);
   });
 
   it("opens the full-viewport dialog on click and closes on Escape", async () => {
@@ -96,7 +130,7 @@ describe("Forky widget", () => {
     expect(screen.queryByTestId("forky-modal")).toBeNull();
   });
 
-  it("closes via the close button", () => {
+  it("closes via the close button", async () => {
     render(
       <>
         <ForkyButton />
@@ -104,11 +138,13 @@ describe("Forky widget", () => {
       </>
     );
     fireEvent.click(screen.getByTestId("forky-button"));
+    await waitFor(() => expect(screen.getByTestId("forky-canvas")).toBeDefined());
+    await waitFor(() => expect(screen.getByTestId("forky-close")).toBeDefined());
     fireEvent.click(screen.getByTestId("forky-close"));
-    expect(screen.queryByTestId("forky-modal")).toBeNull();
+    await waitFor(() => expect(screen.queryByTestId("forky-modal")).toBeNull());
   });
 
-  it("locks body scroll while open", () => {
+  it("locks body scroll while open", async () => {
     render(
       <>
         <ForkyButton />
@@ -116,8 +152,9 @@ describe("Forky widget", () => {
       </>
     );
     fireEvent.click(screen.getByTestId("forky-button"));
-    expect(document.body.style.overflow).toBe("hidden");
+    await waitFor(() => expect(screen.getByTestId("forky-canvas")).toBeDefined());
+    await waitFor(() => expect(document.body.style.overflow).toBe("hidden"));
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(document.body.style.overflow).toBe("");
+    await waitFor(() => expect(document.body.style.overflow).toBe(""));
   });
 });

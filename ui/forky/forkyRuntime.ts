@@ -405,7 +405,8 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
             status: { type: "running" },
           } satisfies ChatModelRunResult;
         } else if (event.type === "done") {
-          setForkyVisualState("idle");
+          setForkyVisualState("happy");
+          window.setTimeout(() => setForkyVisualState("idle"), 1200);
           yield {
             content: [{ type: "text", text }],
             status: { type: "complete", reason: "stop" },

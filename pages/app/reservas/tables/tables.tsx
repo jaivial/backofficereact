@@ -2358,7 +2358,7 @@ export default function TableManagerPage() {
                   <button data-ui="close-draw-panel-btn" className="bo-btn bo-btn--ghost" type="button" onClick={closeDrawPanel}>Cerrar</button>
                 </div>
                 <div data-slot="draw-panel-body" className="bo-tableMapDrawPanelBody">
-                    <ScrollArea dataSlot="draw-panel-body">
+                    <ScrollArea dataSlot="draw-panel-body" className="bo-tableMapDrawScrollArea">
                   <div data-ui="draw-hint" className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
 
                   <div data-ui="limit-section" className="bo-tableMapDrawSection">

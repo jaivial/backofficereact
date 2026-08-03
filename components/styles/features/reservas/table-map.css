@@ -1023,6 +1023,7 @@ body.is-dragging .bo-tableMapFlowWrap {
   top: 72px;
   right: var(--bo-space-4);
   width: min(430px, calc(100vw - 24px));
+  height: fit-content;
   border: 1px solid var(--bo-border);
   border-radius: var(--bo-radius-lg);
   background:
@@ -1053,9 +1054,37 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 .bo-tableMapDrawPanelBody {
   padding: var(--bo-space-4);
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--bo-space-4);
   max-height: min(72vh, 690px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bo-tableMapDrawPanelBody > [data-slot="draw-panel-body"] {
+  min-height: 0;
+  height: auto;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.bo-tableMapDrawScrollArea {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: auto;
+  overflow: hidden;
+}
+
+.bo-tableMapDrawScrollArea [data-slot="scroll-area-viewport"] {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  height: auto !important;
 }
 
 .bo-tableMapDrawSection {

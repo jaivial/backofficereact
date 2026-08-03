@@ -5,7 +5,7 @@ import { useSyncExternalStore } from "react";
  * read by the 3D viewer (via useSyncExternalStore). Kept outside assistant-ui
  * so the animation mapping is version-proof and unit-testable.
  */
-export type ForkyVisualState = "idle" | "greet" | "talk" | "think" | "happy";
+export type ForkyVisualState = "idle" | "greet" | "talk" | "think" | "happy" | "bend_active";
 
 let state: ForkyVisualState = "idle";
 const listeners = new Set<() => void>();
@@ -24,5 +24,7 @@ function subscribe(listener: () => void): () => void {
 }
 
 export function useForkyVisualState(): ForkyVisualState {
-  return useSyncExternalStore(subscribe, () => state);
+  // React requires a third snapshot getter when this hook renders on the
+  // server. Without it, SSR throws and protected app routes return HTTP 500.
+  return useSyncExternalStore(subscribe, () => state, () => "idle");
 }

@@ -4,6 +4,8 @@ import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { posFullscreenAtom, sessionAtom } from "../../state/atoms";
+import { ForkyButton } from "../../ui/forky/ForkyButton";
+import { ForkyModal } from "../../ui/forky/ForkyModal";
 import { Sidebar } from "../../ui/shell/Sidebar";
 import { Topbar } from "../../ui/shell/Topbar";
 
@@ -69,6 +71,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </motion.div>
         </AnimatePresence>
       </main>
+      {posFullscreen ? null : (
+        <>
+          <ForkyButton />
+          <ForkyModal />
+        </>
+      )}
     </div>
   );
 }

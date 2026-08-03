@@ -9,6 +9,7 @@ import {
   Boxes,
   MonitorSmartphone,
   BarChart3,
+  type LucideIcon,
 } from "lucide-react";
 import { sessionAtom } from "../../state/atoms";
 import { sidebarItemsForRole } from "../../lib/rbac";
@@ -18,10 +19,10 @@ type NavItem = {
   key: string;
   label: string;
   href: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
 };
 
-const ICON_MAP: Record<string, React.ElementType> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   reservas: CalendarDays,
   menus: UtensilsCrossed,
   fichaje: Clock,

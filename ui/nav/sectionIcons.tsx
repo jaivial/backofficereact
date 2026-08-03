@@ -12,6 +12,7 @@ import {
   MonitorSmartphone,
   Boxes,
   Receipt,
+  Server,
   Settings,
   ShieldUser,
   UtensilsCrossed,
@@ -59,6 +60,8 @@ export function iconForSidebarItemKey(key: SidebarItemKey, options: BOIconOption
       return <BarChart3 size={size} strokeWidth={strokeWidth} data-ui="section-estadisticas-icon" />;
     case "estado_cuenta":
       return <Receipt size={size} strokeWidth={strokeWidth} />;
+    case "plataforma":
+      return <Server size={size} strokeWidth={strokeWidth} data-ui="section-plataforma-icon" />;
     default:
       return <Settings size={size} strokeWidth={strokeWidth} />;
   }

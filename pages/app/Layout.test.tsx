@@ -11,6 +11,8 @@ const pageContext = { urlPathname: "/app/pos", bo: { session: { activeRestaurant
 vi.mock("vike-react/usePageContext", () => ({ usePageContext: () => pageContext }));
 vi.mock("../../ui/shell/Sidebar", () => ({ Sidebar: () => <nav data-testid="sidebar" /> }));
 vi.mock("../../ui/shell/Topbar", () => ({ Topbar: () => <header data-testid="topbar" /> }));
+vi.mock("../../ui/forky/ForkyButton", () => ({ ForkyButton: () => null }));
+vi.mock("../../ui/forky/ForkyModal", () => ({ ForkyModal: () => null }));
 vi.mock("motion/react", () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   motion: { div: ({ children }: { children: React.ReactNode }) => <div>{children}</div> },

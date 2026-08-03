@@ -83,6 +83,7 @@ describe("TechnicalSheetBrowser", () => {
   // reachable - top right, per the brief.
   it("offers a create button", async () => {
     const { onCreate } = renderBrowser();
+    await waitFor(() => expect(screen.getByText("Salsa brava")).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: /crear ficha/i }));
     expect(onCreate).toHaveBeenCalled();
   });

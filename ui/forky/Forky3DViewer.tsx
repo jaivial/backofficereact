@@ -15,8 +15,9 @@ const FORKY_ASSET_ROOT =
  * Keep this mapping explicit because the Meshy clip names do not match the
  * assistant states used by the UI.
  *
- * The files are loaded lazily by useGLTF, so opening the backoffice does not
- * download all six ~32 MB assets. Only the active state is requested.
+ * All six files are requested when the viewer mounts. The preloader below uses
+ * the same useGLTF cache as the active scene, so every transition is ready
+ * before the automatic cycle starts.
  */
 const FORKY_MODEL_URLS: Record<ForkyState, string> = {
   idle: `${FORKY_ASSET_ROOT}/Meshy_AI_A_mascot_character_in_biped_Animation_Idle_3_withSkin.glb`,
@@ -159,13 +160,27 @@ function hasWebGL(): boolean {
 /**
  * Forky 3D viewer. SSR-safe: renders nothing until mounted (no three.js on the
  * server). Each state selects one BunnyCDN GLB containing the matching Meshy
- * animation. Assets are fetched lazily and remain WebGL-only.
+ * animation. All six assets are prepared before the automatic cycle starts.
  */
-export function Forky3DViewer({ state }: { state: ForkyState }) {
+export function Forky3DViewer({
+  state,
+  onAssetsReady,
+}: {
+  state: ForkyState;
+  onAssetsReady?: () => void;
+}) {
   const [mounted, setMounted] = useState(false);
   const [webglOk, setWebglOk] = useState(false);
   const [modelReady, setModelReady] = useState(false);
-  const markModelReady = useCallback(() => setModelReady(true), []);
+  const [assetsReady, setAssetsReady] = useState(false);
+  // Only the currently-visible state's GLB is loaded eagerly. onAssetsReady is
+  // fired once that model is painted so the caller can lazily preload the next
+  // cycle state instead of fetching all six (~32 MB each) up front.
+  const markModelReady = useCallback(() => {
+    setModelReady(true);
+    setAssetsReady(true);
+    onAssetsReady?.();
+  }, [onAssetsReady]);
 
   useEffect(() => {
     setModelReady(false);
@@ -184,7 +199,7 @@ export function Forky3DViewer({ state }: { state: ForkyState }) {
     <div
       data-testid="forky-canvas"
       className="pointer-events-none h-full w-full overflow-visible"
-      aria-busy={mounted && webglOk && !modelReady ? true : undefined}
+      aria-busy={mounted && webglOk && (!assetsReady || !modelReady) ? true : undefined}
     >
       {!webglOk || !modelReady ? <span className="sr-only">Cargando Forky 3D</span> : null}
       {mounted && webglOk ? (
@@ -208,6 +223,6 @@ export function Forky3DViewer({ state }: { state: ForkyState }) {
   );
 }
 
-export function preloadForkyModel(): void {
-  useGLTF.preload(FORKY_MODEL_URLS.idle, false, true);
+export function preloadForkyModel(states: ForkyState[]): void {
+  states.forEach((state) => useGLTF.preload(FORKY_MODEL_URLS[state], false, true));
 }

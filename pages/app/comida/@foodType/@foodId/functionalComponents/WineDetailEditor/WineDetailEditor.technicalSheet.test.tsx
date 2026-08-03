@@ -33,7 +33,7 @@ describe("WineDetailEditor technical sheet section", () => {
     expect(screen.getByRole("radio", { name: /preparado/i })).toBeTruthy();
   });
 
-  it("shows the stored production type rather than defaulting to bought", () => {
+  it("shows the stored production type rather than defaulting to bought", async () => {
     render(
       <WineDetailEditor
         vino={{ ...WINE, production_type: "MANUFACTURED", stock_recipe_id: 5 }}
@@ -42,6 +42,7 @@ describe("WineDetailEditor technical sheet section", () => {
       />,
     );
     expect(screen.getByRole("radio", { name: /preparado/i }).getAttribute("aria-checked")).toBe("true");
+    await waitFor(() => expect(screen.getByRole("tab", { name: /informaci/i })).toBeTruthy());
   });
 
   it("opens the sheet tabs directly for an elaborated wine", async () => {

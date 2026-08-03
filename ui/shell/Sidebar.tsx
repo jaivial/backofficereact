@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone } from "lucide-react";
+import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone, Server } from "lucide-react";
 
 import type { SidebarItemKey } from "../../lib/rbac";
 import { sidebarItemsForRole } from "../../lib/rbac";
@@ -38,6 +38,8 @@ function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
       return <BarChart3 size={size} strokeWidth={strokeWidth} data-ui="sidebar-estadisticas-icon" />;
     case "estado_cuenta":
       return <Receipt size={size} strokeWidth={strokeWidth} />;
+    case "plataforma":
+      return <Server size={size} strokeWidth={strokeWidth} data-ui="sidebar-plataforma-icon" />;
     default:
       return <Settings size={size} strokeWidth={strokeWidth} />;
   }
@@ -92,9 +94,9 @@ export function Sidebar({
 
   return (
     <aside className={cn("bo-sidebar", className)} aria-label="Sidebar" data-testid="sidebar" data-ui="sidebar">
-      <div className="bo-brand" aria-label="Villa Carmen">
+      <a className="bo-brand" href="/app/backoffice" aria-label="Ir al inicio de Villa Carmen" data-testid="sidebar-logo">
         <img className="bo-logo-img" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="Villa Carmen" />
-      </div>
+      </a>
 
       <nav className="bo-nav bo-navDesktop" aria-label="Navigation" data-testid="sidebar-nav-desktop" data-slot="sidebar-nav-desktop">
         {items.map((item) => {

@@ -50,7 +50,7 @@ describe("FoodItemModal technical sheet section", () => {
     expect(screen.getByRole("radio", { name: /preparado/i })).toBeTruthy();
   });
 
-  it("reflects the saved production type instead of always defaulting to raw", () => {
+  it("reflects the saved production type instead of always defaulting to raw", async () => {
     render(
       <FoodItemModal
         open item={{ ...RAW_ITEM, production_type: "MANUFACTURED", stock_recipe_id: 42 }}
@@ -58,6 +58,7 @@ describe("FoodItemModal technical sheet section", () => {
       />,
     );
     expect(screen.getByRole("radio", { name: /preparado/i }).getAttribute("aria-checked")).toBe("true");
+    await waitFor(() => expect(screen.getByRole("tab", { name: /informaci/i })).toBeTruthy());
   });
 
   // A sheet built while creating a dish must be attached when that dish is

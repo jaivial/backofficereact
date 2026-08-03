@@ -543,7 +543,12 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws")) return;
+
+    if (pathname.startsWith("/api/admin/assistant/ws")) {
+      // TEMP DEBUG: dump the browser's upgrade request.
+      console.error("[forky-debug] client upgrade:", reqURL, JSON.stringify(req.headers));
+    }
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
       let upstreamPath = "";
@@ -1013,7 +1018,16 @@ async function start() {
   } else {
     // Prod: serve built client assets.
     const distClient = path.join(appRoot, "dist", "client");
-    app.use(express.static(distClient, { index: false }));
+    app.use(
+      express.static(distClient, {
+        index: false,
+        setHeaders: (res, servedPath) => {
+          if (/\/assets\/forky\/[^/]+\.(?:glb|gltf|bin|png|jpe?g|webp|avif)$/i.test(servedPath)) {
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          }
+        },
+      }),
+    );
   }
 
   // SSR + guard middleware.

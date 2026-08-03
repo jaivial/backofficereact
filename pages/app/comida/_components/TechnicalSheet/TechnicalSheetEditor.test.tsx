@@ -70,6 +70,7 @@ describe("TechnicalSheetEditor", () => {
     expect(screen.getByRole("tab", { name: /informaci/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /receta/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /coste/i })).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Harina")).toBeTruthy());
   });
 
   it("shows ingredients on the information tab", async () => {
