@@ -2134,3 +2134,19 @@ body.is-dragging .bo-tableMapFlowWrap {
   background: color-mix(in srgb, var(--bo-surface-2) 60%, rgba(0, 0, 0, 0.04));
 }
 
+/* Remove-area confirmation modal */
+.bo-tableRemoveAreaConfirm {
+  display: grid;
+  gap: var(--bo-space-4);
+}
+.bo-tableRemoveAreaText {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  line-height: var(--bo-leading-relaxed);
+  margin: 0;
+}
+.bo-tableRemoveAreaText strong {
+  color: var(--bo-color-danger);
+  font-weight: var(--bo-weight-semibold);
+}
+

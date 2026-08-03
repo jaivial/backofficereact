@@ -344,6 +344,7 @@ export default function TableManagerPage() {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [savingLimitTemplate, setSavingLimitTemplate] = useState(false);
+  const [removeAreaConfirmOpen, setRemoveAreaConfirmOpen] = useState(false);
 
   // Toggle body class for drag state
   useEffect(() => {
@@ -2043,6 +2044,65 @@ export default function TableManagerPage() {
     [isEditingLimitArea, reactFlowInstance],
   );
 
+  // Double-click on a joint circle deletes that joint (keeps a valid polygon).
+  const deleteLimitVertex = useCallback(
+    (index: number) => {
+      if (!isEditingLimitArea) return;
+      const current = lineDrawingPointsRef.current;
+      if (current.length <= 3) {
+        pushToast({ kind: "info", title: "Area invalida", message: "Necesitas al menos 3 puntos en el area." });
+        return;
+      }
+      if (index < 0 || index >= current.length) return;
+      limitEditHistoryRef.current.push(cloneLinePoints(current));
+      const next = cloneLinePoints(current);
+      next.splice(index, 1);
+      lineDrawingPointsRef.current = next;
+      setDraggingLimitVertexIndex(null);
+      setLineDrawing((prev) => ({ ...prev, points: next, isDrawing: false }));
+      queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, next);
+    },
+    [isEditingLimitArea, pushToast, queuePersistLayout],
+  );
+
+  // Double-click on a line segment adds a new joint at its midpoint.
+  const addLimitVertexOnSegment = useCallback(
+    (index: number) => {
+      if (!isEditingLimitArea) return;
+      const current = lineDrawingPointsRef.current;
+      if (index < 1 || index >= current.length) return;
+      limitEditHistoryRef.current.push(cloneLinePoints(current));
+      const next = cloneLinePoints(current);
+      const a = next[index - 1];
+      const b = next[index];
+      next.splice(index, 0, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+      lineDrawingPointsRef.current = next;
+      setDraggingLimitVertexIndex(null);
+      setLineDrawing((prev) => ({ ...prev, points: next, isDrawing: false }));
+      queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, next);
+    },
+    [isEditingLimitArea, queuePersistLayout],
+  );
+
+  // Removes the limit area and every draw element inside it (tables are kept).
+  const removeArea = useCallback(() => {
+    const nextElements: DrawElement[] = [];
+    drawElementsRef.current = nextElements;
+    setDrawElements(nextElements);
+    setSelectedDrawElementId(null);
+    const nextPoints: LinePoint[] = [];
+    lineDrawingPointsRef.current = nextPoints;
+    setLineDrawing({ points: nextPoints, isDrawing: false });
+    setIsEditingLimitArea(false);
+    setDraggingLimitVertexIndex(null);
+    limitEditHistoryRef.current = [];
+    setDrawPanelDismissed(true);
+    setEditMode(false);
+    setRemoveAreaConfirmOpen(false);
+    queuePersistLayout(nextElements, bookingStatesRef.current, nextPoints);
+    pushToast({ kind: "success", title: "Area eliminada", message: "Limites y elementos del mapa eliminados." });
+  }, [pushToast, queuePersistLayout]);
+
   useEffect(() => {
     if (draggingLimitVertexIndex === null || !isEditingLimitArea || !reactFlowInstance) return;
 
@@ -2357,10 +2417,15 @@ export default function TableManagerPage() {
                           stroke="var(--bo-surface)"
                           strokeWidth={2}
                           style={{
-                            cursor: isEditingLimitArea && editMode ? "grab" : "default",
+                            cursor: isEditingLimitArea && editMode ? "pointer" : "default",
                             pointerEvents: isEditingLimitArea && editMode ? "all" : "none",
                           }}
                           onMouseDown={(event) => onLimitVertexMouseDown(idx, event)}
+                          onDoubleClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            deleteLimitVertex(idx);
+                          }}
                         />
                         {idx > 0 && (
                           <line
@@ -2370,8 +2435,19 @@ export default function TableManagerPage() {
                             x2={point.x}
                             y2={point.y}
                             stroke="var(--bo-accent)"
-                            strokeWidth={2}
+                            strokeWidth={isEditingLimitArea && editMode ? 5 : 2}
+                            strokeOpacity={isEditingLimitArea && editMode ? 0.5 : 1}
+                            strokeLinecap="round"
                             strokeDasharray={lineDrawing.isDrawing ? "5,5" : "none"}
+                            style={{
+                              cursor: isEditingLimitArea && editMode ? "copy" : "default",
+                              pointerEvents: isEditingLimitArea && editMode ? "all" : "none",
+                            }}
+                            onDoubleClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              addLimitVertexOnSegment(idx);
+                            }}
                           />
                         )}
                       </g>
@@ -2383,6 +2459,7 @@ export default function TableManagerPage() {
                         fill="none"
                         stroke="var(--bo-accent)"
                         strokeWidth={2}
+                        style={{ pointerEvents: "none" }}
                       />
                     )}
                   </svg>
@@ -2406,7 +2483,11 @@ export default function TableManagerPage() {
 
                   <div data-ui="limit-section" className="bo-tableMapDrawSection">
                     <div data-ui="limit-title" className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
-                    <div data-ui="limit-hint" className="bo-tableMapDrawHint">Dibuja el perimetro del area</div>
+                    <div data-ui="limit-hint" className="bo-tableMapDrawHint">
+                      {isEditingLimitArea
+                        ? "Edita los limites: doble clic en una linea anade un punto, doble clic en un punto lo elimina."
+                        : "Dibuja el perimetro del area"}
+                    </div>
                     {hasClosedLimitArea(selectedFloorTemplatePoints) ? (
                       <div data-ui="template-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">Hay una plantilla guardada para este salon.</div>
                     ) : null}
@@ -2472,6 +2553,17 @@ export default function TableManagerPage() {
                           >
                             <MapPin size={14} />
                             {savingLimitTemplate ? "Guardando plantilla..." : "Guardar plantilla salon"}
+                          </button>
+                        )}
+                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
+                          <button
+                            data-ui="remove-area-btn"
+                            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
+                            type="button"
+                            onClick={() => setRemoveAreaConfirmOpen(true)}
+                          >
+                            <Trash2 size={14} />
+                            Eliminar area
                           </button>
                         )}
                       </div>
@@ -3285,6 +3377,24 @@ export default function TableManagerPage() {
                     </div>
                   </div>
                 ) : null}
+              </Modal>
+
+              <Modal open={removeAreaConfirmOpen} title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} widthPx={480} className="bo-tableRemoveAreaModal">
+                <ModalHeader data-slot="modal-head" data-ui="modal-title" title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} />
+                <div data-ui="remove-area-confirm" className="bo-tableRemoveAreaConfirm">
+                  <p data-ui="remove-area-message" className="bo-tableRemoveAreaText">
+                    Se eliminaran los limites del mapa y <strong>todos los elementos</strong> dibujados dentro de el
+                    (muros, obstaculos, imagenes). Las mesas se mantendran.
+                  </p>
+                  <div data-ui="remove-area-actions" className="bo-modalActions">
+                    <button data-ui="cancel-remove-area-btn" className="bo-btn bo-btn--ghost" type="button" onClick={() => setRemoveAreaConfirmOpen(false)}>
+                      Cancelar
+                    </button>
+                    <button data-ui="confirm-remove-area-btn" className="bo-btn bo-btn--danger" type="button" onClick={removeArea}>
+                      Eliminar area
+                    </button>
+                  </div>
+                </div>
               </Modal>
             </motion.div>
           ) : (
