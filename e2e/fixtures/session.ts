@@ -4,19 +4,13 @@ import {
   expect,
   devices,
 } from "@playwright/test";
-import * as fs from "fs";
-import * as path from "path";
 import type { BOSession } from "../../api/types";
 
-const SESSION_CACHE_FILE = "test-results/.session-cache.json";
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@villacarmen.com";
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123";
 
 export { expect, devices };
 export type { Page } from "@playwright/test";
-
-interface CachedSession {
-  bo_session: string;
-  expiresAt: number;
-}
 
 /**
  * Main test fixture with admin session support.
@@ -26,34 +20,21 @@ export const test = base
   .extend<{ adminPage: Page; session: BOSession }>({
     adminPage: async ({ browser }, use) => {
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
-
-      // Read session from global-setup cache
-      let sessionCookie: string | null = null;
-      if (fs.existsSync(SESSION_CACHE_FILE)) {
-        try {
-          const raw = fs.readFileSync(SESSION_CACHE_FILE, "utf-8");
-          const cached: CachedSession = JSON.parse(raw);
-          if (cached.expiresAt && Date.now() < cached.expiresAt) {
-            sessionCookie = cached.bo_session;
-          }
-        } catch {
-          // ignore
-        }
-      }
-
-      if (sessionCookie) {
-        await context.addCookies([{
-          name: "bo_session",
-          value: sessionCookie,
-          domain: new URL(process.env.BACKOFFICE_URL || "https://localhost:3001").hostname,
-          path: "/",
-          httpOnly: true,
-          secure: true,
-          sameSite: "Lax",
-        }]);
-      }
-
       const page = await context.newPage();
+      const baseURL = process.env.BACKOFFICE_URL || `https://localhost:${process.env.PORT || "3001"}`;
+      await page.goto(`${baseURL}/login`, { waitUntil: "domcontentloaded" });
+      const login = await page.evaluate(async ({ email, password }) => {
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ identifier: email, password }),
+        });
+        return { ok: response.ok, body: await response.json() };
+      }, { email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+      if (!login.ok || !login.body?.success) {
+        throw new Error(`Fixture login failed: ${login.body?.message || "unknown error"}`);
+      }
       await use(page);
       await context.close();
     },
@@ -62,7 +43,7 @@ export const test = base
       await use({
         user: {
           id: 3,
-          email: "admin@hotmail.com",
+          email: ADMIN_EMAIL,
           name: "Admin",
           role: "root",
           roleImportance: 100,
@@ -82,8 +63,5 @@ export const test = base
 export const testSession = test;
 
 export function resetSessionCache() {
-  // Delete the cache file to force re-login on next run
-  if (fs.existsSync(SESSION_CACHE_FILE)) {
-    fs.unlinkSync(SESSION_CACHE_FILE);
-  }
+  // Kept for callers that reset auth state between suites. Fixtures log in per context.
 }

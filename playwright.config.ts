@@ -41,7 +41,7 @@ export default defineConfig({
   globalSetup: "./e2e/global-setup.ts",
 
   use: {
-    baseURL: process.env.BACKOFFICE_URL || "https://localhost:3001",
+    baseURL: process.env.BACKOFFICE_URL || `https://localhost:${process.env.PORT || "3001"}`,
     ignoreHTTPSErrors: true,
     screenshot: screenshotMode as "on" | "only-on-failure" | "off",
     video: "on-first-retry",

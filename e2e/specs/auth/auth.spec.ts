@@ -1,6 +1,9 @@
 import { test, expect } from "../../fixtures/session";
 import { captureConsole, assertNoCriticalErrors } from "../../helpers/console";
 
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@villacarmen.com";
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123";
+
 test.describe("Authentication", () => {
   test.describe("Login page", () => {
     test("renders correctly with all form elements", async ({ browser }) => {
@@ -33,8 +36,8 @@ test.describe("Authentication", () => {
       await page.goto("/login", { waitUntil: "networkidle" });
 
       // Fill and submit login form
-      await page.fill('input[type="text"]', "admin@hotmail.com");
-      await page.fill('input[type="password"]', "admin123123");
+      await page.fill('input[type="text"]', ADMIN_EMAIL);
+      await page.fill('input[type="password"]', ADMIN_PASSWORD);
       await page.click('button[type="submit"]');
 
       // Assert redirect to app
@@ -246,8 +249,8 @@ test.describe("Authentication", () => {
       // Login
       await page.goto("/login", { waitUntil: "networkidle" });
       await page.waitForSelector("form", { timeout: 15_000 });
-      await page.fill('input[type="text"]', "admin@hotmail.com");
-      await page.fill('input[type="password"]', "admin123123");
+      await page.fill('input[type="text"]', ADMIN_EMAIL);
+      await page.fill('input[type="password"]', ADMIN_PASSWORD);
       await page.click('button[type="submit"]');
       await page.waitForURL("**/app/**", { timeout: 15_000 });
 
@@ -271,23 +274,23 @@ test.describe("Authentication", () => {
       const page = await context.newPage();
       await page.goto("/login");
 
-      const response = await page.evaluate(async () => {
+      const response = await page.evaluate(async ({ email, password }) => {
         const res = await fetch("/api/admin/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            identifier: "admin@hotmail.com",
-            password: "admin123123",
+            identifier: email,
+            password,
           }),
           credentials: "include",
         });
         return await res.json();
-      });
+      }, { email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
 
       expect(response.success).toBe(true);
       expect(response.session).toBeDefined();
       expect(response.session.user).toBeDefined();
-      expect(response.session.user.email).toBe("admin@hotmail.com");
+      expect(response.session.user.email).toBe(ADMIN_EMAIL);
       expect(response.session.user.role).toBe("root");
       expect(response.session.user.roleImportance).toBe(100);
       expect(response.session.restaurants).toBeInstanceOf(Array);
@@ -304,17 +307,17 @@ test.describe("Authentication", () => {
       const page = await context.newPage();
       await page.goto("/login");
 
-      const response = await page.evaluate(async () => {
+      const response = await page.evaluate(async (email) => {
         const res = await fetch("/api/admin/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            identifier: "admin@hotmail.com",
+            identifier: email,
             password: "wrongpassword",
           }),
         });
         return await res.json();
-      });
+      }, ADMIN_EMAIL);
 
       expect(response.success).toBe(false);
       expect(response.message).toBeDefined();
@@ -325,13 +328,14 @@ test.describe("Authentication", () => {
     test("GET /api/admin/me with valid session returns user data", async ({
       adminPage,
     }) => {
+      await adminPage.goto("/app");
       const response = await adminPage.evaluate(async () => {
         const res = await fetch("/api/admin/me", { credentials: "include" });
         return await res.json();
       });
 
       expect(response.success).toBe(true);
-      expect(response.session.user.email).toBe("admin@hotmail.com");
+      expect(response.session.user.email).toBe(ADMIN_EMAIL);
     });
 
     test("GET /api/admin/me without session returns 401", async ({
