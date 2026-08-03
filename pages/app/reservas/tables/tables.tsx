@@ -2084,6 +2084,22 @@ export default function TableManagerPage() {
     [isEditingLimitArea, queuePersistLayout],
   );
 
+  // Double-click on the closing edge (last -> first) appends a joint between them.
+  const addLimitVertexOnClosingSegment = useCallback(() => {
+    if (!isEditingLimitArea) return;
+    const current = lineDrawingPointsRef.current;
+    if (current.length < 3) return;
+    limitEditHistoryRef.current.push(cloneLinePoints(current));
+    const next = cloneLinePoints(current);
+    const a = next[next.length - 1];
+    const b = next[0];
+    next.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    lineDrawingPointsRef.current = next;
+    setDraggingLimitVertexIndex(null);
+    setLineDrawing((prev) => ({ ...prev, points: next, isDrawing: false }));
+    queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, next);
+  }, [isEditingLimitArea, queuePersistLayout]);
+
   // Removes the limit area and every draw element inside it (tables are kept).
   const removeArea = useCallback(() => {
     const nextElements: DrawElement[] = [];
@@ -2452,6 +2468,32 @@ export default function TableManagerPage() {
                         )}
                       </g>
                     ))}
+                    {lineDrawing.points.length >= 2 && !lineDrawing.isDrawing && (() => {
+                      const first = lineOverlayPoints[0];
+                      const last = lineOverlayPoints[lineOverlayPoints.length - 1];
+                      return (
+                        <line
+                          data-ui="line-segment-closing"
+                          x1={last.x}
+                          y1={last.y}
+                          x2={first.x}
+                          y2={first.y}
+                          stroke="var(--bo-accent)"
+                          strokeWidth={isEditingLimitArea && editMode ? 5 : 2}
+                          strokeOpacity={isEditingLimitArea && editMode ? 0.5 : 1}
+                          strokeLinecap="round"
+                          style={{
+                            cursor: isEditingLimitArea && editMode ? "copy" : "default",
+                            pointerEvents: isEditingLimitArea && editMode ? "all" : "none",
+                          }}
+                          onDoubleClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            addLimitVertexOnClosingSegment();
+                          }}
+                        />
+                      );
+                    })()}
                     {lineDrawing.points.length >= 2 && !lineDrawing.isDrawing && (
                       <polygon
                         data-ui="limit-area-polygon"
