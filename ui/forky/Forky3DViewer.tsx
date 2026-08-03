@@ -1,14 +1,31 @@
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { Html, useAnimations, useGLTF, useProgress } from "@react-three/drei";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useGLTF } from "@react-three/drei";
 import { gsap } from "gsap";
 import * as THREE from "three";
 import { useReducedMotion } from "motion/react";
 
-export type ForkyState = "idle" | "greet" | "talk" | "think" | "happy";
+export type ForkyState = "idle" | "greet" | "talk" | "think" | "happy" | "bend_active";
 
-const FORKY_MODEL_URL = import.meta.env.VITE_FORKY_MODEL_URL || "/assets/forky/forky.glb";
-const CLIPS = ["idle", "greet", "talk", "think", "happy"];
+const FORKY_ASSET_ROOT =
+  "https://villacarmenmedia.b-cdn.net/weai/Meshy_AI_A_mascot_character_in_biped%20(2)";
+
+/**
+ * Each Bunny asset contains the same skinned character and one animation.
+ * Keep this mapping explicit because the Meshy clip names do not match the
+ * assistant states used by the UI.
+ *
+ * The files are loaded lazily by useGLTF, so opening the backoffice does not
+ * download all six ~32 MB assets. Only the active state is requested.
+ */
+const FORKY_MODEL_URLS: Record<ForkyState, string> = {
+  idle: `${FORKY_ASSET_ROOT}/Meshy_AI_A_mascot_character_in_biped_Animation_Idle_3_withSkin.glb`,
+  greet: `${FORKY_ASSET_ROOT}/Meshy_AI_A_mascot_character_in_biped_Animation_Big_Wave_Hello_withSkin.glb`,
+  talk: `${FORKY_ASSET_ROOT}/Meshy_AI_A_mascot_character_in_biped_Animation_Agree_Gesture_withSkin.glb`,
+  think: `${FORKY_ASSET_ROOT}/Meshy_AI_A_mascot_character_in_biped_Animation_Idle_15_withSkin.glb`,
+  happy: `${FORKY_ASSET_ROOT}/Meshy_AI_A_mascot_character_in_biped_Animation_Running_withSkin.glb`,
+  bend_active: `${FORKY_ASSET_ROOT}/Meshy_AI_A_mascot_character_in_biped_Animation_Walking_withSkin.glb`,
+};
 const CAMERA_FOV = 32;
 const CAMERA_MARGIN = 1.18;
 
@@ -17,57 +34,87 @@ type GLTFResult = {
   animations: THREE.AnimationClip[];
 };
 
-function ForkyModel({ state, gltf }: { state: ForkyState; gltf: GLTFResult }) {
-  const group = useRef<THREE.Group>(null);
+function ForkyModel({
+  state,
+  gltf,
+  onReady,
+}: {
+  state: ForkyState;
+  gltf: GLTFResult;
+  onReady: () => void;
+}) {
   const { scene, animations } = gltf;
-  const { actions } = useAnimations(animations, group);
+  // The animation tracks target named bones inside the Meshy armature. Use the
+  // loaded scene as the mixer root so Three.js resolves every track exactly as
+  // Meshy exported it.
+  const mixer = useMemo(() => new THREE.AnimationMixer(scene), [scene]);
+  const action = useMemo(() => {
+    const clip = animations[0];
+    return clip ? mixer.clipAction(clip) : undefined;
+  }, [animations, mixer]);
   const reduceMotion = useReducedMotion();
+  const activeAction = useRef<THREE.AnimationAction | null>(null);
+  const primed = useRef(false);
+  const [modelVisible, setModelVisible] = useState(false);
+
+  useFrame((_, delta) => {
+    mixer.update(delta);
+  });
 
   useLayoutEffect(() => {
-    const target = group.current;
-    if (!target || reduceMotion) return;
+    if (reduceMotion) return;
+    const target = scene;
     const ctx = gsap.context(() => {
       gsap.to(target.position, { y: 0.045, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
       gsap.to(target.rotation, { z: 0.035, duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: -1 });
     }, target);
     return () => ctx.revert();
-  }, [reduceMotion]);
+  }, [reduceMotion, scene]);
 
   useEffect(() => {
-    if (reduceMotion) {
-      for (const clip of CLIPS) actions[clip]?.stop();
-      return;
+    if (import.meta.env.DEV) {
+      console.debug("[Forky] clips loaded", animations.map((clip) => clip.name));
     }
-    for (const clip of CLIPS) {
-      const action = actions[clip];
-      if (action && action !== actions[state]) {
-        action.fadeOut(0.25);
-      }
-    }
-    const target = actions[state] ?? actions.idle;
+    const target = action;
     if (target) {
-      target.reset();
-      target.fadeIn(0.25);
+      const previous = activeAction.current;
+      target.reset().setEffectiveWeight(1);
+      target.setEffectiveTimeScale(reduceMotion ? 0.15 : 1);
       target.play();
+      if (previous && previous !== target) {
+        previous.crossFadeTo(target, 0.2, false);
+      }
+      activeAction.current = target;
+
+      // Meshy exports the bind pose as the initial scene pose. Advance the
+      // mixer before revealing the object so the first painted frame is
+      // already an animated pose instead of a visible T-pose.
+      mixer.update(1 / 60);
+      if (!primed.current) {
+        primed.current = true;
+        setModelVisible(true);
+        onReady();
+      }
+    } else if (import.meta.env.DEV) {
+      console.warn("[Forky] GLB contains no animation", { state, url: gltf.scene.name });
     }
     return () => {
-      for (const clip of CLIPS) actions[clip]?.stop();
+      if (activeAction.current && activeAction.current !== action) {
+        activeAction.current.stop();
+      }
     };
-  }, [state, actions, reduceMotion]);
+  }, [action, animations, gltf.scene.name, mixer, onReady, reduceMotion, state]);
 
-  return <primitive object={scene} ref={group} />;
+  return <primitive object={scene} visible={modelVisible} />;
 }
 
 function ForkyScene({ state, onReady }: { state: ForkyState; onReady: () => void }) {
-  const gltf = useGLTF(FORKY_MODEL_URL, false, true) as GLTFResult;
-
-  useEffect(() => {
-    onReady();
-  }, [onReady]);
+  const modelUrl = FORKY_MODEL_URLS[state];
+  const gltf = useGLTF(modelUrl, false, true) as GLTFResult;
 
   return (
     <>
-      <ForkyModel state={state} gltf={gltf} />
+      <ForkyModel state={state} gltf={gltf} onReady={onReady} />
       <ForkyCamera scene={gltf.scene} />
     </>
   );
@@ -97,21 +144,6 @@ function ForkyCamera({ scene }: { scene: THREE.Group }) {
   return null;
 }
 
-function ForkyLoading() {
-  const { progress } = useProgress();
-  return (
-    <Html center>
-      <div
-        role="status"
-        aria-live="polite"
-        className="rounded-full border border-white/15 bg-[#110d1d]/80 px-3 py-1.5 text-[11px] text-white/75 shadow-lg backdrop-blur-md"
-      >
-        Cargando Forky {Math.round(progress)}%
-      </div>
-    </Html>
-  );
-}
-
 function hasWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
@@ -126,19 +158,25 @@ function hasWebGL(): boolean {
 
 /**
  * Forky 3D viewer. SSR-safe: renders nothing until mounted (no three.js on the
- * server). The GLB carries the idle/greet/talk/think/happy clips; the current
- * `state` crossfades into the matching clip.
+ * server). Each state selects one BunnyCDN GLB containing the matching Meshy
+ * animation. Assets are fetched lazily and remain WebGL-only.
  */
 export function Forky3DViewer({ state }: { state: ForkyState }) {
   const [mounted, setMounted] = useState(false);
   const [webglOk, setWebglOk] = useState(false);
   const [modelReady, setModelReady] = useState(false);
+  const markModelReady = useCallback(() => setModelReady(true), []);
+
+  useEffect(() => {
+    setModelReady(false);
+  }, [state]);
 
   useEffect(() => {
     setMounted(true);
     // Probe WebGL availability before mounting the Canvas: in environments
     // without a GPU (headless CI, VMs, strict privacy browsers) creating a
-    // context can crash the renderer. Fall back to the 2D sprite.
+    // context can crash the renderer. Keep the viewer empty rather than
+    // substituting a static image, so Forky is always represented by WebGL.
     setWebglOk(hasWebGL());
   }, []);
 
@@ -148,27 +186,21 @@ export function Forky3DViewer({ state }: { state: ForkyState }) {
       className="pointer-events-none h-full w-full overflow-visible"
       aria-busy={mounted && webglOk && !modelReady ? true : undefined}
     >
-      {!webglOk || !modelReady ? (
-        <img
-          src="/assets/forky/forky-preview.png"
-          alt="Forky"
-          className="h-full max-h-[min(70vh,34rem)] w-auto object-contain drop-shadow-[0_18px_30px_rgba(124,92,255,0.35)]"
-        />
-      ) : null}
+      {!webglOk || !modelReady ? <span className="sr-only">Cargando Forky 3D</span> : null}
       {mounted && webglOk ? (
         <Canvas
           camera={{ position: [0, 0, 3], fov: CAMERA_FOV, near: 0.01, far: 20 }}
-          dpr={[1, 1.25]}
+          dpr={[1, 1.5]}
           frameloop="always"
-          gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
+          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
           style={{ width: "100%", height: "100%", background: "transparent" }}
         >
           <ambientLight intensity={0.55} />
           <directionalLight position={[2, 3, 2.5]} intensity={1.6} />
           <directionalLight position={[-2.5, 1.5, -2]} intensity={0.5} />
           <pointLight position={[0.5, 1.2, -0.8]} intensity={7} color="#ffe9c4" />
-          <Suspense fallback={<ForkyLoading />}>
-            <ForkyScene state={state} onReady={() => setModelReady(true)} />
+          <Suspense fallback={null}>
+            <ForkyScene key={FORKY_MODEL_URLS[state]} state={state} onReady={markModelReady} />
           </Suspense>
         </Canvas>
       ) : null}
@@ -177,5 +209,5 @@ export function Forky3DViewer({ state }: { state: ForkyState }) {
 }
 
 export function preloadForkyModel(): void {
-  useGLTF.preload(FORKY_MODEL_URL, false, true);
+  useGLTF.preload(FORKY_MODEL_URLS.idle, false, true);
 }
