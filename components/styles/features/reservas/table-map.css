@@ -2046,10 +2046,31 @@ body.is-dragging .bo-tableMapFlowWrap {
   margin: 0;
 }
 
-@media (max-width: 768px) {
+/* Medium screens / small laptops: keep two columns but tighter */
+@media (min-width: 921px) and (max-width: 1100px) {
+  .bo-tableEditorGrid {
+    gap: var(--bo-space-3);
+  }
+
+  .bo-tableEditorPreviewWrap {
+    min-height: 280px;
+  }
+
+  .bo-tableEditorConfig {
+    margin: var(--bo-space-2);
+    padding: var(--bo-space-3);
+  }
+
+  .bo-tableEditorPresetGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Tablets / phones: stack preview and config vertically */
+@media (max-width: 920px) {
   .bo-modal.bo-tableEditorModal {
-    max-height: 96vh;
-    height: 96vh;
+    max-height: 94vh;
+    height: 94vh;
     min-height: 0;
     padding: var(--bo-space-3);
     overflow: hidden;
@@ -2057,13 +2078,29 @@ body.is-dragging .bo-tableMapFlowWrap {
 
   .bo-tableEditorGrid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
     gap: var(--bo-space-3);
     min-height: 0;
   }
 
   .bo-tableEditorPreviewWrap {
-    min-height: 180px;
+    min-height: 0;
     max-height: 220px;
+    margin-top: 0;
+    padding: var(--bo-space-2);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr;
+    align-items: center;
+    justify-items: center;
+    gap: var(--bo-space-4);
+  }
+
+  .bo-tableEditorRotate {
+    flex-direction: column;
+    transform: none;
+    margin-bottom: 0;
+    gap: var(--bo-space-2);
   }
 
   .bo-tableEditorPreviewTable {
@@ -2113,6 +2150,55 @@ body.is-dragging .bo-tableMapFlowWrap {
 
   .bo-tableEditorActionsWrap .bo-modalActions .bo-btn {
     width: fit-content;
+  }
+}
+
+/* Small phones: further compact */
+@media (max-width: 480px) {
+  .bo-modal.bo-tableEditorModal {
+    max-height: 96vh;
+    height: 96vh;
+    padding: var(--bo-space-2);
+  }
+
+  .bo-tableEditorPreviewWrap {
+    max-height: 190px;
+    gap: var(--bo-space-3);
+  }
+
+  .bo-tableEditorPreviewTable {
+    width: 100px;
+    height: 100px;
+  }
+
+  .bo-tableEditorConfig {
+    padding: var(--bo-space-2);
+  }
+
+  .bo-tableEditorShapeBtns {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--bo-space-2);
+  }
+
+  .bo-tableEditorShapeBtns .bo-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bo-tableEditorPresetGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .bo-tableColorPreset {
+    height: 26px;
+  }
+
+  .bo-tableEditorActionsWrap .bo-modalActions {
+    gap: var(--bo-space-2);
+  }
+
+  .bo-tableEditorActionsWrap .bo-modalActions .bo-btn {
+    flex: 1;
   }
 }
 
