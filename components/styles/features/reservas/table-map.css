@@ -88,9 +88,12 @@
 
 /* shadcn edit/read mode toggle (edit-mode-switch) */
 .bo-tableMapEditToggleWrap {
-  display: grid;
-  place-items: center;
-  width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-2);
+  padding: 0 8px;
+  width: auto;
   height: 40px;
   border-radius: var(--bo-radius-pill, 9999px);
   border: 1px solid color-mix(in srgb, var(--bo-border) 62%, transparent);
@@ -114,6 +117,21 @@
   box-shadow:
     0 2px 10px color-mix(in srgb, var(--bo-accent) 22%, transparent),
     var(--bo-shadow-soft);
+}
+
+.bo-tableMapEditToggleLabel {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  letter-spacing: 0.03em;
+  color: var(--bo-muted);
+  text-align: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+  transition: color var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-tableMapEditToggleLabel.is-active {
+  color: var(--bo-accent);
 }
 
 .bo-tableMapEditToggleWrap .bo-tableMapEditToggle {
@@ -1341,8 +1359,12 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 
   .bo-tableMapEditToggleWrap {
-    width: 52px;
     height: 36px;
+    padding: 0 6px;
+  }
+
+  .bo-tableMapEditToggleLabel {
+    font-size: 10px;
   }
 
   .bo-tableMapDrawPanel {

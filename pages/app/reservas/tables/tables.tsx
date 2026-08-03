@@ -2178,6 +2178,13 @@ export default function TableManagerPage() {
                 </div>
                 <div data-ui="top-right" className="bo-tableMapTopRight">
                   <div data-ui="edit-mode-toggle" className={`bo-tableMapEditToggleWrap${editMode ? " is-active" : ""}`}>
+                    <span
+                      data-ui="edit-mode-label"
+                      className={`bo-tableMapEditToggleLabel${editMode ? " is-active" : ""}`}
+                      aria-hidden="true"
+                    >
+                      {editMode ? "Editar" : "Ver"}
+                    </span>
                     <Switch
                       checked={editMode}
                       onCheckedChange={handleEditModeChange}
