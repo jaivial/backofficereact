@@ -15,7 +15,7 @@ import ReactFlow, {
 } from "reactflow";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-  CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, Eye, FileText, GripVertical,
+  CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical,
   Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
   Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
@@ -2178,20 +2178,11 @@ export default function TableManagerPage() {
                 </div>
                 <div data-ui="top-right" className="bo-tableMapTopRight">
                   <div data-ui="edit-mode-toggle" className={`bo-tableMapEditToggleWrap${editMode ? " is-active" : ""}`}>
-                    <span
-                      data-ui="edit-mode-label"
-                      className={`bo-tableMapEditToggleLabel${editMode ? " is-active" : ""}`}
-                      aria-hidden="true"
-                    >
-                      {editMode ? "Editar" : "Ver"}
-                    </span>
                     <Switch
                       checked={editMode}
                       onCheckedChange={handleEditModeChange}
                       aria-label={editMode ? "Modo edicion activado" : "Modo lectura activado"}
                       title={editMode ? "Modo edicion (desactivar para solo lectura)" : "Modo lectura (activar para editar)"}
-                      startIcon={<Pencil size={12} strokeWidth={2.2} />}
-                      endIcon={<Eye size={12} strokeWidth={2.2} />}
                       className="bo-tableMapEditToggle"
                     />
                   </div>
