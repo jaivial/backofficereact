@@ -87,21 +87,68 @@
 }
 
 /* shadcn edit/read mode toggle (edit-mode-switch) */
-.bo-tableMapTopRight .bo-tableMapEditToggle {
+.bo-tableMapEditToggleWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  padding: 4px 8px 4px 12px;
+  margin-top: 2px;
+  height: 40px;
+  border-radius: var(--bo-radius-pill, 9999px);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 62%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.16)),
+    color-mix(in srgb, var(--bo-surface-2) 78%, transparent);
+  box-shadow: var(--bo-shadow-soft);
+  backdrop-filter: blur(var(--bo-glass-blur, 14px));
+  -webkit-backdrop-filter: blur(var(--bo-glass-blur, 14px));
+  transition:
+    border-color var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-tableMapEditToggleWrap:hover {
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
+}
+
+.bo-tableMapEditToggleWrap.is-active {
+  border-color: color-mix(in srgb, var(--bo-accent) 58%, var(--bo-border));
+  box-shadow:
+    0 2px 10px color-mix(in srgb, var(--bo-accent) 22%, transparent),
+    var(--bo-shadow-soft);
+}
+
+.bo-tableMapEditToggleLabel {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  letter-spacing: 0.03em;
+  color: var(--bo-muted);
+  min-width: 40px;
+  text-align: right;
+  white-space: nowrap;
+  text-transform: uppercase;
+  transition: color var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-tableMapEditToggleLabel.is-active {
+  color: var(--bo-accent);
+}
+
+.bo-tableMapEditToggleWrap .bo-tableMapEditToggle {
   width: 44px;
   height: 24px;
-  margin-top: 10px;
   flex-shrink: 0;
 }
-.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked {
-  background: color-mix(in srgb, var(--bo-accent) 40%, transparent);
-  border-color: color-mix(in srgb, var(--bo-accent) 62%, transparent);
+.bo-tableMapEditToggleWrap .bo-tableMapEditToggle.is-checked {
+  background: color-mix(in srgb, var(--bo-accent) 42%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent) 66%, transparent);
 }
-.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked .bo-sc-switchThumb {
+.bo-tableMapEditToggleWrap .bo-tableMapEditToggle.is-checked .bo-sc-switchThumb {
   background: var(--bo-accent-3);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--bo-accent) 55%, transparent), 0 2px 10px rgba(0, 0, 0, 0.32);
 }
-.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked .bo-sc-switchIcon--left,
-.bo-tableMapTopRight .bo-tableMapEditToggle.is-checked .bo-sc-switchIcon--right {
+.bo-tableMapEditToggleWrap .bo-tableMapEditToggle.is-checked .bo-sc-switchIcon--left,
+.bo-tableMapEditToggleWrap .bo-tableMapEditToggle.is-checked .bo-sc-switchIcon--right {
   color: var(--bo-surface);
 }
 
@@ -1309,6 +1356,22 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 @media (max-width: 560px) {
+  .bo-tableMapTopRight {
+    flex-wrap: wrap;
+    max-width: calc(100vw - 72px);
+    justify-content: flex-end;
+  }
+
+  .bo-tableMapEditToggleWrap {
+    padding-left: 8px;
+    height: 36px;
+  }
+
+  .bo-tableMapEditToggleLabel {
+    font-size: 10px;
+    min-width: 34px;
+  }
+
   .bo-tableMapDrawPanel {
     width: calc(100vw - 20px);
     right: 10px;

@@ -2177,16 +2177,24 @@ export default function TableManagerPage() {
                   </AnimatePresence>
                 </div>
                 <div data-ui="top-right" className="bo-tableMapTopRight">
-                  <Switch
-                    data-ui="edit-mode-toggle"
-                    checked={editMode}
-                    onCheckedChange={handleEditModeChange}
-                    aria-label={editMode ? "Modo edicion activado" : "Modo lectura activado"}
-                    title={editMode ? "Modo edicion (desactivar para solo lectura)" : "Modo lectura (activar para editar)"}
-                    startIcon={<Pencil size={12} strokeWidth={2.2} />}
-                    endIcon={<Eye size={12} strokeWidth={2.2} />}
-                    className="bo-tableMapEditToggle"
-                  />
+                  <div data-ui="edit-mode-toggle" className={`bo-tableMapEditToggleWrap${editMode ? " is-active" : ""}`}>
+                    <span
+                      data-ui="edit-mode-label"
+                      className={`bo-tableMapEditToggleLabel${editMode ? " is-active" : ""}`}
+                      aria-hidden="true"
+                    >
+                      {editMode ? "Editar" : "Ver"}
+                    </span>
+                    <Switch
+                      checked={editMode}
+                      onCheckedChange={handleEditModeChange}
+                      aria-label={editMode ? "Modo edicion activado" : "Modo lectura activado"}
+                      title={editMode ? "Modo edicion (desactivar para solo lectura)" : "Modo lectura (activar para editar)"}
+                      startIcon={<Pencil size={12} strokeWidth={2.2} />}
+                      endIcon={<Eye size={12} strokeWidth={2.2} />}
+                      className="bo-tableMapEditToggle"
+                    />
+                  </div>
                   <button
                     data-ui="add-table-top-btn"
                     className="bo-actionBtn bo-actionBtn--glass"
