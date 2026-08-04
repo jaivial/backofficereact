@@ -16,7 +16,7 @@ import ReactFlow, {
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical,
-  Hand, ImagePlus, Leaf, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
+  Hand, ImagePlus, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
   Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
 } from "lucide-react";
@@ -85,6 +85,7 @@ import type {
   DrawElement,
   DrawNodeData,
   BookingState,
+  BookingTableAssignment,
 } from "./types/tables";
 import {
   COLOR_PRESETS,
@@ -92,6 +93,8 @@ import {
   DRAW_ROTATE_STEP,
   DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS,
   TABLE_LIMIT_PADDING,
+  TABLE_SIZE_MIN,
+  TABLE_SIZE_MAX,
   DRAW_PANEL_GROUPS,
   DRAW_PRESET_ICONS,
   STATUS_LABEL,
@@ -111,6 +114,12 @@ import {
   normalizeTableKey,
   buildRectChairs,
   buildRoundChairs,
+  resolveAssignments,
+  sumAssignmentSeats,
+  splitPartyAcrossTables,
+  normalizeAssignmentSeats,
+  assignmentsDisplayName,
+  seatedNamesForTable,
 } from "./helpers/tables";
 
 // === Status label ===
@@ -213,7 +222,11 @@ function clampRectMoveToLimit(
 
 // === Table node renderer ===
 function tableFromRFNode(data: TableNodeData): React.JSX.Element {
-  const geom = previewGeometry(data.shape, data.capacity, data.rectShortSides);
+  const explicitSize =
+    typeof data.width === "number" || typeof data.height === "number"
+      ? { width: data.width, height: data.height }
+      : undefined;
+  const geom = previewGeometry(data.shape, data.capacity, data.rectShortSides, explicitSize);
   const shape = data.shape === "square" ? "is-square" : "is-round";
   const style: React.CSSProperties = {
     ["--bo-table-fill" as any]: data.fillColor || "var(--bo-surface-2)",
@@ -223,18 +236,33 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
     width: `${geom.width}px`,
     height: `${geom.height}px`,
   };
+  const seatedNames = data.seatedNames || [];
   return (
     <div
       data-ui="table-node"
-      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}`}
+      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}${data.editable ? " is-editable" : ""}`}
       style={style}
     >
+      {data.editable ? (
+        <NodeResizer
+          isVisible={data.editable && Boolean(data.isSelected)}
+          minWidth={TABLE_SIZE_MIN}
+          minHeight={TABLE_SIZE_MIN}
+          maxWidth={TABLE_SIZE_MAX}
+          maxHeight={TABLE_SIZE_MAX}
+          lineStyle={{ borderColor: "var(--bo-accent)" }}
+          handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
+        />
+      ) : null}
       {geom.chairs.map((chair, idx) => (
         <span key={`node-chair-${idx}`} data-ui="chair" className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }} />
       ))}
       <div data-ui="node-name" className="bo-tableMapNodeName">{data.name}</div>
       <div data-ui="node-capacity" className="bo-tableMapNodeCap">{data.capacity}</div>
       <div data-ui="node-status" className={`bo-tableMapNodeStatus is-${data.status}`}>{STATUS_LABEL[data.status]}</div>
+      {seatedNames.length > 0 ? (
+        <div data-ui="node-seated-names" className="bo-tableMapNodeSeatedNames">{seatedNames.join(", ")}</div>
+      ) : null}
     </div>
   );
 }
@@ -261,6 +289,26 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
         lineStyle={{ borderColor: "var(--bo-accent)" }}
         handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
       />
+      {data.editable && data.isSelected && data.onDelete ? (
+        <button
+          data-ui="delete-draw-element-btn"
+          className="bo-drawElementDeleteBtn"
+          type="button"
+          aria-label={`Eliminar ${data.label}`}
+          title={`Eliminar ${data.label}`}
+          onMouseDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            data.onDelete?.();
+          }}
+        >
+          <Trash2 size={13} strokeWidth={2} />
+        </button>
+      ) : null}
       {showAsset ? (
         assetImageUrl ? (
           <img data-ui="draw-asset" className="bo-drawElementNodeAsset" src={assetImageUrl} alt="" aria-hidden="true" />
@@ -289,6 +337,193 @@ function toFileFromDataURL(dataUrl: string, filename: string): File {
   const bytes = new Uint8Array(len);
   for (let i = 0; i < len; i += 1) bytes[i] = binary.charCodeAt(i);
   return new File([bytes], filename, { type: mime });
+}
+
+// === Booking multi-table assignment editor ===
+type BookingAssignmentEditorProps = {
+  booking: Booking;
+  state: BookingState | undefined;
+  tables: TableMapItem[];
+  /** Seats already committed to each table by OTHER bookings (for capacity hints). */
+  occupiedSeats: Map<string, number>;
+  onSave: (assignments: BookingTableAssignment[]) => void;
+};
+
+function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave }: BookingAssignmentEditorProps) {
+  const [draft, setDraft] = useState<BookingTableAssignment[]>(() =>
+    resolveAssignments(state, booking.table_number, booking.party_size),
+  );
+  const partySize = Math.max(1, Math.round(Number(booking.party_size) || 1));
+
+  useEffect(() => {
+    setDraft(resolveAssignments(state, booking.table_number, booking.party_size));
+  }, [booking.id, booking.party_size, booking.table_number, state]);
+
+  const totalSeats = useMemo(() => sumAssignmentSeats(draft), [draft]);
+  const seatsOk = totalSeats === partySize;
+
+  const tableOptions = useMemo(() => {
+    const opts: Array<{ value: string; label: string }> = [];
+    const seen = new Set<string>();
+    for (const t of tables) {
+      const key = normalizeTableKey(t.name);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      const capacity = Math.max(1, Number(t.capacity) || 4);
+      const otherSeats = Math.max(0, occupiedSeats.get(key) || 0);
+      const freeSeats = Math.max(0, capacity - otherSeats);
+      opts.push({
+        value: t.name,
+        label: `${t.name} (${capacity} pax${freeSeats < capacity ? `, ${freeSeats} libres` : ""})`,
+      });
+    }
+    return opts;
+  }, [occupiedSeats, tables]);
+
+  const optionsForRow = useCallback(
+    (row: BookingTableAssignment): Array<{ value: string; label: string }> => {
+      if (!row.table_name) return tableOptions;
+      const exists = tableOptions.some((o) => normalizeTableKey(o.value) === normalizeTableKey(row.table_name));
+      if (exists) return tableOptions;
+      return [{ value: row.table_name, label: `${row.table_name} (actual)` }, ...tableOptions];
+    },
+    [tableOptions],
+  );
+
+  const setRow = useCallback(
+    (idx: number, patch: Partial<BookingTableAssignment>) => {
+      setDraft((prev) => {
+        const next = prev.map((row, i) => (i === idx ? { ...row, ...patch } : row));
+        if (patch.seats !== undefined) {
+          return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
+        }
+        return next;
+      });
+    },
+    [partySize],
+  );
+
+  const addRow = useCallback(() => {
+    setDraft((prev) => {
+      if (prev.length >= partySize) return prev;
+      const next: BookingTableAssignment[] = [...prev, { table_id: null, table_name: "", seats: 1, names: [] }];
+      return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
+    });
+  }, [partySize]);
+
+  const removeRow = useCallback(
+    (idx: number) => {
+      setDraft((prev) => {
+        const next = prev.filter((_, i) => i !== idx);
+        if (next.length === 0) return [];
+        return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
+      });
+    },
+    [partySize],
+  );
+
+  return (
+    <div data-ui="booking-assignment-editor" className="bo-bookingAssignmentEditor">
+      {draft.length === 0 ? (
+        <div data-ui="assignment-empty" className="bo-bookingAssignmentEmpty">Sin mesas asignadas</div>
+      ) : (
+        <>
+          <div data-ui="assignment-rows" className="bo-bookingAssignmentRows">
+            {draft.map((row, idx) => (
+              <div key={idx} data-ui="assignment-row" className="bo-bookingAssignmentRow">
+                <Select
+                  value={row.table_name}
+                  onChange={(val) =>
+                    setRow(idx, {
+                      table_name: val,
+                      table_id: tables.find((t) => normalizeTableKey(t.name) === normalizeTableKey(val))?.id ?? null,
+                    })
+                  }
+                  options={optionsForRow(row)}
+                  ariaLabel={`Mesa ${idx + 1}`}
+                  size="sm"
+                  placeholder="Elegir mesa"
+                />
+                <div data-ui="assignment-seats" className="bo-bookingAssignmentSeats">
+                  <button
+                    type="button"
+                    className="bo-counterBtn"
+                    aria-label="Restar comensal"
+                    onClick={() => setRow(idx, { seats: Math.max(1, row.seats - 1) })}
+                  >
+                    <Minus size={12} strokeWidth={2.2} />
+                  </button>
+                  <span data-ui="assignment-seats-value" className="bo-bookingAssignmentSeatsValue">{row.seats}</span>
+                  <button
+                    type="button"
+                    className="bo-counterBtn"
+                    aria-label="Sumar comensal"
+                    onClick={() => setRow(idx, { seats: Math.min(partySize, row.seats + 1) })}
+                  >
+                    <Plus size={12} strokeWidth={2.2} />
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  data-ui="remove-assignment-row"
+                  className="bo-actionBtn bo-actionBtn--glass"
+                  aria-label={`Quitar mesa ${row.table_name || idx + 1}`}
+                  onClick={() => removeRow(idx)}
+                >
+                  <Trash2 size={13} strokeWidth={1.8} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div data-ui="assignment-names" className="bo-bookingAssignmentNames">
+            {draft.map((row, idx) => (
+              <div key={`names-${idx}`} data-ui="assignment-name-row" className="bo-bookingAssignmentNameRow">
+                <span data-ui="assignment-name-label" className="bo-bookingAssignmentNameLabel">
+                  {row.table_name ? `Nombres en ${row.table_name}` : `Nombres mesa ${idx + 1}`}
+                </span>
+                <input
+                  data-ui="assignment-names-input"
+                  className="bo-input"
+                  value={row.names.join(", ")}
+                  placeholder="Nombres separados por coma"
+                  onChange={(e) =>
+                    setRow(idx, {
+                      names: e.target.value
+                        .split(",")
+                        .map((n) => n.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      <div data-ui="assignment-footer" className="bo-bookingAssignmentFooter">
+        <button
+          data-ui="add-table-assignment"
+          className="bo-btn bo-btn--ghost bo-btn--sm"
+          type="button"
+          onClick={addRow}
+          disabled={draft.length >= partySize}
+        >
+          <Plus size={13} strokeWidth={1.8} /> Anadir mesa
+        </button>
+        <span data-ui="assignment-total" className={`bo-bookingAssignmentTotal${seatsOk ? " is-ok" : " is-warn"}`}>
+          {totalSeats} / {partySize} pax
+        </span>
+        <button
+          data-ui="save-assignments-btn"
+          className="bo-btn bo-btn--primary bo-btn--sm"
+          type="button"
+          onClick={() => onSave(draft)}
+        >
+          Guardar mesas
+        </button>
+      </div>
+    </div>
+  );
 }
 
 // === Main Page Component ===
@@ -334,7 +569,6 @@ export default function TableManagerPage() {
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [selectedDrawElementId, setSelectedDrawElementId] = useState<string | null>(null);
-  const [bookingTableDraft, setBookingTableDraft] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuTooltipStyle, setMenuTooltipStyle] = useState<React.CSSProperties>({});
   const [drawPanelHover, setDrawPanelHover] = useState(false);
@@ -379,6 +613,7 @@ export default function TableManagerPage() {
 
   const ws = useRef<WebSocket | null>(null);
   const drawElementsRef = useRef<DrawElement[]>([]);
+  const deleteSelectedDrawElementRef = useRef<() => void>(() => undefined);
   const lineDrawingPointsRef = useRef<LinePoint[]>([]);
   const limitEditHistoryRef = useRef<LinePoint[][]>([]);
   const bookingStatesRef = useRef<Record<string, BookingState>>({});
@@ -388,6 +623,7 @@ export default function TableManagerPage() {
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const rightSheetRef = useRef<HTMLElement | null>(null);
   const assignmentInProgress = useRef(false);
+  const saveBookingAssignmentsRef = useRef<(booking: Booking, assignments: BookingTableAssignment[]) => Promise<void>>(async () => undefined);
   const geom = useMemo(
     () => previewGeometry(draft.shape, draft.capacity, draft.rectShortSides),
     [draft.capacity, draft.rectShortSides, draft.shape],
@@ -497,10 +733,6 @@ export default function TableManagerPage() {
     if (isRectangularPreview) return;
     setShortSideHover(null);
   }, [isRectangularPreview]);
-
-  useEffect(() => {
-    setBookingTableDraft(selectedBooking?.table_number || "");
-  }, [selectedBooking?.table_number]);
 
   const floorAreas = useMemo(() => {
     const map = new Map<number, TableMapArea[]>();
@@ -616,7 +848,20 @@ export default function TableManagerPage() {
         const rawBookingStates = mapLayout.booking_states as Record<string, unknown> | undefined;
         if (rawBookingStates && typeof rawBookingStates === "object") {
           for (const [key, value] of Object.entries(rawBookingStates)) {
-            loadedBookingStates[key] = { seated: Boolean((value as any)?.seated) };
+            const raw = value as any;
+            const rawAssignments = Array.isArray(raw?.assignments) ? raw.assignments : undefined;
+            const assignments = rawAssignments
+              ? (rawAssignments as any[]).map((item) => ({
+                  table_id: typeof item?.table_id === "number" ? item.table_id : item?.table_id ? Number(item.table_id) : null,
+                  table_name: String(item?.table_name || ""),
+                  seats: Math.max(1, Math.round(Number(item?.seats) || 1)),
+                  names: Array.isArray(item?.names) ? item.names.map((n: any) => String(n || "")) : [],
+                }))
+              : undefined;
+            loadedBookingStates[key] = {
+              seated: Boolean(raw?.seated),
+              ...(assignments ? { assignments } : {}),
+            };
           }
         }
         bookingStatesRef.current = loadedBookingStates;
@@ -701,25 +946,85 @@ export default function TableManagerPage() {
     setSelectedFloor(nextFloor);
   }, [floorTabs, selectedFloor]);
 
-  // Table occupancy map
+  // Table occupancy map (multi-table aware: a booking can occupy several tables)
   const tableOccupancyMap = useMemo(() => {
     const out = new Map<string, { booked: number; seated: number }>();
     for (const booking of bookings) {
-      const key = String(booking.table_number || "").trim();
-      if (!key) continue;
-      const row = out.get(key) || { booked: 0, seated: 0 };
-      row.booked += Number(booking.party_size || 0);
-      if (bookingStates[String(booking.id)]?.seated) row.seated += Number(booking.party_size || 0);
-      out.set(key, row);
+      const state = bookingStates[String(booking.id)];
+      const assignments = resolveAssignments(state, booking.table_number, booking.party_size);
+      for (const assignment of assignments) {
+        const key = normalizeTableKey(assignment.table_name);
+        if (!key) continue;
+        const seats = Math.max(0, Number(assignment.seats) || Number(booking.party_size) || 0);
+        const row = out.get(key) || { booked: 0, seated: 0 };
+        row.booked += seats;
+        if (state?.seated) row.seated += seats;
+        out.set(key, row);
+      }
     }
     return out;
   }, [bookingStates, bookings]);
 
-  // Get bookings for a specific table
+  // Get bookings for a specific table (multi-table aware)
   const getTableBookings = useCallback((tableName: string): Booking[] => {
     const key = normalizeTableKey(tableName);
-    return bookings.filter(b => normalizeTableKey(b.table_number) === key);
-  }, [bookings]);
+    return bookings.filter((b) => {
+      if (normalizeTableKey(b.table_number) === key) return true;
+      const state = bookingStates[String(b.id)];
+      const assignments = resolveAssignments(state, b.table_number, b.party_size);
+      return assignments.some((a) => normalizeTableKey(a.table_name) === key);
+    });
+  }, [bookingStates, bookings]);
+
+  // Names of seated guests grouped by table name (for map node display).
+  const seatedNamesByTable = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const booking of bookings) {
+      const state = bookingStates[String(booking.id)];
+      if (!state?.seated) continue;
+      const assignments = resolveAssignments(state, booking.table_number, booking.party_size);
+      for (const assignment of assignments) {
+        const key = normalizeTableKey(assignment.table_name);
+        if (!key) continue;
+        const names = (assignment.names || []).map((n) => String(n || "").trim()).filter(Boolean);
+        if (names.length === 0) continue;
+        map.set(key, [...(map.get(key) || []), ...names]);
+      }
+    }
+    return map;
+  }, [bookingStates, bookings]);
+
+  // Total seats committed to each table (used for capacity validation when
+  // splitting a booking across several tables).
+  const occupiedSeatsByTable = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const booking of bookings) {
+      const state = bookingStates[String(booking.id)];
+      const assignments = resolveAssignments(state, booking.table_number, booking.party_size);
+      for (const assignment of assignments) {
+        const key = normalizeTableKey(assignment.table_name);
+        if (!key) continue;
+        map.set(key, (map.get(key) || 0) + Math.max(0, Number(assignment.seats) || Number(booking.party_size) || 0));
+      }
+    }
+    return map;
+  }, [bookingStates, bookings]);
+
+  // Same map but without the given booking's own seats (capacity hints in the
+  // assignment editor should only reflect what OTHER bookings occupy).
+  const occupiedSeatsExcludingBooking = useCallback(
+    (booking: Booking | null): Map<string, number> => {
+      if (!booking) return occupiedSeatsByTable;
+      const map = new Map(occupiedSeatsByTable);
+      const prev = resolveAssignments(bookingStates[String(booking.id)], booking.table_number, booking.party_size);
+      for (const a of prev) {
+        const key = normalizeTableKey(a.table_name);
+        map.set(key, Math.max(0, (map.get(key) || 0) - Math.max(0, Number(a.seats) || 0)));
+      }
+      return map;
+    },
+    [bookingStates, occupiedSeatsByTable],
+  );
 
   // Group tables by status
   const tablesByStatus = useMemo(() => {
@@ -749,25 +1054,6 @@ export default function TableManagerPage() {
     seated: tablesByStatus.seated.length,
   }), [visibleTables.length, tablesByStatus]);
 
-  const freeTableOptions = useMemo(() => {
-    const currentTable = selectedBooking?.table_number?.trim();
-    const seen = new Set<string>();
-    const opts: Array<{ value: string; label: string }> = [];
-    for (const table of tablesByStatus.free) {
-      const name = table.name?.trim();
-      if (!name || seen.has(name)) continue;
-      seen.add(name);
-      opts.push({ value: name, label: `${name}  (${table.capacity} pax)` });
-    }
-    if (currentTable && !seen.has(currentTable)) {
-      opts.unshift({ value: currentTable, label: `${currentTable}  (actual)` });
-    }
-    if (!currentTable) {
-      opts.unshift({ value: "", label: "Sin mesa asignada" });
-    }
-    return opts;
-  }, [tablesByStatus.free, selectedBooking?.table_number]);
-
   const [tableSheetView, setTableSheetView] = useAtom(tableSheetViewAtom);
   const [selectedTableCardId, setSelectedTableCardId] = useAtom(selectedTableCardIdAtom);
 
@@ -795,41 +1081,32 @@ export default function TableManagerPage() {
 
   const assignBookingToFreeTable = useCallback(
     async (booking: Booking, tableName: string) => {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === booking.id ? { ...b, table_number: tableName } : b)),
-      );
-      const res = await api.reservas.patch(booking.id, { table_number: tableName });
-      if (!res.success) {
-        setBookings((prev) =>
-          prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b)),
-        );
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo asignar" });
-      } else {
-        pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} → ${tableName}` });
-      }
+      const table = visibleTables.find((t) => normalizeTableKey(t.name) === normalizeTableKey(tableName));
+      const existing = resolveAssignments(bookingStatesRef.current[String(booking.id)], booking.table_number, booking.party_size);
+      const already = existing.some((a) => normalizeTableKey(a.table_name) === normalizeTableKey(tableName));
+      const assignments: BookingTableAssignment[] = already
+        ? existing
+        : [
+            {
+              table_id: table?.id ?? null,
+              table_name: tableName,
+              seats: Math.max(1, Math.round(Number(booking.party_size) || 1)),
+              names: [],
+            },
+          ];
+      await saveBookingAssignmentsRef.current(booking, assignments);
       setSelectedTableCardId(null);
     },
-    [api.reservas, pushToast, setBookings, setSelectedTableCardId],
+    [setSelectedTableCardId, visibleTables],
   );
 
   const unassignBookingFromTable = useCallback(
     async (booking: Booking) => {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === booking.id ? { ...b, table_number: "" } : b)),
-      );
-      const res = await api.reservas.patch(booking.id, { table_number: "" });
-      if (!res.success) {
-        setBookings((prev) =>
-          prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b)),
-        );
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo desasignar" });
-      } else {
-        pushToast({ kind: "success", title: "Reserva desasignada" });
-      }
+      await saveBookingAssignmentsRef.current(booking, []);
       setTableSheetView("list");
       setSelectedTableCardId(null);
     },
-    [api.reservas, pushToast, setBookings, setTableSheetView, setSelectedTableCardId],
+    [setTableSheetView, setSelectedTableCardId],
   );
 
   const closeTableDetail = useCallback(() => {
@@ -846,6 +1123,9 @@ export default function TableManagerPage() {
           const hasBookings = occ && occ.booked > 0;
           const hasSeated = occ && occ.seated > 0;
           const nodeStatus = hasSeated ? "occupied" : hasBookings ? "reserved" : (table.status || "available");
+          const metadata = (table.metadata || {}) as Record<string, unknown>;
+          const explicitWidth = Number(metadata.width);
+          const explicitHeight = Number(metadata.height);
           return {
             id: String(table.id),
             type: "restaurantTable",
@@ -860,10 +1140,14 @@ export default function TableManagerPage() {
               fillColor: table.fill_color || "",
               outlineColor: table.outline_color || "",
               textureImageUrl: table.texture_image_url || "",
-              rotationDeg: Number((table.metadata as any)?.rotation_deg || 0),
-              rectShortSides: shortSidesFromMetadata((table.metadata as any)?.short_side_seats, table.capacity || 4),
+              rotationDeg: Number(metadata.rotation_deg || 0),
+              rectShortSides: shortSidesFromMetadata(metadata.short_side_seats, table.capacity || 4),
               assignMode,
               isSelected: selectedTableId === table.id,
+              editable: editMode,
+              width: Number.isFinite(explicitWidth) && explicitWidth > 0 ? Math.round(explicitWidth) : undefined,
+              height: Number.isFinite(explicitHeight) && explicitHeight > 0 ? Math.round(explicitHeight) : undefined,
+              seatedNames: seatedNamesByTable.get(tableKey) || [],
             } as TableNodeData,
           };
         }),
@@ -883,11 +1167,12 @@ export default function TableManagerPage() {
             height: item.height,
             rotationDeg: item.rotationDeg,
             editable: editMode,
+            onDelete: () => deleteSelectedDrawElementRef.current(),
           } as DrawNodeData,
         })),
       ],
     );
-  }, [assignMode, drawElements, editMode, selectedDrawElementId, selectedTableId, setNodes, tableOccupancyMap, visibleTables]);
+  }, [assignMode, drawElements, editMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -907,18 +1192,32 @@ export default function TableManagerPage() {
           if (!table?.id) return;
           setAreas((prev) => {
             const existingTable = prev.flatMap((area) => area.tables || []).find((entry) => entry.id === table.id);
+            // Keep local position and area membership when the broadcast omits
+            // them (older backends send area_id 0 and no position on moves).
             const mergedTable = existingTable
-              ? ({ ...existingTable, ...table, x_pos: existingTable.x_pos, y_pos: existingTable.y_pos } as TableMapItem)
+              ? ({
+                  ...existingTable,
+                  ...table,
+                  x_pos: existingTable.x_pos,
+                  y_pos: existingTable.y_pos,
+                  area_id: existingTable.area_id || table.area_id,
+                } as TableMapItem)
               : ({ ...table } as TableMapItem);
             const next = prev.map((area) => ({ ...area, tables: [...(area.tables || [])] }));
-            for (const area of next) {
-              area.tables = area.tables.filter((t) => t.id !== table.id);
-            }
             const targetAreaID = Number(mergedTable.area_id || existingTable?.area_id || 0);
             const target = next.find((area) => area.id === targetAreaID);
             if (target) {
+              for (const area of next) {
+                area.tables = area.tables.filter((t) => t.id !== table.id);
+              }
               target.tables.push(mergedTable);
+            } else if (!existingTable) {
+              // New table without a resolvable area: keep it visible in the first area.
+              const firstArea = next[0];
+              if (firstArea) firstArea.tables.push(mergedTable);
             }
+            // If we already track the table but cannot resolve a target area,
+            // leave it untouched instead of dropping it.
             return next;
           });
         }
@@ -962,6 +1261,41 @@ export default function TableManagerPage() {
     [api.tables, pushToast, selectedDate, selectedFloor],
   );
 
+  const saveTableSize = useCallback(
+    async (id: string, width: number, height: number) => {
+      const tableId = Number(id);
+      if (!Number.isFinite(tableId) || tableId <= 0) return;
+      const nextWidth = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, Math.round(width)));
+      const nextHeight = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, Math.round(height)));
+      setAreas((prev) =>
+        prev.map((area) => {
+          const source = area.tables || [];
+          let touched = false;
+          const tables = source.map((table) => {
+            if (table.id !== tableId) return table;
+            const metadata = { ...((table.metadata || {}) as Record<string, unknown>), width: nextWidth, height: nextHeight };
+            touched = true;
+            return { ...table, metadata };
+          });
+          return touched ? { ...area, tables } : area;
+        }),
+      );
+      try {
+        await api.tables.update({
+          id: tableId,
+          entity: "table",
+          metadata: { width: nextWidth, height: nextHeight },
+          date: selectedDate,
+          floor_number: selectedFloor,
+        });
+      } catch (err) {
+        console.error("Failed to save table size:", err);
+        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar el tamano de la mesa" });
+      }
+    },
+    [api.tables, pushToast, selectedDate, selectedFloor],
+  );
+
   const persistLayout = useCallback(
     async (patch: Record<string, unknown>) => {
       try {
@@ -999,6 +1333,21 @@ export default function TableManagerPage() {
     };
   }, []);
 
+  const deleteSelectedDrawElement = useCallback(() => {
+    if (!editMode || !selectedDrawElementId) return;
+    const current = drawElementsRef.current;
+    const updated = current.filter((item) => item.id !== selectedDrawElementId);
+    if (updated.length === current.length) return;
+    drawElementsRef.current = updated;
+    setDrawElements(updated);
+    setSelectedDrawElementId(null);
+    queuePersistLayout(updated, bookingStatesRef.current, lineDrawingPointsRef.current);
+  }, [editMode, queuePersistLayout, selectedDrawElementId]);
+
+  useEffect(() => {
+    deleteSelectedDrawElementRef.current = deleteSelectedDrawElement;
+  }, [deleteSelectedDrawElement]);
+
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       const activeDrawElements = drawElementsRef.current;
@@ -1007,6 +1356,7 @@ export default function TableManagerPage() {
         : null;
       let nextNodesSnapshot: Node<any>[] = [];
       const pendingTableSaves: Array<{ id: string; x: number; y: number }> = [];
+      const pendingTableSizeSaves: Array<{ id: string; width: number; height: number }> = [];
 
       setNodes((nds) => {
         const next = applyNodeChanges(changes, nds) as Node<any>[];
@@ -1018,7 +1368,14 @@ export default function TableManagerPage() {
 
             if (node.type === "restaurantTable") {
               const data = node.data as TableNodeData;
-              const nodeGeom = previewGeometry(data.shape, data.capacity, data.rectShortSides);
+              const nodeGeom = previewGeometry(
+                data.shape,
+                data.capacity,
+                data.rectShortSides,
+                typeof data.width === "number" || typeof data.height === "number"
+                  ? { width: data.width, height: data.height }
+                  : undefined,
+              );
               const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
               const fromFrame = rotatedRectFrameFromPosition(
                 prevNode.position,
@@ -1090,32 +1447,63 @@ export default function TableManagerPage() {
             continue;
           }
 
-          if (c.type === "dimensions" && String(c.id).startsWith("draw-")) {
+          if (c.type === "dimensions") {
             const prevNode = nds.find((n) => n.id === c.id);
             const node = next.find((n) => n.id === c.id);
-            if (!node || !prevNode || node.type !== "drawElement" || !node.position) continue;
+            if (!node || !prevNode || !node.position) continue;
 
-            const prevData = prevNode.data as DrawNodeData;
-            const nextWidth = Math.max(24, Number(c.dimensions?.width || prevData.width));
-            const nextHeight = Math.max(24, Number(c.dimensions?.height || prevData.height));
-            const rotationDeg = Number.isFinite(prevData.rotationDeg) ? prevData.rotationDeg : 0;
+            const rawWidth = Number(c.dimensions?.width);
+            const rawHeight = Number(c.dimensions?.height);
+            const nextWidth = Number.isFinite(rawWidth) ? Math.max(24, Math.round(rawWidth)) : 24;
+            const nextHeight = Number.isFinite(rawHeight) ? Math.max(24, Math.round(rawHeight)) : 24;
 
-            if (!editMode) {
-              node.data = { ...node.data, width: prevData.width, height: prevData.height };
+            if (node.type === "drawElement") {
+              const prevData = prevNode.data as DrawNodeData;
+              const rotationDeg = Number.isFinite(prevData.rotationDeg) ? prevData.rotationDeg : 0;
+
+              if (!editMode) {
+                node.data = { ...node.data, width: prevData.width, height: prevData.height };
+                continue;
+              }
+
+              const nextFrame = rotatedRectFrameFromPosition(node.position, nextWidth, nextHeight, rotationDeg, 0);
+              const insideLimit = activeLimitPoints
+                ? isRectInsideLimitArea(
+                    { x: nextFrame.x, y: nextFrame.y, width: nextFrame.width, height: nextFrame.height },
+                    activeLimitPoints,
+                  )
+                : false;
+              if (!insideLimit) {
+                node.data = { ...node.data, width: prevData.width, height: prevData.height };
+              } else {
+                node.data = { ...node.data, width: nextWidth, height: nextHeight };
+              }
               continue;
             }
 
-            const nextFrame = rotatedRectFrameFromPosition(node.position, nextWidth, nextHeight, rotationDeg, 0);
-            const insideLimit = activeLimitPoints
-              ? isRectInsideLimitArea(
-                  { x: nextFrame.x, y: nextFrame.y, width: nextFrame.width, height: nextFrame.height },
-                  activeLimitPoints,
-                )
-              : false;
-            if (!insideLimit) {
-              node.data = { ...node.data, width: prevData.width, height: prevData.height };
-            } else {
-              node.data = { ...node.data, width: nextWidth, height: nextHeight };
+            if (node.type === "restaurantTable") {
+              const prevData = prevNode.data as TableNodeData;
+              const rotationDeg = Number.isFinite(prevData.rotationDeg) ? prevData.rotationDeg : 0;
+
+              if (!editMode) {
+                node.data = { ...node.data, width: prevData.width, height: prevData.height };
+                continue;
+              }
+
+              const clampedWidth = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextWidth));
+              const clampedHeight = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextHeight));
+              const nextFrame = rotatedRectFrameFromPosition(node.position, clampedWidth, clampedHeight, rotationDeg, TABLE_LIMIT_PADDING);
+              const insideLimit = activeLimitPoints
+                ? isRectInsideLimitArea(
+                    { x: nextFrame.x, y: nextFrame.y, width: nextFrame.width, height: nextFrame.height },
+                    activeLimitPoints,
+                  )
+                : false;
+              if (!insideLimit) {
+                node.data = { ...node.data, width: prevData.width, height: prevData.height };
+              } else {
+                node.data = { ...node.data, width: clampedWidth, height: clampedHeight };
+              }
             }
           }
         }
@@ -1127,7 +1515,14 @@ export default function TableManagerPage() {
 
             if (node.type === "restaurantTable") {
               const data = node.data as TableNodeData;
-              const nodeGeom = previewGeometry(data.shape, data.capacity, data.rectShortSides);
+              const nodeGeom = previewGeometry(
+                data.shape,
+                data.capacity,
+                data.rectShortSides,
+                typeof data.width === "number" || typeof data.height === "number"
+                  ? { width: data.width, height: data.height }
+                  : undefined,
+              );
               const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
               const frame = rotatedRectFrameFromPosition(
                 node.position,
@@ -1243,6 +1638,19 @@ export default function TableManagerPage() {
             drawElementsChanged = true;
           }
         }
+        if (c.type === "dimensions" && c.resizing === false) {
+          const updatedNode = nextNodesSnapshot.find((n) => n.id === c.id);
+          if (updatedNode?.type === "restaurantTable") {
+            const updatedData = updatedNode.data as TableNodeData;
+            if (typeof updatedData.width === "number" && typeof updatedData.height === "number") {
+              pendingTableSizeSaves.push({
+                id: c.id,
+                width: updatedData.width,
+                height: updatedData.height,
+              });
+            }
+          }
+        }
       }
 
       if (drawElementsChanged) {
@@ -1251,11 +1659,15 @@ export default function TableManagerPage() {
         queuePersistLayout(nextDrawElements, bookingStatesRef.current, lineDrawingPointsRef.current);
       }
 
+      for (const save of pendingTableSizeSaves) {
+        void saveTableSize(save.id, save.width, save.height);
+      }
+
       for (const save of pendingTableSaves) {
         void savePosition(save.id, save.x, save.y);
       }
     },
-    [editMode, lineDrawing.isDrawing, queuePersistLayout, savePosition, setNodes],
+    [editMode, lineDrawing.isDrawing, queuePersistLayout, savePosition, saveTableSize, setNodes],
   );
 
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
@@ -1301,29 +1713,22 @@ export default function TableManagerPage() {
       const booking = bookings.find((b) => String(b.id) === bookingId);
       if (!booking) return;
 
-      setBookings((prev) =>
-        prev.map((b) => (b.id === Number(bookingId) ? { ...b, table_number: tableName } : b))
-      );
-
-      if (ws.current?.readyState === WebSocket.OPEN) {
-        ws.current.send(
-          JSON.stringify({
-            type: "assign_booking_to_table",
-            booking_id: Number(bookingId),
-            table_id: targetNode.id,
-            table_name: tableName,
-            date: selectedDate,
-          })
-        );
-        pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} -> ${tableName}` });
-      } else {
-        pushToast({ kind: "error", title: "Error", message: "Conexion no disponible" });
-        setBookings((prev) =>
-          prev.map((b) => (b.id === Number(bookingId) ? { ...b, table_number: booking.table_number } : b))
-        );
-      }
+      const table = visibleTables.find((t) => t.id === Number(targetNode.id));
+      const existing = resolveAssignments(bookingStatesRef.current[String(booking.id)], booking.table_number, booking.party_size);
+      const already = existing.some((a) => normalizeTableKey(a.table_name) === normalizeTableKey(tableName));
+      const assignments: BookingTableAssignment[] = already
+        ? existing
+        : [
+            {
+              table_id: table?.id ?? null,
+              table_name: tableName,
+              seats: Math.max(1, Math.round(Number(booking.party_size) || 1)),
+              names: [],
+            },
+          ];
+      void saveBookingAssignmentsRef.current(booking, assignments);
     },
-    [bookings, nodes, pushToast, reactFlowInstance, selectedDate]
+    [bookings, nodes, pushToast, reactFlowInstance, selectedDate, visibleTables]
   );
 
   const onDragStart = useCallback((event: React.DragEvent, booking: Booking) => {
@@ -1569,13 +1974,117 @@ export default function TableManagerPage() {
 
   const markBookingSeated = useCallback(
     (booking: Booking, seated: boolean) => {
-      const next = { ...bookingStatesRef.current, [String(booking.id)]: { seated } };
+      const prev = bookingStatesRef.current[String(booking.id)] || { seated: false };
+      const next = { ...bookingStatesRef.current, [String(booking.id)]: { ...prev, seated } };
       bookingStatesRef.current = next;
       setBookingStates(next);
       queuePersistLayout(drawElementsRef.current, next, lineDrawingPointsRef.current);
     },
     [queuePersistLayout],
   );
+
+  /**
+   * Shared persistence for table assignment. Stores the structured split in
+   * the day layout (booking_states) and keeps `booking.table_number` in sync
+   * with the primary table for the rest of the app.
+   */
+  const saveBookingAssignments = useCallback(
+    async (booking: Booking, assignments: BookingTableAssignment[]) => {
+      const partySize = Math.max(1, Math.round(Number(booking.party_size) || 1));
+      const normalized = normalizeAssignmentSeats(assignments, partySize) as BookingTableAssignment[];
+      const total = sumAssignmentSeats(normalized);
+
+      if (normalized.length > 0 && total !== partySize) {
+        pushToast({
+          kind: "error",
+          title: "Reparto de mesas",
+          message: `La suma de comensales (${total}) debe ser igual al grupo (${partySize})`,
+        });
+        return;
+      }
+
+      if (normalized.some((a) => !normalizeTableKey(a.table_name))) {
+        pushToast({ kind: "error", title: "Mesas", message: "Selecciona una mesa para cada fila" });
+        return;
+      }
+      const seenTableNames = new Set<string>();
+      for (const a of normalized) {
+        const key = normalizeTableKey(a.table_name);
+        if (seenTableNames.has(key)) {
+          pushToast({ kind: "error", title: "Mesas", message: `La mesa ${a.table_name} aparece repetida` });
+          return;
+        }
+        seenTableNames.add(key);
+      }
+
+      // Capacity check: the seats placed on a table plus what other bookings
+      // already commit to it must not exceed the table capacity.
+      const prevState = bookingStatesRef.current[String(booking.id)];
+      const prevAssignments = resolveAssignments(prevState, booking.table_number, booking.party_size);
+      const prevSeatsByTable = new Map<string, number>();
+      for (const a of prevAssignments) {
+        const key = normalizeTableKey(a.table_name);
+        prevSeatsByTable.set(key, (prevSeatsByTable.get(key) || 0) + Math.max(0, Number(a.seats) || 0));
+      }
+      for (const a of normalized) {
+        const key = normalizeTableKey(a.table_name);
+        const table = visibleTables.find((t) => normalizeTableKey(t.name) === key);
+        if (!table) continue;
+        const otherSeats = Math.max(0, (occupiedSeatsByTable.get(key) || 0) - (prevSeatsByTable.get(key) || 0));
+        if (otherSeats + Math.max(0, Number(a.seats) || 0) > (table.capacity || 4)) {
+          pushToast({
+            kind: "error",
+            title: "Capacidad",
+            message: `La mesa ${table.name} no tiene capacidad para ${a.seats} comensales (max ${table.capacity})`,
+          });
+          return;
+        }
+      }
+
+      const primary = normalized[0]?.table_name?.trim() || "";
+      const display = assignmentsDisplayName(normalized, primary || "sin mesa");
+
+      // Optimistic local update: bookings + booking states (layout).
+      setBookings((prev) =>
+        prev.map((b) => (b.id === booking.id ? { ...b, table_number: primary || null } : b)),
+      );
+      const nextState: BookingState = {
+        ...(prevState || { seated: false }),
+        ...(normalized.length > 0 ? { assignments: normalized } : { assignments: undefined }),
+      };
+      const nextStates = { ...bookingStatesRef.current, [String(booking.id)]: nextState };
+      bookingStatesRef.current = nextStates;
+      setBookingStates(nextStates);
+      queuePersistLayout(drawElementsRef.current, nextStates, lineDrawingPointsRef.current);
+
+      // Keep table_number in sync through the bookings API.
+      const res = await api.reservas.patch(booking.id, { table_number: primary });
+      if (!res.success) {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b)),
+        );
+        const rollback: BookingState = {
+          ...(prevState || { seated: false }),
+          ...(prevState?.assignments ? { assignments: prevState.assignments } : { assignments: undefined }),
+        };
+        const rollbackStates = { ...bookingStatesRef.current, [String(booking.id)]: rollback };
+        bookingStatesRef.current = rollbackStates;
+        setBookingStates(rollbackStates);
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la asignacion" });
+        return;
+      }
+      if (normalized.length > 0) {
+        pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} -> ${display}` });
+      } else {
+        pushToast({ kind: "success", title: "Reserva desasignada" });
+      }
+    },
+    [api.reservas, occupiedSeatsByTable, pushToast, queuePersistLayout, visibleTables],
+  );
+
+  useEffect(() => {
+    saveBookingAssignmentsRef.current = saveBookingAssignments;
+  }, [saveBookingAssignments]);
 
   const addDrawElement = useCallback(
     (preset: DrawElementPreset) => {
@@ -1672,50 +2181,25 @@ export default function TableManagerPage() {
     [api.reservas, pushToast],
   );
 
-  const setBookingTable = useCallback(
-    async (booking: Booking, tableNumber: string) => {
-      const res = await api.reservas.patch(booking.id, { table_number: tableNumber });
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo editar reserva" });
-        return;
-      }
-      setBookings((prev) => prev.map((row) => (row.id === booking.id ? { ...row, table_number: tableNumber } : row)));
-      pushToast({ kind: "success", title: "Reserva actualizada" });
-    },
-    [api.reservas, pushToast],
-  );
-
   const assignBookingToTable = useCallback(
     async (booking: Booking, tableName: string, tableId: string) => {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === booking.id ? { ...b, table_number: tableName } : b))
-      );
       setBookingForAssignment(null);
-
-      if (ws.current?.readyState === WebSocket.OPEN) {
-        ws.current.send(
-          JSON.stringify({
-            type: "assign_booking_to_table",
-            booking_id: booking.id,
-            table_id: Number(tableId),
-            table_name: tableName,
-            date: selectedDate,
-          })
-        );
-        pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} -> ${tableName}` });
-      } else {
-        const res = await api.reservas.patch(booking.id, { table_number: tableName });
-        if (!res.success) {
-          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo asignar" });
-          setBookings((prev) =>
-            prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b))
-          );
-        } else {
-          pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} -> ${tableName}` });
-        }
-      }
+      const table = visibleTables.find((t) => t.id === Number(tableId));
+      const existing = resolveAssignments(bookingStatesRef.current[String(booking.id)], booking.table_number, booking.party_size);
+      const already = existing.some((a) => normalizeTableKey(a.table_name) === normalizeTableKey(tableName));
+      const assignments: BookingTableAssignment[] = already
+        ? existing
+        : [
+            {
+              table_id: table?.id ?? null,
+              table_name: tableName,
+              seats: Math.max(1, Math.round(Number(booking.party_size) || 1)),
+              names: [],
+            },
+          ];
+      await saveBookingAssignmentsRef.current(booking, assignments);
     },
-    [api.reservas, pushToast, selectedDate, ws]
+    [visibleTables],
   );
 
   const handleAssignModeSelect = useCallback(async (bookingId: number, tableId: number) => {
@@ -1724,24 +2208,24 @@ export default function TableManagerPage() {
 
     if (!booking || !table) return;
 
-    setBookings((prev) =>
-      prev.map((b) => (b.id === booking.id ? { ...b, table_number: table.name } : b))
-    );
-
-    const res = await api.reservas.patch(booking.id, { table_number: table.name });
-    if (!res.success) {
-      pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo asignar" });
-      setBookings((prev) =>
-        prev.map((b) => (b.id === booking.id ? { ...b, table_number: booking.table_number } : b))
-      );
-    } else {
-      pushToast({ kind: "success", title: "Reserva asignada", message: `${booking.customer_name} -> ${table.name}` });
-    }
+    const existing = resolveAssignments(bookingStatesRef.current[String(booking.id)], booking.table_number, booking.party_size);
+    const already = existing.some((a) => normalizeTableKey(a.table_name) === normalizeTableKey(table.name));
+    const assignments: BookingTableAssignment[] = already
+      ? existing
+      : [
+          {
+            table_id: table.id,
+            table_name: table.name,
+            seats: Math.max(1, Math.round(Number(booking.party_size) || 1)),
+            names: [],
+          },
+        ];
+    await saveBookingAssignmentsRef.current(booking, assignments);
 
     setSelectedBookingId(null);
     setSelectedTableId(null);
     setAssignMode(false);
-  }, [api.reservas, bookings, pushToast, visibleTables]);
+  }, [bookings, visibleTables]);
 
   useEffect(() => {
     if (assignmentInProgress.current) return;
@@ -1818,6 +2302,10 @@ export default function TableManagerPage() {
   const openRightSheet = useCallback(() => {
     setMenuVisible(false);
     setRightSheetOpen(true);
+    // The reservations sheet is independent from the drawing editor. Opening
+    // it must dismiss the editor panel, while preserving edit mode itself.
+    setDrawPanelDismissed(true);
+    setDrawPanelHover(false);
   }, []);
 
   const closeRightSheet = useCallback(() => {
@@ -1828,16 +2316,19 @@ export default function TableManagerPage() {
     if (!menuVisible && !rightSheetOpen) return;
     const onClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+      // Clicks inside a portal overlay (modal, dropdown menu) must not count
+      // as an outside click for the reservations sheet.
+      const insidePortalUI = Boolean(target.closest?.('[data-ui="modal-overlay"], [data-ui="dropdown-menu"]'));
       if (menuVisible) {
         const tooltip = document.querySelector('[data-ui="map-menu-tooltip"]');
         const trigger = menuButtonRef.current;
-        if (tooltip && !tooltip.contains(target) && trigger && !trigger.contains(target)) {
+        if (!insidePortalUI && tooltip && !tooltip.contains(target) && trigger && !trigger.contains(target)) {
           setMenuVisible(false);
         }
       }
       if (rightSheetOpen) {
         const sheet = rightSheetRef.current;
-        if (sheet && !sheet.contains(target)) {
+        if (!insidePortalUI && sheet && !sheet.contains(target)) {
           setRightSheetOpen(false);
         }
       }
@@ -1879,6 +2370,7 @@ export default function TableManagerPage() {
     } else {
       setEditMode(false);
       setSelectedDrawElementId(null);
+      setSelectedTableId(null);
       setIsEditingLimitArea(false);
       setDraggingLimitVertexIndex(null);
       limitEditHistoryRef.current = [];
@@ -2289,8 +2781,6 @@ export default function TableManagerPage() {
                   <div
                     data-ui="draw-trigger"
                     className="bo-tableMapDrawTrigger"
-                    onMouseEnter={openDrawPanelHover}
-                    onMouseLeave={closeDrawPanelHoverSoon}
                   >
                     <button
                       data-ui="draw-mode-btn"
@@ -2345,6 +2835,8 @@ export default function TableManagerPage() {
                         setSelectedTableId(prev => prev === tableData.id ? null : tableData.id);
                       } else if (bookingForAssignment) {
                         assignBookingToTable(bookingForAssignment, tableData.name, node.id);
+                      } else if (editMode) {
+                        setSelectedTableId(prev => (prev === tableData.id ? null : tableData.id));
                       }
                       return;
                     }
@@ -2829,7 +3321,7 @@ export default function TableManagerPage() {
                       <div data-ui="reservations-section" className="bo-tableMapSection">
                         <div data-slot="reservations-header" className="bo-tableMapSectionHeader">
                           <div data-ui="reservations-title" className="bo-tableMapSectionTitle">Reservas del dia</div>
-                          {bookings.length > 0 && hasUnassignedBookings && !assignMode && (
+                          {bookings.length > 0 && hasUnassignedBookings && !assignMode && visibleTables.length > 0 && tablesByStatus.free.length > 0 && (
                             <button
                               data-ui="assign-table-btn"
                               className="bo-btn bo-btn--primary bo-btn--sm"
@@ -2907,16 +3399,23 @@ export default function TableManagerPage() {
                                   )}
                                   <span data-ui="booking-status-dot" className="bo-tableMapBookingStatusDot" />
                                   <div data-ui="booking-main" className="bo-tableMapBookingMain">
-                                    <strong data-ui="booking-table-customer">{booking.table_number || "-"} · {booking.customer_name}</strong>
+                                    <strong data-ui="booking-table-customer">
+                                      {assignmentsDisplayName(
+                                        resolveAssignments(bookingStates[String(booking.id)], booking.table_number, booking.party_size),
+                                        booking.table_number || "-",
+                                      )} · {booking.customer_name}
+                                    </strong>
                                     <span data-ui="booking-pax-time">{booking.party_size} pax · {formatHHMM(booking.reservation_time)}</span>
                                   </div>
                                   <DropdownMenu
                                     label="Acciones reserva"
                                     triggerClassName="bo-actionBtn bo-actionBtn--glass"
+                                    triggerDataSlot="booking-row-actions"
                                     items={[
                                       { id: "details", label: "Ver", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => setSelectedBooking(booking) },
                                       { id: "cancel", label: "Cancelar", tone: "danger", icon: <Trash2 size={16} strokeWidth={1.8} />, onSelect: () => void cancelBooking(booking) },
                                     ]}
+                                    wrapperClassName="bo-tableBookingRowActions"
                                   />
                                 </div>
                               );
@@ -3356,9 +3855,18 @@ export default function TableManagerPage() {
 
                     <div data-ui="booking-hero" className="bo-tableBookingHero">
                       <div data-ui="booking-hero-left" className="bo-tableBookingHeroLeft">
-                        <div data-ui="booking-table-badge" className={`bo-tableBookingTableBadge${selectedBooking.table_number ? "" : " is-unassigned"}`}>
-                          {selectedBooking.table_number ? `Mesa ${selectedBooking.table_number}` : "Sin mesa"}
-                        </div>
+                        {(() => {
+                          const display = assignmentsDisplayName(
+                            resolveAssignments(bookingStates[String(selectedBooking.id)], selectedBooking.table_number, selectedBooking.party_size),
+                            selectedBooking.table_number || "",
+                          );
+                          const unassigned = !display;
+                          return (
+                            <div data-ui="booking-table-badge" className={`bo-tableBookingTableBadge${unassigned ? " is-unassigned" : ""}`}>
+                              {unassigned ? "Sin mesa" : `Mesas: ${display}`}
+                            </div>
+                          );
+                        })()}
                         <div data-ui="booking-hero-name" className="bo-tableBookingHeroName">{selectedBooking.customer_name}</div>
                       </div>
                       <div data-ui="booking-hero-right" className="bo-tableBookingHeroRight">
@@ -3404,14 +3912,21 @@ export default function TableManagerPage() {
                       ) : null}
                     </div>
 
-                    <div data-ui="field-booking-table" className="bo-tableBookingTableField">
-                      <label data-ui="booking-table-label" className="bo-tableBookingTableLabel">Asignar mesa</label>
-                      <Select
-                        value={bookingTableDraft}
-                        onChange={(val) => setBookingTableDraft(val)}
-                        options={freeTableOptions}
-                        ariaLabel="Seleccionar mesa"
-                      />
+                    <div data-ui="field-booking-tables" className="bo-tableBookingTableField">
+                      <label data-ui="booking-tables-label" className="bo-tableBookingTableLabel">Mesas asignadas</label>
+                      {visibleTables.length === 0 ? (
+                        <div data-ui="booking-table-empty" className="bo-tableBookingTableEmpty" role="status">
+                          No hay mesas creadas, por favor primero crea una mesa nueva.
+                        </div>
+                      ) : (
+                        <BookingAssignmentEditor
+                          booking={selectedBooking}
+                          state={bookingStates[String(selectedBooking.id)]}
+                          tables={visibleTables}
+                          occupiedSeats={occupiedSeatsExcludingBooking(selectedBooking)}
+                          onSave={(assignments) => void saveBookingAssignments(selectedBooking, assignments)}
+                        />
+                      )}
                     </div>
 
                     <div data-ui="booking-modal-actions" className="bo-tableBookingModalActions">
@@ -3420,22 +3935,16 @@ export default function TableManagerPage() {
                         Cancelar reserva
                       </button>
                       <div data-slot="actions-right" className="bo-tableBookingActionsRight">
-                        <button
-                          data-ui="toggle-seated-btn"
-                          className="bo-btn bo-btn--ghost bo-btn--sm"
-                          type="button"
-                          onClick={() => markBookingSeated(selectedBooking, !bookingStates[String(selectedBooking.id)]?.seated)}
-                        >
-                          {bookingStates[String(selectedBooking.id)]?.seated ? "Desmarcar sentada" : "Marcar sentada"}
-                        </button>
-                        <button
-                          data-ui="save-booking-btn"
-                          className="bo-btn bo-btn--primary bo-btn--sm"
-                          type="button"
-                          onClick={() => void setBookingTable(selectedBooking, bookingTableDraft.trim())}
-                        >
-                          Guardar
-                        </button>
+                        {visibleTables.length > 0 ? (
+                          <button
+                            data-ui="toggle-seated-btn"
+                            className="bo-btn bo-btn--ghost bo-btn--sm"
+                            type="button"
+                            onClick={() => markBookingSeated(selectedBooking, !bookingStates[String(selectedBooking.id)]?.seated)}
+                          >
+                            {bookingStates[String(selectedBooking.id)]?.seated ? "Desmarcar sentada" : "Marcar sentada"}
+                          </button>
+                        ) : null}
                       </div>
                     </div>
                   </div>

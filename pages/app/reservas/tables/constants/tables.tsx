@@ -19,6 +19,11 @@ export const STATUS_LABEL: Record<string, string> = {
 export const RECT_SEAT_OFFSET = 18;
 export const DRAW_ROTATE_STEP = 10;
 
+/** Minimum/maximum canvas size (px) for a table node when resizing in edit mode. */
+export const TABLE_SIZE_MIN = 44;
+export const TABLE_SIZE_MAX = 420;
+export const TABLE_SIZE_DEFAULT = 148;
+
 export const DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS = {
   padding: 0.5,
   maxZoom: 0.45,

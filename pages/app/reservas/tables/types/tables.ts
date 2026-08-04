@@ -29,6 +29,13 @@ export type TableNodeData = {
   rectShortSides: RectShortSides;
   assignMode?: boolean;
   isSelected?: boolean;
+  /** Explicit canvas size (px) set by the editor resize feature. */
+  width?: number;
+  height?: number;
+  /** True while the map is in edit mode (enables resize handles). */
+  editable?: boolean;
+  /** Names of seated guests at this table (derived from booking assignments). */
+  seatedNames?: string[];
 };
 
 // Draw element types
@@ -74,6 +81,7 @@ export type DrawNodeData = {
   height: number;
   rotationDeg: number;
   editable: boolean;
+  onDelete?: () => void;
 };
 
 // Line drawing state (LinePoint is imported from lineDrawing.ts)
@@ -84,8 +92,23 @@ export type LineDrawingState = {
 };
 
 // Booking state
+export type BookingTableAssignment = {
+  /** Table row id when resolvable (null for legacy table_number-only bookings). */
+  table_id: number | null;
+  table_name: string;
+  /** Number of guests split to this table. */
+  seats: number;
+  /** Guest names seated at this table. */
+  names: string[];
+};
+
 export type BookingState = {
   seated: boolean;
+  /**
+   * Structured table split for the booking. Missing for legacy bookings that
+   * only carry a `table_number`; those are derived as a single assignment.
+   */
+  assignments?: BookingTableAssignment[];
 };
 
 // Geometry types
