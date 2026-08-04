@@ -1910,12 +1910,16 @@ export default function TableManagerPage() {
 
   const closeDrawPanel = useCallback(() => {
     setSelectedDrawElementId(null);
-    setIsEditingLimitArea(false);
+    // Closing the panel only hides its UI. While editing the area, keep the
+    // area editor active so joints and lines remain editable on the canvas.
+    if (!isEditingLimitArea) {
+      setIsEditingLimitArea(false);
+    }
     setDraggingLimitVertexIndex(null);
     limitEditHistoryRef.current = [];
     setDrawPanelDismissed(true);
     setDrawPanelHover(false);
-  }, []);
+  }, [isEditingLimitArea]);
 
   const startLineDrawing = useCallback(() => {
     setIsEditingLimitArea(false);
@@ -1974,7 +1978,11 @@ export default function TableManagerPage() {
     setEditMode(true);
     setDrawPanelDismissed(false);
     setMenuVisible(false);
-  }, [lineDrawing.isDrawing, lineDrawing.points]);
+    // Reframe the complete editable area so all joints are immediately reachable.
+    requestAnimationFrame(() => {
+      reactFlowInstance?.fitView?.({ padding: 0.2, duration: 220 });
+    });
+  }, [lineDrawing.isDrawing, lineDrawing.points, reactFlowInstance]);
 
   const stopLimitAreaEditing = useCallback(() => {
     setIsEditingLimitArea(false);
@@ -2405,6 +2413,15 @@ export default function TableManagerPage() {
                     >
                       <Hand size={14} strokeWidth={1.9} />
                     </ControlButton>
+                    {isEditingLimitArea && editMode ? (
+                      <ControlButton
+                        onClick={() => reactFlowInstance?.fitView?.({ padding: 0.2, duration: 220 })}
+                        title="Reencuadrar area"
+                        aria-label="Reencuadrar area"
+                      >
+                        <RotateCcw size={14} strokeWidth={1.9} />
+                      </ControlButton>
+                    ) : null}
                   </Controls>
                 </ReactFlow>
 
@@ -2418,7 +2435,9 @@ export default function TableManagerPage() {
                       left: 0,
                       width: "100%",
                       height: "100%",
-                      pointerEvents: isEditingLimitArea && editMode ? "auto" : "none",
+                      // The overlay must not create a full-screen hit target. Only
+                      // the joint circles and line segments below handle input.
+                      pointerEvents: "none",
                       overflow: "visible",
                     }}
                   >
@@ -2428,7 +2447,7 @@ export default function TableManagerPage() {
                           data-ui="line-vertex"
                           cx={point.x}
                           cy={point.y}
-                          r={isEditingLimitArea && editMode ? 9 : 6}
+                          r={isEditingLimitArea && editMode ? 14 : 6}
                           fill={isEditingLimitArea && editMode ? "color-mix(in srgb, var(--bo-accent) 70%, var(--bo-surface))" : "var(--bo-accent)"}
                           stroke="var(--bo-surface)"
                           strokeWidth={2}
