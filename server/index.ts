@@ -546,8 +546,9 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
     if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws")) return;
 
     if (pathname.startsWith("/api/admin/assistant/ws")) {
-      // TEMP DEBUG: dump the browser's upgrade request.
-      console.error("[forky-debug] client upgrade:", reqURL, JSON.stringify(req.headers));
+      // Keep diagnostic logging safe: upgrade headers include the session cookie.
+      const { cookie: _cookie, authorization: _authorization, ...safeHeaders } = req.headers;
+      console.error("[forky-debug] client upgrade:", reqURL, JSON.stringify(safeHeaders));
     }
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
