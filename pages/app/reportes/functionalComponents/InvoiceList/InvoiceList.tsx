@@ -31,41 +31,41 @@ export function InvoiceList({ invoices, expanded, onToggle }: InvoiceListProps) 
     <Card variant="tailwind" data-ui="invoice-list">
       <button
         onClick={onToggle}
-        className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
+        className="w-full px-6 py-4 flex items-center justify-between bg-[var(--bo-surface-2)] hover:bg-[var(--bo-surface-3)]"
         data-ui="toggle-btn"
       >
-        <span className="text-sm font-medium text-gray-900" data-ui="count-label">Lista de facturas ({invoices.length})</span>
-        {expanded ? <ChevronUp className="w-5 h-5 text-gray-600" /> : <ChevronDown className="w-5 h-5 text-gray-600" />}
+        <span className="text-sm font-medium text-[var(--bo-text)]" data-ui="count-label">Lista de facturas ({invoices.length})</span>
+        {expanded ? <ChevronUp className="w-5 h-5 text-[var(--bo-muted)]" /> : <ChevronDown className="w-5 h-5 text-[var(--bo-muted)]" />}
       </button>
       {expanded && (
-        <table className="min-w-full divide-y divide-gray-200" data-ui="invoice-table">
-          <thead className="bg-gray-50" data-slot="invoiceList-bg-gray-50">
+        <table className="min-w-full divide-y divide-[var(--bo-border)]" data-ui="invoice-table">
+          <thead className="bg-[var(--bo-surface-2)]" data-slot="invoiceList-bg-[var(--bo-surface-2)]">
             <tr data-slot="invoiceList-tr">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Factura</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Cliente</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Fecha</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Base</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">IVA</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">IVA Importe</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Total</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Tipo</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Factura</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Cliente</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Fecha</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Base</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">IVA</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">IVA Importe</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Total</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-[var(--bo-muted)] uppercase tracking-wider" data-slot="invoiceList-tracking-wider">Tipo</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200" data-slot="invoiceList-divide-gray-200">
+          <tbody className="bg-[var(--bo-surface)] divide-y divide-[var(--bo-border)]" data-slot="invoiceList-divide-[var(--bo-border)]">
             {invoices.map((inv, idx) => (
-              <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"} data-ui="invoice-row">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-ui="invoice-number">{inv.invoice_number || ` #${inv.id}`}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600" data-ui="customer-name">{inv.customer_name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600" data-ui="invoice-date">{formatDate(inv.invoice_date)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" data-ui="base-amount">{formatCurrency(inv.base_amount, "EUR")}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600" data-ui="iva-rate">{inv.iva_rate}%</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" data-ui="iva-amount">{formatCurrency(inv.iva_amount, "EUR")}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-semibold" data-ui="total">{formatCurrency(inv.total, "EUR")}</td>
+              <tr key={idx} className={idx % 2 === 0 ? "bg-[var(--bo-surface)]" : "bg-[var(--bo-surface-2)]"} data-ui="invoice-row">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--bo-text)]" data-ui="invoice-number">{inv.invoice_number || ` #${inv.id}`}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--bo-muted)]" data-ui="customer-name">{inv.customer_name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--bo-muted)]" data-ui="invoice-date">{formatDate(inv.invoice_date)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-[var(--bo-text)]" data-ui="base-amount">{formatCurrency(inv.base_amount, "EUR")}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-[var(--bo-muted)]" data-ui="iva-rate">{inv.iva_rate}%</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-[var(--bo-text)]" data-ui="iva-amount">{formatCurrency(inv.iva_amount, "EUR")}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-[var(--bo-text)] font-semibold" data-ui="total">{formatCurrency(inv.total, "EUR")}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-center" data-ui="invoice-type">
                   {inv.is_credit_note ? (
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800" data-slot="invoiceList-text-yellow-800">NC</span>
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-[var(--bo-warning-bg)] text-[var(--bo-color-warning)]" data-slot="invoiceList-text-[var(--bo-color-warning)]">NC</span>
                   ) : (
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800" data-slot="invoiceList-text-blue-800">Factura</span>
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-[color-mix(in_srgb,var(--bo-accent)_18%,transparent)] text-[var(--bo-accent)]" data-slot="invoiceList-text-[var(--bo-accent)]">Factura</span>
                   )}
                 </td>
               </tr>

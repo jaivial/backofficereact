@@ -1,46 +1,20 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { Loader2 } from "lucide-react";
 
-import { createClient } from "../../api/client";
+import { createAuthClient } from "../../api/auth-client";
 import { sessionAtom } from "../../state/atoms";
 import { useErrorToast } from "../../ui/feedback/useErrorToast";
 import { createLoginHandler } from "./helpers/onSubmit";
 
-const LOGIN_IMAGES = [
-  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1600&q=85",
-  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=85",
-  "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1600&q=85",
-];
-
 export default function Page() {
-  const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const api = useMemo(() => createAuthClient({ baseUrl: "" }), []);
   const setSession = useSetAtom(sessionAtom);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageIndex, setImageIndex] = useState(0);
   useErrorToast(error);
-
-  useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 769px)");
-    let timer: ReturnType<typeof setInterval> | undefined;
-
-    const syncTimer = () => {
-      if (timer) clearInterval(timer);
-      timer = desktop.matches
-        ? setInterval(() => setImageIndex((index) => (index + 1) % LOGIN_IMAGES.length), 2_000)
-        : undefined;
-    };
-
-    syncTimer();
-    desktop.addEventListener("change", syncTimer);
-    return () => {
-      if (timer) clearInterval(timer);
-      desktop.removeEventListener("change", syncTimer);
-    };
-  }, []);
 
   const onSubmit = createLoginHandler({
     api,
@@ -157,19 +131,30 @@ export default function Page() {
         className="relative hidden min-h-screen min-h-[100dvh] overflow-hidden min-[769px]:block"
         data-testid="login-image-pane"
         data-ui="login-image-pane"
-        data-image-index={imageIndex}
         aria-hidden="true"
       >
-        {LOGIN_IMAGES.map((src, index) => (
-          <img
-            key={src}
-            src={src}
-            alt=""
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-              index === imageIndex ? "opacity-100" : "opacity-0"
-            }`}
+        <picture className="absolute inset-0 block h-full w-full" data-ui="login-hero-picture">
+          <source
+            media="(min-width: 769px)"
+            srcSet="/media/login/login-hero.avif"
+            type="image/avif"
+            data-ui="login-hero-source-avif"
           />
-        ))}
+          <source
+            media="(min-width: 769px)"
+            srcSet="/media/login/login-hero.webp"
+            type="image/webp"
+            data-ui="login-hero-source-webp"
+          />
+          <img
+            src="data:image/gif;base64,R0lGODlhAQABAAAAACw="
+            alt=""
+            width={850}
+            height={850}
+            className="h-full w-full object-cover"
+            data-ui="login-hero-image"
+          />
+        </picture>
       </section>
     </main>
   );

@@ -45,6 +45,22 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        boFadeIn: {
+          "0%": { opacity: "0", transform: "translateY(4px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        boFadeOut: {
+          "0%": { opacity: "1", transform: "translateY(0)" },
+          "100%": { opacity: "0", transform: "translateY(4px)" },
+        },
+      },
+      animation: {
+        // 200ms: long enough to read as a transition between the sheet list and
+        // the editor, short enough not to delay the next click.
+        boFadeIn: "boFadeIn 200ms ease-out both",
+        boFadeOut: "boFadeOut 200ms ease-in both",
+      },
     },
   },
   corePlugins: {

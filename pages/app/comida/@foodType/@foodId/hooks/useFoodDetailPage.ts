@@ -24,6 +24,30 @@ export interface QuickFormState {
   allergens: string[];
 }
 
+/**
+ * Which editor a catalogue type uses. Extracted so the rule can be tested
+ * without mounting the page.
+ *
+ * Postres are included: they were the only type without a detail editor, which
+ * is why the "Tipo de producto" section could never be shown for them.
+ * Wine keeps its own editor, so it is deliberately excluded here.
+ */
+export function detailEditorSupport(foodType: string) {
+  const isPlate = foodType === "platos";
+  const isCafe = foodType === "cafes";
+  const isBebida = foodType === "bebidas";
+  const isWine = foodType === "vinos";
+  const isPostre = foodType === "postres";
+  return {
+    isPlate,
+    isCafe,
+    isBebida,
+    isWine,
+    isPostre,
+    supportsQuickEditor: isPlate || isCafe || isBebida || isPostre,
+  };
+}
+
 export function useFoodDetailPage() {
   const pageContext = usePageContext();
   const data = pageContext.data as Data;
@@ -65,11 +89,8 @@ export function useFoodDetailPage() {
 
   const item = itemState;
   const foodType = data.foodType;
-  const isPlate = foodType === "platos";
-  const isCafe = foodType === "cafes";
-  const isBebida = foodType === "bebidas";
-  const isWine = foodType === "vinos";
-  const supportsQuickEditor = isPlate || isCafe || isBebida;
+  const { isPlate, isCafe, isBebida, isWine, isPostre, supportsQuickEditor } =
+    detailEditorSupport(foodType);
 
   // WebSocket for AI events
   const itemNum = item ? (item as FoodItem).num : null;
@@ -139,12 +160,18 @@ export function useFoodDetailPage() {
     if (isPlate) res = await api.comida.platos.get(itemNum);
     else if (isBebida) res = await api.comida.bebidas.get(itemNum);
     else if (isCafe) res = await api.comida.cafes.get(itemNum);
-    else return;
+    else if (isPostre) {
+      // The postres endpoint returns the legacy row plus a normalised item.
+      const postreRes = await api.comida.postres.get(itemNum);
+      res = postreRes.success && postreRes.item
+        ? { success: true, item: postreRes.item }
+        : { success: false };
+    } else return;
     if (!res.success || !res.item) return;
     const fresh = res.item as FoodItem;
     setItemState(fresh);
     if (!(fresh as any).ai_generating) setAiGenerating(false);
-  }, [api.comida.platos, api.comida.bebidas, api.comida.cafes, isPlate, isBebida, isCafe, itemNum, supportsQuickEditor]);
+  }, [api.comida.platos, api.comida.bebidas, api.comida.cafes, isPlate, isBebida, isCafe, isPostre, itemNum, supportsQuickEditor]);
 
   useEffect(() => { resyncRef.current = () => { void resyncItemOnce(); }; }, [resyncItemOnce]);
 
@@ -717,6 +744,7 @@ export function useFoodDetailPage() {
     isCafe,
     isBebida,
     isWine,
+    isPostre,
     supportsQuickEditor,
     itemNum,
     showAdvisorForType,

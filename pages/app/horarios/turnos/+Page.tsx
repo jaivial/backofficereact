@@ -468,14 +468,14 @@ export default function Page() {
       >
 
           {view === "grid" ? (
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex w-full min-w-0 flex-wrap justify-center gap-3">
             {membersSorted.map((member) => {
               const sched = scheduleByMember.get(member.id);
               const isLive = activeEntriesForDate.has(member.id);
               return (
                 <div
                   key={member.id}
-                  className="flex flex-col justify-between rounded-xl bg-transparent p-4 w-[calc(25%-12px)] min-w-[200px] h-[120px] transition-colors duration-200"
+                  className="flex flex-col justify-between rounded-xl bg-transparent p-4 max-sm:w-full w-[calc(25%-12px)] min-w-[min(200px,100%)] h-[120px] transition-colors duration-200"
                   style={{ border: "1px solid rgba(255,255,255,0.12)" }}
                   data-testid="turnos-member-card"
                 >

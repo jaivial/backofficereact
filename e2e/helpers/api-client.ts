@@ -31,17 +31,27 @@ export interface MenusResponse extends ApiResponse {
   menu?: { menu_title?: string; sections?: unknown[]; [key: string]: unknown };
 }
 
+const BASE_URL = process.env.BACKOFFICE_URL || "https://localhost:3001";
+
+function absoluteUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 export class TestApiClient {
   constructor(private page: Page) {}
 
+  private abs(path: string): string {
+    return absoluteUrl(path);
+  }
+
   /**
-   * Make a GET request via the page's fetch (includes cookies).
+   * Make a GET request via the page's request context (shares browser cookies,
+   * no CORS restrictions — works even before the page has navigated).
    */
   async get<T = ApiResponse>(path: string): Promise<T> {
-    return this.page.evaluate(async (url) => {
-      const res = await fetch(url, { credentials: "include" });
-      return res.json();
-    }, path) as Promise<T>;
+    const res = await this.page.request.get(this.abs(path));
+    return res.json() as Promise<T>;
   }
 
   /**
@@ -51,18 +61,8 @@ export class TestApiClient {
     path: string,
     body: Record<string, unknown>
   ): Promise<T> {
-    return this.page.evaluate(
-      async ([url, data]: [string, Record<string, unknown>]) => {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-          credentials: "include",
-        });
-        return res.json();
-      },
-      [path, body] as [string, Record<string, unknown>]
-    ) as Promise<T>;
+    const res = await this.page.request.post(this.abs(path), { data: body });
+    return res.json() as Promise<T>;
   }
 
   /**
@@ -72,31 +72,16 @@ export class TestApiClient {
     path: string,
     body: Record<string, unknown>
   ): Promise<T> {
-    return this.page.evaluate(
-      async ([url, data]: [string, Record<string, unknown>]) => {
-        const res = await fetch(url, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-          credentials: "include",
-        });
-        return res.json();
-      },
-      [path, body] as [string, Record<string, unknown>]
-    ) as Promise<T>;
+    const res = await this.page.request.patch(this.abs(path), { data: body });
+    return res.json() as Promise<T>;
   }
 
   /**
    * Make a DELETE request via the page's fetch.
    */
   async delete<T = ApiResponse>(path: string): Promise<T> {
-    return this.page.evaluate(async (url) => {
-      const res = await fetch(url, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      return res.json();
-    }, path) as Promise<T>;
+    const res = await this.page.request.delete(this.abs(path));
+    return res.json() as Promise<T>;
   }
 
   // --- Domain-specific helpers ---

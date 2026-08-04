@@ -195,33 +195,59 @@ export function buildRectChairs(
   return out;
 }
 
-export function previewGeometry(shape: TableShape, capacity: number, rectShortSides: RectShortSides): PreviewGeometry {
+export type ExplicitTableSize = { width?: number; height?: number };
+
+/** Capacity-based default canvas size for a table. */
+export function defaultTableSize(shape: TableShape, capacity: number): { width: number; height: number } {
   const c = clampCapacity(capacity);
   if (shape === "round") {
     const size = 148 + c * 2;
-    return {
-      width: size,
-      height: size,
-      chairs: buildRoundChairs(c, size, size),
-    };
+    return { width: size, height: size };
   }
-
   if (c <= 4) {
-    const size = 164;
-    return {
-      width: size,
-      height: size,
-      chairs: buildRectChairs(c, size, size, rectShortSides),
-    };
+    return { width: 164, height: 164 };
   }
-
-  const width = Math.min(290, 164 + (c - 4) * 18);
-  const height = Math.max(138, 164 - Math.min(36, (c - 4) * 4));
   return {
-    width,
-    height,
-    chairs: buildRectChairs(c, width, height, rectShortSides),
+    width: Math.min(290, 164 + (c - 4) * 18),
+    height: Math.max(138, 164 - Math.min(36, (c - 4) * 4)),
   };
+}
+
+/**
+ * Resolves the canvas size for a table. Explicit width/height (set by the
+ * editor resize feature) win; otherwise the capacity-based default is used.
+ */
+export function normalizeTableSize(
+  shape: TableShape,
+  capacity: number,
+  _rectShortSides: RectShortSides,
+  explicit?: ExplicitTableSize,
+): { width: number; height: number } {
+  const fallback = defaultTableSize(shape, capacity);
+  const width =
+    typeof explicit?.width === "number" && Number.isFinite(explicit.width) && explicit.width > 0
+      ? Math.round(explicit.width)
+      : fallback.width;
+  const height =
+    typeof explicit?.height === "number" && Number.isFinite(explicit.height) && explicit.height > 0
+      ? Math.round(explicit.height)
+      : fallback.height;
+  return { width, height };
+}
+
+export function previewGeometry(
+  shape: TableShape,
+  capacity: number,
+  rectShortSides: RectShortSides,
+  explicit?: ExplicitTableSize,
+): PreviewGeometry {
+  const c = clampCapacity(capacity);
+  const size = normalizeTableSize(shape, c, rectShortSides, explicit);
+  const chairs =
+    shape === "round"
+      ? buildRoundChairs(c, size.width, size.height)
+      : buildRectChairs(c, size.width, size.height, rectShortSides);
+  return { width: size.width, height: size.height, chairs };
 }
 
 // === Geometry helpers ===
@@ -277,4 +303,96 @@ export function normalizeTableKey(name: string | number | null | undefined): str
 
 export function pickColorPreset(presetId: string): ColorPreset | undefined {
   return COLOR_PRESETS.find((p) => p.id === presetId);
+}
+
+// === Booking table assignment helpers ===
+
+export function sumAssignmentSeats(assignments: Array<{ seats: number }> | undefined | null): number {
+  return (assignments || []).reduce((sum, item) => sum + Math.max(0, Number(item.seats) || 0), 0);
+}
+
+/** Clamps seats to a party of `partySize`, redistributing the difference. */
+export function normalizeAssignmentSeats(
+  assignments: Array<{ seats: number }>,
+  partySize: number,
+): Array<{ seats: number }> {
+  const total = clampCapacity(partySize);
+  if (assignments.length === 0 || total <= 0) return assignments;
+
+  let remaining = total;
+  const next = assignments.map((item, idx) => {
+    if (idx === assignments.length - 1) {
+      return { ...item, seats: remaining };
+    }
+    const seats = Math.max(1, Math.min(remaining - (assignments.length - idx - 1), Math.round(Number(item.seats) || 1)));
+    remaining -= seats;
+    return { ...item, seats };
+  });
+  return next;
+}
+
+/**
+ * Splits `partySize` across `tableCount` assignments, keeping the sum exact.
+ * Earlier rows get the extra seat when the party does not divide evenly.
+ */
+export function splitPartyAcrossTables(
+  partySize: number,
+  tables: Array<{ table_id: number | null; table_name: string }>,
+  existing?: Array<{ seats: number; names?: string[] }>,
+): Array<{ table_id: number | null; table_name: string; seats: number; names: string[] }> {
+  const total = clampCapacity(partySize);
+  const count = Math.max(1, tables.length);
+  const base = Math.floor(total / count);
+  const extra = total % count;
+  return tables.map((table, idx) => ({
+    table_id: table.table_id,
+    table_name: table.table_name,
+    seats: base + (idx < extra ? 1 : 0),
+    names: existing?.[idx]?.names || [],
+  }));
+}
+
+/**
+ * Resolves the assignments for a booking. Prefers the structured assignments
+ * stored in the booking state; legacy bookings with only a `table_number` are
+ * derived as a single full-party assignment.
+ */
+export function resolveAssignments(
+  state: { assignments?: Array<{ table_id: number | null; table_name: string; seats: number; names: string[] }> } | undefined,
+  tableNumber: string | null | undefined,
+  partySize: number,
+): Array<{ table_id: number | null; table_name: string; seats: number; names: string[] }> {
+  if (state?.assignments && state.assignments.length > 0) {
+    return state.assignments;
+  }
+  const name = normalizeTableKey(tableNumber);
+  if (!name) return [];
+  return [{ table_id: null, table_name: name, seats: Math.max(1, Math.round(Number(partySize) || 1)), names: [] }];
+}
+
+export function assignmentsDisplayName(
+  assignments: Array<{ table_name: string }> | undefined | null,
+  fallback: string,
+): string {
+  const names = (assignments || []).map((item) => normalizeTableKey(item.table_name)).filter(Boolean);
+  if (names.length === 0) return fallback;
+  return names.join(" + ");
+}
+
+/** Names seated at a specific table, gathered from assignments. */
+export function seatedNamesForTable(
+  assignments: Array<{ table_name: string; names: string[] }> | undefined | null,
+  tableName: string,
+): string[] {
+  const key = normalizeTableKey(tableName);
+  if (!assignments) return [];
+  const out: string[] = [];
+  for (const item of assignments) {
+    if (normalizeTableKey(item.table_name) !== key) continue;
+    for (const name of item.names || []) {
+      const trimmed = String(name || "").trim();
+      if (trimmed) out.push(trimmed);
+    }
+  }
+  return out;
 }

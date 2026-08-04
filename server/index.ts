@@ -2,6 +2,8 @@ import fs from "node:fs";
 import http from "node:http";
 import https from "node:https";
 import path from "node:path";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 
 const MOBILE_UA_REGEX = /(android|iphone|ipad|ipod|mobile|webos|blackberry|windows phone)/i;
@@ -15,6 +17,12 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { renderPage } from "vike/server";
 import { WebSocket, WebSocketServer } from "ws";
+import {
+  filterBOSessionCookie,
+  filterBOSessionSetCookies,
+  sessionCacheKey,
+  sessionTokenFromCookie,
+} from "../lib/http/cookies";
 import { readSetCookies } from "../lib/http/readSetCookies";
 import { firstAllowedPath, isPathAllowed } from "../lib/rbac";
 
@@ -50,6 +58,9 @@ type BOPageContext = {
 
 const LOCAL_BACKEND_START_CMD = "cd ../backend && go run ./cmd/server";
 const backendHelpLogged = new Set<string>();
+const SSR_DEBUG = process.env.SSR_DEBUG === "1";
+const SESSION_FETCH_TIMEOUT_MS = 2_500;
+const API_PROXY_BODY_LIMIT_BYTES = 32 * 1024 * 1024;
 
 // Session cache: server-side only, no client exposure
 // TTL: 30 seconds to balance freshness vs performance
@@ -61,6 +72,7 @@ type SessionCacheEntry = {
   expiresAt: number;
 };
 const sessionCache = new Map<string, SessionCacheEntry>();
+const sessionFetches = new Map<string, Promise<FetchSessionResult>>();
 
 // Clean expired entries periodically
 setInterval(() => {
@@ -71,17 +83,6 @@ setInterval(() => {
     }
   }
 }, SESSION_CACHE_TTL_MS);
-
-// Simple hash for cache key (not cryptographic, just for Map lookup)
-function hashString(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return String(hash);
-}
 
 function isBackendConnectionError(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
@@ -113,6 +114,28 @@ function isBackendConnectionError(err: unknown): boolean {
   }
 
   return false;
+}
+
+function isAbortError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const errorLike = err as { name?: unknown; code?: unknown };
+  return errorLike.name === "AbortError" || errorLike.name === "TimeoutError" || errorLike.code === "ABORT_ERR";
+}
+
+function proxyTimeoutForPath(pathname: string): number {
+  const path = pathname.toLowerCase();
+  if (path.includes("/ai") || path.includes("/generate")) return 10 * 60_000;
+  if (path.includes("/image") || path.includes("/import") || path.includes("/documents")) return 2 * 60_000;
+  return 30_000;
+}
+
+function upstreamSignal(req: express.Request, res: express.Response, timeoutMs: number): AbortSignal {
+  const disconnected = new AbortController();
+  req.once("aborted", () => disconnected.abort());
+  res.once("close", () => {
+    if (!res.writableFinished) disconnected.abort();
+  });
+  return AbortSignal.any([disconnected.signal, AbortSignal.timeout(timeoutMs)]);
 }
 
 function logBackendUnavailable(scope: string, backendOrigin: string, err?: unknown): void {
@@ -156,7 +179,11 @@ function parseCookies(cookieHeader: string | undefined): Record<string, string> 
     const k = part.slice(0, idx).trim();
     const v = part.slice(idx + 1).trim();
     if (!k) continue;
-    out[k] = decodeURIComponent(v);
+    try {
+      out[k] = decodeURIComponent(v);
+    } catch {
+      out[k] = v;
+    }
   }
   return out;
 }
@@ -171,17 +198,28 @@ function resolveAppPath(baseDir: string, p: string): string {
   return path.resolve(baseDir, p);
 }
 
-async function readRequestBody(req: express.Request): Promise<Buffer> {
+async function readRequestBody(req: express.Request, maxBytes = API_PROXY_BODY_LIMIT_BYTES): Promise<Buffer> {
+  const declaredLength = Number(req.headers["content-length"] ?? 0);
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw Object.assign(new Error("Request body too large"), { statusCode: 413 });
+  }
   const chunks: Buffer[] = [];
+  let total = 0;
   const it = req as any as AsyncIterable<any>;
   for await (const chunk of it) {
     if (chunk === null || chunk === undefined) continue;
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    total += buffer.length;
+    if (total > maxBytes) {
+      throw Object.assign(new Error("Request body too large"), { statusCode: 413 });
+    }
+    chunks.push(buffer);
   }
   return Buffer.concat(chunks);
 }
 
 type FetchSessionResult = {
+  status: "authenticated" | "unauthenticated" | "unavailable";
   session: BOSession | null;
   movingExpirationDate: string | null;
   setCookies: string[];
@@ -195,45 +233,62 @@ function normalizeMovingExpirationDate(value: unknown): string | null {
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
 }
 
+function sessionSecurityScope(pagePath: string | undefined): "high" | "normal" {
+  const path = String(pagePath ?? "").toLowerCase();
+  return path.startsWith("/app/facturas") || path.startsWith("/app/estado-cuenta") ? "high" : "normal";
+}
+
 async function fetchSession(
   backendOrigin: string,
   cookieHeader: string | undefined,
   pagePath: string | undefined,
 ): Promise<FetchSessionResult> {
-  if (!cookieHeader) return { session: null, movingExpirationDate: null, setCookies: [] };
+  const sessionToken = sessionTokenFromCookie(cookieHeader);
+  if (!sessionToken) {
+    return { status: "unauthenticated", session: null, movingExpirationDate: null, setCookies: [] };
+  }
 
-  // Create cache key from cookie header hash (server-side only, never exposed to client)
-  const cacheKey = hashString(cookieHeader);
+  const cacheKey = `${sessionCacheKey(sessionToken)}:${sessionSecurityScope(pagePath)}`;
   const now = Date.now();
 
   // Check cache first
   const cached = sessionCache.get(cacheKey);
   if (cached && cached.expiresAt > now) {
     return {
+      status: cached.session ? "authenticated" : "unauthenticated",
       session: cached.session,
       movingExpirationDate: cached.movingExpirationDate,
       setCookies: [],
     };
   }
 
+  const pending = sessionFetches.get(cacheKey);
+  if (pending) return pending;
 
-  // Cache miss or expired - fetch fresh from backend
-  try {
+  const request = (async (): Promise<FetchSessionResult> => {
+    // Cache miss or expired - fetch fresh from backend
+    try {
     const url = new URL("/api/admin/me", backendOrigin);
-    const headers: Record<string, string> = { cookie: cookieHeader };
+    const headers: Record<string, string> = { cookie: `bo_session=${sessionToken}` };
     if (typeof pagePath === "string" && pagePath.trim() !== "") {
       headers["x-bo-page-path"] = pagePath.trim();
     }
     const res = await fetch(url, {
       method: "GET",
       headers,
+      signal: AbortSignal.timeout(SESSION_FETCH_TIMEOUT_MS),
     });
-    const setCookies = readSetCookies(res.headers);
+    const setCookies = filterBOSessionSetCookies(readSetCookies(res.headers));
 
     // Always invalidate cache on auth failures (401/403)
     if (!res.ok) {
       sessionCache.delete(cacheKey);
-      return { session: null, movingExpirationDate: null, setCookies };
+      return {
+        status: res.status === 401 || res.status === 403 ? "unauthenticated" : "unavailable",
+        session: null,
+        movingExpirationDate: null,
+        setCookies,
+      };
     }
 
     const json = (await res.json()) as any;
@@ -246,7 +301,7 @@ async function fetchSession(
         setCookies,
         expiresAt: now + SESSION_CACHE_TTL_MS,
       });
-      return { session: null, movingExpirationDate: movingExp, setCookies };
+      return { status: "unauthenticated", session: null, movingExpirationDate: movingExp, setCookies };
     }
 
     const session = json.session as BOSession;
@@ -260,14 +315,22 @@ async function fetchSession(
       expiresAt: now + SESSION_CACHE_TTL_MS,
     });
 
-    return { session, movingExpirationDate, setCookies };
+    return { status: "authenticated", session, movingExpirationDate, setCookies };
   } catch (err) {
     if (isBackendConnectionError(err)) {
       logBackendUnavailable("fetchSession", backendOrigin, err);
     } else {
       console.error("[backoffice] fetchSession error", err);
     }
-    return { session: null, movingExpirationDate: null, setCookies: [] };
+    return { status: "unavailable", session: null, movingExpirationDate: null, setCookies: [] };
+    }
+  })();
+
+  sessionFetches.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    sessionFetches.delete(cacheKey);
   }
 }
 
@@ -328,6 +391,21 @@ function sendHttpResponse(
   }
 
   res.send(body as any);
+}
+
+function setServerTiming(res: express.Response, timings: { session: number; render: number; total: number }): void {
+  res.setHeader(
+    "Server-Timing",
+    `session;dur=${timings.session.toFixed(1)}, render;dur=${timings.render.toFixed(1)}, total;dur=${timings.total.toFixed(1)}`,
+  );
+}
+
+async function streamFetchBody(upstream: Response, res: express.Response): Promise<void> {
+  if (!upstream.body) {
+    res.end();
+    return;
+  }
+  await pipeline(Readable.fromWeb(upstream.body as any), res);
 }
 
 function escapeHTML(value: string): string {
@@ -465,7 +543,13 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws")) return;
+
+    if (pathname.startsWith("/api/admin/assistant/ws")) {
+      // Keep diagnostic logging safe: upgrade headers include the session cookie.
+      const { cookie: _cookie, authorization: _authorization, ...safeHeaders } = req.headers;
+      console.error("[forky-debug] client upgrade:", reqURL, JSON.stringify(safeHeaders));
+    }
 
     wss.handleUpgrade(req, socket, head, (clientWS) => {
       let upstreamPath = "";
@@ -498,6 +582,9 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
         if (Array.isArray(v)) headers[k] = v.join(", ");
         else if (typeof v === "string") headers[k] = v;
       }
+      const sessionCookie = filterBOSessionCookie(headers.cookie);
+      if (sessionCookie) headers.cookie = sessionCookie;
+      else delete headers.cookie;
       headers.host = new URL(backendOrigin).host;
       headers["x-forwarded-host"] = req.headers.host || "";
 
@@ -601,6 +688,9 @@ async function start() {
 
       // Let fetch set `Host` to upstream automatically.
       headers.delete("host");
+      const sessionCookie = filterBOSessionCookie(headers.get("cookie") ?? undefined);
+      if (sessionCookie) headers.set("cookie", sessionCookie);
+      else headers.delete("cookie");
 
       // Avoid upstream compression: the proxy buffers the body and can otherwise
       // end up forwarding mismatched `content-encoding`/`content-length` headers.
@@ -617,10 +707,13 @@ async function start() {
         redirect: "manual",
       };
 
-      const upstream = await fetch(upstreamURL, init);
+      const upstream = await fetch(upstreamURL, {
+        ...init,
+        signal: upstreamSignal(req, res, proxyTimeoutForPath(req.path)),
+      });
       res.status(upstream.status);
 
-      for (const cookie of readSetCookies(upstream.headers)) {
+      for (const cookie of filterBOSessionSetCookies(readSetCookies(upstream.headers))) {
         res.append("set-cookie", cookie);
       }
 
@@ -646,18 +739,25 @@ async function start() {
         res.setHeader(k, v);
       });
 
-      const buf = Buffer.from(await upstream.arrayBuffer());
-      res.send(buf);
+      await streamFetchBody(upstream, res);
     } catch (err) {
       if (isBackendConnectionError(err)) {
         logBackendUnavailable("proxy", backendOrigin, err);
-        res.status(502).json({
+        res.status(503).json({
           success: false,
           message: `Backend unavailable at ${backendOrigin}. Run: ${LOCAL_BACKEND_START_CMD}`,
         });
       } else {
         console.error("[backoffice] proxy error", err);
-        res.status(502).json({ success: false, message: "Upstream error" });
+        const statusCode = (err as { statusCode?: number })?.statusCode === 413 ? 413 : isAbortError(err) ? 504 : 502;
+        if (res.headersSent) {
+          res.end();
+          return;
+        }
+        res.status(statusCode).json({
+          success: false,
+          message: statusCode === 413 ? "Request body too large" : statusCode === 504 ? "Upstream timeout" : "Upstream error",
+        });
       }
     }
   });
@@ -676,6 +776,7 @@ async function start() {
       }
 
       headers.delete("host");
+      headers.delete("cookie");
       headers.set("accept-encoding", "identity");
 
       const body = req.method === "GET" || req.method === "HEAD" ? undefined : await readRequestBody(req);
@@ -688,7 +789,10 @@ async function start() {
         redirect: "manual",
       };
 
-      const upstream = await fetch(upstreamURL, init);
+      const upstream = await fetch(upstreamURL, {
+        ...init,
+        signal: upstreamSignal(req, res, proxyTimeoutForPath(req.path)),
+      });
       res.status(upstream.status);
 
       upstream.headers.forEach((v, k) => {
@@ -710,18 +814,22 @@ async function start() {
         res.setHeader(k, v);
       });
 
-      const buf = Buffer.from(await upstream.arrayBuffer());
-      res.send(buf);
+      await streamFetchBody(upstream, res);
     } catch (err) {
       if (isBackendConnectionError(err)) {
         logBackendUnavailable("public invoice proxy", backendOrigin, err);
-        res.status(502).json({
+        res.status(503).json({
           success: false,
           message: `Backend unavailable at ${backendOrigin}. Run: ${LOCAL_BACKEND_START_CMD}`,
         });
       } else {
         console.error("[backoffice] public invoice proxy error", err);
-        res.status(502).json({ success: false, message: "Upstream error" });
+        if (res.headersSent) return void res.end();
+        const statusCode = (err as { statusCode?: number })?.statusCode === 413 ? 413 : isAbortError(err) ? 504 : 502;
+        res.status(statusCode).json({
+          success: false,
+          message: statusCode === 413 ? "Request body too large" : statusCode === 504 ? "Upstream timeout" : "Upstream error",
+        });
       }
     }
   });
@@ -740,9 +848,15 @@ async function start() {
         else headers.set(k, v);
       }
       headers.delete("host");
+      headers.delete("cookie");
       headers.set("accept-encoding", "identity");
 
-      const upstream = await fetch(upstreamURL, { method: "GET", headers, redirect: "manual" });
+      const upstream = await fetch(upstreamURL, {
+        method: "GET",
+        headers,
+        redirect: "manual",
+        signal: upstreamSignal(req, res, 30_000),
+      });
       res.status(upstream.status);
 
       upstream.headers.forEach((v, k) => {
@@ -764,18 +878,21 @@ async function start() {
         res.setHeader(k, v);
       });
 
-      const buf = Buffer.from(await upstream.arrayBuffer());
-      res.send(buf);
+      await streamFetchBody(upstream, res);
     } catch (err) {
       if (isBackendConnectionError(err)) {
         logBackendUnavailable("public legal-page proxy", backendOrigin, err);
-        res.status(502).json({
+        res.status(503).json({
           success: false,
           message: `Backend unavailable at ${backendOrigin}. Run: ${LOCAL_BACKEND_START_CMD}`,
         });
       } else {
         console.error("[backoffice] public legal-page proxy error", err);
-        res.status(502).json({ success: false, message: "Upstream error" });
+        if (res.headersSent) return void res.end();
+        res.status(isAbortError(err) ? 504 : 502).json({
+          success: false,
+          message: isAbortError(err) ? "Upstream timeout" : "Upstream error",
+        });
       }
     }
   });
@@ -808,6 +925,7 @@ async function start() {
             else headers.set(k, v);
           }
           headers.delete("host");
+          headers.delete("cookie");
           headers.set("accept-encoding", "identity");
           if (body !== undefined) headers.delete("content-length");
 
@@ -816,6 +934,7 @@ async function start() {
             headers,
             body: body as any,
             redirect: "manual",
+            signal: upstreamSignal(req, res, 30_000),
           });
 
           res.status(upstream.status);
@@ -838,8 +957,7 @@ async function start() {
             res.setHeader(k, v);
           });
 
-          const buf = Buffer.from(await upstream.arrayBuffer());
-          res.send(buf);
+          await streamFetchBody(upstream, res);
           return;
         } catch (err) {
           lastErr = err;
@@ -847,7 +965,8 @@ async function start() {
       }
 
       console.error("[backoffice] preview proxy error", lastErr);
-      res.status(502).send("Preview upstream unavailable");
+      if (res.headersSent) return void res.end();
+      res.status(isAbortError(lastErr) ? 504 : 502).send(isAbortError(lastErr) ? "Preview upstream timeout" : "Preview upstream unavailable");
     } catch (err) {
       console.error("[backoffice] preview proxy error", err);
       res.status(502).send("Preview upstream unavailable");
@@ -900,13 +1019,23 @@ async function start() {
   } else {
     // Prod: serve built client assets.
     const distClient = path.join(appRoot, "dist", "client");
-    app.use(express.static(distClient, { index: false }));
+    app.use(
+      express.static(distClient, {
+        index: false,
+        setHeaders: (res, servedPath) => {
+          if (/\/assets\/forky\/[^/]+\.(?:glb|gltf|bin|png|jpe?g|webp|avif)$/i.test(servedPath)) {
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          }
+        },
+      }),
+    );
   }
 
   // SSR + guard middleware.
   // Express 5 uses path-to-regexp v6 where "*" is no longer a valid pattern.
   // Use a regex route to catch-all GET requests for SSR.
   app.get(/.*/, async (req, res, next) => {
+    const requestStartedAt = performance.now();
     try {
       // Public routes that don't require authentication
       const isPublicRoute =
@@ -931,8 +1060,21 @@ async function start() {
       const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
       const isMobile = isMobileUA(userAgent);
       const cookieHeader = typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
-      console.log(`[SSR] ${req.path} cookieHeader=${cookieHeader ? "present" : "null"} mobile=${isMobile}`);
-      const sessionFetch = await fetchSession(backendOrigin, cookieHeader, req.path);
+      const backendCookieHeader = filterBOSessionCookie(cookieHeader) ?? "";
+      const isPublicBookingPage =
+        req.path === "/confirm" ||
+        req.path === "/cancel" ||
+        req.path === "/update-rice" ||
+        req.path === "/booking-policies";
+      const skipSessionLookup = req.path.startsWith("/factura/") || isPublicBookingPage;
+      if (SSR_DEBUG) {
+        console.log(`[SSR] ${req.path} cookieHeader=${backendCookieHeader ? "present" : "null"} mobile=${isMobile}`);
+      }
+      const sessionStartedAt = performance.now();
+      const sessionFetch = skipSessionLookup
+        ? { status: "unauthenticated" as const, session: null, movingExpirationDate: null, setCookies: [] }
+        : await fetchSession(backendOrigin, backendCookieHeader, req.path);
+      const sessionDuration = performance.now() - sessionStartedAt;
       const session = sessionFetch.session;
       const movingExpirationDate = sessionFetch.movingExpirationDate;
       if (sessionFetch.setCookies.length) {
@@ -940,9 +1082,18 @@ async function start() {
           res.append("set-cookie", cookie);
         }
       }
-      console.log(`[SSR] ${req.path} session=${session ? "valid" : "null"}`);
+      if (SSR_DEBUG) console.log(`[SSR] ${req.path} session=${session ? "valid" : "null"}`);
 
       const pageContextRequest = isPageContextRequest(req.path, req.originalUrl);
+      if (sessionFetch.status === "unavailable") {
+        res.setHeader("Server-Timing", `session;dur=${sessionDuration.toFixed(1)}`);
+        if (pageContextRequest) {
+          res.status(503).json({ statusCode: 503, message: "Backend unavailable" });
+        } else {
+          sendFallbackErrorPage(res, 503, "Backend unavailable");
+        }
+        return;
+      }
 
       // Allow public access to invoice viewing route without session
       if (req.path.startsWith("/factura/")) {
@@ -951,10 +1102,12 @@ async function start() {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
           bo: { theme, session: null, movingExpirationDate: null, isMobile } satisfies BOPageContext & { isMobile: boolean },
-          boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
+          boRequest: { cookieHeader: "", backendOrigin },
         };
 
+        const renderStartedAt = performance.now();
         const pageContext = await renderPage(pageContextInit);
+        const renderDuration = performance.now() - renderStartedAt;
         const httpResponse = pageContext.httpResponse;
         if (!httpResponse) return next();
 
@@ -962,25 +1115,23 @@ async function start() {
           sendFallbackErrorPage(res, 500);
           return;
         }
+        setServerTiming(res, { session: sessionDuration, render: renderDuration, total: performance.now() - requestStartedAt });
         sendHttpResponse(res, httpResponse, { pageContextRequest });
         return;
       }
 
       // Public booking pages (confirm, cancel, update-rice, booking-policies) — no session required
-      const isPublicBookingPage =
-        req.path === "/confirm" ||
-        req.path === "/cancel" ||
-        req.path === "/update-rice" ||
-        req.path === "/booking-policies";
       if (isPublicBookingPage) {
         const pageContextInit: any = {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
           bo: { theme, session: null, movingExpirationDate: null, isMobile } satisfies BOPageContext & { isMobile: boolean },
-          boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
+          boRequest: { cookieHeader: "", backendOrigin },
         };
 
+        const renderStartedAt = performance.now();
         const pageContext = await renderPage(pageContextInit);
+        const renderDuration = performance.now() - renderStartedAt;
         const httpResponse = pageContext.httpResponse;
         if (!httpResponse) return next();
 
@@ -988,6 +1139,7 @@ async function start() {
           sendFallbackErrorPage(res, 500);
           return;
         }
+        setServerTiming(res, { session: sessionDuration, render: renderDuration, total: performance.now() - requestStartedAt });
         sendHttpResponse(res, httpResponse, { pageContextRequest });
         return;
       }
@@ -1087,10 +1239,12 @@ async function start() {
         urlOriginal: req.originalUrl,
         headersOriginal: req.headers,
         bo: { theme, session, movingExpirationDate, isMobile } satisfies BOPageContext & { isMobile: boolean },
-        boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
+        boRequest: { cookieHeader: backendCookieHeader, backendOrigin },
       };
 
+      const renderStartedAt = performance.now();
       const pageContext = await renderPage(pageContextInit);
+      const renderDuration = performance.now() - renderStartedAt;
       const httpResponse = pageContext.httpResponse;
       if (!httpResponse) return next();
 
@@ -1098,6 +1252,7 @@ async function start() {
         sendFallbackErrorPage(res, 500);
         return;
       }
+      setServerTiming(res, { session: sessionDuration, render: renderDuration, total: performance.now() - requestStartedAt });
       sendHttpResponse(res, httpResponse, { pageContextRequest });
     } catch (err) {
       console.error("[backoffice] SSR error", err);
@@ -1134,7 +1289,7 @@ async function start() {
           urlOriginal: req.originalUrl,
           headersOriginal: req.headers,
           bo: { theme: "dark", session: null, movingExpirationDate: null },
-          boRequest: { cookieHeader: req.headers.cookie ?? "", backendOrigin },
+          boRequest: { cookieHeader: filterBOSessionCookie(typeof req.headers.cookie === "string" ? req.headers.cookie : undefined) ?? "", backendOrigin },
           is404: false,
           is500: true,
           errorInfo: err,

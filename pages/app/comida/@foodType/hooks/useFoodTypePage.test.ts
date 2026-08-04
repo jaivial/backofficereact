@@ -97,9 +97,10 @@ describe("useFoodTypePage", () => {
     expect(Array.isArray(result.current.categories)).toBe(true);
   });
 
-  it("shows loading state initially", () => {
+  it("shows loading state initially", async () => {
     const { result } = renderHook(() => useFoodTypePage({ data: defaultData }));
     expect(result.current.loading).toBe(true);
+    await waitFor(() => expect(result.current.loading).toBe(false));
   });
 
   it.each(["bebidas", "cafes", "vinos"] as const)("opens %s create modal", async (foodType) => {

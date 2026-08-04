@@ -6,7 +6,10 @@ import {
   Clock,
   ClipboardList,
   LayoutDashboard,
-  Settings,
+  Boxes,
+  MonitorSmartphone,
+  BarChart3,
+  type LucideIcon,
 } from "lucide-react";
 import { sessionAtom } from "../../state/atoms";
 import { sidebarItemsForRole } from "../../lib/rbac";
@@ -16,16 +19,19 @@ type NavItem = {
   key: string;
   label: string;
   href: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
 };
 
-const ICON_MAP: Record<string, React.ElementType> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   reservas: CalendarDays,
   menus: UtensilsCrossed,
   fichaje: Clock,
   horarios: ClipboardList,
   facturas: ClipboardList,
   backoffice: LayoutDashboard,
+  stock: Boxes,
+  pos: MonitorSmartphone,
+  estadisticas: BarChart3,
 };
 
 function iconForSection(key: string, size = 22, strokeWidth = 1.8): React.ReactNode {
@@ -37,15 +43,16 @@ const MOBILE_NAV_ITEMS: NavItem[] = [
   { key: "backoffice", label: "Inicio", href: "/m/app/backoffice", icon: LayoutDashboard },
   { key: "reservas", label: "Reservas", href: "/m/app/reservas", icon: CalendarDays },
   { key: "fichaje", label: "Fichaje", href: "/m/app/fichaje", icon: Clock },
-  { key: "menus", label: "Menus", href: "/m/app/menus", icon: UtensilsCrossed },
-  { key: "ajustes", label: "Ajustes", href: "/m/app/settings", icon: Settings },
+  { key: "stock", label: "Stock", href: "/app/stock", icon: Boxes },
+  { key: "pos", label: "TPV", href: "/app/pos", icon: MonitorSmartphone },
+  { key: "estadisticas", label: "Estadisticas", href: "/app/estadisticas", icon: BarChart3 },
 ];
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/m/app/backoffice") {
     return pathname === "/m/app/backoffice";
   }
-  return pathname.startsWith(href.replace("/m", ""));
+  return pathname.startsWith(href.startsWith("/m") ? href.replace("/m", "") : href);
 }
 
 interface MobileNavProps {

@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "POS control rail — feature development tracker",
+  "source": "pages/app/pos/functionalComponents/POSSellScreen/POSControlRail.tsx (data-testid=\"pos-control-rail\")",
+  "legend": {
+    "status": {
+      "not-started": "Rail button dispatches the default placeholder message.",
+      "partial": "Some wiring exists but plan acceptance criteria (UX + TDD + E2E) are not met.",
+      "done": "Plan fully developed: UI + backend + unit/component tests + dev E2E green.",
+      "backend-ready": "Schema and API landed and tested; frontend rail wiring still pending."
+    },
+    "class": {
+      "OK": "Backend endpoints already exist, only frontend wiring needed.",
+      "EXT": "Existing backend must be extended.",
+      "NEW": "New backend model/endpoint/migration required.",
+      "FE": "Frontend-only until hardware/agent workstream lands."
+    }
+  },
+  "features": [
+    {
+      "id": 1,
+      "key": "total",
+      "label": "Total",
+      "testid": "pos-rail-total",
+      "plan": "pos-tpv-plan/features/01-total.md",
+      "class": "OK",
+      "milestone": "M2",
+      "perms": [
+        "pos.checkout"
+      ],
+      "status": "done",
+      "notes": "Checkout modal has quick-cash keys (exacto/5/10/20/50), live pending + change due, card terminal reference, and an in-flight guard so a double tap cannot double-charge; cash over the total settles exactly the ticket total. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx. Dev E2E pending M2 run."
+    },
+    {
+      "id": 2,
+      "key": "aparcar",
+      "label": "Aparcar",
+      "testid": "pos-rail-aparcar",
+      "plan": "pos-tpv-plan/features/02-aparcar-ticket.md",
+      "class": "EXT",
+      "milestone": "M3",
+      "perms": [
+        "pos.sell",
+        "pos.visit.manage"
+      ],
+      "status": "done",
+      "notes": "Rail opens a park modal with an optional note; parkVisit() PATCHes the visit, clears the register and parked comandas come back from the Aparcados list in the tables modal. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 3,
+      "key": "mesa",
+      "label": "Mesa",
+      "testid": "pos-rail-mesa",
+      "plan": "pos-tpv-plan/features/03-mesa.md",
+      "class": "OK/EXT",
+      "milestone": "M2",
+      "perms": [
+        "pos.sell",
+        "pos.visit.manage"
+      ],
+      "status": "done",
+      "notes": "Mesa opens a dine-in visit (table + covers + reservation prefill) and, when a visit is already active, switches the modal to 'Cambiar mesa': tapping a free table PATCHes /visits/{id} with the new tableId keeping covers and lines; occupied targets are refused client-side and by the backend (TABLE_OCCUPIED). Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx. Dev E2E pending M2/M3 run."
+    },
+    {
+      "id": 4,
+      "key": "salon",
+      "label": "Salón",
+      "testid": "pos-rail-salon",
+      "plan": "pos-tpv-plan/features/04-salon.md",
+      "class": "EXT",
+      "milestone": "M3",
+      "perms": [
+        "pos.view"
+      ],
+      "status": "done",
+      "notes": "Bootstrap now returns areas[] and tables carry areaId/areaName; the tables modal shows area chips that filter the grid. Salón opens the floor directly. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 5,
+      "key": "juntar-mesas",
+      "label": "Juntar mesas",
+      "testid": "pos-rail-juntar-mesas",
+      "plan": "pos-tpv-plan/features/05-juntar-mesas.md",
+      "class": "NEW",
+      "milestone": "M3",
+      "perms": [
+        "pos.visit.manage"
+      ],
+      "status": "done",
+      "notes": "Rail opens a merge modal listing other open visits; mergeVisits() calls POST /pos/visits/{id}/merge, consolidating lines and covers and freeing the source table. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 6,
+      "key": "borrar-comanda",
+      "label": "Borrar comanda",
+      "testid": "pos-rail-borrar-comanda",
+      "plan": "pos-tpv-plan/features/06-borrar-comanda.md",
+      "class": "OK",
+      "milestone": "M2",
+      "perms": [
+        "pos.sell",
+        "pos.line.void",
+        "pos.visit.manage"
+      ],
+      "status": "done",
+      "notes": "Rail opens a confirm modal with a required reason; voidOrder() voids every active line, voids the ticket and cancels the visit. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx. Dev E2E pending M2 run."
+    },
+    {
+      "id": 7,
+      "key": "combinado",
+      "label": "Combinado",
+      "testid": "pos-rail-combinado",
+      "plan": "pos-tpv-plan/features/07-combinado.md",
+      "class": "NEW",
+      "milestone": "M4",
+      "perms": [
+        "pos.sell"
+      ],
+      "status": "backend-ready",
+      "notes": "Migration 078 modifier/pack schema is live, but there is no tenant catalogue UI yet, so the rail button explains that modifiers/packs must be configured in Catálogo instead of failing silently. Catalogue CRUD + line-modifier wiring still pending."
+    },
+    {
+      "id": 8,
+      "key": "cliente",
+      "label": "Cliente",
+      "testid": "pos-rail-cliente",
+      "plan": "pos-tpv-plan/features/08-cliente.md",
+      "class": "EXT",
+      "milestone": "M5",
+      "perms": [
+        "pos.view",
+        "pos.sell"
+      ],
+      "status": "done",
+      "notes": "Rail opens a customer modal (name + NIF) persisted through PATCH /pos/visits/{id}/customer and pre-filled from the active visit. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 9,
+      "key": "cocina",
+      "label": "Cocina",
+      "testid": "pos-rail-cocina",
+      "plan": "pos-tpv-plan/features/09-cocina.md",
+      "class": "OK",
+      "milestone": "M2",
+      "perms": [
+        "pos.sell",
+        "pos.kitchen.manage"
+      ],
+      "status": "done",
+      "notes": "Register tracks sent-per-line quantities: pendingKitchenLines/hasPendingKitchenLines partition, dispatch only fires pending lines, lines show a 'Cocina' badge once sent and the rail button is disabled while nothing is pending. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx. Dev E2E pending M2 run."
+    },
+    {
+      "id": 10,
+      "key": "cajon",
+      "label": "Cajón",
+      "testid": "pos-rail-cajon",
+      "plan": "pos-tpv-plan/features/10-cajon.md",
+      "class": "NEW/FE",
+      "milestone": "M5",
+      "perms": [
+        "pos.checkout",
+        "pos.shift.manage"
+      ],
+      "status": "done",
+      "notes": "Rail opens a drawer modal with reason chips (sin venta/cambio/arqueo); openDrawer() posts an idempotent, shift-gated drawer event. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 11,
+      "key": "descuento",
+      "label": "Descuento",
+      "testid": "pos-rail-descuento",
+      "plan": "pos-tpv-plan/features/11-descuento.md",
+      "class": "OK",
+      "milestone": "M2",
+      "perms": [
+        "pos.discount"
+      ],
+      "status": "done",
+      "notes": "Rail opens a discount modal with €/% toggle, live preview and required reason; applyDiscount(amountCents, reason) clamps to ticket total and no longer uses window.prompt. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx. Dev E2E pending M2 run."
+    },
+    {
+      "id": 12,
+      "key": "recargo",
+      "label": "Recargo",
+      "testid": "pos-rail-recargo",
+      "plan": "pos-tpv-plan/features/12-recargo.md",
+      "class": "EXT/NEW",
+      "milestone": "M4",
+      "perms": [
+        "pos.discount"
+      ],
+      "status": "done",
+      "notes": "Rail opens a surcharge modal with €/% toggle and required reason, posting to /tickets/{id}/adjustments; discount and surcharge coexist and VAT is recomputed on the surcharged gross. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 13,
+      "key": "invita",
+      "label": "Invita",
+      "testid": "pos-rail-invita",
+      "plan": "pos-tpv-plan/features/13-invita.md",
+      "class": "EXT",
+      "milestone": "M4",
+      "perms": [
+        "pos.discount",
+        "pos.line.void"
+      ],
+      "status": "done",
+      "notes": "Rail comps the selected line with a required reason; the line stays ACTIVE so kitchen and stock still fire while its charge drops to zero. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 14,
+      "key": "empleado",
+      "label": "Empleado",
+      "testid": "pos-rail-empleado",
+      "plan": "pos-tpv-plan/features/14-empleado.md",
+      "class": "EXT",
+      "milestone": "M3",
+      "perms": [
+        "pos.view"
+      ],
+      "status": "done",
+      "notes": "Rail assigns an operator member to the open ticket via PATCH /pos/tickets/{id}/operator. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 15,
+      "key": "separar-comanda",
+      "label": "Separar comanda",
+      "testid": "pos-rail-separar-comanda",
+      "plan": "pos-tpv-plan/features/15-separar-comanda.md",
+      "class": "OK",
+      "milestone": "M2",
+      "perms": [
+        "pos.sell"
+      ],
+      "status": "done",
+      "notes": "Rail creates a sibling ticket; ticket panel shows split tabs (role=tablist) to switch accounts and a per-line move button; moveLine(line, quantity?) supports partial moves clamped to the line quantity. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx. Dev E2E pending M2 run."
+    },
+    {
+      "id": 16,
+      "key": "tags",
+      "label": "Tags",
+      "testid": "pos-rail-tags",
+      "plan": "pos-tpv-plan/features/16-tags-etiquetas.md",
+      "class": "NEW",
+      "milestone": "M5",
+      "perms": [
+        "pos.sell"
+      ],
+      "status": "done",
+      "notes": "Rail loads the tenant tag catalogue and attaches the chosen tag to the selected line. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 17,
+      "key": "barra",
+      "label": "Barra",
+      "testid": "pos-rail-barra",
+      "plan": "pos-tpv-plan/features/17-barra.md",
+      "class": "EXT",
+      "milestone": "M3",
+      "perms": [
+        "pos.sell",
+        "pos.checkout"
+      ],
+      "status": "done",
+      "notes": "Rail opens a tableless, coverless BAR-channel visit (previously it wrongly opened TAKEAWAY). Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 18,
+      "key": "comentario",
+      "label": "Comentario",
+      "testid": "pos-rail-comentario",
+      "plan": "pos-tpv-plan/features/18-comentario.md",
+      "class": "NEW",
+      "milestone": "M5",
+      "perms": [
+        "pos.sell"
+      ],
+      "status": "done",
+      "notes": "Rail saves a free-text note on the selected line; LinePatch now treats notes as optional so a quantity change no longer wipes an existing comment. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 19,
+      "key": "dividir-comanda",
+      "label": "Dividir comanda",
+      "testid": "pos-rail-dividir-comanda",
+      "plan": "pos-tpv-plan/features/19-dividir-comanda.md",
+      "class": "OK/EXT",
+      "milestone": "M2",
+      "perms": [
+        "pos.sell",
+        "pos.checkout"
+      ],
+      "status": "done",
+      "notes": "Divide modal splits the ticket total evenly by guest count via pages/app/pos/utils/splitShares.ts (remainder spread one cent per share, shares always sum back to the total) and pre-fills the checkout with one share. Covered by splitShares.test.ts + POSSellScreen.test.tsx. Persisted partial payments stay deferred to M4 per plan."
+    },
+    {
+      "id": 20,
+      "key": "suplemento",
+      "label": "Suplemento",
+      "testid": "pos-rail-suplemento",
+      "plan": "pos-tpv-plan/features/20-suplemento.md",
+      "class": "NEW",
+      "milestone": "M4",
+      "perms": [
+        "pos.sell"
+      ],
+      "status": "backend-ready",
+      "notes": "Migration 078 modifier/pack schema is live, but there is no tenant catalogue UI yet, so the rail button explains that modifiers/packs must be configured in Catálogo instead of failing silently. Catalogue CRUD + line-modifier wiring still pending."
+    },
+    {
+      "id": 21,
+      "key": "propina",
+      "label": "Propina",
+      "testid": "pos-rail-propina",
+      "plan": "pos-tpv-plan/features/21-propina.md",
+      "class": "EXT/NEW",
+      "milestone": "M4",
+      "perms": [
+        "pos.checkout"
+      ],
+      "status": "done",
+      "notes": "Rail captures a tip that is added to the amount tendered at checkout and sent as payments[].tipCents, excluded from the sale total and VAT. Covered by usePOSRegister.test.ts + POSSellScreen.test.tsx (+ Go integration tests). Dev E2E pending."
+    },
+    {
+      "id": 22,
+      "key": "pack",
+      "label": "Pack",
+      "testid": "pos-rail-pack",
+      "plan": "pos-tpv-plan/features/22-pack.md",
+      "class": "NEW",
+      "milestone": "M4",
+      "perms": [
+        "pos.sell",
+        "pos.catalog.manage"
+      ],
+      "status": "backend-ready",
+      "notes": "Migration 078 modifier/pack schema is live, but there is no tenant catalogue UI yet, so the rail button explains that modifiers/packs must be configured in Catálogo instead of failing silently. Catalogue CRUD + line-modifier wiring still pending."
+    }
+  ]
+}

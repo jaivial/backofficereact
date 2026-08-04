@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Receipt,
   ChefHat,
+  type LucideIcon,
 } from "lucide-react";
 import { sessionAtom } from "../../../../state/atoms";
 import { sidebarItemsForRole } from "../../../../lib/rbac";
@@ -22,7 +23,7 @@ function todayDisplay(): string {
 function StatCard({ label, value, icon: Icon, accent = "primary" }: {
   label: string;
   value: string | number;
-  icon: React.ElementType;
+  icon: LucideIcon;
   accent?: string;
 }) {
   return (
@@ -42,7 +43,7 @@ function StatCard({ label, value, icon: Icon, accent = "primary" }: {
 function QuickActionCard({ href, label, icon: Icon, color }: {
   href: string;
   label: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   color: string;
 }) {
   return (
@@ -72,7 +73,7 @@ const ACTION_COLORS = [
   "hsl(25, 95%, 53%)", // orange
 ];
 
-const SECTION_ICONS: Record<string, React.ElementType> = {
+const SECTION_ICONS: Record<string, LucideIcon> = {
   reservas: CalendarDays,
   menus: UtensilsCrossed,
   fichaje: Clock,

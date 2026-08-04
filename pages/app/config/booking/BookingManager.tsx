@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "../../../../state/atoms";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
@@ -32,6 +34,8 @@ function readAPIMessage(result: unknown, fallback: string): string {
 export function BookingManager() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
+  const session = useAtomValue(sessionAtom);
+  const restaurantId = String(session?.activeRestaurantId ?? "");
 
   const [settings, setSettings] = useState<WidgetSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -98,7 +102,7 @@ export function BookingManager() {
   return (
     <div className="bo-stack" data-ui="booking-manager">
       <Panel title="Booking Manager" meta="Widget de reservas embebible para webs de clientes" data-slot="bookingManager-panel">
-        <InstallGuide restaurantId="1" />
+        <InstallGuide restaurantId={restaurantId} />
       </Panel>
 
       <Panel title="Vista previa" meta="Así se verá el widget en la web del cliente" data-slot="bookingManager-panel">

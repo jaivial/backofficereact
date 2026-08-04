@@ -1,0 +1,554 @@
+/* ============================================
+   Stock Control (/app/stock)
+   Reuses shared bo-* primitives (panel, card,
+   btn, input, badge, table, pager) and adds
+   only layout + status helpers.
+   ============================================ */
+
+.bo-stockPage {
+  position: relative;
+  padding: 0 0 96px;
+}
+
+.bo-stockHero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 24px 0 20px;
+  border-bottom: 1px solid var(--bo-border);
+  margin-bottom: 20px;
+}
+
+.bo-stockHeroTitles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bo-stockHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-stockTabsRow {
+  margin-bottom: 18px;
+}
+
+/* Stock tabs carry no icons, so the shared icons-only mobile rule would leave
+   them visually empty. Keep the text labels at every width. */
+.bo-stockTabsRow .bo-tabLabel {
+  display: inline;
+}
+
+@media (max-width: 639px) {
+  .bo-stockTabsRow .bo-tabs {
+    gap: 6px;
+  }
+
+  .bo-stockTabsRow .bo-tab {
+    padding: 10px 12px;
+    font-size: var(--bo-text-sm);
+  }
+
+  .bo-stockTabsRow .bo-tab.is-active {
+    padding: 12px 14px;
+  }
+}
+
+.bo-stockStack {
+  display: grid;
+  gap: 18px;
+}
+
+.bo-stockSplit {
+  display: grid;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (min-width: 1180px) {
+  .bo-stockSplit {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Summary cards ─────────────────────────── */
+.bo-stockSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 760px) {
+  .bo-stockSummary {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.bo-stockSummaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.bo-stockSummaryCard .bo-statValue {
+  margin-top: 0;
+  color: var(--bo-text);
+}
+
+/* ── Toolbar / filters ─────────────────────── */
+.bo-stockToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.bo-stockSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 260px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--bo-muted);
+}
+
+:root[data-theme="light"] .bo-stockSearch {
+  background: var(--bo-surface-2);
+}
+
+.bo-stockSearch:focus-within {
+  border-color: color-mix(in srgb, var(--bo-accent) 48%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bo-accent) 16%, transparent);
+}
+
+.bo-stockSearchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 16px;
+  outline: none;
+}
+
+.bo-stockSearchInput::placeholder {
+  color: var(--bo-muted);
+}
+
+.bo-stockFilterField {
+  display: grid;
+  gap: 4px;
+  min-width: 200px;
+}
+
+/* ── Item grid ─────────────────────────────── */
+.bo-stockGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  gap: 14px;
+}
+
+.bo-stockItemCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.bo-stockItemHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-stockItemName {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-stockItemMeta {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-stockItemQuantityRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-stockItemQuantity {
+  font-size: 22px;
+  font-weight: 720;
+  color: var(--bo-text);
+}
+
+.bo-stockItemTarget {
+  font-size: 12px;
+  color: var(--bo-muted);
+  text-align: right;
+}
+
+.bo-stockProgress {
+  height: 8px;
+  border-radius: var(--bo-radius-full);
+  background: color-mix(in srgb, var(--bo-text) 12%, transparent);
+  overflow: hidden;
+}
+
+.bo-stockProgressFill {
+  height: 100%;
+  border-radius: var(--bo-radius-full);
+  background: var(--bo-color-success);
+}
+
+.bo-stockProgressFill--warning {
+  background: var(--bo-color-warning);
+}
+
+.bo-stockProgressFill--danger {
+  background: var(--bo-color-danger);
+}
+
+.bo-stockAdjust {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-stockAdjustBtn {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+
+.bo-stockAdjustInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.bo-stockAdjustUnit {
+  font-size: 13px;
+  color: var(--bo-muted);
+}
+
+.bo-stockItemActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bo-border);
+}
+
+/* ── Generic rows / lists ──────────────────── */
+.bo-stockRowList {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-stockRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-2) 60%, transparent);
+  font-size: 13px;
+  color: var(--bo-text);
+}
+
+.bo-stockRowActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bo-stockRowMeta {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+/* ── Forms ─────────────────────────────────── */
+.bo-stockForm {
+  display: grid;
+  gap: 12px;
+}
+
+.bo-stockFormGrid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .bo-stockFormGrid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bo-stockFormGrid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bo-stockFormGrid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .bo-stockFormGrid--component {
+    grid-template-columns: minmax(0, 1fr) 130px 110px;
+  }
+
+  .bo-stockFormGrid--labour {
+    grid-template-columns: minmax(0, 1fr) 150px;
+  }
+}
+
+.bo-stockFormActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-stockCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 13px;
+  color: var(--bo-text);
+}
+
+.bo-stockCheckbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--bo-accent);
+}
+
+.bo-stockSubsection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bo-border);
+  display: grid;
+  gap: 12px;
+}
+
+.bo-stockSubsectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bo-stockSubtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-stockNote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-stockCode {
+  max-height: 190px;
+  overflow: auto;
+  white-space: pre-wrap;
+  padding: 12px;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-3);
+  color: var(--bo-muted);
+  font-family: var(--bo-font-mono);
+  font-size: 12px;
+}
+
+/* ── Collapsible panels ────────────────────── */
+.bo-stockDetails {
+  padding: 0;
+}
+
+.bo-stockDetailsSummary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 18px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 760;
+  color: var(--bo-text);
+  list-style: none;
+}
+
+.bo-stockDetailsSummary::-webkit-details-marker {
+  display: none;
+}
+
+.bo-stockDetailsSummary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid var(--bo-muted);
+  border-bottom: 2px solid var(--bo-muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.bo-stockDetails[open] > .bo-stockDetailsSummary::after {
+  transform: rotate(-135deg);
+}
+
+.bo-stockDetailsBody {
+  display: grid;
+  gap: 12px;
+  padding: 4px 18px 18px;
+}
+
+/* ── Status text (AA on surfaces) ──────────── */
+.bo-stockTextDanger {
+  color: var(--bo-on-surface-danger);
+}
+
+.bo-stockTextWarning {
+  color: var(--bo-on-surface-warning);
+}
+
+.bo-stockTextSuccess {
+  color: var(--bo-on-surface-success);
+}
+
+.bo-stockTextAccent {
+  color: var(--bo-accent);
+}
+
+:root[data-theme="dark"] .bo-stockTextAccent,
+:root:not([data-theme="light"]) .bo-stockTextAccent {
+  color: color-mix(in srgb, var(--bo-accent) 88%, white 12%);
+}
+
+/* Contrast: --bo-faint is below 4.5:1 on light surfaces, so stock keeps
+   secondary text on --bo-muted instead. */
+.bo-stockPage .bo-panelMeta,
+.bo-stockDrawer .bo-panelMeta,
+.bo-stockPage .bo-table thead th {
+  color: var(--bo-muted);
+}
+
+/* Empty state icon tone (shared EmptyState has no icon rule) */
+.bo-stockPage .bo-emptyStateIcon {
+  color: var(--bo-muted);
+}
+
+/* ── History drawer ────────────────────────── */
+.bo-stockDrawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 60;
+  width: min(420px, 100%);
+  overflow-y: auto;
+  padding: 20px;
+  border-left: 1px solid var(--bo-border);
+  background: var(--bo-shell);
+  box-shadow: var(--bo-shadow);
+}
+
+.bo-stockDrawerHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.bo-stockDrawerList {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-stockMovement {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface-2) 60%, transparent);
+}
+
+.bo-stockMovementTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--bo-text);
+}
+
+.bo-stockIconBtn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--bo-radius-sm);
+  background: transparent;
+  color: var(--bo-text);
+  cursor: pointer;
+}
+
+.bo-stockIconBtn:hover {
+  background: color-mix(in srgb, var(--bo-text) 8%, transparent);
+}
+
+/* ── Accessibility: visible focus everywhere ─ */
+.bo-stockPage :is(a, button, summary, input, select, textarea):focus-visible,
+.bo-stockDrawer :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* Native controls styled as bo-input */
+.bo-stockPage select.bo-input,
+.bo-stockDrawer select.bo-input {
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.bo-input--textarea {
+  height: auto;
+  min-height: 104px;
+  padding: 10px 12px;
+  line-height: var(--bo-leading-normal);
+  resize: vertical;
+}
+
+.bo-input--file {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 13px;
+}

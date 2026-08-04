@@ -183,6 +183,16 @@ export function BookingEditor({
   }, [api.menus.grupos, draft.menu_de_grupo_id, draft.special_menu]);
 
   useEffect(() => {
+    // Seed one principal row when a group menu is selected and its items arrive,
+    // so the selection UI is immediately available (mirrors the arroz row).
+    if (!draft.special_menu || !draft.menu_de_grupo_id || principalesItems.length === 0) return;
+    setDraft((p) => {
+      if (p.principales.length > 0) return p;
+      return { ...p, principales: [{ name: "", servings: 1 }] };
+    });
+  }, [draft.special_menu, draft.menu_de_grupo_id, principalesItems.length, setDraft]);
+
+  useEffect(() => {
     if (draft.special_menu) return;
     if (!draft.arroz_enabled) {
       setRiceTypesLoaded(false);
@@ -244,12 +254,13 @@ export function BookingEditor({
       setFormError(null);
       setDraft((p) => {
         if (!v) return { ...p, arroz_enabled: false, arroz: [] };
-        // Ensure at least one row.
+        // Ensure at least one row regardless of whether rice types have loaded yet;
+        // the select options populate when the types arrive.
         const row: RiceRow = { type: "", servings: 2 };
-        return { ...p, arroz_enabled: true, arroz: p.arroz.length ? p.arroz : (riceTypes.length ? [row] : []) };
+        return { ...p, arroz_enabled: true, arroz: p.arroz.length ? p.arroz : [row] };
       });
     },
-    [riceTypes],
+    [],
   );
 
   const addRiceRow = useCallback(() => {

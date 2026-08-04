@@ -33,6 +33,13 @@
   --bo-text-danger: #dc2626;
   --bo-border-color: var(--bo-border);
 
+  /* State text readable on surfaces (WCAG AA on --bo-surface) */
+  --bo-on-surface-success: #6ee7a8;
+  --bo-on-surface-warning: #ffc266;
+  --bo-on-surface-danger: #ff9c9c;
+  --bo-on-surface-info: #7dd3fc;
+  --bo-on-accent: #16151f;
+
   /* Compatibility aliases for shared admin modules (facturas/reportes) */
   --bo-primary: var(--bo-accent);
   --bo-primary-rgb: 185, 168, 255;
@@ -141,6 +148,12 @@
   --bo-accent: #7c5ce7;
   --bo-accent-2: #0d9488;
   --bo-accent-3: #5eead4;
+
+  --bo-on-surface-success: #15803d;
+  --bo-on-surface-warning: #92400e;
+  --bo-on-surface-danger: #b91c1c;
+  --bo-on-surface-info: #0369a1;
+  --bo-on-accent: #ffffff;
 
   --bo-primary: var(--bo-accent);
   --bo-primary-rgb: 124, 92, 231;

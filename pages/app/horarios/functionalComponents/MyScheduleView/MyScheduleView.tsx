@@ -120,7 +120,7 @@ export function MyScheduleView({ initialSchedules }: { initialSchedules: Fichaje
         {loading ? (
           <div data-ui="loadingState" className="flex items-center justify-center py-12">
             <Loader2 data-slot="spinner" size={24} strokeWidth={1.8} className="dark:text-white/60 text-purple-400 animate-spin" aria-hidden="true" />
-            <span data-slot="label" className="ml-2 dark:text-white/60 text-zinc-500">Cargando horarios...</span>
+            <span data-slot="label" className="ml-2 text-[var(--bo-muted)]">Cargando horarios...</span>
           </div>
         ) : error ? (
           <div data-ui="errorState" className="text-center py-12 dark:text-red-400 text-red-600">

@@ -79,16 +79,16 @@ export function WeeklyScheduleTable({
                     </td>
                     <td data-col="scheduleCell" className="py-2" data-slot="weeklyScheduleTable-py-2">
                       {schedule ? (
-                        <span data-slot="scheduleInfo" className="schedule-time text-zinc-700 font-medium">
+                        <span data-slot="scheduleInfo" className="schedule-time text-[var(--bo-text)] font-medium">
                           {schedule.startTime} - {schedule.endTime}
                           {schedule.breakMinutes && schedule.breakMinutes > 0 ? (
-                            <span data-slot="breakInfo" className="schedule-break text-xs ml-2 text-zinc-400">
+                            <span data-slot="breakInfo" className="schedule-break text-xs ml-2 text-[var(--bo-faint)]">
                               ({schedule.breakMinutes}min pausa)
                             </span>
                           ) : null}
                         </span>
                       ) : (
-                        <span data-slot="noSchedule" className="no-schedule italic text-zinc-400">
+                        <span data-slot="noSchedule" className="no-schedule italic text-[var(--bo-faint)]">
                           Sin horario
                         </span>
                       )}
@@ -102,7 +102,7 @@ export function WeeklyScheduleTable({
       ))}
 
       {weekGroups.length === 0 ? (
-        <div data-ui="emptyState" className="text-center py-8 text-zinc-400">
+        <div data-ui="emptyState" className="text-center py-8 text-[var(--bo-faint)]">
           Selecciona un rango de fechas para ver el horario semanal
         </div>
       ) : null}

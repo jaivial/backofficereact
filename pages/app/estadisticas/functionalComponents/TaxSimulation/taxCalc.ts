@@ -1,0 +1,333 @@
+export type EntityType = "autonomo" | "sl" | "sl_new" | "sl_micro" | "sa";
+
+export const ENTITY_LABELS: Record<EntityType, string> = {
+  autonomo: "Autónomo (IRPF)",
+  sl: "SL · tipo general",
+  sl_new: "SL · nueva creación",
+  sl_micro: "SL · micropyme",
+  sa: "SA · tipo general",
+};
+
+export const ENTITY_DESCRIPTIONS: Record<EntityType, string> = {
+  autonomo: "IRPF progresivo por tramos + cuota de autónomos (Seguridad Social)",
+  sl: "Impuesto de Sociedades al 25% sobre el beneficio",
+  sl_new: "Impuesto de Sociedades al 15% sobre los primeros 300.000 € (2 primeros ejercicios con beneficios)",
+  sl_micro: "Impuesto de Sociedades al 19% sobre los primeros 50.000 € y 21% sobre el resto (INCN < 1 M €, Ley 7/2024)",
+  sa: "Impuesto de Sociedades al 25% sobre el beneficio",
+};
+
+export interface IvaAssumption {
+  foodRate: number;
+  drinkRate: number;
+  foodShare: number;
+}
+
+export interface TaxAssumptions {
+  iva: IvaAssumption;
+  grossIncludesIva: boolean;
+  otherDeductibleExpenses: number;
+  includeSocialSecurity: boolean;
+  stockPurchases: number;
+}
+
+export interface IvaBreakdown {
+  gross: number;
+  base: number;
+  ivaCollected: number;
+  ivaPurchases: number;
+  ivaDue: number;
+}
+
+export interface TaxBracketSlice {
+  label: string;
+  rate: number;
+  taxable: number;
+  tax: number;
+}
+
+export interface IncomeTaxResult {
+  taxableBase: number;
+  taxDue: number;
+  effectiveRate: number;
+  slices: TaxBracketSlice[];
+  entityType: EntityType;
+}
+
+export interface TaxSimulation {
+  gross: number;
+  iva: IvaBreakdown;
+  incomeTax: IncomeTaxResult;
+  socialSecurity: number;
+  totalTaxes: number;
+  net: number;
+  keptRate: number;
+}
+
+export const IVA_DEFAULT: IvaAssumption = {
+  foodRate: 0.1,
+  drinkRate: 0.21,
+  foodShare: 0.78,
+};
+
+export interface BillingBracket {
+  id: string;
+  label: string;
+  rateLabel: string;
+  active: boolean;
+}
+
+export interface BillingBand {
+  id: string;
+  label: string;
+  detail: string;
+  brackets: BillingBracket[];
+}
+
+// Escala IRPF conjunta (estatal + autonómica media) de la campaña de la renta
+// 2025/2026, la vigente para 2026 (tablas actualizadas a 25/6/2026, p. ej.
+// TaxDown; la AEAT publica el cuadro de retención IRPF 2026). La parte estatal es
+// 9,5–24,5 % y la autonómica media ~9,5 %; la parte autonómica real varía por
+// CCAA (tope ~45 % Madrid – ~54 % Valencia).
+export const IRPF_BRACKETS_2026: Array<{ from: number; to: number | null; rate: number }> = [
+  { from: 0, to: 12_450, rate: 0.19 },
+  { from: 12_450, to: 20_200, rate: 0.24 },
+  { from: 20_200, to: 35_200, rate: 0.3 },
+  { from: 35_200, to: 60_000, rate: 0.37 },
+  { from: 60_000, to: 300_000, rate: 0.45 },
+  { from: 300_000, to: null, rate: 0.47 },
+];
+
+export const TAX_YEAR = 2026;
+
+// Cuota RETA por rendimiento neto mensual — 2026. 15 tramos, cuotas base SIN MEI.
+// RDL 3/2026 + Orden PJC/297/2026 (BOE-A-2026-7296) mantienen la tabla de 2025
+// congelada; el MEI sube al 0,9 % y añade ~6–46 €/mes según la base de cotización.
+export const RETA_2026: Array<{ from: number; to: number | null; quota: number }> = [
+  { from: 0, to: 670, quota: 200 },
+  { from: 670, to: 900, quota: 220 },
+  { from: 900, to: 1_166.7, quota: 260 },
+  { from: 1_166.7, to: 1_300, quota: 291 },
+  { from: 1_300, to: 1_500, quota: 294 },
+  { from: 1_500, to: 1_700, quota: 294 },
+  { from: 1_700, to: 1_850, quota: 350 },
+  { from: 1_850, to: 2_030, quota: 370 },
+  { from: 2_030, to: 2_330, quota: 390 },
+  { from: 2_330, to: 2_760, quota: 415 },
+  { from: 2_760, to: 3_190, quota: 440 },
+  { from: 3_190, to: 3_620, quota: 465 },
+  { from: 3_620, to: 4_050, quota: 490 },
+  { from: 4_050, to: 6_000, quota: 530 },
+  { from: 6_000, to: null, quota: 590 },
+];
+
+export function autonomoQuota(netMonthly: number): number {
+  return RETA_2026.find((tier) => tier.to === null || netMonthly < tier.to)?.quota ?? RETA_2026[RETA_2026.length - 1].quota;
+}
+
+export function billingBrackets(entityType: EntityType, firstProfitYear: boolean): Array<Omit<BillingBracket, "active">> {
+  if (entityType === "autonomo") {
+    return IRPF_BRACKETS_2026.map((b, i) => ({
+      id: `irpf-${i}`,
+      label:
+        b.to === null
+          ? `Más de ${b.from.toLocaleString("es-ES")} €`
+          : `${b.from.toLocaleString("es-ES")} – ${b.to.toLocaleString("es-ES")} €`,
+      rateLabel: `${Math.round(b.rate * 100)} %`,
+    }));
+  }
+  if (entityType === "sl_micro") {
+    return [
+      { id: "micro-19", label: "Primeros 50.000 €", rateLabel: "19 %" },
+      { id: "micro-21", label: "Exceso sobre 50.000 €", rateLabel: "21 %" },
+    ];
+  }
+  if (entityType === "sl_new" && firstProfitYear) {
+    return [
+      { id: "new-15", label: "Primeros 300.000 €", rateLabel: "15 %" },
+      { id: "new-25", label: "Exceso sobre 300.000 €", rateLabel: "25 %" },
+    ];
+  }
+  return [{ id: "general-25", label: "Tipo general sobre la base", rateLabel: "25 %" }];
+}
+
+// El "tramo de gravamen" es la escala que aplica según el tipo de entidad:
+// IRPF progresivo para autónomos (sobre la base imponible), e Impuesto de
+// Sociedades (25 % general, 15/25 % nueva creación, 19/21 % micropyme) para
+// sociedades. Depende de entityType y firstProfitYear, no solo de la facturación.
+export function findBillingBand(base: number, entityType: EntityType, firstProfitYear = false): BillingBand {
+  const safeBase = Math.max(0, base);
+  const brackets = billingBrackets(entityType, firstProfitYear);
+
+  const activeId = (() => {
+    if (entityType === "autonomo") {
+      for (let i = 0; i < IRPF_BRACKETS_2026.length; i++) {
+        const b = IRPF_BRACKETS_2026[i];
+        if (b.to === null || safeBase < b.to) return `irpf-${i}`;
+      }
+      return `irpf-${IRPF_BRACKETS_2026.length - 1}`;
+    }
+    if (entityType === "sl_micro") return safeBase <= 50_000 ? "micro-19" : "micro-21";
+    if (entityType === "sl_new" && firstProfitYear) return safeBase <= 300_000 ? "new-15" : "new-25";
+    return "general-25";
+  })();
+
+  const active = brackets.find((b) => b.id === activeId);
+  const activeLabel = active?.label ?? brackets[brackets.length - 1].label;
+  const activeRate = active?.rateLabel ?? "";
+
+  let label: string;
+  let detail: string;
+  if (entityType === "autonomo") {
+    label = `IRPF · ${activeRate}`;
+    detail = `${activeLabel} de base imponible`;
+  } else if (entityType === "sl_micro") {
+    label = safeBase <= 50_000 ? "IS · 19 %" : "IS · 19/21 %";
+    detail = safeBase <= 50_000 ? "Primeros 50.000 € de base al 19 %" : "50.000 € al 19 % + exceso al 21 %";
+  } else if (entityType === "sl_new" && firstProfitYear) {
+    label = safeBase <= 300_000 ? "IS · 15 %" : "IS · 15/25 %";
+    detail = safeBase <= 300_000 ? "Primeros 300.000 € de base al 15 %" : "300.000 € al 15 % + exceso al 25 %";
+  } else {
+    label = "IS · 25 %";
+    detail = "Tipo general (Ley 27/2014, art. 29)";
+  }
+
+  return {
+    id: activeId,
+    label,
+    detail,
+    brackets: brackets.map((b) => ({ ...b, active: b.id === activeId })),
+  };
+}
+
+export function computeIva(gross: number, iva: IvaAssumption): IvaBreakdown {
+  const foodBase = (gross * iva.foodShare) / (1 + iva.foodRate);
+  const drinkBase = (gross * (1 - iva.foodShare)) / (1 + iva.drinkRate);
+  const base = foodBase + drinkBase;
+  const ivaCollected = gross - base;
+  return {
+    gross,
+    base,
+    ivaCollected,
+    ivaPurchases: 0,
+    ivaDue: 0,
+  };
+}
+
+export function computeIvaWithPurchases(gross: number, stockPurchases: number, iva: IvaAssumption): IvaBreakdown {
+  const baseBreakdown = computeIva(gross, iva);
+  const purchasesFood = (stockPurchases * iva.foodShare) / (1 + iva.foodRate);
+  const purchasesDrink = (stockPurchases * (1 - iva.foodShare)) / (1 + iva.drinkRate);
+  const ivaPurchases = stockPurchases - (purchasesFood + purchasesDrink);
+  return {
+    ...baseBreakdown,
+    ivaPurchases,
+    ivaDue: baseBreakdown.ivaCollected - ivaPurchases,
+  };
+}
+
+export function computeIvaFromBase(base: number, iva: IvaAssumption): IvaBreakdown {
+  const foodBase = base * iva.foodShare;
+  const drinkBase = base * (1 - iva.foodShare);
+  const ivaCollected = foodBase * iva.foodRate + drinkBase * iva.drinkRate;
+  return {
+    gross: base + ivaCollected,
+    base,
+    ivaCollected,
+    ivaPurchases: 0,
+    ivaDue: 0,
+  };
+}
+
+function progressiveIrfp(taxableBase: number): { tax: number; slices: TaxBracketSlice[] } {
+  let tax = 0;
+  const slices: TaxBracketSlice[] = [];
+  for (const bracket of IRPF_BRACKETS_2026) {
+    if (taxableBase <= bracket.from) break;
+    const taxable = Math.min(taxableBase, bracket.to ?? Number.POSITIVE_INFINITY) - bracket.from;
+    const sliceTax = taxable * bracket.rate;
+    tax += sliceTax;
+    slices.push({ label: `${bracket.from.toLocaleString("es-ES")} €${bracket.to ? ` – ${bracket.to.toLocaleString("es-ES")} €` : " €+"}`, rate: bracket.rate, taxable, tax: sliceTax });
+  }
+  return { tax, slices };
+}
+
+export function computeIncomeTax(taxableBase: number, entityType: EntityType, firstProfitYear = false): IncomeTaxResult {
+  if (entityType === "autonomo") {
+    const { tax, slices } = progressiveIrfp(Math.max(0, taxableBase));
+    return {
+      taxableBase: Math.max(0, taxableBase),
+      taxDue: tax,
+      effectiveRate: taxableBase > 0 ? tax / taxableBase : 0,
+      slices,
+      entityType,
+    };
+  }
+
+  if (entityType === "sl_micro") {
+    // Micropyme 2026 (INCN < 1 M €): 19 % primeros 50.000 € de base, 21 % resto.
+    const slices: TaxBracketSlice[] = [];
+    const first = Math.min(Math.max(0, taxableBase), 50_000);
+    const rest = Math.max(0, taxableBase - 50_000);
+    if (first > 0) slices.push({ label: "Primeros 50.000 € · 19%", rate: 0.19, taxable: first, tax: first * 0.19 });
+    if (rest > 0) slices.push({ label: "Exceso · 21%", rate: 0.21, taxable: rest, tax: rest * 0.21 });
+    const taxDue = slices.reduce((acc, slice) => acc + slice.tax, 0);
+    return {
+      taxableBase,
+      taxDue,
+      effectiveRate: taxableBase > 0 ? taxDue / taxableBase : 0,
+      slices,
+      entityType,
+    };
+  }
+
+  const rate = entityType === "sl_new" && firstProfitYear ? 0.15 : 0.25;
+  const isNewCompany = entityType === "sl_new" && firstProfitYear;
+  const slices: TaxBracketSlice[] = [];
+  if (isNewCompany && taxableBase > 300_000) {
+    slices.push({ label: "Primeros 300.000 € · 15%", rate: 0.15, taxable: 300_000, tax: 300_000 * 0.15 });
+    slices.push({ label: "Exceso · 25%", rate: 0.25, taxable: taxableBase - 300_000, tax: (taxableBase - 300_000) * 0.25 });
+  } else {
+    slices.push({ label: `${Math.round(rate * 100)}% sobre beneficio`, rate, taxable: taxableBase, tax: taxableBase * rate });
+  }
+  const taxDue = slices.reduce((acc, slice) => acc + slice.tax, 0);
+  return {
+    taxableBase,
+    taxDue,
+    effectiveRate: taxableBase > 0 ? taxDue / taxableBase : 0,
+    slices,
+    entityType,
+  };
+}
+
+export function computeSimulation(gross: number, assumptions: TaxAssumptions, entityType: EntityType, firstProfitYear = false): TaxSimulation {
+  const iva = assumptions.grossIncludesIva
+    ? computeIvaWithPurchases(gross, assumptions.stockPurchases, assumptions.iva)
+    : (() => {
+        const baseBreakdown = computeIvaFromBase(gross, assumptions.iva);
+        const purchasesFood = (assumptions.stockPurchases * assumptions.iva.foodShare) / (1 + assumptions.iva.foodRate);
+        const purchasesDrink = (assumptions.stockPurchases * (1 - assumptions.iva.foodShare)) / (1 + assumptions.iva.drinkRate);
+        const ivaPurchases = assumptions.stockPurchases - (purchasesFood + purchasesDrink);
+        return { ...baseBreakdown, ivaPurchases, ivaDue: baseBreakdown.ivaCollected - ivaPurchases };
+      })();
+
+  const incomeBase = assumptions.grossIncludesIva ? iva.base : gross;
+  const taxableBase = incomeBase - assumptions.stockPurchases - assumptions.otherDeductibleExpenses;
+  const incomeTax = computeIncomeTax(taxableBase, entityType, firstProfitYear);
+
+  const socialSecurity =
+    entityType === "autonomo" && assumptions.includeSocialSecurity ? autonomoQuota(taxableBase / 12) * 12 : 0;
+
+  const ivaDueEffective = Math.max(0, iva.ivaDue);
+  const totalTaxes = incomeTax.taxDue + socialSecurity + ivaDueEffective;
+  const net = gross - totalTaxes;
+
+  return {
+    gross,
+    iva,
+    incomeTax,
+    socialSecurity,
+    totalTaxes,
+    net,
+    keptRate: gross > 0 ? net / gross : 0,
+  };
+}

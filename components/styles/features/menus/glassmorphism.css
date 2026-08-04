@@ -295,24 +295,26 @@
 
 /* ============================================
    Glassmorphism Tabs — Responsive small screens
-   More gap between tabs when icons-only
+   Icons-only below the tablet breakpoint
    ============================================ */
-@media (max-width: 639px) {
+@media (max-width: 895px) {
+  /* Spacing is sized so five icon-only tabs fit a 320px viewport without
+     scrolling; the old 18px gap / 16px padding overflowed by ~40px. */
   .bo-tabs--glass {
-    gap: 18px;
-    padding: 10px;
+    gap: 2px;
+    padding: 6px;
   }
 
-  .bo-tabs--glass .bo-tab {
-    padding: 12px 16px;
-  }
-
+  /* 44x44 keeps the Apple HIG touch minimum; padding alone gave a 40px box. */
+  .bo-tabs--glass .bo-tab,
   .bo-tabs--glass .bo-tab.is-active {
-    padding: 14px 20px;
+    padding: 10px;
+    min-width: 44px;
+    justify-content: center;
   }
 
   .bo-tabs--glass .bo-tabInner {
-    gap: 14px;
+    gap: 0;
   }
 
   .bo-tabs--glass .bo-tabIcon {

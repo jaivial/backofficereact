@@ -101,7 +101,14 @@ export type UseSiteBuilderReturn = {
   handleSwitchPage: (page: SitePage) => void;
 };
 
-export function useSiteBuilder(): UseSiteBuilderReturn {
+export function useSiteBuilder(options?: {
+  initialData?: {
+    site?: Record<string, unknown> | null;
+    pages?: Record<string, unknown>[];
+    components?: Record<string, unknown>[];
+  } | null;
+  wsSend?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
+}): UseSiteBuilderReturn {
   const { addToast } = useToasts();
   const { handleError } = useErrorToast();
 
@@ -197,8 +204,24 @@ export function useSiteBuilder(): UseSiteBuilderReturn {
   }, [handleError]);
 
   useEffect(() => {
+    // Hydration path: seed state from vike SSR +data.ts when present, so the
+    // initial paint needs no client round-trip. All post-load CRUD uses WS.
+    if (options?.initialData) {
+      const { site, pages: initPages, components: initComponents } = options.initialData;
+      if (site) setSite(site as unknown as Site);
+      const normalized = (initPages ?? []).map((page) => ({
+        ...(page as unknown as SitePage),
+        tree: ensurePageTree((page as any).tree),
+      }));
+      setPages(normalized);
+      const homePage = normalized.find((p) => p.is_home) || normalized[0] || null;
+      setCurrentPage(homePage);
+      if (initComponents) setComponents(initComponents as unknown as ComponentDefinition[]);
+      setLoading(false);
+      return;
+    }
     void loadInitialData();
-  }, [loadInitialData]);
+  }, [loadInitialData, options?.initialData]);
 
   // Context menu click outside
   useEffect(() => {
@@ -402,9 +425,19 @@ export function useSiteBuilder(): UseSiteBuilderReturn {
 
     try {
       setSaving(true);
-      await pagesApi.update(currentPage.id, {
-        tree: currentPage.tree,
-      });
+      // Post-load CRUD over WebSocket (per plan). Falls back to REST when the
+      // WS bridge isn't connected (e.g. preview/older flows).
+      if (options?.wsSend) {
+        await options.wsSend("pages.update", {
+          pageId: currentPage.id,
+          ...currentPage,
+          tree: currentPage.tree,
+        });
+      } else {
+        await pagesApi.update(currentPage.id, {
+          tree: currentPage.tree,
+        });
+      }
       addToast({
         title: "Guardado",
         description: "Página guardada correctamente",
@@ -414,7 +447,7 @@ export function useSiteBuilder(): UseSiteBuilderReturn {
     } finally {
       setSaving(false);
     }
-  }, [addToast, currentPage, handleError]);
+  }, [addToast, currentPage, handleError, options?.wsSend]);
 
   // Add component
   const handleAddComponent = useCallback(

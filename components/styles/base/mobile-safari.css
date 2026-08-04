@@ -1,0 +1,197 @@
+/* Mobile Safari (iOS) corrections.
+ *
+ * Only applies below the tablet breakpoint and only on touch pointers, so
+ * desktop density is untouched. Findings come from the
+ * e2e/specs/mobile/safari-ux-audit.spec.ts sweep.
+ */
+
+@media (max-width: 767px) and (pointer: coarse) {
+  /* iOS Safari zooms the whole page when a focused field's text is under 16px.
+     Nothing else fixes it — the zoom is a hard-coded WebKit behaviour. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Checkboxes/radios are their own tap target, independent of font size.
+     The extra class raises specificity over per-feature 16px overrides. */
+  :is(.bo-app, #bo-portal) input[type="checkbox"],
+  :is(.bo-app, #bo-portal) input[type="radio"] {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+  }
+
+  /* The widget preview (.vc-widget-*) intentionally renders the public booking
+     widget at miniature scale — it is a picture of another site, not UI the
+     user taps here, so it keeps its own type sizes. */
+
+  /* Apple HIG minimum touch target is 44x44pt. These are the recurring
+     offenders from the audit; each keeps its visual size via padding rather
+     than growing the box. */
+  .bo-btn,
+  .bo-counterBtn,
+  .bo-selectBtn,
+  .bo-modalX,
+  .bo-iconBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* .bo-actionBtn sets an explicit 36px box, so min-height cannot raise it. */
+  :is(.bo-app, #bo-portal) .bo-actionBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Calendar day cells: tappable squares, not 30px pinpricks. */
+  :is(.bo-app, #bo-portal) .bo-mcalCell,
+  .bo-calDay {
+    min-height: 46px;
+  }
+
+  /* Hour slots, list rows and compact controls were below the 44pt floor.
+     .bo-tableColorPreset is *shrunk* to 28px by a narrow-viewport rule, which
+     is backwards for touch. */
+  .bo-tableColorPreset,
+  /* .bo-tabs--compact .bo-tab pins 36px, so the scope must out-specify it. */
+  :is(.bo-app, #bo-portal) .bo-tab,
+  .bo-hourCard--slot,
+  .bo-horariosMemberBtn,
+  .bo-dateBtn,
+  .bo-brandingLogo-uploadBtn,
+  .bo-drawAccordionToggle,
+  .bo-toastX,
+  :is(.bo-app, #bo-portal) .bo-input {
+    min-height: 44px;
+  }
+
+  /* Permission chips act as toggles; they need a real target. */
+  .bo-chip[role="button"],
+  button.bo-chip {
+    min-height: 44px;
+  }
+
+  /* Borderless input inside a padded wrapper: the wrapper is the visual
+     control, so grow the input to fill it rather than boxing it separately. */
+  .bo-memberPickerSearch {
+    min-height: 44px;
+  }
+
+  .bo-memberPickerSearchInput {
+    align-self: stretch;
+  }
+
+  /* Inline text links inside table cells: pad the hit area vertically without
+     changing where the text sits. */
+  .bo-tableCustomerName--link {
+    display: inline-block;
+    padding-block: 13px;
+  }
+
+  /* Clickable table rows: the row is the target, so give it real height. */
+  .bo-horariosRosterRow.is-clickable > td,
+  .bo-horariosRosterRow.is-clickable > th {
+    height: 44px;
+    padding-block: 12px;
+  }
+
+  /* Tailwind-styled buttons that never picked up a .bo-* class. Scoped to the
+     app shell so the public/marketing pages keep their own sizing. */
+  :is(.bo-app, #bo-portal) button:not([class*="bo-"]):not([data-slot*="tab"]) {
+    min-height: 44px;
+  }
+
+  /* The switch's own pill stays 44x24; the tap target grows via a transparent
+     pseudo-element so the control does not visually inflate. */
+  .bo-sc-switch {
+    position: relative;
+  }
+
+  .bo-sc-switch::after {
+    content: "";
+    position: absolute;
+    inset: -10px;
+  }
+
+  :is(.bo-app, #bo-portal) .bo-textarea {
+    font-size: 16px;
+  }
+
+  :is(.bo-app, #bo-portal) .bo-colorPickerInput,
+  .bo-memberWhatsAppButton {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+  }
+
+  /* The calendar's occupancy ratio is container-query sized and bottoms out at
+     9px in a 46px cell. 11px still fits "20/45" without the ellipsis that 12px
+     forced, and is a real improvement over 9px. */
+  :is(.bo-app, #bo-portal) .bo-mcalSub,
+  :is(.bo-app, #bo-portal) .bo-mcalRatio {
+    font-size: 11px;
+  }
+
+  /* Sub-12px copy is unreadable on a phone; float the smallest labels up.
+     .bo-mcalRatio is handled just above on purpose: it sits in a 1/7-width calendar cell,
+     where 12px truncates "20/45" to "20/…" — legibility of the number matters
+     more than the floor there. */
+  .bo-roleCardLevel,
+  .bo-roleUserEmail,
+  .bo-roleUserHint,
+  .bo-mcalDow,
+  :is(.bo-app, #bo-portal) .bo-mcalNum,
+  .bo-roleBadge,
+  .bo-memberHours,
+  :is(.bo-app, #bo-portal) .bo-chip,
+  .bo-homeNodeLabel,
+  .bo-btn--ghost,
+  .bo-timeAdjustCounterLabel,
+  .bo-install-stepMeta,
+  .bo-install-noteLabel,
+  .bo-install-noteText,
+  .bo-fichajeConn,
+  .bo-menuTag,
+  .bo-allergenCircleLabel,
+  .bo-tableMapSheetStat,
+  .bo-typeHint,
+  .bo-typeState,
+  .bo-menuTypePanelCount,
+  .bo-drawPresetGroupTitle {
+    font-size: 12px;
+  }
+
+  /* Uppercase micro-labels (section headers, table column heads) sit at 10px;
+     11px keeps them compact while clearing the floor. */
+  .bo-tableMapSectionTitle,
+  .bo-horariosRosterTable thead th {
+    font-size: 11px;
+  }
+
+  /* Tailwind arbitrary sizes below the 12px floor. Attribute selectors, since
+     these are inline utilities with no semantic class to hook. */
+  :is(.bo-app, #bo-portal) [class*="text-[11px]"],
+  :is(.bo-app, #bo-portal) [class*="text-[10px]"],
+  :is(.bo-app, #bo-portal) [class*="text-[9px]"] {
+    font-size: 12px;
+  }
+
+  /* Toasts sat under the fixed bottom nav bar (~68px tall). */
+  .bo-toastWrap {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    left: 16px;
+    justify-items: stretch;
+  }
+
+  /* Nothing may bleed past the viewport edge; the app shell already clips, so
+     a bleeding child just becomes invisible instead of scrollable. */
+  .bo-panel,
+  .bo-panelHead,
+  .bo-panelBody,
+  .bo-content-grid {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

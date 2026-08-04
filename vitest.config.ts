@@ -1,6 +1,13 @@
 import { defineConfig } from 'vitest/config';
+import path from 'node:path';
 
 export default defineConfig({
+  resolve: {
+    dedupe: ["react", "react-dom", "three"],
+    alias: {
+      three: path.resolve(process.cwd(), "node_modules/three"),
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

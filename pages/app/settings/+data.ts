@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../api/client";
-import type { RestaurantBranding, RestaurantIntegrations, RestaurantInvoiceSettings, RestaurantWebsiteMenuTemplatesConfig } from "../../../api/types";
+import type { RestaurantBranding, RestaurantInfo, RestaurantIntegrations, RestaurantInvoiceSettings, RestaurantWebsiteMenuTemplatesConfig } from "../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -19,13 +19,15 @@ export async function data(pageContext: PageContextServer) {
   let branding: RestaurantBranding | null = null;
   let invoiceSettings: RestaurantInvoiceSettings | null = null;
   let websiteMenuTemplates: RestaurantWebsiteMenuTemplatesConfig | null = null;
+  let restaurantInfo: RestaurantInfo | null = null;
 
   try {
-    const [a, b, c, d] = await Promise.all([
+    const [a, b, c, d, e] = await Promise.all([
       api.settings.getIntegrations(),
       api.settings.getBranding(),
       api.settings.getInvoiceSettings(),
       api.settings.getWebsiteMenuTemplates(),
+      api.config.getRestaurantInfo(),
     ]);
     if (a.success) integrations = a.integrations;
     else error = a.message || "Error cargando integraciones";
@@ -38,9 +40,12 @@ export async function data(pageContext: PageContextServer) {
 
     if (d.success) websiteMenuTemplates = d;
     else if (!error) error = d.message || "Error cargando pagina web";
+
+    if (e.success) restaurantInfo = e.restaurantInfo;
+    else if (!error) error = e.message || "Error cargando datos fiscales";
   } catch (e) {
     error = e instanceof Error ? e.message : "Error cargando ajustes";
   }
 
-  return { integrations, branding, invoiceSettings, websiteMenuTemplates, error };
+  return { integrations, branding, invoiceSettings, websiteMenuTemplates, restaurantInfo, error };
 }
