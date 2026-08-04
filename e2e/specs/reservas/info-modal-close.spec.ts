@@ -77,8 +77,9 @@ test.describe("Reservas Config - Info Modal", () => {
     const dialog = page.getByRole("dialog", { name: "Reserva obligatoria" });
     await expect(dialog).toBeVisible({ timeout: 3000 });
 
-    // Click backdrop corner — Modal.tsx overlay uses .fixed.inset-0 as wrapper
-    await page.locator(".fixed.inset-0").first().click({
+    // Click backdrop corner — Modal.tsx overlay is data-ui="modal-overlay" (closes when
+    // the mousedown target is the overlay itself).
+    await page.locator('[data-ui="modal-overlay"]').first().click({
       position: { x: 10, y: 10 },
     });
     await expect(dialog).not.toBeVisible({ timeout: 3000 });

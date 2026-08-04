@@ -47,12 +47,12 @@ export function CustomerStatementFilters({
     <Card variant="tailwind" padding className="mb-6" data-ui="customer-statement-filters">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-ui="filters-grid">
         <div data-ui="customer-select-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="customer-select" data-slot="customerStatementFilters-mb-1">Cliente</label>
+          <label className="block text-sm font-medium text-[var(--bo-text)] mb-1" htmlFor="customer-select" data-slot="customerStatementFilters-mb-1">Cliente</label>
           <select
             id="customer-select"
             value={selectedCustomer}
             onChange={(e) => onCustomerChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bo-input w-full"
             data-ui="customer-select"
           >
             <option value="">Seleccionar cliente...</option>
@@ -65,25 +65,25 @@ export function CustomerStatementFilters({
         </div>
 
         <div data-ui="date-from-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-from" data-slot="customerStatementFilters-mb-1">Desde</label>
+          <label className="block text-sm font-medium text-[var(--bo-text)] mb-1" htmlFor="statement-date-from" data-slot="customerStatementFilters-mb-1">Desde</label>
           <input
             id="statement-date-from"
             type="date"
             value={statementDateFrom}
             onChange={(e) => onDateFromChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bo-input w-full"
             data-ui="statement-date-from"
           />
         </div>
 
         <div data-ui="date-to-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="statement-date-to" data-slot="customerStatementFilters-mb-1">Hasta</label>
+          <label className="block text-sm font-medium text-[var(--bo-text)] mb-1" htmlFor="statement-date-to" data-slot="customerStatementFilters-mb-1">Hasta</label>
           <input
             id="statement-date-to"
             type="date"
             value={statementDateTo}
             onChange={(e) => onDateToChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bo-input w-full"
             data-ui="statement-date-to"
           />
         </div>
@@ -92,7 +92,7 @@ export function CustomerStatementFilters({
           <button
             onClick={onLoadCustomers}
             disabled={customersLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+            className="bo-btn bo-btn--secondary flex items-center gap-2 disabled:opacity-50"
             data-ui="load-customers-btn"
           >
             {customersLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
@@ -105,7 +105,7 @@ export function CustomerStatementFilters({
         <button
           onClick={onGenerate}
           disabled={customerLoading || !selectedCustomer}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="bo-btn bo-btn--primary flex items-center gap-2 disabled:opacity-50"
           data-ui="generate-btn"
         >
           {customerLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
@@ -117,7 +117,7 @@ export function CustomerStatementFilters({
             <button
               onClick={onExportPDF}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              className="bo-btn bo-btn--danger flex items-center gap-2 disabled:opacity-50"
               data-ui="export-pdf-btn"
             >
               <FileText className="w-4 h-4" />
@@ -126,7 +126,7 @@ export function CustomerStatementFilters({
             <button
               onClick={onExportCSV}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              className="bo-btn bo-btn--success flex items-center gap-2 disabled:opacity-50"
               data-ui="export-csv-btn"
             >
               <FileSpreadsheet className="w-4 h-4" />

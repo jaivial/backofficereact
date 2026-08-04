@@ -21,15 +21,15 @@ export function EmptyState({
     <div
       className={cn(
         variant === "tailwind"
-          ? "bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center"
+          ? "bg-[var(--bo-surface)] rounded-lg shadow-sm border border-[var(--bo-border)] p-12 text-center"
           : "bo-emptyState",
         className,
       )}
       {...rest}
     >
       {icon && <div className="bo-emptyStateIcon">{icon}</div>}
-      {title && <p className={variant === "tailwind" ? "text-gray-500 text-sm" : "bo-mutedText"}>{title}</p>}
-      {description && <p className={variant === "tailwind" ? "text-gray-400 text-xs mt-1" : "bo-mutedText"}>{description}</p>}
+      {title && <p className={variant === "tailwind" ? "text-[var(--bo-muted)] text-sm" : "bo-mutedText"}>{title}</p>}
+      {description && <p className={variant === "tailwind" ? "text-[var(--bo-faint)] text-xs mt-1" : "bo-mutedText"}>{description}</p>}
       {children}
     </div>
   );

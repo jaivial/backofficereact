@@ -24,9 +24,12 @@ describe("Comida hub create flow", () => {
     expect(modal.querySelector('[data-ui="food-modal-field-tipo"]')).toBeTruthy();
     expect(modal.querySelector('[data-ui="food-modal-field-categoria"]')).toBeTruthy();
     expect(modal.querySelector('[data-role="food-modal-input-precio"]')).toHaveValue(0);
+    // The switch row is styled by a named class now; the amount input is a
+    // sibling below it rather than inline, so the row only holds label+switch.
     const supplementRow = modal.querySelector('[data-ui="food-modal-supplement-head"]') as HTMLElement;
-    expect(supplementRow).toHaveClass("justify-center");
+    expect(supplementRow).toHaveClass("bo-foodModalSupplementHead");
     expect(supplementRow.parentElement).toHaveClass("bo-foodModalSupplementField");
+    expect(supplementRow.querySelector('[data-role="food-modal-input-suplemento"]')).toBeNull();
     expect(modal.querySelector('[data-role="food-modal-visibility-switch"]')).toHaveAttribute("aria-checked", "false");
 
     const gluten = modal.querySelector('[data-role="food-modal-alergeno-option"][data-allergen="gluten"]') as HTMLButtonElement;

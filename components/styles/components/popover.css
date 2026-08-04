@@ -1,0 +1,68 @@
+/* Anchored popover surface.
+   Positioning is set inline by the component; this file only describes how it
+   looks. Colours come from the shared AA-checked tokens so the panel keeps its
+   contrast in both themes. */
+
+.bo-popover {
+  position: fixed;
+  z-index: 1200;
+  box-sizing: border-box;
+  max-height: min(70vh, 520px);
+  /* Vertical only: a popover that scrolls sideways hides content behind an edge
+     nobody thinks to drag. Anything too wide is made to wrap or truncate
+     instead. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* The panel is small and its bounds are obvious, so the scrollbar is chrome
+     rather than information. Scrolling itself is untouched. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 12px;
+  border: 1px solid var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  box-shadow: var(--bo-shadow, 0 16px 30px rgba(8, 10, 22, 0.34));
+}
+
+/* Content-sized panel. The cap comes from --bo-popover-max but the viewport
+   always wins: a panel wider than the screen cannot be read or dismissed. */
+.bo-popover--auto {
+  max-width: min(var(--bo-popover-max, 320px), calc(100vw - 16px));
+}
+
+.bo-popover::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+:root[data-theme="light"] .bo-popover {
+  box-shadow: 0 12px 28px rgba(30, 38, 64, 0.18);
+}
+
+.bo-popover__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.bo-popover__title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.bo-popover__body {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-popover__empty {
+  font-size: 12px;
+  color: var(--bo-muted);
+  margin: 0;
+  padding: 8px 2px;
+}

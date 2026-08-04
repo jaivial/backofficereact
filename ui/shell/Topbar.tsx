@@ -14,7 +14,7 @@ import { Breadcrumbs, type BreadcrumbItem } from "../nav/Breadcrumbs";
 import { cn } from "../shadcn/utils";
 
 function isBOSection(value: string): value is BOSection {
-  return value === "reservas" || value === "menus" || value === "ajustes" || value === "miembros" || value === "fichaje" || value === "horarios";
+  return value === "reservas" || value === "menus" || value === "comida" || value === "stock" || value === "pos" || value === "ajustes" || value === "website" || value === "site-builder" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas" || value === "reportes" || value === "estadisticas" || value === "estado_cuenta";
 }
 
 function formatElapsed(totalSeconds: number): string {

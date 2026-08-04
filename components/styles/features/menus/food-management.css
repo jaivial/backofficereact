@@ -900,14 +900,24 @@ body.is-navigating .bo-fadeout {
 /* Food Modal */
 .bo-foodModal-grid {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
 }
 
+/* The image block sits in the same column flow as the fields, so it is centred
+   rather than stretched to the full modal width. */
 .bo-foodModal-imageSection {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 12px;
+  width: 100%;
+}
+
+.bo-foodModal-imageSection > .bo-btn,
+.bo-foodModal-imageSection > .bo-foodModal-imageHint {
+  width: 200px;
+  max-width: 100%;
 }
 
 .bo-foodModal-imagePreview {
@@ -978,10 +988,49 @@ body.is-navigating .bo-fadeout {
   gap: 14px;
 }
 
+/* Supplement: the switch and its label on one row, the amount stacked beneath.
+   Keeping the input inline made the row wrap unpredictably in a narrow modal. */
+.bo-foodModalSupplementField {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-foodModalSupplementHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-foodModalSupplementAmount {
+  display: grid;
+  gap: 6px;
+  max-width: 220px;
+}
+
 .bo-fieldRow {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
+  align-items: end;
+}
+
+/* A field in a row must be allowed to shrink, or a long select label forces the
+   whole track wider and the columns stop being proportional. */
+.bo-fieldRow > .bo-field {
+  min-width: 0;
+}
+
+/* Select renders an inline-flex button that sizes to its label; inside a form
+   row every trigger should fill its share of the track instead. */
+.bo-fieldRow .bo-selectWrapper,
+.bo-field > .bo-selectWrapper {
+  width: 100%;
+}
+
+.bo-fieldRow .bo-selectBtn,
+.bo-field > .bo-selectWrapper > .bo-selectBtn {
+  width: 100%;
+  justify-content: space-between;
 }
 
 .bo-textarea {

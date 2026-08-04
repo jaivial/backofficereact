@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 
-import { createClient } from "../../api/client";
+import { createAuthClient } from "../../api/auth-client";
 import { sessionAtom } from "../../state/atoms";
 import { useErrorToast } from "../../ui/feedback/useErrorToast";
 import { createLoginHandler } from "./helpers/onSubmit";
 
 export default function LoginPage() {
-  const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const api = useMemo(() => createAuthClient({ baseUrl: "" }), []);
   const setSession = useSetAtom(sessionAtom);
 
   const [identifier, setIdentifier] = useState("");

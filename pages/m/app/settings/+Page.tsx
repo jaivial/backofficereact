@@ -9,6 +9,7 @@ import {
   LogOut,
   Shield,
   Smartphone,
+  type LucideIcon,
 } from "lucide-react";
 
 function SettingsRow({
@@ -20,7 +21,7 @@ function SettingsRow({
   "data-ui": dataUi,
   "data-role": dataRole,
 }: {
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
   value?: string;
   onClick?: () => void;

@@ -1,5 +1,5 @@
 import type { BOSession } from "../../../api/types";
-import { createClient } from "../../../api/client";
+import { createAuthClient } from "../../../api/auth-client";
 
 export function createLoginHandler({
   api,
@@ -9,7 +9,7 @@ export function createLoginHandler({
   setError,
   setBusy,
 }: {
-  api: ReturnType<typeof createClient>;
+  api: ReturnType<typeof createAuthClient>;
   identifier: string;
   password: string;
   setSession: (session: BOSession) => void;

@@ -62,7 +62,11 @@ export default defineConfig({
     ...(isStorybook ? [react()] : [vike(), react()]),
   ],
   resolve: {
-    alias: { "@ui": path.resolve(__dirname, "ui") },
+    alias: {
+      "@ui": path.resolve(__dirname, "ui"),
+      three: path.resolve(__dirname, "node_modules/three"),
+    },
+    dedupe: ["react", "react-dom", "three"],
   },
   server: {
     host: "0.0.0.0",
@@ -75,4 +79,3 @@ export default defineConfig({
     ],
   },
 });
-

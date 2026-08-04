@@ -1,0 +1,887 @@
+/* Technical sheets (fichas tecnicas).
+   Every state that carries meaning is expressed in text or an icon as well as
+   colour, so the UI stays usable for colour-blind users and in high-contrast
+   mode. Colours come from the shared AA-checked tokens in variables.css. */
+
+.bo-productionType {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.bo-productionType__option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "mark label" "mark hint";
+  gap: 0.15rem 0.6rem;
+  min-height: 44px; /* touch target */
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border: 2px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  background: var(--bo-surface);
+  color: var(--bo-on-surface);
+  cursor: pointer;
+}
+
+.bo-productionType__option:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-productionType__option.is-active {
+  border-color: var(--bo-accent);
+  background: var(--bo-surface-raised);
+}
+
+.bo-productionType__mark {
+  grid-area: mark;
+  font-weight: 700;
+  color: var(--bo-on-surface-success);
+}
+
+.bo-productionType__label {
+  grid-area: label;
+  font-weight: 600;
+}
+
+.bo-productionType__hint {
+  grid-area: hint;
+  font-size: 0.85em;
+  color: var(--bo-muted);
+}
+
+.bo-sheetPicker__list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bo-sheetPicker__item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+}
+
+.bo-sheetPicker__info {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.bo-sheetPicker__name {
+  font-weight: 600;
+}
+
+/* The reuse warning is the whole reason the direct-link option is safe to
+   offer, so it must read as a warning, not as a footnote. */
+.bo-sheetPicker__usage {
+  font-size: 0.85em;
+  color: var(--bo-on-surface-warning);
+}
+
+.bo-sheetPicker__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* A derived allergen cannot be switched off: it is dashed and shows a padlock,
+   so the state is legible without relying on colour. */
+.bo-allergenCircle.is-locked {
+  position: relative;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+/* Corner badge for an allergen the card cannot change, e.g. inherited from a
+   technical sheet. Text, not just colour, so the reason survives a colour-blind
+   or high-contrast reading. */
+.bo-allergenCircleBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: var(--bo-accent);
+  color: var(--bo-on-accent);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.bo-allergenCircleLock {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* The picker reuses the product editor's card grid at a smaller scale, so the
+   same 14 allergens look the same wherever they are chosen. */
+.bo-allergenGrid--compact {
+  grid-template-columns: repeat(auto-fill, 82px);
+  gap: 6px;
+}
+
+.bo-allergenGrid--compact .bo-allergenCircle {
+  width: 82px;
+  height: 76px;
+  grid-template-rows: 26px 1fr;
+  gap: 4px;
+  border-radius: 12px;
+  padding: 6px;
+}
+
+.bo-allergenGrid--compact .bo-allergenCircleIcon {
+  width: 26px;
+  height: 26px;
+}
+
+.bo-allergenGrid--compact .bo-allergenCircleIcon img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.bo-allergenGrid--compact .bo-allergenCircleLabel {
+  font-size: 10px;
+}
+
+.bo-stepList {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bo-stepCard {
+  display: grid;
+  /* number | 1:1 media | text | actions */
+  grid-template-columns: auto 160px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  background: var(--bo-surface);
+}
+
+.bo-stepCard__no {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--bo-accent);
+  color: var(--bo-on-accent);
+  font-weight: 700;
+}
+
+/* The media box is square whether it holds a picture, a skeleton or the empty
+   placeholder, so the row never changes height when an image arrives. */
+.bo-stepCard__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 155px;
+  border-radius: var(--bo-radius);
+  overflow: hidden;
+  background: var(--bo-surface-2);
+}
+
+.bo-stepCard__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bo-stepCard__imageAdd {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px dashed var(--bo-border-2);
+  border-radius: inherit;
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.bo-stepCard__imageAdd:hover,
+.bo-stepCard__imageAdd:focus-visible {
+  border-color: var(--bo-accent);
+  color: var(--bo-text);
+  outline: none;
+}
+
+.bo-stepCard__imageChange {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 999px;
+  /* Fixed dark scrim rather than a theme token: it sits on an arbitrary photo,
+     so the contrast has to hold regardless of the theme. */
+  background: rgba(8, 10, 22, 0.78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.bo-stepCard__skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--bo-surface-2) 25%,
+    var(--bo-surface-3, var(--bo-surface)) 50%,
+    var(--bo-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: bo-stepSkeleton 1.4s ease-in-out infinite;
+}
+
+@keyframes bo-stepSkeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-stepCard__skeleton {
+    animation: none;
+  }
+}
+
+.bo-stepCard__body {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.bo-stepCard__titleInput {
+  font-weight: 650;
+}
+
+.bo-stepCard__textInput {
+  resize: vertical;
+  min-height: 64px;
+}
+
+.bo-stepCard__error {
+  margin: 0.25rem 0 0;
+  color: var(--bo-on-surface-danger);
+}
+
+.bo-stepCard__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Tab-level actions follow the content they add to. */
+.bo-sheetTabActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Ingredientes and Alergenos each get their own outline, so it is obvious which
+   heading and add-button a block of content belongs to. */
+/* Empty-state and loading text inside a technical sheet.
+   `.bo-muted` was used for these but has no rule anywhere, so they rendered as
+   full-size body copy that competed with the real content. These are secondary
+   guidance: smaller, lighter, and constrained to a readable measure so a long
+   sentence does not run the full width of the panel. */
+.bo-sheetHint {
+  margin: 0 auto;
+  max-width: 68ch;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  /* --bo-muted is AA-checked against the panel surface in both themes. */
+  color: var(--bo-muted);
+  text-wrap: pretty;
+  text-align: center;
+}
+
+.bo-sheetSection {
+  padding: 0.75rem;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+}
+
+.bo-sheetSectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Ingredient search inside the popover. */
+.bo-sheetSearchField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bo-muted);
+}
+
+.bo-sheetSearchField .bo-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bo-sheetSearchList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  max-height: 190px;
+  /* Results scroll down, never sideways: a long product name truncates in its
+     row instead of widening the list. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  list-style: none;
+}
+
+.bo-sheetSearchList::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* A grid item is min-width:auto by default, so a long name would refuse to
+   shrink and push the row wider than the popover. */
+.bo-sheetSearchList > li {
+  min-width: 0;
+}
+
+.bo-sheetSearchItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--bo-radius-sm);
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bo-sheetSearchItem:hover,
+.bo-sheetSearchItem:focus-visible {
+  border-color: var(--bo-border-2);
+  background: var(--bo-surface-2);
+  outline: none;
+}
+
+/* The selected row is marked by border AND a check-style weight change, not by
+   colour alone. */
+.bo-sheetSearchItem.is-selected {
+  border-color: var(--bo-accent);
+  background: var(--bo-surface-2);
+  font-weight: 650;
+}
+
+.bo-sheetSearchItem__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-sheetSearchItem__unit {
+  flex: 0 0 auto;
+  color: var(--bo-muted);
+  font-size: 11px;
+}
+
+.bo-sheetSearchForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* The confirm action is as wide as its label and centred, so it reads as one
+   deliberate button rather than a full-width bar in a panel that now sizes
+   itself to its content. */
+.bo-sheetSearchSubmit {
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.bo-stepImagePreview {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--bo-radius-sm);
+}
+
+.bo-stepImageChoice {
+  display: grid;
+  gap: 6px;
+}
+
+.bo-costSummary {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  background: var(--bo-surface-2);
+}
+
+.bo-costSummary__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.bo-costSummary__row:not(:last-child) {
+  border-bottom: 1px solid var(--bo-border);
+}
+
+.bo-costSummary dt {
+  font-size: 0.85em;
+  color: var(--bo-muted);
+}
+
+.bo-costSummary dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The total is the line people look for, so it is the heaviest. */
+.bo-costSummary__row--total dt,
+.bo-costSummary__row--total dd {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+/* Money and quantities line up on the decimal point. */
+.bo-table--cost .bo-table__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bo-tableWrap {
+  overflow-x: auto;
+}
+
+/* An unpriced ingredient is a gap, not a zero: it reads as a warning. */
+.bo-costMissing {
+  color: var(--bo-on-surface-warning);
+  font-weight: 600;
+}
+
+.bo-costTotal {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-top: 2px solid var(--bo-border);
+  background: var(--bo-surface);
+  font-size: 1.1rem;
+}
+
+.bo-costZone {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid currentColor;
+  border-radius: var(--bo-radius);
+  font-weight: 600;
+}
+
+.bo-costZone--green {
+  color: var(--bo-on-surface-success);
+}
+
+.bo-costZone--amber {
+  color: var(--bo-on-surface-warning);
+}
+
+.bo-costZone--red {
+  color: var(--bo-on-surface-danger);
+}
+
+.bo-costZone--purple {
+  color: var(--bo-on-surface-info);
+}
+
+/* Sheet actions inside the dish modal. */
+.bo-foodModalSheetActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* "Tipo de producto" section, shared by every product editor. */
+.bo-productionSection {
+  display: grid;
+  gap: 0.5rem;
+  grid-column: 1 / -1;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--bo-border);
+}
+
+/* The subtabs render inline, inside the product editor, so a whole technical
+   sheet can be built without leaving the modal. */
+.bo-productionSection__sheet {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  background: var(--bo-surface-raised);
+}
+
+/* Narrow screens: the four-column step card becomes number+media on one row and
+   the text beneath, so neither the picture nor the textarea gets crushed. */
+@media (max-width: 720px) {
+  .bo-stepCard {
+    grid-template-columns: auto 96px minmax(0, 1fr);
+    grid-template-areas:
+      "no media actions"
+      "body body body";
+  }
+
+  .bo-stepCard__no {
+    grid-area: no;
+  }
+
+  .bo-stepCard__media {
+    grid-area: media;
+    width: 96px;
+  }
+
+  .bo-stepCard__body {
+    grid-area: body;
+  }
+
+  .bo-stepCard__actions {
+    grid-area: actions;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .bo-sheetSearchForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The information tab holds the densest content (ingredient cards plus the
+   allergen grid), so it gets breathing room at the sides. */
+[data-ui="sheet-info-tab"] {
+  padding-inline: 2rem;
+}
+
+.bo-ingredientList {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bo-ingredientCard {
+  display: grid;
+  /* image | name | figures | actions */
+  grid-template-columns: 56px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  background: var(--bo-surface);
+}
+
+.bo-ingredientCard__media {
+  width: 56px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bo-radius-sm);
+  overflow: hidden;
+  background: var(--bo-surface-2);
+}
+
+.bo-ingredientCard__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bo-ingredientCard__placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--bo-faint);
+}
+
+.bo-ingredientCard__main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bo-ingredientCard__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-ingredientCard__flag {
+  font-size: 11px;
+  color: var(--bo-muted);
+}
+
+.bo-ingredientCard__figures {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+}
+
+.bo-ingredientCard__figure {
+  display: grid;
+  gap: 1px;
+  justify-items: end;
+  text-align: right;
+}
+
+.bo-ingredientCard__figure dt {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bo-faint);
+}
+
+.bo-ingredientCard__figure dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bo-ingredientCard__actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+@media (max-width: 720px) {
+  [data-ui="sheet-info-tab"] {
+    padding-inline: 0.75rem;
+  }
+
+  /* The figures drop under the name so neither gets squeezed to a few pixels. */
+  .bo-ingredientCard {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "media main actions"
+      "media figures figures";
+    row-gap: 0.35rem;
+  }
+
+  .bo-ingredientCard__media {
+    grid-area: media;
+    width: 48px;
+  }
+
+  .bo-ingredientCard__main {
+    grid-area: main;
+  }
+
+  .bo-ingredientCard__figures {
+    grid-area: figures;
+    gap: 1rem;
+  }
+
+  .bo-ingredientCard__figure {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .bo-ingredientCard__actions {
+    grid-area: actions;
+  }
+}
+
+/* Sheet browser: filters and the create action on one row, results below. */
+.bo-sheetBrowser__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.bo-sheetBrowser__filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.6fr) minmax(140px, 1fr) minmax(140px, 1fr);
+  gap: 0.5rem;
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.bo-sheetBrowser__filters .bo-selectWrapper,
+.bo-sheetBrowser__filters .bo-selectBtn {
+  width: 100%;
+}
+
+.bo-sheetBrowser__create {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.bo-sheetCardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bo-sheetCard {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.bo-sheetCard:hover,
+.bo-sheetCard:focus-visible {
+  border-color: var(--bo-accent);
+  background: var(--bo-surface-2);
+  outline: none;
+}
+
+.bo-sheetCard__media {
+  width: 56px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bo-radius-sm);
+  overflow: hidden;
+  background: var(--bo-surface-2);
+  display: block;
+}
+
+.bo-sheetCard__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bo-sheetCard__placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--bo-faint);
+}
+
+.bo-sheetCard__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bo-sheetCard__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-sheetCard__meta {
+  font-size: 11px;
+  color: var(--bo-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status is spelled out; the colour only reinforces it. */
+.bo-sheetCard__status {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bo-muted);
+}
+
+.bo-sheetCard__status--published {
+  color: var(--bo-on-surface-success, var(--bo-color-success));
+}
+
+.bo-sheetCard__usage {
+  font-size: 10px;
+  color: var(--bo-on-surface-warning, var(--bo-color-warning));
+}
+
+/* Back to the sheet list: pinned to the panel's top-left corner so it stays put
+   as the tabs change height and costs no vertical space. The tabs are centred,
+   so the button sits in the gutter beside them rather than over them. */
+.bo-sheetBack {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 1;
+  width: fit-content;
+  padding-inline: 0.5rem;
+}
+
+@media (max-width: 720px) {
+  .bo-sheetBrowser__filters {
+    grid-template-columns: 1fr;
+    flex-basis: 100%;
+  }
+
+  .bo-sheetBrowser__create {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -26,7 +26,7 @@ type Pos = {
 };
 
 const VIEWPORT_MARGIN = 8;
-const MENU_GAP = 8;
+const MENU_GAP = 13;
 
 function portalEl(): HTMLElement | null {
   return document.getElementById("bo-portal") || document.body;
@@ -116,6 +116,7 @@ export function DropdownMenu({
   menuMinWidthPx,
   className,
   menuClassName,
+  wrapperClassName,
 }: {
   label: string;
   items: MenuItem[];
@@ -125,6 +126,7 @@ export function DropdownMenu({
   menuMinWidthPx?: number;
   className?: string;
   menuClassName?: string;
+  wrapperClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -208,7 +210,12 @@ export function DropdownMenu({
       aria-haspopup="menu"
       aria-expanded={open}
       aria-label={label}
-      onClick={toggle}
+      onClick={(ev) => {
+        // Keep the dropdown working but stop the click from bubbling into a
+        // parent row/row handler (e.g. opening a booking modal).
+        ev.stopPropagation();
+        toggle();
+      }}
       data-ui="dropdown-trigger"
       data-slot={triggerDataSlot}
     >
@@ -265,7 +272,7 @@ export function DropdownMenu({
   ) : null;
 
   return (
-    <div className={cn("bo-dropdownWrapper", className)}>
+    <div className={cn("bo-dropdownWrapper", className, wrapperClassName)}>
       {trigger}
       {menu}
     </div>

@@ -2,7 +2,7 @@
  * Global Playwright setup - runs once before all e2e tests.
  * Handles session caching across test runs.
  *
- * Uses Bun's built-in env loading (--env-file in playwright.config.ts).
+ * Loads credentials through Playwright config from local .env files.
  * Session is stored in a cache file so tests can reuse it.
  */
 import { chromium, type FullConfig } from "@playwright/test";
@@ -12,13 +12,14 @@ import * as fs from "fs";
 interface CachedSession {
   bo_session: string;
   expiresAt: number;
+  email?: string;
 }
 
 const SESSION_CACHE_FILE = "test-results/.session-cache.json";
 const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@hotmail.com";
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123123";
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || "admin@villacarmen.com";
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || process.env.BOOTSTRAP_ADMIN_PASSWORD || "admin123";
 
 async function loginViaAPI(
   browserPage: import("@playwright/test").Page,
@@ -70,7 +71,7 @@ export default async function globalSetup(
 
   const baseURL =
     (config.projects[0]?.use?.baseURL as string | undefined) ??
-    (process.env.BACKOFFICE_URL ?? "https://localhost:3001");
+    (process.env.BACKOFFICE_URL ?? `https://localhost:${process.env.PORT ?? "3001"}`);
 
   const sessionCachePath = path.resolve(process.cwd(), SESSION_CACHE_FILE);
 
@@ -80,7 +81,7 @@ export default async function globalSetup(
     try {
       const raw = fs.readFileSync(sessionCachePath, "utf-8");
       const parsed = JSON.parse(raw) as CachedSession;
-      if (parsed.expiresAt && Date.now() < parsed.expiresAt) {
+      if (parsed.expiresAt && Date.now() < parsed.expiresAt && parsed.email === ADMIN_EMAIL) {
         sessionCookie = parsed.bo_session;
         console.log("[global-setup] Reusing cached session");
       }
@@ -107,7 +108,7 @@ export default async function globalSetup(
     }
     fs.writeFileSync(
       sessionCachePath,
-      JSON.stringify({ bo_session: sessionCookie, expiresAt: Date.now() + SESSION_TTL_MS })
+      JSON.stringify({ bo_session: sessionCookie, email: ADMIN_EMAIL, expiresAt: Date.now() + SESSION_TTL_MS })
     );
     console.log("[global-setup] New session cached");
   }
