@@ -14,6 +14,7 @@ const allKeys: SidebarItemKey[] = [
   "horarios",
   "facturas",
   "reportes",
+  "estadisticas",
   "estado_cuenta",
 ];
 

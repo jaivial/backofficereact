@@ -29,3 +29,15 @@ export { RoleCreateModal } from "./roles/RoleCreateModal";
 export type { CreateRoleInput } from "./roles/RoleCreateModal";
 export { RoleDetailModal } from "./roles/RoleDetailModal";
 export { RoleIcon } from "./roles/RoleIcon";
+export { AllergenIconList } from "./allergens/AllergenIconList";
+export type { AllergenIconListProps } from "./allergens/AllergenIconList";
+export {
+  ALLERGEN_ALIAS_TO_CANONICAL,
+  ALLERGEN_KEYS,
+  CANONICAL_ALLERGENS,
+  allergenIconSrc,
+  allergenLabel,
+  normalizeAllergen,
+  normalizeAllergenList,
+} from "./allergens/allergens";
+export type { CanonicalAllergen } from "./allergens/allergens";

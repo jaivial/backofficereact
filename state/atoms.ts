@@ -6,6 +6,12 @@ export type ThemeMode = "dark" | "light";
 export const sessionAtom = atom<BOSession | null>(null);
 export const sessionMovingExpirationAtom = atom<string | null>(null);
 export const themeAtom = atom<ThemeMode>("dark");
+// POS "Pantalla completa" mode: hides sidebar chrome, topbar and mobile nav
+// while on /app/pos. Read by pages/app/+Layout.tsx.
+export const posFullscreenAtom = atom(false);
+// Forky AI assistant modal open/closed. Read by pages/app/+Layout.tsx,
+// ForkyButton (opens) and ForkyModal (closes).
+export const forkyOpenAtom = atom(false);
 
 export type ToastKind = "success" | "error" | "info";
 export type Toast = {

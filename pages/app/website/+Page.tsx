@@ -176,19 +176,19 @@ export default function WebsiteBuilderPage() {
       <div className="flex gap-4 border-b border-slate-700/50 pb-2">
         <button 
           onClick={() => setActiveTab("templates")}
-          className={`px-4 py-2 font-medium transition-colors ${activeTab === "templates" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
+          className={`bg-transparent px-4 py-2 font-medium transition-colors ${activeTab === "templates" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
         >
           Plantillas Premium
         </button>
         <button 
           onClick={() => setActiveTab("ai")}
-          className={`px-4 py-2 font-medium transition-colors ${activeTab === "ai" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
+          className={`bg-transparent px-4 py-2 font-medium transition-colors ${activeTab === "ai" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
         >
           Constructor con IA
         </button>
         <button 
           onClick={() => setActiveTab("domain")}
-          className={`px-4 py-2 font-medium transition-colors ${activeTab === "domain" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
+          className={`bg-transparent px-4 py-2 font-medium transition-colors ${activeTab === "domain" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
         >
           Dominio Personalizado
         </button>

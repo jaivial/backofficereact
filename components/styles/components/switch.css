@@ -2,6 +2,9 @@
 .bo-sc-switch {
   width: 44px;
   height: 24px;
+  /* flex-shrink:0 — as a flex child the pill was squeezed to ~24px wide in
+     tight rows, collapsing the track under the thumb. */
+  flex: 0 0 auto;
   border-radius: 999px;
   border: 1px solid var(--bo-border-2);
   background: rgba(255, 255, 255, 0.08);

@@ -29,10 +29,20 @@
   -webkit-backdrop-filter: blur(var(--bo-glass-blur)) saturate(118%);
 }
 
+.bo-panel,
+.bo-panel--glass {
+  /* Grid/flex items default to min-width:auto, so a wide header pushed panels
+     past the viewport on phones instead of wrapping. */
+  min-width: 0;
+}
+
 .bo-panelHead {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
   padding: 16px 18px 10px;
 }
 

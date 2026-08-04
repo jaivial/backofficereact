@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CalendarClock, Clock3, Play, Square, Wifi, WifiOff } from "lucide-react";
 
 import { createClient } from "../../../api/client";
-import type { FichajeActiveEntry, FichajeSchedule, Member } from "../../../api/types";
+import type { FichajeActiveEntry, FichajeSchedule, LabourCostReport as LabourCostReportType, Member } from "../../../api/types";
 import { fichajeRealtimeAtom } from "../../../state/atoms";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import type { Data } from "./+data";
@@ -15,6 +15,7 @@ import { MemberPicker, type MemberPickerItem } from "../../../ui/widgets/MemberP
 import { TimeAdjust } from "../../../ui/widgets/TimeAdjust";
 import { Panel } from "../../../ui/shell/Panel";
 import { fullName } from "../../../lib/member";
+import { LabourCostReport } from "./functionalComponents/LabourCostReport/LabourCostReport";
 
 function formatElapsed(totalSeconds: number): string {
   const seconds = Math.max(0, Math.floor(totalSeconds));
@@ -98,6 +99,8 @@ export default function Page() {
   });
   const [busyAdminAction, setBusyAdminAction] = useState(false);
   const [busyScheduleUpdate, setBusyScheduleUpdate] = useState(false);
+  const [labourCost,setLabourCost]=useState<LabourCostReportType|null>(data.labourCost||null);
+  const [labourLoading,setLabourLoading]=useState(false);
 
   useEffect(() => {
     if (!data.state) return;
@@ -366,7 +369,9 @@ export default function Page() {
     [api.horarios, date, pushToast, selectedMemberId, selectedSchedule],
   );
 
-  const transition = reduceMotion ? { duration: 0 } : { duration: 0.22, ease: "easeOut" as const };
+  const loadLabourCost=useCallback(async(from:string,to:string)=>{setLabourLoading(true);try{const res=await api.fichaje.getLabourCost({from,to});if(res.success)setLabourCost(res);else setError(res.message||"No se pudo calcular coste laboral")}catch(err){setError(err instanceof Error?err.message:"No se pudo calcular coste laboral")}finally{setLabourLoading(false)}},[api.fichaje]);
+
+  const transition = reduceMotion ? { duration: 0 } : { duration: 0.22, ease: "easeOut" as const }; 
 
   if (!data.isAdminView) {
     return (
@@ -559,6 +564,7 @@ export default function Page() {
           </section>
         </div>
       </Panel>
+      {data.canViewLabourCost ? <LabourCostReport report={labourCost} loading={labourLoading} onRangeChange={(from,to)=>void loadLabourCost(from,to)} /> : null}
     </section>
   );
 }

@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../../../api/client";
-import type { Member, MemberStats } from "../../../../../api/types";
+import type { Member, MemberCompensation, MemberStats } from "../../../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -38,6 +38,8 @@ export async function data(pageContext: PageContextServer) {
       memberId: 0,
       member: null as Member | null,
       initialStats: null as MemberStats | null,
+      compensations: [] as MemberCompensation[],
+      canManageCompensation: false,
       date,
       error: "Miembro no valido" as string | null,
     };
@@ -50,11 +52,15 @@ export async function data(pageContext: PageContextServer) {
   let error: string | null = null;
   let member: Member | null = null;
   let initialStats: MemberStats | null = null;
+  let compensations: MemberCompensation[] = [];
+  const roleImportance = Number((pageContext as any)?.bo?.session?.user?.roleImportance ?? 0);
+  const canManageCompensation = roleImportance >= 90;
 
   try {
-    const [memberRes, statsRes] = await Promise.all([
+    const [memberRes, statsRes, compensationRes] = await Promise.all([
       api.members.get(memberId),
       api.members.getStats(memberId, { view: "weekly", date }),
+      canManageCompensation ? api.members.listCompensations(memberId) : Promise.resolve(null),
     ]);
 
     if (memberRes.success) member = memberRes.member;
@@ -62,9 +68,10 @@ export async function data(pageContext: PageContextServer) {
 
     if (statsRes.success) initialStats = statsRes;
     else if (!error) error = statsRes.message || "Error cargando datos de contrato";
+    if (compensationRes?.success) compensations = compensationRes.items;
   } catch (err) {
     error = err instanceof Error ? err.message : "Error cargando contrato";
   }
 
-  return { memberId, member, initialStats, date, error };
+  return { memberId, member, initialStats, compensations, canManageCompensation, date, error };
 }

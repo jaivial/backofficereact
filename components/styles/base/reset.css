@@ -58,3 +58,11 @@ button {
   font: inherit;
 }
 
+/* Form controls paint with the UA's blue by default, which reads as foreign
+   next to the app's accent. */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+  accent-color: var(--bo-accent);
+}

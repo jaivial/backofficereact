@@ -307,7 +307,7 @@ export function TableLegend({
             <div data-ui="reservations-section" className="bo-tableMapSection">
               <div data-slot="reservations-header" className="bo-tableMapSectionHeader">
                 <div data-ui="reservations-title" className="bo-tableMapSectionTitle">Reservas del día</div>
-                {bookings.length > 0 && hasUnassignedBookings && !assignMode && (
+                {bookings.length > 0 && hasUnassignedBookings && !assignMode && visibleTables.length > 0 && tablesByStatus.free.length > 0 && (
                   <button
                     data-ui="assign-table-btn"
                     className="bo-btn bo-btn--primary bo-btn--sm"

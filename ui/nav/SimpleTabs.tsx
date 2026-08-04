@@ -59,6 +59,7 @@ export function SimpleTabs({
             className={cn("bo-tab", active && "is-active")}
             role="tab"
             aria-selected={active}
+            aria-label={item.label}
             data-testid={`simple-tab-${item.id}`}
             data-role="tab-button"
             {...(panelled ? { "aria-controls": `panel-${item.id}`, id: `tab-${item.id}` } : null)}
@@ -107,6 +108,7 @@ export function SimpleTabsList({
             className={cn("bo-tab", active && "is-active")}
             role="tab"
             aria-selected={active}
+            aria-label={item.label}
             aria-controls={`panel-${item.id}`}
             id={`tab-${item.id}`}
             data-testid={`simple-tab-${item.id}`}

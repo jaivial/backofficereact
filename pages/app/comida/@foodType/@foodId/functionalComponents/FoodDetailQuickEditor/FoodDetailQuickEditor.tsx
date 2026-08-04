@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import { type ProductionType } from "../../../../_components/TechnicalSheet/ProductionTypeToggle";
+import { ProductionTypeSection } from "../../../../_components/TechnicalSheet/ProductionTypeSection";
+import React, { useEffect, useState } from "react";
 import { Loader2, Plus, Save, X } from "lucide-react";
 
 import { Select } from "../../../../../../../ui/inputs/Select";
@@ -66,7 +68,12 @@ interface FoodDetailQuickEditorProps {
   onQuickActiveChange: (value: boolean) => void;
   onQuickSave: () => void;
   onAddCategoryClick: () => void;
-
+  /** Null for a dish that has not been saved yet: there is nothing to link to. */
+  itemId?: number | null;
+  productionType?: ProductionType;
+  stockRecipeId?: number | null;
+  /** Which catalogue table the id belongs to; postres are a separate table. */
+  source?: "comida" | "postres";
 }
 
 export function FoodDetailQuickEditor({
@@ -99,8 +106,27 @@ export function FoodDetailQuickEditor({
   onToggleAllergen,
   onQuickSave,
   onAddCategoryClick,
+  itemId = null,
+  productionType = "RAW",
+  stockRecipeId = null,
+  source = "comida",
 }: FoodDetailQuickEditorProps) {
+  // The sheet link lives on the saved dish, so it is tracked locally and
+  // seeded from the server value rather than from the in-progress form.
+  const [currentProductionType, setCurrentProductionType] = useState<ProductionType>(productionType);
+  const [currentRecipeId, setCurrentRecipeId] = useState<number | null>(stockRecipeId);
+  const [sheetPickerOpen, setSheetPickerOpen] = useState(false);
+  const [sheetEditorOpen, setSheetEditorOpen] = useState(false);
+
+  // Re-seed only when a DIFFERENT product is opened; see WineDetailEditor for
+  // why re-seeding on every prop change would revert a save.
+  useEffect(() => {
+    setCurrentProductionType(productionType);
+    setCurrentRecipeId(stockRecipeId);
+  }, [itemId]);
+
   return (
+    <>
     <Panel
       className="bo-foodDetailPanel bo-foodDetailQuickEditor"
       actions={<span className="bo-badge bo-badge--sm bo-badge--muted bo-hidden" />}
@@ -199,6 +225,26 @@ export function FoodDetailQuickEditor({
             ) : null}
           </div>
 
+          {/* Ficha tecnica: what the dish is made of, and its cost. Only a
+              saved dish can carry one, because the sheet links to its id. */}
+          <ProductionTypeSection
+            itemId={itemId}
+            productionType={currentProductionType}
+            stockRecipeId={currentRecipeId}
+            productName={quickName}
+            source={source}
+            onChange={(next) => {
+              setCurrentProductionType(next);
+              // Reverting to raw clears the link server-side, so the local copy
+              // follows to avoid offering a sheet that is no longer attached.
+              if (next === "RAW") setCurrentRecipeId(null);
+            }}
+            onSheetLinked={(sheetId) => {
+              setCurrentRecipeId(sheetId);
+              setCurrentProductionType("MANUFACTURED");
+            }}
+          />
+
           {/* Visible en carta — full width */}
           <div className="bo-foodDetailQuickStatus bo-foodDetailQuickStatus--full" data-ui="food-detail-quick-active">
             <span className="bo-label" data-role="food-detail-quick-active-label">Visible en carta</span>
@@ -264,5 +310,8 @@ export function FoodDetailQuickEditor({
         </button>
       </div>
     </Panel>
+
+
+    </>
   );
 }

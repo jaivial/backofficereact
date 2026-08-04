@@ -1190,12 +1190,6 @@
   gap: 6px;
 }
 
-.bo-menuDishPreviewAllergenIcon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
-
 .bo-menuDishPreviewMeta {
   display: flex;
   flex-wrap: wrap;
@@ -1643,7 +1637,10 @@
 
 .bo-allergenGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+  /* Fixed tracks: auto-fill with 1fr stretched the last row's cards to a
+     different width from the rest, so the grid never looked square. */
+  grid-template-columns: repeat(auto-fill, 112px);
+  justify-content: center;
   gap: 10px;
 }
 
@@ -1652,9 +1649,13 @@
   border: 1px solid var(--bo-border);
   background: rgba(255, 255, 255, 0.03);
   color: var(--bo-text);
-  min-height: 88px;
+  /* Every card is the same box regardless of how long its label wraps. */
+  width: 112px;
+  height: 96px;
+  box-sizing: border-box;
   padding: 8px;
   display: grid;
+  grid-template-rows: 34px 1fr;
   justify-items: center;
   align-content: center;
   gap: 7px;
@@ -1690,6 +1691,12 @@
   font-size: 11px;
   color: var(--bo-muted);
   text-align: center;
+  /* Two lines max keeps "Frutos de cascara" from making its card taller. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  align-self: center;
 }
 
 @media (max-width: 1280px) {
@@ -2351,8 +2358,15 @@
     flex: 1 1 0;
   }
 
+  /* On a narrow screen two flexible columns beat fixed 112px tracks, so the
+     cards are allowed to stretch - but they all stretch equally. */
   .bo-allergenGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .bo-allergenCircle {
+    width: 100%;
   }
 }
 

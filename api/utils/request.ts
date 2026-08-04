@@ -57,12 +57,13 @@ export type ClientOpts = {
   baseUrl: string;
   fetchImpl?: typeof fetch;
   cookieHeader?: string;
+  timeoutMs?: number;
 };
 
 /**
  * Normalized client options with defaults applied
  */
-export type NormalizedClientOpts = Required<Pick<ClientOpts, "baseUrl" | "fetchImpl" | "cookieHeader">>;
+export type NormalizedClientOpts = Required<Pick<ClientOpts, "baseUrl" | "fetchImpl" | "cookieHeader" | "timeoutMs">>;
 
 /**
  * Create normalized client options with defaults
@@ -72,6 +73,7 @@ export function normalizeClientOpts(opts: ClientOpts = { baseUrl: "" }): Normali
     baseUrl: opts?.baseUrl?.replace(/\/+$/, "") ?? "",
     fetchImpl: opts?.fetchImpl ?? fetch,
     cookieHeader: opts?.cookieHeader ?? "",
+    timeoutMs: opts?.timeoutMs ?? (isBrowser() ? 0 : 8_000),
   };
 }
 
@@ -79,7 +81,7 @@ export function normalizeClientOpts(opts: ClientOpts = { baseUrl: "" }): Normali
  * Create the base API fetch function with authentication and error handling
  */
 export function createApiFetch(normalizedOpts: NormalizedClientOpts) {
-  const { fetchImpl, baseUrl, cookieHeader } = normalizedOpts;
+  const { fetchImpl, baseUrl, cookieHeader, timeoutMs } = normalizedOpts;
 
   return async function apiFetch(path: string, init: RequestInit): Promise<Response> {
     const url = baseUrl + normalizeAdminPath(path);
@@ -95,6 +97,7 @@ export function createApiFetch(normalizedOpts: NormalizedClientOpts) {
       ...init,
       ...withCreds,
       headers,
+      signal: init.signal ?? (timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined),
     });
   };
 }

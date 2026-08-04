@@ -1,0 +1,345 @@
+/* Platform (superadmin) panel styles */
+
+.bo-platformPage {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.bo-platformHeader {
+  margin-bottom: 24px;
+}
+
+.bo-platformTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  margin: 0 0 4px 0;
+}
+
+.bo-platformSub {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+/* Tabs */
+.bo-platformTabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid hsl(var(--border));
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.bo-platformTab {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s ease;
+  border-radius: 6px 6px 0 0;
+}
+
+.bo-platformTab:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--accent));
+}
+
+.bo-platformTab.is-active {
+  color: hsl(var(--primary));
+  border-bottom-color: hsl(var(--primary));
+}
+
+/* Dashboard metrics */
+.bo-metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.bo-metricCard {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.bo-metricIcon {
+  font-size: 1.75rem;
+  margin-bottom: 8px;
+}
+
+.bo-metricValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.bo-metricLabel {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 4px;
+}
+
+/* Tables */
+.bo-platformTableWrap {
+  overflow-x: auto;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+}
+
+.bo-platformTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.bo-platformTable th {
+  text-align: left;
+  padding: 12px 16px;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid hsl(var(--border));
+  white-space: nowrap;
+}
+
+.bo-platformTable td {
+  padding: 10px 16px;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  vertical-align: middle;
+}
+
+.bo-platformTable tr:last-child td {
+  border-bottom: none;
+}
+
+.bo-platformTable tr:hover td {
+  background: hsl(var(--accent) / 0.3);
+}
+
+.bo-platformTable code {
+  font-size: 0.75rem;
+  background: hsl(var(--muted));
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Action bar + buttons */
+.bo-platformActionBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+
+.bo-platformBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bo-platformBtn:hover:not(:disabled) {
+  background: hsl(var(--accent));
+}
+
+.bo-platformBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bo-platformBtn--danger {
+  background: hsl(0 72% 51%);
+  color: #fff;
+  border-color: hsl(0 72% 45%);
+}
+
+.bo-platformBtn--danger:hover:not(:disabled) {
+  background: hsl(0 72% 45%);
+}
+
+.bo-platformBtn--success {
+  background: hsl(142 72% 33%);
+  color: #fff;
+  border-color: hsl(142 72% 28%);
+}
+
+.bo-platformBtn--success:hover:not(:disabled) {
+  background: hsl(142 72% 28%);
+}
+
+.bo-platformActions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Forms */
+.bo-platformForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.bo-platformInput {
+  padding: 8px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+  min-width: 180px;
+  flex: 1;
+}
+
+.bo-platformInput:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+}
+
+.bo-platformCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.bo-platformError {
+  color: hsl(0 72% 51%);
+  font-size: 0.8125rem;
+  width: 100%;
+}
+
+.bo-platformResult {
+  font-size: 0.8125rem;
+  color: hsl(var(--foreground));
+  width: 100%;
+  word-break: break-all;
+}
+
+/* Toggle */
+.bo-platformToggle {
+  padding: 4px 10px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+
+.bo-platformToggle.is-on {
+  background: hsl(142 72% 33%);
+  color: #fff;
+  border-color: hsl(142 72% 28%);
+}
+
+/* WhatsApp badge */
+.bo-waBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.bo-waBadge--on {
+  background: hsl(142 72% 33% / 0.15);
+  color: hsl(142 72% 25%);
+}
+
+.bo-waBadge--off {
+  background: hsl(0 0% 50% / 0.15);
+  color: hsl(0 0% 35%);
+}
+
+.bo-waBadge--pending {
+  background: hsl(38 92% 50% / 0.15);
+  color: hsl(38 92% 35%);
+}
+
+/* Loading + empty states */
+.bo-platformLoading {
+  padding: 40px;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
+.bo-platformEmpty {
+  padding: 32px;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
+.bo-platformRefresh {
+  padding: 6px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--card));
+  cursor: pointer;
+  font-size: 0.8125rem;
+}
+
+/* Card */
+.bo-platformCard {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.bo-platformCardTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: hsl(var(--foreground));
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .bo-platformPage {
+    padding: 12px;
+  }
+
+  .bo-platformForm {
+    flex-direction: column;
+  }
+
+  .bo-platformInput {
+    min-width: 0;
+    width: 100%;
+  }
+}

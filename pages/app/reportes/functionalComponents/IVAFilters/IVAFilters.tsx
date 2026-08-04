@@ -49,12 +49,12 @@ export function IVAFilters({
     <Card variant="tailwind" padding className="mb-6" data-ui="iva-filters">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-ui="filters-grid">
         <div data-ui="date-preset-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="date-preset" data-slot="iVAFilters-mb-1">Periodo</label>
+          <label className="block text-sm font-medium text-[var(--bo-text)] mb-1" htmlFor="date-preset" data-slot="iVAFilters-mb-1">Periodo</label>
           <select
             id="date-preset"
             value={datePreset}
             onChange={(e) => onDatePresetChange(e.target.value as DatePreset)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bo-input w-full"
             data-ui="date-preset-select"
           >
             {DATE_PRESETS.map(preset => (
@@ -64,7 +64,7 @@ export function IVAFilters({
         </div>
 
         <div data-ui="date-from-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="iva-date-from" data-slot="iVAFilters-mb-1">Desde</label>
+          <label className="block text-sm font-medium text-[var(--bo-text)] mb-1" htmlFor="iva-date-from" data-slot="iVAFilters-mb-1">Desde</label>
           <input
             id="iva-date-from"
             type="date"
@@ -73,13 +73,13 @@ export function IVAFilters({
               onDateFromChange(e.target.value);
               onDatePresetChange("custom");
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bo-input w-full"
             data-ui="date-from-input"
           />
         </div>
 
         <div data-ui="date-to-wrapper">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="iva-date-to" data-slot="iVAFilters-mb-1">Hasta</label>
+          <label className="block text-sm font-medium text-[var(--bo-text)] mb-1" htmlFor="iva-date-to" data-slot="iVAFilters-mb-1">Hasta</label>
           <input
             id="iva-date-to"
             type="date"
@@ -88,7 +88,7 @@ export function IVAFilters({
               onDateToChange(e.target.value);
               onDatePresetChange("custom");
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bo-input w-full"
             data-ui="date-to-input"
           />
         </div>
@@ -99,10 +99,10 @@ export function IVAFilters({
               type="checkbox"
               checked={includeCreditNotes}
               onChange={(e) => onIncludeCreditNotesChange(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-[var(--bo-accent)] border-[var(--bo-border-2)] rounded focus:ring-[var(--bo-accent)]"
               data-ui="credit-notes-checkbox"
             />
-            <span className="text-sm text-gray-700" data-slot="iVAFilters-text-gray-700">Incluir notas de credito</span>
+            <span className="text-sm text-[var(--bo-text)]" data-slot="iVAFilters-text-[var(--bo-text)]">Incluir notas de credito</span>
           </label>
         </div>
       </div>
@@ -111,7 +111,7 @@ export function IVAFilters({
         <button
           onClick={onGenerate}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="bo-btn bo-btn--primary flex items-center gap-2 disabled:opacity-50"
           data-ui="generate-btn"
         >
           {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
@@ -123,7 +123,7 @@ export function IVAFilters({
             <button
               onClick={onExportPDF}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              className="bo-btn bo-btn--danger flex items-center gap-2 disabled:opacity-50"
               data-ui="export-pdf-btn"
             >
               <FileText className="w-4 h-4" />
@@ -132,7 +132,7 @@ export function IVAFilters({
             <button
               onClick={onExportExcel}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              className="bo-btn bo-btn--success flex items-center gap-2 disabled:opacity-50"
               data-ui="export-excel-btn"
             >
               <FileSpreadsheet className="w-4 h-4" />

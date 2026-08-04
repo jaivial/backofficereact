@@ -3,12 +3,13 @@ import { Check, RefreshCcw } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../../api/client";
-import type { Member, MemberStats } from "../../../../../api/types";
+import type { Member, MemberCompensation, MemberCompensationInput, MemberStats } from "../../../../../api/types";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { applyLiveToStats, formatElapsedHHMMSS, useMemberLive } from "../_shared/realtime";
+import { CompensationPanel } from "./functionalComponents/CompensationPanel/CompensationPanel";
 
 function parseHours(v: string): number | null {
   const n = Number(v);
@@ -38,6 +39,7 @@ export default function Page() {
 
   const [member, setMember] = useState<Member | null>(data.member);
   const [stats, setStats] = useState<MemberStats | null>(data.initialStats);
+  const [compensations,setCompensations]=useState<MemberCompensation[]>(data.compensations||[]);
   const date = data.date || todayISO();
   const [weeklyContractHours, setWeeklyContractHours] = useState(String(data.member?.weeklyContractHours ?? 40));
   const [saving, setSaving] = useState(false);
@@ -46,6 +48,10 @@ export default function Page() {
   useErrorToast(error);
 
   const { liveEntry, tick, liveHours } = useMemberLive(member?.id);
+  const reloadCompensations=useCallback(async()=>{if(!member||!data.canManageCompensation)return;const res=await api.members.listCompensations(member.id);if(res.success)setCompensations(res.items);},[api.members,data.canManageCompensation,member]);
+  const createCompensation=useCallback(async(input:MemberCompensationInput)=>{if(!member)return false;try{const res=await api.members.createCompensation(member.id,input);if(!res.success){setError(res.message||"No se pudo guardar salario");return false};await reloadCompensations();pushToast({kind:"success",title:"Salario guardado"});return true}catch(err){setError(err instanceof Error?err.message:"No se pudo guardar salario");return false}},[api.members,member,pushToast,reloadCompensations]);
+  const updateCompensation=useCallback(async(id:number,input:MemberCompensationInput)=>{if(!member)return false;try{const res=await api.members.patchCompensation(member.id,id,input);if(!res.success){setError(res.message||"No se pudo guardar salario");return false};await reloadCompensations();pushToast({kind:"success",title:"Salario actualizado"});return true}catch(err){setError(err instanceof Error?err.message:"No se pudo guardar salario");return false}},[api.members,member,pushToast,reloadCompensations]);
+  const deleteCompensation=useCallback(async(id:number)=>{if(!member||!window.confirm("¿Eliminar este periodo salarial?"))return;try{const res=await api.members.deleteCompensation(member.id,id);if(!res.success){setError(res.message||"No se pudo eliminar salario");return};await reloadCompensations()}catch(err){setError(err instanceof Error?err.message:"No se pudo eliminar salario")}},[api.members,member,reloadCompensations]);
   const statsLive = useMemo(() => applyLiveToStats(stats, liveEntry, liveHours, date), [date, liveEntry, liveHours, stats]);
 
   const reloadStats = useCallback(
@@ -127,6 +133,7 @@ export default function Page() {
               />
             </label>
             <div className="bo-memberContractNote" data-slot="contrato-memberContractNote">Este valor se usa para calcular cumplimiento semanal y progreso del periodo.</div>
+            {data.canManageCompensation ? <CompensationPanel items={compensations} onCreate={createCompensation} onUpdate={updateCompensation} onDelete={deleteCompensation} /> : null}
 
             <div className="bo-kvGrid" data-slot="contrato-kvGrid">
               <div className="bo-kv" data-slot="contrato-kv">

@@ -20,12 +20,17 @@ vi.mock("lucide-react", () => ({
   Home: () => <span data-testid="icon-home" />,
   Settings: () => <span data-testid="icon-settings" />,
   Ellipsis: () => <span data-testid="icon-ellipsis" />,
+  Boxes: () => <span data-testid="icon-boxes" />,
+  MonitorSmartphone: () => <span data-testid="icon-pos" />,
+  Server: () => <span data-testid="icon-server" />,
 }));
 
 vi.mock("../../lib/rbac", () => ({
   sidebarItemsForRole: () => [
     { key: "reservas", label: "Reservas", href: "/app/reservas" },
     { key: "menus", label: "Menus", href: "/app/menus" },
+    { key: "stock", label: "Stock", href: "/app/stock" },
+    { key: "pos", label: "TPV", href: "/app/pos" },
   ],
 }));
 
@@ -46,6 +51,12 @@ describe("Sidebar", () => {
     expect(sidebar).toBeInTheDocument();
   });
 
+  it("renders stock and POS in desktop and mobile navigation", () => {
+    render(<Sidebar pathname="/app" role="admin" />);
+    expect(screen.getAllByTestId("nav-link-Stock")).toHaveLength(2);
+    expect(screen.getAllByTestId("nav-link-TPV")).toHaveLength(2);
+  });
+
   it("applies className prop", () => {
     render(<Sidebar pathname="/app" role="admin" className="custom-sidebar" />);
     const sidebar = screen.getByLabelText("Sidebar");
@@ -58,5 +69,14 @@ describe("Sidebar", () => {
     const sidebar = screen.getByLabelText("Sidebar");
     expect(sidebar).toHaveClass("bo-sidebar");
     expect(sidebar.className).toBe("bo-sidebar");
+  });
+
+  it("navigates to the main home when the app logo is clicked", () => {
+    render(<Sidebar pathname="/app/comida" role="admin" />);
+
+    const logo = screen.getByTestId("sidebar-logo");
+    expect(logo).toHaveAttribute("href", "/app/backoffice");
+    expect(logo).toHaveAttribute("aria-label", "Ir al inicio de Villa Carmen");
+    expect(logo.querySelector("img")).toHaveAttribute("alt", "Villa Carmen");
   });
 });

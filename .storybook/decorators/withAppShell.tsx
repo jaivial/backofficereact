@@ -16,7 +16,7 @@ const MOCK_SESSION: BOSession = {
     name: "Admin",
     role: "admin",
     roleImportance: 90,
-    sectionAccess: ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas", "reportes", "estado_cuenta", "website"],
+    sectionAccess: ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website"],
   },
   restaurants: [{ id: 1, slug: "villacarmen", name: "Alqueria Villa Carmen" }],
   activeRestaurantId: 1,

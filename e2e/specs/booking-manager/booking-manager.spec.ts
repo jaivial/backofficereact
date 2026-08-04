@@ -89,9 +89,9 @@ test.describe('Booking Manager', () => {
     expect((settings as Record<string, unknown>).success).toBe(true)
   })
 
-  test('copies embed code to clipboard', async ({ adminPage, context }) => {
-    // Grant clipboard permissions.
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  test('copies embed code to clipboard', async ({ adminPage }) => {
+    // Grant clipboard permissions on the page's own context (fixture creates its own).
+    await adminPage.context().grantPermissions(['clipboard-read', 'clipboard-write'])
 
     // Click the first copy button.
     const copyButton = adminPage.locator('[data-ui="install-copy-btn"]').first()

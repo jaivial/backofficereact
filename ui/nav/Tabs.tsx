@@ -63,6 +63,7 @@ export function Tabs({
               className={cn("bo-tab", active && "is-active")}
               role="tab"
               aria-selected={active}
+              aria-label={t.label}
               data-testid={`tab-${t.id}`}
               data-role="tab-btn"
               disabled={active}
@@ -78,7 +79,7 @@ export function Tabs({
                     {t.icon}
                   </span>
                 )}
-                <span className="bo-tabLabel hidden sm:inline" data-slot="tab-label">{t.label}</span>
+                <span className="bo-tabLabel hidden min-[896px]:inline" data-slot="tab-label">{t.label}</span>
               </span>
             </button>
           );
@@ -90,6 +91,7 @@ export function Tabs({
             className={cn("bo-tab", active && "is-active")}
             href={href}
             aria-current={active ? "page" : undefined}
+            aria-label={t.label}
             data-testid={`tab-${t.id}`}
             data-role="tab-link"
             transition={motionTransition}
@@ -108,7 +110,7 @@ export function Tabs({
                   {t.icon}
                 </span>
               )}
-              <span className="bo-tabLabel hidden sm:inline" data-slot="tab-label">{t.label}</span>
+              <span className="bo-tabLabel hidden min-[896px]:inline" data-slot="tab-label">{t.label}</span>
             </span>
           </motion.a>
         );

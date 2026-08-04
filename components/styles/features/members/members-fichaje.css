@@ -1756,8 +1756,11 @@
     grid-template-columns: 1fr;
   }
 
+  /* `margin: 0 auto` alone collapsed this grid item to max-content (26px on a
+     390px phone). Centre with justify-self and keep it full-width instead. */
   .bo-horariosCalendarViewport {
-    margin: 0 auto;
+    width: 100%;
+    justify-self: center;
   }
 
   .bo-horariosMembersPanel {

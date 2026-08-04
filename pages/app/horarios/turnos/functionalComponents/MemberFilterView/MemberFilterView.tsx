@@ -209,11 +209,11 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
         }}
       >
         <div data-slot="sidebarHeader" className="flex items-center gap-2 mb-3">
-          <User data-slot="icon" size={16} strokeWidth={1.8} className="sidebar-icon text-purple-400" aria-hidden="true" />
+          <User data-slot="icon" size={16} strokeWidth={1.8} className="sidebar-icon text-[var(--bo-accent)]" aria-hidden="true" />
           <span data-slot="title" className="sidebar-title text-sm font-medium text-purple-900">
             Miembro
           </span>
-          <span data-slot="count" className="sidebar-count ml-auto text-xs text-zinc-400">
+          <span data-slot="count" className="sidebar-count ml-auto text-xs text-[var(--bo-faint)]">
             {filteredMembers.length}
           </span>
         </div>
@@ -225,7 +225,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             placeholder="Buscar..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="w-full rounded-lg px-3 py-2 text-sm transition-colors border border-solid bg-white border-zinc-300 text-zinc-800 placeholder:text-zinc-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400/30"
+            className="bo-input w-full"
             aria-label="Buscar miembro"
           />
         </div>
@@ -237,10 +237,10 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
                 key={member.id}
                 data-ui="memberOption"
                 type="button"
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-150 border border-transparent ${
+                className={`w-full text-left px-3 py-2 max-sm:min-h-11 rounded-lg text-sm transition-all duration-150 border border-transparent ${
                   selectedMemberId === member.id
-                    ? "is-selected bg-purple-100 border-purple-200 text-purple-700 font-medium"
-                    : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "is-selected bg-[color-mix(in_srgb,var(--bo-accent)_18%,transparent)] border-[var(--bo-accent)] text-[var(--bo-text)] font-medium"
+                    : "bg-transparent text-[var(--bo-muted)] hover:bg-[var(--bo-bg-hover)] hover:text-[var(--bo-text)]"
                 }`}
                 onClick={() => handleMemberSelect(member.id)}
               >
@@ -249,7 +249,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             ))}
 
             {filteredMembers.length === 0 ? (
-              <div data-ui="emptyState" className="text-center py-4 text-sm text-zinc-400">
+              <div data-ui="emptyState" className="text-center py-4 text-sm text-[var(--bo-faint)]">
                 Sin resultados
               </div>
             ) : null}
@@ -265,7 +265,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4"
         >
           <div data-slot="dateRange" className="flex items-center gap-2">
-            <CalendarRange data-slot="icon" size={16} strokeWidth={1.8} className="dark:text-white/60 text-purple-400" aria-hidden="true" />
+            <CalendarRange data-slot="icon" size={16} strokeWidth={1.8} className="text-[var(--bo-muted)]" aria-hidden="true" />
             <ChevronButton direction="left" ariaLabel="Rango anterior" onClick={handlePrevRange} />
             <DateRangePicker
               from={dateFrom}
@@ -292,15 +292,15 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
         {/* Loading state */}
         {loading ? (
           <div data-ui="loadingState" className="flex items-center justify-center py-12">
-            <Loader2 data-slot="spinner" size={24} strokeWidth={1.8} className="dark:text-white/60 text-purple-400 animate-spin" aria-hidden="true" />
-            <span data-slot="label" className="ml-2 dark:text-white/60 text-zinc-500">Cargando horarios...</span>
+            <Loader2 data-slot="spinner" size={24} strokeWidth={1.8} className="text-[var(--bo-muted)] animate-spin" aria-hidden="true" />
+            <span data-slot="label" className="ml-2 text-[var(--bo-muted)]">Cargando horarios...</span>
           </div>
         ) : error ? (
           <div data-ui="errorState" className="text-center py-12 dark:text-red-400 text-red-600">
             {error}
           </div>
         ) : !selectedMemberId ? (
-          <div data-ui="emptyState" className="text-center py-12 dark:text-white/40 text-zinc-400">
+          <div data-ui="emptyState" className="text-center py-12 text-[var(--bo-faint)]">
             Selecciona un miembro para ver su horario
           </div>
         ) : view === "diario" ? (

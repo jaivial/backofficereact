@@ -1,12 +1,45 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 
-import { createClient } from "../../api/client";
-import type { FichajeActiveEntry, FichajeSchedule, FichajeState } from "../../api/types";
-import { fichajeRealtimeAtom, sessionAtom } from "../../state/atoms";
+import { createFichajeStateClient } from "../../api/fichaje-state-client";
+import type {
+  FichajeActiveEntry,
+  FichajeSchedule,
+  FichajeState,
+} from "../../api/types";
+import { fichajeRealtimeAtom, sessionAtom, type FichajeRealtimeState } from "../../state/atoms";
 
 const BASE_RETRY_MS = 800;
 const MAX_RETRY_MS = 8000;
+
+type StateUpdater = (prev: FichajeRealtimeState) => FichajeRealtimeState;
+type Subscriber = (update: StateUpdater) => void;
+
+type FichajeSession = {
+  activeRestaurantId: number;
+  user: { id: number };
+};
+
+type FichajeConnection = {
+  key: string;
+  session: FichajeSession;
+  subscribe: (subscriber: Subscriber) => () => void;
+  stop: () => void;
+};
+
+const EMPTY_STATE = (restaurantId: number | null): FichajeRealtimeState => ({
+  wsConnected: false,
+  wsConnecting: false,
+  restaurantId,
+  lastSyncAt: null,
+  member: null,
+  activeEntriesByMember: {},
+  activeEntry: null,
+  scheduleToday: null,
+  pendingScheduleUpdates: false,
+});
+
+let activeConnection: FichajeConnection | null = null;
 
 function normalizedHost(): string {
   return window.location.host;
@@ -37,237 +70,250 @@ function toActiveEntriesByMember(raw: unknown): Record<number, FichajeActiveEntr
   return out;
 }
 
-export function FichajeRealtimeBridge() {
-  const session = useAtomValue(sessionAtom);
-  const [, setState] = useAtom(fichajeRealtimeAtom);
-  const api = useMemo(() => createClient({ baseUrl: "" }), []);
-  const retryRef = useRef<number | null>(null);
+function sessionKey(session: FichajeSession): string {
+  return `${session.user.id}:${session.activeRestaurantId}`;
+}
 
-  useEffect(() => {
-    if (!session || !session.activeRestaurantId) {
-      setState({
+function createConnection(session: FichajeSession): FichajeConnection {
+  const key = sessionKey(session);
+  const subscribers = new Set<Subscriber>();
+  const api = createFichajeStateClient({ baseUrl: "" });
+  let snapshot = EMPTY_STATE(session.activeRestaurantId);
+  let retryTimer: number | null = null;
+  let ws: WebSocket | null = null;
+  let closed = false;
+  let attempts = 0;
+  let openedAtLeastOnce = false;
+
+  const emit = (update: StateUpdater) => {
+    snapshot = update(snapshot);
+    subscribers.forEach((subscriber) => subscriber(update));
+  };
+
+  const mergeFromState = (payload: FichajeState) => {
+    const byMember = toActiveEntriesByMember(payload.activeEntries);
+    if (payload.activeEntry && payload.activeEntry.memberId > 0) {
+      byMember[payload.activeEntry.memberId] = payload.activeEntry;
+    }
+    emit((prev) => ({
+      ...prev,
+      restaurantId: session.activeRestaurantId,
+      member: payload.member,
+      activeEntriesByMember: byMember,
+      activeEntry: payload.activeEntry,
+      scheduleToday: payload.scheduleToday,
+      lastSyncAt: Date.now(),
+    }));
+  };
+
+  const applyScheduleUpdate = (schedule: FichajeSchedule | null | undefined) => {
+    if (!schedule) return;
+    emit((prev) => {
+      if (!prev.member) return prev;
+      if (schedule.memberId !== prev.member.id) return prev;
+      if (schedule.date !== todayISO()) return prev;
+      return { ...prev, scheduleToday: schedule, pendingScheduleUpdates: true, lastSyncAt: Date.now() };
+    });
+  };
+
+  const scheduleReconnect = () => {
+    if (closed || retryTimer !== null) return;
+    const wait = Math.min(MAX_RETRY_MS, BASE_RETRY_MS * Math.pow(2, attempts));
+    attempts += 1;
+    retryTimer = window.setTimeout(() => {
+      retryTimer = null;
+      connect();
+    }, wait);
+  };
+
+  const connect = () => {
+    if (closed || ws) return;
+    emit((prev) => ({
+      ...prev,
+      wsConnected: false,
+      wsConnecting: true,
+      restaurantId: session.activeRestaurantId,
+    }));
+
+    ws = new WebSocket(wsURL());
+
+    ws.onopen = () => {
+      if (closed || !ws) return;
+      openedAtLeastOnce = true;
+      attempts = 0;
+      emit((prev) => ({ ...prev, wsConnected: true, wsConnecting: false }));
+      ws.send(JSON.stringify({ type: "join_restaurant", restaurantId: session.activeRestaurantId }));
+      // Initial state is fetched once during boot. Do not refetch on every WS open.
+    };
+
+    ws.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(String(ev.data || "{}")) as any;
+        if (!msg || typeof msg !== "object") return;
+        if (msg.restaurantId && Number(msg.restaurantId) !== session.activeRestaurantId) return;
+
+        const type = String(msg.type || "").toLowerCase();
+        if (type === "hello" || type === "joined") {
+          emit((prev) => {
+            const nextByMember = toActiveEntriesByMember(msg.activeEntries);
+            const hasOwnActive = Object.prototype.hasOwnProperty.call(msg, "activeEntry");
+            const nextOwnActive = hasOwnActive
+              ? (msg.activeEntry as FichajeActiveEntry | null)
+              : prev.activeEntry;
+            if (nextOwnActive && nextOwnActive.memberId > 0) {
+              nextByMember[nextOwnActive.memberId] = nextOwnActive;
+            }
+            return {
+              ...prev,
+              activeEntriesByMember: nextByMember,
+              activeEntry: nextOwnActive ?? null,
+              lastSyncAt: Date.now(),
+            };
+          });
+        } else if (type === "clock_started") {
+          const started = (msg.activeEntry as FichajeActiveEntry | null) ?? null;
+          emit((prev) => {
+            if (!started || !started.memberId) return prev;
+            const nextByMember = { ...prev.activeEntriesByMember, [started.memberId]: started };
+            const nextOwnActive = prev.member && prev.member.id === started.memberId ? started : prev.activeEntry;
+            return {
+              ...prev,
+              activeEntriesByMember: nextByMember,
+              activeEntry: nextOwnActive,
+              lastSyncAt: Date.now(),
+            };
+          });
+        } else if (type === "clock_stopped") {
+          const stopped = (msg.activeEntry as FichajeActiveEntry | null) ?? null;
+          emit((prev) => {
+            const nextByMember = { ...prev.activeEntriesByMember };
+            if (stopped?.memberId) delete nextByMember[stopped.memberId];
+            const nextOwnActive = prev.member && stopped?.memberId === prev.member.id ? null : prev.activeEntry;
+            return {
+              ...prev,
+              activeEntriesByMember: nextByMember,
+              activeEntry: nextOwnActive,
+              lastSyncAt: Date.now(),
+            };
+          });
+        } else if (type === "schedule_updated" || type === "schedule_created") {
+          applyScheduleUpdate(msg.schedule as FichajeSchedule | null | undefined);
+        } else if (type === "schedule_deleted") {
+          const deletedSchedule = msg.schedule as FichajeSchedule | null | undefined;
+          if (deletedSchedule) {
+            emit((prev) => {
+              if (!prev.member) return prev;
+              if (deletedSchedule.memberId !== prev.member.id) return prev;
+              if (deletedSchedule.date !== todayISO()) return prev;
+              return { ...prev, scheduleToday: null, pendingScheduleUpdates: true, lastSyncAt: Date.now() };
+            });
+          }
+        }
+      } catch {
+        // Ignore malformed realtime payloads.
+      }
+    };
+
+    ws.onerror = () => {
+      ws?.close();
+    };
+
+    ws.onclose = () => {
+      ws = null;
+      if (closed) return;
+      emit((prev) => ({ ...prev, wsConnected: false, wsConnecting: false }));
+      if (openedAtLeastOnce) scheduleReconnect();
+    };
+  };
+
+  const boot = async () => {
+    try {
+      // One preflight state request per persistent session connection.
+      const res = await api.getState();
+      if (closed) return;
+      if (!res.success) {
+        emit(() => EMPTY_STATE(session.activeRestaurantId));
+        return;
+      }
+      mergeFromState(res.state);
+    } catch {
+      if (closed) return;
+      emit((prev) => ({
+        ...prev,
         wsConnected: false,
         wsConnecting: false,
-        restaurantId: null,
+        restaurantId: session.activeRestaurantId,
         lastSyncAt: null,
         member: null,
         activeEntriesByMember: {},
         activeEntry: null,
         scheduleToday: null,
         pendingScheduleUpdates: false,
-      });
+      }));
       return;
     }
+    connect();
+  };
 
-    let closed = false;
-    let ws: WebSocket | null = null;
-    let attempts = 0;
-    let openedAtLeastOnce = false;
-
-    const mergeFromState = (payload: FichajeState) => {
-      const byMember = toActiveEntriesByMember(payload.activeEntries);
-      if (payload.activeEntry && payload.activeEntry.memberId > 0) {
-        byMember[payload.activeEntry.memberId] = payload.activeEntry;
-      }
-      setState((prev) => ({
-        ...prev,
-        restaurantId: session.activeRestaurantId,
-        member: payload.member,
-        activeEntriesByMember: byMember,
-        activeEntry: payload.activeEntry,
-        scheduleToday: payload.scheduleToday,
-        lastSyncAt: Date.now(),
-      }));
-    };
-
-    const applyScheduleUpdate = (schedule: FichajeSchedule | null | undefined) => {
-      if (!schedule) return;
-      setState((prev) => {
-        if (!prev.member) return prev;
-        if (schedule.memberId !== prev.member.id) return prev;
-        if (schedule.date !== todayISO()) return prev;
-        return { ...prev, scheduleToday: schedule, pendingScheduleUpdates: true, lastSyncAt: Date.now() };
-      });
-    };
-
-    const syncNow = async () => {
-      try {
-        const res = await api.fichaje.getState();
-        if (closed || !res.success) return;
-        mergeFromState(res.state);
-      } catch {
-        // Keep websocket retries alive even if HTTP sync fails.
-      }
-    };
-
-    const scheduleReconnect = () => {
-      if (closed) return;
-      const wait = Math.min(MAX_RETRY_MS, BASE_RETRY_MS * Math.pow(2, attempts));
-      attempts += 1;
-      retryRef.current = window.setTimeout(connect, wait);
-    };
-
-    const connect = () => {
-      if (closed) return;
-      setState((prev) => ({
-        ...prev,
-        wsConnected: false,
-        wsConnecting: true,
-        restaurantId: session.activeRestaurantId,
-      }));
-
-      ws = new WebSocket(wsURL());
-
-      ws.onopen = () => {
-        if (closed || !ws) return;
-        openedAtLeastOnce = true;
-        attempts = 0;
-        setState((prev) => ({ ...prev, wsConnected: true, wsConnecting: false }));
-        ws.send(JSON.stringify({ type: "join_restaurant", restaurantId: session.activeRestaurantId }));
-        void syncNow();
+  const connection: FichajeConnection = {
+    key,
+    session,
+    subscribe(subscriber) {
+      subscribers.add(subscriber);
+      subscriber(() => snapshot);
+      return () => {
+        // Deliberately do not close the connection here. Vike/React can remount
+        // layout consumers during navigation or lazy UI updates. The singleton
+        // must keep the WS alive and avoid another state fetch.
+        subscribers.delete(subscriber);
       };
-
-      ws.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(String(ev.data || "{}")) as any;
-          if (!msg || typeof msg !== "object") return;
-          if (msg.restaurantId && Number(msg.restaurantId) !== session.activeRestaurantId) return;
-
-          const type = String(msg.type || "").toLowerCase();
-          if (type === "hello" || type === "joined") {
-            setState((prev) => {
-              const nextByMember = toActiveEntriesByMember(msg.activeEntries);
-              const hasOwnActive = Object.prototype.hasOwnProperty.call(msg, "activeEntry");
-              const nextOwnActive = hasOwnActive ? (msg.activeEntry as FichajeActiveEntry | null) : prev.activeEntry;
-              if (nextOwnActive && nextOwnActive.memberId > 0) {
-                nextByMember[nextOwnActive.memberId] = nextOwnActive;
-              }
-              return {
-                ...prev,
-                activeEntriesByMember: nextByMember,
-                activeEntry: nextOwnActive ?? null,
-                lastSyncAt: Date.now(),
-              };
-            });
-          } else if (type === "clock_started") {
-            const started = (msg.activeEntry as FichajeActiveEntry | null) ?? null;
-            setState((prev) => {
-              if (!started || !started.memberId) return prev;
-              const nextByMember = { ...prev.activeEntriesByMember, [started.memberId]: started };
-              const nextOwnActive = prev.member && prev.member.id === started.memberId ? started : prev.activeEntry;
-              return {
-                ...prev,
-                activeEntriesByMember: nextByMember,
-                activeEntry: nextOwnActive,
-                lastSyncAt: Date.now(),
-              };
-            });
-          } else if (type === "clock_stopped") {
-            const stopped = (msg.activeEntry as FichajeActiveEntry | null) ?? null;
-            setState((prev) => {
-              const nextByMember = { ...prev.activeEntriesByMember };
-              if (stopped?.memberId) {
-                delete nextByMember[stopped.memberId];
-              }
-              const nextOwnActive = prev.member && stopped?.memberId === prev.member.id ? null : prev.activeEntry;
-              return {
-                ...prev,
-                activeEntriesByMember: nextByMember,
-                activeEntry: nextOwnActive,
-                lastSyncAt: Date.now(),
-              };
-            });
-          } else if (type === "schedule_updated") {
-            applyScheduleUpdate(msg.schedule as FichajeSchedule | null | undefined);
-          } else if (type === "schedule_created") {
-            applyScheduleUpdate(msg.schedule as FichajeSchedule | null | undefined);
-          } else if (type === "schedule_deleted") {
-            // When a schedule is deleted, clear the scheduleToday if it matches
-            const deletedSchedule = msg.schedule as FichajeSchedule | null | undefined;
-            if (deletedSchedule) {
-              setState((prev) => {
-                if (!prev.member) return prev;
-                if (deletedSchedule.memberId !== prev.member.id) return prev;
-                if (deletedSchedule.date !== todayISO()) return prev;
-                // Clear schedule when deleted and mark as pending
-                return { ...prev, scheduleToday: null, pendingScheduleUpdates: true, lastSyncAt: Date.now() };
-              });
-            }
-          }
-        } catch {
-          // Ignore malformed realtime payloads.
-        }
-      };
-
-      ws.onerror = () => {
-        ws?.close();
-      };
-
-      ws.onclose = () => {
-        if (closed) return;
-        setState((prev) => ({ ...prev, wsConnected: false, wsConnecting: false }));
-        if (!openedAtLeastOnce) return;
-        scheduleReconnect();
-      };
-    };
-
-    const boot = async () => {
-      try {
-        // Preflight access with the same backend guard used by WS.
-        // If forbidden/unauthorized, skip WS connect and avoid retry/log spam.
-        const res = await api.fichaje.getState();
-        if (closed) return;
-        if (!res.success) {
-          setState((prev) => ({
-            ...prev,
-            wsConnected: false,
-            wsConnecting: false,
-            restaurantId: session.activeRestaurantId,
-            lastSyncAt: null,
-            member: null,
-            activeEntriesByMember: {},
-            activeEntry: null,
-            scheduleToday: null,
-            pendingScheduleUpdates: false,
-          }));
-          return;
-        }
-        mergeFromState(res.state);
-      } catch {
-        if (closed) return;
-        setState((prev) => ({
-          ...prev,
-          wsConnected: false,
-          wsConnecting: false,
-          restaurantId: session.activeRestaurantId,
-          lastSyncAt: null,
-          member: null,
-          activeEntriesByMember: {},
-          activeEntry: null,
-          scheduleToday: null,
-          pendingScheduleUpdates: false,
-        }));
-        return;
-      }
-      connect();
-    };
-
-    void boot();
-
-    return () => {
+    },
+    stop() {
       closed = true;
-      if (retryRef.current !== null) {
-        window.clearTimeout(retryRef.current);
-        retryRef.current = null;
+      if (retryTimer !== null) {
+        window.clearTimeout(retryTimer);
+        retryTimer = null;
       }
       try {
         ws?.close();
       } catch {
         // noop
       }
-    };
-  }, [api, session?.activeRestaurantId, session?.user.id, setState]);
+      ws = null;
+      subscribers.clear();
+    },
+  };
 
-  // Keep this component mounted globally.
+  void boot();
+  return connection;
+}
+
+function getConnection(session: FichajeSession): FichajeConnection {
+  const key = sessionKey(session);
+  if (activeConnection?.key === key) return activeConnection;
+  activeConnection?.stop();
+  activeConnection = createConnection(session);
+  return activeConnection;
+}
+
+export function FichajeRealtimeBridge() {
+  const session = useAtomValue(sessionAtom);
+  const [, setState] = useAtom(fichajeRealtimeAtom);
+
+  useEffect(() => {
+    if (!session || !session.activeRestaurantId || !session.user?.id) {
+      activeConnection?.stop();
+      activeConnection = null;
+      setState(EMPTY_STATE(null));
+      return;
+    }
+
+    const connection = getConnection({
+      activeRestaurantId: session.activeRestaurantId,
+      user: { id: session.user.id },
+    });
+    return connection.subscribe(setState);
+  }, [session?.activeRestaurantId, session?.user?.id, setState]);
+
   return null;
 }

@@ -5,6 +5,5 @@ export default {
   extends: [vikeReact],
   title: "Backoffice",
   description: "Backoffice multitenant",
-  passToClient: ["bo", "boRequest"],
+  passToClient: ["bo"],
 } satisfies Config;
-

@@ -15,7 +15,9 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
 const variantClasses: Record<CardVariant, string> = {
   default: "bo-card",
   glass: "bo-card bo-card--glass",
-  tailwind: "bg-white rounded-lg shadow-sm border border-gray-200",
+  // "tailwind" predates the design tokens; it now renders in theme colours
+  // instead of hardcoded light-mode white, which was unreadable in the app.
+  tailwind: "bg-[var(--bo-surface)] rounded-lg shadow-sm border border-[var(--bo-border)]",
 };
 
 export function Card({

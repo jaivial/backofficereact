@@ -53,17 +53,17 @@ export function DailyScheduleCard({ date, schedule, className = "" }: DailySched
       <div data-slot="scheduleContent">
         {schedule ? (
           <div data-slot="scheduleInfo" className="flex items-center gap-3">
-            <span data-slot="timeRange" className="card-time text-lg font-semibold text-zinc-800">
+            <span data-slot="timeRange" className="card-time text-lg font-semibold text-[var(--bo-text)]">
               {schedule.startTime} - {schedule.endTime}
             </span>
             {schedule.breakMinutes && schedule.breakMinutes > 0 ? (
-              <span data-slot="breakInfo" className="card-break text-xs text-zinc-400">
+              <span data-slot="breakInfo" className="card-break text-xs text-[var(--bo-faint)]">
                 ({schedule.breakMinutes}min pausa)
               </span>
             ) : null}
           </div>
         ) : (
-          <span data-slot="noSchedule" className="card-empty text-sm italic text-zinc-400">
+          <span data-slot="noSchedule" className="card-empty text-sm italic text-[var(--bo-faint)]">
             Sin horario
           </span>
         )}

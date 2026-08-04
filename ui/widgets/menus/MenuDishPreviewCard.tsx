@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { ImageOff } from "lucide-react";
 
 import { cn } from "../../shadcn/utils";
+import { AllergenIconList } from "../allergens/AllergenIconList";
 
 type MenuDishPreviewCardProps = {
   title: string;
@@ -12,40 +13,6 @@ type MenuDishPreviewCardProps = {
   supplementPrice?: number | null;
   price?: number | null;
   className?: string;
-};
-
-const ALLERGEN_ICONS: Record<string, string> = {
-  Gluten: "/media/images/gluten.png",
-  Crustaceos: "/media/images/crustaceos.png",
-  Huevos: "/media/images/huevos.png",
-  Pescado: "/media/images/pescado.png",
-  Cacahuetes: "/media/images/cacahuetes.png",
-  Soja: "/media/images/soja.png",
-  Leche: "/media/images/leche.png",
-  "Frutos de cascara": "/media/images/frutoscascara.png",
-  Apio: "/media/images/apio.png",
-  Mostaza: "/media/images/mostaza.png",
-  Sesamo: "/media/images/sesamo.png",
-  Sulfitos: "/media/images/sulfitos.png",
-  Altramuces: "/media/images/altramuces.png",
-  Moluscos: "/media/images/moluscos.png",
-};
-
-const ALLERGEN_LABELS: Record<string, string> = {
-  Gluten: "Gluten",
-  Crustaceos: "Crustaceos",
-  Huevos: "Huevos",
-  Pescado: "Pescado",
-  Cacahuetes: "Cacahuetes",
-  Soja: "Soja",
-  Leche: "Leche",
-  "Frutos de cascara": "Frutos de cascara",
-  Apio: "Apio",
-  Mostaza: "Mostaza",
-  Sesamo: "Sesamo",
-  Sulfitos: "Sulfitos",
-  Altramuces: "Altramuces",
-  Moluscos: "Moluscos",
 };
 
 function formatEuro(value: number): string {
@@ -64,12 +31,6 @@ export const MenuDishPreviewCard = React.memo(function MenuDishPreviewCard({
   price,
   className,
 }: MenuDishPreviewCardProps) {
-  const allergenKeys = useMemo(
-    () =>
-      Array.from(new Set((allergens || []).map((item) => String(item || "").trim()).filter((key) => key && Boolean(ALLERGEN_ICONS[key])))),
-    [allergens],
-  );
-
   const supplementLabel = useMemo(() => {
     if (!supplementEnabled) return "";
     if (Number.isFinite(supplementPrice)) return `Suplemento +${formatEuro(Number(supplementPrice))}`;
@@ -97,22 +58,7 @@ export const MenuDishPreviewCard = React.memo(function MenuDishPreviewCard({
         <h3 className="bo-menuDishPreviewTitle" data-slot="menu-dish-preview-title">{title}</h3>
         {description ? <p className="bo-menuDishPreviewDescription" data-slot="menu-dish-preview-description">{description}</p> : null}
 
-        {allergenKeys.length > 0 ? (
-          <div className="bo-menuDishPreviewAllergens" aria-label="Alergenos" data-slot="menu-dish-preview-allergens">
-            {allergenKeys.map((key) => (
-              <img
-                key={key}
-                src={ALLERGEN_ICONS[key]}
-                className="bo-menuDishPreviewAllergenIcon"
-                alt={ALLERGEN_LABELS[key] || key}
-                title={ALLERGEN_LABELS[key] || key}
-                loading="lazy"
-                decoding="async"
-                data-slot="menu-dish-preview-allergen"
-              />
-            ))}
-          </div>
-        ) : null}
+        <AllergenIconList allergens={allergens || []} className="bo-menuDishPreviewAllergens" />
 
         {supplementLabel || priceLabel ? (
           <div className="bo-menuDishPreviewMeta" data-slot="menu-dish-preview-meta">

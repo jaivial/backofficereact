@@ -18,6 +18,7 @@ import type {
   TableMapItem,
   WeekdayOpen,
   DashboardMetrics,
+  InvoiceDashboardMetrics,
   HorariosCalendarResponse,
   CalendarDay,
   DishCatalogItem,
@@ -36,6 +37,9 @@ import type {
   FichajeState,
   TimeEntry,
   Member,
+  MemberCompensation,
+  MemberCompensationInput,
+  LabourCostReport,
   DeliveryAttempt,
   MemberInvitationPreview,
   InvitationOnboardingMember,
@@ -71,6 +75,13 @@ import type {
   LegalPageListResponse,
   LegalPageSlug,
   LegalPageUpsertRequest,
+  POSBootstrap,
+  POSSettings,
+  POSTicket,
+  AnalyticsOverview,
+  AnalyticsOverviewParams,
+  AnalyticsRefreshRequest,
+  AnalyticsRefreshResponse,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 import { emitSessionExpired, emitSessionExpirationUpdate } from "../lib/session-expiration";
@@ -79,6 +90,7 @@ type ClientOpts = {
   baseUrl: string;
   fetchImpl?: typeof fetch;
   cookieHeader?: string;
+  timeoutMs?: number;
 };
 
 function isBrowser(): boolean {
@@ -99,6 +111,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
     baseUrl: opts?.baseUrl ?? "",
     fetchImpl: opts?.fetchImpl,
     cookieHeader: opts?.cookieHeader,
+    timeoutMs: opts?.timeoutMs ?? (isBrowser() ? 0 : 8_000),
   };
   const fetchImpl = normalizedOpts.fetchImpl ?? fetch;
   const baseUrl = normalizedOpts.baseUrl.replace(/\/+$/, "");
@@ -123,6 +136,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       ...init,
       ...withCreds,
       headers,
+      signal: init.signal ?? ((normalizedOpts.timeoutMs ?? 0) > 0 ? AbortSignal.timeout(normalizedOpts.timeoutMs!) : undefined),
     });
   }
 
@@ -464,6 +478,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
   }
 
   const comidaApi = {
+    async counts(): Promise<APISuccess<{ countsByType: Record<"vinos" | "cafes" | "postres" | "platos" | "bebidas", number> }> | APIError> {
+      return json("/api/admin/comida/counts", { method: "GET" });
+    },
     // Whether the AI image config is fully usable (activation + key + i2i model).
     async aiImageStatus(): Promise<APISuccess<{ valid: boolean }> | APIError> {
       return json("/api/admin/comida/ai-image/status", { method: "GET" });
@@ -793,9 +810,23 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       },
     },
     dashboard: {
-      async getMetrics(date: string): Promise<APISuccess<{ metrics: DashboardMetrics }> | APIError> {
+      async getMetrics(date: string): Promise<APISuccess<{ metrics: DashboardMetrics; invoiceMetrics: InvoiceDashboardMetrics | null }> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/dashboard/metrics?${q.toString()}`, { method: "GET" });
+      },
+    },
+    analytics: {
+      async getOverview(params: AnalyticsOverviewParams): Promise<AnalyticsOverview | APIError> {
+        const q = new URLSearchParams({ from: params.from, to: params.to, granularity: params.granularity });
+        if (params.compare) q.set("compare", params.compare);
+        return json(`/api/admin/analytics/overview?${q.toString()}`, { method: "GET" });
+      },
+      async refresh(params: AnalyticsRefreshRequest): Promise<AnalyticsRefreshResponse> {
+        return json("/api/admin/analytics/refresh", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(params),
+        });
       },
     },
     calendar: {
@@ -1046,6 +1077,18 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(patch),
         });
       },
+      async listCompensations(id: number): Promise<APISuccess<{ items: MemberCompensation[] }> | APIError> {
+        return json(`/api/admin/members/${id}/compensations`, { method: "GET" });
+      },
+      async createCompensation(id: number, input: MemberCompensationInput): Promise<APISuccess<{ id: number }> | APIError> {
+        return json(`/api/admin/members/${id}/compensations`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async patchCompensation(id: number, compensationId: number, input: MemberCompensationInput): Promise<APISuccess<{ id: number }> | APIError> {
+        return json(`/api/admin/members/${id}/compensations/${compensationId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async deleteCompensation(id: number, compensationId: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/members/${id}/compensations/${compensationId}`, { method: "DELETE" });
+      },
       async setPhone(id: number, phone: string): Promise<APISuccess<{ member: Member }> | APIError> {
         return json(`/api/admin/members/${id}/phone`, {
           method: "PUT",
@@ -1246,6 +1289,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       },
     },
     fichaje: {
+      async getLabourCost(params: { from: string; to: string }): Promise<APISuccess<LabourCostReport> | APIError> {
+        return json(withQuery("/api/admin/fichaje/labour-cost", params), { method: "GET" });
+      },
       async getState(): Promise<APISuccess<{ state: FichajeState }> | APIError> {
         return json("/api/admin/fichaje/state", { method: "GET" });
       },
@@ -2587,6 +2633,22 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         return json(`/api/admin/jobs/status?${q.toString()}`, { method: "GET" });
       },
 
+    },
+
+    pos: {
+      bootstrap(): Promise<POSBootstrap | APIError> { return json("/api/admin/pos/bootstrap", { method: "GET" }); },
+      settings: {
+        get(): Promise<APISuccess<{ settings: POSSettings }> | APIError> { return json("/api/admin/pos/settings", { method: "GET" }); },
+        update(input: POSSettings): Promise<APISuccess | APIError> { return json("/api/admin/pos/settings", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(input) }); },
+      },
+      visits: {
+        open(input: { channel: "DINE_IN" | "TAKEAWAY" | "DELIVERY"; tableId?: number; bookingId?: number; covers: number; idempotencyKey: string }): Promise<APISuccess<{ visit: unknown; ticket: POSTicket }> | APIError> { return json("/api/admin/pos/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) }); },
+        get(id: number): Promise<APISuccess<{ visit: unknown }> | APIError> { return json(`/api/admin/pos/visits/${id}`, { method: "GET" }); },
+      },
+      tickets: {
+        addLine(id: number, input: { productId: number; quantity: number; notes?: string; idempotencyKey: string }): Promise<APISuccess<{ ticket: POSTicket }> | APIError> { return json(`/api/admin/pos/tickets/${id}/lines`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) }); },
+        checkout(id: number, input: { idempotencyKey: string; expectedVersion: number; payments: Array<{ method: string; amountCents: number; idempotencyKey: string }>; closeVisit: boolean }): Promise<APISuccess<{ ticket: POSTicket; stockStatus: string; visitClosed: boolean }> | APIError> { return json(`/api/admin/pos/tickets/${id}/checkout`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) }); },
+      },
     },
 
     // Public Invoice API (for customer-facing invoice lookup)

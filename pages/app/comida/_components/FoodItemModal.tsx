@@ -11,6 +11,11 @@ import { FOOD_TYPE_TIPO_OPTIONS, type FoodType } from "./foodTypes";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { BeverageCategoryModal } from "./BeverageCategoryModal";
+import { type ProductionType } from "./TechnicalSheet/ProductionTypeToggle";
+import { ProductionTypeSection } from "./TechnicalSheet/ProductionTypeSection";
+import { AllergenSelectGrid } from "../../../../ui/widgets/allergens/AllergenSelectGrid";
+import { sheetsApi, type SheetSummary } from "./TechnicalSheet/sheetsApi";
+import { normalizeAllergen } from "../../../../ui/widgets/allergens/allergens";
 
 interface FoodItemModalProps {
   open: boolean;
@@ -22,22 +27,42 @@ interface FoodItemModalProps {
   onSave: (item: FoodItem) => void;
 }
 
+// Values stay the lowercase slugs already persisted for comida items; only the
+// presentation is shared with the technical sheet.
 const ALERGEN_OPTIONS = [
-  { value: "gluten", label: "Gluten", icon: Bean },
-  { value: "crustaceos", label: "Crustaceos", icon: Shrimp },
-  { value: "huevos", label: "Huevos", icon: Egg },
-  { value: "pescado", label: "Pescado", icon: Fish },
-  { value: "cacahuetes", label: "Cacahuetes", icon: Nut },
-  { value: "soja", label: "Soja", icon: Bean },
-  { value: "lacteos", label: "Lacteos", icon: Milk },
-  { value: "frutos_secos", label: "Frutos secos", icon: Nut },
-  { value: "apio", label: "Apio", icon: LeafyGreen },
-  { value: "mostaza", label: "Mostaza", icon: Sprout },
-  { value: "sesamo", label: "Sesamo", icon: CircleDot },
-  { value: "sulfitos", label: "Sulfitos", icon: FlaskConical },
-  { value: "altramuces", label: "Altramuces", icon: Bean },
-  { value: "moluscos", label: "Moluscos", icon: Shell },
+  { value: "gluten", label: "Gluten", icon: <Bean size={16} /> },
+  { value: "crustaceos", label: "Crustaceos", icon: <Shrimp size={16} /> },
+  { value: "huevos", label: "Huevos", icon: <Egg size={16} /> },
+  { value: "pescado", label: "Pescado", icon: <Fish size={16} /> },
+  { value: "cacahuetes", label: "Cacahuetes", icon: <Nut size={16} /> },
+  { value: "soja", label: "Soja", icon: <Bean size={16} /> },
+  { value: "lacteos", label: "Lacteos", icon: <Milk size={16} /> },
+  { value: "frutos_secos", label: "Frutos secos", icon: <Nut size={16} /> },
+  { value: "apio", label: "Apio", icon: <LeafyGreen size={16} /> },
+  { value: "mostaza", label: "Mostaza", icon: <Sprout size={16} /> },
+  { value: "sesamo", label: "Sesamo", icon: <CircleDot size={16} /> },
+  { value: "sulfitos", label: "Sulfitos", icon: <FlaskConical size={16} /> },
+  { value: "altramuces", label: "Altramuces", icon: <Bean size={16} /> },
+  { value: "moluscos", label: "Moluscos", icon: <Shell size={16} /> },
 ];
+
+/**
+ * Maps canonical allergen names ("Leche", "Frutos de cascara") onto the
+ * lowercase slugs comida items persist ("lacteos", "frutos_secos"). Anything
+ * unrecognised is dropped rather than stored: an unknown string must never be
+ * saved as if it were a declared allergen.
+ */
+function toComidaAllergenSlugs(keys: readonly string[]): string[] {
+  const bySlug = new Map(
+    ALERGEN_OPTIONS.map((option) => [normalizeAllergen(option.value) ?? option.value, option.value]),
+  );
+  const seen = new Set<string>();
+  for (const key of keys) {
+    const slug = bySlug.get(normalizeAllergen(key) ?? key);
+    if (slug) seen.add(slug);
+  }
+  return [...seen];
+}
 
 const TIPO_OPTIONS = FOOD_TYPE_TIPO_OPTIONS;
 
@@ -77,6 +102,14 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const [descripcion, setDescripcion] = useState("");
   const [categoria, setCategoria] = useState("");
   const [alergenos, setAlergenos] = useState<string[]>([]);
+  // Slugs the linked technical sheet declares. Kept separate from `alergenos`
+  // because the sheet owns them: they are badged, not editable here, and are
+  // released when the product stops being Preparado.
+  const [sheetAlergenos, setSheetAlergenos] = useState<string[]>([]);
+  // Mirrors sheetAlergenos for the setAlergenos updater: reading state there
+  // would need it as a dependency, which would change the callback identity and
+  // retrigger the editor's notification effect.
+  const sheetAlergenosRef = useRef<string[]>([]);
   const [active, setActive] = useState(true);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -84,6 +117,12 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const [bebidaCategories, setBebidaCategories] = useState<Array<{ value: string; label: string }>>([]);
   const [platoCategories, setPlatoCategories] = useState<Array<{ value: string; label: string }>>([]);
   const [bebidaCatModalOpen, setBebidaCatModalOpen] = useState(false);
+  // Technical sheet state. A dish only has a sheet once it exists, so all of
+  // this hangs off the saved item rather than the in-progress form.
+  const [productionType, setProductionType] = useState<ProductionType>("RAW");
+  const [stockRecipeId, setStockRecipeId] = useState<number | null>(null);
+  const [sheetPickerOpen, setSheetPickerOpen] = useState(false);
+  const [sheetEditorOpen, setSheetEditorOpen] = useState(false);
   const [showAIAdvisor, setShowAIAdvisor] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [pendingAIEnhance, setPendingAIEnhance] = useState(false);
@@ -120,6 +159,14 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       setActive(item.active ?? true);
       setImageBase64(null);
       setImagePreview(item.foto_url || null);
+      // Hydrate from what the server actually stored, so reopening the modal
+      // never silently downgrades an elaborated dish back to "bought".
+      // Seeded per open; the toggle then owns the value for this session so a
+      // save is not reverted by the stale item the list still holds.
+      setProductionType(item.production_type === "MANUFACTURED" ? "MANUFACTURED" : "RAW");
+      setStockRecipeId(item.stock_recipe_id ?? null);
+      setSheetPickerOpen(false);
+      setSheetEditorOpen(false);
       return;
     }
     setNombre("");
@@ -134,6 +181,10 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     setActive(!isPlato);
     setImageBase64(null);
     setImagePreview(null);
+    setProductionType("RAW");
+    setStockRecipeId(null);
+    setSheetPickerOpen(false);
+    setSheetEditorOpen(false);
     setShowAIAdvisor(false);
     setAiBusy(false);
     setPendingAIEnhance(false);
@@ -408,13 +459,91 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     e.preventDefault();
     const saved = await saveItem();
     if (!saved) return;
+
+    // A sheet built while creating the dish exists on its own until now; the
+    // dish only gets an id here, so this is the first moment the two can be
+    // attached. Without it the recipe the user just typed would be orphaned.
+    if (productionType === "MANUFACTURED" && stockRecipeId != null && saved.num) {
+      try {
+        await sheetsApi.setProductionType(saved.num, "MANUFACTURED", stockRecipeId);
+      } catch {
+        // The dish itself saved; surfacing a second failure here would be
+        // confusing, and the link can be set again from the detail page.
+      }
+    }
+
     onSave(saved);
 
     if (pendingAIEnhance) {
       setPendingAIEnhance(false);
       runAIEnhance(saved.num);
     }
-  }, [onSave, pendingAIEnhance, runAIEnhance, saveItem]);
+  }, [onSave, pendingAIEnhance, productionType, runAIEnhance, saveItem, stockRecipeId]);
+
+  // Reusing an existing sheet fills the product form from it. The sheet already
+  // records the preparation's name, price, method and allergens, so retyping
+  // them would invite the two records to disagree about the same dish.
+  //
+  // Empty sheet fields are skipped rather than written as blanks: a sheet with
+  // no price is unknown, not free, and must not overwrite a price the user has
+  // already typed.
+  const fillFromSheet = useCallback(
+    (sheet: SheetSummary) => {
+      if (sheet.name) {
+        if (isPostre) setDescripcion(sheet.name);
+        else setNombre(sheet.name);
+      }
+      if (sheet.sellingPriceGross != null && sheet.sellingPriceGross > 0) {
+        setPrecio(String(sheet.sellingPriceGross));
+      }
+      if (sheet.instructions && !isPostre) {
+        setDescripcion(sheet.instructions);
+      }
+      if (sheet.allergens.length > 0) {
+        const slugs = toComidaAllergenSlugs(sheet.allergens);
+        if (slugs.length > 0) setAlergenos(slugs);
+      }
+    },
+    [isPostre],
+  );
+
+  // A sheet's allergens are the dish's allergens - they are what reaches the
+  // menu - so the product grid follows the sheet rather than holding a second
+  // opinion that whichever save ran last would silently win.
+  //
+  // This replaces rather than merges: an allergen removed in the sheet has to
+  // disappear here too, and merging would make removal impossible.
+  const syncAllergensFromSheet = useCallback((effective: string[]) => {
+    const slugs = toComidaAllergenSlugs(effective);
+    setAlergenos((prev) => {
+      // The sheet's previous contribution is withdrawn before the new one is
+      // applied, so switching an allergen off in the ficha tecnica clears it
+      // here too. Adding without removing left a stale entry that the user
+      // could not delete, because the card is locked precisely on the grounds
+      // that the sheet owns it.
+      const withoutSheet = prev.filter((slug) => !sheetAlergenosRef.current.includes(slug));
+      return [...new Set([...withoutSheet, ...slugs])];
+    });
+    sheetAlergenosRef.current = slugs;
+    setSheetAlergenos(slugs);
+  }, []);
+
+  // "FT" (ficha tecnica) marks the corner; the tooltip spells it out, so the
+  // reason does not depend on knowing the abbreviation.
+  const sheetAllergenBadges = useMemo(
+    () => Object.fromEntries(sheetAlergenos.map((slug) => [slug, "FT"])),
+    [sheetAlergenos],
+  );
+  const sheetAllergenReasons = useMemo(
+    () =>
+      Object.fromEntries(
+        sheetAlergenos.map((slug) => [
+          slug,
+          "Viene de la ficha tecnica. Se quita desde la ficha o cambiando a Materia prima.",
+        ]),
+      ),
+    [sheetAlergenos],
+  );
 
   const title = item ? "Editar elemento" : "Nuevo elemento";
 
@@ -423,6 +552,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       <Modal open={open} onClose={onClose} title={title} size="lg">
         <form data-role="food-modal-form" onSubmit={onSubmit}>
           <div data-ui="food-modal-grid" className="bo-foodModal-grid">
+            <div data-slot="food-modal-fields" className="bo-foodModal-fields">
             <div data-slot="food-modal-image-section" className="bo-foodModal-imageSection">
               <div data-ui="food-modal-image-preview" className="bo-foodModal-imagePreview">
                 {imagePreview ? (
@@ -476,7 +606,6 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               <p data-role="food-modal-image-hint" className="bo-foodModal-imageHint">Se comprimira a WebP (max 100KB)</p>
             </div>
 
-            <div data-slot="food-modal-fields" className="bo-foodModal-fields">
               <div data-ui="food-modal-field-nombre" className="bo-field">
                 <label data-role="food-modal-label-nombre" className="bo-label" htmlFor="nombre">
                   {isPostre ? "Descripcion *" : "Nombre *"}
@@ -593,7 +722,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
               {supportsSuplemento ? (
                 <div data-ui="food-modal-field-suplemento" className="bo-field bo-foodModalSupplementField">
-                  <div data-ui="food-modal-supplement-head" className="flex items-center justify-center gap-2">
+                  <div data-ui="food-modal-supplement-head" className="bo-foodModalSupplementHead">
                     <span data-role="food-modal-label-suplemento" className="bo-label m-0">Tiene suplemento</span>
                     <Switch
                       checked={hasSuplemento}
@@ -601,20 +730,28 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                       aria-label="Activar suplemento"
                       data-role="food-modal-supplement-toggle"
                     />
-                    {hasSuplemento ? (
+                  </div>
+                  {/* The amount belongs under the switch that reveals it, not
+                      beside it: on a narrow modal the inline input pushed the
+                      label and toggle out of alignment. */}
+                  {hasSuplemento ? (
+                    <div data-ui="food-modal-supplement-amount" className="bo-foodModalSupplementAmount">
+                      <label data-role="food-modal-label-suplemento-precio" className="bo-label" htmlFor="suplemento">
+                        Precio del suplemento
+                      </label>
                       <input
                         data-role="food-modal-input-suplemento"
                         id="suplemento"
                         type="number"
                         step="0.01"
                         min="0"
-                        className="bo-input max-w-28"
+                        className="bo-input"
                         value={suplemento}
                         onChange={(e) => setSuplemento(e.target.value)}
                         placeholder="0.00"
                       />
-                    ) : null}
-                  </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -638,31 +775,43 @@ export const FoodItemModal = React.memo(function FoodItemModal({
               {supportsAlergenos ? (
                 <div data-ui="food-modal-field-alergenos" className="bo-field">
                   <label data-role="food-modal-label-alergenos" className="bo-label">Alergenos</label>
-                  <div data-slot="food-modal-alergenos-list" className="bo-allergenGrid">
-                    {ALERGEN_OPTIONS.map(({ value, label, icon: Icon }) => {
-                      const selected = alergenos.includes(value);
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          className={`bo-allergenCircle ${selected ? "is-selected" : "is-unselected"}`}
-                          onClick={() => handleAlergenoToggle(value)}
-                          aria-label={label}
-                          aria-pressed={selected}
-                          data-role="food-modal-alergeno-option"
-                          data-allergen={value}
-                          data-state={selected ? "selected" : "unselected"}
-                        >
-                          <span className="bo-allergenCircleIcon" data-role="food-modal-alergeno-icon">
-                            <Icon size={16} data-role="food-modal-alergeno-icon-svg" />
-                          </span>
-                          <span className="bo-allergenCircleLabel" data-role="food-modal-alergeno-text">{label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {/* Shared with the technical sheet, so both grids stay identical. */}
+                  <AllergenSelectGrid
+                    data-slot="food-modal-alergenos-list"
+                    options={ALERGEN_OPTIONS}
+                    selected={alergenos}
+                    locked={sheetAlergenos}
+                    badges={sheetAllergenBadges}
+                    lockedReasons={sheetAllergenReasons}
+                    onToggle={(value) => handleAlergenoToggle(value)}
+                    itemDataRole="food-modal-alergeno-option"
+                  />
                 </div>
               ) : null}
+
+              <ProductionTypeSection
+                itemId={item ? item.num : null}
+                productionType={productionType}
+                stockRecipeId={stockRecipeId}
+                productName={titulo || nombre}
+                onChange={(next) => {
+                  setProductionType(next);
+                  if (next === "RAW") {
+                    setStockRecipeId(null);
+                    // No sheet means no sheet-owned allergens. They are dropped
+                    // rather than left behind as undeletable leftovers.
+                    setAlergenos((prev) => prev.filter((slug) => !sheetAlergenos.includes(slug)));
+                    sheetAlergenosRef.current = [];
+                    setSheetAlergenos([]);
+                  }
+                }}
+                onSheetLinked={(sheetId) => {
+                  setStockRecipeId(sheetId);
+                  setProductionType("MANUFACTURED");
+                }}
+                onSheetPicked={fillFromSheet}
+                onSheetAllergensChange={syncAllergensFromSheet}
+              />
 
               <div data-ui="food-modal-field-active" className="bo-field">
                 <div data-ui="food-modal-visibility-row" className="bo-foodModalCategoryHead flex items-center gap-2">
@@ -695,6 +844,8 @@ export const FoodItemModal = React.memo(function FoodItemModal({
           </div>
         </form>
       </Modal>
+
+
 
       {isBebida ? (
         <BeverageCategoryModal

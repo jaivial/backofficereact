@@ -3,11 +3,12 @@ import { Switch as HeadlessSwitch } from "@headlessui/react";
 import { motion } from "motion/react";
 import { cn } from "./utils";
 
-type HeadlessSwitchProps = React.ComponentProps<typeof HeadlessSwitch>;
-
-type SwitchProps = Omit<HeadlessSwitchProps, "onChange" | "children"> & {
+type SwitchProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onChange" | "children" | "className" | "value"> & {
+  checked?: boolean;
+  defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   onChange?: (checked: boolean) => void;
+  className?: string;
   pressedWidth?: number;
   startIcon?: React.ReactElement;
   endIcon?: React.ReactElement;
@@ -38,7 +39,7 @@ export function Switch({
   );
 
   return (
-    <HeadlessSwitch
+    <HeadlessSwitch as="button"
       checked={checked}
       defaultChecked={defaultChecked}
       disabled={disabled}

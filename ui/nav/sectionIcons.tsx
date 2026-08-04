@@ -9,7 +9,10 @@ import {
   FileText,
   Globe,
   Link,
+  MonitorSmartphone,
+  Boxes,
   Receipt,
+  Server,
   Settings,
   ShieldUser,
   UtensilsCrossed,
@@ -33,6 +36,10 @@ export function iconForSidebarItemKey(key: SidebarItemKey, options: BOIconOption
       return <UtensilsCrossed size={size} strokeWidth={strokeWidth} />;
     case "comida":
       return <CookingPot size={size} strokeWidth={strokeWidth} />;
+    case "stock":
+      return <Boxes size={size} strokeWidth={strokeWidth} data-ui="section-stock-icon" />;
+    case "pos":
+      return <MonitorSmartphone size={size} strokeWidth={strokeWidth} data-ui="section-pos-icon" />;
     case "miembros":
       return <ShieldUser size={size} strokeWidth={strokeWidth} />;
     case "ajustes":
@@ -49,10 +56,13 @@ export function iconForSidebarItemKey(key: SidebarItemKey, options: BOIconOption
       return <FileText size={size} strokeWidth={strokeWidth} />;
     case "reportes":
       return <BarChart3 size={size} strokeWidth={strokeWidth} />;
+    case "estadisticas":
+      return <BarChart3 size={size} strokeWidth={strokeWidth} data-ui="section-estadisticas-icon" />;
     case "estado_cuenta":
       return <Receipt size={size} strokeWidth={strokeWidth} />;
+    case "plataforma":
+      return <Server size={size} strokeWidth={strokeWidth} data-ui="section-plataforma-icon" />;
     default:
       return <Settings size={size} strokeWidth={strokeWidth} />;
   }
 }
-

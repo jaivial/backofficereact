@@ -17,6 +17,7 @@ import { BrandingPanel } from "./functionalComponents/BrandingPanel/BrandingPane
 import { WebsitePanel } from "./functionalComponents/WebsitePanel/WebsitePanel";
 import { InvoiceNumberingPanel } from "./functionalComponents/InvoiceNumberingPanel/InvoiceNumberingPanel";
 import { PdfTemplatePanel } from "./functionalComponents/PdfTemplatePanel/PdfTemplatePanel";
+import { FiscalPanel, type FiscalEntityType } from "./functionalComponents/FiscalPanel/FiscalPanel";
 
 function defaultWebsiteMenuTemplates(): RestaurantWebsiteMenuTemplatesConfig {
   return {
@@ -85,6 +86,7 @@ export default function Page() {
   const [websiteTemplateUsePerType, setWebsiteTemplateUsePerType] = useState<boolean>(
     () => Object.keys((data.websiteMenuTemplates?.overrides || {})).length > 0,
   );
+  const [tipoEmpresa, setTipoEmpresa] = useState<FiscalEntityType>(() => data.restaurantInfo?.tipoEmpresa ?? "sl");
 
   useErrorToast(error);
 
@@ -92,22 +94,25 @@ export default function Page() {
     setBusy(true);
     setError(null);
     try {
-      const [a, b, c, d] = await Promise.all([
+      const [a, b, c, d, e] = await Promise.all([
         api.settings.getIntegrations(),
         api.settings.getBranding(),
         api.settings.getInvoiceSettings(),
         api.settings.getWebsiteMenuTemplates(),
+        api.config.getRestaurantInfo(),
       ]);
       if (!a.success) throw new Error(a.message || "Error cargando integraciones");
       if (!b.success) throw new Error(b.message || "Error cargando branding");
       if (!c.success) throw new Error(c.message || "Error cargando configuracion de facturas");
       if (!d.success) throw new Error(d.message || "Error cargando pagina web");
+      if (!e.success) throw new Error(e.message || "Error cargando datos fiscales");
 
       setIntegrations(a.integrations);
       setBranding(b.branding);
       setInvoiceSettings(c.settings);
       setWebsiteMenuTemplates(d);
       setWebsiteTemplateUsePerType(Object.keys(d.overrides || {}).length > 0);
+      setTipoEmpresa(e.restaurantInfo.tipoEmpresa);
       pushToast({ kind: "success", title: "Actualizado" });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error recargando");
@@ -170,6 +175,24 @@ export default function Page() {
     }
   }, [api, invoiceSettings, pushToast]);
 
+  const saveTipoEmpresa = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api.config.setRestaurantInfo({ tipoEmpresa });
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar" });
+        return;
+      }
+      setTipoEmpresa(res.restaurantInfo.tipoEmpresa);
+      pushToast({ kind: "success", title: "Guardado", message: "Datos fiscales actualizados" });
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar" });
+    } finally {
+      setBusy(false);
+    }
+  }, [api, tipoEmpresa, pushToast]);
+
   const saveWebsiteMenuTemplates = useCallback(async () => {
     setBusy(true);
     setError(null);
@@ -217,6 +240,12 @@ export default function Page() {
           busy={busy}
           onIntegrationsChange={setIntegrations}
           onSave={saveIntegrations}
+        />
+        <FiscalPanel
+          tipoEmpresa={tipoEmpresa}
+          busy={busy}
+          onTipoEmpresaChange={setTipoEmpresa}
+          onSave={saveTipoEmpresa}
         />
         <BrandingPanel
           branding={branding}

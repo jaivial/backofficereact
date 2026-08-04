@@ -23,7 +23,9 @@ export function ChevronButton({
     <button
       type="button"
       className={cn(
-        "inline-flex items-center justify-center w-9 h-9 rounded-xl border cursor-pointer transition-all duration-150",
+        // shrink-0: as a flex child the 36px box was squeezed to 30px wide.
+        // max-sm sizing meets the 44pt touch target on phones.
+        "inline-flex shrink-0 items-center justify-center w-9 h-9 max-sm:w-11 max-sm:h-11 rounded-xl border cursor-pointer transition-all duration-150",
         "border-[var(--bo-border)] bg-transparent text-[var(--bo-muted)] hover:text-[var(--bo-text)] hover:bg-black/10 dark:hover:bg-white/10 hover:border-[var(--bo-border-2)]",
         "disabled:opacity-40 disabled:cursor-not-allowed",
         className,

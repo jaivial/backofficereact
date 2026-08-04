@@ -42,10 +42,6 @@ vi.mock('../../../../ui/feedback/useErrorToast', () => ({
   useErrorToast: vi.fn(),
 }))
 
-function tick() {
-  return new Promise((r) => setTimeout(r, 0))
-}
-
 describe('BookingManager', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -58,14 +54,12 @@ describe('BookingManager', () => {
 
   it('renders the install guide panel', async () => {
     render(<BookingManager />)
-    await tick()
-    expect(screen.getByText(/Añade el script/i)).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText(/Añade el script/i)).toBeInTheDocument())
   })
 
   it('renders the color customization panel', async () => {
     render(<BookingManager />)
-    await tick()
-    expect(screen.getByText(/Personalización de colores/i)).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText(/Personalización de colores/i)).toBeInTheDocument())
   })
 
   it('shows loading state initially', async () => {
@@ -78,14 +72,12 @@ describe('BookingManager', () => {
   it('shows error state when API fails', async () => {
     mockGetSettings.mockResolvedValue({ success: false, message: 'API Error' })
     render(<BookingManager />)
-    await tick()
-    // After error, loading finishes and the main panel renders with default settings
-    expect(screen.getByText(/Personalización de colores/i)).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText(/Personalización de colores/i)).toBeInTheDocument())
   })
 
   it('renders all 6 color pickers', async () => {
     render(<BookingManager />)
-    await tick()
+    await waitFor(() => expect(screen.getByLabelText('Color primario')).toBeInTheDocument())
     // Each ColorPicker has an <input type="color"> with a specific aria-label
     const colorLabels = [
       'Color primario',
@@ -104,7 +96,7 @@ describe('BookingManager', () => {
 
   it('triggers save when a color changes', async () => {
     render(<BookingManager />)
-    await tick()
+    await waitFor(() => expect(screen.getByLabelText('Color primario')).toBeInTheDocument())
 
     const primaryInput = screen.getByLabelText('Color primario')
     fireEvent.change(primaryInput, { target: { value: '#ff0000' } })

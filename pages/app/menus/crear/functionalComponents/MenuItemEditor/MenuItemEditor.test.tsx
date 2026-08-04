@@ -18,13 +18,23 @@ vi.mock("lucide-react", async (importOriginal) => {
 vi.mock("motion/react", () => {
   const React = require("react");
   const forwardRef = (render: any) => React.forwardRef(render);
+  const DOM_MOTION_PROPS = new Set([
+    "dragListener",
+    "dragControls",
+    "dragMomentum",
+    "dragElastic",
+    "whileDrag",
+  ]);
+  const cleanProps = (props: any) => Object.fromEntries(
+    Object.entries(props).filter(([key]) => key !== "children" && !DOM_MOTION_PROPS.has(key)),
+  );
   const createMotionProxy = () => new Proxy({}, {
-    get: () => (props: any) => React.createElement("div", props, props.children),
+    get: () => (props: any) => React.createElement("div", cleanProps(props), props.children),
   });
   return {
     Reorder: {
-      Item: forwardRef((props: any, ref: any) => React.createElement("div", { ...props, ref }, props.children)),
-      Group: forwardRef((props: any, ref: any) => React.createElement("div", { ...props, ref }, props.children)),
+      Item: forwardRef((props: any, ref: any) => React.createElement("div", { ...cleanProps(props), ref }, props.children)),
+      Group: forwardRef((props: any, ref: any) => React.createElement("div", { ...cleanProps(props), ref }, props.children)),
     },
     motion: createMotionProxy(),
     useDragControls: () => ({ start: vi.fn() }),

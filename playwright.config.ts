@@ -1,8 +1,23 @@
 import { defineConfig, devices } from "@playwright/test";
+import fs from "node:fs";
 import path from "path";
 import url from "url";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+function loadDotEnv(filePath: string): void {
+  if (!fs.existsSync(filePath)) return;
+  for (const line of fs.readFileSync(filePath, "utf8").split(/\r?\n/)) {
+    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (!match || process.env[match[1]] !== undefined) continue;
+    const value = match[2].replace(/^(?:"([\s\S]*)"|'([\s\S]*)')$/, "$1$2");
+    process.env[match[1]] = value;
+  }
+}
+
+loadDotEnv(path.join(__dirname, "../backend/.env"));
+loadDotEnv(path.join(__dirname, ".env"));
+loadDotEnv(path.join(__dirname, ".env.local"));
 
 const isCI = !!process.env.CI;
 const isHeaded = process.env.HEADED === "1" || process.env.HEADED === "true";
@@ -26,7 +41,7 @@ export default defineConfig({
   globalSetup: "./e2e/global-setup.ts",
 
   use: {
-    baseURL: process.env.BACKOFFICE_URL || "https://localhost:3001",
+    baseURL: process.env.BACKOFFICE_URL || `https://localhost:${process.env.PORT || "3001"}`,
     ignoreHTTPSErrors: true,
     screenshot: screenshotMode as "on" | "only-on-failure" | "off",
     video: "on-first-retry",
