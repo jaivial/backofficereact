@@ -1472,7 +1472,7 @@ export default function TableManagerPage() {
                     { x: nextFrame.x, y: nextFrame.y, width: nextFrame.width, height: nextFrame.height },
                     activeLimitPoints,
                   )
-                : false;
+                : true;
               if (!insideLimit) {
                 node.data = { ...node.data, width: prevData.width, height: prevData.height };
               } else {
@@ -1492,18 +1492,11 @@ export default function TableManagerPage() {
 
               const clampedWidth = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextWidth));
               const clampedHeight = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextHeight));
-              const nextFrame = rotatedRectFrameFromPosition(node.position, clampedWidth, clampedHeight, rotationDeg, TABLE_LIMIT_PADDING);
-              const insideLimit = activeLimitPoints
-                ? isRectInsideLimitArea(
-                    { x: nextFrame.x, y: nextFrame.y, width: nextFrame.width, height: nextFrame.height },
-                    activeLimitPoints,
-                  )
-                : false;
-              if (!insideLimit) {
-                node.data = { ...node.data, width: prevData.width, height: prevData.height };
-              } else {
-                node.data = { ...node.data, width: clampedWidth, height: clampedHeight };
-              }
+              // Apply the new size directly. The limit-area repositioning below
+              // keeps the (padded) table frame inside the area, so resizing must
+              // not be gated on containment or it silently reverts when there is
+              // no limit area or the table sits near the boundary.
+              node.data = { ...node.data, width: clampedWidth, height: clampedHeight };
             }
           }
         }
