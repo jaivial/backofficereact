@@ -38,25 +38,15 @@ export const test = base
       await use(page);
       await context.close();
     },
-    session: async ({}, use) => {
-      // Return session data by calling /api/admin/me
-      await use({
-        user: {
-          id: 3,
-          email: ADMIN_EMAIL,
-          name: "Admin",
-          role: "root",
-          roleImportance: 100,
-          sectionAccess: [
-            "ajustes", "comida", "estado_cuenta", "facturas",
-            "fichaje", "horarios", "menus", "miembros",
-            "reportes", "reservas", "site-builder", "website",
-          ],
-          mustChangePassword: false,
-        },
-        restaurants: [{ id: 1, slug: "villacarmen", name: "Alqueria Villa Carmen" }],
-        activeRestaurantId: 1,
-      } as BOSession);
+    session: async ({ adminPage }, use) => {
+      const result = await adminPage.evaluate(async () => {
+        const response = await fetch("/api/admin/me", { credentials: "include" });
+        return { ok: response.ok, body: await response.json() };
+      });
+      if (!result.ok || !result.body?.success || !result.body.session) {
+        throw new Error(`Fixture session lookup failed: ${result.body?.message || "unknown error"}`);
+      }
+      await use(result.body.session as BOSession);
     },
   });
 
