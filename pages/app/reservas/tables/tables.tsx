@@ -252,6 +252,13 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
           maxHeight={TABLE_SIZE_MAX}
           lineStyle={{ borderColor: "var(--bo-accent)" }}
           handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
+          onResizeEnd={(_event, params) => {
+            const width = Number(params?.width);
+            const height = Number(params?.height);
+            if (Number.isFinite(width) && Number.isFinite(height)) {
+              data.onResizeEnd?.(Math.round(width), Math.round(height));
+            }
+          }}
         />
       ) : null}
       {geom.chairs.map((chair, idx) => (
@@ -624,6 +631,7 @@ export default function TableManagerPage() {
   const rightSheetRef = useRef<HTMLElement | null>(null);
   const assignmentInProgress = useRef(false);
   const saveBookingAssignmentsRef = useRef<(booking: Booking, assignments: BookingTableAssignment[]) => Promise<void>>(async () => undefined);
+  const saveTableSizeRef = useRef<(id: string, width: number, height: number) => void>(() => undefined);
   const geom = useMemo(
     () => previewGeometry(draft.shape, draft.capacity, draft.rectShortSides),
     [draft.capacity, draft.rectShortSides, draft.shape],
@@ -1147,6 +1155,7 @@ export default function TableManagerPage() {
               editable: editMode,
               width: Number.isFinite(explicitWidth) && explicitWidth > 0 ? Math.round(explicitWidth) : undefined,
               height: Number.isFinite(explicitHeight) && explicitHeight > 0 ? Math.round(explicitHeight) : undefined,
+              onResizeEnd: (width, height) => saveTableSizeRef.current(String(table.id), width, height),
               seatedNames: seatedNamesByTable.get(tableKey) || [],
             } as TableNodeData,
           };
@@ -1295,6 +1304,12 @@ export default function TableManagerPage() {
     },
     [api.tables, pushToast, selectedDate, selectedFloor],
   );
+
+  useEffect(() => {
+    saveTableSizeRef.current = (id, width, height) => {
+      void saveTableSize(id, width, height);
+    };
+  }, [saveTableSize]);
 
   const persistLayout = useCallback(
     async (patch: Record<string, unknown>) => {
@@ -1452,10 +1467,14 @@ export default function TableManagerPage() {
             const node = next.find((n) => n.id === c.id);
             if (!node || !prevNode || !node.position) continue;
 
-            const rawWidth = Number(c.dimensions?.width);
-            const rawHeight = Number(c.dimensions?.height);
-            const nextWidth = Number.isFinite(rawWidth) ? Math.max(24, Math.round(rawWidth)) : 24;
-            const nextHeight = Number.isFinite(rawHeight) ? Math.max(24, Math.round(rawHeight)) : 24;
+            const rawWidth = c.dimensions ? Number(c.dimensions.width) : NaN;
+            const rawHeight = c.dimensions ? Number(c.dimensions.height) : NaN;
+            // React Flow emits a final dimensions change with `resizing: false`
+            // and NO dimensions when a resize gesture ends. Leave the node
+            // untouched there; the last real drag already set the size.
+            if (!Number.isFinite(rawWidth) || !Number.isFinite(rawHeight)) continue;
+            const nextWidth = Math.max(24, Math.round(rawWidth));
+            const nextHeight = Math.max(24, Math.round(rawHeight));
 
             if (node.type === "drawElement") {
               const prevData = prevNode.data as DrawNodeData;
@@ -1631,17 +1650,14 @@ export default function TableManagerPage() {
             drawElementsChanged = true;
           }
         }
-        if (c.type === "dimensions" && c.resizing === false) {
-          const updatedNode = nextNodesSnapshot.find((n) => n.id === c.id);
-          if (updatedNode?.type === "restaurantTable") {
-            const updatedData = updatedNode.data as TableNodeData;
-            if (typeof updatedData.width === "number" && typeof updatedData.height === "number") {
-              pendingTableSizeSaves.push({
-                id: c.id,
-                width: updatedData.width,
-                height: updatedData.height,
-              });
-            }
+        if (c.type === "dimensions" && c.resizing === false && c.dimensions) {
+          // Belt-and-suspenders: React Flow's finalize change carries no
+          // dimensions, so the real save goes through NodeResizer onResizeEnd.
+          // If a future version does send dimensions here, persist them.
+          const width = Math.round(Number(c.dimensions.width));
+          const height = Math.round(Number(c.dimensions.height));
+          if (Number.isFinite(width) && Number.isFinite(height)) {
+            pendingTableSizeSaves.push({ id: c.id, width, height });
           }
         }
       }

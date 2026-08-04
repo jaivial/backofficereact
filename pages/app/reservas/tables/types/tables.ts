@@ -34,6 +34,8 @@ export type TableNodeData = {
   height?: number;
   /** True while the map is in edit mode (enables resize handles). */
   editable?: boolean;
+  /** Fired by NodeResizer when a resize gesture ends (final pixel size). */
+  onResizeEnd?: (width: number, height: number) => void;
   /** Names of seated guests at this table (derived from booking assignments). */
   seatedNames?: string[];
 };
