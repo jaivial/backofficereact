@@ -16,7 +16,7 @@ import ReactFlow, {
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical,
-  Hand, ImagePlus, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
+  Hand, ImagePlus, Layers, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
   Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
 } from "lucide-react";
@@ -124,6 +124,16 @@ import {
   initialDateFromSearch,
   withDateParam,
 } from "./helpers/tables";
+import {
+  buildDayOverrideLayout,
+  buildGlobalTemplateLayout,
+  buildTemplatePayload,
+  defaultScope,
+  isNonEmptyTemplate,
+  stripDayFieldsForTemplate,
+  stripTemplateFieldsForDay,
+} from "./helpers/templateScope";
+import type { TableMapLayoutTemplate, TableMapTemplateScope } from "../../../../api/types";
 
 // === Status label ===
 // Already exported from constants/tables.ts
@@ -588,6 +598,16 @@ export default function TableManagerPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [savingLimitTemplate, setSavingLimitTemplate] = useState(false);
   const [removeAreaConfirmOpen, setRemoveAreaConfirmOpen] = useState(false);
+  // Cross-day layout template (per floor). When `templateScope` is "template"
+  // the editor commits to the global template; when "day" it stores day-specific
+  // overrides without touching the template.
+  const [floorTemplate, setFloorTemplate] = useState<TableMapLayoutTemplate | null>(null);
+  const [templateScope, setTemplateScope] = useState<TableMapTemplateScope>("day");
+  const [templateScopeLocked, setTemplateScopeLocked] = useState(false);
+  const [confirmScopeChange, setConfirmScopeChange] = useState<
+    | { next: TableMapTemplateScope; reason: "switch-to-day" | "switch-to-template" }
+    | null
+  >(null);
 
   // Toggle body class for drag state
   useEffect(() => {
@@ -925,6 +945,35 @@ export default function TableManagerPage() {
     }
   }, [api.calendar, api.config, api.dashboard, api.reservas, api.tables, calendarView.month, calendarView.year, selectedDate, selectedFloor]);
 
+  // Load the cross-day template for the current floor and re-derive the
+  // default scope. Done as a separate effect so it re-runs when the floor
+  // changes (and not on every per-day layout refresh).
+  useEffect(() => {
+    let cancelled = false;
+    async function loadTemplateForFloor() {
+      try {
+        const res = await api.tables.getTemplate(selectedFloor);
+        if (cancelled) return;
+        if (!res.success) {
+          setFloorTemplate(null);
+          setTemplateScope(defaultScope(false));
+          return;
+        }
+        const tpl = isNonEmptyTemplate((res as any).template) ? ((res as any).template as TableMapLayoutTemplate) : null;
+        setFloorTemplate(tpl);
+        setTemplateScope(defaultScope(tpl !== null, (res as any).scope));
+      } catch {
+        if (cancelled) return;
+        setFloorTemplate(null);
+        setTemplateScope(defaultScope(false));
+      }
+    }
+    void loadTemplateForFloor();
+    return () => {
+      cancelled = true;
+    };
+  }, [api.tables, selectedFloor]);
+
   useEffect(() => {
     void loadData();
   }, [loadData]);
@@ -1196,6 +1245,48 @@ export default function TableManagerPage() {
         const payload = JSON.parse(event.data);
         if (payload.type === "snapshot" && Array.isArray(payload.areas)) {
           setAreas(payload.areas.map((a: any) => normalizeTableArea(a)));
+          // The server also ships the resolved template + scope in the
+          // snapshot; pick them up so the toggle stays in sync with any
+          // other open tab or the backend itself.
+          const snapshotTemplate = isNonEmptyTemplate(payload.layout?.template)
+            ? (payload.layout.template as TableMapLayoutTemplate)
+            : null;
+          if (snapshotTemplate !== null) {
+            setFloorTemplate(snapshotTemplate);
+            setTemplateScope(defaultScope(true, payload.layout?.scope));
+          } else {
+            setFloorTemplate(null);
+            setTemplateScope(defaultScope(false, payload.layout?.scope));
+          }
+          return;
+        }
+        if (payload.type === "template_updated") {
+          const floor = Number(payload.floor_number);
+          if (Number.isFinite(floor) && floor !== selectedFloor) return;
+          const tpl = isNonEmptyTemplate(payload.template) ? (payload.template as TableMapLayoutTemplate) : null;
+          if (tpl) {
+            setFloorTemplate(tpl);
+            setTemplateScope("template");
+          } else {
+            setFloorTemplate(null);
+            setTemplateScope("day");
+          }
+          void loadData();
+          return;
+        }
+        if (payload.type === "template_cleared") {
+          const floor = Number(payload.floor_number);
+          if (Number.isFinite(floor) && floor !== selectedFloor) return;
+          setFloorTemplate(null);
+          setTemplateScope("day");
+          void loadData();
+          return;
+        }
+        if (payload.type === "layout_updated") {
+          const floor = Number(payload.floor_number);
+          if (Number.isFinite(floor) && floor !== selectedFloor) return;
+          // Another session saved the per-day layout. Refresh.
+          void loadData();
           return;
         }
         if (payload.type === "table_created" || payload.type === "table_updated") {
@@ -1241,7 +1332,7 @@ export default function TableManagerPage() {
       socket.close();
       ws.current = null;
     };
-  }, []);
+  }, [loadData, selectedFloor, templateScope]);
 
   const savePosition = useCallback(
     async (id: string, x: number, y: number) => {
@@ -2492,6 +2583,18 @@ export default function TableManagerPage() {
     queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, lineDrawingPointsRef.current);
   }, [queuePersistLayout]);
 
+  /**
+   * Persists the cross-day template via POST /tables/template/{floor}.
+   * The template owns the limit area polygon and the draw elements (kind,
+   * preset, position, size, rotation, display mode). Customer booking data
+   * is intentionally excluded.
+   *
+   * The current "scope" decides which backend write path is used:
+   *  - "template"  → writes to the template; per-day overrides are wiped
+   *                  so the rest of the app immediately reads the new state.
+   *  - "day"       → writes only to the per-day layout (the template stays
+   *                  untouched and other days are not affected).
+   */
   const saveLimitAreaTemplate = useCallback(async () => {
     if (lineDrawing.isDrawing || !hasClosedLimitArea(lineDrawing.points)) {
       pushToast({ kind: "error", title: "Area invalida", message: "Cierra el area antes de guardar la plantilla." });
@@ -2500,36 +2603,152 @@ export default function TableManagerPage() {
 
     setSavingLimitTemplate(true);
     try {
-      const areaId = await ensureAreaForFloor();
-      if (!areaId) return;
+      const clonedPoints = cloneLinePoints(lineDrawing.points);
+      const clonedElements = drawElementsRef.current.map((item) => ({
+        ...item,
+        display_mode: item.displayMode,
+      }));
 
-      const currentArea = (floorAreas.get(selectedFloor) || []).find((area) => area.id === areaId) || null;
-      const metadata: Record<string, unknown> = {
-        ...areaMetadata(currentArea),
-        floorNumber: selectedFloor,
-        limit_area_template_points: cloneLinePoints(lineDrawing.points),
-      };
+      if (templateScope === "template") {
+        // Build the full template payload: take the current template (if any)
+        // and overlay the new limit area + draw elements. This is the path
+        // that ships cross-day changes to all other days.
+        const payload = buildTemplatePayload({
+          previousTemplate: floorTemplate || undefined,
+          limitPoints: clonedPoints,
+          drawElements: clonedElements,
+        });
+        const res = await api.tables.saveTemplate(selectedFloor, { data: payload });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la plantilla" });
+          return;
+        }
+        setFloorTemplate((res as any).template as TableMapLayoutTemplate);
+        setTemplateScope("template");
+        // Reflect the new template in the current per-day state so the
+        // canvas immediately renders the new geometry.
+        const newLayout = stripTemplateFieldsForDay(
+          buildGlobalTemplateLayout({ ...stripDayFieldsForTemplate({ ...payload }) }),
+        );
+        queuePersistLayout(clonedElements, bookingStatesRef.current, clonedPoints);
+        pushToast({
+          kind: "success",
+          title: "Plantilla guardada",
+          message: "Se aplicara por defecto para este salon en todos los dias.",
+        });
+        return;
+      }
 
-      const res = await api.tables.update({
-        entity: "area",
-        id: areaId,
-        metadata,
+      // Day-specific scope: write only the per-day layout with day-specific
+      // overrides. The template is left untouched.
+      const dayOverride = buildDayOverrideLayout(
+        { limit_area_template_points: clonedPoints, draw_elements_template: clonedElements },
+        {},
+      );
+      const res = await api.tables.saveLayout({
+        date: selectedDate,
+        floor_number: selectedFloor,
+        metadata: dayOverride,
       });
       if (!res.success) {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la plantilla" });
         return;
       }
-
-      setAreas((prev) => prev.map((area) => (area.id === areaId ? { ...area, metadata } : area)));
+      queuePersistLayout(clonedElements, bookingStatesRef.current, clonedPoints);
       pushToast({
         kind: "success",
-        title: "Plantilla guardada",
-        message: "Se aplicara por defecto para este salon en todos los dias.",
+        title: "Cambios guardados para este dia",
+        message: "Solo afectaran al dia seleccionado.",
       });
     } finally {
       setSavingLimitTemplate(false);
     }
-  }, [api.tables, ensureAreaForFloor, floorAreas, lineDrawing.isDrawing, lineDrawing.points, pushToast, selectedFloor]);
+  }, [
+    api.tables,
+    floorTemplate,
+    lineDrawing.isDrawing,
+    lineDrawing.points,
+    pushToast,
+    queuePersistLayout,
+    selectedDate,
+    selectedFloor,
+    templateScope,
+  ]);
+
+  const clearFloorTemplate = useCallback(async () => {
+    setSavingLimitTemplate(true);
+    try {
+      const res = await api.tables.deleteTemplate(selectedFloor);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo eliminar la plantilla" });
+        return;
+      }
+      setFloorTemplate(null);
+      setTemplateScope("day");
+      // Force a layout refresh so per-day geometry re-renders without the
+      // template merging in.
+      void loadData();
+      pushToast({ kind: "success", title: "Plantilla eliminada", message: "Este salon vuelve a las ediciones por dia." });
+    } finally {
+      setSavingLimitTemplate(false);
+    }
+  }, [api.tables, loadData, pushToast, selectedFloor]);
+
+  const requestScopeChange = useCallback(
+    (next: TableMapTemplateScope) => {
+      if (next === templateScope) return;
+      if (next === "day" && templateScope === "template") {
+        setConfirmScopeChange({ next, reason: "switch-to-day" });
+        return;
+      }
+      applyScopeChange(next, next === "template" ? "switch-to-template" : "switch-to-day");
+    },
+    [templateScope],
+  );
+
+  const applyScopeChange = useCallback(
+    async (next: TableMapTemplateScope, reason: "switch-to-day" | "switch-to-template") => {
+      setConfirmScopeChange(null);
+      // Switching to "day": copy the current per-day layout (which already
+      // has the merged template) into a per-day override and save it.
+      if (next === "day") {
+        if (!floorTemplate) {
+          setTemplateScope("day");
+          return;
+        }
+        const currentLayout = {
+          booking_states: bookingStatesRef.current,
+        };
+        const dayOverride = buildDayOverrideLayout(floorTemplate, currentLayout);
+        const res = await api.tables.saveLayout({
+          date: selectedDate,
+          floor_number: selectedFloor,
+          metadata: dayOverride,
+        });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo cambiar a cambios por dia" });
+          return;
+        }
+        setTemplateScope("day");
+        pushToast({
+          kind: "info",
+          title: "Cambios solo para este dia",
+          message: "Los cambios futuros se guardaran solo para esta fecha.",
+        });
+        return;
+      }
+      // Switching to "template": the template already wins, so just clear
+      // any per-day override markers and re-fetch.
+      setTemplateScope("template");
+      void loadData();
+      pushToast({
+        kind: "info",
+        title: "Cambios en la plantilla",
+        message: "Los cambios futuros afectaran a todos los dias.",
+      });
+    },
+    [api.tables, floorTemplate, loadData, pushToast, selectedDate, selectedFloor],
+  );
 
   const undoEditAreaLastAction = useCallback(() => {
     if (!isEditingLimitArea || lineDrawing.isDrawing) return;
@@ -3050,14 +3269,67 @@ export default function TableManagerPage() {
                   <div data-ui="draw-hint" className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
 
                   <div data-ui="limit-section" className="bo-tableMapDrawSection">
-                    <div data-ui="limit-title" className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
+                    <div data-ui="limit-header" className="bo-tableMapDrawSectionHead">
+                      <div data-ui="limit-title" className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
+                      <span
+                        data-ui="template-status"
+                        className={`bo-tableMapDrawSectionPill${floorTemplate ? " is-active" : ""}`}
+                        aria-label={floorTemplate ? "Plantilla guardada para este salon" : "Sin plantilla"}
+                      >
+                        <Layers size={12} />
+                        {floorTemplate ? "Plantilla" : "Sin plantilla"}
+                      </span>
+                    </div>
                     <div data-ui="limit-hint" className="bo-tableMapDrawHint">
                       {isEditingLimitArea
                         ? "Edita los limites: doble clic en una linea anade un punto, doble clic en un punto lo elimina."
                         : "Dibuja el perimetro del area"}
                     </div>
-                    {hasClosedLimitArea(selectedFloorTemplatePoints) ? (
-                      <div data-ui="template-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">Hay una plantilla guardada para este salon.</div>
+
+                    {floorTemplate ? (
+                      <div
+                        data-ui="template-scope-toggle"
+                        className="bo-tableMapDrawScopeToggle"
+                        role="group"
+                        aria-label="Alcance de los cambios"
+                      >
+                        <button
+                          data-ui="template-scope-template-btn"
+                          type="button"
+                          className={`bo-tableMapDrawScopeOption${templateScope === "template" ? " is-active" : ""}`}
+                          onClick={() => requestScopeChange("template")}
+                          aria-pressed={templateScope === "template"}
+                        >
+                          <Layers size={12} />
+                          Cambios en la plantilla
+                        </button>
+                        <button
+                          data-ui="template-scope-day-btn"
+                          type="button"
+                          className={`bo-tableMapDrawScopeOption${templateScope === "day" ? " is-active" : ""}`}
+                          onClick={() => requestScopeChange("day")}
+                          aria-pressed={templateScope === "day"}
+                        >
+                          <CalendarDays size={12} />
+                          Cambios solo este dia
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {floorTemplate && templateScope === "day" ? (
+                      <div data-ui="day-scope-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                        Estás editando solo para esta fecha. La plantilla no cambiara.
+                      </div>
+                    ) : null}
+                    {floorTemplate && templateScope === "template" ? (
+                      <div data-ui="template-scope-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                        Los cambios se aplican a todos los dias de este salon.
+                      </div>
+                    ) : null}
+                    {hasClosedLimitArea(selectedFloorTemplatePoints) && !floorTemplate ? (
+                      <div data-ui="template-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                        Hay limites guardados para este salon (solo este dia).
+                      </div>
                     ) : null}
                     {!lineDrawing.isDrawing && lineDrawing.points.length === 0 ? (
                       <button data-ui="start-line-drawing-btn" className="bo-btn bo-btn--primary" type="button" onClick={startLineDrawing}>
@@ -3120,10 +3392,26 @@ export default function TableManagerPage() {
                             disabled={savingLimitTemplate}
                           >
                             <MapPin size={14} />
-                            {savingLimitTemplate ? "Guardando plantilla..." : "Guardar plantilla salon"}
+                            {savingLimitTemplate
+                              ? "Guardando..."
+                              : templateScope === "day"
+                              ? "Guardar solo este dia"
+                              : "Guardar plantilla salon"}
                           </button>
                         )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
+                        {floorTemplate ? (
+                          <button
+                            data-ui="delete-template-btn"
+                            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
+                            type="button"
+                            onClick={() => void clearFloorTemplate()}
+                            disabled={savingLimitTemplate}
+                          >
+                            <Trash2 size={14} />
+                            Eliminar plantilla
+                          </button>
+                        ) : null}
+                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !floorTemplate ? (
                           <button
                             data-ui="remove-area-btn"
                             className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
@@ -3133,7 +3421,7 @@ export default function TableManagerPage() {
                             <Trash2 size={14} />
                             Eliminar area
                           </button>
-                        )}
+                        ) : null}
                       </div>
                     )}
                   </div>

@@ -1232,6 +1232,72 @@ body.is-dragging .bo-tableMapFlowWrap {
   color: var(--bo-text);
 }
 
+.bo-tableMapDrawSectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapDrawSectionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: var(--bo-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--bo-radius-pill, 9999px);
+  background: color-mix(in srgb, var(--bo-surface-2) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
+  color: var(--bo-muted);
+}
+
+.bo-tableMapDrawSectionPill.is-active {
+  color: var(--bo-accent);
+  border-color: color-mix(in srgb, var(--bo-accent) 50%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface-2));
+}
+
+.bo-tableMapDrawScopeToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  background: color-mix(in srgb, var(--bo-surface-2) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 60%, transparent);
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-tableMapDrawScopeOption {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--bo-radius-sm);
+  cursor: pointer;
+  transition: background var(--bo-transition-fast) var(--bo-ease), color var(--bo-transition-fast) var(--bo-ease);
+}
+
+.bo-tableMapDrawScopeOption:hover:not(.is-active) {
+  color: var(--bo-text);
+  background: color-mix(in srgb, var(--bo-accent) 10%, transparent);
+}
+
+.bo-tableMapDrawScopeOption.is-active {
+  color: var(--bo-text);
+  background: color-mix(in srgb, var(--bo-accent) 26%, var(--bo-surface-2));
+  border-color: color-mix(in srgb, var(--bo-accent) 56%, var(--bo-border));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--bo-accent) 18%, transparent) inset;
+}
+
 .bo-drawAccordionToggle {
   display: flex;
   align-items: center;
