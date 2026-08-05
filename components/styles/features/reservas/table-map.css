@@ -1567,7 +1567,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 .bo-tableMapLineDrawControls {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--bo-space-2);
+  justify-items: center;
   width: 100%;
   padding: var(--bo-space-2);
   border: 1px solid color-mix(in srgb, var(--bo-border) 64%, transparent);
@@ -1580,7 +1582,7 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableMapLineDrawStatusRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--bo-space-2);
   min-height: 28px;
   padding: 2px var(--bo-space-1) var(--bo-space-2);
@@ -1598,11 +1600,12 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableMapLineDrawStatusHint {
   color: var(--bo-faint);
   font-size: var(--bo-text-xs);
-  text-align: right;
+  text-align: center;
 }
 
 .bo-tableMapLineDrawActionGroup {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--bo-space-2);
@@ -1620,7 +1623,7 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 .bo-tableMapLineDrawActionGroup--persistence {
-  justify-content: flex-end;
+  justify-content: center;
   padding-top: var(--bo-space-2);
   border-top: 1px solid color-mix(in srgb, var(--bo-border) 54%, transparent);
 }
@@ -1652,7 +1655,7 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 
   .bo-tableMapLineDrawStatusHint {
-    text-align: left;
+    text-align: center;
   }
 
   .bo-tableMapLineDrawActionGroup > .bo-btn {

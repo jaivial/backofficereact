@@ -17,7 +17,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical,
   Hand, ImagePlus, Layers, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
-  Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
+  Plus, Redo2, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
 } from "lucide-react";
 import "reactflow/dist/style.css";
@@ -157,6 +157,28 @@ function makeDrawElement(kind: DrawElementKind, preset: DrawElementPreset, base:
     height: dims.height,
     rotationDeg: 0,
     label: drawPresetLabel(preset),
+  };
+}
+
+type MapEditSnapshot = {
+  drawElements: DrawElement[];
+  limitPoints: LinePoint[];
+};
+
+type MapEditHistoryEntry = {
+  before: MapEditSnapshot;
+  after: MapEditSnapshot;
+  timestamp: number;
+};
+
+function cloneDrawElements(elements: DrawElement[]): DrawElement[] {
+  return elements.map((element) => ({ ...element }));
+}
+
+function cloneMapEditSnapshot(snapshot: MapEditSnapshot): MapEditSnapshot {
+  return {
+    drawElements: cloneDrawElements(snapshot.drawElements),
+    limitPoints: cloneLinePoints(snapshot.limitPoints),
   };
 }
 
@@ -604,6 +626,7 @@ export default function TableManagerPage() {
   const [floorTemplate, setFloorTemplate] = useState<TableMapLayoutTemplate | null>(null);
   const [templateScope, setTemplateScope] = useState<TableMapTemplateScope>("day");
   const [templateScopeLocked, setTemplateScopeLocked] = useState(false);
+  const [historyVersion, setHistoryVersion] = useState(0);
   const [confirmScopeChange, setConfirmScopeChange] = useState<
     | { next: TableMapTemplateScope; reason: "switch-to-day" | "switch-to-template" }
     | null
@@ -647,6 +670,8 @@ export default function TableManagerPage() {
   const limitEditHistoryRef = useRef<LinePoint[][]>([]);
   const bookingStatesRef = useRef<Record<string, BookingState>>({});
   const persistLayoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mapHistoryRef = useRef(new Map<string, { undo: MapEditHistoryEntry[]; redo: MapEditHistoryEntry[]; last: MapEditSnapshot | null }>());
+  const applyingHistoryRef = useRef(false);
   const drawPanelHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flowWrapRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -673,6 +698,29 @@ export default function TableManagerPage() {
   const shortSideMax = useMemo(() => maxRectShortSeatsForCapacity(draft.capacity), [draft.capacity]);
   const canAddLeftShortSide = isRectangularPreview && !normalizedRectShortSides.left && shortSideCount < shortSideMax;
   const canAddRightShortSide = isRectangularPreview && !normalizedRectShortSides.right && shortSideCount < shortSideMax;
+
+  const mapHistoryKey = useCallback(
+    () => `${Number(pageContext.bo?.session?.activeRestaurantId || 0)}:${selectedFloor}:${selectedDate}:${templateScope}`,
+    [pageContext.bo?.session?.activeRestaurantId, selectedDate, selectedFloor, templateScope],
+  );
+
+  const getMapHistory = useCallback(() => {
+    const key = mapHistoryKey();
+    let history = mapHistoryRef.current.get(key);
+    if (!history) {
+      history = { undo: [], redo: [], last: null };
+      mapHistoryRef.current.set(key, history);
+    }
+    return history;
+  }, [mapHistoryKey]);
+
+  const setMapHistoryBaseline = useCallback((elements: DrawElement[], points: LinePoint[]) => {
+    const history = getMapHistory();
+    history.last = cloneMapEditSnapshot({ drawElements: elements, limitPoints: points });
+    history.undo = [];
+    history.redo = [];
+    setHistoryVersion((version) => version + 1);
+  }, [getMapHistory]);
 
   useEffect(() => {
     drawElementsRef.current = drawElements;
@@ -873,6 +921,8 @@ export default function TableManagerPage() {
         lineDrawingPointsRef.current = activeLimitPoints;
         limitEditHistoryRef.current = [];
         setLineDrawing({ points: activeLimitPoints, isDrawing: false });
+        const history = getMapHistory();
+        if (!history.last) setMapHistoryBaseline(loadedElements, activeLimitPoints);
 
         const loadedBookingStates: Record<string, BookingState> = {};
         const rawBookingStates = mapLayout.booking_states as Record<string, unknown> | undefined;
@@ -1418,6 +1468,20 @@ export default function TableManagerPage() {
 
   const queuePersistLayout = useCallback(
     (elements: DrawElement[], states: Record<string, BookingState>, limitPoints: LinePoint[]) => {
+      const history = getMapHistory();
+      const after = cloneMapEditSnapshot({ drawElements: elements, limitPoints });
+      if (!applyingHistoryRef.current) {
+        if (!history.last) {
+          history.last = cloneMapEditSnapshot(after);
+        } else if (JSON.stringify(history.last) !== JSON.stringify(after)) {
+          history.undo.push({ before: cloneMapEditSnapshot(history.last), after: cloneMapEditSnapshot(after), timestamp: Date.now() });
+          history.redo = [];
+          history.last = cloneMapEditSnapshot(after);
+          setHistoryVersion((version) => version + 1);
+        }
+      } else {
+        history.last = cloneMapEditSnapshot(after);
+      }
       if (persistLayoutTimerRef.current) {
         clearTimeout(persistLayoutTimerRef.current);
       }
@@ -1430,8 +1494,39 @@ export default function TableManagerPage() {
         void persistLayout({ elements: layoutElements, booking_states: states, limit_points: limitPoints });
       }, 120);
     },
-    [persistLayout],
+    [getMapHistory, persistLayout],
   );
+
+  const applyMapEditSnapshot = useCallback((snapshot: MapEditSnapshot) => {
+    const next = cloneMapEditSnapshot(snapshot);
+    applyingHistoryRef.current = true;
+    drawElementsRef.current = next.drawElements;
+    lineDrawingPointsRef.current = next.limitPoints;
+    setDrawElements(next.drawElements);
+    setLineDrawing((prev) => ({ ...prev, points: next.limitPoints, isDrawing: false }));
+    setIsEditingLimitArea(false);
+    setDraggingLimitVertexIndex(null);
+    queuePersistLayout(next.drawElements, bookingStatesRef.current, next.limitPoints);
+    applyingHistoryRef.current = false;
+  }, [queuePersistLayout]);
+
+  const undoMapEdit = useCallback(() => {
+    const history = getMapHistory();
+    const entry = history.undo.pop();
+    if (!entry) return;
+    history.redo.push(entry);
+    applyMapEditSnapshot(entry.before);
+    setHistoryVersion((version) => version + 1);
+  }, [applyMapEditSnapshot, getMapHistory]);
+
+  const redoMapEdit = useCallback(() => {
+    const history = getMapHistory();
+    const entry = history.redo.pop();
+    if (!entry) return;
+    history.undo.push(entry);
+    applyMapEditSnapshot(entry.after);
+    setHistoryVersion((version) => version + 1);
+  }, [applyMapEditSnapshot, getMapHistory]);
 
   useEffect(() => {
     return () => {
@@ -2877,6 +2972,11 @@ export default function TableManagerPage() {
     () => lineDrawing.points.map((point) => projectFlowPointToOverlay(point, flowViewport)),
     [flowViewport, lineDrawing.points],
   );
+  const currentMapHistory = getMapHistory();
+  // The ref-backed history needs a render signal after each mutation so the
+  // button availability reflects the current undo/redo stacks.
+  const historyRenderVersion = historyVersion;
+  void historyRenderVersion;
 
   if (loading) {
     return <div data-ui="loading" className="bo-tableMapLoading">Cargando mapa...</div>;
@@ -3331,7 +3431,7 @@ export default function TableManagerPage() {
                         Hay limites guardados para este salon (solo este dia).
                       </div>
                     ) : null}
-                    {!lineDrawing.isDrawing && lineDrawing.points.length === 0 ? (
+                    {!lineDrawing.isDrawing && lineDrawing.points.length === 0 && currentMapHistory.undo.length === 0 ? (
                       <button data-ui="start-line-drawing-btn" className="bo-btn bo-btn--primary" type="button" onClick={startLineDrawing}>
                         <MapPin size={16} />
                         Dibujar limites
@@ -3385,7 +3485,29 @@ export default function TableManagerPage() {
                         )}
 
                         <div data-ui="line-draw-persistence-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--persistence">
-                          {lineDrawing.points.length > 0 && (
+                          {currentMapHistory.undo.length > 0 && (
+                            <button
+                              data-ui="cancel-line-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm"
+                              type="button"
+                              onClick={undoMapEdit}
+                            >
+                              <Undo size={14} />
+                              Cancelar
+                            </button>
+                          )}
+                          {currentMapHistory.redo.length > 0 && (
+                            <button
+                              data-ui="redo-line-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm"
+                              type="button"
+                              onClick={redoMapEdit}
+                            >
+                              <Redo2 size={14} />
+                              Rehacer
+                            </button>
+                          )}
+                          {lineDrawing.points.length > 0 && currentMapHistory.undo.length === 0 && (
                             <button
                               data-ui="cancel-line-btn"
                               className="bo-btn bo-btn--ghost bo-btn--sm"
