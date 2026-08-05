@@ -87,7 +87,7 @@
   min-height: 0;
 }
 .pos-sell__row { display: grid; gap: var(--bo-space-3); min-height: 0; }
-.pos-sell__row--register { grid-template-columns: minmax(0, 1fr) 294px; flex: 0 0 38%; overflow: visible !important; }
+.pos-sell__row--register { grid-template-columns: minmax(0, 1fr) 294px; flex: 0 0 38%; overflow: visible !important; padding: 0.2rem; }
 .pos-sell__row--catalog { grid-template-columns: 210px minmax(0, 1fr); flex: 1; }
 .pos-sell__row[hidden] { display: none; }
 .pos-sell__row--register.is-expanded { flex: 1; }
