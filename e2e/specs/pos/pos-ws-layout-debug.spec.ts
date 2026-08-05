@@ -3,9 +3,17 @@ import { expect, test } from "../../fixtures/session";
 test("debug: layout_updated broadcast carries layout at top level and under data", async ({ adminPage: page }) => {
   await page.goto("/app/pos", { waitUntil: "domcontentloaded" });
 
-  const result = await page.evaluate(async () => {
+  const result = await page.evaluate(async (): Promise<{
+    topLevelLayout: boolean;
+    dataLayout: boolean;
+    topLevelPoints: number;
+    dataPoints: number;
+    floor: number;
+    date: string;
+    error?: string;
+  }> => {
     const date = new Date().toISOString().slice(0, 10);
-    return await new Promise((resolve) => {
+    return await new Promise<any>((resolve) => {
       const secure = location.protocol === "https:";
       const socket = new WebSocket(`${secure ? "wss" : "ws"}://${location.host}/api/admin/tables/ws`);
       const timeout = setTimeout(() => resolve({ error: "ws timeout" }), 8000);

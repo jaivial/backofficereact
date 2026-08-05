@@ -159,6 +159,34 @@ function makeDrawElement(kind: DrawElementKind, preset: DrawElementPreset, base:
   };
 }
 
+/** Normalizes raw layout element rows (per-day `elements` or cross-day
+ *  `draw_elements_template`) into the DrawElement shape the canvas renders. */
+function normalizeLayoutElements(raw: unknown): DrawElement[] {
+  if (!Array.isArray(raw)) return [];
+  return (raw as any[])
+    .map((item) => {
+      const id = String(item?.id || "").trim();
+      if (!id) return null;
+      const kind = normalizeDrawElementKind(item?.kind);
+      const preset = normalizeDrawElementPreset(item?.preset);
+      const displayMode = normalizeDrawElementDisplayMode(item?.display_mode ?? item?.displayMode);
+      const defaultSize = drawElementSizeForPreset(preset);
+      return {
+        id,
+        kind,
+        preset,
+        displayMode,
+        x: Number(item?.x || 0),
+        y: Number(item?.y || 0),
+        width: Math.max(24, Number(item?.width || defaultSize.width)),
+        height: Math.max(24, Number(item?.height || defaultSize.height)),
+        rotationDeg: Number(item?.rotationDeg || 0),
+        label: String(item?.label || drawPresetLabel(preset)),
+      } as DrawElement;
+    })
+    .filter(Boolean) as DrawElement[];
+}
+
 type MapEditSnapshot = {
   drawElements: DrawElement[];
   limitPoints: LinePoint[];
@@ -934,36 +962,24 @@ export default function TableManagerPage() {
         loadedAreas = (tablesRes.areas || tablesRes.data || []).map((a: any) => normalizeTableArea(a));
         setAreas(loadedAreas);
         const mapLayout = ((tablesRes.layout as any)?.map || (tablesRes.layout as any) || {}) as Record<string, unknown>;
-        const loadedElements = Array.isArray(mapLayout.elements)
-          ? (mapLayout.elements as any[])
-              .map((item) => {
-                const id = String(item?.id || "").trim();
-                if (!id) return null;
-                const kind = normalizeDrawElementKind(item?.kind);
-                const preset = normalizeDrawElementPreset(item?.preset);
-                const displayMode = normalizeDrawElementDisplayMode(item?.display_mode ?? item?.displayMode);
-                const defaultSize = drawElementSizeForPreset(preset);
-                return {
-                  id,
-                  kind,
-                  preset,
-                  displayMode,
-                  x: Number(item?.x || 0),
-                  y: Number(item?.y || 0),
-                  width: Math.max(24, Number(item?.width || defaultSize.width)),
-                  height: Math.max(24, Number(item?.height || defaultSize.height)),
-                  rotationDeg: Number(item?.rotationDeg || 0),
-                  label: String(item?.label || drawPresetLabel(preset)),
-                } as DrawElement;
-              })
-              .filter(Boolean) as DrawElement[]
-          : [];
+        // Per-day elements win when present; otherwise fall back to the
+        // cross-day template the backend merges into the layout response.
+        const perDayElements = normalizeLayoutElements(mapLayout.elements);
+        const templateElements = normalizeLayoutElements(mapLayout.draw_elements_template);
+        const loadedElements = perDayElements.length > 0 ? perDayElements : templateElements;
         drawElementsRef.current = loadedElements;
         setDrawElements(loadedElements);
 
+        // Limit points: per-day polygon wins, then the merged template polygon,
+        // then the legacy area-metadata path.
         const loadedLimitPoints = normalizeLimitPoints(mapLayout.limit_points);
-        const templateLimitPoints = limitAreaTemplatePointsForFloor(loadedAreas, selectedFloor);
-        const activeLimitPoints = hasClosedLimitArea(loadedLimitPoints) ? loadedLimitPoints : templateLimitPoints;
+        const templateLayoutPoints = normalizeLimitPoints(mapLayout.limit_area_template_points);
+        const legacyTemplatePoints = limitAreaTemplatePointsForFloor(loadedAreas, selectedFloor);
+        const activeLimitPoints = hasClosedLimitArea(loadedLimitPoints)
+          ? loadedLimitPoints
+          : hasClosedLimitArea(templateLayoutPoints)
+            ? templateLayoutPoints
+            : legacyTemplatePoints;
         lineDrawingPointsRef.current = activeLimitPoints;
         limitEditHistoryRef.current = [];
         setLineDrawing({ points: activeLimitPoints, isDrawing: false });
