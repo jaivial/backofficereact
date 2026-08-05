@@ -74,14 +74,14 @@
 /* ===== Body layout ===== */
 .pos-sell__body {
   display: flex;
-  gap: var(--bo-space-3);
+  gap: 0px !important;
   flex: 1;
   min-height: 0;
 }
 .pos-sell__work {
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-3);
+  gap: 0px !important;
   flex: 1;
   min-width: 0;
   min-height: 0;
