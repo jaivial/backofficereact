@@ -87,8 +87,8 @@
   min-height: 0;
 }
 .pos-sell__row { display: grid; gap: var(--bo-space-3); min-height: 0; }
-.pos-sell__row--register { grid-template-columns: minmax(0, 1fr) 294px; flex: 0 0 38%; overflow: visible !important; padding: 0.2rem; }
-.pos-sell__row--catalog { grid-template-columns: 210px minmax(0, 1fr); flex: 1; }
+.pos-sell__row--register { grid-template-columns: minmax(0, 1fr) 294px; flex: 0 0 38%; overflow: visible !important; padding: 1rem; }
+.pos-sell__row--catalog { grid-template-columns: 210px minmax(0, 1fr); flex: 1; padding: 1rem; }
 .pos-sell__row[hidden] { display: none; }
 .pos-sell__row--register.is-expanded { flex: 1; }
 .pos-ticketPanel--expanded { height: 100%; }
@@ -443,6 +443,7 @@
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
   align-content: start; overflow-y: auto; padding: var(--bo-space-3);
   width: 248px; flex: none;
+  margin: 1rem 1rem 1rem 0;
   border-radius: var(--bo-radius-lg);
   background: var(--bo-surface);
   border: 1px solid var(--bo-border);
