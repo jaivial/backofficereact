@@ -33,7 +33,9 @@
 .bo-tableMapClosedTop {
   display: flex;
   align-items: flex-start;
-  justify-content: flex-start;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  width: 100%;
 }
 
 .bo-tableMapClosedBody {
@@ -76,7 +78,34 @@
 .bo-tableMapTopCenter {
   position: relative;
   display: flex;
+  align-items: flex-start;
   justify-content: center;
+  gap: var(--bo-space-2);
+  min-width: 0;
+}
+
+/* Header date picker (reusable DatePicker: bo-dateBtn--glass) */
+.bo-tableMapHeaderDatePicker {
+  height: 40px;
+  min-width: 0;
+  border-color: color-mix(in srgb, var(--bo-accent) 24%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-surface) 74%, rgba(255, 255, 255, 0.11));
+}
+
+@media (max-width: 560px) {
+  .bo-tableMapHeaderDatePicker {
+    height: 36px;
+    padding: 0 10px;
+    gap: 0;
+  }
+
+  .bo-tableMapHeaderDatePicker .bo-dateBtnLabel {
+    display: none;
+  }
+
+  .bo-tableMapTopCenter {
+    flex-wrap: nowrap;
+  }
 }
 
 .bo-tableMapTopRight {
