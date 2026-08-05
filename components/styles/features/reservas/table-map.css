@@ -1566,10 +1566,25 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 .bo-tableMapLineDrawControls {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: var(--bo-space-2);
+  width: 100%;
+  padding: var(--bo-space-2);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 64%, transparent);
+  border-radius: var(--bo-radius-md);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--bo-surface-2) 62%, transparent), transparent),
+    color-mix(in srgb, var(--bo-surface) 48%, transparent);
+}
+
+.bo-tableMapLineDrawStatusRow {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  min-height: 28px;
+  padding: 2px var(--bo-space-1) var(--bo-space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--bo-border) 54%, transparent);
 }
 
 .bo-tableMapLineDrawStatus {
@@ -1578,6 +1593,80 @@ body.is-dragging .bo-tableMapFlowWrap {
   gap: var(--bo-space-2);
   font-size: var(--bo-text-sm);
   color: var(--bo-accent);
+}
+
+.bo-tableMapLineDrawStatusHint {
+  color: var(--bo-faint);
+  font-size: var(--bo-text-xs);
+  text-align: right;
+}
+
+.bo-tableMapLineDrawActionGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
+.bo-tableMapLineDrawActionGroup--primary {
+  padding-top: var(--bo-space-1);
+}
+
+.bo-tableMapLineDrawActionGroup--secondary {
+  padding: var(--bo-space-2);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 30%, var(--bo-border));
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-accent) 8%, transparent);
+}
+
+.bo-tableMapLineDrawActionGroup--persistence {
+  justify-content: flex-end;
+  padding-top: var(--bo-space-2);
+  border-top: 1px solid color-mix(in srgb, var(--bo-border) 54%, transparent);
+}
+
+.bo-tableMapLineDrawEditingBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 8px;
+  color: var(--bo-accent);
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-tableMapLineDrawSaveBtn {
+  border-color: color-mix(in srgb, var(--bo-accent-2) 36%, var(--bo-border));
+  color: var(--bo-accent-2);
+}
+
+.bo-tableMapLineDrawSaveBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bo-accent-2) 12%, transparent);
+  border-color: color-mix(in srgb, var(--bo-accent-2) 56%, var(--bo-border));
+}
+
+@media (max-width: 560px) {
+  .bo-tableMapLineDrawStatusRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .bo-tableMapLineDrawStatusHint {
+    text-align: left;
+  }
+
+  .bo-tableMapLineDrawActionGroup > .bo-btn {
+    flex: 1 1 calc(50% - var(--bo-space-2));
+    justify-content: center;
+  }
+
+  .bo-tableMapLineDrawActionGroup--persistence > .bo-btn {
+    flex-basis: 100%;
+  }
+
+  .bo-tableMapLineDrawEditingBadge {
+    flex-basis: 100%;
+  }
 }
 
 .bo-tableMapLineDrawStatusDot {

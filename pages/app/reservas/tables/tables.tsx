@@ -3339,89 +3339,103 @@ export default function TableManagerPage() {
                     ) : (
                       <div data-ui="line-draw-controls" className="bo-tableMapLineDrawControls">
                         {lineDrawing.isDrawing && (
-                          <div data-ui="line-draw-status" className="bo-tableMapLineDrawStatus">
-                            <Circle size={12} className="bo-tableMapLineDrawStatusDot" />
-                            <span data-ui="point-count">{lineDrawing.points.length} puntos</span>
+                          <div data-ui="line-draw-status-row" className="bo-tableMapLineDrawStatusRow">
+                            <div data-ui="line-draw-status" className="bo-tableMapLineDrawStatus">
+                              <Circle size={12} className="bo-tableMapLineDrawStatusDot" />
+                              <span data-ui="point-count">{lineDrawing.points.length} puntos</span>
+                            </div>
+                            <span data-ui="line-draw-status-hint" className="bo-tableMapLineDrawStatusHint">Pulsa en el mapa para añadir vértices</span>
                           </div>
                         )}
-                        {lineDrawing.isDrawing && lineDrawing.points.length > 0 && (
-                          <button data-ui="undo-point-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoCreateAreaLastAction}>
-                            <Undo size={14} />
-                            Deshacer ultimo punto
-                          </button>
-                        )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !isEditingLimitArea && (
-                          <button data-ui="edit-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={startLimitAreaEditing}>
-                            Editar area
-                          </button>
-                        )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && isEditingLimitArea && (
-                          <button data-ui="save-edit-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={stopLimitAreaEditing}>
-                            Guardar edicion
-                          </button>
-                        )}
+                        <div data-ui="line-draw-primary-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--primary">
+                          {lineDrawing.isDrawing && lineDrawing.points.length > 0 && (
+                            <button data-ui="undo-point-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoCreateAreaLastAction}>
+                              <Undo size={14} />
+                              Deshacer ultimo punto
+                            </button>
+                          )}
+                          {lineDrawing.points.length >= 3 && lineDrawing.isDrawing && (
+                            <button data-ui="close-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={closeLineDrawing}>
+                              <SquareMinus size={14} />
+                              Cerrar area
+                            </button>
+                          )}
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !isEditingLimitArea && (
+                            <button data-ui="edit-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={startLimitAreaEditing}>
+                              <Pencil size={14} />
+                              Editar area
+                            </button>
+                          )}
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && isEditingLimitArea && (
+                            <button data-ui="save-edit-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={stopLimitAreaEditing}>
+                              <SquareMinus size={14} />
+                              Guardar edicion
+                            </button>
+                          )}
+                        </div>
+
                         {isEditingLimitArea && (
-                          <button data-ui="undo-edit-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoEditAreaLastAction}>
-                            <Undo size={14} />
-                            Deshacer ultimo cambio
-                          </button>
+                          <div data-ui="line-draw-edit-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--secondary">
+                            <span data-ui="editing-badge" className="bo-tableMapLineDrawEditingBadge">Editando límites</span>
+                            <button data-ui="undo-edit-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoEditAreaLastAction}>
+                              <Undo size={14} />
+                              Deshacer ultimo cambio
+                            </button>
+                          </div>
                         )}
-                        {lineDrawing.points.length >= 3 && lineDrawing.isDrawing && (
-                          <button data-ui="close-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={closeLineDrawing}>
-                            <SquareMinus size={14} />
-                            Cerrar area
-                          </button>
-                        )}
-                        {lineDrawing.points.length > 0 && (
-                          <button
-                            data-ui="cancel-line-btn"
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
-                            type="button"
-                            onClick={isEditingLimitArea ? stopLimitAreaEditing : cancelLineDrawing}
-                          >
-                            <Undo size={14} />
-                            {isEditingLimitArea ? "Salir edicion" : "Cancelar"}
-                          </button>
-                        )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
-                          <button
-                            data-ui="save-template-btn"
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
-                            type="button"
-                            onClick={() => void saveLimitAreaTemplate()}
-                            disabled={savingLimitTemplate}
-                          >
-                            <MapPin size={14} />
-                            {savingLimitTemplate
-                              ? "Guardando..."
-                              : templateScope === "day"
-                              ? "Guardar solo este dia"
-                              : "Guardar plantilla salon"}
-                          </button>
-                        )}
-                        {floorTemplate ? (
-                          <button
-                            data-ui="delete-template-btn"
-                            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
-                            type="button"
-                            onClick={() => void clearFloorTemplate()}
-                            disabled={savingLimitTemplate}
-                          >
-                            <Trash2 size={14} />
-                            Eliminar plantilla
-                          </button>
-                        ) : null}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !floorTemplate ? (
-                          <button
-                            data-ui="remove-area-btn"
-                            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
-                            type="button"
-                            onClick={() => setRemoveAreaConfirmOpen(true)}
-                          >
-                            <Trash2 size={14} />
-                            Eliminar area
-                          </button>
-                        ) : null}
+
+                        <div data-ui="line-draw-persistence-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--persistence">
+                          {lineDrawing.points.length > 0 && (
+                            <button
+                              data-ui="cancel-line-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm"
+                              type="button"
+                              onClick={isEditingLimitArea ? stopLimitAreaEditing : cancelLineDrawing}
+                            >
+                              <Undo size={14} />
+                              {isEditingLimitArea ? "Salir edicion" : "Cancelar"}
+                            </button>
+                          )}
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
+                            <button
+                              data-ui="save-template-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm bo-tableMapLineDrawSaveBtn"
+                              type="button"
+                              onClick={() => void saveLimitAreaTemplate()}
+                              disabled={savingLimitTemplate}
+                            >
+                              <MapPin size={14} />
+                              {savingLimitTemplate
+                                ? "Guardando..."
+                                : templateScope === "day"
+                                ? "Guardar solo este dia"
+                                : "Guardar plantilla salon"}
+                            </button>
+                          )}
+                          {floorTemplate ? (
+                            <button
+                              data-ui="delete-template-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
+                              type="button"
+                              onClick={() => void clearFloorTemplate()}
+                              disabled={savingLimitTemplate}
+                            >
+                              <Trash2 size={14} />
+                              Eliminar plantilla
+                            </button>
+                          ) : null}
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !floorTemplate ? (
+                            <button
+                              data-ui="remove-area-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
+                              type="button"
+                              onClick={() => setRemoveAreaConfirmOpen(true)}
+                            >
+                              <Trash2 size={14} />
+                              Eliminar area
+                            </button>
+                          ) : null}
+                        </div>
                       </div>
                     )}
                   </div>
