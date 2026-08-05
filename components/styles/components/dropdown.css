@@ -180,6 +180,9 @@
 .bo-dateBtnLabel {
   font-size: 12px;
   font-weight: 720;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bo-datePop {
