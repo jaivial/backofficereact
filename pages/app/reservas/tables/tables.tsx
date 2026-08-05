@@ -32,6 +32,7 @@ import type {
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
+import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { formatHHMM } from "../../../../ui/lib/format";
@@ -120,6 +121,8 @@ import {
   normalizeAssignmentSeats,
   assignmentsDisplayName,
   seatedNamesForTable,
+  initialDateFromSearch,
+  withDateParam,
 } from "./helpers/tables";
 
 // === Status label ===
@@ -539,11 +542,10 @@ export default function TableManagerPage() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
 
-  const initialDate = useMemo(() => {
-    const fromSearch = typeof pageContext.urlParsed?.search?.date === "string" ? pageContext.urlParsed.search.date : "";
-    if (fromSearch && /^\d{4}-\d{2}-\d{2}$/.test(fromSearch)) return fromSearch;
-    return todayISO();
-  }, [pageContext.urlParsed?.search?.date]);
+  const initialDate = useMemo(
+    () => initialDateFromSearch(pageContext.urlParsed?.search?.date, todayISO()),
+    [pageContext.urlParsed?.search?.date],
+  );
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [calendarView, setCalendarView] = useState(() => {
     const [y, m] = String(initialDate).split("-").map((n) => Number(n));
@@ -1965,9 +1967,7 @@ export default function TableManagerPage() {
         setCalendarView(nextView);
       }
       if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.set("date", nextDate);
-        window.history.replaceState(null, "", url.toString());
+        window.history.replaceState(null, "", withDateParam(window.location.href, nextDate));
       }
     },
     [calendarView.month, calendarView.year],
@@ -2682,6 +2682,12 @@ export default function TableManagerPage() {
                 </button>
 
                 <div data-ui="top-center" className="bo-tableMapTopCenter">
+                  <DatePicker
+                    value={selectedDate}
+                    onChange={onSelectDate}
+                    data-testid="table-map-date-picker"
+                    className="bo-tableMapHeaderDatePicker"
+                  />
                   <button
                     data-ui="menu-trigger"
                     ref={menuButtonRef}
@@ -3992,6 +3998,12 @@ export default function TableManagerPage() {
                 <button data-ui="closed-back-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
                   <ChevronLeft size={18} strokeWidth={1.8} />
                 </button>
+                <DatePicker
+                  value={selectedDate}
+                  onChange={onSelectDate}
+                  data-testid="table-map-date-picker"
+                  className="bo-tableMapHeaderDatePicker"
+                />
               </div>
               <div data-ui="closed-body" className="bo-tableMapClosedBody">
                 <ReservationDayPanel

@@ -18,8 +18,8 @@ interface CachedSession {
 const SESSION_CACHE_FILE = "test-results/.session-cache.json";
 const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || "admin@villacarmen.com";
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || process.env.BOOTSTRAP_ADMIN_PASSWORD || "admin123";
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || process.env.LOGIN_USER || "admin@villacarmen.com";
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || process.env.BOOTSTRAP_ADMIN_PASSWORD || process.env.LOGIN_PASSWORD || "admin123";
 
 async function loginViaAPI(
   browserPage: import("@playwright/test").Page,
