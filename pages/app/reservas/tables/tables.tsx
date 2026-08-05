@@ -95,7 +95,6 @@ import {
   DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS,
   TABLE_LIMIT_PADDING,
   TABLE_SIZE_MIN,
-  TABLE_SIZE_MAX,
   DRAW_PANEL_GROUPS,
   DRAW_PRESET_ICONS,
   STATUS_LABEL,
@@ -255,6 +254,38 @@ function clampRectMoveToLimit(
   return findNearestRectInsideLimitArea(candidate, size, polygon) || findNearestRectInsideLimitArea(from, size, polygon) || from;
 }
 
+function rectsOverlap(a: RectSize & XYPosition, b: RectSize & XYPosition): boolean {
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+function tableSizeFitsOtherTables(
+  node: Node<any>,
+  width: number,
+  height: number,
+  nodes: Node<any>[],
+): boolean {
+  if (!node.position) return false;
+  const data = node.data as TableNodeData;
+  const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+  const frame = rotatedRectFrameFromPosition(node.position, width, height, rotationDeg, 0);
+
+  return nodes.every((other) => {
+    if (other.id === node.id || other.type !== "restaurantTable" || !other.position) return true;
+    const otherData = other.data as TableNodeData;
+    const otherGeom = previewGeometry(
+      otherData.shape,
+      otherData.capacity,
+      otherData.rectShortSides,
+      typeof otherData.width === "number" || typeof otherData.height === "number"
+        ? { width: otherData.width, height: otherData.height }
+        : undefined,
+    );
+    const otherRotation = Number.isFinite(otherData.rotationDeg) ? otherData.rotationDeg : 0;
+    const otherFrame = rotatedRectFrameFromPosition(other.position, otherGeom.width, otherGeom.height, otherRotation, 0);
+    return !rectsOverlap(frame, otherFrame);
+  });
+}
+
 // === Table node renderer ===
 function tableFromRFNode(data: TableNodeData): React.JSX.Element {
   const explicitSize =
@@ -283,8 +314,6 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
           isVisible={data.editable && Boolean(data.isSelected)}
           minWidth={TABLE_SIZE_MIN}
           minHeight={TABLE_SIZE_MIN}
-          maxWidth={TABLE_SIZE_MAX}
-          maxHeight={TABLE_SIZE_MAX}
           lineStyle={{ borderColor: "var(--bo-accent)" }}
           handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
           onResizeEnd={(_event, params) => {
@@ -867,8 +896,14 @@ export default function TableManagerPage() {
   const hasUnassignedBookings = useMemo(() => bookings.some(b => !b.table_number), [bookings]);
 
   const nextTableNumber = useMemo(() => {
-    const total = areas.flatMap((a) => a.tables || []).length;
-    return total + 1;
+    const allTables = areas.flatMap((a) => a.tables || []);
+    const usedNames = new Set(allTables.map((t) => normalizeTableKey(t.name)));
+    // Start above the visible count; keep bumping until "Mesa N" is free so a
+    // duplicate name can never be suggested (tables not nested under an area
+    // or tables with custom names would otherwise collide).
+    let n = allTables.length + 1;
+    while (usedNames.has(normalizeTableKey(`Mesa ${n}`))) n += 1;
+    return n;
   }, [areas]);
 
   const occupancy = useMemo(() => {
@@ -1443,8 +1478,34 @@ export default function TableManagerPage() {
     async (id: string, width: number, height: number) => {
       const tableId = Number(id);
       if (!Number.isFinite(tableId) || tableId <= 0) return;
-      const nextWidth = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, Math.round(width)));
-      const nextHeight = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, Math.round(height)));
+      const nextWidth = Math.max(TABLE_SIZE_MIN, Math.round(width));
+      const nextHeight = Math.max(TABLE_SIZE_MIN, Math.round(height));
+
+      // NodeResizer's onResizeEnd receives the raw gesture dimensions. Keep
+      // persistence subject to the same spatial rules as the live node state,
+      // otherwise a rejected resize could still be written to metadata.
+      const node = nodes.find((item) => item.id === id && item.type === "restaurantTable");
+      if (node?.position) {
+        const data = node.data as TableNodeData;
+        const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+        const frame = rotatedRectFrameFromPosition(
+          node.position,
+          nextWidth,
+          nextHeight,
+          rotationDeg,
+          TABLE_LIMIT_PADDING,
+        );
+        const limitPoints = hasClosedLimitArea(lineDrawingPointsRef.current)
+          ? lineDrawingPointsRef.current
+          : null;
+        if (
+          (limitPoints && !isRectInsideLimitArea(frame, limitPoints)) ||
+          !tableSizeFitsOtherTables(node, nextWidth, nextHeight, nodes)
+        ) {
+          return;
+        }
+      }
+
       setAreas((prev) =>
         prev.map((area) => {
           const source = area.tables || [];
@@ -1465,7 +1526,7 @@ export default function TableManagerPage() {
         data: { id: tableId, metadata: { width: nextWidth, height: nextHeight } },
       });
     },
-    [selectedDate, selectedFloor, sendMapWSMessage],
+    [nodes, selectedDate, selectedFloor, sendMapWSMessage],
   );
 
   useEffect(() => {
@@ -1712,13 +1773,22 @@ export default function TableManagerPage() {
                 continue;
               }
 
-              const clampedWidth = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextWidth));
-              const clampedHeight = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextHeight));
-              // Apply the new size directly. The limit-area repositioning below
-              // keeps the (padded) table frame inside the area, so resizing must
-              // not be gated on containment or it silently reverts when there is
-              // no limit area or the table sits near the boundary.
-              node.data = { ...node.data, width: clampedWidth, height: clampedHeight };
+              const candidateWidth = Math.max(TABLE_SIZE_MIN, nextWidth);
+              const candidateHeight = Math.max(TABLE_SIZE_MIN, nextHeight);
+              const candidateFrame = rotatedRectFrameFromPosition(
+                node.position,
+                candidateWidth,
+                candidateHeight,
+                rotationDeg,
+                TABLE_LIMIT_PADDING,
+              );
+              const fitsLimit = activeLimitPoints ? isRectInsideLimitArea(candidateFrame, activeLimitPoints) : true;
+              const fitsTables = tableSizeFitsOtherTables(node, candidateWidth, candidateHeight, next);
+              if (fitsLimit && fitsTables) {
+                node.data = { ...node.data, width: candidateWidth, height: candidateHeight };
+              } else {
+                node.data = { ...node.data, width: prevData.width, height: prevData.height };
+              }
             }
           }
         }
