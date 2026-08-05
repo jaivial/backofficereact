@@ -714,6 +714,14 @@
   min-width: 0;
 }
 
+[data-ui="pos-title"] {
+  margin-top: 0;
+}
+
+[data-ui="pos-subtitle"] {
+  margin-bottom: 0;
+}
+
 [data-ui="pos-mode"] {
   min-width: 0;
   max-width: 100%;
