@@ -708,6 +708,7 @@
   gap: var(--bo-space-3);
   min-width: 0;
   flex: 0 0 auto;
+  padding-inline: 1rem;
 }
 
 [data-ui="pos-heading"] {
