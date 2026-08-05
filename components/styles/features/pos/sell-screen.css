@@ -735,6 +735,14 @@
   overflow-y: auto !important;
 }
 
+/* POS page: the main pane drops its left/right/bottom padding so the sell
+   screen can use the full width. */
+.bo-main--pos {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+}
+
 .pos-sell {
   flex: 1 1 auto;
   height: auto;
