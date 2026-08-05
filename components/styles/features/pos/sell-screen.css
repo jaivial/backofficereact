@@ -91,6 +91,8 @@
 .pos-sell__row--catalog { grid-template-columns: 210px minmax(0, 1fr); flex: 1; }
 .pos-sell__row[hidden] { display: none; }
 .pos-sell__row--register.is-expanded { flex: 1; }
+.pos-sell__row--register > .pos-ticketPanel,
+.pos-sell__row--register > .pos-keypad { margin: 5px; }
 .pos-ticketPanel--expanded { height: 100%; }
 
 .pos-categories { overflow-x: hidden; }
