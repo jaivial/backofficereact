@@ -145,10 +145,6 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-accent) 38%, var(--bo-border));
   background: linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 6%, transparent), transparent 55%), color-mix(in srgb, var(--bo-surface-2) 86%, transparent);
 }
-.pos-ticketPanel.is-empty:hover {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-accent) 58%, var(--bo-border));
-  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 52%), color-mix(in srgb, var(--bo-surface-2) 90%, transparent);
-}
 .pos-ticketPanel__empty { font-size: var(--bo-text-sm); color: var(--bo-faint); padding: var(--bo-space-4); text-align: center; }
 .pos-ticketPanel__tabs { display: flex; gap: var(--bo-space-2); overflow-x: auto; padding-bottom: var(--bo-space-2); flex: 0 0 auto; }
 .pos-ticketPanel__tab {
