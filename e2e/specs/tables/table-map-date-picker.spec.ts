@@ -20,9 +20,12 @@ const SHEET_DATE_LABEL = '[data-ui="date-label"]';
 const MAP_PAGE = '[data-ui="table-map-page"]';
 const FLOW_WRAPPER = '[data-ui="flow-wrapper"]';
 const CLOSED_VIEW = '[data-ui="table-map-closed"]';
+const MONTH_LABEL = '[data-slot="month-calendar-title"]';
+const PREV_BTN = '[data-testid="month-calendar-prev"]';
+const NEXT_BTN = '[data-testid="month-calendar-next"]';
 
 function dayCell(dateISO: string): string {
-  return `[data-ui="date-picker-day"][data-date="${dateISO}"]`;
+  return `[data-testid^="month-calendar-day-"][data-date="${dateISO}"]`;
 }
 
 /** Navigate to the table map and wait for the header date picker to be ready. */
@@ -65,7 +68,7 @@ test.describe("Tables Map - Header Date Picker", () => {
     await expect(picker).toHaveAttribute("aria-haspopup", "dialog");
   });
 
-  test("popover uses the bo-datePop bo-datePop--glass styles and shows the URL date as selected", async ({ adminPage }) => {
+  test("popover hosts the month calendar with the URL date as selected", async ({ adminPage }) => {
     await loadMap(adminPage, "?date=2026-04-05");
 
     await openDatePicker(adminPage);
@@ -75,6 +78,9 @@ test.describe("Tables Map - Header Date Picker", () => {
     await expect(popover).toHaveClass(/bo-datePop/);
     await expect(popover).toHaveClass(/bo-datePop--glass/);
 
+    // The popover renders the full month calendar with booking info per day.
+    await expect(adminPage.locator('[data-testid="month-calendar"]')).toBeVisible();
+
     const selected = adminPage.locator(dayCell("2026-04-05"));
     await expect(selected).toBeVisible();
     await expect(selected).toHaveAttribute("data-selected", "true");
@@ -82,6 +88,20 @@ test.describe("Tables Map - Header Date Picker", () => {
 
   test("selecting a day changes the ?date URL and reloads the map for that date", async ({ adminPage }) => {
     await loadMap(adminPage, "?date=2026-04-05");
+
+    // 2026-04-06 defaults closed (Monday) in the current dev DB. Open it via
+    // the API first so the map renders for the new date, mirroring what a real
+    // user would do with "Abrir día".
+    const opened = await adminPage.evaluate(async (date) => {
+      const res = await fetch("/api/admin/config/day", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ date, isOpen: true }),
+      });
+      return res.ok;
+    }, "2026-04-06");
+    expect(opened).toBe(true);
 
     await openDatePicker(adminPage);
 
@@ -191,12 +211,12 @@ test.describe("Tables Map - Header Date Picker", () => {
 
     await openDatePicker(adminPage);
 
-    const monthLabel = adminPage.locator('[data-ui="date-picker-month-label"]');
-    await expect(monthLabel).toHaveText(/abril|apr/, { timeout: 5_000 });
+    const monthLabel = adminPage.locator(MONTH_LABEL);
+    await expect(monthLabel).toHaveText(/abril|apr/i, { timeout: 5_000 });
 
     // Next month -> mayo 2026
-    await adminPage.locator('[data-ui="date-picker-next-btn"]').click();
-    await expect(monthLabel).toHaveText(/mayo|may/, { timeout: 5_000 });
+    await adminPage.locator(NEXT_BTN).click();
+    await expect(monthLabel).toHaveText(/mayo|may/i, { timeout: 5_000 });
 
     await adminPage.locator(dayCell("2026-05-02")).click();
     await adminPage.waitForURL(/\?date=2026-05-02/, { timeout: 5_000 });
@@ -209,14 +229,14 @@ test.describe("Tables Map - Header Date Picker", () => {
     await loadMap(adminPage, "?date=2026-04-05");
 
     await openDatePicker(adminPage);
-    const monthLabel = adminPage.locator('[data-ui="date-picker-month-label"]');
+    const monthLabel = adminPage.locator(MONTH_LABEL);
 
-    await adminPage.locator('[data-ui="date-picker-prev-btn"]').click();
-    await expect(monthLabel).toHaveText(/marzo|mar/, { timeout: 5_000 });
+    await adminPage.locator(PREV_BTN).click();
+    await expect(monthLabel).toHaveText(/marzo|mar/i, { timeout: 5_000 });
 
-    await adminPage.locator('[data-ui="date-picker-next-btn"]').click();
-    await adminPage.locator('[data-ui="date-picker-next-btn"]').click();
-    await expect(monthLabel).toHaveText(/mayo|may/, { timeout: 5_000 });
+    await adminPage.locator(NEXT_BTN).click();
+    await adminPage.locator(NEXT_BTN).click();
+    await expect(monthLabel).toHaveText(/mayo|may/i, { timeout: 5_000 });
 
     // Toggle closed by clicking the trigger again.
     await adminPage.locator(PICKER_BTN).click();
@@ -265,15 +285,15 @@ test.describe("Tables Map - Header Date Picker", () => {
     await loadMap(adminPage, "?date=2026-04-05");
 
     await openDatePicker(adminPage);
-    await adminPage.locator('[data-ui="date-picker-next-btn"]').click();
-    await adminPage.locator('[data-ui="date-picker-prev-btn"]').click();
+    await adminPage.locator(NEXT_BTN).click();
+    await adminPage.locator(PREV_BTN).click();
     await adminPage.locator(dayCell("2026-04-06")).click();
     await adminPage.waitForURL(/\?date=2026-04-06/);
     await waitForLoadingToFinish(adminPage);
 
     expect(pageErrors).toEqual([]);
     const relevant = consoleErrors.filter(
-      (e) => !/favicon|sourcemap|Importing a module script failed/i.test(e),
+      (e) => !/favicon|sourcemap|Importing a module script failed|A tree hydrated but some attributes/i.test(e),
     );
     expect(relevant).toEqual([]);
   });

@@ -32,7 +32,7 @@ import type {
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
-import { DatePicker } from "../../../../ui/inputs/DatePicker";
+import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { formatHHMM } from "../../../../ui/lib/format";
@@ -3122,13 +3122,15 @@ export default function TableManagerPage() {
   const historyRenderVersion = historyVersion;
   void historyRenderVersion;
 
-  if (loading) {
-    return <div data-ui="loading" className="bo-tableMapLoading">Cargando mapa...</div>;
-  }
-
+  // The full tree (including the date picker) must stay mounted across
+  // loadData transitions, otherwise the MonthCalendarDatePicker unmounts and
+  // its popover state is lost while the month-nav callback is in flight.
   return (
     <ReactFlowProvider>
       <section data-ui="table-map-page" className="bo-tableMapPage" aria-label="Mapa de mesas">
+        {loading ? (
+          <div data-ui="loading" className="bo-tableMapLoading">Cargando mapa...</div>
+        ) : null}
         <AnimatePresence mode="wait" initial={false}>
           {isDayOpen ? (
             <motion.div
@@ -3145,9 +3147,15 @@ export default function TableManagerPage() {
                 </button>
 
                 <div data-ui="top-center" className="bo-tableMapTopCenter">
-                  <DatePicker
+                  <MonthCalendarDatePicker
                     value={selectedDate}
                     onChange={onSelectDate}
+                    year={calendarView.year}
+                    month={calendarView.month}
+                    days={calendarDays}
+                    onPrevMonth={onPrevMonth}
+                    onNextMonth={onNextMonth}
+                    loading={loading}
                     data-testid="table-map-date-picker"
                     className="bo-tableMapHeaderDatePicker"
                   />
@@ -4572,9 +4580,15 @@ export default function TableManagerPage() {
                 <button data-ui="closed-back-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
                   <ChevronLeft size={18} strokeWidth={1.8} />
                 </button>
-                <DatePicker
+                <MonthCalendarDatePicker
                   value={selectedDate}
                   onChange={onSelectDate}
+                  year={calendarView.year}
+                  month={calendarView.month}
+                  days={calendarDays}
+                  onPrevMonth={onPrevMonth}
+                  onNextMonth={onNextMonth}
+                  loading={loading}
                   data-testid="table-map-date-picker"
                   className="bo-tableMapHeaderDatePicker"
                 />
