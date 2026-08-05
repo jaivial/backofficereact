@@ -1628,6 +1628,11 @@ body.is-dragging .bo-tableMapFlowWrap {
   border-top: 1px solid color-mix(in srgb, var(--bo-border) 54%, transparent);
 }
 
+.bo-tableMapLineDrawActionGroup--template,
+.bo-tableMapLineDrawActionGroup--area {
+  justify-content: center;
+}
+
 .bo-tableMapLineDrawEditingBadge {
   display: inline-flex;
   align-items: center;

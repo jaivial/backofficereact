@@ -3518,6 +3518,9 @@ export default function TableManagerPage() {
                               {isEditingLimitArea ? "Salir edicion" : "Cancelar"}
                             </button>
                           )}
+                        </div>
+
+                        <div data-ui="line-draw-template-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--template">
                           {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
                             <button
                               data-ui="save-template-btn"
@@ -3546,6 +3549,9 @@ export default function TableManagerPage() {
                               Eliminar plantilla
                             </button>
                           ) : null}
+                        </div>
+
+                        <div data-ui="line-draw-area-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--area">
                           {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !floorTemplate ? (
                             <button
                               data-ui="remove-area-btn"
