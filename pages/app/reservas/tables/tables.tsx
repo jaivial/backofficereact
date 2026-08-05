@@ -670,6 +670,7 @@ export default function TableManagerPage() {
   const limitEditHistoryRef = useRef<LinePoint[][]>([]);
   const bookingStatesRef = useRef<Record<string, BookingState>>({});
   const persistLayoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingMapWSMessagesRef = useRef<string[]>([]);
   const mapHistoryRef = useRef(new Map<string, { undo: MapEditHistoryEntry[]; redo: MapEditHistoryEntry[]; last: MapEditSnapshot | null }>());
   const applyingHistoryRef = useRef(false);
   const drawPanelHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -721,6 +722,16 @@ export default function TableManagerPage() {
     history.redo = [];
     setHistoryVersion((version) => version + 1);
   }, [getMapHistory]);
+
+  const sendMapWSMessage = useCallback((message: Record<string, unknown>) => {
+    const raw = JSON.stringify(message);
+    const socket = ws.current;
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(raw);
+      return;
+    }
+    pendingMapWSMessagesRef.current.push(raw);
+  }, []);
 
   useEffect(() => {
     drawElementsRef.current = drawElements;
@@ -1289,6 +1300,9 @@ export default function TableManagerPage() {
     const wsURL = `${secure ? "wss" : "ws"}://${window.location.host}/api/admin/tables/ws`;
     const socket = new WebSocket(wsURL);
     ws.current = socket;
+    socket.onopen = () => {
+      for (const raw of pendingMapWSMessagesRef.current.splice(0)) socket.send(raw);
+    };
 
     socket.onmessage = (event) => {
       try {
@@ -1321,7 +1335,6 @@ export default function TableManagerPage() {
             setFloorTemplate(null);
             setTemplateScope("day");
           }
-          void loadData();
           return;
         }
         if (payload.type === "template_cleared") {
@@ -1329,14 +1342,27 @@ export default function TableManagerPage() {
           if (Number.isFinite(floor) && floor !== selectedFloor) return;
           setFloorTemplate(null);
           setTemplateScope("day");
-          void loadData();
           return;
         }
         if (payload.type === "layout_updated") {
           const floor = Number(payload.floor_number);
           if (Number.isFinite(floor) && floor !== selectedFloor) return;
-          // Another session saved the per-day layout. Refresh.
-          void loadData();
+          if (String(payload.date || "") !== selectedDate) return;
+          const layout = (payload.layout || {}) as Record<string, unknown>;
+          const elements = Array.isArray(layout.elements) ? (layout.elements as any[]).map((item) => ({
+            id: String(item?.id || ""),
+            kind: normalizeDrawElementKind(item?.kind),
+            preset: normalizeDrawElementPreset(item?.preset),
+            displayMode: normalizeDrawElementDisplayMode(item?.display_mode ?? item?.displayMode),
+            x: Number(item?.x || 0), y: Number(item?.y || 0),
+            width: Math.max(24, Number(item?.width || 24)), height: Math.max(24, Number(item?.height || 24)),
+            rotationDeg: Number(item?.rotationDeg || 0), label: String(item?.label || ""),
+          })).filter((item) => item.id) as DrawElement[] : drawElementsRef.current;
+          const points = normalizeLimitPoints(layout.limit_points);
+          drawElementsRef.current = elements;
+          lineDrawingPointsRef.current = points;
+          setDrawElements(elements);
+          setLineDrawing((prev) => ({ ...prev, points, isDrawing: false }));
           return;
         }
         if (payload.type === "table_created" || payload.type === "table_updated") {
@@ -1382,7 +1408,7 @@ export default function TableManagerPage() {
       socket.close();
       ws.current = null;
     };
-  }, [loadData, selectedFloor, templateScope]);
+  }, [loadData, selectedDate, selectedFloor, templateScope]);
 
   const savePosition = useCallback(
     async (id: string, x: number, y: number) => {
@@ -1403,14 +1429,14 @@ export default function TableManagerPage() {
           return touched ? { ...area, tables } : area;
         }),
       );
-      try {
-        await api.tables.update({ id: tableId, x_pos: nextX, y_pos: nextY, date: selectedDate, floor_number: selectedFloor });
-      } catch (err) {
-        console.error("Failed to save table position:", err);
-        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la posicion" });
-      }
+      sendMapWSMessage({
+        type: "table_edit",
+        date: selectedDate,
+        floor_number: selectedFloor,
+        data: { id: tableId, x_pos: nextX, y_pos: nextY },
+      });
     },
-    [api.tables, pushToast, selectedDate, selectedFloor],
+    [selectedDate, selectedFloor, sendMapWSMessage],
   );
 
   const saveTableSize = useCallback(
@@ -1432,20 +1458,14 @@ export default function TableManagerPage() {
           return touched ? { ...area, tables } : area;
         }),
       );
-      try {
-        await api.tables.update({
-          id: tableId,
-          entity: "table",
-          metadata: { width: nextWidth, height: nextHeight },
-          date: selectedDate,
-          floor_number: selectedFloor,
-        });
-      } catch (err) {
-        console.error("Failed to save table size:", err);
-        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar el tamano de la mesa" });
-      }
+      sendMapWSMessage({
+        type: "table_edit",
+        date: selectedDate,
+        floor_number: selectedFloor,
+        data: { id: tableId, metadata: { width: nextWidth, height: nextHeight } },
+      });
     },
-    [api.tables, pushToast, selectedDate, selectedFloor],
+    [selectedDate, selectedFloor, sendMapWSMessage],
   );
 
   useEffect(() => {
@@ -1456,14 +1476,9 @@ export default function TableManagerPage() {
 
   const persistLayout = useCallback(
     async (patch: Record<string, unknown>) => {
-      try {
-        await api.tables.saveLayout({ date: selectedDate, floor_number: selectedFloor, metadata: patch });
-      } catch (err) {
-        console.error("Failed to save layout:", err);
-        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar el layout" });
-      }
+      sendMapWSMessage({ type: "layout_edit", date: selectedDate, floor_number: selectedFloor, metadata: patch });
     },
-    [api.tables, pushToast, selectedDate, selectedFloor],
+    [selectedDate, selectedFloor, sendMapWSMessage],
   );
 
   const queuePersistLayout = useCallback(
@@ -2713,12 +2728,8 @@ export default function TableManagerPage() {
           limitPoints: clonedPoints,
           drawElements: clonedElements,
         });
-        const res = await api.tables.saveTemplate(selectedFloor, { data: payload });
-        if (!res.success) {
-          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la plantilla" });
-          return;
-        }
-        setFloorTemplate((res as any).template as TableMapLayoutTemplate);
+        sendMapWSMessage({ type: "template_edit", floor_number: selectedFloor, data: payload });
+        setFloorTemplate(payload as TableMapLayoutTemplate);
         setTemplateScope("template");
         // Reflect the new template in the current per-day state so the
         // canvas immediately renders the new geometry.
@@ -2740,15 +2751,7 @@ export default function TableManagerPage() {
         { limit_area_template_points: clonedPoints, draw_elements_template: clonedElements },
         {},
       );
-      const res = await api.tables.saveLayout({
-        date: selectedDate,
-        floor_number: selectedFloor,
-        metadata: dayOverride,
-      });
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la plantilla" });
-        return;
-      }
+        sendMapWSMessage({ type: "layout_edit", date: selectedDate, floor_number: selectedFloor, metadata: dayOverride });
       queuePersistLayout(clonedElements, bookingStatesRef.current, clonedPoints);
       pushToast({
         kind: "success",
@@ -2759,7 +2762,6 @@ export default function TableManagerPage() {
       setSavingLimitTemplate(false);
     }
   }, [
-    api.tables,
     floorTemplate,
     lineDrawing.isDrawing,
     lineDrawing.points,
@@ -2768,26 +2770,20 @@ export default function TableManagerPage() {
     selectedDate,
     selectedFloor,
     templateScope,
+    sendMapWSMessage,
   ]);
 
   const clearFloorTemplate = useCallback(async () => {
     setSavingLimitTemplate(true);
     try {
-      const res = await api.tables.deleteTemplate(selectedFloor);
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo eliminar la plantilla" });
-        return;
-      }
+      sendMapWSMessage({ type: "template_delete", floor_number: selectedFloor });
       setFloorTemplate(null);
       setTemplateScope("day");
-      // Force a layout refresh so per-day geometry re-renders without the
-      // template merging in.
-      void loadData();
       pushToast({ kind: "success", title: "Plantilla eliminada", message: "Este salon vuelve a las ediciones por dia." });
     } finally {
       setSavingLimitTemplate(false);
     }
-  }, [api.tables, loadData, pushToast, selectedFloor]);
+  }, [pushToast, selectedFloor, sendMapWSMessage]);
 
   const requestScopeChange = useCallback(
     (next: TableMapTemplateScope) => {
