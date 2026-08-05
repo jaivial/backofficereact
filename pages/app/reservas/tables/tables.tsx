@@ -387,6 +387,13 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
         minHeight={24}
         lineStyle={{ borderColor: "var(--bo-accent)" }}
         handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
+        onResizeEnd={(_event, params) => {
+          const width = Number(params?.width);
+          const height = Number(params?.height);
+          if (Number.isFinite(width) && Number.isFinite(height)) {
+            data.onResizeEnd?.(Math.round(width), Math.round(height));
+          }
+        }}
       />
       {data.editable && data.isSelected && data.onDelete ? (
         <button
@@ -737,6 +744,7 @@ export default function TableManagerPage() {
   const assignmentInProgress = useRef(false);
   const saveBookingAssignmentsRef = useRef<(booking: Booking, assignments: BookingTableAssignment[]) => Promise<void>>(async () => undefined);
   const saveTableSizeRef = useRef<(id: string, width: number, height: number) => void>(() => undefined);
+  const saveDrawElementSizeRef = useRef<(id: string, width: number, height: number) => void>(() => undefined);
   const geom = useMemo(
     () => previewGeometry(draft.shape, draft.capacity, draft.rectShortSides),
     [draft.capacity, draft.rectShortSides, draft.shape],
@@ -1340,6 +1348,7 @@ export default function TableManagerPage() {
             rotationDeg: item.rotationDeg,
             editable: editMode,
             onDelete: () => deleteSelectedDrawElementRef.current(),
+            onResizeEnd: (width, height) => saveDrawElementSizeRef.current(item.id, width, height),
           } as DrawNodeData,
         })),
       ],
@@ -1665,6 +1674,36 @@ export default function TableManagerPage() {
   useEffect(() => {
     deleteSelectedDrawElementRef.current = deleteSelectedDrawElement;
   }, [deleteSelectedDrawElement]);
+
+  // Persist a draw element resize. The NodeResizer fires onResizeEnd with the
+  // final gesture dimensions; the `dimensions` change React Flow emits at the
+  // end carries no size, so this is the only reliable save point.
+  const saveDrawElementSize = useCallback(
+    (id: string, width: number, height: number) => {
+      if (!editMode) return;
+      const nextWidth = Math.max(24, Math.round(width));
+      const nextHeight = Math.max(24, Math.round(height));
+      const current = drawElementsRef.current;
+      let changed = false;
+      const updated = current.map((el) => {
+        if (el.id !== id) return el;
+        if (el.width === nextWidth && el.height === nextHeight) return el;
+        changed = true;
+        return { ...el, width: nextWidth, height: nextHeight };
+      });
+      if (!changed) return;
+      drawElementsRef.current = updated;
+      setDrawElements(updated);
+      queuePersistLayout(updated, bookingStatesRef.current, lineDrawingPointsRef.current);
+    },
+    [editMode, queuePersistLayout],
+  );
+
+  useEffect(() => {
+    saveDrawElementSizeRef.current = (id, width, height) => {
+      saveDrawElementSize(id, width, height);
+    };
+  }, [saveDrawElementSize]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {

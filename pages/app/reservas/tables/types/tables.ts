@@ -84,6 +84,7 @@ export type DrawNodeData = {
   rotationDeg: number;
   editable: boolean;
   onDelete?: () => void;
+  onResizeEnd?: (width: number, height: number) => void;
 };
 
 // Line drawing state (LinePoint is imported from lineDrawing.ts)
