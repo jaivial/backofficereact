@@ -1359,6 +1359,25 @@ export default function TableManagerPage() {
           }
           return;
         }
+        if (payload.type === "area_created" || payload.type === "area_updated") {
+          const area = (payload.data || payload) as any;
+          if (!area?.id) return;
+          const nextArea = normalizeTableArea(area);
+          setAreas((prev) => {
+            if (prev.some((a) => a.id === area.id)) {
+              return prev.map((a) => (a.id === area.id ? { ...a, ...nextArea } : a));
+            }
+            return [...prev, nextArea];
+          });
+          return;
+        }
+        if (payload.type === "area_deleted") {
+          const area = (payload.data || payload) as any;
+          const id = Number(area?.id);
+          if (!Number.isFinite(id) || id <= 0) return;
+          setAreas((prev) => prev.filter((a) => Number(a.id) !== id));
+          return;
+        }
         if (payload.type === "template_updated") {
           const floor = Number(payload.floor_number);
           if (Number.isFinite(floor) && floor !== selectedFloor) return;
@@ -1383,7 +1402,11 @@ export default function TableManagerPage() {
           const floor = Number(payload.floor_number);
           if (Number.isFinite(floor) && floor !== selectedFloor) return;
           if (String(payload.date || "") !== selectedDate) return;
-          const layout = (payload.layout || {}) as Record<string, unknown>;
+          // The generic broadcast wraps the payload under `data`; date/floor are
+          // copied to the top level but `layout` only lives inside `data` on
+          // current backends. Read both so older and newer servers both work.
+          const data = (payload.data || {}) as Record<string, unknown>;
+          const layout = ((data.layout || payload.layout) || {}) as Record<string, unknown>;
           const elements = Array.isArray(layout.elements) ? (layout.elements as any[]).map((item) => ({
             id: String(item?.id || ""),
             kind: normalizeDrawElementKind(item?.kind),
