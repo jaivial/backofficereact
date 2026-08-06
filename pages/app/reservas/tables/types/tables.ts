@@ -38,6 +38,14 @@ export type TableNodeData = {
   onResizeEnd?: (width: number, height: number) => void;
   /** Names of seated guests at this table (derived from booking assignments). */
   seatedNames?: string[];
+  /** True when table is in multi-table draft selection */
+  isMultiSelected?: boolean;
+  /** Index in multiTableDraft array (-1 if not selected) */
+  multiTableDraftIdx?: number;
+  /** Callback to open names modal for this table */
+  onMultiNamesClick?: () => void;
+  /** Callback to remove this table from multi selection */
+  onMultiRemoveClick?: () => void;
 };
 
 // Draw element types
@@ -84,6 +92,7 @@ export type DrawNodeData = {
   rotationDeg: number;
   editable: boolean;
   onDelete?: () => void;
+  onResizeEnd?: (width: number, height: number) => void;
 };
 
 // Line drawing state (LinePoint is imported from lineDrawing.ts)

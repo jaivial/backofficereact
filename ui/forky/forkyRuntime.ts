@@ -1,4 +1,4 @@
-import { createElement, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { createElement, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { setForkyVisualState } from "./forkyStatus";
 import {
@@ -103,6 +103,7 @@ export class ForkyWsClient {
   private onHistory?: (history: ForkyHistoryMessage[]) => void;
 
   private intentionalClose = false;
+  private disposed = false;
   private busy = false;
   private activeTurn: ActiveTurn | null = null;
   private reconnectAttempts = 0;
@@ -180,7 +181,13 @@ export class ForkyWsClient {
 
   /** Close the socket for good and stop reconnecting. */
   dispose(): void {
+    this.disposed = true;
     this.close(1000, "dispose");
+  }
+
+  /** Check if the client has been disposed. */
+  isDisposed(): boolean {
+    return this.disposed;
   }
 
   private close(code: number, reason: string): void {
@@ -446,13 +453,12 @@ function seedHistory(runtime: AssistantRuntime, history: ForkyHistoryMessage[]):
  * Provider wrapping AssistantRuntimeProvider with a local runtime backed by the
  * Forky WS transport. Mount it around the chat chrome; on unmount the socket is
  * disposed. History is seeded from the hello frame once the socket connects.
+ * 
+ * NOTE: Uses useState to ensure a fresh client on each mount (StrictMode-safe).
  */
 export function ForkyRuntimeProvider({ children }: { children: ReactNode }) {
-  const clientRef = useRef<ForkyWsClient | null>(null);
-  if (clientRef.current === null) {
-    clientRef.current = new ForkyWsClient({ url: forkyWsURL() });
-  }
-  const client = clientRef.current;
+  // useState ensures a new client is created on each mount (StrictMode remounts)
+  const [client] = useState(() => new ForkyWsClient({ url: forkyWsURL() }));
   const adapter = useMemo(() => createForkyChatModelAdapter(client), [client]);
   const runtime = useLocalRuntime(adapter);
 

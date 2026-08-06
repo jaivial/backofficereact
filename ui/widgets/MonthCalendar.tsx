@@ -116,6 +116,7 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
             aria-label={cell.label}
             aria-selected={cell.isSelected}
             data-date={cell.dateISO}
+            data-selected={cell.isSelected ? "true" : "false"}
             data-testid={`month-calendar-day-${cell.day}`}
             onClick={handleSelectDate}
             onMouseEnter={onDayEnter ? handleEnter : undefined}

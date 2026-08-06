@@ -16,7 +16,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const reduceMotion = useReducedMotion();
   const pathname = pageContext.urlPathname ?? "/";
   const isReservasTables = pathname.startsWith("/app/reservas/tables");
-  const posFullscreen = useAtomValue(posFullscreenAtom) && pathname.startsWith("/app/pos");
+  const isPosPage = pathname.startsWith("/app/pos");
+  const posFullscreen = useAtomValue(posFullscreenAtom) && isPosPage;
   const immersive = isReservasTables || posFullscreen;
   const prevRestaurant = useRef<number | null>(null);
 
@@ -56,7 +57,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           roleImportance={session.user.roleImportance}
         />
       )}
-      <main className={`bo-main${immersive ? " bo-main--immersive" : ""}${posFullscreen ? " bo-main--pos-fullscreen" : ""}`} data-testid="app-layout-main">
+      <main className={`bo-main${immersive ? " bo-main--immersive" : ""}${posFullscreen ? " bo-main--pos-fullscreen" : ""}${isPosPage ? " bo-main--pos" : ""}`} data-testid="app-layout-main">
         {immersive ? null : <Topbar />}
         <AnimatePresence mode="wait">
           <motion.div

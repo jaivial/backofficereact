@@ -32,6 +32,46 @@ export function normalizeDateView(iso: string): DateView {
   };
 }
 
+/**
+ * True only for real calendar dates in `YYYY-MM-DD` format. Rejects malformed
+ * strings, non-strings, impossible months/days and fake dates like Feb 30.
+ */
+export function isValidISODate(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return false;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+/**
+ * Resolves the initial table-map date from the `?date=` search param.
+ * Invalid, missing or impossible values fall back to `fallback` (today).
+ */
+export function initialDateFromSearch(search: unknown, fallback: string = todayISO()): string {
+  return isValidISODate(search) ? search : fallback;
+}
+
+/**
+ * Returns `url` with the `date` query param set (replacing an existing value,
+ * preserving other params). Accepts absolute or relative URLs.
+ */
+export function withDateParam(url: string, date: string): string {
+  const [base, search = ""] = url.split("?");
+  const params = new URLSearchParams(search);
+  params.set("date", date);
+  const query = params.toString();
+  return query ? `${base}?${query}` : base;
+}
+
 // === Capacity helpers ===
 
 export function clampCapacity(n: number): number {

@@ -28,6 +28,7 @@ describe("app Layout POS fullscreen", () => {
     render(<Provider><Layout>content</Layout></Provider>);
     expect(screen.getByTestId("topbar")).toBeInTheDocument();
     expect(screen.getByTestId("app-layout-main")).not.toHaveClass("bo-main--immersive");
+    expect(screen.getByTestId("app-layout-main")).toHaveClass("bo-main--pos");
   });
 
   it("hides topbar and goes immersive when posFullscreenAtom is on", () => {
@@ -47,5 +48,6 @@ describe("app Layout POS fullscreen", () => {
     render(<Provider store={store}><Layout>content</Layout></Provider>);
     expect(screen.getByTestId("topbar")).toBeInTheDocument();
     expect(screen.getByTestId("app-layout-main")).not.toHaveClass("bo-main--immersive");
+    expect(screen.getByTestId("app-layout-main")).not.toHaveClass("bo-main--pos");
   });
 });
