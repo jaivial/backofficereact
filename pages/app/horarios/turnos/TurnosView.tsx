@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { ArrowRight, CalendarClock, CalendarDays, Clock, Search } from "lucide-react";
+import { CalendarClock, CalendarDays, Search } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
 import type { FichajeActiveEntry, FichajeSchedule, Member, TimeEntry } from "../../../../api/types";
@@ -17,12 +17,9 @@ import { fichajeRealtimeAtom } from "../../../../state/atoms";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { CalendarModal } from "./functionalComponents/CalendarModal/CalendarModal";
-import { MemberFilterView } from "./functionalComponents/MemberFilterView/MemberFilterView";
 import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
-import { HorariosRosterTable, type HorariosRosterRow, type HorariosRosterTableView } from "../../../../ui/widgets/HorariosRosterTable";
+import { HorariosRosterTable, type HorariosRosterRow } from "../../../../ui/widgets/HorariosRosterTable";
 import { Panel } from "../../../../ui/shell/Panel";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../ui/shell/Avatar";
-import { cn } from "../../../../ui/shadcn/utils";
 import { fullName } from "../../../../lib/member";
 
 export type TurnosViewProps = {
@@ -36,8 +33,6 @@ export type TurnosViewProps = {
   /** Notifies an embedding parent when schedules are reloaded here. */
   onSchedulesChange?: (schedules: FichajeSchedule[]) => void;
 };
-
-const VIEW_STORAGE_KEY = "bo_horarios_turnos_view";
 
 function parseHHMM(value: string): number | null {
   const [h, m] = value.split(":").map((v) => Number(v));
@@ -69,23 +64,6 @@ function formatDateLabel(iso: string): string {
   return new Date(yyyy, mm - 1, dd).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0) return "??";
-  return (parts[0][0] + (parts[parts.length - 1]?.[0] ?? "")).toUpperCase();
-}
-
-function scheduleHours(startTime: string, endTime: string): string {
-  const s = startTime.split(":").map(Number);
-  const e = endTime.split(":").map(Number);
-  if (!s[0] || !e[0]) return "";
-  const mins = (e[0] * 60 + e[1]) - (s[0] * 60 + s[1]);
-  if (mins <= 0) return "";
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-
 function todayISO(): string {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -113,15 +91,6 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
   const [error, setError] = useState<string | null>(initialError);
   const { pushToast } = useToasts();
   useErrorToast(error);
-  const [view, setView] = useState<HorariosRosterTableView>(() => {
-    try {
-      const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
-      if (stored === "table" || stored === "grid") return stored;
-    } catch {
-      // ignore
-    }
-    return "grid";
-  });
   const [shiftModalMember, setShiftModalMember] = useState<Member | null>(null);
   const [shiftModalOpen, setShiftModalOpen] = useState(false);
 
@@ -342,14 +311,6 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
     [selectedMemberId, activeEntriesForDate],
   );
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(VIEW_STORAGE_KEY, view);
-    } catch {
-      // ignore
-    }
-  }, [view]);
-
   React.useEffect(() => {
     void loadEntries(date, selectedMemberId).catch((err) => {
       setError(err instanceof Error ? err.message : "No se pudieron cargar registros");
@@ -419,135 +380,34 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
               month={Number(date.split("-")[1])}
               currentDate={date}
             />
-            <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Cambiar vista" data-testid="horarios-turnos-view-tabs">
-              <button
-                type="button"
-                className={cn("bo-tab", view === "grid" && "is-active")}
-                role="tab"
-                aria-selected={view === "grid"}
-                onClick={() => setView("grid")}
-                data-testid="horarios-turnos-view-grid"
-              >
-                {view === "grid" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner" data-slot="turnos-tabInner">
-                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Grid</span>
-                </span>
-              </button>
-              <button
-                type="button"
-                className={cn("bo-tab", view === "table" && "is-active")}
-                role="tab"
-                aria-selected={view === "table"}
-                onClick={() => setView("table")}
-                data-testid="horarios-turnos-view-table"
-              >
-                {view === "table" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner" data-slot="turnos-tabInner">
-                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Tabla</span>
-                </span>
-              </button>
-              <button
-                type="button"
-                className={cn("bo-tab", view === "member" && "is-active")}
-                role="tab"
-                aria-selected={view === "member"}
-                onClick={() => setView("member")}
-                data-testid="horarios-turnos-view-member"
-              >
-                {view === "member" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner" data-slot="turnos-tabInner">
-                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Miembro</span>
-                </span>
-              </button>
-            </div>
           </div>
         }
         bodyClassName="bo-turnosBody"
       >
-
-          {view === "grid" ? (
-          <div className="flex w-full min-w-0 flex-wrap justify-center gap-3">
-            {membersSorted.map((member) => {
-              const sched = scheduleByMember.get(member.id);
-              const isLive = activeEntriesForDate.has(member.id);
-              return (
-                <div
-                  key={member.id}
-                  className="flex flex-col justify-between rounded-xl bg-transparent p-4 max-sm:w-full w-[calc(25%-12px)] min-w-[min(200px,100%)] h-[120px] transition-colors duration-200"
-                  style={{ border: "1px solid rgba(255,255,255,0.12)" }}
-                  data-testid="turnos-member-card"
-                >
-                  <div className="flex items-center gap-3" data-ui="card-header">
-                    <div className="relative flex-shrink-0">
-                      <Avatar className="w-10 h-10 rounded-full">
-                        {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
-                        <AvatarFallback className="text-xs font-bold">{initials(fullName(member))}</AvatarFallback>
-                      </Avatar>
-                      {isLive ? (
-                        <span
-                          className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--bo-bg)]"
-                          style={{ background: "var(--bo-color-success)" }}
-                          data-ui="card-live-dot"
-                        />
-                      ) : null}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-semibold leading-tight truncate text-[var(--bo-text)]">
-                        {fullName(member)}
-                      </div>
-                      <div className="text-[11px] leading-tight mt-0.5 text-[var(--bo-faint)]">
-                        {isLive ? "En curso" : sched ? "Programado" : "Sin asignar"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-2" data-ui="card-footer">
-                    {sched ? (
-                      <>
-                        <div className="flex items-center gap-1.5" data-ui="card-times">
-                          <Clock size={13} strokeWidth={1.8} className="text-[var(--bo-muted)]" />
-                          <span className="text-xs font-semibold tabular-nums text-[var(--bo-text)]">{sched.startTime}</span>
-                          <ArrowRight size={11} strokeWidth={1.8} className="text-[var(--bo-faint)]" />
-                          <span className="text-xs font-semibold tabular-nums text-[var(--bo-text)]">{sched.endTime}</span>
-                        </div>
-                        <span className="text-[11px] font-medium text-[var(--bo-muted)]">{scheduleHours(sched.startTime, sched.endTime)}</span>
-                      </>
-                    ) : (
-                      <span className="text-[11px] text-[var(--bo-faint)] italic">Sin horario</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          ) : view === "table" ? (
-            <section className="bo-turnosRoster" aria-label="Tabla de miembros" data-testid="horarios-turnos-roster">
-              <div className="bo-turnosRosterHead" data-testid="horarios-turnos-roster-head">
-                <div className="bo-panelTitle" data-testid="horarios-turnos-roster-title">Miembros</div>
-                <div className="bo-memberPickerCount" data-testid="horarios-turnos-roster-count">{tableMembers.length}</div>
-              </div>
-              <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro" data-testid="horarios-turnos-search-label">
-                <Search size={14} strokeWidth={1.8} />
-                <input
-                  type="text"
-                  className="bo-memberPickerSearchInput"
-                  value={memberSearch}
-                  onChange={(ev) => setMemberSearch(ev.target.value)}
-                  placeholder="Buscar..."
-                  data-testid="horarios-turnos-search-input"
-                />
-              </label>
-              <HorariosRosterTable
-                rows={rosterRows}
-                selectedMemberId={selectedMemberId}
-                onRowClick={onRosterSelect}
-                onEditMember={onOpenShiftModal}
-                ariaLabel="Tabla de horarios (turnos)"
+          <section className="bo-turnosRoster" aria-label="Tabla de miembros" data-testid="horarios-turnos-roster">
+            <div className="bo-turnosRosterHead" data-testid="horarios-turnos-roster-head">
+              <div className="bo-panelTitle" data-testid="horarios-turnos-roster-title">Miembros</div>
+              <div className="bo-memberPickerCount" data-testid="horarios-turnos-roster-count">{tableMembers.length}</div>
+            </div>
+            <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro" data-testid="horarios-turnos-search-label">
+              <Search size={14} strokeWidth={1.8} />
+              <input
+                type="text"
+                className="bo-memberPickerSearchInput"
+                value={memberSearch}
+                onChange={(ev) => setMemberSearch(ev.target.value)}
+                placeholder="Buscar..."
+                data-testid="horarios-turnos-search-input"
               />
-            </section>
-          ) : view === "member" ? (
-            <MemberFilterView members={membersSorted} />
-          ) : null}
+            </label>
+            <HorariosRosterTable
+              rows={rosterRows}
+              selectedMemberId={selectedMemberId}
+              onRowClick={onRosterSelect}
+              onEditMember={onOpenShiftModal}
+              ariaLabel="Tabla de horarios (turnos)"
+            />
+          </section>
         </Panel>
 
       {shiftModalMember ? (
