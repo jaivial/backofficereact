@@ -295,7 +295,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             />
           </div>
 
-          <ScrollArea dataSlot="memberList" maxHeight={256}>
+          <ScrollArea dataSlot="memberList" maxHeight="auto">
             <div className="space-y-1">
               {filteredMembers.map((member) => (
                 <button
