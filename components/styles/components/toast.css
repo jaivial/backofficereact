@@ -12,43 +12,56 @@
 
 .bo-toast {
   width: min(340px, calc(100vw - 32px));
+  min-width: 0;
+  box-sizing: border-box;
   border-radius: var(--bo-radius-lg);
   border: 1px solid var(--bo-border);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
     var(--bo-surface-2);
   box-shadow: var(--bo-shadow-soft);
-  padding: 12px 12px 10px;
+  padding: 12px 42px 10px 12px;
   pointer-events: auto;
   position: relative;
 }
 
 .bo-toastTitle {
+  min-width: 0;
   font-size: 12px;
   font-weight: 760;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .bo-toastMsg {
+  min-width: 0;
   margin-top: 6px;
   font-size: 12px;
   color: var(--bo-muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .bo-toastX {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 26px;
-  height: 26px;
-  border-radius: 10px;
-  border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.02);
+  top: 9px;
+  right: 9px;
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
   color: var(--bo-muted);
+  line-height: 1;
   cursor: pointer;
 }
 
 .bo-toastX:hover {
   color: var(--bo-text);
+  background: transparent;
 }
 
 .bo-toast--error {
