@@ -218,18 +218,14 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
         </div>
 
         {/* Compact Diario/Semanal switcher: two small icons instead of tabs */}
-        <div data-slot="viewTabs" className="flex items-center gap-1.5">
+        <div data-slot="viewTabs" className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => handleViewChange("diario")}
             aria-label="Vista diaria"
             title="Diario"
             aria-pressed={view === "diario"}
-            className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
-              view === "diario"
-                ? "border-violet-500 bg-violet-500/15 text-violet-600 dark:border-violet-400 dark:bg-violet-400/15 dark:text-violet-300"
-                : "border-transparent text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-200"
-            }`}
+            className={`bo-dateBtn bo-dateBtn--glass !p-0 !w-9${view === "diario" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
           >
             <CalendarDays size={16} strokeWidth={1.8} aria-hidden="true" />
           </button>
@@ -239,11 +235,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             aria-label="Vista semanal"
             title="Semanal"
             aria-pressed={view === "semanal"}
-            className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
-              view === "semanal"
-                ? "border-violet-500 bg-violet-500/15 text-violet-600 dark:border-violet-400 dark:bg-violet-400/15 dark:text-violet-300"
-                : "border-transparent text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-200"
-            }`}
+            className={`bo-dateBtn bo-dateBtn--glass !p-0 !w-9${view === "semanal" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
           >
             <CalendarRange size={16} strokeWidth={1.8} aria-hidden="true" />
           </button>
@@ -277,7 +269,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               onClick={() => setSidebarOpen(false)}
               aria-label="Ocultar miembros"
               title="Ocultar miembros"
-              className="flex size-6 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-black/5 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-200"
+              className="bo-dateBtn bo-dateBtn--glass !h-6 !w-6 !p-0"
             >
               <PanelLeftClose size={15} strokeWidth={1.8} aria-hidden="true" />
             </button>
@@ -333,7 +325,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               onClick={() => setSidebarOpen(true)}
               aria-label="Mostrar miembros"
               title="Mostrar miembros"
-              className="flex size-9 items-center justify-center rounded-xl border border-solid border-violet-500/25 text-slate-400 transition-colors hover:text-slate-700 dark:border-violet-400/25 dark:text-slate-500 dark:hover:text-slate-200"
+              className="bo-dateBtn bo-dateBtn--glass !h-9 !w-9 !p-0"
             >
               <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
             </button>
