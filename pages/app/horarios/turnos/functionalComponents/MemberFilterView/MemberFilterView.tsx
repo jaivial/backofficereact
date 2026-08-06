@@ -203,10 +203,9 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       {/* Top controls bar: date range + view switcher, above the whole section */}
       <div
         data-ui="controlsBar"
-        className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
+        className="flex flex-col items-center gap-2"
       >
         <div data-slot="dateRange" className="flex items-center gap-2">
-          <CalendarRange data-slot="icon" size={16} strokeWidth={1.8} className="text-[var(--bo-muted)]" aria-hidden="true" />
           <ChevronButton direction="left" ariaLabel="Rango anterior" onClick={handlePrevRange} />
           <DateRangePicker
             from={dateFrom}
@@ -219,7 +218,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
         </div>
 
         {/* Compact Diario/Semanal switcher: two small icons instead of tabs */}
-        <div data-slot="viewTabs" className="flex-1 flex justify-end gap-1.5">
+        <div data-slot="viewTabs" className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => handleViewChange("diario")}
@@ -322,23 +321,24 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             </div>
           </ScrollArea>
         </aside>
-      ) : (
-        /* Collapsed rail: single button to reopen the member list */
-        <div className="flex w-full md:w-10 flex-shrink-0 justify-start md:justify-center" data-slot="sidebarRail">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Mostrar miembros"
-            title="Mostrar miembros"
-            className="flex size-9 items-center justify-center rounded-xl border border-solid border-violet-500/25 text-slate-400 transition-colors hover:text-slate-700 dark:border-violet-400/25 dark:text-slate-500 dark:hover:text-slate-200"
-          >
-            <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
-          </button>
-        </div>
-      )}
+      ) : null}
 
       {/* Schedule display area */}
       <div data-ui="scheduleArea" className="flex-1 min-w-0">
+        {!sidebarOpen ? (
+          /* Collapsed rail: reopen button above the schedule, full width */
+          <div className="mb-3 flex" data-slot="sidebarRail">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Mostrar miembros"
+              title="Mostrar miembros"
+              className="flex size-9 items-center justify-center rounded-xl border border-solid border-violet-500/25 text-slate-400 transition-colors hover:text-slate-700 dark:border-violet-400/25 dark:text-slate-500 dark:hover:text-slate-200"
+            >
+              <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
         {/* Loading state */}
         {loading ? (
           <div data-ui="loadingState" className="flex items-center justify-center py-12">
