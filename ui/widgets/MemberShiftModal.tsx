@@ -107,6 +107,12 @@ export function MemberShiftModal({
   const [assignExitHour, setAssignExitHour] = useState("17");
   const [assignExitMinute, setAssignExitMinute] = useState("00");
   const pendingAdjustments = useRef(new Set<string>());
+  const [manualTime, setManualTime] = useState<{
+    scheduleId: number;
+    field: "startTime" | "endTime";
+    hour: string;
+    minute: string;
+  } | null>(null);
 
   const assignStartTime = `${assignEntryHour}:${assignEntryMinute}`;
   const assignEndTime = `${assignExitHour}:${assignExitMinute}`;
@@ -214,6 +220,57 @@ export function MemberShiftModal({
     },
     [schedules, api.horarios, pushToast],
   );
+
+  const saveManualTime = useCallback(async (scheduleId: number, field: "startTime" | "endTime", hour: string, minute: string) => {
+    const schedule = schedules.find((item) => item.id === scheduleId);
+    if (!schedule) return;
+    const nextTime = `${hour}:${minute}`;
+    const nextStart = field === "startTime" ? nextTime : schedule.startTime;
+    const nextEnd = field === "endTime" ? nextTime : schedule.endTime;
+    if (parseTimeToMinutes(nextStart) >= parseTimeToMinutes(nextEnd)) return;
+    const overlaps = schedules.some((item) => item.id !== scheduleId && hasTimeOverlap(nextStart, nextEnd, item.startTime, item.endTime));
+    if (overlaps) {
+      pushToast({ kind: "error", title: "Horario invalido", message: "El turno se solapa con otro turno ese día" });
+      return;
+    }
+    const previous = schedules;
+    const key = `${scheduleId}:${field}`;
+    pendingAdjustments.current.add(key);
+    setSchedules((current) => current.map((item) => item.id === scheduleId ? { ...item, startTime: nextStart, endTime: nextEnd } : item));
+    setManualTime(null);
+    try {
+      const response = await api.horarios.update(scheduleId, { startTime: nextStart, endTime: nextEnd });
+      if (!response.success) {
+        setSchedules(previous);
+        pushToast({ kind: "error", title: response.message || "Error al actualizar" });
+      }
+    } catch {
+      setSchedules(previous);
+      pushToast({ kind: "error", title: "Error al actualizar" });
+    } finally {
+      pendingAdjustments.current.delete(key);
+    }
+  }, [api.horarios, pushToast, schedules]);
+
+  const manualTimeControl = useCallback((schedule: FichajeSchedule, field: "startTime" | "endTime") => {
+    const current = field === "startTime" ? schedule.startTime : schedule.endTime;
+    const [hour, minute] = current.split(":");
+    const draft = manualTime?.scheduleId === schedule.id && manualTime.field === field ? manualTime : { scheduleId: schedule.id, field, hour, minute };
+    const other = field === "startTime" ? schedule.endTime : schedule.startTime;
+    const otherMinutes = parseTimeToMinutes(other);
+    const hourOptions = HOUR_OPTIONS.filter((option) => field === "startTime" ? toMinutes(option, "00") < otherMinutes : toMinutes(option, "59") > otherMinutes);
+    const minuteOptions = MINUTE_OPTIONS.filter((option) => {
+      const candidate = toMinutes(draft.hour, option);
+      return field === "startTime" ? candidate < otherMinutes : candidate > otherMinutes;
+    });
+    return (
+      <div className="bo-timeManualControl" data-slot="time-manual-control">
+        <Select value={draft.hour} onChange={(value) => setManualTime({ ...draft, hour: value })} options={hourOptions.map((value) => ({ value, label: value }))} ariaLabel={`Hora de ${field === "startTime" ? "entrada" : "salida"}`} menuMinWidthPx={64} listMaxHeightPx={132} />
+        <span aria-hidden="true">:</span>
+        <Select value={draft.minute} onChange={(value) => void saveManualTime(schedule.id, field, draft.hour, value)} options={minuteOptions.map((value) => ({ value, label: value }))} ariaLabel={`Minutos de ${field === "startTime" ? "entrada" : "salida"}`} menuMinWidthPx={64} listMaxHeightPx={132} />
+      </div>
+    );
+  }, [manualTime, saveManualTime]);
 
   const startFichaje = useCallback(async () => {
     setLoading(true);
@@ -410,6 +467,8 @@ export function MemberShiftModal({
                         onMinus={() => adjustTime(schedule.id, "startTime", -15)}
                         onPlus={() => adjustTime(schedule.id, "startTime", 15)}
                         disabled={false}
+                        valueControl={manualTime?.scheduleId === schedule.id && manualTime.field === "startTime" ? manualTimeControl(schedule, "startTime") : undefined}
+                        onValueClick={() => setManualTime({ scheduleId: schedule.id, field: "startTime", hour: schedule.startTime.slice(0, 2), minute: schedule.startTime.slice(3, 5) })}
                       />
                       <TimeAdjustCounter
                         label="Salida"
@@ -417,6 +476,8 @@ export function MemberShiftModal({
                         onMinus={() => adjustTime(schedule.id, "endTime", -15)}
                         onPlus={() => adjustTime(schedule.id, "endTime", 15)}
                         disabled={false}
+                        valueControl={manualTime?.scheduleId === schedule.id && manualTime.field === "endTime" ? manualTimeControl(schedule, "endTime") : undefined}
+                        onValueClick={() => setManualTime({ scheduleId: schedule.id, field: "endTime", hour: schedule.endTime.slice(0, 2), minute: schedule.endTime.slice(3, 5) })}
                       />
                     </div>
                     <div className="bo-shiftModalActions bo-shiftModalScheduleActions" data-slot="shift-modal-actions">

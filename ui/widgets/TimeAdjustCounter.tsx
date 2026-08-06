@@ -10,6 +10,8 @@ export const TimeAdjustCounter = React.memo(function TimeAdjustCounter({
   onPlus,
   disabled,
   className,
+  valueControl,
+  onValueClick,
 }: {
   label: string;
   value: string;
@@ -17,6 +19,8 @@ export const TimeAdjustCounter = React.memo(function TimeAdjustCounter({
   onPlus: () => void;
   disabled?: boolean;
   className?: string;
+  valueControl?: React.ReactNode;
+  onValueClick?: () => void;
 }) {
   return (
     <div className={cn("bo-timeAdjustCounter bo-timeAdjustCounter--glass", className)} aria-label={label} data-slot="time-adjust-counter">
@@ -32,7 +36,18 @@ export const TimeAdjustCounter = React.memo(function TimeAdjustCounter({
         >
           <Minus size={14} strokeWidth={2.2} />
         </button>
-        <div className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass" data-slot="time-adjust-counter-value">{value}</div>
+        {valueControl ?? (
+          <button
+            className="bo-timeAdjustCounterValue bo-timeAdjustCounterValue--glass bo-timeAdjustCounterValueButton"
+            type="button"
+            onClick={onValueClick}
+            disabled={disabled || !onValueClick}
+            data-slot="time-adjust-counter-value"
+            aria-label={`Editar ${label}`}
+          >
+            {value}
+          </button>
+        )}
         <button
           className="bo-counterBtn bo-counterBtn--glass"
           type="button"

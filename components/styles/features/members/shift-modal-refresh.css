@@ -165,6 +165,42 @@
   min-width: 72px;
 }
 
+.bo-timeAdjustCounterValueButton {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--bo-border);
+  color: var(--bo-text);
+  cursor: pointer;
+}
+
+.bo-timeManualControl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.bo-timeManualControl .bo-selectBtn {
+  width: 44px;
+  min-width: 44px;
+  height: 30px;
+  padding: 0 3px;
+  justify-content: center;
+}
+
+.bo-timeManualControl .bo-selectLabelWrap {
+  padding: 0;
+  justify-content: center;
+}
+
+.bo-timeManualControl .bo-selectLabel {
+  text-align: center;
+}
+
+.bo-timeManualControl .bo-selectChev {
+  display: none;
+}
+
 .bo-shiftModalActive--glass {
   padding: 12px;
   border-color: color-mix(in srgb, var(--bo-accent-2) 38%, var(--bo-border));
