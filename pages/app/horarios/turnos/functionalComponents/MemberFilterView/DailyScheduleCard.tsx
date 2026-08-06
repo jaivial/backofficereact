@@ -1,17 +1,23 @@
 import React, { useMemo } from "react";
-import { Clock } from "lucide-react";
+import { Clock, Pencil, Plus } from "lucide-react";
 
-import type { FichajeSchedule } from "../../../../../../api/types";
+import type { FichajeSchedule, Member } from "../../../../../../api/types";
 import { formatDateHeader } from "../../helpers/index";
 
 export type DailyScheduleCardProps = {
   date: string;
   schedule: FichajeSchedule | null;
+  /** The member whose schedule this card shows; enables the shift editor. */
+  member?: Member;
+  /** Opens the shift editor for this date. Required when member is set. */
+  onEdit?: (date: string) => void;
   className?: string;
 };
 
-export function DailyScheduleCard({ date, schedule, className = "" }: DailyScheduleCardProps) {
+export function DailyScheduleCard({ date, schedule, member, onEdit, className = "" }: DailyScheduleCardProps) {
   const formattedDate = useMemo(() => formatDateHeader(date), [date]);
+  const memberName = member ? `${member.firstName || ""} ${member.lastName || ""}`.trim() || `Miembro #${member.id}` : "";
+  const canEdit = !!member && !!onEdit;
 
   return (
     <>
@@ -68,6 +74,21 @@ export function DailyScheduleCard({ date, schedule, className = "" }: DailySched
           </span>
         )}
       </div>
+
+      {canEdit ? (
+      <div data-slot="cardActions" className="mt-3 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onEdit?.(date)}
+          aria-label={schedule ? `Editar turno de ${memberName} el ${formattedDate}` : `Añadir turno de ${memberName} el ${formattedDate}`}
+          data-role="daily-schedule-action"
+          className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1.5 !px-3 !py-1.5 !h-auto text-xs"
+        >
+          {schedule ? <Pencil size={13} strokeWidth={1.8} aria-hidden="true" /> : <Plus size={13} strokeWidth={1.8} aria-hidden="true" />}
+          {schedule ? "Editar" : "Añadir"}
+        </button>
+      </div>
+      ) : null}
     </div>
     </>
   );
