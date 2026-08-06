@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarDays, CalendarRange, Loader2, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
+import { Loader2, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
 
 import { createClient } from "../../../../../../api/client";
 import type { Member, FichajeSchedule } from "../../../../../../api/types";
@@ -217,27 +217,27 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           <ChevronButton direction="right" ariaLabel="Siguiente rango" onClick={handleNextRange} />
         </div>
 
-        {/* Compact Diario/Semanal switcher: two small icons instead of tabs */}
+        {/* Día/Semana switcher */}
         <div data-slot="viewTabs" className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => handleViewChange("diario")}
             aria-label="Vista diaria"
-            title="Diario"
+            title="Día"
             aria-pressed={view === "diario"}
-            className={`bo-dateBtn bo-dateBtn--glass !justify-center !p-0 !w-9${view === "diario" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
+            className={`bo-dateBtn bo-dateBtn--glass !justify-center !px-3 ${view === "diario" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
           >
-            <CalendarDays size={16} strokeWidth={1.8} aria-hidden="true" />
+            Día
           </button>
           <button
             type="button"
             onClick={() => handleViewChange("semanal")}
             aria-label="Vista semanal"
-            title="Semanal"
+            title="Semana"
             aria-pressed={view === "semanal"}
-            className={`bo-dateBtn bo-dateBtn--glass !justify-center !p-0 !w-9${view === "semanal" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
+            className={`bo-dateBtn bo-dateBtn--glass !justify-center !px-3 ${view === "semanal" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
           >
-            <CalendarRange size={16} strokeWidth={1.8} aria-hidden="true" />
+            Semana
           </button>
         </div>
       </div>
