@@ -36,6 +36,12 @@ type Props = {
    * creation). Omitted for existing products: their sheet already exists.
    */
   sheetOutputUnit?: SheetOutputUnit;
+  /**
+   * When true, creating a new sheet is disabled (picking an existing one is
+   * still allowed). Stock creation uses it while the form's unit data is not
+   * valid enough to persist into a brand-new sheet.
+   */
+  sheetCreateDisabled?: boolean;
   disabled?: boolean;
 };
 
@@ -50,6 +56,7 @@ export function ProductionTypeSection({
   source = "comida",
   productName = "",
   sheetOutputUnit,
+  sheetCreateDisabled = false,
   disabled,
 }: Props) {
   const [creating, setCreating] = useState(false);
@@ -165,6 +172,7 @@ export function ProductionTypeSection({
               onPick={pickSheet}
               onCreate={createSheet}
               productName={productName}
+              createDisabled={sheetCreateDisabled}
             />
           )}
         </div>

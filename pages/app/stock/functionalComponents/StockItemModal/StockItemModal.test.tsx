@@ -105,6 +105,38 @@ describe("StockItemModal", () => {
     expect(screen.getByText(/crea o selecciona una ficha tecnica/i)).toBeTruthy();
   });
 
+  it("blocks sheet creation while the unit factor is invalid", async () => {
+    stubFetch();
+    render(<StockItemModal open onClose={vi.fn()} onCreated={vi.fn()} />);
+
+    fireEvent.change(screen.getByTestId("stock-item-factor"), { target: { value: "0" } });
+    fireEvent.click(screen.getByRole("radio", { name: /preparado/i }));
+
+    // The sheet's output item would be persisted with factor 1, so creating it
+    // is not allowed until the factor is a positive number.
+    expect(screen.getByRole("button", { name: /crear ficha tecnica/i })).toBeDisabled();
+    expect(screen.getByText(/unidad visible y un factor base validos/i)).toBeTruthy();
+
+    fireEvent.change(screen.getByTestId("stock-item-factor"), { target: { value: "1000" } });
+    expect(screen.getByRole("button", { name: /crear ficha tecnica/i })).toBeEnabled();
+  });
+
+  it("locks the unit fields once a sheet exists", async () => {
+    stubFetch();
+    render(<StockItemModal open onClose={vi.fn()} onCreated={vi.fn()} />);
+
+    fireEvent.change(screen.getByTestId("stock-item-name"), { target: { value: "Pure de patata" } });
+    fireEvent.click(screen.getByRole("radio", { name: /preparado/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /crear ficha tecnica/i }));
+    await waitFor(() => expect(screen.getByTestId("stock-create-item")).toBeEnabled());
+
+    // The output unit was fixed server-side at sheet creation; editing it now
+    // would only change what a future sheet would use.
+    expect(screen.getByTestId("stock-item-unit")).toBeDisabled();
+    expect(screen.getByTestId("stock-item-factor")).toBeDisabled();
+    expect(screen.getByText(/unidad de salida queda fijada/i)).toBeTruthy();
+  });
+
   it("blocks the article until a ficha exists, then closes without POSTing a RAW item", async () => {
     const calls = stubFetch();
     const onClose = vi.fn();

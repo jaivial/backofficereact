@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { FormField } from "../../../../../ui/inputs/FormField";
@@ -78,9 +78,30 @@ export function StockItemModal({
   }, [open]);
 
   const isPreparado = productionType === "MANUFACTURED";
+  // A sheet's output item is created server-side with the current unit data,
+  // so those fields must be valid before a sheet can be created. The submit
+  // path re-validates as a backstop, but the create button inside the sheet
+  // browser is gated on the same rule.
+  const factorNum = Number(factor);
+  const unit = unidad.trim();
+  const unitValid = Number.isFinite(factorNum) && factorNum > 0 && unit !== "";
+  // Once a sheet exists, the output unit is fixed on the server: editing these
+  // fields afterwards would only change what a *future* sheet would use, so
+  // they are locked to stop the form and the article from disagreeing.
+  const sheetLocked = stockRecipeId != null;
   // The user must build the ficha first: a Preparado article without a recipe
   // cannot be produced, so the form stays blocked until one exists.
-  const missingSheet = isPreparado && stockRecipeId == null;
+  const missingSheet = isPreparado && !sheetLocked;
+
+  const outputUnit = useMemo(
+    () => ({
+      baseDimension: dimension,
+      displayUnitCode: unit,
+      displayUnitLabel: unit,
+      displayUnitFactor: factorNum,
+    }),
+    [dimension, factor, unidad],
+  );
 
   const submit = useCallback(
     async (event: React.FormEvent) => {
@@ -94,12 +115,10 @@ export function StockItemModal({
         setError("Crea o selecciona una ficha tecnica antes de crear el articulo");
         return;
       }
-      const factorNum = Number(factor);
       if (!Number.isFinite(factorNum) || factorNum <= 0) {
         setError("El factor base debe ser mayor que cero");
         return;
       }
-      const unit = unidad.trim();
       if (!unit) {
         setError("La unidad visible es obligatoria");
         return;
@@ -152,6 +171,7 @@ export function StockItemModal({
                 onChange={setDimension}
                 options={DIMENSION_OPTIONS}
                 ariaLabel="Dimensión"
+                disabled={sheetLocked}
                 data-testid="stock-item-dimension"
               />
             </FormField>
@@ -164,6 +184,7 @@ export function StockItemModal({
                   value={unidad}
                   onChange={(event) => setUnidad(event.target.value)}
                   required
+                  disabled={sheetLocked}
                   data-testid="stock-item-unit"
                 />
               </FormField>
@@ -175,6 +196,7 @@ export function StockItemModal({
                   value={factor}
                   onChange={(event) => setFactor(event.target.value)}
                   required
+                  disabled={sheetLocked}
                   data-testid="stock-item-factor"
                 />
               </FormField>
@@ -192,15 +214,23 @@ export function StockItemModal({
                 if (next === "RAW") setStockRecipeId(null);
               }}
               onSheetLinked={(sheetId) => setStockRecipeId(sheetId)}
-              sheetOutputUnit={{
-                baseDimension: dimension,
-                displayUnitCode: unidad,
-                displayUnitLabel: unidad,
-                displayUnitFactor: Number(factor) || 1,
-              }}
+              sheetCreateDisabled={isPreparado && !unitValid}
+              sheetOutputUnit={outputUnit}
             />
 
-            {missingSheet ? (
+            {sheetLocked ? (
+              <p className="bo-sheetHint" data-role="stock-item-sheet-locked-hint">
+                La unidad de salida queda fijada al crear la ficha tecnica.
+              </p>
+            ) : null}
+
+            {isPreparado && !unitValid && !sheetLocked ? (
+              <p className="bo-sheetHint" data-role="stock-item-unit-hint">
+                Introduce una unidad visible y un factor base validos para crear la ficha tecnica.
+              </p>
+            ) : null}
+
+            {missingSheet && unitValid ? (
               <p className="bo-sheetHint" data-role="stock-item-sheet-hint">
                 Crea o selecciona una ficha tecnica para crear el articulo.
               </p>
