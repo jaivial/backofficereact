@@ -27,6 +27,12 @@ vi.mock("jotai", () => ({
   atom: vi.fn(),
 }));
 
+// The per-member view has its own data fetching and date-range UI; a stub keeps
+// these tests focused on the subtab switcher behaviour.
+vi.mock("./functionalComponents/MemberFilterView/MemberFilterView", () => ({
+  MemberFilterView: () => <div data-testid="member-filter-view" />,
+}));
+
 import { TurnosView } from "./TurnosView";
 import type { FichajeSchedule, Member } from "../../../../api/types";
 
@@ -54,26 +60,26 @@ describe("TurnosView (extracted component)", () => {
     window.history.replaceState(null, "", "/app/horarios/turnos?date=2026-08-06");
   });
 
-  it("renders the Turnos panel with the Miembros roster by default", async () => {
+  it("renders the Turnos panel with the Miembro view by default", async () => {
     render(<TurnosView date="2026-08-06" members={members} schedules={schedules} error={null} />);
     expect(screen.getByTestId("horarios-turnos-section")).toBeInTheDocument();
-    expect(await screen.findByText("Juan Perez")).toBeInTheDocument();
-    expect(screen.getByText("Maria Lopez")).toBeInTheDocument();
-    // The roster (Miembros) is the only view: no view switcher.
-    expect(screen.getByTestId("horarios-turnos-roster")).toBeInTheDocument();
-    expect(screen.getByText("Miembros")).toBeInTheDocument();
-    expect(screen.queryByTestId("horarios-turnos-view-tabs")).not.toBeInTheDocument();
-    // Scheduled member shows the assigned shift in the roster row.
-    expect(screen.getByText("09:00 - 17:00")).toBeInTheDocument();
-  });
-
-  it("shows the Miembros roster without needing to switch views", async () => {
-    render(<TurnosView date="2026-08-06" members={members} schedules={schedules} error={null} />);
-    await waitFor(() => expect(screen.getByTestId("horarios-turnos-roster")).toBeInTheDocument());
-    // The old Grid/Tabla/Miembro switcher is gone: the roster is the view.
-    expect(screen.queryByTestId("horarios-turnos-view-table")).not.toBeInTheDocument();
+    // Default subtab is Miembro.
+    expect(screen.getByTestId("member-filter-view")).toBeInTheDocument();
+    expect(screen.queryByTestId("horarios-turnos-roster")).not.toBeInTheDocument();
+    // The switcher has exactly two subtabs: Tabla and Miembro (no Grid).
+    expect(screen.getByTestId("horarios-turnos-subtab-tabla")).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByTestId("horarios-turnos-subtab-miembro")).toHaveAttribute("aria-selected", "true");
     expect(screen.queryByTestId("horarios-turnos-view-grid")).not.toBeInTheDocument();
     expect(screen.queryByTestId("horarios-turnos-view-member")).not.toBeInTheDocument();
+  });
+
+  it("switches to the Tabla roster subtab", async () => {
+    render(<TurnosView date="2026-08-06" members={members} schedules={schedules} error={null} />);
+    fireEvent.click(screen.getByTestId("horarios-turnos-subtab-tabla"));
+    await waitFor(() => expect(screen.getByTestId("horarios-turnos-roster")).toBeInTheDocument());
+    expect(screen.queryByTestId("member-filter-view")).not.toBeInTheDocument();
+    // Scheduled member shows the assigned shift in the roster row.
+    expect(screen.getByText("09:00 - 17:00")).toBeInTheDocument();
   });
 
   it("propagates schedules to an embedding parent via onSchedulesChange", async () => {
