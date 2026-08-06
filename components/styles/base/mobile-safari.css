@@ -190,6 +190,33 @@
     justify-items: stretch;
   }
 
+  /* The global touch-target rules intentionally enlarge toast dismiss buttons,
+     but the enlarged box was shifting the icon off the toast's visual axis. */
+  .bo-toastWrap .bo-toastX {
+    top: 50%;
+    right: 9px;
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    min-height: 24px;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    align-items: center;
+    justify-items: center;
+    line-height: 0;
+    transform: translateY(-50%);
+  }
+
+  .bo-toastWrap .bo-toastX svg {
+    display: block;
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    vertical-align: middle;
+  }
+
   /* Nothing may bleed past the viewport edge; the app shell already clips, so
      a bleeding child just becomes invisible instead of scrollable. */
   .bo-panel,
