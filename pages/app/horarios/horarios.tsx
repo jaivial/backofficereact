@@ -532,7 +532,7 @@ function AdminHorariosView({ data }: { data: Data }) {
           </div>
 
           {tablePanelTab === "tabla" ? (
-          <div className="bo-tableWrap min-w-0 !mt-0" data-slot="table-wrap">
+          <div className="bo-tableWrap min-w-0 mt-4" data-slot="table-wrap">
             <div className="bo-tableScroll" data-slot="table-scroll">
               <table className="bo-table bo-table--horarios" aria-label="Tabla de horarios del dia" data-slot="horarios-table">
                 <thead data-slot="table-head">
