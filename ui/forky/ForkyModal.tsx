@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useCallback, useState } from "react";
 import { gsap } from "gsap";
 import {
+  ActionBarPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
@@ -18,31 +19,13 @@ import {
 
 import { forkyOpenAtom } from "../../state/atoms";
 import { ForkyRuntimeProvider } from "./forkyRuntime";
-import { useForkyVisualState, type ForkyVisualState } from "./forkyStatus";
-import type { OrbState } from "thinking-orbs";
 
 // ---------------------------------------------------------------------------
 // Surface utilities (assistant-ui/elements default style)
 // ---------------------------------------------------------------------------
 const paper = "bg-foreground/[0.04]";
 const floating = "bg-popover shadow-lg shadow-black/10 border border-foreground/[0.08]";
-const ghostButton = "flex items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white/55";
 const mono = "font-mono text-[0.85em]";
-
-// ---------------------------------------------------------------------------
-// State mapping
-// ---------------------------------------------------------------------------
-function mapVisualStateToOrbState(state: ForkyVisualState): OrbState {
-  switch (state) {
-    case "think": return "working";
-    case "talk": return "composing";
-    case "greet":
-    case "happy": return "shaping";
-    case "bend_active": return "listening";
-    case "idle":
-    default: return "breathing";
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Typing Indicator (assistant-ui/elements/typing-indicator)
@@ -187,14 +170,17 @@ function AssistantMessage() {
               <CopyIcon className="size-3.5" />
             )}
           </button>
-          <button
-            type="button"
-            aria-label="Regenerar respuesta"
+          {/* Reload regenerates the assistant message; ActionBarPrimitive
+              disables itself while the thread is running or when reload is
+              not available for this message. */}
+          <ActionBarPrimitive.Reload
             className="flex size-7 items-center justify-center rounded-lg bg-slate-900/5 text-slate-500 backdrop-blur-sm transition-colors hover:bg-slate-900/10 hover:text-slate-800 dark:bg-white/[0.06] dark:text-white/50 dark:hover:bg-white/[0.1] dark:hover:text-white/70"
             style={{ border: "none" }}
+            aria-label="Regenerar respuesta"
+            data-testid="forky-regenerate-button"
           >
             <RefreshCwIcon className="size-3.5" />
-          </button>
+          </ActionBarPrimitive.Reload>
         </div>
       </div>
     </MessagePrimitive.Root>

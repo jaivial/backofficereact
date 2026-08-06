@@ -7,10 +7,6 @@ import type { APIError, APISuccess, BOSession } from "../types";
 import type { BORole } from "../../lib/rbac";
 import type { JsonRequestFn } from "../utils/request";
 
-export type UserPreferences = {
-  forky_hidden?: boolean;
-};
-
 export type AuthModule = {
   login(identifier: string, password: string): Promise<APISuccess<{ session: BOSession }> | APIError>;
   logout(): Promise<APISuccess | APIError>;
@@ -21,8 +17,6 @@ export type AuthModule = {
   ): Promise<
     APISuccess<{ activeRestaurantId: number; role: BORole; roleImportance: number; sectionAccess: string[] }> | APIError
   >;
-  getPreferences(): Promise<APISuccess<{ preferences: UserPreferences }> | APIError>;
-  setPreferences(prefs: Partial<UserPreferences>): Promise<APISuccess<{ preferences: UserPreferences }> | APIError>;
 };
 
 export function createAuthModule(json: JsonRequestFn): AuthModule {
@@ -64,18 +58,6 @@ export function createAuthModule(json: JsonRequestFn): AuthModule {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ restaurantId }),
-      });
-    },
-
-    async getPreferences(): Promise<APISuccess<{ preferences: UserPreferences }> | APIError> {
-      return json("/api/admin/me/preferences", { method: "GET" });
-    },
-
-    async setPreferences(prefs: Partial<UserPreferences>): Promise<APISuccess<{ preferences: UserPreferences }> | APIError> {
-      return json("/api/admin/me/preferences", {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(prefs),
       });
     },
   };

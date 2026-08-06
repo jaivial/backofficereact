@@ -30,6 +30,11 @@ vi.mock("./Forky3DViewer", () => ({
 }));
 
 vi.mock("@assistant-ui/react", () => ({
+  ActionBarPrimitive: {
+    Reload: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => (
+      <button type="button" {...props}>{children}</button>
+    ),
+  },
   ThreadPrimitive: {
     Root: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
       <div className={className}>{children}</div>
