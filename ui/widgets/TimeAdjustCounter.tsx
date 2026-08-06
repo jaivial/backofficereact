@@ -3,7 +3,7 @@ import { Minus, Plus } from "lucide-react";
 
 import { cn } from "../shadcn/utils";
 
-export function TimeAdjustCounter({
+export const TimeAdjustCounter = React.memo(function TimeAdjustCounter({
   label,
   value,
   onMinus,
@@ -46,4 +46,4 @@ export function TimeAdjustCounter({
       </div>
     </div>
   );
-}
+});
