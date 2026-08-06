@@ -225,7 +225,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             aria-label="Vista diaria"
             title="Diario"
             aria-pressed={view === "diario"}
-            className={`bo-dateBtn bo-dateBtn--glass !p-0 !w-9${view === "diario" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
+            className={`bo-dateBtn bo-dateBtn--glass !justify-center !p-0 !w-9${view === "diario" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
           >
             <CalendarDays size={16} strokeWidth={1.8} aria-hidden="true" />
           </button>
@@ -235,7 +235,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             aria-label="Vista semanal"
             title="Semanal"
             aria-pressed={view === "semanal"}
-            className={`bo-dateBtn bo-dateBtn--glass !p-0 !w-9${view === "semanal" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
+            className={`bo-dateBtn bo-dateBtn--glass !justify-center !p-0 !w-9${view === "semanal" ? " !border-violet-500 !text-violet-500 dark:!border-violet-400 dark:!text-violet-300" : ""}`}
           >
             <CalendarRange size={16} strokeWidth={1.8} aria-hidden="true" />
           </button>
@@ -269,7 +269,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               onClick={() => setSidebarOpen(false)}
               aria-label="Ocultar miembros"
               title="Ocultar miembros"
-              className="bo-dateBtn bo-dateBtn--glass !h-6 !w-6 !p-0"
+              className="bo-dateBtn bo-dateBtn--glass !justify-center !h-6 !w-6 !p-0"
             >
               <PanelLeftClose size={15} strokeWidth={1.8} aria-hidden="true" />
             </button>
@@ -325,7 +325,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               onClick={() => setSidebarOpen(true)}
               aria-label="Mostrar miembros"
               title="Mostrar miembros"
-              className="bo-dateBtn bo-dateBtn--glass !h-9 !w-9 !p-0"
+              className="bo-dateBtn bo-dateBtn--glass !justify-center !h-9 !w-9 !p-0"
             >
               <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
             </button>
