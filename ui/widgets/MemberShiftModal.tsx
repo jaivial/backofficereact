@@ -182,6 +182,10 @@ export function MemberShiftModal({
         return;
       }
 
+      const previousSchedules = schedules;
+      setSchedules((current) => current.map((s) => (
+        s.id === scheduleId ? { ...s, startTime: optimisticStart, endTime: optimisticEnd } : s
+      )));
       setLoading(true);
       try {
         const res = await api.horarios.update(scheduleId, {
@@ -192,17 +196,17 @@ export function MemberShiftModal({
           setSchedules((current) => current.map((s) => (s.id === scheduleId ? { ...s, ...res.schedule } : s)));
           pushToast({ kind: "success", title: "Horario actualizado" });
         } else {
+          setSchedules(previousSchedules);
           pushToast({ kind: "error", title: res.message || "Error al actualizar" });
-          await loadData();
         }
       } catch (err) {
+        setSchedules(previousSchedules);
         pushToast({ kind: "error", title: "Error al actualizar" });
-        await loadData();
       } finally {
         setLoading(false);
       }
     },
-    [schedules, api.horarios, pushToast, loadData],
+    [schedules, api.horarios, pushToast],
   );
 
   const startFichaje = useCallback(async () => {
@@ -262,11 +266,15 @@ export function MemberShiftModal({
   );
   const exitMinuteOptions = useMemo(() => {
     if (Number(assignExitHour) !== Number(assignEntryHour)) return MINUTE_OPTIONS;
-    return MINUTE_OPTIONS.filter((m) => Number(m) >= Number(assignEntryMinute));
+    return MINUTE_OPTIONS.filter((m) => Number(m) > Number(assignEntryMinute));
   }, [assignEntryHour, assignEntryMinute, assignExitHour]);
 
+  const assignStartMinutes = toMinutes(assignEntryHour, assignEntryMinute);
+  const assignEndMinutes = toMinutes(assignExitHour, assignExitMinute);
+  const assignTimeInvalid = assignEndMinutes <= assignStartMinutes;
+
   const assignShift = useCallback(async () => {
-    if (!assignStartTime || !assignEndTime) return;
+    if (!assignStartTime || !assignEndTime || assignTimeInvalid) return;
 
     const overlaps = schedules.some((s) =>
       hasTimeOverlap(assignStartTime, assignEndTime, s.startTime, s.endTime),
@@ -276,6 +284,18 @@ export function MemberShiftModal({
       return;
     }
 
+    const optimisticId = -Date.now();
+    const optimisticSchedule: FichajeSchedule = {
+      id: optimisticId,
+      memberId: member.id,
+      memberName: `${member.firstName || ""} ${member.lastName || ""}`.trim() || `Miembro #${member.id}`,
+      date: selectedDate,
+      startTime: assignStartTime,
+      endTime: assignEndTime,
+      updatedAt: new Date().toISOString(),
+    };
+    setSchedules((current) => [...current, optimisticSchedule].sort((a, b) => a.startTime.localeCompare(b.startTime)));
+    setShowAssignForm(false);
     setLoading(true);
     try {
       const res = await api.horarios.assign({
@@ -283,39 +303,45 @@ export function MemberShiftModal({
         memberId: member.id,
         startTime: assignStartTime,
         endTime: assignEndTime,
-      });
-      if (res.success) {
-        setSchedules((current) => [...current, res.schedule].sort((a, b) => a.startTime.localeCompare(b.startTime)));
-        setShowAssignForm(false);
-        pushToast({ kind: "success", title: "Turno asignado" });
-      } else {
-        pushToast({ kind: "error", title: res.message || "Error al asignar" });
-      }
-    } catch (err) {
-      pushToast({ kind: "error", title: "Error al asignar" });
+        });
+        if (res.success) {
+          setSchedules((current) => current
+            .map((schedule) => schedule.id === optimisticId ? res.schedule : schedule)
+            .sort((a, b) => a.startTime.localeCompare(b.startTime)));
+          pushToast({ kind: "success", title: "Turno asignado" });
+        } else {
+          setSchedules((current) => current.filter((schedule) => schedule.id !== optimisticId));
+          pushToast({ kind: "error", title: res.message || "Error al asignar" });
+        }
+      } catch (err) {
+        setSchedules((current) => current.filter((schedule) => schedule.id !== optimisticId));
+        pushToast({ kind: "error", title: "Error al asignar" });
     } finally {
       setLoading(false);
     }
-  }, [assignStartTime, assignEndTime, schedules, selectedDate, member.id, api.horarios, pushToast]);
+  }, [assignStartTime, assignEndTime, assignTimeInvalid, schedules, selectedDate, member.id, member.firstName, member.lastName, api.horarios, pushToast]);
 
   const removeShift = useCallback(
     async (scheduleId: number) => {
+      const previousSchedules = schedules;
+      setSchedules((current) => current.filter((schedule) => schedule.id !== scheduleId));
       setLoading(true);
       try {
         const res = await api.horarios.delete(scheduleId);
         if (res.success) {
-          setSchedules((current) => current.filter((s) => s.id !== scheduleId));
           pushToast({ kind: "success", title: "Turno eliminado" });
         } else {
+          setSchedules(previousSchedules);
           pushToast({ kind: "error", title: res.message || "Error al eliminar" });
         }
       } catch (err) {
+        setSchedules(previousSchedules);
         pushToast({ kind: "error", title: "Error al eliminar" });
       } finally {
         setLoading(false);
       }
     },
-    [api.horarios, pushToast],
+    [api.horarios, pushToast, schedules],
   );
 
   const fullName = `${member.firstName || ""} ${member.lastName || ""}`.trim() || `Miembro #${member.id}`;
@@ -445,11 +471,16 @@ export function MemberShiftModal({
                       </div>
                     </div>
                   </div>
+                  {assignTimeInvalid ? (
+                    <div className="bo-shiftModalValidation" role="alert" data-slot="shift-modal-validation">
+                      La hora de salida debe ser posterior a la hora de entrada.
+                    </div>
+                  ) : null}
                   <button
                     className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
                     type="button"
                     onClick={assignShift}
-                    disabled={loading}
+                    disabled={loading || assignTimeInvalid}
                     data-testid="member-shift-submit-btn"
                   >
                     <Plus size={14} strokeWidth={1.8} />
