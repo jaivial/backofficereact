@@ -17,9 +17,11 @@ import { fichajeRealtimeAtom } from "../../../../state/atoms";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { CalendarModal } from "./functionalComponents/CalendarModal/CalendarModal";
+import { MemberFilterView } from "./functionalComponents/MemberFilterView/MemberFilterView";
 import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { HorariosRosterTable, type HorariosRosterRow } from "../../../../ui/widgets/HorariosRosterTable";
 import { Panel } from "../../../../ui/shell/Panel";
+import { cn } from "../../../../ui/shadcn/utils";
 import { fullName } from "../../../../lib/member";
 
 export type TurnosViewProps = {
@@ -93,6 +95,9 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
   useErrorToast(error);
   const [shiftModalMember, setShiftModalMember] = useState<Member | null>(null);
   const [shiftModalOpen, setShiftModalOpen] = useState(false);
+  // Sub-tab switcher inside Turnos: "tabla" (roster) or "miembro" (per-member
+  // schedule). Miembro is the default.
+  const [subTab, setSubTab] = useState<"tabla" | "miembro">("miembro");
 
   const membersSorted = useMemo(
     () => [...(members || [])].sort((a, b) => fullName(a).localeCompare(fullName(b), "es", { sensitivity: "base" })),
@@ -380,10 +385,39 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
               month={Number(date.split("-")[1])}
               currentDate={date}
             />
+            <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Vista de turnos" data-testid="horarios-turnos-subtabs">
+              <button
+                type="button"
+                className={cn("bo-tab", subTab === "tabla" && "is-active")}
+                role="tab"
+                aria-selected={subTab === "tabla"}
+                onClick={() => setSubTab("tabla")}
+                data-testid="horarios-turnos-subtab-tabla"
+              >
+                {subTab === "tabla" ? <span className="bo-tabIndicator" /> : null}
+                <span className="bo-tabInner" data-slot="turnos-tabInner">
+                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Tabla</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                className={cn("bo-tab", subTab === "miembro" && "is-active")}
+                role="tab"
+                aria-selected={subTab === "miembro"}
+                onClick={() => setSubTab("miembro")}
+                data-testid="horarios-turnos-subtab-miembro"
+              >
+                {subTab === "miembro" ? <span className="bo-tabIndicator" /> : null}
+                <span className="bo-tabInner" data-slot="turnos-tabInner">
+                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Miembro</span>
+                </span>
+              </button>
+            </div>
           </div>
         }
         bodyClassName="bo-turnosBody"
       >
+          {subTab === "tabla" ? (
           <section className="bo-turnosRoster" aria-label="Tabla de miembros" data-testid="horarios-turnos-roster">
             <div className="bo-turnosRosterHead" data-testid="horarios-turnos-roster-head">
               <div className="bo-panelTitle" data-testid="horarios-turnos-roster-title">Miembros</div>
@@ -408,6 +442,9 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
               ariaLabel="Tabla de horarios (turnos)"
             />
           </section>
+          ) : (
+            <MemberFilterView members={membersSorted} />
+          )}
         </Panel>
 
       {shiftModalMember ? (
