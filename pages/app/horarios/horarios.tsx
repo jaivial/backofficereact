@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarClock, CalendarDays, UserRoundPlus, Users } from "lucide-react";
+import { CalendarClock, CalendarDays, Clock3, TableProperties, UserRoundPlus, Users } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { CalendarDay, FichajeActiveEntry, FichajeSchedule, HorarioMonthPoint, HorariosCalendarDay, Member } from "../../../api/types";
@@ -16,6 +16,7 @@ import { diffLabel, elapsedForEntry, fullName, fromMinutes, monthCalendarData, s
 import { HOUR_OPTIONS, MINUTE_OPTIONS, HorariosCalendarTab } from "./constants";
 import { MyScheduleView } from "./functionalComponents/MyScheduleView/MyScheduleView";
 import { ScheduleModal } from "./functionalComponents/ScheduleModal/ScheduleModal";
+import { TurnosView } from "./turnos/TurnosView";
 import { Panel } from "../../../ui/shell/Panel";
 import { ScrollArea } from "../../../ui/layout/ScrollArea";
 import { cn } from "../../../ui/shadcn/utils";
@@ -41,7 +42,10 @@ export default function Page() {
   return <AdminHorariosView data={data} />;
 }
 
+type TablePanelTab = "tabla" | "turnos";
+
 function AdminHorariosView({ data }: { data: Data }) {
+  const pageContext = usePageContext();
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const realtime = useAtomValue(fichajeRealtimeAtom);
@@ -64,6 +68,9 @@ function AdminHorariosView({ data }: { data: Data }) {
   const [calendarDetail, setCalendarDetail] = useState<HorariosCalendarDay[]>([]);
   const [bookingMonthDays, setBookingMonthDays] = useState<CalendarDay[]>(data.bookingMonthDays);
   const [calendarTab, setCalendarTab] = useState<HorariosCalendarTab>("miembros");
+  const initialTablePanelTab: TablePanelTab =
+    (pageContext.urlParsed?.search?.tab === "turnos" ? "turnos" : "tabla");
+  const [tablePanelTab, setTablePanelTab] = useState<TablePanelTab>(initialTablePanelTab);
   const [memberSearch, setMemberSearch] = useState("");
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);
@@ -204,6 +211,15 @@ function AdminHorariosView({ data }: { data: Data }) {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
     url.searchParams.set("date", dateISO);
+    window.history.replaceState(null, "", url.toString());
+  }, []);
+
+  const selectTablePanelTab = useCallback((tab: TablePanelTab) => {
+    setTablePanelTab(tab);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (tab === "turnos") url.searchParams.set("tab", "turnos");
+    else url.searchParams.delete("tab");
     window.history.replaceState(null, "", url.toString());
   }, []);
 
@@ -480,6 +496,42 @@ function AdminHorariosView({ data }: { data: Data }) {
         meta={selectedDate}
         bodyClassName="overflow-hidden !p-0"
       >
+          <div className="bo-tabs bo-horariosCalendarTabs !w-fit mx-auto" role="tablist" aria-label="Tabla de horarios y turnos" data-slot="table-panel-tabs" style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              className={`bo-tab bo-horariosCalendarTab${tablePanelTab === "tabla" ? " is-active" : ""}`}
+              role="tab"
+              aria-selected={tablePanelTab === "tabla"}
+              onClick={() => selectTablePanelTab("tabla")}
+              data-slot="tab-tabla"
+            >
+              {tablePanelTab === "tabla" ? <span className="bo-tabIndicator" data-role="tab-indicator" /> : null}
+              <span className="bo-tabInner" data-slot="tab-inner">
+                <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
+                  <TableProperties size={16} strokeWidth={1.8} data-role="table-icon" />
+                </span>
+                <span className="bo-tabLabel" data-slot="tab-label">Tabla</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`bo-tab bo-horariosCalendarTab${tablePanelTab === "turnos" ? " is-active" : ""}`}
+              role="tab"
+              aria-selected={tablePanelTab === "turnos"}
+              onClick={() => selectTablePanelTab("turnos")}
+              data-slot="tab-turnos"
+            >
+              {tablePanelTab === "turnos" ? <span className="bo-tabIndicator" data-role="tab-indicator" /> : null}
+              <span className="bo-tabInner" data-slot="tab-inner">
+                <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
+                  <Clock3 size={16} strokeWidth={1.8} data-role="clock-icon" />
+                </span>
+                <span className="bo-tabLabel" data-slot="tab-label">Turnos</span>
+              </span>
+            </button>
+          </div>
+
+          {tablePanelTab === "tabla" ? (
           <div className="bo-tableWrap min-w-0 !mt-0" data-slot="table-wrap">
             <div className="bo-tableScroll" data-slot="table-scroll">
               <table className="bo-table bo-table--horarios" aria-label="Tabla de horarios del dia" data-slot="horarios-table">
@@ -567,6 +619,14 @@ function AdminHorariosView({ data }: { data: Data }) {
               </table>
             </div>
           </div>
+          ) : (
+            <TurnosView
+              date={selectedDate}
+              members={data.members}
+              schedules={schedules}
+              error={error}
+            />
+          )}
         </Panel>
 
       <ScheduleModal
