@@ -190,6 +190,10 @@
     justify-items: stretch;
   }
 
+  .bo-mcal.bo-mcal--glass {
+    margin-inline: 0 !important;
+  }
+
   /* The global touch-target rules intentionally enlarge toast dismiss buttons,
      but the enlarged box was shifting the icon off the toast's visual axis. */
   .bo-toastWrap .bo-toastX {
