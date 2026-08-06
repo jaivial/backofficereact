@@ -78,6 +78,11 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
     return members.filter((m) => fullName(m).toLowerCase().includes(q));
   }, [members, searchValue]);
 
+  const membersSorted = useMemo(
+    () => [...(members || [])].sort((a, b) => fullName(a).localeCompare(fullName(b), "es", { sensitivity: "base" })),
+    [members],
+  );
+
   useEffect(() => {
     if (!selectedMemberId || !dateFrom || !dateTo) {
       setSchedules([]);
