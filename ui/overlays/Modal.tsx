@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { X } from "lucide-react";
 import { cn } from "../shadcn/utils";
 
 function portalEl(): HTMLElement | null {
@@ -88,6 +89,16 @@ export function Modal({
             exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.16, ease: "easeOut" }}
           >
+            <button
+              type="button"
+              className="bo-modalClose"
+              onClick={onClose}
+              aria-label="Cerrar"
+              title="Cerrar"
+              data-ui="modal-close"
+            >
+              <X size={18} strokeWidth={1.8} aria-hidden="true" />
+            </button>
             {children}
           </motion.div>
         </motion.div>
