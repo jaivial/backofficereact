@@ -8,6 +8,7 @@ import type { MemberFilterViewProps } from "./types";
 import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import { ChevronButton } from "../../../../../../ui/widgets/ChevronButton";
 import { DateRangePicker } from "../../../../../../ui/inputs/DateRangePicker";
+import { MemberShiftModal } from "../../../../../../ui/widgets/MemberShiftModal";
 import { DailyScheduleCard } from "./DailyScheduleCard";
 import { WeeklyScheduleTable } from "./WeeklyScheduleTable";
 
@@ -48,6 +49,11 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
   const [schedules, setSchedules] = useState<FichajeSchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  // Shift editor state: the member/date whose schedule is being edited.
+  const [shiftMember, setShiftMember] = useState<Member | null>(null);
+  const [shiftDate, setShiftDate] = useState("");
+  const [shiftOpen, setShiftOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(MEMBER_FILTER_VIEW_KEY, view);
@@ -107,7 +113,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
     fetchSchedules();
 
     return () => controller.abort();
-  }, [selectedMemberId, dateFrom, dateTo]);
+  }, [selectedMemberId, dateFrom, dateTo, refreshKey]);
 
   const schedulesByDate = useMemo(() => {
     const map = new Map<string, FichajeSchedule>();
@@ -157,6 +163,24 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
 
   const handleViewChange = useCallback((id: string) => {
     setView(id as "diario" | "semanal");
+  }, []);
+
+  const openShift = useCallback(
+    (date: string) => {
+      const member = members.find((m) => m.id === selectedMemberId);
+      if (!member) return;
+      setShiftMember(member);
+      setShiftDate(date);
+      setShiftOpen(true);
+    },
+    [members, selectedMemberId],
+  );
+
+  const closeShift = useCallback(() => {
+    setShiftOpen(false);
+    setShiftMember(null);
+    // Reload schedules so edits made in the modal show in the cards.
+    setRefreshKey((key) => key + 1);
   }, []);
 
   const selectedMember = useMemo(
@@ -360,6 +384,8 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
                 key={date}
                 date={date}
                 schedule={schedulesByDate.get(date) || null}
+                member={selectedMember ?? undefined}
+                onEdit={openShift}
                 className={index === 0 ? "!mt-0" : undefined}
               />
             ))}
@@ -368,11 +394,22 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           <WeeklyScheduleTable
             weekGroups={weekGroups}
             schedulesByDate={schedulesByDate}
+            member={selectedMember ?? undefined}
+            onEdit={openShift}
           />
         )}
       </div>
       </div>
     </div>
+
+      {shiftMember ? (
+        <MemberShiftModal
+          member={shiftMember}
+          selectedDate={shiftDate}
+          open={shiftOpen}
+          onClose={closeShift}
+        />
+      ) : null}
     </>
   );
 }
