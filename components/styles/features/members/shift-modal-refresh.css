@@ -69,6 +69,7 @@
 }
 
 .bo-shiftModalTimes {
+  display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -84,6 +85,58 @@
   min-height: 40px;
   border-radius: 12px;
   font-weight: var(--bo-weight-medium);
+}
+
+.bo-shiftModalScheduleActions {
+  flex-wrap: nowrap;
+}
+
+.bo-shiftModalScheduleActions .bo-btn {
+  min-width: 0;
+  padding-inline: 9px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.bo-shiftModalTimePair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.bo-shiftModalTimeSelect {
+  min-width: 0;
+  width: 54px;
+}
+
+.bo-shiftModalTimeSelect.bo-selectBtn {
+  width: 54px;
+  height: 34px;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+.bo-shiftModalTimeSelect .bo-selectLabelWrap {
+  justify-content: center;
+  padding: 0;
+}
+
+.bo-shiftModalTimeSelect .bo-selectLabel {
+  text-align: center;
+}
+
+.bo-shiftModalTimeSelect .bo-selectChev {
+  display: none;
+}
+
+.bo-shiftModalTimeColon {
+  color: var(--bo-muted);
+  font-weight: 700;
+}
+
+.bo-shiftModalTimeList {
+  min-width: 72px;
 }
 
 .bo-shiftModalActive--glass {
@@ -165,16 +218,42 @@
     padding: 12px;
   }
 
-  .bo-shiftModalTimes,
-  .bo-shiftModalWheels,
-  .bo-shiftModalWheelRow {
-    grid-template-columns: 1fr;
+  .bo-shiftModalTimes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 
-  .bo-shiftModalActions .bo-btn,
-  .bo-shiftModal .bo-btn--full {
-    width: 100%;
-    flex: 1 1 100%;
+  .bo-shiftModalTimes .bo-timeAdjustCounter {
+    min-width: 0;
+  }
+
+  .bo-shiftModalTimes .bo-timeAdjustCounterCtrls {
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
+    gap: 4px;
+  }
+
+  .bo-shiftModalTimes .bo-counterBtn {
+    width: 28px;
+    min-width: 28px;
+    height: 30px;
+    padding: 0;
+  }
+
+  .bo-shiftModalTimes .bo-timeAdjustCounterValue {
+    min-width: 0;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .bo-shiftModalScheduleActions .bo-btn {
+    width: auto;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 34px;
+    padding-inline: 6px;
+    font-size: 11px;
+    gap: 5px;
   }
 }
 
@@ -207,4 +286,3 @@
   border-top-color: var(--bo-accent);
   animation: bo-spin 700ms linear infinite;
 }
-
