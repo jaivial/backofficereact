@@ -355,11 +355,12 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           </div>
         ) : view === "diario" ? (
           <div data-ui="dailyView" className="space-y-4">
-            {datesInRange.map((date) => (
+            {datesInRange.map((date, index) => (
               <DailyScheduleCard
                 key={date}
                 date={date}
                 schedule={schedulesByDate.get(date) || null}
+                className={index === 0 ? "first:mt-0" : undefined}
               />
             ))}
           </div>
