@@ -496,7 +496,7 @@ function AdminHorariosView({ data }: { data: Data }) {
         meta={selectedDate}
         bodyClassName="overflow-hidden !p-0"
       >
-          <div className="bo-tabs bo-horariosCalendarTabs !w-fit mx-auto" role="tablist" aria-label="Tabla de horarios y turnos" data-slot="table-panel-tabs" style={{ marginTop: 12 }}>
+          <div className="bo-tabs bo-horariosCalendarTabs !w-fit mx-auto mt-3" role="tablist" aria-label="Tabla de horarios y turnos" data-slot="table-panel-tabs">
             <button
               type="button"
               className={`bo-tab bo-horariosCalendarTab${tablePanelTab === "tabla" ? " is-active" : ""}`}
