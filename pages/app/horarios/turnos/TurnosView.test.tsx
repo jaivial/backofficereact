@@ -54,20 +54,26 @@ describe("TurnosView (extracted component)", () => {
     window.history.replaceState(null, "", "/app/horarios/turnos?date=2026-08-06");
   });
 
-  it("renders the Turnos panel with member cards in the default grid view", async () => {
+  it("renders the Turnos panel with the Miembros roster by default", async () => {
     render(<TurnosView date="2026-08-06" members={members} schedules={schedules} error={null} />);
     expect(screen.getByTestId("horarios-turnos-section")).toBeInTheDocument();
     expect(await screen.findByText("Juan Perez")).toBeInTheDocument();
     expect(screen.getByText("Maria Lopez")).toBeInTheDocument();
-    // Scheduled member shows the schedule times.
-    expect(screen.getByText("09:00")).toBeInTheDocument();
-    expect(screen.getByText("17:00")).toBeInTheDocument();
+    // The roster (Miembros) is the only view: no view switcher.
+    expect(screen.getByTestId("horarios-turnos-roster")).toBeInTheDocument();
+    expect(screen.getByText("Miembros")).toBeInTheDocument();
+    expect(screen.queryByTestId("horarios-turnos-view-tabs")).not.toBeInTheDocument();
+    // Scheduled member shows the assigned shift in the roster row.
+    expect(screen.getByText("09:00 - 17:00")).toBeInTheDocument();
   });
 
-  it("switches to the Tabla view via the internal view tabs", async () => {
+  it("shows the Miembros roster without needing to switch views", async () => {
     render(<TurnosView date="2026-08-06" members={members} schedules={schedules} error={null} />);
-    fireEvent.click(screen.getByTestId("horarios-turnos-view-table"));
     await waitFor(() => expect(screen.getByTestId("horarios-turnos-roster")).toBeInTheDocument());
+    // The old Grid/Tabla/Miembro switcher is gone: the roster is the view.
+    expect(screen.queryByTestId("horarios-turnos-view-table")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("horarios-turnos-view-grid")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("horarios-turnos-view-member")).not.toBeInTheDocument();
   });
 
   it("propagates schedules to an embedding parent via onSchedulesChange", async () => {
