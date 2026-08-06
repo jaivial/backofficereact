@@ -10,7 +10,6 @@ import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { LoadingSpinner } from "../../../ui/feedback/LoadingSpinner";
 import { StatusBadge } from "../../../ui/feedback/StatusBadge";
 import { FormField } from "../../../ui/inputs/FormField";
-import { Modal } from "../../../ui/overlays/Modal";
 import { StockCountPanel } from "./functionalComponents/StockCountPanel/StockCountPanel";
 import { StockDocumentsPanel } from "./functionalComponents/StockDocumentsPanel/StockDocumentsPanel";
 import { StockImportPanel } from "./functionalComponents/StockImportPanel/StockImportPanel";
@@ -18,6 +17,7 @@ import { StockOperationsPanel } from "./functionalComponents/StockOperationsPane
 import { ProductionLabourPanel } from "./functionalComponents/ProductionLabourPanel/ProductionLabourPanel";
 import { PortionWastePanel } from "./functionalComponents/PortionWastePanel/PortionWastePanel";
 import { StockSettingsPanel } from "./functionalComponents/StockSettingsPanel/StockSettingsPanel";
+import { StockItemModal } from "./functionalComponents/StockItemModal/StockItemModal";
 
 type Warehouse = { id: number; name: string; code?: string; type: string; isDefault: boolean; isActive: boolean; sortOrder: number; notes?: string };
 type Unit = { id: number; code: string; label: string; factorToBase: number };
@@ -78,10 +78,6 @@ export default function Page() {
   const [quantities, setQuantities] = useState<Record<number, string>>({});
   const [showItemForm, setShowItemForm] = useState(false);
   const [showWarehouses, setShowWarehouses] = useState(false);
-  const [itemName, setItemName] = useState("");
-  const [itemDimension, setItemDimension] = useState("MASS");
-  const [itemUnit, setItemUnit] = useState("kg");
-  const [itemFactor, setItemFactor] = useState("1000");
   const [warehouseName, setWarehouseName] = useState("");
   const [transferItemId, setTransferItemId] = useState(0);
   const [transferFromId, setTransferFromId] = useState(0);
@@ -135,14 +131,6 @@ export default function Page() {
       setError(reason instanceof Error ? reason.message : "No se pudo ajustar el stock");
     }
   }, [quantities, selectedWarehouseId]);
-
-  const createItem = useCallback(async (event: React.FormEvent) => {
-    event.preventDefault();
-    try {
-      await request("/items", { method: "POST", body: JSON.stringify({ name: itemName, kind: "RAW", baseDimension: itemDimension, isTracked: true, deductionSource: "BOTH_MANUAL", displayUnitCode: itemUnit, displayUnitLabel: itemUnit, displayUnitFactor: Number(itemFactor) }) });
-      setItemName(""); setShowItemForm(false); await load();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo crear el artículo"); }
-  }, [itemDimension, itemFactor, itemName, itemUnit, load]);
 
   const createWarehouse = useCallback(async (event: React.FormEvent) => {
     event.preventDefault();
@@ -442,29 +430,11 @@ export default function Page() {
         </div>
       </div>
 
-      <Modal open={showItemForm} title="Nuevo artículo" onClose={() => setShowItemForm(false)} size="sm">
-        <form className="bo-stockForm" onSubmit={createItem} data-ui="stock-item-dialog">
-          <FormField label="Nombre" htmlFor="stock-item-name" required>
-            <input id="stock-item-name" className="bo-input" value={itemName} onChange={(event) => setItemName(event.target.value)} required data-testid="stock-item-name" />
-          </FormField>
-          <FormField label="Dimensión" htmlFor="stock-item-dimension">
-            <select id="stock-item-dimension" className="bo-input" value={itemDimension} onChange={(event) => setItemDimension(event.target.value)} data-ui="stock-item-dimension">
-              <option value="MASS" data-ui="stock-dimension-mass">Masa</option>
-              <option value="VOLUME" data-ui="stock-dimension-volume">Volumen</option>
-              <option value="COUNT" data-ui="stock-dimension-count">Unidades</option>
-            </select>
-          </FormField>
-          <div className="bo-stockFormGrid bo-stockFormGrid--2" data-ui="stock-item-unit-row">
-            <FormField label="Unidad visible" htmlFor="stock-item-unit" required>
-              <input id="stock-item-unit" className="bo-input" value={itemUnit} onChange={(event) => setItemUnit(event.target.value)} required data-ui="stock-item-unit" />
-            </FormField>
-            <FormField label="Factor base" htmlFor="stock-item-factor" required>
-              <input id="stock-item-factor" className="bo-input" inputMode="decimal" value={itemFactor} onChange={(event) => setItemFactor(event.target.value)} required data-ui="stock-item-factor" />
-            </FormField>
-          </div>
-          <Button variant="primary" type="submit" data-testid="stock-create-item">Crear artículo</Button>
-        </form>
-      </Modal>
+      <StockItemModal
+        open={showItemForm}
+        onClose={() => setShowItemForm(false)}
+        onCreated={load}
+      />
 
       {historyItem ? (
         <aside className="bo-stockDrawer" aria-label={`Historial de ${historyItem.name}`} data-ui="stock-history-drawer">

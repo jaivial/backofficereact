@@ -16,6 +16,12 @@ type Props = {
   onPick: (sheet: SheetSummary) => void;
   onCreate: () => void;
   productName?: string;
+  /**
+   * When true, "Crear ficha tecnica" is disabled. Picking an existing sheet
+   * stays available: reuse never creates anything, so it does not depend on
+   * the form fields a new sheet would be born with.
+   */
+  createDisabled?: boolean;
 };
 
 const STATUS_OPTIONS = [
@@ -24,7 +30,7 @@ const STATUS_OPTIONS = [
   { value: "DRAFT", label: "Borrador" },
 ];
 
-export function TechnicalSheetBrowser({ onPick, onCreate, productName = "" }: Props) {
+export function TechnicalSheetBrowser({ onPick, onCreate, productName = "", createDisabled = false }: Props) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -130,6 +136,7 @@ export function TechnicalSheetBrowser({ onPick, onCreate, productName = "" }: Pr
           className="bo-btn bo-btn--primary bo-sheetBrowser__create"
           data-role="sheet-browser-create"
           onClick={onCreate}
+          disabled={createDisabled}
         >
           <Plus size={14} aria-hidden="true" />
           Crear ficha tecnica
