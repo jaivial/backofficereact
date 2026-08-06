@@ -59,6 +59,10 @@
   cursor: pointer;
 }
 
+.bo-toastX svg {
+  display: block;
+}
+
 .bo-toastX:hover {
   color: var(--bo-text);
   background: transparent;
