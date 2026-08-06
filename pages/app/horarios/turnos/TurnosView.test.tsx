@@ -69,4 +69,33 @@ describe("TurnosView (extracted component)", () => {
     fireEvent.click(screen.getByTestId("horarios-turnos-view-table"));
     await waitFor(() => expect(screen.getByTestId("horarios-turnos-roster")).toBeInTheDocument());
   });
+
+  it("propagates schedules to an embedding parent via onSchedulesChange", async () => {
+    const onSchedulesChange = vi.fn();
+    const reloaded = [
+      { id: 20, memberId: 2, memberName: "Maria Lopez", startTime: "08:00", endTime: "16:00" } as any,
+    ];
+    // First render fetches entries; selecting a date triggers loadSchedules -> onSchedulesChange.
+    const client = await import("../../../../api/client");
+    (client.createClient as any).mockReturnValue({
+      horarios: { list: vi.fn().mockResolvedValue({ success: true, schedules: reloaded }) },
+      fichaje: { entries: { list: mockEntriesList, patch: vi.fn() }, adminStart: vi.fn(), adminStop: vi.fn() },
+    });
+
+    render(
+      <TurnosView
+        date="2026-08-06"
+        members={members}
+        schedules={schedules}
+        error={null}
+        onDateChange={vi.fn()}
+        onSchedulesChange={onSchedulesChange}
+      />,
+    );
+    // Open the calendar and pick the first available day to drive selectDate -> loadSchedules.
+    fireEvent.click(screen.getByTestId("horarios-turnos-calendar-btn"));
+    const cells = await screen.findAllByTestId("calendar-day-cell");
+    fireEvent.click(cells[0]);
+    await waitFor(() => expect(onSchedulesChange).toHaveBeenCalledWith(reloaded));
+  });
 });
