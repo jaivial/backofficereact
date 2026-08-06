@@ -39,6 +39,11 @@
     min-width: 44px;
   }
 
+  .bo-toastX {
+    min-width: 24px;
+    min-height: 24px;
+  }
+
   /* .bo-actionBtn sets an explicit 36px box, so min-height cannot raise it. */
   :is(.bo-app, #bo-portal) .bo-actionBtn {
     width: 44px;
