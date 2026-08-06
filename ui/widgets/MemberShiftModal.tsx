@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Clock, Play, Square, Plus, Trash2 } from "lucide-react";
 
@@ -106,6 +106,7 @@ export function MemberShiftModal({
   const [assignEntryMinute, setAssignEntryMinute] = useState("00");
   const [assignExitHour, setAssignExitHour] = useState("17");
   const [assignExitMinute, setAssignExitMinute] = useState("00");
+  const pendingAdjustments = useRef(new Set<string>());
 
   const assignStartTime = `${assignEntryHour}:${assignEntryMinute}`;
   const assignEndTime = `${assignExitHour}:${assignExitMinute}`;
@@ -165,6 +166,8 @@ export function MemberShiftModal({
 
   const adjustTime = useCallback(
     async (scheduleId: number, field: "startTime" | "endTime", delta: number) => {
+      const pendingKey = `${scheduleId}:${field}`;
+      if (pendingAdjustments.current.has(pendingKey)) return;
       const schedule = schedules.find((s) => s.id === scheduleId);
       if (!schedule) return;
       const current = schedule[field];
@@ -186,10 +189,10 @@ export function MemberShiftModal({
       }
 
       const previousSchedules = schedules;
+      pendingAdjustments.current.add(pendingKey);
       setSchedules((current) => current.map((s) => (
         s.id === scheduleId ? { ...s, startTime: optimisticStart, endTime: optimisticEnd } : s
       )));
-      setLoading(true);
       try {
         const res = await api.horarios.update(scheduleId, {
           startTime: optimisticStart,
@@ -206,7 +209,7 @@ export function MemberShiftModal({
         setSchedules(previousSchedules);
         pushToast({ kind: "error", title: "Error al actualizar" });
       } finally {
-        setLoading(false);
+        pendingAdjustments.current.delete(pendingKey);
       }
     },
     [schedules, api.horarios, pushToast],
@@ -406,14 +409,14 @@ export function MemberShiftModal({
                         value={schedule.startTime}
                         onMinus={() => adjustTime(schedule.id, "startTime", -15)}
                         onPlus={() => adjustTime(schedule.id, "startTime", 15)}
-                        disabled={loading}
+                        disabled={false}
                       />
                       <TimeAdjustCounter
                         label="Salida"
                         value={schedule.endTime}
                         onMinus={() => adjustTime(schedule.id, "endTime", -15)}
                         onPlus={() => adjustTime(schedule.id, "endTime", 15)}
-                        disabled={loading}
+                        disabled={false}
                       />
                     </div>
                     <div className="bo-shiftModalActions bo-shiftModalScheduleActions" data-slot="shift-modal-actions">
