@@ -126,16 +126,21 @@ function AssistantMessage() {
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const messageRef = useRef<HTMLDivElement>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => setMounted(true), []);
 
+  useEffect(() => () => {
+    if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
+  }, []);
+
   const handleCopy = useCallback(() => {
     const text = messageRef.current?.textContent;
-    if (text) {
-      navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    if (!text) return;
+    void navigator.clipboard.writeText(text).catch(() => undefined);
+    setCopied(true);
+    if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
   }, []);
 
   return (
@@ -508,38 +513,27 @@ export function ForkyModal() {
 
   useEffect(() => {
     if (!open) return;
+    const overlay = overlayRef.current;
+    // Focus the composer on open so the user can start typing immediately.
+    if (overlay) {
+      const composer = overlay.querySelector<HTMLElement>('[data-testid="forky-composer-input"]');
+      (composer ?? overlay.querySelector<HTMLElement>("button"))?.focus();
+    }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.stopPropagation();
         setOpen(false);
+        return;
       }
-    };
-    document.addEventListener("keydown", onKeyDown, true);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown, true);
-      document.body.style.overflow = "";
-    };
-  }, [open, setOpen]);
-
-  useEffect(() => {
-    if (!open) return;
-    const overlay = overlayRef.current;
-    if (!overlay) return;
-    
-    const focusables = () =>
-      Array.from(
-        overlay.querySelectorAll<HTMLElement>(
-          'button, textarea, input, select, a[href], [tabindex]:not([tabindex="-1"])'
-        )
-      ).filter((el) => !el.hasAttribute("disabled"));
-    
-    const first = focusables()[0];
-    const composer = overlay.querySelector<HTMLElement>('[data-testid="forky-composer-input"]');
-    (composer ?? first)?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
+      const overlay = overlayRef.current;
+      if (!overlay) return;
+      const focusables = () =>
+        Array.from(
+          overlay.querySelectorAll<HTMLElement>(
+            'button, textarea, input, select, a[href], [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => !el.hasAttribute("disabled"));
       const items = focusables();
       if (items.length === 0) return;
       const firstEl = items[0];
@@ -552,9 +546,13 @@ export function ForkyModal() {
         firstEl.focus();
       }
     };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open]);
+    document.addEventListener("keydown", onKeyDown, true);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown, true);
+      document.body.style.overflow = "";
+    };
+  }, [open, setOpen]);
 
   if (!open) return null;
 
