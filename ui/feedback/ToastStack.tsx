@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { X } from "lucide-react";
 
 import { toastsAtom } from "../../state/atoms";
 import { useToasts } from "./useToasts";
@@ -45,7 +46,7 @@ export function ToastStack({
             <div className="bo-toastTitle" data-ui="toast-title">{t.title}</div>
             {t.message ? <div className="bo-toastMsg" data-ui="toast-message">{t.message}</div> : null}
             <button className="bo-toastX" type="button" onClick={() => dismissToast(t.id)} aria-label="Dismiss" data-ui="toast-dismiss-btn">
-              ×
+              <X size={15} strokeWidth={1.9} aria-hidden="true" />
             </button>
           </motion.div>
         ))}
