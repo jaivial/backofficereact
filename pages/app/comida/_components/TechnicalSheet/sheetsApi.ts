@@ -26,6 +26,18 @@ export type SheetListFilters = {
   categoryId?: number | null;
 };
 
+/**
+ * Optional output-unit details for a freshly created sheet. Stock creation lets
+ * the user pick the dimension and display unit the produced article should
+ * use; when omitted the server keeps its COUNT/ud defaults.
+ */
+export type SheetOutputUnit = {
+  baseDimension: string;
+  displayUnitCode: string;
+  displayUnitLabel: string;
+  displayUnitFactor: number;
+};
+
 export type SheetComponent = {
   id: number;
   stockItemId: number;
@@ -124,10 +136,10 @@ export const sheetsApi = {
       `/comida/technical-sheets${query ? `?${query}` : ""}`,
     );
   },
-  create: (name: string, portions: number) =>
+  create: (name: string, portions: number, outputUnit?: SheetOutputUnit) =>
     request<{ sheetId: number; outputItemId: number }>("/comida/technical-sheets", {
       method: "POST",
-      body: JSON.stringify({ name, portions }),
+      body: JSON.stringify(outputUnit ? { name, portions, ...outputUnit } : { name, portions }),
     }),
   /**
    * Returns the product's sheet, creating and linking it if there is none.
