@@ -9,6 +9,7 @@ import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import { ChevronButton } from "../../../../../../ui/widgets/ChevronButton";
 import { DateRangePicker } from "../../../../../../ui/inputs/DateRangePicker";
 import { MemberShiftModal } from "../../../../../../ui/widgets/MemberShiftModal";
+import { MemberSelector } from "./MemberSelector";
 import { DailyScheduleCard } from "./DailyScheduleCard";
 import { WeeklyScheduleTable } from "./WeeklyScheduleTable";
 
@@ -279,11 +280,21 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
 
       {/* Sidebar + schedule area */}
       <div className="flex flex-col md:flex-row gap-4 w-full">
-      {sidebarOpen ? (
+      {/* Mobile: dropdown selector above schedule */}
+      <div className="md:hidden flex flex-col gap-3">
+        <MemberSelector
+          members={membersSorted}
+          selectedMemberId={selectedMemberId}
+          onSelect={handleMemberSelect}
+        />
+      </div>
+
+      {/* Desktop: sidebar */}
+      {sidebarOpen && (
         /* Member selector sidebar */
         <aside
           data-ui="memberSidebar"
-          className="w-full md:w-64 flex-shrink-0 rounded-xl p-4 border border-solid"
+          className="hidden md:flex md:w-64 flex-shrink-0 rounded-xl p-4 border border-solid flex-col"
           aria-label="Selector de miembro"
           style={{
             background: "linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)), color-mix(in srgb, var(--bo-surface) 90%, transparent)",
@@ -348,24 +359,25 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             </div>
           </ScrollArea>
         </aside>
-      ) : null}
+      )}
+
+      {/* Reopen sidebar button for desktop only */}
+      {!sidebarOpen && (
+        <div className="hidden md:flex mb-3" data-slot="sidebarRail">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Mostrar miembros"
+            title="Mostrar miembros"
+            className="bo-dateBtn bo-dateBtn--glass !justify-center !h-9 !w-9 !p-0"
+          >
+            <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {/* Schedule display area */}
       <div data-ui="scheduleArea" className="flex-1 min-w-0">
-        {!sidebarOpen ? (
-          /* Collapsed rail: reopen button above the schedule, full width */
-          <div className="mb-3 flex" data-slot="sidebarRail">
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Mostrar miembros"
-              title="Mostrar miembros"
-              className="bo-dateBtn bo-dateBtn--glass !justify-center !h-9 !w-9 !p-0"
-            >
-              <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
-            </button>
-          </div>
-        ) : null}
         {/* Loading state */}
         {loading ? (
           <div data-ui="loadingState" className="flex items-center justify-center py-12">

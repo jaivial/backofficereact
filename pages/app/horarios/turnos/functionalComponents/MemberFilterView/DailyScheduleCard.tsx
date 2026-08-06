@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Clock, Pencil, Plus } from "lucide-react";
+import { Clock, Pencil } from "lucide-react";
 
 import type { FichajeSchedule, Member } from "../../../../../../api/types";
 import { formatDateHeader } from "../../helpers/index";
@@ -62,13 +62,12 @@ export function DailyScheduleCard({ date, schedules = [], member, onEdit, classN
           <button
             type="button"
             onClick={() => onEdit?.(date)}
-            aria-label={`Añadir turno de ${memberName} el ${formattedDate}`}
-            title="Añadir turno"
-            data-role="daily-schedule-add"
-            className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1 !px-2.5 !py-1 !h-auto ml-auto text-xs"
+            aria-label={`Editar horario de ${memberName} el ${formattedDate}`}
+            title="Editar horario"
+            data-role="daily-schedule-edit"
+            className="bo-dateBtn bo-dateBtn--glass !justify-center !h-7 !w-7 !p-0 ml-auto"
           >
-            <Plus size={13} strokeWidth={1.8} aria-hidden="true" />
-            Añadir
+            <Pencil size={14} strokeWidth={1.8} aria-hidden="true" />
           </button>
         ) : null}
       </div>
@@ -81,15 +80,12 @@ export function DailyScheduleCard({ date, schedules = [], member, onEdit, classN
             Sin horario
           </span>
         ) : (
-          ordered.map((schedule, index) => (
+          ordered.map((schedule) => (
             <div
               key={schedule.id}
               data-slot="scheduleRow"
-              className="card-shift flex flex-wrap items-center gap-2 rounded-lg border border-solid border-[color-mix(in_srgb,var(--bo-accent)_14%,var(--bo-border))] px-3 py-2"
+              className="card-shift flex items-center gap-2 rounded-lg border border-solid border-[color-mix(in_srgb,var(--bo-accent)_14%,var(--bo-border))] px-3 py-2"
             >
-              <span data-slot="shiftIndex" className="card-break text-xs font-medium tabular-nums text-[var(--bo-faint)]" aria-hidden="true">
-                #{index + 1}
-              </span>
               <span data-slot="timeRange" className="card-time text-sm font-semibold tabular-nums text-[var(--bo-text)]">
                 {schedule.startTime} - {schedule.endTime}
               </span>
@@ -97,19 +93,6 @@ export function DailyScheduleCard({ date, schedules = [], member, onEdit, classN
                 <span data-slot="breakInfo" className="card-break text-xs text-[var(--bo-faint)]">
                   ({schedule.breakMinutes}min pausa)
                 </span>
-              ) : null}
-              {canEdit ? (
-                <button
-                  type="button"
-                  onClick={() => onEdit?.(date)}
-                  aria-label={`Editar turno ${index + 1} de ${memberName} el ${formattedDate}`}
-                  title="Editar turno"
-                  data-role="daily-schedule-edit"
-                  className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1 !px-2.5 !py-1 !h-auto ml-auto text-xs"
-                >
-                  <Pencil size={12} strokeWidth={1.8} aria-hidden="true" />
-                  Editar
-                </button>
               ) : null}
             </div>
           ))
