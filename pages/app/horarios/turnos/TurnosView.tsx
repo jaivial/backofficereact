@@ -364,7 +364,6 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
             Turnos
           </span>
         }
-        meta="Editar tiempo registrado por miembro y fecha."
         actions={
           <div className="bo-horariosPreviewActions" data-testid="horarios-turnos-actions">
             <button
