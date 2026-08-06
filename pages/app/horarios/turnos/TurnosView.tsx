@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { CalendarClock, CalendarDays, Search } from "lucide-react";
+import { CalendarClock, CalendarDays } from "lucide-react";
 
 import { createClient } from "../../../../api/client";
 import type { FichajeActiveEntry, FichajeSchedule, Member, TimeEntry } from "../../../../api/types";
@@ -18,8 +18,6 @@ import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { CalendarModal } from "./functionalComponents/CalendarModal/CalendarModal";
 import { MemberFilterView } from "./functionalComponents/MemberFilterView/MemberFilterView";
-import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
-import { HorariosRosterTable, type HorariosRosterRow } from "../../../../ui/widgets/HorariosRosterTable";
 import { Panel } from "../../../../ui/shell/Panel";
 import { fullName } from "../../../../lib/member";
 
@@ -79,7 +77,6 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
 
   const [date, setDate] = useState(initialDate || todayISO());
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
-  const [memberSearch, setMemberSearch] = useState("");
   const [schedules, setSchedules] = useState<FichajeSchedule[]>(initialSchedules || []);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(() => {
     if (Number.isFinite(initialMemberId) && (initialMemberId ?? 0) > 0) return initialMemberId ?? null;
@@ -92,11 +89,6 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
   const [error, setError] = useState<string | null>(initialError);
   const { pushToast } = useToasts();
   useErrorToast(error);
-  const [shiftModalMember, setShiftModalMember] = useState<Member | null>(null);
-  const [shiftModalOpen, setShiftModalOpen] = useState(false);
-  // Sub-tab switcher inside Turnos: "tabla" (roster) or "miembro" (per-member
-  // schedule). Miembro is the default.
-  const [subTab, setSubTab] = useState<"tabla" | "miembro">("miembro");
 
   const membersSorted = useMemo(
     () => [...(members || [])].sort((a, b) => fullName(a).localeCompare(fullName(b), "es", { sensitivity: "base" })),
@@ -188,23 +180,6 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
       }
     },
     [loadEntries, loadSchedules, onDateChange, selectedMemberId, syncURL],
-  );
-
-  const selectMember = useCallback(
-    async (memberId: number) => {
-      setSelectedMemberId(memberId);
-      syncURL(date, memberId);
-      setLoading(true);
-      setError(null);
-      try {
-        await loadEntries(date, memberId);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "No se pudo cargar el miembro");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [date, loadEntries, syncURL],
   );
 
   const refreshMemberEntries = useCallback(async () => {
@@ -321,39 +296,6 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
     });
   }, [date, loadEntries, selectedMemberId]);
 
-  const tableMembers = useMemo(() => {
-    const query = memberSearch.trim().toLowerCase();
-    if (!query) return membersSorted;
-    return membersSorted.filter((member) => fullName(member).toLowerCase().includes(query));
-  }, [memberSearch, membersSorted]);
-
-  const rosterRows = useMemo<HorariosRosterRow[]>(
-    () =>
-      tableMembers.map((member) => ({
-        member,
-        schedule: scheduleByMember.get(member.id),
-        activeEntry: activeEntriesForDate.get(member.id),
-      })),
-    [activeEntriesForDate, scheduleByMember, tableMembers],
-  );
-
-  const onRosterSelect = useCallback(
-    (member: Member) => {
-      void selectMember(member.id);
-    },
-    [selectMember],
-  );
-
-  const onOpenShiftModal = useCallback((member: Member) => {
-    setShiftModalMember(member);
-    setShiftModalOpen(true);
-  }, []);
-
-  const onCloseShiftModal = useCallback(() => {
-    setShiftModalOpen(false);
-    setShiftModalMember(null);
-  }, []);
-
   return (
     <section aria-label="Edicion de turnos" className="bo-turnosPage" data-testid="horarios-turnos-section">
       <Panel
@@ -384,71 +326,12 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
               month={Number(date.split("-")[1])}
               currentDate={date}
             />
-            <div className="bo-tabs bo-horariosCalendarTabs !w-fit mx-auto mt-3" role="tablist" aria-label="Vista de turnos" data-testid="horarios-turnos-subtabs">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={subTab === "tabla"}
-                onClick={() => setSubTab("tabla")}
-                data-testid="horarios-turnos-subtab-tabla"
-                className={`bo-tab bo-horariosCalendarTab${subTab === "tabla" ? " is-active" : ""}`}
-              >
-                {subTab === "tabla" ? <span className="bo-tabIndicator" data-role="tab-indicator" /> : null}
-                <span className="bo-tabInner" data-slot="turnos-tabInner">
-                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Tabla</span>
-                </span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={subTab === "miembro"}
-                onClick={() => setSubTab("miembro")}
-                data-testid="horarios-turnos-subtab-miembro"
-                className={`bo-tab bo-horariosCalendarTab${subTab === "miembro" ? " is-active" : ""}`}
-              >
-                {subTab === "miembro" ? <span className="bo-tabIndicator" data-role="tab-indicator" /> : null}
-                <span className="bo-tabInner" data-slot="turnos-tabInner">
-                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Miembro</span>
-                </span>
-              </button>
-            </div>
           </div>
         }
         bodyClassName="bo-turnosBody"
       >
-          {subTab === "tabla" ? (
-          <section className="bo-turnosRoster" aria-label="Tabla de miembros" data-testid="horarios-turnos-roster">
-            <div className="bo-turnosRosterHead" data-testid="horarios-turnos-roster-head">
-              <div className="bo-panelTitle" data-testid="horarios-turnos-roster-title">Miembros</div>
-              <div className="bo-memberPickerCount" data-testid="horarios-turnos-roster-count">{tableMembers.length}</div>
-            </div>
-            <label className="bo-memberPickerSearch bo-memberPickerSearch--glass" aria-label="Buscar miembro" data-testid="horarios-turnos-search-label">
-              <Search size={14} strokeWidth={1.8} />
-              <input
-                type="text"
-                className="bo-memberPickerSearchInput"
-                value={memberSearch}
-                onChange={(ev) => setMemberSearch(ev.target.value)}
-                placeholder="Buscar..."
-                data-testid="horarios-turnos-search-input"
-              />
-            </label>
-            <HorariosRosterTable
-              rows={rosterRows}
-              selectedMemberId={selectedMemberId}
-              onRowClick={onRosterSelect}
-              onEditMember={onOpenShiftModal}
-              ariaLabel="Tabla de horarios (turnos)"
-            />
-          </section>
-          ) : (
-            <MemberFilterView members={membersSorted} />
-          )}
+          <MemberFilterView members={membersSorted} />
         </Panel>
-
-      {shiftModalMember ? (
-        <MemberShiftModal member={shiftModalMember} selectedDate={date} open={shiftModalOpen} onClose={onCloseShiftModal} />
-      ) : null}
     </section>
   );
 }
