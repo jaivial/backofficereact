@@ -36,7 +36,7 @@ function getInitialView(): "diario" | "semanal" {
 
 export function MemberFilterView({ members, className }: MemberFilterViewProps) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(() => members[0]?.id ?? null);
   const [searchValue, setSearchValue] = useState("");
   const [dateFrom, setDateFrom] = useState(() => todayISO());
   const [dateTo, setDateTo] = useState(() => addDays(todayISO(), 6));
@@ -56,6 +56,14 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
   useEffect(() => {
     localStorage.setItem(MEMBER_SIDEBAR_KEY, sidebarOpen ? "1" : "0");
   }, [sidebarOpen]);
+
+  // Always keep a member selected: default to the first one once members are
+  // available (props may load asynchronously).
+  useEffect(() => {
+    if (selectedMemberId == null && members.length > 0) {
+      setSelectedMemberId(members[0].id);
+    }
+  }, [members, selectedMemberId]);
 
   const filteredMembers = useMemo(() => {
     if (!searchValue.trim()) return members;
@@ -269,7 +277,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               onClick={() => setSidebarOpen(false)}
               aria-label="Ocultar miembros"
               title="Ocultar miembros"
-              className="bo-dateBtn bo-dateBtn--glass !justify-center !h-6 !w-6 !p-0"
+              className="!inline-flex !h-6 !w-6 items-center justify-center !rounded-none !border-0 !bg-transparent !p-0 text-[var(--bo-faint)] transition-colors hover:text-[var(--bo-text)]"
             >
               <PanelLeftClose size={15} strokeWidth={1.8} aria-hidden="true" />
             </button>
