@@ -625,6 +625,15 @@ function AdminHorariosView({ data }: { data: Data }) {
               members={data.members}
               schedules={schedules}
               error={error}
+              onDateChange={(d) => {
+                setSelectedDate(d);
+                const [y, m] = d.split("-").map((v) => Number(v));
+                if (Number.isFinite(y) && Number.isFinite(m) && (y !== year || m !== month)) {
+                  setYear(y);
+                  setMonth(m);
+                }
+              }}
+              onSchedulesChange={setSchedules}
             />
           )}
         </Panel>

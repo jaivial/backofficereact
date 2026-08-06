@@ -31,6 +31,10 @@ export type TurnosViewProps = {
   schedules: FichajeSchedule[];
   error: string | null;
   initialMemberId?: number | null;
+  /** Notifies an embedding parent when the date changes here, so shared state stays in sync. */
+  onDateChange?: (date: string) => void;
+  /** Notifies an embedding parent when schedules are reloaded here. */
+  onSchedulesChange?: (schedules: FichajeSchedule[]) => void;
 };
 
 const VIEW_STORAGE_KEY = "bo_horarios_turnos_view";
@@ -90,7 +94,7 @@ function todayISO(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-export function TurnosView({ date: initialDate, members, schedules: initialSchedules, error: initialError, initialMemberId }: TurnosViewProps) {
+export function TurnosView({ date: initialDate, members, schedules: initialSchedules, error: initialError, initialMemberId, onDateChange, onSchedulesChange }: TurnosViewProps) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const realtime = useAtomValue(fichajeRealtimeAtom);
 
@@ -177,8 +181,9 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
       const res = await api.horarios.list(nextDate);
       if (!res.success) throw new Error(res.message || "No se pudieron cargar horarios");
       setSchedules(res.schedules);
+      onSchedulesChange?.(res.schedules);
     },
-    [api.horarios],
+    [api.horarios, onSchedulesChange],
   );
 
   const loadEntries = useCallback(
@@ -197,6 +202,7 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
   const selectDate = useCallback(
     async (nextDate: string) => {
       setDate(nextDate);
+      onDateChange?.(nextDate);
       syncURL(nextDate, selectedMemberId);
       setLoading(true);
       setError(null);
@@ -208,7 +214,7 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
         setLoading(false);
       }
     },
-    [loadEntries, loadSchedules, selectedMemberId, syncURL],
+    [loadEntries, loadSchedules, onDateChange, selectedMemberId, syncURL],
   );
 
   const selectMember = useCallback(
