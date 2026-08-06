@@ -21,7 +21,6 @@ import { MemberFilterView } from "./functionalComponents/MemberFilterView/Member
 import { MemberShiftModal } from "../../../../ui/widgets/MemberShiftModal";
 import { HorariosRosterTable, type HorariosRosterRow } from "../../../../ui/widgets/HorariosRosterTable";
 import { Panel } from "../../../../ui/shell/Panel";
-import { cn } from "../../../../ui/shadcn/utils";
 import { fullName } from "../../../../lib/member";
 
 export type TurnosViewProps = {
@@ -385,32 +384,34 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
               month={Number(date.split("-")[1])}
               currentDate={date}
             />
-            <div className="bo-tabs bo-tabs--glass bo-viewTabs !w-fit !ms-auto" role="tablist" aria-label="Vista de turnos" data-testid="horarios-turnos-subtabs">
+            <div className="ml-auto flex w-fit items-center gap-1 rounded-xl border border-solid border-slate-200/70 bg-white/70 p-1 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70" role="tablist" aria-label="Vista de turnos" data-testid="horarios-turnos-subtabs">
               <button
                 type="button"
-                className={cn("bo-tab", subTab === "tabla" && "is-active")}
                 role="tab"
                 aria-selected={subTab === "tabla"}
                 onClick={() => setSubTab("tabla")}
                 data-testid="horarios-turnos-subtab-tabla"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  subTab === "tabla"
+                    ? "bg-violet-500/15 text-violet-600 dark:bg-violet-400/15 dark:text-violet-300"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                }`}
               >
-                {subTab === "tabla" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner" data-slot="turnos-tabInner">
-                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Tabla</span>
-                </span>
+                Tabla
               </button>
               <button
                 type="button"
-                className={cn("bo-tab", subTab === "miembro" && "is-active")}
                 role="tab"
                 aria-selected={subTab === "miembro"}
                 onClick={() => setSubTab("miembro")}
                 data-testid="horarios-turnos-subtab-miembro"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  subTab === "miembro"
+                    ? "bg-violet-500/15 text-violet-600 dark:bg-violet-400/15 dark:text-violet-300"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                }`}
               >
-                {subTab === "miembro" ? <span className="bo-tabIndicator" /> : null}
-                <span className="bo-tabInner" data-slot="turnos-tabInner">
-                  <span className="bo-tabLabel" data-slot="turnos-tabLabel">Miembro</span>
-                </span>
+                Miembro
               </button>
             </div>
           </div>
