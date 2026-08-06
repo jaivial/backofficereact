@@ -116,9 +116,12 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
   }, [selectedMemberId, dateFrom, dateTo, refreshKey]);
 
   const schedulesByDate = useMemo(() => {
-    const map = new Map<string, FichajeSchedule>();
+    const map = new Map<string, FichajeSchedule[]>();
     for (const s of schedules) {
-      if (s.date) map.set(s.date, s);
+      if (!s.date) continue;
+      const list = map.get(s.date) ?? [];
+      list.push(s);
+      map.set(s.date, list);
     }
     return map;
   }, [schedules]);
@@ -383,7 +386,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               <DailyScheduleCard
                 key={date}
                 date={date}
-                schedule={schedulesByDate.get(date) || null}
+                schedules={schedulesByDate.get(date) || []}
                 member={selectedMember ?? undefined}
                 onEdit={openShift}
                 className={index === 0 ? "!mt-0" : undefined}

@@ -6,7 +6,8 @@ import { formatDateHeader } from "../../helpers/index";
 
 export type DailyScheduleCardProps = {
   date: string;
-  schedule: FichajeSchedule | null;
+  /** All schedules for this member on this date (multi-shift days supported). */
+  schedules: FichajeSchedule[];
   /** The member whose schedule this card shows; enables the shift editor. */
   member?: Member;
   /** Opens the shift editor for this date. Required when member is set. */
@@ -14,10 +15,14 @@ export type DailyScheduleCardProps = {
   className?: string;
 };
 
-export function DailyScheduleCard({ date, schedule, member, onEdit, className = "" }: DailyScheduleCardProps) {
+export function DailyScheduleCard({ date, schedules = [], member, onEdit, className = "" }: DailyScheduleCardProps) {
   const formattedDate = useMemo(() => formatDateHeader(date), [date]);
   const memberName = member ? `${member.firstName || ""} ${member.lastName || ""}`.trim() || `Miembro #${member.id}` : "";
   const canEdit = !!member && !!onEdit;
+  const ordered = useMemo(
+    () => [...schedules].sort((a, b) => a.startTime.localeCompare(b.startTime)),
+    [schedules],
+  );
 
   return (
     <>
@@ -37,6 +42,7 @@ export function DailyScheduleCard({ date, schedule, member, onEdit, className = 
         [data-theme="dark"] [data-ui="dailyScheduleCard"] .card-time { color: rgba(255,255,255,0.90); }
         [data-theme="dark"] [data-ui="dailyScheduleCard"] .card-break { color: rgba(255,255,255,0.50); }
         [data-theme="dark"] [data-ui="dailyScheduleCard"] .card-empty { color: rgba(255,255,255,0.40); }
+        [data-theme="dark"] [data-ui="dailyScheduleCard"] .card-shift { background: rgba(255,255,255,0.06); }
       `}</style>
     <div
       data-ui="dailyScheduleCard"
@@ -52,43 +58,63 @@ export function DailyScheduleCard({ date, schedule, member, onEdit, className = 
         <span data-slot="dateLabel" className="card-date text-sm font-medium text-purple-900 capitalize">
           {formattedDate}
         </span>
+        {canEdit ? (
+          <button
+            type="button"
+            onClick={() => onEdit?.(date)}
+            aria-label={`Añadir turno de ${memberName} el ${formattedDate}`}
+            title="Añadir turno"
+            data-role="daily-schedule-add"
+            className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1 !px-2.5 !py-1 !h-auto ml-auto text-xs"
+          >
+            <Plus size={13} strokeWidth={1.8} aria-hidden="true" />
+            Añadir
+          </button>
+        ) : null}
       </div>
 
       <div data-slot="separator" className="card-separator h-px mb-3" aria-hidden="true" />
 
-      <div data-slot="scheduleContent">
-        {schedule ? (
-          <div data-slot="scheduleInfo" className="flex items-center gap-3">
-            <span data-slot="timeRange" className="card-time text-lg font-semibold text-[var(--bo-text)]">
-              {schedule.startTime} - {schedule.endTime}
-            </span>
-            {schedule.breakMinutes && schedule.breakMinutes > 0 ? (
-              <span data-slot="breakInfo" className="card-break text-xs text-[var(--bo-faint)]">
-                ({schedule.breakMinutes}min pausa)
-              </span>
-            ) : null}
-          </div>
-        ) : (
+      <div data-slot="scheduleList" className="flex flex-col gap-2">
+        {ordered.length === 0 ? (
           <span data-slot="noSchedule" className="card-empty text-sm italic text-[var(--bo-faint)]">
             Sin horario
           </span>
+        ) : (
+          ordered.map((schedule, index) => (
+            <div
+              key={schedule.id}
+              data-slot="scheduleRow"
+              className="card-shift flex flex-wrap items-center gap-2 rounded-lg border border-solid border-[color-mix(in_srgb,var(--bo-accent)_14%,var(--bo-border))] px-3 py-2"
+            >
+              <span data-slot="shiftIndex" className="card-break text-xs font-medium tabular-nums text-[var(--bo-faint)]" aria-hidden="true">
+                #{index + 1}
+              </span>
+              <span data-slot="timeRange" className="card-time text-sm font-semibold tabular-nums text-[var(--bo-text)]">
+                {schedule.startTime} - {schedule.endTime}
+              </span>
+              {schedule.breakMinutes && schedule.breakMinutes > 0 ? (
+                <span data-slot="breakInfo" className="card-break text-xs text-[var(--bo-faint)]">
+                  ({schedule.breakMinutes}min pausa)
+                </span>
+              ) : null}
+              {canEdit ? (
+                <button
+                  type="button"
+                  onClick={() => onEdit?.(date)}
+                  aria-label={`Editar turno ${index + 1} de ${memberName} el ${formattedDate}`}
+                  title="Editar turno"
+                  data-role="daily-schedule-edit"
+                  className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1 !px-2.5 !py-1 !h-auto ml-auto text-xs"
+                >
+                  <Pencil size={12} strokeWidth={1.8} aria-hidden="true" />
+                  Editar
+                </button>
+              ) : null}
+            </div>
+          ))
         )}
       </div>
-
-      {canEdit ? (
-      <div data-slot="cardActions" className="mt-3 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onEdit?.(date)}
-          aria-label={schedule ? `Editar turno de ${memberName} el ${formattedDate}` : `Añadir turno de ${memberName} el ${formattedDate}`}
-          data-role="daily-schedule-action"
-          className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1.5 !px-3 !py-1.5 !h-auto text-xs"
-        >
-          {schedule ? <Pencil size={13} strokeWidth={1.8} aria-hidden="true" /> : <Plus size={13} strokeWidth={1.8} aria-hidden="true" />}
-          {schedule ? "Editar" : "Añadir"}
-        </button>
-      </div>
-      ) : null}
     </div>
     </>
   );
