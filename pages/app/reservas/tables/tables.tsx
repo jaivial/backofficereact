@@ -15,7 +15,7 @@ import ReactFlow, {
 } from "reactflow";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-  CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical,
+  CalendarDays, ChevronDown, ChevronLeft, ClipboardList, DoorOpen, Ellipsis, FileDown, FileText, GripVertical,
   Hand, ImagePlus, Layers, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
   Plus, Redo2, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
@@ -334,7 +334,7 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
   return (
     <div
       data-ui="table-node"
-      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}${data.editable ? " is-editable" : ""}`}
+      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}${data.editable ? " is-editable" : ""}${data.isMultiSelected ? " is-multi-selected" : ""}`}
       style={style}
     >
       {data.editable ? (
@@ -362,6 +362,35 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
       {seatedNames.length > 0 ? (
         <div data-ui="node-seated-names" className="bo-tableMapNodeSeatedNames">{seatedNames.join(", ")}</div>
       ) : null}
+      {/* Multi-table selection overlay - buttons outside container on top-right */}
+      {data.isMultiSelected && (
+        <div data-ui="multi-select-overlay" className="bo-tableMultiSelectOverlay">
+          <button
+            data-ui="multi-names-btn"
+            type="button"
+            className="bo-tableMultiSelectBtn"
+            title="Nombres"
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onMultiNamesClick?.();
+            }}
+          >
+            <ClipboardList size={12} strokeWidth={2} />
+          </button>
+          <button
+            data-ui="multi-remove-btn"
+            type="button"
+            className="bo-tableMultiSelectBtn bo-tableMultiSelectBtn--remove"
+            title="Quitar"
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onMultiRemoveClick?.();
+            }}
+          >
+            <X size={12} strokeWidth={2} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -445,6 +474,157 @@ function toFileFromDataURL(dataUrl: string, filename: string): File {
   return new File([bytes], filename, { type: mime });
 }
 
+// === Guest names modal ===
+export type GuestNamesModalProps = {
+  tableName: string;
+  capacity: number;
+  names: string[];
+  onSave: (names: string[]) => void;
+  onClose: () => void;
+};
+
+export function GuestNamesModal({ tableName, capacity, names, onSave, onClose }: GuestNamesModalProps) {
+  const [draft, setDraft] = useState<string[]>(() => {
+    const result = new Array(capacity).fill("");
+    for (let i = 0; i < Math.min(names.length, capacity); i++) {
+      result[i] = names[i] || "";
+    }
+    return result;
+  });
+
+  const handleChange = useCallback((idx: number, value: string) => {
+    setDraft((prev) => {
+      const next = [...prev];
+      next[idx] = value;
+      return next;
+    });
+  }, []);
+
+  const handleSave = useCallback(() => {
+    onSave(draft.map((n) => n.trim()).filter(Boolean));
+    onClose();
+  }, [draft, onSave, onClose]);
+
+  return (
+    <div data-ui="guest-names-modal" className="bo-guestNamesModal">
+      <div data-ui="guest-names-backdrop" className="bo-guestNamesBackdrop" onClick={onClose} />
+      <div data-ui="guest-names-content" className="bo-guestNamesContent">
+        <div data-ui="guest-names-header" className="bo-guestNamesHeader">
+          <h3>Comensales en {tableName || "mesa"}</h3>
+          <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={onClose} aria-label="Cerrar">
+            <X size={14} strokeWidth={2} />
+          </button>
+        </div>
+        <div data-ui="guest-names-inputs" className="bo-guestNamesInputs">
+          {draft.map((name, idx) => (
+            <div key={idx} data-ui="guest-name-row" className="bo-guestNameRow">
+              <label className="bo-guestNameLabel">Comensal {idx + 1}</label>
+              <input
+                data-ui="guest-name-input"
+                className="bo-input"
+                value={name}
+                placeholder={`Nombre comensal ${idx + 1}`}
+                onChange={(e) => handleChange(idx, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+        <div data-ui="guest-names-footer" className="bo-guestNamesFooter">
+          <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose}>
+            Cancelar
+          </button>
+          <button type="button" className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleSave}>
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// === PDF generator for multi-table assignment ===
+async function downloadMultiTablePdf(
+  bookingName: string,
+  assignments: Array<{ table_name: string; seats: number; names: string[] }>,
+): Promise<void> {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  const PAGE_WIDTH = 210;
+  const PAGE_HEIGHT = 297;
+  const MARGIN = 15;
+  const CARD_GAP = 10;
+  const CARD_WIDTH = (PAGE_WIDTH - MARGIN * 2 - CARD_GAP) / 2;
+  const CARD_MIN_HEIGHT = 50;
+  const LINE_HEIGHT = 6;
+  const HEADER_HEIGHT = 10;
+
+  let x = MARGIN;
+  let y = MARGIN;
+  let col = 0;
+  let maxRowHeight = 0;
+
+  // Title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Reserva: ${bookingName}`, MARGIN, y + 5);
+  y += 15;
+
+  for (const assignment of assignments) {
+    const nameCount = Math.max(assignment.seats, assignment.names.length, 1);
+    const cardHeight = Math.max(CARD_MIN_HEIGHT, HEADER_HEIGHT + nameCount * LINE_HEIGHT + 10);
+
+    // Check if we need a new row or page
+    if (y + cardHeight > PAGE_HEIGHT - MARGIN) {
+      doc.addPage();
+      y = MARGIN;
+      x = MARGIN;
+      col = 0;
+      maxRowHeight = 0;
+    }
+
+    // Draw card border
+    doc.setDrawColor("#cccccc");
+    doc.setLineWidth(0.3);
+    doc.rect(x, y, CARD_WIDTH, cardHeight);
+
+    // Table header
+    doc.setFillColor("#f5f5f5");
+    doc.rect(x, y, CARD_WIDTH, HEADER_HEIGHT, "F");
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor("#333333");
+    doc.text(`Mesa ${assignment.table_name}`, x + 4, y + 7);
+
+    // Guest names
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor("#000000");
+    let nameY = y + HEADER_HEIGHT + 6;
+    for (let i = 0; i < nameCount; i++) {
+      const name = assignment.names[i]?.trim() || `— Comensal ${i + 1}`;
+      doc.text(name, x + 4, nameY);
+      nameY += LINE_HEIGHT;
+    }
+
+    maxRowHeight = Math.max(maxRowHeight, cardHeight);
+
+    // Move to next column or row
+    col++;
+    if (col >= 2) {
+      col = 0;
+      x = MARGIN;
+      y += maxRowHeight + CARD_GAP;
+      maxRowHeight = 0;
+    } else {
+      x += CARD_WIDTH + CARD_GAP;
+    }
+  }
+
+  const safeBookingName = bookingName.replace(/[^\w.-]+/g, "-") || "reserva";
+  doc.save(`mesas-${safeBookingName}.pdf`);
+}
+
 // === Booking multi-table assignment editor ===
 type BookingAssignmentEditorProps = {
   booking: Booking;
@@ -459,6 +639,7 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
   const [draft, setDraft] = useState<BookingTableAssignment[]>(() =>
     resolveAssignments(state, booking.table_number, booking.party_size),
   );
+  const [namesModalRow, setNamesModalRow] = useState<number | null>(null);
   const partySize = Math.max(1, Math.round(Number(booking.party_size) || 1));
 
   useEffect(() => {
@@ -467,6 +648,16 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
 
   const totalSeats = useMemo(() => sumAssignmentSeats(draft), [draft]);
   const seatsOk = totalSeats === partySize;
+
+  // Map table name -> capacity for quick lookup
+  const tableCapacityMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of tables) {
+      const key = normalizeTableKey(t.name);
+      if (key) map.set(key, Math.max(1, Number(t.capacity) || 4));
+    }
+    return map;
+  }, [tables]);
 
   const tableOptions = useMemo(() => {
     const opts: Array<{ value: string; label: string }> = [];
@@ -500,75 +691,112 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
     (idx: number, patch: Partial<BookingTableAssignment>) => {
       setDraft((prev) => {
         const next = prev.map((row, i) => (i === idx ? { ...row, ...patch } : row));
-        if (patch.seats !== undefined) {
-          return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
-        }
+        // Note: we no longer normalize seats across tables automatically since seats are locked to capacity
         return next;
       });
     },
-    [partySize],
+    [],
+  );
+
+  // When table is selected, lock seats to table capacity
+  const handleTableSelect = useCallback(
+    (idx: number, tableName: string) => {
+      const table = tables.find((t) => normalizeTableKey(t.name) === normalizeTableKey(tableName));
+      const capacity = table ? Math.max(1, Number(table.capacity) || 4) : 1;
+      setDraft((prev) => {
+        const next = prev.map((row, i) =>
+          i === idx ? { ...row, table_name: tableName, table_id: table?.id ?? null, seats: capacity } : row,
+        );
+        return next;
+      });
+    },
+    [tables],
   );
 
   const addRow = useCallback(() => {
-    setDraft((prev) => {
-      if (prev.length >= partySize) return prev;
-      const next: BookingTableAssignment[] = [...prev, { table_id: null, table_name: "", seats: 1, names: [] }];
-      return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
-    });
-  }, [partySize]);
+    setDraft((prev) => [...prev, { table_id: null, table_name: "", seats: 1, names: [] }]);
+  }, []);
 
-  const removeRow = useCallback(
-    (idx: number) => {
-      setDraft((prev) => {
-        const next = prev.filter((_, i) => i !== idx);
-        if (next.length === 0) return [];
-        return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
-      });
+  const removeRow = useCallback((idx: number) => {
+    setDraft((prev) => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const handleSaveNames = useCallback(
+    (idx: number, names: string[]) => {
+      setRow(idx, { names });
     },
-    [partySize],
+    [setRow],
   );
+
+  const handleDownloadPdf = useCallback(async () => {
+    const bookingName = booking.customer_name?.trim() || `Reserva ${booking.id}`;
+    await downloadMultiTablePdf(bookingName, draft);
+  }, [booking.id, booking.customer_name, draft]);
+
+  const hasAnyNames = draft.some((row) => row.names.length > 0);
+  const isMultiTable = draft.length > 1;
+  const showPdfButton = isMultiTable || hasAnyNames;
+
+  // Get the modal row data for GuestNamesModal
+  const modalRow = namesModalRow !== null ? draft[namesModalRow] : null;
+  const modalCapacity = modalRow ? (tableCapacityMap.get(normalizeTableKey(modalRow.table_name)) || modalRow.seats) : 1;
 
   return (
     <div data-ui="booking-assignment-editor" className="bo-bookingAssignmentEditor">
       {draft.length === 0 ? (
         <div data-ui="assignment-empty" className="bo-bookingAssignmentEmpty">Sin mesas asignadas</div>
       ) : (
-        <>
-          <div data-ui="assignment-rows" className="bo-bookingAssignmentRows">
-            {draft.map((row, idx) => (
+        <div data-ui="assignment-rows" className="bo-bookingAssignmentRows">
+          {draft.map((row, idx) => {
+            const rowCapacity = tableCapacityMap.get(normalizeTableKey(row.table_name)) || row.seats;
+            const isLocked = Boolean(row.table_name);
+            const namesCount = row.names.filter(Boolean).length;
+            return (
               <div key={idx} data-ui="assignment-row" className="bo-bookingAssignmentRow">
                 <Select
                   value={row.table_name}
-                  onChange={(val) =>
-                    setRow(idx, {
-                      table_name: val,
-                      table_id: tables.find((t) => normalizeTableKey(t.name) === normalizeTableKey(val))?.id ?? null,
-                    })
-                  }
+                  onChange={(val) => handleTableSelect(idx, val)}
                   options={optionsForRow(row)}
                   ariaLabel={`Mesa ${idx + 1}`}
                   size="sm"
                   placeholder="Elegir mesa"
                 />
-                <div data-ui="assignment-seats" className="bo-bookingAssignmentSeats">
-                  <button
-                    type="button"
-                    className="bo-counterBtn"
-                    aria-label="Restar comensal"
-                    onClick={() => setRow(idx, { seats: Math.max(1, row.seats - 1) })}
-                  >
-                    <Minus size={12} strokeWidth={2.2} />
-                  </button>
-                  <span data-ui="assignment-seats-value" className="bo-bookingAssignmentSeatsValue">{row.seats}</span>
-                  <button
-                    type="button"
-                    className="bo-counterBtn"
-                    aria-label="Sumar comensal"
-                    onClick={() => setRow(idx, { seats: Math.min(partySize, row.seats + 1) })}
-                  >
-                    <Plus size={12} strokeWidth={2.2} />
-                  </button>
-                </div>
+                {isLocked ? (
+                  <span data-ui="assignment-seats-chip" className="bo-bookingAssignmentSeatsChip" title="Capacidad fija de la mesa">
+                    {rowCapacity} pax
+                  </span>
+                ) : (
+                  <div data-ui="assignment-seats" className="bo-bookingAssignmentSeats">
+                    <button
+                      type="button"
+                      className="bo-counterBtn"
+                      aria-label="Restar comensal"
+                      onClick={() => setRow(idx, { seats: Math.max(1, row.seats - 1) })}
+                    >
+                      <Minus size={12} strokeWidth={2.2} />
+                    </button>
+                    <span data-ui="assignment-seats-value" className="bo-bookingAssignmentSeatsValue">{row.seats}</span>
+                    <button
+                      type="button"
+                      className="bo-counterBtn"
+                      aria-label="Sumar comensal"
+                      onClick={() => setRow(idx, { seats: row.seats + 1 })}
+                    >
+                      <Plus size={12} strokeWidth={2.2} />
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  data-ui="open-names-modal"
+                  className="bo-actionBtn bo-actionBtn--glass"
+                  aria-label={`Nombres en ${row.table_name || `mesa ${idx + 1}`}`}
+                  title={namesCount > 0 ? `${namesCount} nombre(s)` : "Añadir nombres"}
+                  onClick={() => setNamesModalRow(idx)}
+                >
+                  <ClipboardList size={13} strokeWidth={1.8} />
+                  {namesCount > 0 && <span className="bo-namesBadge">{namesCount}</span>}
+                </button>
                 <button
                   type="button"
                   data-ui="remove-assignment-row"
@@ -579,32 +807,9 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
                   <Trash2 size={13} strokeWidth={1.8} />
                 </button>
               </div>
-            ))}
-          </div>
-          <div data-ui="assignment-names" className="bo-bookingAssignmentNames">
-            {draft.map((row, idx) => (
-              <div key={`names-${idx}`} data-ui="assignment-name-row" className="bo-bookingAssignmentNameRow">
-                <span data-ui="assignment-name-label" className="bo-bookingAssignmentNameLabel">
-                  {row.table_name ? `Nombres en ${row.table_name}` : `Nombres mesa ${idx + 1}`}
-                </span>
-                <input
-                  data-ui="assignment-names-input"
-                  className="bo-input"
-                  value={row.names.join(", ")}
-                  placeholder="Nombres separados por coma"
-                  onChange={(e) =>
-                    setRow(idx, {
-                      names: e.target.value
-                        .split(",")
-                        .map((n) => n.trim())
-                        .filter(Boolean),
-                    })
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        </>
+            );
+          })}
+        </div>
       )}
       <div data-ui="assignment-footer" className="bo-bookingAssignmentFooter">
         <button
@@ -612,13 +817,23 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
           className="bo-btn bo-btn--ghost bo-btn--sm"
           type="button"
           onClick={addRow}
-          disabled={draft.length >= partySize}
         >
-          <Plus size={13} strokeWidth={1.8} /> Anadir mesa
+          <Plus size={13} strokeWidth={1.8} /> Añadir mesa
         </button>
         <span data-ui="assignment-total" className={`bo-bookingAssignmentTotal${seatsOk ? " is-ok" : " is-warn"}`}>
           {totalSeats} / {partySize} pax
         </span>
+        {showPdfButton && (
+          <button
+            data-ui="download-pdf-btn"
+            className="bo-btn bo-btn--ghost bo-btn--sm"
+            type="button"
+            onClick={handleDownloadPdf}
+            title="Descargar PDF con mesas y comensales"
+          >
+            <FileDown size={13} strokeWidth={1.8} /> PDF
+          </button>
+        )}
         <button
           data-ui="save-assignments-btn"
           className="bo-btn bo-btn--primary bo-btn--sm"
@@ -628,6 +843,15 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
           Guardar mesas
         </button>
       </div>
+      {namesModalRow !== null && modalRow && (
+        <GuestNamesModal
+          tableName={modalRow.table_name || `Mesa ${namesModalRow + 1}`}
+          capacity={modalCapacity}
+          names={modalRow.names}
+          onSave={(names) => handleSaveNames(namesModalRow, names)}
+          onClose={() => setNamesModalRow(null)}
+        />
+      )}
     </div>
   );
 }
@@ -671,6 +895,9 @@ export default function TableManagerPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookingForAssignment, setBookingForAssignment] = useState<Booking | null>(null);
   const [assignMode, setAssignMode] = useState(false);
+  const [multiTableMode, setMultiTableMode] = useState(false);
+  const [multiTableDraft, setMultiTableDraft] = useState<BookingTableAssignment[]>([]);
+  const [multiTableNamesModalIdx, setMultiTableNamesModalIdx] = useState<number | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [selectedDrawElementId, setSelectedDrawElementId] = useState<string | null>(null);
@@ -1301,10 +1528,14 @@ export default function TableManagerPage() {
           const occ = tableOccupancyMap.get(tableKey);
           const hasBookings = occ && occ.booked > 0;
           const hasSeated = occ && occ.seated > 0;
-          const nodeStatus = hasSeated ? "occupied" : hasBookings ? "reserved" : (table.status || "available");
+          // Status is derived from bookings only - ignore DB status field
+          const nodeStatus = hasSeated ? "occupied" : hasBookings ? "reserved" : "available";
           const metadata = (table.metadata || {}) as Record<string, unknown>;
           const explicitWidth = Number(metadata.width);
           const explicitHeight = Number(metadata.height);
+          // Check if this table is in the multi-table draft
+          const multiDraftIdx = multiTableDraft.findIndex((d) => d.table_id === table.id);
+          const isMultiSelected = multiTableMode && multiDraftIdx >= 0;
           return {
             id: String(table.id),
             type: "restaurantTable",
@@ -1328,6 +1559,10 @@ export default function TableManagerPage() {
               height: Number.isFinite(explicitHeight) && explicitHeight > 0 ? Math.round(explicitHeight) : undefined,
               onResizeEnd: (width, height) => saveTableSizeRef.current(String(table.id), width, height),
               seatedNames: seatedNamesByTable.get(tableKey) || [],
+              isMultiSelected,
+              multiTableDraftIdx: multiDraftIdx,
+              onMultiNamesClick: isMultiSelected ? () => setMultiTableNamesModalIdx(multiDraftIdx) : undefined,
+              onMultiRemoveClick: isMultiSelected ? () => setMultiTableDraft((prev) => prev.filter((_, i) => i !== multiDraftIdx)) : undefined,
             } as TableNodeData,
           };
         }),
@@ -1353,7 +1588,7 @@ export default function TableManagerPage() {
         })),
       ],
     );
-  }, [assignMode, drawElements, editMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, visibleTables]);
+  }, [assignMode, drawElements, editMode, multiTableDraft, multiTableMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -2560,11 +2795,64 @@ export default function TableManagerPage() {
     [visibleTables],
   );
 
+  // Multi-table assignment: computed totals
+  const multiTableTotalSeats = useMemo(() => sumAssignmentSeats(multiTableDraft), [multiTableDraft]);
+  const multiTablePartySize = bookingForAssignment ? Math.max(1, Math.round(Number(bookingForAssignment.party_size) || 1)) : 0;
+  const multiTableComplete = multiTableTotalSeats >= multiTablePartySize;
+
+  // Add a table to multi-table draft
+  const addTableToMultiDraft = useCallback((table: TableMapItem) => {
+    const capacity = Math.max(1, Number(table.capacity) || 4);
+    const key = normalizeTableKey(table.name);
+    setMultiTableDraft((prev) => {
+      // Don't add duplicates
+      if (prev.some((a) => normalizeTableKey(a.table_name) === key)) return prev;
+      return [...prev, { table_id: table.id, table_name: table.name, seats: capacity, names: [] }];
+    });
+  }, []);
+
+  // Remove a table from multi-table draft
+  const removeTableFromMultiDraft = useCallback((idx: number) => {
+    setMultiTableDraft((prev) => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  // Update names for a table in multi-table draft
+  const updateMultiDraftNames = useCallback((idx: number, names: string[]) => {
+    setMultiTableDraft((prev) => prev.map((row, i) => (i === idx ? { ...row, names } : row)));
+  }, []);
+
+  // Save multi-table draft
+  const saveMultiTableDraft = useCallback(async () => {
+    if (!bookingForAssignment) return;
+    await saveBookingAssignmentsRef.current(bookingForAssignment, multiTableDraft);
+    setMultiTableMode(false);
+    setMultiTableDraft([]);
+    setBookingForAssignment(null);
+    setAssignMode(false);
+    setSelectedBookingId(null);
+    setSelectedTableId(null);
+    pushToast({ kind: "success", title: "Mesas asignadas", message: `${multiTableDraft.length} mesa(s) asignadas` });
+  }, [bookingForAssignment, multiTableDraft, pushToast]);
+
+  // Cancel multi-table mode
+  const cancelMultiTableMode = useCallback(() => {
+    setMultiTableMode(false);
+    setMultiTableDraft([]);
+    setMultiTableNamesModalIdx(null);
+  }, []);
+
   const handleAssignModeSelect = useCallback(async (bookingId: number, tableId: number) => {
     const booking = bookings.find(b => b.id === bookingId);
     const table = visibleTables.find(t => t.id === tableId);
 
     if (!booking || !table) return;
+
+    // If multi-table mode is enabled, add to draft instead of saving
+    if (multiTableMode) {
+      addTableToMultiDraft(table);
+      setSelectedTableId(null);
+      return;
+    }
 
     const existing = resolveAssignments(bookingStatesRef.current[String(booking.id)], booking.table_number, booking.party_size);
     const already = existing.some((a) => normalizeTableKey(a.table_name) === normalizeTableKey(table.name));
@@ -2583,7 +2871,19 @@ export default function TableManagerPage() {
     setSelectedBookingId(null);
     setSelectedTableId(null);
     setAssignMode(false);
-  }, [bookings, visibleTables]);
+  }, [bookings, visibleTables, multiTableMode, addTableToMultiDraft]);
+
+  // Sync bookingForAssignment with selectedBookingId in assign mode
+  useEffect(() => {
+    if (assignMode && selectedBookingId) {
+      const booking = bookings.find(b => b.id === selectedBookingId);
+      if (booking) {
+        setBookingForAssignment(booking);
+      }
+    } else if (!assignMode) {
+      setBookingForAssignment(null);
+    }
+  }, [assignMode, selectedBookingId, bookings]);
 
   useEffect(() => {
     if (assignmentInProgress.current) return;
@@ -2599,6 +2899,9 @@ export default function TableManagerPage() {
   const cancelAssignmentMode = useCallback(() => {
     setBookingForAssignment(null);
     setAssignMode(false);
+    setMultiTableMode(false);
+    setMultiTableDraft([]);
+    setMultiTableNamesModalIdx(null);
     setSelectedBookingId(null);
     setSelectedTableId(null);
   }, []);
@@ -3319,10 +3622,27 @@ export default function TableManagerPage() {
                       const tableData = node.data as TableNodeData;
                       if (assignMode) {
                         setSelectedTableId(prev => prev === tableData.id ? null : tableData.id);
+                      } else if (multiTableMode) {
+                        // In multi-table mode, clicking a table adds it to draft
+                        const table = visibleTables.find(t => t.id === tableData.id);
+                        if (table) {
+                          addTableToMultiDraft(table);
+                        }
                       } else if (bookingForAssignment) {
                         assignBookingToTable(bookingForAssignment, tableData.name, node.id);
                       } else if (editMode) {
                         setSelectedTableId(prev => (prev === tableData.id ? null : tableData.id));
+                      } else {
+                        // View mode: if table is occupied, open booking modal
+                        const tableKey = normalizeTableKey(tableData.name);
+                        const tableBookings = bookings.filter(b => {
+                          const assignments = resolveAssignments(bookingStates[String(b.id)], b.table_number, b.party_size);
+                          return assignments.some(a => normalizeTableKey(a.table_name) === tableKey);
+                        });
+                        if (tableBookings.length > 0) {
+                          // Open modal with first booking (or could show a list if multiple)
+                          setSelectedBooking(tableBookings[0]);
+                        }
                       }
                       return;
                     }
@@ -3962,21 +4282,108 @@ export default function TableManagerPage() {
                               const isAssigning = bookingForAssignment?.id === booking.id;
                               const isSelected = selectedBookingId === booking.id;
                               return (
-                                <div
-                                  key={booking.id}
-                                  data-ui="booking-row"
-                                  className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}${assignMode && !isUnassigned ? " is-disabled" : ""}`}
-                                  onClick={() => {
-                                    if (assignMode && !isUnassigned) return;
-                                    if (assignMode) {
-                                      setSelectedBookingId(isSelected ? null : booking.id);
-                                    } else if (bookingForAssignment?.id === booking.id) {
-                                      setBookingForAssignment(null);
-                                    } else {
-                                      setSelectedBooking(booking);
-                                    }
-                                  }}
-                                >
+                                <React.Fragment key={booking.id}>
+                                  {/* Multi-table toggle appears above selected booking in assign mode */}
+                                  {assignMode && isSelected && (
+                                    <div data-ui="multi-table-inline" className="bo-multiTableInline">
+                                      <div data-ui="multi-table-toggle-row" className="bo-multiTableToggleRow">
+                                        <span className="bo-multiTableLabel">Asignar múltiples mesas</span>
+                                        <button
+                                          data-ui="multi-table-toggle"
+                                          type="button"
+                                          className={`bo-multiTableToggle${multiTableMode ? " is-active" : ""}`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (!multiTableMode) {
+                                              setMultiTableMode(true);
+                                              setMultiTableDraft([]);
+                                            } else {
+                                              setMultiTableMode(false);
+                                              setMultiTableDraft([]);
+                                            }
+                                          }}
+                                        >
+                                          <span className="bo-multiTableToggleThumb" />
+                                        </button>
+                                      </div>
+                                      {multiTableMode && (
+                                        <>
+                                          <div data-ui="multi-table-hint" className="bo-multiTableHint">
+                                            Haz clic en las mesas del mapa para añadirlas
+                                          </div>
+                                          {multiTableDraft.length > 0 && (
+                                            <div data-ui="multi-table-progress" className="bo-multiTableProgress">
+                                              <span className={`bo-multiTableProgressText${multiTableTotalSeats >= multiTablePartySize ? " is-complete" : ""}`}>
+                                                {multiTableTotalSeats} / {multiTablePartySize} comensales
+                                              </span>
+                                            </div>
+                                          )}
+                                          {multiTableDraft.length > 0 && (
+                                            <div data-ui="multi-table-assigned" className="bo-multiTableAssigned">
+                                              {multiTableDraft.map((row, idx) => (
+                                                <div key={row.table_id} data-ui="multi-table-row" className="bo-multiTableRow">
+                                                  <span className="bo-multiTableRowName">{row.table_name} ({row.seats})</span>
+                                                  <div className="bo-multiTableRowActions">
+                                                    <button
+                                                      type="button"
+                                                      className="bo-btn bo-btn--ghost bo-btn--xs"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setMultiTableNamesModalIdx(idx);
+                                                      }}
+                                                      title="Nombres"
+                                                    >
+                                                      <ClipboardList size={14} />
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      className="bo-btn bo-btn--ghost bo-btn--xs"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeTableFromMultiDraft(idx);
+                                                      }}
+                                                      title="Quitar"
+                                                    >
+                                                      ×
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {multiTableDraft.length > 0 && (
+                                            <div data-ui="multi-table-actions" className="bo-multiTableActions">
+                                              <button
+                                                data-ui="multi-table-save-btn"
+                                                type="button"
+                                                className="bo-btn bo-btn--primary bo-btn--sm"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  saveMultiTableDraft();
+                                                }}
+                                              >
+                                                Guardar mesas
+                                              </button>
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div
+                                    data-ui="booking-row"
+                                    className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}${assignMode && !isUnassigned ? " is-disabled" : ""}`}
+                                    onClick={() => {
+                                      if (assignMode && !isUnassigned) return;
+                                      if (assignMode) {
+                                        setSelectedBookingId(isSelected ? null : booking.id);
+                                      } else if (bookingForAssignment?.id === booking.id) {
+                                        setBookingForAssignment(null);
+                                      } else {
+                                        setSelectedBooking(booking);
+                                      }
+                                    }}
+                                  >
                                   {assignMode ? (
                                     <label data-ui="booking-checkbox" className="bo-checkboxContainer" onClick={(e) => e.stopPropagation()}>
                                       <input
@@ -4014,7 +4421,8 @@ export default function TableManagerPage() {
                                     ]}
                                     wrapperClassName="bo-tableBookingRowActions"
                                   />
-                                </div>
+                                  </div>
+                                </React.Fragment>
                               );
                             })}
                           </div>
@@ -4565,6 +4973,20 @@ export default function TableManagerPage() {
                   </div>
                 </div>
               </Modal>
+
+              {/* Multi-table names modal */}
+              {multiTableNamesModalIdx !== null && multiTableDraft[multiTableNamesModalIdx] && (
+                <GuestNamesModal
+                  tableName={multiTableDraft[multiTableNamesModalIdx].table_name}
+                  capacity={multiTableDraft[multiTableNamesModalIdx].seats}
+                  names={multiTableDraft[multiTableNamesModalIdx].names}
+                  onSave={(names) => {
+                    updateMultiDraftNames(multiTableNamesModalIdx, names);
+                    setMultiTableNamesModalIdx(null);
+                  }}
+                  onClose={() => setMultiTableNamesModalIdx(null)}
+                />
+              )}
             </motion.div>
           ) : (
             <motion.div
