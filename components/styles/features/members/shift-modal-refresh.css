@@ -260,9 +260,13 @@
   }
 
   .bo-shiftModalTimes .bo-counterBtn {
+    flex: 0 0 28px;
     width: 28px;
     min-width: 28px;
     height: 30px;
+    min-height: 28px;
+    aspect-ratio: 1;
+    border-radius: 50%;
     padding: 0;
   }
 
