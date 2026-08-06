@@ -360,7 +360,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
                 key={date}
                 date={date}
                 schedule={schedulesByDate.get(date) || null}
-                className={index === 0 ? "first:mt-0" : undefined}
+                className={index === 0 ? "!mt-0" : undefined}
               />
             ))}
           </div>
