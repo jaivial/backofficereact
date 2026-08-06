@@ -12,6 +12,8 @@ export const posFullscreenAtom = atom(false);
 // Forky AI assistant modal open/closed. Read by pages/app/+Layout.tsx,
 // ForkyButton (opens) and ForkyModal (closes).
 export const forkyOpenAtom = atom(false);
+// Forky hidden preference - persisted to database via user preferences API
+export const forkyHiddenAtom = atom(false);
 
 export type ToastKind = "success" | "error" | "info";
 export type Toast = {

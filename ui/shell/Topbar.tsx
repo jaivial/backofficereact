@@ -9,6 +9,7 @@ import { fichajeRealtimeAtom, sessionAtom } from "../../state/atoms";
 import { DropdownMenu } from "../inputs/DropdownMenu";
 import { Select } from "../inputs/Select";
 import { ThemeToggle } from "../theme/ThemeToggle";
+import { ForkyToggle } from "../forky/ForkyToggle";
 import { useToasts } from "../feedback/useToasts";
 import { Breadcrumbs, type BreadcrumbItem } from "../nav/Breadcrumbs";
 import { cn } from "../shadcn/utils";
@@ -153,6 +154,7 @@ export function Topbar({
         ) : null}
 
         <ThemeToggle />
+        <ForkyToggle />
 
         <DropdownMenu
           label="User menu"

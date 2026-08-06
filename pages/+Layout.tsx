@@ -34,13 +34,18 @@ import { ToastStack } from "../ui/feedback/ToastStack";
 import { FichajeRealtimeBridge } from "../ui/fichaje/FichajeRealtimeBridge";
 import { SessionExpiryGuard } from "../ui/session/SessionExpiryGuard";
 import { ThemeSync } from "../ui/theme/ThemeSync";
-import { sessionAtom, sessionMovingExpirationAtom, themeAtom, type ThemeMode } from "../state/atoms";
+import { sessionAtom, sessionMovingExpirationAtom, themeAtom, forkyHiddenAtom, type ThemeMode } from "../state/atoms";
+import { readForkyHiddenFromStorage } from "../ui/forky/ForkyButton";
 
 function initStore(theme: ThemeMode, session: BOSession | null, movingExpirationDate: string | null) {
   const store = createStore();
   store.set(themeAtom, theme);
   store.set(sessionAtom, session);
   store.set(sessionMovingExpirationAtom, movingExpirationDate);
+  // Initialize Forky hidden state from localStorage
+  if (typeof window !== "undefined") {
+    store.set(forkyHiddenAtom, readForkyHiddenFromStorage());
+  }
   return store;
 }
 
