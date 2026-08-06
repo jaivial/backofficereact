@@ -8,7 +8,8 @@
   display: grid;
   place-items: center;
   padding: 18px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -21,8 +22,10 @@
 .bo-modal,
 .bo-modal-content {
   width: min(var(--bo-modal-w, 520px), calc(100vw - 36px));
+  max-width: 100%;
   max-height: 80vh;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
   border-radius: var(--bo-radius-lg);
@@ -32,6 +35,26 @@
     var(--bo-surface-2);
   box-shadow: var(--bo-shadow);
   padding: 14px;
+}
+
+@media (max-width: 640px) {
+  .bo-modalOverlay,
+  .bo-modal-overlay {
+    padding: 8px;
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(8px + env(safe-area-inset-left, 0px));
+    padding-right: calc(8px + env(safe-area-inset-right, 0px));
+  }
+
+  .bo-modal,
+  .bo-modal-content {
+    width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    max-width: 100%;
+    max-height: calc(90vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(90dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding: 12px;
+  }
 }
 
 .bo-modalOverlay::-webkit-scrollbar,

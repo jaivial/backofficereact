@@ -16,6 +16,7 @@ function loadDotEnv(filePath: string): void {
 }
 
 loadDotEnv(path.join(__dirname, "../backend/.env"));
+loadDotEnv(path.join(__dirname, "../.env")); // # E2E playwright real app (URL, LOGIN_USER, LOGIN_PASSWORD)
 loadDotEnv(path.join(__dirname, ".env"));
 loadDotEnv(path.join(__dirname, ".env.local"));
 
@@ -41,7 +42,9 @@ export default defineConfig({
   globalSetup: "./e2e/global-setup.ts",
 
   use: {
-    baseURL: process.env.BACKOFFICE_URL || `https://localhost:${process.env.PORT || "3001"}`,
+    baseURL:
+      process.env.BACKOFFICE_URL ||
+      (process.env.URL ? `https://${process.env.URL}` : `https://localhost:${process.env.PORT || "3001"}`),
     ignoreHTTPSErrors: true,
     screenshot: screenshotMode as "on" | "only-on-failure" | "off",
     video: "on-first-retry",

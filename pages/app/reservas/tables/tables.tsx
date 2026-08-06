@@ -15,9 +15,9 @@ import ReactFlow, {
 } from "reactflow";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-  CalendarDays, ChevronDown, ChevronLeft, DoorOpen, Ellipsis, FileText, GripVertical,
-  Hand, ImagePlus, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
-  Plus, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
+  CalendarDays, ChevronDown, ChevronLeft, ClipboardList, DoorOpen, Ellipsis, FileDown, FileText, GripVertical,
+  Hand, ImagePlus, Layers, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
+  Plus, Redo2, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
 } from "lucide-react";
 import "reactflow/dist/style.css";
@@ -32,6 +32,7 @@ import type {
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
+import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { formatHHMM } from "../../../../ui/lib/format";
@@ -94,7 +95,6 @@ import {
   DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS,
   TABLE_LIMIT_PADDING,
   TABLE_SIZE_MIN,
-  TABLE_SIZE_MAX,
   DRAW_PANEL_GROUPS,
   DRAW_PRESET_ICONS,
   STATUS_LABEL,
@@ -120,7 +120,19 @@ import {
   normalizeAssignmentSeats,
   assignmentsDisplayName,
   seatedNamesForTable,
+  initialDateFromSearch,
+  withDateParam,
 } from "./helpers/tables";
+import {
+  buildDayOverrideLayout,
+  buildGlobalTemplateLayout,
+  buildTemplatePayload,
+  defaultScope,
+  isNonEmptyTemplate,
+  stripDayFieldsForTemplate,
+  stripTemplateFieldsForDay,
+} from "./helpers/templateScope";
+import type { TableMapLayoutTemplate, TableMapTemplateScope } from "../../../../api/types";
 
 // === Status label ===
 // Already exported from constants/tables.ts
@@ -144,6 +156,56 @@ function makeDrawElement(kind: DrawElementKind, preset: DrawElementPreset, base:
     height: dims.height,
     rotationDeg: 0,
     label: drawPresetLabel(preset),
+  };
+}
+
+/** Normalizes raw layout element rows (per-day `elements` or cross-day
+ *  `draw_elements_template`) into the DrawElement shape the canvas renders. */
+function normalizeLayoutElements(raw: unknown): DrawElement[] {
+  if (!Array.isArray(raw)) return [];
+  return (raw as any[])
+    .map((item) => {
+      const id = String(item?.id || "").trim();
+      if (!id) return null;
+      const kind = normalizeDrawElementKind(item?.kind);
+      const preset = normalizeDrawElementPreset(item?.preset);
+      const displayMode = normalizeDrawElementDisplayMode(item?.display_mode ?? item?.displayMode);
+      const defaultSize = drawElementSizeForPreset(preset);
+      return {
+        id,
+        kind,
+        preset,
+        displayMode,
+        x: Number(item?.x || 0),
+        y: Number(item?.y || 0),
+        width: Math.max(24, Number(item?.width || defaultSize.width)),
+        height: Math.max(24, Number(item?.height || defaultSize.height)),
+        rotationDeg: Number(item?.rotationDeg || 0),
+        label: String(item?.label || drawPresetLabel(preset)),
+      } as DrawElement;
+    })
+    .filter(Boolean) as DrawElement[];
+}
+
+type MapEditSnapshot = {
+  drawElements: DrawElement[];
+  limitPoints: LinePoint[];
+};
+
+type MapEditHistoryEntry = {
+  before: MapEditSnapshot;
+  after: MapEditSnapshot;
+  timestamp: number;
+};
+
+function cloneDrawElements(elements: DrawElement[]): DrawElement[] {
+  return elements.map((element) => ({ ...element }));
+}
+
+function cloneMapEditSnapshot(snapshot: MapEditSnapshot): MapEditSnapshot {
+  return {
+    drawElements: cloneDrawElements(snapshot.drawElements),
+    limitPoints: cloneLinePoints(snapshot.limitPoints),
   };
 }
 
@@ -220,6 +282,38 @@ function clampRectMoveToLimit(
   return findNearestRectInsideLimitArea(candidate, size, polygon) || findNearestRectInsideLimitArea(from, size, polygon) || from;
 }
 
+function rectsOverlap(a: RectSize & XYPosition, b: RectSize & XYPosition): boolean {
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+function tableSizeFitsOtherTables(
+  node: Node<any>,
+  width: number,
+  height: number,
+  nodes: Node<any>[],
+): boolean {
+  if (!node.position) return false;
+  const data = node.data as TableNodeData;
+  const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+  const frame = rotatedRectFrameFromPosition(node.position, width, height, rotationDeg, 0);
+
+  return nodes.every((other) => {
+    if (other.id === node.id || other.type !== "restaurantTable" || !other.position) return true;
+    const otherData = other.data as TableNodeData;
+    const otherGeom = previewGeometry(
+      otherData.shape,
+      otherData.capacity,
+      otherData.rectShortSides,
+      typeof otherData.width === "number" || typeof otherData.height === "number"
+        ? { width: otherData.width, height: otherData.height }
+        : undefined,
+    );
+    const otherRotation = Number.isFinite(otherData.rotationDeg) ? otherData.rotationDeg : 0;
+    const otherFrame = rotatedRectFrameFromPosition(other.position, otherGeom.width, otherGeom.height, otherRotation, 0);
+    return !rectsOverlap(frame, otherFrame);
+  });
+}
+
 // === Table node renderer ===
 function tableFromRFNode(data: TableNodeData): React.JSX.Element {
   const explicitSize =
@@ -240,7 +334,7 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
   return (
     <div
       data-ui="table-node"
-      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}${data.editable ? " is-editable" : ""}`}
+      className={`bo-tableMapNode ${shape}${data.assignMode ? " is-assign-mode" : ""}${data.isSelected ? " is-selected" : ""}${data.editable ? " is-editable" : ""}${data.isMultiSelected ? " is-multi-selected" : ""}`}
       style={style}
     >
       {data.editable ? (
@@ -248,8 +342,6 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
           isVisible={data.editable && Boolean(data.isSelected)}
           minWidth={TABLE_SIZE_MIN}
           minHeight={TABLE_SIZE_MIN}
-          maxWidth={TABLE_SIZE_MAX}
-          maxHeight={TABLE_SIZE_MAX}
           lineStyle={{ borderColor: "var(--bo-accent)" }}
           handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
           onResizeEnd={(_event, params) => {
@@ -270,6 +362,35 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
       {seatedNames.length > 0 ? (
         <div data-ui="node-seated-names" className="bo-tableMapNodeSeatedNames">{seatedNames.join(", ")}</div>
       ) : null}
+      {/* Multi-table selection overlay - buttons outside container on top-right */}
+      {data.isMultiSelected && (
+        <div data-ui="multi-select-overlay" className="bo-tableMultiSelectOverlay">
+          <button
+            data-ui="multi-names-btn"
+            type="button"
+            className="bo-tableMultiSelectBtn"
+            title="Nombres"
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onMultiNamesClick?.();
+            }}
+          >
+            <ClipboardList size={12} strokeWidth={2} />
+          </button>
+          <button
+            data-ui="multi-remove-btn"
+            type="button"
+            className="bo-tableMultiSelectBtn bo-tableMultiSelectBtn--remove"
+            title="Quitar"
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onMultiRemoveClick?.();
+            }}
+          >
+            <X size={12} strokeWidth={2} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -295,6 +416,13 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
         minHeight={24}
         lineStyle={{ borderColor: "var(--bo-accent)" }}
         handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
+        onResizeEnd={(_event, params) => {
+          const width = Number(params?.width);
+          const height = Number(params?.height);
+          if (Number.isFinite(width) && Number.isFinite(height)) {
+            data.onResizeEnd?.(Math.round(width), Math.round(height));
+          }
+        }}
       />
       {data.editable && data.isSelected && data.onDelete ? (
         <button
@@ -346,6 +474,157 @@ function toFileFromDataURL(dataUrl: string, filename: string): File {
   return new File([bytes], filename, { type: mime });
 }
 
+// === Guest names modal ===
+export type GuestNamesModalProps = {
+  tableName: string;
+  capacity: number;
+  names: string[];
+  onSave: (names: string[]) => void;
+  onClose: () => void;
+};
+
+export function GuestNamesModal({ tableName, capacity, names, onSave, onClose }: GuestNamesModalProps) {
+  const [draft, setDraft] = useState<string[]>(() => {
+    const result = new Array(capacity).fill("");
+    for (let i = 0; i < Math.min(names.length, capacity); i++) {
+      result[i] = names[i] || "";
+    }
+    return result;
+  });
+
+  const handleChange = useCallback((idx: number, value: string) => {
+    setDraft((prev) => {
+      const next = [...prev];
+      next[idx] = value;
+      return next;
+    });
+  }, []);
+
+  const handleSave = useCallback(() => {
+    onSave(draft.map((n) => n.trim()).filter(Boolean));
+    onClose();
+  }, [draft, onSave, onClose]);
+
+  return (
+    <div data-ui="guest-names-modal" className="bo-guestNamesModal">
+      <div data-ui="guest-names-backdrop" className="bo-guestNamesBackdrop" onClick={onClose} />
+      <div data-ui="guest-names-content" className="bo-guestNamesContent">
+        <div data-ui="guest-names-header" className="bo-guestNamesHeader">
+          <h3>Comensales en {tableName || "mesa"}</h3>
+          <button type="button" className="bo-actionBtn bo-actionBtn--glass" onClick={onClose} aria-label="Cerrar">
+            <X size={14} strokeWidth={2} />
+          </button>
+        </div>
+        <div data-ui="guest-names-inputs" className="bo-guestNamesInputs">
+          {draft.map((name, idx) => (
+            <div key={idx} data-ui="guest-name-row" className="bo-guestNameRow">
+              <label className="bo-guestNameLabel">Comensal {idx + 1}</label>
+              <input
+                data-ui="guest-name-input"
+                className="bo-input"
+                value={name}
+                placeholder={`Nombre comensal ${idx + 1}`}
+                onChange={(e) => handleChange(idx, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+        <div data-ui="guest-names-footer" className="bo-guestNamesFooter">
+          <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose}>
+            Cancelar
+          </button>
+          <button type="button" className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleSave}>
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// === PDF generator for multi-table assignment ===
+async function downloadMultiTablePdf(
+  bookingName: string,
+  assignments: Array<{ table_name: string; seats: number; names: string[] }>,
+): Promise<void> {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  const PAGE_WIDTH = 210;
+  const PAGE_HEIGHT = 297;
+  const MARGIN = 15;
+  const CARD_GAP = 10;
+  const CARD_WIDTH = (PAGE_WIDTH - MARGIN * 2 - CARD_GAP) / 2;
+  const CARD_MIN_HEIGHT = 50;
+  const LINE_HEIGHT = 6;
+  const HEADER_HEIGHT = 10;
+
+  let x = MARGIN;
+  let y = MARGIN;
+  let col = 0;
+  let maxRowHeight = 0;
+
+  // Title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Reserva: ${bookingName}`, MARGIN, y + 5);
+  y += 15;
+
+  for (const assignment of assignments) {
+    const nameCount = Math.max(assignment.seats, assignment.names.length, 1);
+    const cardHeight = Math.max(CARD_MIN_HEIGHT, HEADER_HEIGHT + nameCount * LINE_HEIGHT + 10);
+
+    // Check if we need a new row or page
+    if (y + cardHeight > PAGE_HEIGHT - MARGIN) {
+      doc.addPage();
+      y = MARGIN;
+      x = MARGIN;
+      col = 0;
+      maxRowHeight = 0;
+    }
+
+    // Draw card border
+    doc.setDrawColor("#cccccc");
+    doc.setLineWidth(0.3);
+    doc.rect(x, y, CARD_WIDTH, cardHeight);
+
+    // Table header
+    doc.setFillColor("#f5f5f5");
+    doc.rect(x, y, CARD_WIDTH, HEADER_HEIGHT, "F");
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor("#333333");
+    doc.text(`Mesa ${assignment.table_name}`, x + 4, y + 7);
+
+    // Guest names
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor("#000000");
+    let nameY = y + HEADER_HEIGHT + 6;
+    for (let i = 0; i < nameCount; i++) {
+      const name = assignment.names[i]?.trim() || `— Comensal ${i + 1}`;
+      doc.text(name, x + 4, nameY);
+      nameY += LINE_HEIGHT;
+    }
+
+    maxRowHeight = Math.max(maxRowHeight, cardHeight);
+
+    // Move to next column or row
+    col++;
+    if (col >= 2) {
+      col = 0;
+      x = MARGIN;
+      y += maxRowHeight + CARD_GAP;
+      maxRowHeight = 0;
+    } else {
+      x += CARD_WIDTH + CARD_GAP;
+    }
+  }
+
+  const safeBookingName = bookingName.replace(/[^\w.-]+/g, "-") || "reserva";
+  doc.save(`mesas-${safeBookingName}.pdf`);
+}
+
 // === Booking multi-table assignment editor ===
 type BookingAssignmentEditorProps = {
   booking: Booking;
@@ -360,6 +639,7 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
   const [draft, setDraft] = useState<BookingTableAssignment[]>(() =>
     resolveAssignments(state, booking.table_number, booking.party_size),
   );
+  const [namesModalRow, setNamesModalRow] = useState<number | null>(null);
   const partySize = Math.max(1, Math.round(Number(booking.party_size) || 1));
 
   useEffect(() => {
@@ -368,6 +648,16 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
 
   const totalSeats = useMemo(() => sumAssignmentSeats(draft), [draft]);
   const seatsOk = totalSeats === partySize;
+
+  // Map table name -> capacity for quick lookup
+  const tableCapacityMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of tables) {
+      const key = normalizeTableKey(t.name);
+      if (key) map.set(key, Math.max(1, Number(t.capacity) || 4));
+    }
+    return map;
+  }, [tables]);
 
   const tableOptions = useMemo(() => {
     const opts: Array<{ value: string; label: string }> = [];
@@ -401,75 +691,112 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
     (idx: number, patch: Partial<BookingTableAssignment>) => {
       setDraft((prev) => {
         const next = prev.map((row, i) => (i === idx ? { ...row, ...patch } : row));
-        if (patch.seats !== undefined) {
-          return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
-        }
+        // Note: we no longer normalize seats across tables automatically since seats are locked to capacity
         return next;
       });
     },
-    [partySize],
+    [],
+  );
+
+  // When table is selected, lock seats to table capacity
+  const handleTableSelect = useCallback(
+    (idx: number, tableName: string) => {
+      const table = tables.find((t) => normalizeTableKey(t.name) === normalizeTableKey(tableName));
+      const capacity = table ? Math.max(1, Number(table.capacity) || 4) : 1;
+      setDraft((prev) => {
+        const next = prev.map((row, i) =>
+          i === idx ? { ...row, table_name: tableName, table_id: table?.id ?? null, seats: capacity } : row,
+        );
+        return next;
+      });
+    },
+    [tables],
   );
 
   const addRow = useCallback(() => {
-    setDraft((prev) => {
-      if (prev.length >= partySize) return prev;
-      const next: BookingTableAssignment[] = [...prev, { table_id: null, table_name: "", seats: 1, names: [] }];
-      return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
-    });
-  }, [partySize]);
+    setDraft((prev) => [...prev, { table_id: null, table_name: "", seats: 1, names: [] }]);
+  }, []);
 
-  const removeRow = useCallback(
-    (idx: number) => {
-      setDraft((prev) => {
-        const next = prev.filter((_, i) => i !== idx);
-        if (next.length === 0) return [];
-        return normalizeAssignmentSeats(next, partySize) as BookingTableAssignment[];
-      });
+  const removeRow = useCallback((idx: number) => {
+    setDraft((prev) => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const handleSaveNames = useCallback(
+    (idx: number, names: string[]) => {
+      setRow(idx, { names });
     },
-    [partySize],
+    [setRow],
   );
+
+  const handleDownloadPdf = useCallback(async () => {
+    const bookingName = booking.customer_name?.trim() || `Reserva ${booking.id}`;
+    await downloadMultiTablePdf(bookingName, draft);
+  }, [booking.id, booking.customer_name, draft]);
+
+  const hasAnyNames = draft.some((row) => row.names.length > 0);
+  const isMultiTable = draft.length > 1;
+  const showPdfButton = isMultiTable || hasAnyNames;
+
+  // Get the modal row data for GuestNamesModal
+  const modalRow = namesModalRow !== null ? draft[namesModalRow] : null;
+  const modalCapacity = modalRow ? (tableCapacityMap.get(normalizeTableKey(modalRow.table_name)) || modalRow.seats) : 1;
 
   return (
     <div data-ui="booking-assignment-editor" className="bo-bookingAssignmentEditor">
       {draft.length === 0 ? (
         <div data-ui="assignment-empty" className="bo-bookingAssignmentEmpty">Sin mesas asignadas</div>
       ) : (
-        <>
-          <div data-ui="assignment-rows" className="bo-bookingAssignmentRows">
-            {draft.map((row, idx) => (
+        <div data-ui="assignment-rows" className="bo-bookingAssignmentRows">
+          {draft.map((row, idx) => {
+            const rowCapacity = tableCapacityMap.get(normalizeTableKey(row.table_name)) || row.seats;
+            const isLocked = Boolean(row.table_name);
+            const namesCount = row.names.filter(Boolean).length;
+            return (
               <div key={idx} data-ui="assignment-row" className="bo-bookingAssignmentRow">
                 <Select
                   value={row.table_name}
-                  onChange={(val) =>
-                    setRow(idx, {
-                      table_name: val,
-                      table_id: tables.find((t) => normalizeTableKey(t.name) === normalizeTableKey(val))?.id ?? null,
-                    })
-                  }
+                  onChange={(val) => handleTableSelect(idx, val)}
                   options={optionsForRow(row)}
                   ariaLabel={`Mesa ${idx + 1}`}
                   size="sm"
                   placeholder="Elegir mesa"
                 />
-                <div data-ui="assignment-seats" className="bo-bookingAssignmentSeats">
-                  <button
-                    type="button"
-                    className="bo-counterBtn"
-                    aria-label="Restar comensal"
-                    onClick={() => setRow(idx, { seats: Math.max(1, row.seats - 1) })}
-                  >
-                    <Minus size={12} strokeWidth={2.2} />
-                  </button>
-                  <span data-ui="assignment-seats-value" className="bo-bookingAssignmentSeatsValue">{row.seats}</span>
-                  <button
-                    type="button"
-                    className="bo-counterBtn"
-                    aria-label="Sumar comensal"
-                    onClick={() => setRow(idx, { seats: Math.min(partySize, row.seats + 1) })}
-                  >
-                    <Plus size={12} strokeWidth={2.2} />
-                  </button>
-                </div>
+                {isLocked ? (
+                  <span data-ui="assignment-seats-chip" className="bo-bookingAssignmentSeatsChip" title="Capacidad fija de la mesa">
+                    {rowCapacity} pax
+                  </span>
+                ) : (
+                  <div data-ui="assignment-seats" className="bo-bookingAssignmentSeats">
+                    <button
+                      type="button"
+                      className="bo-counterBtn"
+                      aria-label="Restar comensal"
+                      onClick={() => setRow(idx, { seats: Math.max(1, row.seats - 1) })}
+                    >
+                      <Minus size={12} strokeWidth={2.2} />
+                    </button>
+                    <span data-ui="assignment-seats-value" className="bo-bookingAssignmentSeatsValue">{row.seats}</span>
+                    <button
+                      type="button"
+                      className="bo-counterBtn"
+                      aria-label="Sumar comensal"
+                      onClick={() => setRow(idx, { seats: row.seats + 1 })}
+                    >
+                      <Plus size={12} strokeWidth={2.2} />
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  data-ui="open-names-modal"
+                  className="bo-actionBtn bo-actionBtn--glass"
+                  aria-label={`Nombres en ${row.table_name || `mesa ${idx + 1}`}`}
+                  title={namesCount > 0 ? `${namesCount} nombre(s)` : "Añadir nombres"}
+                  onClick={() => setNamesModalRow(idx)}
+                >
+                  <ClipboardList size={13} strokeWidth={1.8} />
+                  {namesCount > 0 && <span className="bo-namesBadge">{namesCount}</span>}
+                </button>
                 <button
                   type="button"
                   data-ui="remove-assignment-row"
@@ -480,32 +807,9 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
                   <Trash2 size={13} strokeWidth={1.8} />
                 </button>
               </div>
-            ))}
-          </div>
-          <div data-ui="assignment-names" className="bo-bookingAssignmentNames">
-            {draft.map((row, idx) => (
-              <div key={`names-${idx}`} data-ui="assignment-name-row" className="bo-bookingAssignmentNameRow">
-                <span data-ui="assignment-name-label" className="bo-bookingAssignmentNameLabel">
-                  {row.table_name ? `Nombres en ${row.table_name}` : `Nombres mesa ${idx + 1}`}
-                </span>
-                <input
-                  data-ui="assignment-names-input"
-                  className="bo-input"
-                  value={row.names.join(", ")}
-                  placeholder="Nombres separados por coma"
-                  onChange={(e) =>
-                    setRow(idx, {
-                      names: e.target.value
-                        .split(",")
-                        .map((n) => n.trim())
-                        .filter(Boolean),
-                    })
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        </>
+            );
+          })}
+        </div>
       )}
       <div data-ui="assignment-footer" className="bo-bookingAssignmentFooter">
         <button
@@ -513,13 +817,23 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
           className="bo-btn bo-btn--ghost bo-btn--sm"
           type="button"
           onClick={addRow}
-          disabled={draft.length >= partySize}
         >
-          <Plus size={13} strokeWidth={1.8} /> Anadir mesa
+          <Plus size={13} strokeWidth={1.8} /> Añadir mesa
         </button>
         <span data-ui="assignment-total" className={`bo-bookingAssignmentTotal${seatsOk ? " is-ok" : " is-warn"}`}>
           {totalSeats} / {partySize} pax
         </span>
+        {showPdfButton && (
+          <button
+            data-ui="download-pdf-btn"
+            className="bo-btn bo-btn--ghost bo-btn--sm"
+            type="button"
+            onClick={handleDownloadPdf}
+            title="Descargar PDF con mesas y comensales"
+          >
+            <FileDown size={13} strokeWidth={1.8} /> PDF
+          </button>
+        )}
         <button
           data-ui="save-assignments-btn"
           className="bo-btn bo-btn--primary bo-btn--sm"
@@ -529,6 +843,15 @@ function BookingAssignmentEditor({ booking, state, tables, occupiedSeats, onSave
           Guardar mesas
         </button>
       </div>
+      {namesModalRow !== null && modalRow && (
+        <GuestNamesModal
+          tableName={modalRow.table_name || `Mesa ${namesModalRow + 1}`}
+          capacity={modalCapacity}
+          names={modalRow.names}
+          onSave={(names) => handleSaveNames(namesModalRow, names)}
+          onClose={() => setNamesModalRow(null)}
+        />
+      )}
     </div>
   );
 }
@@ -539,11 +862,10 @@ export default function TableManagerPage() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
 
-  const initialDate = useMemo(() => {
-    const fromSearch = typeof pageContext.urlParsed?.search?.date === "string" ? pageContext.urlParsed.search.date : "";
-    if (fromSearch && /^\d{4}-\d{2}-\d{2}$/.test(fromSearch)) return fromSearch;
-    return todayISO();
-  }, [pageContext.urlParsed?.search?.date]);
+  const initialDate = useMemo(
+    () => initialDateFromSearch(pageContext.urlParsed?.search?.date, todayISO()),
+    [pageContext.urlParsed?.search?.date],
+  );
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [calendarView, setCalendarView] = useState(() => {
     const [y, m] = String(initialDate).split("-").map((n) => Number(n));
@@ -573,6 +895,9 @@ export default function TableManagerPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookingForAssignment, setBookingForAssignment] = useState<Booking | null>(null);
   const [assignMode, setAssignMode] = useState(false);
+  const [multiTableMode, setMultiTableMode] = useState(false);
+  const [multiTableDraft, setMultiTableDraft] = useState<BookingTableAssignment[]>([]);
+  const [multiTableNamesModalIdx, setMultiTableNamesModalIdx] = useState<number | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [selectedDrawElementId, setSelectedDrawElementId] = useState<string | null>(null);
@@ -586,6 +911,17 @@ export default function TableManagerPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [savingLimitTemplate, setSavingLimitTemplate] = useState(false);
   const [removeAreaConfirmOpen, setRemoveAreaConfirmOpen] = useState(false);
+  // Cross-day layout template (per floor). When `templateScope` is "template"
+  // the editor commits to the global template; when "day" it stores day-specific
+  // overrides without touching the template.
+  const [floorTemplate, setFloorTemplate] = useState<TableMapLayoutTemplate | null>(null);
+  const [templateScope, setTemplateScope] = useState<TableMapTemplateScope>("day");
+  const [templateScopeLocked, setTemplateScopeLocked] = useState(false);
+  const [historyVersion, setHistoryVersion] = useState(0);
+  const [confirmScopeChange, setConfirmScopeChange] = useState<
+    | { next: TableMapTemplateScope; reason: "switch-to-day" | "switch-to-template" }
+    | null
+  >(null);
 
   // Toggle body class for drag state
   useEffect(() => {
@@ -625,6 +961,9 @@ export default function TableManagerPage() {
   const limitEditHistoryRef = useRef<LinePoint[][]>([]);
   const bookingStatesRef = useRef<Record<string, BookingState>>({});
   const persistLayoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingMapWSMessagesRef = useRef<string[]>([]);
+  const mapHistoryRef = useRef(new Map<string, { undo: MapEditHistoryEntry[]; redo: MapEditHistoryEntry[]; last: MapEditSnapshot | null }>());
+  const applyingHistoryRef = useRef(false);
   const drawPanelHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flowWrapRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -632,6 +971,7 @@ export default function TableManagerPage() {
   const assignmentInProgress = useRef(false);
   const saveBookingAssignmentsRef = useRef<(booking: Booking, assignments: BookingTableAssignment[]) => Promise<void>>(async () => undefined);
   const saveTableSizeRef = useRef<(id: string, width: number, height: number) => void>(() => undefined);
+  const saveDrawElementSizeRef = useRef<(id: string, width: number, height: number) => void>(() => undefined);
   const geom = useMemo(
     () => previewGeometry(draft.shape, draft.capacity, draft.rectShortSides),
     [draft.capacity, draft.rectShortSides, draft.shape],
@@ -651,6 +991,39 @@ export default function TableManagerPage() {
   const shortSideMax = useMemo(() => maxRectShortSeatsForCapacity(draft.capacity), [draft.capacity]);
   const canAddLeftShortSide = isRectangularPreview && !normalizedRectShortSides.left && shortSideCount < shortSideMax;
   const canAddRightShortSide = isRectangularPreview && !normalizedRectShortSides.right && shortSideCount < shortSideMax;
+
+  const mapHistoryKey = useCallback(
+    () => `${Number(pageContext.bo?.session?.activeRestaurantId || 0)}:${selectedFloor}:${selectedDate}:${templateScope}`,
+    [pageContext.bo?.session?.activeRestaurantId, selectedDate, selectedFloor, templateScope],
+  );
+
+  const getMapHistory = useCallback(() => {
+    const key = mapHistoryKey();
+    let history = mapHistoryRef.current.get(key);
+    if (!history) {
+      history = { undo: [], redo: [], last: null };
+      mapHistoryRef.current.set(key, history);
+    }
+    return history;
+  }, [mapHistoryKey]);
+
+  const setMapHistoryBaseline = useCallback((elements: DrawElement[], points: LinePoint[]) => {
+    const history = getMapHistory();
+    history.last = cloneMapEditSnapshot({ drawElements: elements, limitPoints: points });
+    history.undo = [];
+    history.redo = [];
+    setHistoryVersion((version) => version + 1);
+  }, [getMapHistory]);
+
+  const sendMapWSMessage = useCallback((message: Record<string, unknown>) => {
+    const raw = JSON.stringify(message);
+    const socket = ws.current;
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(raw);
+      return;
+    }
+    pendingMapWSMessagesRef.current.push(raw);
+  }, []);
 
   useEffect(() => {
     drawElementsRef.current = drawElements;
@@ -786,8 +1159,14 @@ export default function TableManagerPage() {
   const hasUnassignedBookings = useMemo(() => bookings.some(b => !b.table_number), [bookings]);
 
   const nextTableNumber = useMemo(() => {
-    const total = areas.flatMap((a) => a.tables || []).length;
-    return total + 1;
+    const allTables = areas.flatMap((a) => a.tables || []);
+    const usedNames = new Set(allTables.map((t) => normalizeTableKey(t.name)));
+    // Start above the visible count; keep bumping until "Mesa N" is free so a
+    // duplicate name can never be suggested (tables not nested under an area
+    // or tables with custom names would otherwise collide).
+    let n = allTables.length + 1;
+    while (usedNames.has(normalizeTableKey(`Mesa ${n}`))) n += 1;
+    return n;
   }, [areas]);
 
   const occupancy = useMemo(() => {
@@ -818,39 +1197,29 @@ export default function TableManagerPage() {
         loadedAreas = (tablesRes.areas || tablesRes.data || []).map((a: any) => normalizeTableArea(a));
         setAreas(loadedAreas);
         const mapLayout = ((tablesRes.layout as any)?.map || (tablesRes.layout as any) || {}) as Record<string, unknown>;
-        const loadedElements = Array.isArray(mapLayout.elements)
-          ? (mapLayout.elements as any[])
-              .map((item) => {
-                const id = String(item?.id || "").trim();
-                if (!id) return null;
-                const kind = normalizeDrawElementKind(item?.kind);
-                const preset = normalizeDrawElementPreset(item?.preset);
-                const displayMode = normalizeDrawElementDisplayMode(item?.display_mode ?? item?.displayMode);
-                const defaultSize = drawElementSizeForPreset(preset);
-                return {
-                  id,
-                  kind,
-                  preset,
-                  displayMode,
-                  x: Number(item?.x || 0),
-                  y: Number(item?.y || 0),
-                  width: Math.max(24, Number(item?.width || defaultSize.width)),
-                  height: Math.max(24, Number(item?.height || defaultSize.height)),
-                  rotationDeg: Number(item?.rotationDeg || 0),
-                  label: String(item?.label || drawPresetLabel(preset)),
-                } as DrawElement;
-              })
-              .filter(Boolean) as DrawElement[]
-          : [];
+        // Per-day elements win when present; otherwise fall back to the
+        // cross-day template the backend merges into the layout response.
+        const perDayElements = normalizeLayoutElements(mapLayout.elements);
+        const templateElements = normalizeLayoutElements(mapLayout.draw_elements_template);
+        const loadedElements = perDayElements.length > 0 ? perDayElements : templateElements;
         drawElementsRef.current = loadedElements;
         setDrawElements(loadedElements);
 
+        // Limit points: per-day polygon wins, then the merged template polygon,
+        // then the legacy area-metadata path.
         const loadedLimitPoints = normalizeLimitPoints(mapLayout.limit_points);
-        const templateLimitPoints = limitAreaTemplatePointsForFloor(loadedAreas, selectedFloor);
-        const activeLimitPoints = hasClosedLimitArea(loadedLimitPoints) ? loadedLimitPoints : templateLimitPoints;
+        const templateLayoutPoints = normalizeLimitPoints(mapLayout.limit_area_template_points);
+        const legacyTemplatePoints = limitAreaTemplatePointsForFloor(loadedAreas, selectedFloor);
+        const activeLimitPoints = hasClosedLimitArea(loadedLimitPoints)
+          ? loadedLimitPoints
+          : hasClosedLimitArea(templateLayoutPoints)
+            ? templateLayoutPoints
+            : legacyTemplatePoints;
         lineDrawingPointsRef.current = activeLimitPoints;
         limitEditHistoryRef.current = [];
         setLineDrawing({ points: activeLimitPoints, isDrawing: false });
+        const history = getMapHistory();
+        if (!history.last) setMapHistoryBaseline(loadedElements, activeLimitPoints);
 
         const loadedBookingStates: Record<string, BookingState> = {};
         const rawBookingStates = mapLayout.booking_states as Record<string, unknown> | undefined;
@@ -922,6 +1291,35 @@ export default function TableManagerPage() {
       setLoading(false);
     }
   }, [api.calendar, api.config, api.dashboard, api.reservas, api.tables, calendarView.month, calendarView.year, selectedDate, selectedFloor]);
+
+  // Load the cross-day template for the current floor and re-derive the
+  // default scope. Done as a separate effect so it re-runs when the floor
+  // changes (and not on every per-day layout refresh).
+  useEffect(() => {
+    let cancelled = false;
+    async function loadTemplateForFloor() {
+      try {
+        const res = await api.tables.getTemplate(selectedFloor);
+        if (cancelled) return;
+        if (!res.success) {
+          setFloorTemplate(null);
+          setTemplateScope(defaultScope(false));
+          return;
+        }
+        const tpl = isNonEmptyTemplate((res as any).template) ? ((res as any).template as TableMapLayoutTemplate) : null;
+        setFloorTemplate(tpl);
+        setTemplateScope(defaultScope(tpl !== null, (res as any).scope));
+      } catch {
+        if (cancelled) return;
+        setFloorTemplate(null);
+        setTemplateScope(defaultScope(false));
+      }
+    }
+    void loadTemplateForFloor();
+    return () => {
+      cancelled = true;
+    };
+  }, [api.tables, selectedFloor]);
 
   useEffect(() => {
     void loadData();
@@ -1130,10 +1528,14 @@ export default function TableManagerPage() {
           const occ = tableOccupancyMap.get(tableKey);
           const hasBookings = occ && occ.booked > 0;
           const hasSeated = occ && occ.seated > 0;
-          const nodeStatus = hasSeated ? "occupied" : hasBookings ? "reserved" : (table.status || "available");
+          // Status is derived from bookings only - ignore DB status field
+          const nodeStatus = hasSeated ? "occupied" : hasBookings ? "reserved" : "available";
           const metadata = (table.metadata || {}) as Record<string, unknown>;
           const explicitWidth = Number(metadata.width);
           const explicitHeight = Number(metadata.height);
+          // Check if this table is in the multi-table draft
+          const multiDraftIdx = multiTableDraft.findIndex((d) => d.table_id === table.id);
+          const isMultiSelected = multiTableMode && multiDraftIdx >= 0;
           return {
             id: String(table.id),
             type: "restaurantTable",
@@ -1157,6 +1559,10 @@ export default function TableManagerPage() {
               height: Number.isFinite(explicitHeight) && explicitHeight > 0 ? Math.round(explicitHeight) : undefined,
               onResizeEnd: (width, height) => saveTableSizeRef.current(String(table.id), width, height),
               seatedNames: seatedNamesByTable.get(tableKey) || [],
+              isMultiSelected,
+              multiTableDraftIdx: multiDraftIdx,
+              onMultiNamesClick: isMultiSelected ? () => setMultiTableNamesModalIdx(multiDraftIdx) : undefined,
+              onMultiRemoveClick: isMultiSelected ? () => setMultiTableDraft((prev) => prev.filter((_, i) => i !== multiDraftIdx)) : undefined,
             } as TableNodeData,
           };
         }),
@@ -1177,23 +1583,104 @@ export default function TableManagerPage() {
             rotationDeg: item.rotationDeg,
             editable: editMode,
             onDelete: () => deleteSelectedDrawElementRef.current(),
+            onResizeEnd: (width, height) => saveDrawElementSizeRef.current(item.id, width, height),
           } as DrawNodeData,
         })),
       ],
     );
-  }, [assignMode, drawElements, editMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, visibleTables]);
+  }, [assignMode, drawElements, editMode, multiTableDraft, multiTableMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
     const wsURL = `${secure ? "wss" : "ws"}://${window.location.host}/api/admin/tables/ws`;
     const socket = new WebSocket(wsURL);
     ws.current = socket;
+    socket.onopen = () => {
+      for (const raw of pendingMapWSMessagesRef.current.splice(0)) socket.send(raw);
+    };
 
     socket.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
         if (payload.type === "snapshot" && Array.isArray(payload.areas)) {
           setAreas(payload.areas.map((a: any) => normalizeTableArea(a)));
+          // The server also ships the resolved template + scope in the
+          // snapshot; pick them up so the toggle stays in sync with any
+          // other open tab or the backend itself.
+          const snapshotTemplate = isNonEmptyTemplate(payload.layout?.template)
+            ? (payload.layout.template as TableMapLayoutTemplate)
+            : null;
+          if (snapshotTemplate !== null) {
+            setFloorTemplate(snapshotTemplate);
+            setTemplateScope(defaultScope(true, payload.layout?.scope));
+          } else {
+            setFloorTemplate(null);
+            setTemplateScope(defaultScope(false, payload.layout?.scope));
+          }
+          return;
+        }
+        if (payload.type === "area_created" || payload.type === "area_updated") {
+          const area = (payload.data || payload) as any;
+          if (!area?.id) return;
+          const nextArea = normalizeTableArea(area);
+          setAreas((prev) => {
+            if (prev.some((a) => a.id === area.id)) {
+              return prev.map((a) => (a.id === area.id ? { ...a, ...nextArea } : a));
+            }
+            return [...prev, nextArea];
+          });
+          return;
+        }
+        if (payload.type === "area_deleted") {
+          const area = (payload.data || payload) as any;
+          const id = Number(area?.id);
+          if (!Number.isFinite(id) || id <= 0) return;
+          setAreas((prev) => prev.filter((a) => Number(a.id) !== id));
+          return;
+        }
+        if (payload.type === "template_updated") {
+          const floor = Number(payload.floor_number);
+          if (Number.isFinite(floor) && floor !== selectedFloor) return;
+          const tpl = isNonEmptyTemplate(payload.template) ? (payload.template as TableMapLayoutTemplate) : null;
+          if (tpl) {
+            setFloorTemplate(tpl);
+            setTemplateScope("template");
+          } else {
+            setFloorTemplate(null);
+            setTemplateScope("day");
+          }
+          return;
+        }
+        if (payload.type === "template_cleared") {
+          const floor = Number(payload.floor_number);
+          if (Number.isFinite(floor) && floor !== selectedFloor) return;
+          setFloorTemplate(null);
+          setTemplateScope("day");
+          return;
+        }
+        if (payload.type === "layout_updated") {
+          const floor = Number(payload.floor_number);
+          if (Number.isFinite(floor) && floor !== selectedFloor) return;
+          if (String(payload.date || "") !== selectedDate) return;
+          // The generic broadcast wraps the payload under `data`; date/floor are
+          // copied to the top level but `layout` only lives inside `data` on
+          // current backends. Read both so older and newer servers both work.
+          const data = (payload.data || {}) as Record<string, unknown>;
+          const layout = ((data.layout || payload.layout) || {}) as Record<string, unknown>;
+          const elements = Array.isArray(layout.elements) ? (layout.elements as any[]).map((item) => ({
+            id: String(item?.id || ""),
+            kind: normalizeDrawElementKind(item?.kind),
+            preset: normalizeDrawElementPreset(item?.preset),
+            displayMode: normalizeDrawElementDisplayMode(item?.display_mode ?? item?.displayMode),
+            x: Number(item?.x || 0), y: Number(item?.y || 0),
+            width: Math.max(24, Number(item?.width || 24)), height: Math.max(24, Number(item?.height || 24)),
+            rotationDeg: Number(item?.rotationDeg || 0), label: String(item?.label || ""),
+          })).filter((item) => item.id) as DrawElement[] : drawElementsRef.current;
+          const points = normalizeLimitPoints(layout.limit_points);
+          drawElementsRef.current = elements;
+          lineDrawingPointsRef.current = points;
+          setDrawElements(elements);
+          setLineDrawing((prev) => ({ ...prev, points, isDrawing: false }));
           return;
         }
         if (payload.type === "table_created" || payload.type === "table_updated") {
@@ -1239,7 +1726,7 @@ export default function TableManagerPage() {
       socket.close();
       ws.current = null;
     };
-  }, []);
+  }, [loadData, selectedDate, selectedFloor, templateScope]);
 
   const savePosition = useCallback(
     async (id: string, x: number, y: number) => {
@@ -1260,22 +1747,48 @@ export default function TableManagerPage() {
           return touched ? { ...area, tables } : area;
         }),
       );
-      try {
-        await api.tables.update({ id: tableId, x_pos: nextX, y_pos: nextY, date: selectedDate, floor_number: selectedFloor });
-      } catch (err) {
-        console.error("Failed to save table position:", err);
-        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la posicion" });
-      }
+      sendMapWSMessage({
+        type: "table_edit",
+        date: selectedDate,
+        floor_number: selectedFloor,
+        data: { id: tableId, x_pos: nextX, y_pos: nextY },
+      });
     },
-    [api.tables, pushToast, selectedDate, selectedFloor],
+    [selectedDate, selectedFloor, sendMapWSMessage],
   );
 
   const saveTableSize = useCallback(
     async (id: string, width: number, height: number) => {
       const tableId = Number(id);
       if (!Number.isFinite(tableId) || tableId <= 0) return;
-      const nextWidth = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, Math.round(width)));
-      const nextHeight = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, Math.round(height)));
+      const nextWidth = Math.max(TABLE_SIZE_MIN, Math.round(width));
+      const nextHeight = Math.max(TABLE_SIZE_MIN, Math.round(height));
+
+      // NodeResizer's onResizeEnd receives the raw gesture dimensions. Keep
+      // persistence subject to the same spatial rules as the live node state,
+      // otherwise a rejected resize could still be written to metadata.
+      const node = nodes.find((item) => item.id === id && item.type === "restaurantTable");
+      if (node?.position) {
+        const data = node.data as TableNodeData;
+        const rotationDeg = Number.isFinite(data.rotationDeg) ? data.rotationDeg : 0;
+        const frame = rotatedRectFrameFromPosition(
+          node.position,
+          nextWidth,
+          nextHeight,
+          rotationDeg,
+          TABLE_LIMIT_PADDING,
+        );
+        const limitPoints = hasClosedLimitArea(lineDrawingPointsRef.current)
+          ? lineDrawingPointsRef.current
+          : null;
+        if (
+          (limitPoints && !isRectInsideLimitArea(frame, limitPoints)) ||
+          !tableSizeFitsOtherTables(node, nextWidth, nextHeight, nodes)
+        ) {
+          return;
+        }
+      }
+
       setAreas((prev) =>
         prev.map((area) => {
           const source = area.tables || [];
@@ -1289,20 +1802,14 @@ export default function TableManagerPage() {
           return touched ? { ...area, tables } : area;
         }),
       );
-      try {
-        await api.tables.update({
-          id: tableId,
-          entity: "table",
-          metadata: { width: nextWidth, height: nextHeight },
-          date: selectedDate,
-          floor_number: selectedFloor,
-        });
-      } catch (err) {
-        console.error("Failed to save table size:", err);
-        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar el tamano de la mesa" });
-      }
+      sendMapWSMessage({
+        type: "table_edit",
+        date: selectedDate,
+        floor_number: selectedFloor,
+        data: { id: tableId, metadata: { width: nextWidth, height: nextHeight } },
+      });
     },
-    [api.tables, pushToast, selectedDate, selectedFloor],
+    [nodes, selectedDate, selectedFloor, sendMapWSMessage],
   );
 
   useEffect(() => {
@@ -1313,18 +1820,27 @@ export default function TableManagerPage() {
 
   const persistLayout = useCallback(
     async (patch: Record<string, unknown>) => {
-      try {
-        await api.tables.saveLayout({ date: selectedDate, floor_number: selectedFloor, metadata: patch });
-      } catch (err) {
-        console.error("Failed to save layout:", err);
-        pushToast({ kind: "error", title: "Error", message: "No se pudo guardar el layout" });
-      }
+      sendMapWSMessage({ type: "layout_edit", date: selectedDate, floor_number: selectedFloor, metadata: patch });
     },
-    [api.tables, pushToast, selectedDate, selectedFloor],
+    [selectedDate, selectedFloor, sendMapWSMessage],
   );
 
   const queuePersistLayout = useCallback(
     (elements: DrawElement[], states: Record<string, BookingState>, limitPoints: LinePoint[]) => {
+      const history = getMapHistory();
+      const after = cloneMapEditSnapshot({ drawElements: elements, limitPoints });
+      if (!applyingHistoryRef.current) {
+        if (!history.last) {
+          history.last = cloneMapEditSnapshot(after);
+        } else if (JSON.stringify(history.last) !== JSON.stringify(after)) {
+          history.undo.push({ before: cloneMapEditSnapshot(history.last), after: cloneMapEditSnapshot(after), timestamp: Date.now() });
+          history.redo = [];
+          history.last = cloneMapEditSnapshot(after);
+          setHistoryVersion((version) => version + 1);
+        }
+      } else {
+        history.last = cloneMapEditSnapshot(after);
+      }
       if (persistLayoutTimerRef.current) {
         clearTimeout(persistLayoutTimerRef.current);
       }
@@ -1337,8 +1853,39 @@ export default function TableManagerPage() {
         void persistLayout({ elements: layoutElements, booking_states: states, limit_points: limitPoints });
       }, 120);
     },
-    [persistLayout],
+    [getMapHistory, persistLayout],
   );
+
+  const applyMapEditSnapshot = useCallback((snapshot: MapEditSnapshot) => {
+    const next = cloneMapEditSnapshot(snapshot);
+    applyingHistoryRef.current = true;
+    drawElementsRef.current = next.drawElements;
+    lineDrawingPointsRef.current = next.limitPoints;
+    setDrawElements(next.drawElements);
+    setLineDrawing((prev) => ({ ...prev, points: next.limitPoints, isDrawing: false }));
+    setIsEditingLimitArea(false);
+    setDraggingLimitVertexIndex(null);
+    queuePersistLayout(next.drawElements, bookingStatesRef.current, next.limitPoints);
+    applyingHistoryRef.current = false;
+  }, [queuePersistLayout]);
+
+  const undoMapEdit = useCallback(() => {
+    const history = getMapHistory();
+    const entry = history.undo.pop();
+    if (!entry) return;
+    history.redo.push(entry);
+    applyMapEditSnapshot(entry.before);
+    setHistoryVersion((version) => version + 1);
+  }, [applyMapEditSnapshot, getMapHistory]);
+
+  const redoMapEdit = useCallback(() => {
+    const history = getMapHistory();
+    const entry = history.redo.pop();
+    if (!entry) return;
+    history.undo.push(entry);
+    applyMapEditSnapshot(entry.after);
+    setHistoryVersion((version) => version + 1);
+  }, [applyMapEditSnapshot, getMapHistory]);
 
   useEffect(() => {
     return () => {
@@ -1362,6 +1909,36 @@ export default function TableManagerPage() {
   useEffect(() => {
     deleteSelectedDrawElementRef.current = deleteSelectedDrawElement;
   }, [deleteSelectedDrawElement]);
+
+  // Persist a draw element resize. The NodeResizer fires onResizeEnd with the
+  // final gesture dimensions; the `dimensions` change React Flow emits at the
+  // end carries no size, so this is the only reliable save point.
+  const saveDrawElementSize = useCallback(
+    (id: string, width: number, height: number) => {
+      if (!editMode) return;
+      const nextWidth = Math.max(24, Math.round(width));
+      const nextHeight = Math.max(24, Math.round(height));
+      const current = drawElementsRef.current;
+      let changed = false;
+      const updated = current.map((el) => {
+        if (el.id !== id) return el;
+        if (el.width === nextWidth && el.height === nextHeight) return el;
+        changed = true;
+        return { ...el, width: nextWidth, height: nextHeight };
+      });
+      if (!changed) return;
+      drawElementsRef.current = updated;
+      setDrawElements(updated);
+      queuePersistLayout(updated, bookingStatesRef.current, lineDrawingPointsRef.current);
+    },
+    [editMode, queuePersistLayout],
+  );
+
+  useEffect(() => {
+    saveDrawElementSizeRef.current = (id, width, height) => {
+      saveDrawElementSize(id, width, height);
+    };
+  }, [saveDrawElementSize]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -1509,13 +2086,22 @@ export default function TableManagerPage() {
                 continue;
               }
 
-              const clampedWidth = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextWidth));
-              const clampedHeight = Math.min(TABLE_SIZE_MAX, Math.max(TABLE_SIZE_MIN, nextHeight));
-              // Apply the new size directly. The limit-area repositioning below
-              // keeps the (padded) table frame inside the area, so resizing must
-              // not be gated on containment or it silently reverts when there is
-              // no limit area or the table sits near the boundary.
-              node.data = { ...node.data, width: clampedWidth, height: clampedHeight };
+              const candidateWidth = Math.max(TABLE_SIZE_MIN, nextWidth);
+              const candidateHeight = Math.max(TABLE_SIZE_MIN, nextHeight);
+              const candidateFrame = rotatedRectFrameFromPosition(
+                node.position,
+                candidateWidth,
+                candidateHeight,
+                rotationDeg,
+                TABLE_LIMIT_PADDING,
+              );
+              const fitsLimit = activeLimitPoints ? isRectInsideLimitArea(candidateFrame, activeLimitPoints) : true;
+              const fitsTables = tableSizeFitsOtherTables(node, candidateWidth, candidateHeight, next);
+              if (fitsLimit && fitsTables) {
+                node.data = { ...node.data, width: candidateWidth, height: candidateHeight };
+              } else {
+                node.data = { ...node.data, width: prevData.width, height: prevData.height };
+              }
             }
           }
         }
@@ -1965,9 +2551,7 @@ export default function TableManagerPage() {
         setCalendarView(nextView);
       }
       if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.set("date", nextDate);
-        window.history.replaceState(null, "", url.toString());
+        window.history.replaceState(null, "", withDateParam(window.location.href, nextDate));
       }
     },
     [calendarView.month, calendarView.year],
@@ -2211,11 +2795,64 @@ export default function TableManagerPage() {
     [visibleTables],
   );
 
+  // Multi-table assignment: computed totals
+  const multiTableTotalSeats = useMemo(() => sumAssignmentSeats(multiTableDraft), [multiTableDraft]);
+  const multiTablePartySize = bookingForAssignment ? Math.max(1, Math.round(Number(bookingForAssignment.party_size) || 1)) : 0;
+  const multiTableComplete = multiTableTotalSeats >= multiTablePartySize;
+
+  // Add a table to multi-table draft
+  const addTableToMultiDraft = useCallback((table: TableMapItem) => {
+    const capacity = Math.max(1, Number(table.capacity) || 4);
+    const key = normalizeTableKey(table.name);
+    setMultiTableDraft((prev) => {
+      // Don't add duplicates
+      if (prev.some((a) => normalizeTableKey(a.table_name) === key)) return prev;
+      return [...prev, { table_id: table.id, table_name: table.name, seats: capacity, names: [] }];
+    });
+  }, []);
+
+  // Remove a table from multi-table draft
+  const removeTableFromMultiDraft = useCallback((idx: number) => {
+    setMultiTableDraft((prev) => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  // Update names for a table in multi-table draft
+  const updateMultiDraftNames = useCallback((idx: number, names: string[]) => {
+    setMultiTableDraft((prev) => prev.map((row, i) => (i === idx ? { ...row, names } : row)));
+  }, []);
+
+  // Save multi-table draft
+  const saveMultiTableDraft = useCallback(async () => {
+    if (!bookingForAssignment) return;
+    await saveBookingAssignmentsRef.current(bookingForAssignment, multiTableDraft);
+    setMultiTableMode(false);
+    setMultiTableDraft([]);
+    setBookingForAssignment(null);
+    setAssignMode(false);
+    setSelectedBookingId(null);
+    setSelectedTableId(null);
+    pushToast({ kind: "success", title: "Mesas asignadas", message: `${multiTableDraft.length} mesa(s) asignadas` });
+  }, [bookingForAssignment, multiTableDraft, pushToast]);
+
+  // Cancel multi-table mode
+  const cancelMultiTableMode = useCallback(() => {
+    setMultiTableMode(false);
+    setMultiTableDraft([]);
+    setMultiTableNamesModalIdx(null);
+  }, []);
+
   const handleAssignModeSelect = useCallback(async (bookingId: number, tableId: number) => {
     const booking = bookings.find(b => b.id === bookingId);
     const table = visibleTables.find(t => t.id === tableId);
 
     if (!booking || !table) return;
+
+    // If multi-table mode is enabled, add to draft instead of saving
+    if (multiTableMode) {
+      addTableToMultiDraft(table);
+      setSelectedTableId(null);
+      return;
+    }
 
     const existing = resolveAssignments(bookingStatesRef.current[String(booking.id)], booking.table_number, booking.party_size);
     const already = existing.some((a) => normalizeTableKey(a.table_name) === normalizeTableKey(table.name));
@@ -2234,7 +2871,19 @@ export default function TableManagerPage() {
     setSelectedBookingId(null);
     setSelectedTableId(null);
     setAssignMode(false);
-  }, [bookings, visibleTables]);
+  }, [bookings, visibleTables, multiTableMode, addTableToMultiDraft]);
+
+  // Sync bookingForAssignment with selectedBookingId in assign mode
+  useEffect(() => {
+    if (assignMode && selectedBookingId) {
+      const booking = bookings.find(b => b.id === selectedBookingId);
+      if (booking) {
+        setBookingForAssignment(booking);
+      }
+    } else if (!assignMode) {
+      setBookingForAssignment(null);
+    }
+  }, [assignMode, selectedBookingId, bookings]);
 
   useEffect(() => {
     if (assignmentInProgress.current) return;
@@ -2250,6 +2899,9 @@ export default function TableManagerPage() {
   const cancelAssignmentMode = useCallback(() => {
     setBookingForAssignment(null);
     setAssignMode(false);
+    setMultiTableMode(false);
+    setMultiTableDraft([]);
+    setMultiTableNamesModalIdx(null);
     setSelectedBookingId(null);
     setSelectedTableId(null);
   }, []);
@@ -2492,6 +3144,18 @@ export default function TableManagerPage() {
     queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, lineDrawingPointsRef.current);
   }, [queuePersistLayout]);
 
+  /**
+   * Persists the cross-day template via POST /tables/template/{floor}.
+   * The template owns the limit area polygon and the draw elements (kind,
+   * preset, position, size, rotation, display mode). Customer booking data
+   * is intentionally excluded.
+   *
+   * The current "scope" decides which backend write path is used:
+   *  - "template"  → writes to the template; per-day overrides are wiped
+   *                  so the rest of the app immediately reads the new state.
+   *  - "day"       → writes only to the per-day layout (the template stays
+   *                  untouched and other days are not affected).
+   */
   const saveLimitAreaTemplate = useCallback(async () => {
     if (lineDrawing.isDrawing || !hasClosedLimitArea(lineDrawing.points)) {
       pushToast({ kind: "error", title: "Area invalida", message: "Cierra el area antes de guardar la plantilla." });
@@ -2500,36 +3164,133 @@ export default function TableManagerPage() {
 
     setSavingLimitTemplate(true);
     try {
-      const areaId = await ensureAreaForFloor();
-      if (!areaId) return;
+      const clonedPoints = cloneLinePoints(lineDrawing.points);
+      const clonedElements = drawElementsRef.current.map((item) => ({
+        ...item,
+        display_mode: item.displayMode,
+      }));
 
-      const currentArea = (floorAreas.get(selectedFloor) || []).find((area) => area.id === areaId) || null;
-      const metadata: Record<string, unknown> = {
-        ...areaMetadata(currentArea),
-        floorNumber: selectedFloor,
-        limit_area_template_points: cloneLinePoints(lineDrawing.points),
-      };
-
-      const res = await api.tables.update({
-        entity: "area",
-        id: areaId,
-        metadata,
-      });
-      if (!res.success) {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la plantilla" });
+      if (templateScope === "template") {
+        // Build the full template payload: take the current template (if any)
+        // and overlay the new limit area + draw elements. This is the path
+        // that ships cross-day changes to all other days.
+        const payload = buildTemplatePayload({
+          previousTemplate: floorTemplate || undefined,
+          limitPoints: clonedPoints,
+          drawElements: clonedElements,
+        });
+        sendMapWSMessage({ type: "template_edit", floor_number: selectedFloor, data: payload });
+        setFloorTemplate(payload as TableMapLayoutTemplate);
+        setTemplateScope("template");
+        // Reflect the new template in the current per-day state so the
+        // canvas immediately renders the new geometry.
+        const newLayout = stripTemplateFieldsForDay(
+          buildGlobalTemplateLayout({ ...stripDayFieldsForTemplate({ ...payload }) }),
+        );
+        queuePersistLayout(clonedElements, bookingStatesRef.current, clonedPoints);
+        pushToast({
+          kind: "success",
+          title: "Plantilla guardada",
+          message: "Se aplicara por defecto para este salon en todos los dias.",
+        });
         return;
       }
 
-      setAreas((prev) => prev.map((area) => (area.id === areaId ? { ...area, metadata } : area)));
+      // Day-specific scope: write only the per-day layout with day-specific
+      // overrides. The template is left untouched.
+      const dayOverride = buildDayOverrideLayout(
+        { limit_area_template_points: clonedPoints, draw_elements_template: clonedElements },
+        {},
+      );
+        sendMapWSMessage({ type: "layout_edit", date: selectedDate, floor_number: selectedFloor, metadata: dayOverride });
+      queuePersistLayout(clonedElements, bookingStatesRef.current, clonedPoints);
       pushToast({
         kind: "success",
-        title: "Plantilla guardada",
-        message: "Se aplicara por defecto para este salon en todos los dias.",
+        title: "Cambios guardados para este dia",
+        message: "Solo afectaran al dia seleccionado.",
       });
     } finally {
       setSavingLimitTemplate(false);
     }
-  }, [api.tables, ensureAreaForFloor, floorAreas, lineDrawing.isDrawing, lineDrawing.points, pushToast, selectedFloor]);
+  }, [
+    floorTemplate,
+    lineDrawing.isDrawing,
+    lineDrawing.points,
+    pushToast,
+    queuePersistLayout,
+    selectedDate,
+    selectedFloor,
+    templateScope,
+    sendMapWSMessage,
+  ]);
+
+  const clearFloorTemplate = useCallback(async () => {
+    setSavingLimitTemplate(true);
+    try {
+      sendMapWSMessage({ type: "template_delete", floor_number: selectedFloor });
+      setFloorTemplate(null);
+      setTemplateScope("day");
+      pushToast({ kind: "success", title: "Plantilla eliminada", message: "Este salon vuelve a las ediciones por dia." });
+    } finally {
+      setSavingLimitTemplate(false);
+    }
+  }, [pushToast, selectedFloor, sendMapWSMessage]);
+
+  const requestScopeChange = useCallback(
+    (next: TableMapTemplateScope) => {
+      if (next === templateScope) return;
+      if (next === "day" && templateScope === "template") {
+        setConfirmScopeChange({ next, reason: "switch-to-day" });
+        return;
+      }
+      applyScopeChange(next, next === "template" ? "switch-to-template" : "switch-to-day");
+    },
+    [templateScope],
+  );
+
+  const applyScopeChange = useCallback(
+    async (next: TableMapTemplateScope, reason: "switch-to-day" | "switch-to-template") => {
+      setConfirmScopeChange(null);
+      // Switching to "day": copy the current per-day layout (which already
+      // has the merged template) into a per-day override and save it.
+      if (next === "day") {
+        if (!floorTemplate) {
+          setTemplateScope("day");
+          return;
+        }
+        const currentLayout = {
+          booking_states: bookingStatesRef.current,
+        };
+        const dayOverride = buildDayOverrideLayout(floorTemplate, currentLayout);
+        const res = await api.tables.saveLayout({
+          date: selectedDate,
+          floor_number: selectedFloor,
+          metadata: dayOverride,
+        });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo cambiar a cambios por dia" });
+          return;
+        }
+        setTemplateScope("day");
+        pushToast({
+          kind: "info",
+          title: "Cambios solo para este dia",
+          message: "Los cambios futuros se guardaran solo para esta fecha.",
+        });
+        return;
+      }
+      // Switching to "template": the template already wins, so just clear
+      // any per-day override markers and re-fetch.
+      setTemplateScope("template");
+      void loadData();
+      pushToast({
+        kind: "info",
+        title: "Cambios en la plantilla",
+        message: "Los cambios futuros afectaran a todos los dias.",
+      });
+    },
+    [api.tables, floorTemplate, loadData, pushToast, selectedDate, selectedFloor],
+  );
 
   const undoEditAreaLastAction = useCallback(() => {
     if (!isEditingLimitArea || lineDrawing.isDrawing) return;
@@ -2658,14 +3419,21 @@ export default function TableManagerPage() {
     () => lineDrawing.points.map((point) => projectFlowPointToOverlay(point, flowViewport)),
     [flowViewport, lineDrawing.points],
   );
+  const currentMapHistory = getMapHistory();
+  // The ref-backed history needs a render signal after each mutation so the
+  // button availability reflects the current undo/redo stacks.
+  const historyRenderVersion = historyVersion;
+  void historyRenderVersion;
 
-  if (loading) {
-    return <div data-ui="loading" className="bo-tableMapLoading">Cargando mapa...</div>;
-  }
-
+  // The full tree (including the date picker) must stay mounted across
+  // loadData transitions, otherwise the MonthCalendarDatePicker unmounts and
+  // its popover state is lost while the month-nav callback is in flight.
   return (
     <ReactFlowProvider>
       <section data-ui="table-map-page" className="bo-tableMapPage" aria-label="Mapa de mesas">
+        {loading ? (
+          <div data-ui="loading" className="bo-tableMapLoading">Cargando mapa...</div>
+        ) : null}
         <AnimatePresence mode="wait" initial={false}>
           {isDayOpen ? (
             <motion.div
@@ -2682,6 +3450,18 @@ export default function TableManagerPage() {
                 </button>
 
                 <div data-ui="top-center" className="bo-tableMapTopCenter">
+                  <MonthCalendarDatePicker
+                    value={selectedDate}
+                    onChange={onSelectDate}
+                    year={calendarView.year}
+                    month={calendarView.month}
+                    days={calendarDays}
+                    onPrevMonth={onPrevMonth}
+                    onNextMonth={onNextMonth}
+                    loading={loading}
+                    data-testid="table-map-date-picker"
+                    className="bo-tableMapHeaderDatePicker"
+                  />
                   <button
                     data-ui="menu-trigger"
                     ref={menuButtonRef}
@@ -2842,10 +3622,27 @@ export default function TableManagerPage() {
                       const tableData = node.data as TableNodeData;
                       if (assignMode) {
                         setSelectedTableId(prev => prev === tableData.id ? null : tableData.id);
+                      } else if (multiTableMode) {
+                        // In multi-table mode, clicking a table adds it to draft
+                        const table = visibleTables.find(t => t.id === tableData.id);
+                        if (table) {
+                          addTableToMultiDraft(table);
+                        }
                       } else if (bookingForAssignment) {
                         assignBookingToTable(bookingForAssignment, tableData.name, node.id);
                       } else if (editMode) {
                         setSelectedTableId(prev => (prev === tableData.id ? null : tableData.id));
+                      } else {
+                        // View mode: if table is occupied, open booking modal
+                        const tableKey = normalizeTableKey(tableData.name);
+                        const tableBookings = bookings.filter(b => {
+                          const assignments = resolveAssignments(bookingStates[String(b.id)], b.table_number, b.party_size);
+                          return assignments.some(a => normalizeTableKey(a.table_name) === tableKey);
+                        });
+                        if (tableBookings.length > 0) {
+                          // Open modal with first booking (or could show a list if multiple)
+                          setSelectedBooking(tableBookings[0]);
+                        }
                       }
                       return;
                     }
@@ -3044,16 +3841,69 @@ export default function TableManagerPage() {
                   <div data-ui="draw-hint" className="bo-tableMapDrawHint">En modo dibujo puedes crear y editar muros/obstaculos. Las mesas quedan bloqueadas por estos limites.</div>
 
                   <div data-ui="limit-section" className="bo-tableMapDrawSection">
-                    <div data-ui="limit-title" className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
+                    <div data-ui="limit-header" className="bo-tableMapDrawSectionHead">
+                      <div data-ui="limit-title" className="bo-tableMapDrawSectionTitle">Limites del mapa</div>
+                      <span
+                        data-ui="template-status"
+                        className={`bo-tableMapDrawSectionPill${floorTemplate ? " is-active" : ""}`}
+                        aria-label={floorTemplate ? "Plantilla guardada para este salon" : "Sin plantilla"}
+                      >
+                        <Layers size={12} />
+                        {floorTemplate ? "Plantilla" : "Sin plantilla"}
+                      </span>
+                    </div>
                     <div data-ui="limit-hint" className="bo-tableMapDrawHint">
                       {isEditingLimitArea
                         ? "Edita los limites: doble clic en una linea anade un punto, doble clic en un punto lo elimina."
                         : "Dibuja el perimetro del area"}
                     </div>
-                    {hasClosedLimitArea(selectedFloorTemplatePoints) ? (
-                      <div data-ui="template-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">Hay una plantilla guardada para este salon.</div>
+
+                    {floorTemplate ? (
+                      <div
+                        data-ui="template-scope-toggle"
+                        className="bo-tableMapDrawScopeToggle"
+                        role="group"
+                        aria-label="Alcance de los cambios"
+                      >
+                        <button
+                          data-ui="template-scope-template-btn"
+                          type="button"
+                          className={`bo-tableMapDrawScopeOption${templateScope === "template" ? " is-active" : ""}`}
+                          onClick={() => requestScopeChange("template")}
+                          aria-pressed={templateScope === "template"}
+                        >
+                          <Layers size={12} />
+                          Cambios en la plantilla
+                        </button>
+                        <button
+                          data-ui="template-scope-day-btn"
+                          type="button"
+                          className={`bo-tableMapDrawScopeOption${templateScope === "day" ? " is-active" : ""}`}
+                          onClick={() => requestScopeChange("day")}
+                          aria-pressed={templateScope === "day"}
+                        >
+                          <CalendarDays size={12} />
+                          Cambios solo este dia
+                        </button>
+                      </div>
                     ) : null}
-                    {!lineDrawing.isDrawing && lineDrawing.points.length === 0 ? (
+
+                    {floorTemplate && templateScope === "day" ? (
+                      <div data-ui="day-scope-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                        Estás editando solo para esta fecha. La plantilla no cambiara.
+                      </div>
+                    ) : null}
+                    {floorTemplate && templateScope === "template" ? (
+                      <div data-ui="template-scope-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                        Los cambios se aplican a todos los dias de este salon.
+                      </div>
+                    ) : null}
+                    {hasClosedLimitArea(selectedFloorTemplatePoints) && !floorTemplate ? (
+                      <div data-ui="template-hint" className="bo-tableMapDrawHint bo-tableMapDrawHint--compact">
+                        Hay limites guardados para este salon (solo este dia).
+                      </div>
+                    ) : null}
+                    {!lineDrawing.isDrawing && lineDrawing.points.length === 0 && currentMapHistory.undo.length === 0 ? (
                       <button data-ui="start-line-drawing-btn" className="bo-btn bo-btn--primary" type="button" onClick={startLineDrawing}>
                         <MapPin size={16} />
                         Dibujar limites
@@ -3061,73 +3911,131 @@ export default function TableManagerPage() {
                     ) : (
                       <div data-ui="line-draw-controls" className="bo-tableMapLineDrawControls">
                         {lineDrawing.isDrawing && (
-                          <div data-ui="line-draw-status" className="bo-tableMapLineDrawStatus">
-                            <Circle size={12} className="bo-tableMapLineDrawStatusDot" />
-                            <span data-ui="point-count">{lineDrawing.points.length} puntos</span>
+                          <div data-ui="line-draw-status-row" className="bo-tableMapLineDrawStatusRow">
+                            <div data-ui="line-draw-status" className="bo-tableMapLineDrawStatus">
+                              <Circle size={12} className="bo-tableMapLineDrawStatusDot" />
+                              <span data-ui="point-count">{lineDrawing.points.length} puntos</span>
+                            </div>
+                            <span data-ui="line-draw-status-hint" className="bo-tableMapLineDrawStatusHint">Pulsa en el mapa para añadir vértices</span>
                           </div>
                         )}
-                        {lineDrawing.isDrawing && lineDrawing.points.length > 0 && (
-                          <button data-ui="undo-point-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoCreateAreaLastAction}>
-                            <Undo size={14} />
-                            Deshacer ultimo punto
-                          </button>
-                        )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !isEditingLimitArea && (
-                          <button data-ui="edit-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={startLimitAreaEditing}>
-                            Editar area
-                          </button>
-                        )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && isEditingLimitArea && (
-                          <button data-ui="save-edit-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={stopLimitAreaEditing}>
-                            Guardar edicion
-                          </button>
-                        )}
+                        <div data-ui="line-draw-primary-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--primary">
+                          {lineDrawing.isDrawing && lineDrawing.points.length > 0 && (
+                            <button data-ui="undo-point-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoCreateAreaLastAction}>
+                              <Undo size={14} />
+                              Deshacer ultimo punto
+                            </button>
+                          )}
+                          {lineDrawing.points.length >= 3 && lineDrawing.isDrawing && (
+                            <button data-ui="close-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={closeLineDrawing}>
+                              <SquareMinus size={14} />
+                              Cerrar area
+                            </button>
+                          )}
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !isEditingLimitArea && (
+                            <button data-ui="edit-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={startLimitAreaEditing}>
+                              <Pencil size={14} />
+                              Editar area
+                            </button>
+                          )}
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && isEditingLimitArea && (
+                            <button data-ui="save-edit-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={stopLimitAreaEditing}>
+                              <SquareMinus size={14} />
+                              Guardar edicion
+                            </button>
+                          )}
+                        </div>
+
                         {isEditingLimitArea && (
-                          <button data-ui="undo-edit-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoEditAreaLastAction}>
-                            <Undo size={14} />
-                            Deshacer ultimo cambio
-                          </button>
+                          <div data-ui="line-draw-edit-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--secondary">
+                            <span data-ui="editing-badge" className="bo-tableMapLineDrawEditingBadge">Editando límites</span>
+                            <button data-ui="undo-edit-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={undoEditAreaLastAction}>
+                              <Undo size={14} />
+                              Deshacer ultimo cambio
+                            </button>
+                          </div>
                         )}
-                        {lineDrawing.points.length >= 3 && lineDrawing.isDrawing && (
-                          <button data-ui="close-area-btn" className="bo-btn bo-btn--primary bo-btn--sm" type="button" onClick={closeLineDrawing}>
-                            <SquareMinus size={14} />
-                            Cerrar area
-                          </button>
-                        )}
-                        {lineDrawing.points.length > 0 && (
-                          <button
-                            data-ui="cancel-line-btn"
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
-                            type="button"
-                            onClick={isEditingLimitArea ? stopLimitAreaEditing : cancelLineDrawing}
-                          >
-                            <Undo size={14} />
-                            {isEditingLimitArea ? "Salir edicion" : "Cancelar"}
-                          </button>
-                        )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
-                          <button
-                            data-ui="save-template-btn"
-                            className="bo-btn bo-btn--ghost bo-btn--sm"
-                            type="button"
-                            onClick={() => void saveLimitAreaTemplate()}
-                            disabled={savingLimitTemplate}
-                          >
-                            <MapPin size={14} />
-                            {savingLimitTemplate ? "Guardando plantilla..." : "Guardar plantilla salon"}
-                          </button>
-                        )}
-                        {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
-                          <button
-                            data-ui="remove-area-btn"
-                            className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
-                            type="button"
-                            onClick={() => setRemoveAreaConfirmOpen(true)}
-                          >
-                            <Trash2 size={14} />
-                            Eliminar area
-                          </button>
-                        )}
+
+                        <div data-ui="line-draw-persistence-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--persistence">
+                          {currentMapHistory.undo.length > 0 && (
+                            <button
+                              data-ui="cancel-line-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm"
+                              type="button"
+                              onClick={undoMapEdit}
+                            >
+                              <Undo size={14} />
+                              Cancelar
+                            </button>
+                          )}
+                          {currentMapHistory.redo.length > 0 && (
+                            <button
+                              data-ui="redo-line-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm"
+                              type="button"
+                              onClick={redoMapEdit}
+                            >
+                              <Redo2 size={14} />
+                              Rehacer
+                            </button>
+                          )}
+                          {lineDrawing.points.length > 0 && currentMapHistory.undo.length === 0 && (
+                            <button
+                              data-ui="cancel-line-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm"
+                              type="button"
+                              onClick={isEditingLimitArea ? stopLimitAreaEditing : cancelLineDrawing}
+                            >
+                              <Undo size={14} />
+                              {isEditingLimitArea ? "Salir edicion" : "Cancelar"}
+                            </button>
+                          )}
+                        </div>
+
+                        <div data-ui="line-draw-template-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--template">
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && (
+                            <button
+                              data-ui="save-template-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--sm bo-tableMapLineDrawSaveBtn"
+                              type="button"
+                              onClick={() => void saveLimitAreaTemplate()}
+                              disabled={savingLimitTemplate}
+                            >
+                              <MapPin size={14} />
+                              {savingLimitTemplate
+                                ? "Guardando..."
+                                : templateScope === "day"
+                                ? "Guardar solo este dia"
+                                : "Guardar plantilla salon"}
+                            </button>
+                          )}
+                          {floorTemplate ? (
+                            <button
+                              data-ui="delete-template-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
+                              type="button"
+                              onClick={() => void clearFloorTemplate()}
+                              disabled={savingLimitTemplate}
+                            >
+                              <Trash2 size={14} />
+                              Eliminar plantilla
+                            </button>
+                          ) : null}
+                        </div>
+
+                        <div data-ui="line-draw-area-actions" className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--area">
+                          {!lineDrawing.isDrawing && hasClosedLimitArea(lineDrawing.points) && !floorTemplate ? (
+                            <button
+                              data-ui="remove-area-btn"
+                              className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
+                              type="button"
+                              onClick={() => setRemoveAreaConfirmOpen(true)}
+                            >
+                              <Trash2 size={14} />
+                              Eliminar area
+                            </button>
+                          ) : null}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -3374,21 +4282,108 @@ export default function TableManagerPage() {
                               const isAssigning = bookingForAssignment?.id === booking.id;
                               const isSelected = selectedBookingId === booking.id;
                               return (
-                                <div
-                                  key={booking.id}
-                                  data-ui="booking-row"
-                                  className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}${assignMode && !isUnassigned ? " is-disabled" : ""}`}
-                                  onClick={() => {
-                                    if (assignMode && !isUnassigned) return;
-                                    if (assignMode) {
-                                      setSelectedBookingId(isSelected ? null : booking.id);
-                                    } else if (bookingForAssignment?.id === booking.id) {
-                                      setBookingForAssignment(null);
-                                    } else {
-                                      setSelectedBooking(booking);
-                                    }
-                                  }}
-                                >
+                                <React.Fragment key={booking.id}>
+                                  {/* Multi-table toggle appears above selected booking in assign mode */}
+                                  {assignMode && isSelected && (
+                                    <div data-ui="multi-table-inline" className="bo-multiTableInline">
+                                      <div data-ui="multi-table-toggle-row" className="bo-multiTableToggleRow">
+                                        <span className="bo-multiTableLabel">Asignar múltiples mesas</span>
+                                        <button
+                                          data-ui="multi-table-toggle"
+                                          type="button"
+                                          className={`bo-multiTableToggle${multiTableMode ? " is-active" : ""}`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (!multiTableMode) {
+                                              setMultiTableMode(true);
+                                              setMultiTableDraft([]);
+                                            } else {
+                                              setMultiTableMode(false);
+                                              setMultiTableDraft([]);
+                                            }
+                                          }}
+                                        >
+                                          <span className="bo-multiTableToggleThumb" />
+                                        </button>
+                                      </div>
+                                      {multiTableMode && (
+                                        <>
+                                          <div data-ui="multi-table-hint" className="bo-multiTableHint">
+                                            Haz clic en las mesas del mapa para añadirlas
+                                          </div>
+                                          {multiTableDraft.length > 0 && (
+                                            <div data-ui="multi-table-progress" className="bo-multiTableProgress">
+                                              <span className={`bo-multiTableProgressText${multiTableTotalSeats >= multiTablePartySize ? " is-complete" : ""}`}>
+                                                {multiTableTotalSeats} / {multiTablePartySize} comensales
+                                              </span>
+                                            </div>
+                                          )}
+                                          {multiTableDraft.length > 0 && (
+                                            <div data-ui="multi-table-assigned" className="bo-multiTableAssigned">
+                                              {multiTableDraft.map((row, idx) => (
+                                                <div key={row.table_id} data-ui="multi-table-row" className="bo-multiTableRow">
+                                                  <span className="bo-multiTableRowName">{row.table_name} ({row.seats})</span>
+                                                  <div className="bo-multiTableRowActions">
+                                                    <button
+                                                      type="button"
+                                                      className="bo-btn bo-btn--ghost bo-btn--xs"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setMultiTableNamesModalIdx(idx);
+                                                      }}
+                                                      title="Nombres"
+                                                    >
+                                                      <ClipboardList size={14} />
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      className="bo-btn bo-btn--ghost bo-btn--xs"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeTableFromMultiDraft(idx);
+                                                      }}
+                                                      title="Quitar"
+                                                    >
+                                                      ×
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {multiTableDraft.length > 0 && (
+                                            <div data-ui="multi-table-actions" className="bo-multiTableActions">
+                                              <button
+                                                data-ui="multi-table-save-btn"
+                                                type="button"
+                                                className="bo-btn bo-btn--primary bo-btn--sm"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  saveMultiTableDraft();
+                                                }}
+                                              >
+                                                Guardar mesas
+                                              </button>
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div
+                                    data-ui="booking-row"
+                                    className={`bo-tableMapBookingRow${seated ? " is-seated" : " is-pending"}${isAssigning ? " is-assigning" : ""}${assignMode ? " is-assign-mode" : ""}${isSelected ? " is-selected" : ""}${assignMode && !isUnassigned ? " is-disabled" : ""}`}
+                                    onClick={() => {
+                                      if (assignMode && !isUnassigned) return;
+                                      if (assignMode) {
+                                        setSelectedBookingId(isSelected ? null : booking.id);
+                                      } else if (bookingForAssignment?.id === booking.id) {
+                                        setBookingForAssignment(null);
+                                      } else {
+                                        setSelectedBooking(booking);
+                                      }
+                                    }}
+                                  >
                                   {assignMode ? (
                                     <label data-ui="booking-checkbox" className="bo-checkboxContainer" onClick={(e) => e.stopPropagation()}>
                                       <input
@@ -3426,7 +4421,8 @@ export default function TableManagerPage() {
                                     ]}
                                     wrapperClassName="bo-tableBookingRowActions"
                                   />
-                                </div>
+                                  </div>
+                                </React.Fragment>
                               );
                             })}
                           </div>
@@ -3977,6 +4973,20 @@ export default function TableManagerPage() {
                   </div>
                 </div>
               </Modal>
+
+              {/* Multi-table names modal */}
+              {multiTableNamesModalIdx !== null && multiTableDraft[multiTableNamesModalIdx] && (
+                <GuestNamesModal
+                  tableName={multiTableDraft[multiTableNamesModalIdx].table_name}
+                  capacity={multiTableDraft[multiTableNamesModalIdx].seats}
+                  names={multiTableDraft[multiTableNamesModalIdx].names}
+                  onSave={(names) => {
+                    updateMultiDraftNames(multiTableNamesModalIdx, names);
+                    setMultiTableNamesModalIdx(null);
+                  }}
+                  onClose={() => setMultiTableNamesModalIdx(null)}
+                />
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -3992,6 +5002,18 @@ export default function TableManagerPage() {
                 <button data-ui="closed-back-btn" className="bo-actionBtn bo-actionBtn--glass" type="button" onClick={onBack} aria-label="Volver a reservas">
                   <ChevronLeft size={18} strokeWidth={1.8} />
                 </button>
+                <MonthCalendarDatePicker
+                  value={selectedDate}
+                  onChange={onSelectDate}
+                  year={calendarView.year}
+                  month={calendarView.month}
+                  days={calendarDays}
+                  onPrevMonth={onPrevMonth}
+                  onNextMonth={onNextMonth}
+                  loading={loading}
+                  data-testid="table-map-date-picker"
+                  className="bo-tableMapHeaderDatePicker"
+                />
               </div>
               <div data-ui="closed-body" className="bo-tableMapClosedBody">
                 <ReservationDayPanel

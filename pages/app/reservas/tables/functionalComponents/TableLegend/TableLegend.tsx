@@ -1,6 +1,6 @@
 import React from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarDays, ChevronLeft, GripVertical, LayoutGrid, Trash2, FileText } from "lucide-react";
+import { CalendarDays, ChevronLeft, ClipboardList, GripVertical, LayoutGrid, Trash2, FileText } from "lucide-react";
 import { DropdownMenu } from "../../../../../../ui/inputs/DropdownMenu";
 import { Select } from "../../../../../../ui/inputs/Select";
 import { formatHHMM } from "../../../../../../ui/lib/format";
@@ -9,6 +9,7 @@ import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import type { Booking, TableMapItem } from "../../../../../../api/types";
 import type { BookingState } from "../../types/tables";
 import { todayISO } from "../../helpers/tables";
+import { GuestNamesModal } from "../../tables";
 
 // === Booking Row Component ===
 
@@ -126,6 +127,19 @@ interface TableLegendProps {
   onSelectBooking: (booking: Booking) => void;
   onSelectBookingCheckbox: (booking: Booking, checked: boolean) => void;
   onCancelBooking: (booking: Booking) => void;
+  // Multi-table assignment
+  multiTableMode: boolean;
+  multiTableDraft: Array<{ table_id: number | null; table_name: string; seats: number; names: string[] }>;
+  multiTableTotalSeats: number;
+  multiTablePartySize: number;
+  multiTableComplete: boolean;
+  multiTableNamesModalIdx: number | null;
+  onMultiTableModeToggle: () => void;
+  onRemoveTableFromMultiDraft: (idx: number) => void;
+  onUpdateMultiDraftNames: (idx: number, names: string[]) => void;
+  onSaveMultiTableDraft: () => void;
+  onOpenMultiTableNamesModal: (idx: number) => void;
+  onCloseMultiTableNamesModal: () => void;
   // Table sheet
   tableSheetView: "list" | "table-detail";
   selectedTableCardId: number | null;
@@ -174,6 +188,18 @@ export function TableLegend({
   onSelectBooking,
   onSelectBookingCheckbox,
   onCancelBooking,
+  multiTableMode,
+  multiTableDraft,
+  multiTableTotalSeats,
+  multiTablePartySize,
+  multiTableComplete,
+  multiTableNamesModalIdx,
+  onMultiTableModeToggle,
+  onRemoveTableFromMultiDraft,
+  onUpdateMultiDraftNames,
+  onSaveMultiTableDraft,
+  onOpenMultiTableNamesModal,
+  onCloseMultiTableNamesModal,
   tableSheetView,
   selectedTableCardId,
   selectedTableCard,
@@ -396,6 +422,84 @@ export function TableLegend({
                     </span>
                   </div>
 
+                  {/* Multi-table assignment toggle - shows when in assign mode with a booking */}
+                  {assignMode && bookingForAssignment && (
+                    <div data-ui="multi-table-section" className="bo-multiTableSection">
+                      <div data-ui="multi-table-toggle-row" className="bo-multiTableToggleRow">
+                        <label data-ui="multi-table-label" className="bo-multiTableLabel">
+                          Asignar multi mesa
+                        </label>
+                        <button
+                          data-ui="multi-table-toggle-btn"
+                          className={`bo-multiTableToggle${multiTableMode ? " is-active" : ""}`}
+                          type="button"
+                          onClick={onMultiTableModeToggle}
+                          aria-pressed={multiTableMode}
+                        >
+                          <span className="bo-multiTableToggleThumb" />
+                        </button>
+                      </div>
+
+                      {multiTableMode && (
+                        <>
+                          <div data-ui="multi-table-progress" className="bo-multiTableProgress">
+                            <span className={`bo-multiTableProgressText${multiTableComplete ? " is-complete" : ""}`}>
+                              {multiTableTotalSeats} / {multiTablePartySize} pax
+                            </span>
+                          </div>
+
+                          {multiTableDraft.length > 0 && (
+                            <div data-ui="multi-table-assigned" className="bo-multiTableAssigned">
+                              {multiTableDraft.map((row, idx) => {
+                                const namesCount = row.names.filter(Boolean).length;
+                                return (
+                                  <div key={idx} data-ui="multi-table-row" className="bo-multiTableRow">
+                                    <span data-ui="multi-table-row-name" className="bo-multiTableRowName">
+                                      {row.table_name} ({row.seats} pax)
+                                    </span>
+                                    <div data-ui="multi-table-row-actions" className="bo-multiTableRowActions">
+                                      <button
+                                        data-ui="multi-table-names-btn"
+                                        type="button"
+                                        className="bo-actionBtn bo-actionBtn--glass"
+                                        title={namesCount > 0 ? `${namesCount} nombre(s)` : "Añadir nombres"}
+                                        onClick={() => onOpenMultiTableNamesModal(idx)}
+                                      >
+                                        <ClipboardList size={13} strokeWidth={1.8} />
+                                        {namesCount > 0 && <span className="bo-namesBadge">{namesCount}</span>}
+                                      </button>
+                                      <button
+                                        data-ui="multi-table-remove-btn"
+                                        type="button"
+                                        className="bo-actionBtn bo-actionBtn--glass"
+                                        title="Quitar mesa"
+                                        onClick={() => onRemoveTableFromMultiDraft(idx)}
+                                      >
+                                        <Trash2 size={13} strokeWidth={1.8} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          <div data-ui="multi-table-actions" className="bo-multiTableActions">
+                            <button
+                              data-ui="multi-table-save-btn"
+                              type="button"
+                              className="bo-btn bo-btn--primary bo-btn--sm"
+                              onClick={onSaveMultiTableDraft}
+                              disabled={multiTableDraft.length === 0}
+                            >
+                              Guardar mesas
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   {selectedTableCardBookings.length > 0 ? (
                     <div data-slot="detail-bookings" className="bo-tableSheetDetailBookings">
                       {selectedTableCardBookings.map((booking) => {
@@ -540,6 +644,20 @@ export function TableLegend({
         </ScrollArea>
         </div>
       </div>
+
+      {/* Multi-table names modal */}
+      {multiTableNamesModalIdx !== null && multiTableDraft[multiTableNamesModalIdx] && (
+        <GuestNamesModal
+          tableName={multiTableDraft[multiTableNamesModalIdx].table_name}
+          capacity={multiTableDraft[multiTableNamesModalIdx].seats}
+          names={multiTableDraft[multiTableNamesModalIdx].names}
+          onSave={(names) => {
+            onUpdateMultiDraftNames(multiTableNamesModalIdx, names);
+            onCloseMultiTableNamesModal();
+          }}
+          onClose={onCloseMultiTableNamesModal}
+        />
+      )}
     </aside>
   );
 }

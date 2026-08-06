@@ -641,6 +641,44 @@ export type TableMapArea = {
   tables: TableMapItem[];
 };
 
+/**
+ * Template scope for the table map.
+ * - "template" (default after a template is saved): edits propagate to all days.
+ * - "day": edits are stored per-day and do not affect the template or other days.
+ */
+export type TableMapTemplateScope = "template" | "day";
+
+/**
+ * Cross-day layout template. The template owns the limit area polygon
+ * (`limit_area_template_points`) and the draw elements
+ * (`draw_elements_template`). Per-day customer data (booking_states,
+ * table_positions) is intentionally NOT part of the template.
+ */
+export type TableMapLayoutTemplate = {
+  limit_area_template_points?: Array<{ x: number; y: number }>;
+  draw_elements_template?: Array<Record<string, unknown>>;
+  template_updated_at?: string;
+  [key: string]: unknown;
+};
+
+export type TableMapTemplateResponse = APISuccess<{
+  entity: "template";
+  floor_number: number;
+  has_template: boolean;
+  template: TableMapLayoutTemplate;
+  scope: TableMapTemplateScope;
+}>;
+
+export type TableMapListLayout = {
+  areas: TableMapArea[];
+  map: Record<string, unknown>;
+  template?: TableMapLayoutTemplate;
+  scope?: TableMapTemplateScope;
+  date: string;
+  floor_number: number;
+  generated_at: string;
+};
+
 export type RestaurantIntegrations = {
   n8nWebhookUrl: string;
   enabledEvents: string[];
