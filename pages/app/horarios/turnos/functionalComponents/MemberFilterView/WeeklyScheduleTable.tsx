@@ -1,5 +1,5 @@
 import React from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Pencil, Plus } from "lucide-react";
 
 import type { FichajeSchedule } from "../../../../../../api/types";
 import type { WeeklyScheduleTableProps } from "./types";
@@ -9,8 +9,12 @@ import { formatWeekHeader, getDayName } from "../../helpers";
 export function WeeklyScheduleTable({
   weekGroups,
   schedulesByDate,
+  member,
+  onEdit,
   className,
 }: WeeklyScheduleTableProps) {
+  const memberName = member ? `${member.firstName || ""} ${member.lastName || ""}`.trim() || `Miembro #${member.id}` : "";
+  const canEdit = !!member && !!onEdit;
   return (
     <>
       <style>{`
@@ -92,6 +96,18 @@ export function WeeklyScheduleTable({
                           Sin horario
                         </span>
                       )}
+                      {canEdit ? (
+                      <button
+                        type="button"
+                        onClick={() => onEdit?.(date)}
+                        aria-label={schedule ? `Editar turno de ${memberName} el ${dayName} ${dayNum}` : `Añadir turno de ${memberName} el ${dayName} ${dayNum}`}
+                        data-role="weekly-schedule-action"
+                        className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1.5 !px-2.5 !py-1 !h-auto ml-3 align-middle text-xs"
+                      >
+                        {schedule ? <Pencil size={12} strokeWidth={1.8} aria-hidden="true" /> : <Plus size={12} strokeWidth={1.8} aria-hidden="true" />}
+                        {schedule ? "Editar" : "Añadir"}
+                      </button>
+                      ) : null}
                     </td>
                   </tr>
                 );

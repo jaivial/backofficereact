@@ -14,11 +14,19 @@ export type MemberFilterViewProps = {
 export type DailyScheduleCardProps = {
   date: string;
   schedule: FichajeSchedule | null;
+  /** The member whose schedule this card shows; enables the shift editor. */
+  member?: Member;
+  /** Opens the shift editor for this date. Required when member is set. */
+  onEdit?: (date: string) => void;
   className?: string;
 };
 
 export type WeeklyScheduleTableProps = {
   weekGroups: WeekGroup[];
   schedulesByDate: Map<string, FichajeSchedule>;
+  /** The member whose schedule the table shows; enables the shift editor. */
+  member?: Member;
+  /** Opens the shift editor for the given date. Required when member is set. */
+  onEdit?: (date: string) => void;
   className?: string;
 };
