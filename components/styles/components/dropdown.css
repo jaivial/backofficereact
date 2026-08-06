@@ -89,8 +89,9 @@
   font-size: 12px;
   font-weight: 720;
   color: var(--bo-text);
+  min-width: 0;
+  flex: 1 1 auto;
   width: 100%;
-  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -258,4 +259,3 @@
   color: var(--bo-text);
   text-transform: capitalize;
 }
-

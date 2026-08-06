@@ -1,5 +1,5 @@
 import React from "react";
-import { CalendarDays, Pencil, Plus } from "lucide-react";
+import { CalendarDays, Pencil } from "lucide-react";
 
 import type { FichajeSchedule } from "../../../../../../api/types";
 import type { WeeklyScheduleTableProps } from "./types";
@@ -72,7 +72,6 @@ export function WeeklyScheduleTable({
             </thead>
             <tbody data-slot="weeklyScheduleTable-tbody">
               {week.dates.map((date) => {
-                const schedule = schedulesByDate.get(date);
                 const dayName = getDayName(date);
                 const dayNum = new Date(date).getDate();
 
@@ -94,12 +93,12 @@ export function WeeklyScheduleTable({
                                 <button
                                   type="button"
                                   onClick={() => onEdit?.(date)}
-                                  aria-label={`Añadir turno de ${memberName} el ${dayName} ${dayNum}`}
-                                  data-role="weekly-schedule-action"
-                                  className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1 !px-2.5 !py-1 !h-auto text-xs"
+                                  aria-label={`Editar horario de ${memberName} el ${dayName} ${dayNum}`}
+                                  title="Editar horario"
+                                  data-role="weekly-schedule-edit"
+                                  className="bo-dateBtn bo-dateBtn--glass !ml-auto !inline-flex !h-7 !w-7 !justify-center !p-0"
                                 >
-                                  <Plus size={12} strokeWidth={1.8} aria-hidden="true" />
-                                  Añadir
+                                  <Pencil size={14} strokeWidth={1.8} aria-hidden="true" />
                                 </button>
                               ) : null}
                             </span>
@@ -107,33 +106,32 @@ export function WeeklyScheduleTable({
                         }
                         return (
                           <div className="flex flex-col gap-1.5">
-                            {daySchedules.map((schedule, index) => (
+                            {daySchedules.map((schedule) => (
                               <span
                                 key={schedule.id}
                                 data-slot="scheduleInfo"
-                                className="schedule-time flex flex-wrap items-center gap-2 text-[var(--bo-text)] font-medium"
+                                className="schedule-time flex items-center gap-2 text-[var(--bo-text)] font-medium"
                               >
-                                <span className="schedule-break text-[11px] text-[var(--bo-faint)]">#{index + 1}</span>
                                 {schedule.startTime} - {schedule.endTime}
                                 {schedule.breakMinutes && schedule.breakMinutes > 0 ? (
                                   <span data-slot="breakInfo" className="schedule-break text-xs text-[var(--bo-faint)]">
                                     ({schedule.breakMinutes}min pausa)
                                   </span>
                                 ) : null}
-                                {canEdit ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => onEdit?.(date)}
-                                    aria-label={`Editar turno ${index + 1} de ${memberName} el ${dayName} ${dayNum}`}
-                                    data-role="weekly-schedule-action"
-                                    className="bo-dateBtn bo-dateBtn--glass !justify-center !gap-1 !px-2 !py-0.5 !h-auto text-[11px]"
-                                  >
-                                    <Pencil size={11} strokeWidth={1.8} aria-hidden="true" />
-                                    Editar
-                                  </button>
-                                ) : null}
                               </span>
                             ))}
+                            {canEdit ? (
+                              <button
+                                type="button"
+                                onClick={() => onEdit?.(date)}
+                                aria-label={`Editar horario de ${memberName} el ${dayName} ${dayNum}`}
+                                title="Editar horario"
+                                data-role="weekly-schedule-edit"
+                                className="bo-dateBtn bo-dateBtn--glass !ml-auto !inline-flex !h-7 !w-7 !justify-center !p-0"
+                              >
+                                <Pencil size={14} strokeWidth={1.8} aria-hidden="true" />
+                              </button>
+                            ) : null}
                           </div>
                         );
                       })()}
