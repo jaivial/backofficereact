@@ -228,8 +228,8 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             aria-pressed={view === "diario"}
             className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
               view === "diario"
-                ? "border-[var(--bo-accent)] bg-[color-mix(in_srgb,var(--bo-accent)_16%,transparent)] text-[var(--bo-accent)]"
-                : "border-transparent text-[var(--bo-muted)] hover:bg-[var(--bo-bg-hover)] hover:text-[var(--bo-text)]"
+                ? "border-violet-500 bg-violet-500/15 text-violet-600 dark:border-violet-400 dark:bg-violet-400/15 dark:text-violet-300"
+                : "border-transparent text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-200"
             }`}
           >
             <CalendarDays size={16} strokeWidth={1.8} aria-hidden="true" />
@@ -242,8 +242,8 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             aria-pressed={view === "semanal"}
             className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
               view === "semanal"
-                ? "border-[var(--bo-accent)] bg-[color-mix(in_srgb,var(--bo-accent)_16%,transparent)] text-[var(--bo-accent)]"
-                : "border-transparent text-[var(--bo-muted)] hover:bg-[var(--bo-bg-hover)] hover:text-[var(--bo-text)]"
+                ? "border-violet-500 bg-violet-500/15 text-violet-600 dark:border-violet-400 dark:bg-violet-400/15 dark:text-violet-300"
+                : "border-transparent text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-200"
             }`}
           >
             <CalendarRange size={16} strokeWidth={1.8} aria-hidden="true" />
@@ -278,7 +278,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
               onClick={() => setSidebarOpen(false)}
               aria-label="Ocultar miembros"
               title="Ocultar miembros"
-              className="flex size-6 items-center justify-center rounded-md text-[var(--bo-faint)] transition-colors hover:bg-white/10 hover:text-[var(--bo-text)]"
+              className="flex size-6 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-black/5 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-200"
             >
               <PanelLeftClose size={15} strokeWidth={1.8} aria-hidden="true" />
             </button>
@@ -330,8 +330,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             onClick={() => setSidebarOpen(true)}
             aria-label="Mostrar miembros"
             title="Mostrar miembros"
-            className="flex size-9 items-center justify-center rounded-xl border border-solid text-[var(--bo-muted)] transition-colors hover:text-[var(--bo-text)]"
-            style={{ borderColor: "color-mix(in srgb, var(--bo-accent) 16%, var(--bo-border))" }}
+            className="flex size-9 items-center justify-center rounded-xl border border-solid border-violet-500/25 text-slate-400 transition-colors hover:text-slate-700 dark:border-violet-400/25 dark:text-slate-500 dark:hover:text-slate-200"
           >
             <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
           </button>
