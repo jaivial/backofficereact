@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { ProductionTypeToggle, type ProductionType } from "./ProductionTypeToggle";
 import { TechnicalSheetBrowser } from "./TechnicalSheetBrowser";
 import { TechnicalSheetEditor } from "./TechnicalSheetEditor";
-import { sheetsApi, type SheetSummary } from "./sheetsApi";
+import { sheetsApi, type SheetOutputUnit, type SheetSummary } from "./sheetsApi";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 
 // The "Tipo de producto" section, shared by every product editor.
@@ -31,6 +31,11 @@ type Props = {
   /** Which catalogue table the id belongs to; wine and postres are separate. */
   source?: "comida" | "vinos" | "postres";
   productName?: string;
+  /**
+   * Output-unit details applied when a new sheet is created from here (stock
+   * creation). Omitted for existing products: their sheet already exists.
+   */
+  sheetOutputUnit?: SheetOutputUnit;
   disabled?: boolean;
 };
 
@@ -44,6 +49,7 @@ export function ProductionTypeSection({
   onSheetAllergensChange,
   source = "comida",
   productName = "",
+  sheetOutputUnit,
   disabled,
 }: Props) {
   const [creating, setCreating] = useState(false);
@@ -108,7 +114,7 @@ export function ProductionTypeSection({
             .ensureForProduct(itemId, productName.trim() || "Ficha tecnica", source)
             .then((ensured) => ensured.sheetId)
         : sheetsApi
-            .create(productName.trim() || "Ficha tecnica", 1)
+            .create(productName.trim() || "Ficha tecnica", 1, sheetOutputUnit)
             .then((created) => created.sheetId);
 
     request
@@ -123,7 +129,7 @@ export function ProductionTypeSection({
         creatingRef.current = false;
         setCreating(false);
       });
-  }, [itemId, onSheetLinked, productName, source]);
+  }, [itemId, onSheetLinked, productName, sheetOutputUnit, source]);
 
   return (
     <section

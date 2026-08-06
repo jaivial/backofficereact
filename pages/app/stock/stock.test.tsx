@@ -6,15 +6,23 @@ import Page from "./stock";
 
 vi.mock("vike-react/usePageContext",()=>({usePageContext:()=>({bo:{session:{user:{roleImportance:90}}}})}));
 
-vi.mock("lucide-react", () => ({
-  Boxes: () => React.createElement("span", { "data-testid": "boxes-icon" }),
-  FileScan: () => React.createElement("span", { "data-testid": "file-scan-icon" }),
-  Minus: () => React.createElement("span", { "data-testid": "minus-icon" }),
-  Plus: () => React.createElement("span", { "data-testid": "plus-icon" }),
-  Search: () => React.createElement("span", { "data-testid": "search-icon" }),
-  Warehouse: () => React.createElement("span", { "data-testid": "warehouse-icon" }),
-  X: () => React.createElement("span", { "data-testid": "x-icon" }),
-}));
+vi.mock("lucide-react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("lucide-react")>();
+  // The page now pulls in the technical sheet editor (via StockItemModal),
+  // which needs the full icon set; only the icons the page itself renders are
+  // swapped for testid markers, the rest keep their real implementations.
+  const mockIcon = (testid: string) => () => React.createElement("span", { "data-testid": testid });
+  return {
+    ...actual,
+    Boxes: mockIcon("boxes-icon"),
+    FileScan: mockIcon("file-scan-icon"),
+    Minus: mockIcon("minus-icon"),
+    Plus: mockIcon("plus-icon"),
+    Search: mockIcon("search-icon"),
+    Warehouse: mockIcon("warehouse-icon"),
+    X: mockIcon("x-icon"),
+  };
+});
 
 const item = {
   id: 1,
