@@ -191,6 +191,9 @@
   }
 
   .bo-mcal.bo-mcal--glass {
+    width: 100%;
+    width: -webkit-fill-available;
+    max-width: none;
     margin-inline: 0 !important;
   }
 
