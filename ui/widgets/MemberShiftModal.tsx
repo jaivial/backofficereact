@@ -100,6 +100,7 @@ export function MemberShiftModal({
   const [schedules, setSchedules] = useState<FichajeSchedule[]>([]);
   const [activeEntry, setActiveEntry] = useState<TimeEntry | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [assignEntryHour, setAssignEntryHour] = useState("09");
   const [assignEntryMinute, setAssignEntryMinute] = useState("00");
@@ -111,6 +112,7 @@ export function MemberShiftModal({
 
   const loadData = useCallback(async () => {
     if (!open) return;
+    setDataLoaded(false);
     setLoading(true);
     try {
       const [horariosRes, entriesRes] = await Promise.all([
@@ -131,6 +133,7 @@ export function MemberShiftModal({
       console.error("Error loading shift data:", err);
     } finally {
       setLoading(false);
+      setDataLoaded(true);
     }
   }, [open, selectedDate, member.id, api]);
 
@@ -355,13 +358,13 @@ export function MemberShiftModal({
           {selectedDate}
         </div>
 
-        {loading && (
+        {!dataLoaded && (
           <div className="bo-shiftModalLoading" data-slot="shift-modal-loading">
             <div className="bo-spinner" data-slot="memberShiftModal-spinner" />
           </div>
         )}
 
-        {!loading && (
+        {dataLoaded && (
           <>
             {isActive ? (
               <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-active-section">
