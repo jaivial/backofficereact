@@ -358,6 +358,7 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
     <section aria-label="Edicion de turnos" className="bo-turnosPage" data-testid="horarios-turnos-section">
       <Panel
         data-testid="horarios-turnos-panel"
+        className="mt-4"
         title={
           <span className="bo-horariosTitle" data-testid="horarios-turnos-title">
             <CalendarClock size={16} strokeWidth={1.8} />
