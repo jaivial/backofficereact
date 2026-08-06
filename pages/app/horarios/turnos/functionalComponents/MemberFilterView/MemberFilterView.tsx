@@ -8,7 +8,7 @@ import type { MemberFilterViewProps } from "./types";
 import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import { ChevronButton } from "../../../../../../ui/widgets/ChevronButton";
 import { DateRangePicker } from "../../../../../../ui/inputs/DateRangePicker";
-import { DropdownMenu } from "../../../../../../ui/inputs/DropdownMenu";
+import { Select } from "../../../../../../ui/inputs/Select";
 import { MemberShiftModal } from "../../../../../../ui/widgets/MemberShiftModal";
 import { DailyScheduleCard } from "./DailyScheduleCard";
 import { WeeklyScheduleTable } from "./WeeklyScheduleTable";
@@ -286,21 +286,21 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       {/* Sidebar + schedule area */}
       <div className="flex flex-col md:flex-row gap-4 w-full">
       {/* Mobile: dropdown selector above schedule */}
-      <div className="md:hidden">
-        <DropdownMenu
-          label="Selecciona miembro"
-          triggerContent={
-            <span className="flex items-center gap-2 text-sm font-medium">
-              <User size={16} strokeWidth={1.8} aria-hidden="true" />
-              <span className="truncate">{selectedMember ? fullName(selectedMember) : "Miembro"}</span>
-            </span>
-          }
-          triggerClassName="bo-dateBtn bo-dateBtn--glass w-full !justify-start"
-          items={membersSorted.map((member) => ({
-            id: String(member.id),
+      <div className="md:hidden w-full min-w-0" data-ui="mobile-member-selector">
+        <Select
+          value={selectedMemberId ? String(selectedMemberId) : ""}
+          onChange={(value) => handleMemberSelect(Number(value))}
+          options={membersSorted.map((member) => ({
+            value: String(member.id),
             label: fullName(member),
-            onSelect: () => handleMemberSelect(member.id),
+            icon: <User size={16} strokeWidth={1.8} />,
           }))}
+          ariaLabel="Seleccionar miembro"
+          placeholder="Seleccionar miembro"
+          className="w-full !min-w-0"
+          menuMinWidthPx={240}
+          listClassName="bo-memberSelectList"
+          data-testid="mobile-member-selector"
         />
       </div>
 

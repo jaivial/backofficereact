@@ -148,10 +148,12 @@ export function Select({
     const desiredHeight = maxHeight;
     const opensUp = spaceBelow < desiredHeight && spaceAbove > spaceBelow;
 
+    const width = Math.min(Math.max(rect.width, minWidth), Math.max(160, window.innerWidth - 16));
+    const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - width - 8));
     setListPosition({
       top: opensUp ? rect.top - desiredHeight - 6 : rect.bottom + 6,
-      left: rect.left,
-      width: Math.max(rect.width, minWidth),
+      left,
+      width,
     });
     setDirection(opensUp ? "up" : "down");
     const idx = Math.max(0, options.findIndex((o) => o.value === value));
@@ -179,7 +181,7 @@ export function Select({
               {selected.icon}
             </span>
           ) : null}
-          <span className="bo-selectLabel !max-w-[200px]" data-ui="select-selected-label">{selected?.label ?? placeholder ?? ""}</span>
+          <span className="bo-selectLabel" data-ui="select-selected-label">{selected?.label ?? placeholder ?? ""}</span>
         </span>
         <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
       </button>
