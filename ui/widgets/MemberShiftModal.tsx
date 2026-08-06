@@ -6,7 +6,7 @@ import { createClient } from "../../api/client";
 import type { FichajeSchedule, Member, TimeEntry } from "../../api/types";
 import { cn } from "../shadcn/utils";
 import { Modal } from "../overlays/Modal";
-import { SpinWheel } from "../inputs/SpinWheel";
+import { Select } from "../inputs/Select";
 import { TimeAdjustCounter } from "./TimeAdjustCounter";
 import { useToasts } from "../feedback/useToasts";
 
@@ -42,6 +42,31 @@ function fromMinutes(totalMinutes: number): { h: string; m: string } {
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => pad2(i));
 const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => pad2(i));
+
+function TimeSelect({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <Select
+      value={value}
+      onChange={onChange}
+      options={options.map((option) => ({ value: option, label: option }))}
+      ariaLabel={ariaLabel}
+      menuMinWidthPx={72}
+      listMaxHeightPx={132}
+      className="bo-shiftModalTimeSelect"
+      listClassName="bo-shiftModalTimeList"
+    />
+  );
+}
 
 function hasTimeOverlap(
   newStart: string,
@@ -362,7 +387,7 @@ export function MemberShiftModal({
                         disabled={loading}
                       />
                     </div>
-                    <div className="bo-shiftModalActions flex flex-col sm:flex-row gap-2" data-slot="shift-modal-actions">
+                    <div className="bo-shiftModalActions bo-shiftModalScheduleActions" data-slot="shift-modal-actions">
                       {!isActive ? (
                         <button className="bo-btn bo-btn--primary bo-btn--glass flex-1" type="button" onClick={startFichaje} disabled={loading} data-testid="member-shift-start-btn">
                           <Play size={14} strokeWidth={1.8} />
@@ -402,43 +427,21 @@ export function MemberShiftModal({
                   data-slot="shift-modal-assign-form"
                 >
                   <div className="bo-shiftModalLabel" data-slot="shift-modal-assign-label">Nuevo turno</div>
-                  <div className="bo-shiftModalWheels flex flex-col sm:flex-row gap-4" data-slot="shift-modal-wheels">
+                  <div className="bo-shiftModalWheels" data-slot="shift-modal-wheels">
                     <div className="bo-shiftModalWheelGroup flex-1" data-slot="shift-modal-start-wheel-group">
                       <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de entrada</div>
-                      <div className="bo-shiftModalWheelRow flex gap-2" data-slot="shift-modal-wheel-row">
-                        <SpinWheel
-                          values={HOUR_OPTIONS}
-                          value={assignEntryHour}
-                          onChange={(v) => setAssignEntryTime(v, assignEntryMinute)}
-                          ariaLabel="Hora de entrada"
-                          className="bo-shiftModalWheelSpin flex-1"
-                        />
-                        <SpinWheel
-                          values={MINUTE_OPTIONS}
-                          value={assignEntryMinute}
-                          onChange={(v) => setAssignEntryTime(assignEntryHour, v)}
-                          ariaLabel="Minutos de entrada"
-                          className="bo-shiftModalWheelSpin flex-1"
-                        />
+                      <div className="bo-shiftModalTimePair" data-slot="shift-modal-wheel-row">
+                        <TimeSelect value={assignEntryHour} options={HOUR_OPTIONS} onChange={(v) => setAssignEntryTime(v, assignEntryMinute)} ariaLabel="Hora de entrada" />
+                        <span className="bo-shiftModalTimeColon" aria-hidden="true">:</span>
+                        <TimeSelect value={assignEntryMinute} options={MINUTE_OPTIONS} onChange={(v) => setAssignEntryTime(assignEntryHour, v)} ariaLabel="Minutos de entrada" />
                       </div>
                     </div>
                     <div className="bo-shiftModalWheelGroup flex-1" data-slot="shift-modal-end-wheel-group">
                       <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de salida</div>
-                      <div className="bo-shiftModalWheelRow flex gap-2" data-slot="shift-modal-wheel-row">
-                        <SpinWheel
-                          values={exitHourOptions}
-                          value={assignExitHour}
-                          onChange={setAssignExitHour}
-                          ariaLabel="Hora de salida"
-                          className="bo-shiftModalWheelSpin flex-1"
-                        />
-                        <SpinWheel
-                          values={exitMinuteOptions}
-                          value={assignExitMinute}
-                          onChange={setAssignExitMinute}
-                          ariaLabel="Minutos de salida"
-                          className="bo-shiftModalWheelSpin flex-1"
-                        />
+                      <div className="bo-shiftModalTimePair" data-slot="shift-modal-wheel-row">
+                        <TimeSelect value={assignExitHour} options={exitHourOptions} onChange={setAssignExitHour} ariaLabel="Hora de salida" />
+                        <span className="bo-shiftModalTimeColon" aria-hidden="true">:</span>
+                        <TimeSelect value={assignExitMinute} options={exitMinuteOptions} onChange={setAssignExitMinute} ariaLabel="Minutos de salida" />
                       </div>
                     </div>
                   </div>
