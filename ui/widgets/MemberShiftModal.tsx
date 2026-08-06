@@ -25,14 +25,6 @@ function minutesToTime(minutes: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function splitHHMM(value: string): { h: string; m: string } {
-  const raw = String(value || "").trim();
-  const [h, m] = raw.split(":");
-  const hh = /^\d{2}$/.test(h || "") ? h : "09";
-  const mm = /^\d{2}$/.test(m || "") ? m : "00";
-  return { h: hh, m: mm };
-}
-
 function toMinutes(hour: string, minute: string): number {
   const h = Number(hour);
   const m = Number(minute);
@@ -61,7 +53,6 @@ function hasTimeOverlap(
   const newEndMin = parseTimeToMinutes(newEnd);
   const existingStartMin = parseTimeToMinutes(existingStart);
   const existingEndMin = parseTimeToMinutes(existingEnd);
-
   return newStartMin < existingEndMin && newEndMin > existingStartMin;
 }
 
@@ -81,7 +72,7 @@ export function MemberShiftModal({
   const { pushToast } = useToasts();
   const [api] = useState(() => createClient({ baseUrl: "" }));
 
-  const [schedule, setSchedule] = useState<FichajeSchedule | null>(null);
+  const [schedules, setSchedules] = useState<FichajeSchedule[]>([]);
   const [activeEntry, setActiveEntry] = useState<TimeEntry | null>(null);
   const [loading, setLoading] = useState(false);
   const [showAssignForm, setShowAssignForm] = useState(false);
@@ -103,8 +94,8 @@ export function MemberShiftModal({
       ]);
 
       if (horariosRes.success) {
-        const memberSchedule = horariosRes.schedules.find((s) => s.memberId === member.id) || null;
-        setSchedule(memberSchedule);
+        const memberSchedules = horariosRes.schedules.filter((s) => s.memberId === member.id);
+        setSchedules(memberSchedules);
       }
 
       if (entriesRes.success) {
@@ -132,46 +123,69 @@ export function MemberShiftModal({
     }
   }, [open]);
 
+  const refreshEntries = useCallback(async () => {
+    try {
+      const entriesRes = await api.fichaje.entries.list({ date: selectedDate, memberId: member.id });
+      if (entriesRes.success) {
+        const active = entriesRes.entries.find((e) => e.endTime === null && e.workDate === selectedDate);
+        setActiveEntry(active || null);
+      }
+    } catch {
+      // non-fatal; fichaje buttons will surface errors
+    }
+  }, [api.fichaje.entries, selectedDate, member.id]);
+
   const adjustTime = useCallback(
-    async (field: "startTime" | "endTime", delta: number) => {
+    async (scheduleId: number, field: "startTime" | "endTime", delta: number) => {
+      const schedule = schedules.find((s) => s.id === scheduleId);
       if (!schedule) return;
       const current = schedule[field];
       const currentMin = parseTimeToMinutes(current);
       const newMin = Math.max(0, Math.min(24 * 60 - 15, currentMin + delta));
       const newTime = minutesToTime(newMin);
 
+      // Optimistic local update so the list reacts immediately.
+      const optimisticStart = field === "startTime" ? newTime : schedule.startTime;
+      const optimisticEnd = field === "endTime" ? newTime : schedule.endTime;
+      const overlaps = schedules.some(
+        (s) =>
+          s.id !== scheduleId &&
+          hasTimeOverlap(optimisticStart, optimisticEnd, s.startTime, s.endTime),
+      );
+      if (overlaps) {
+        pushToast({ kind: "error", title: "Horario invalido", message: "El turno se solapa con otro turno ese día" });
+        return;
+      }
+
       setLoading(true);
       try {
-        const res = await api.horarios.update(schedule.id, {
-          startTime: field === "startTime" ? newTime : schedule.startTime,
-          endTime: field === "endTime" ? newTime : schedule.endTime,
+        const res = await api.horarios.update(scheduleId, {
+          startTime: optimisticStart,
+          endTime: optimisticEnd,
         });
         if (res.success) {
-          setSchedule(res.schedule);
+          setSchedules((current) => current.map((s) => (s.id === scheduleId ? { ...s, ...res.schedule } : s)));
           pushToast({ kind: "success", title: "Horario actualizado" });
         } else {
           pushToast({ kind: "error", title: res.message || "Error al actualizar" });
+          await loadData();
         }
       } catch (err) {
         pushToast({ kind: "error", title: "Error al actualizar" });
+        await loadData();
       } finally {
         setLoading(false);
       }
     },
-    [schedule, api, pushToast],
+    [schedules, api.horarios, pushToast, loadData],
   );
 
   const startFichaje = useCallback(async () => {
-    if (!schedule) return;
     setLoading(true);
     try {
-      const res = await api.fichaje.adminStart(schedule.memberId);
+      const res = await api.fichaje.adminStart(member.id);
       if (res.success) {
-        const entriesRes = await api.fichaje.entries.list({ date: selectedDate, memberId: member.id });
-        if (entriesRes.success) {
-          const active = entriesRes.entries.find((e) => e.endTime === null && e.workDate === selectedDate);
-          setActiveEntry(active || null);
-        }
+        await refreshEntries();
         pushToast({ kind: "success", title: "Fichaje iniciado" });
       } else {
         pushToast({ kind: "error", title: res.message || "Error al iniciar" });
@@ -181,7 +195,7 @@ export function MemberShiftModal({
     } finally {
       setLoading(false);
     }
-  }, [schedule, selectedDate, member.id, api, pushToast]);
+  }, [member.id, api.fichaje, refreshEntries, pushToast]);
 
   const stopFichaje = useCallback(async () => {
     if (!activeEntry) return;
@@ -189,11 +203,7 @@ export function MemberShiftModal({
     try {
       const res = await api.fichaje.adminStop(activeEntry.memberId);
       if (res.success) {
-        const entriesRes = await api.fichaje.entries.list({ date: selectedDate, memberId: member.id });
-        if (entriesRes.success) {
-          const active = entriesRes.entries.find((e) => e.endTime === null && e.workDate === selectedDate);
-          setActiveEntry(active || null);
-        }
+        await refreshEntries();
         pushToast({ kind: "success", title: "Fichaje terminado" });
       } else {
         pushToast({ kind: "error", title: res.message || "Error al terminar" });
@@ -203,7 +213,7 @@ export function MemberShiftModal({
     } finally {
       setLoading(false);
     }
-  }, [activeEntry, selectedDate, member.id, api, pushToast]);
+  }, [activeEntry, api.fichaje, refreshEntries, pushToast]);
 
   const setAssignEntryTime = useCallback(
     (nextHour: string, nextMinute: string) => {
@@ -223,7 +233,7 @@ export function MemberShiftModal({
 
   const exitHourOptions = useMemo(
     () => HOUR_OPTIONS.filter((h) => Number(h) >= Number(assignEntryHour)),
-    [],
+    [assignEntryHour],
   );
   const exitMinuteOptions = useMemo(() => {
     if (Number(assignExitHour) !== Number(assignEntryHour)) return MINUTE_OPTIONS;
@@ -233,12 +243,12 @@ export function MemberShiftModal({
   const assignShift = useCallback(async () => {
     if (!assignStartTime || !assignEndTime) return;
 
-    if (schedule) {
-      const overlaps = hasTimeOverlap(assignStartTime, assignEndTime, schedule.startTime, schedule.endTime);
-      if (overlaps) {
-        pushToast({ kind: "error", title: "El nuevo turno coincide con el actual" });
-        return;
-      }
+    const overlaps = schedules.some((s) =>
+      hasTimeOverlap(assignStartTime, assignEndTime, s.startTime, s.endTime),
+    );
+    if (overlaps) {
+      pushToast({ kind: "error", title: "El nuevo turno coincide con otro turno" });
+      return;
     }
 
     setLoading(true);
@@ -250,7 +260,7 @@ export function MemberShiftModal({
         endTime: assignEndTime,
       });
       if (res.success) {
-        setSchedule(res.schedule);
+        setSchedules((current) => [...current, res.schedule].sort((a, b) => a.startTime.localeCompare(b.startTime)));
         setShowAssignForm(false);
         pushToast({ kind: "success", title: "Turno asignado" });
       } else {
@@ -261,28 +271,29 @@ export function MemberShiftModal({
     } finally {
       setLoading(false);
     }
-  }, [assignStartTime, assignEndTime, schedule, selectedDate, member.id, api, pushToast]);
+  }, [assignStartTime, assignEndTime, schedules, selectedDate, member.id, api.horarios, pushToast]);
 
-  const removeShift = useCallback(async () => {
-    if (!schedule) return;
-    setLoading(true);
-    try {
-      const res = await api.horarios.delete(schedule.id);
-      if (res.success) {
-        setSchedule(null);
-        pushToast({ kind: "success", title: "Turno eliminado" });
-      } else {
-        pushToast({ kind: "error", title: res.message || "Error al eliminar" });
+  const removeShift = useCallback(
+    async (scheduleId: number) => {
+      setLoading(true);
+      try {
+        const res = await api.horarios.delete(scheduleId);
+        if (res.success) {
+          setSchedules((current) => current.filter((s) => s.id !== scheduleId));
+          pushToast({ kind: "success", title: "Turno eliminado" });
+        } else {
+          pushToast({ kind: "error", title: res.message || "Error al eliminar" });
+        }
+      } catch (err) {
+        pushToast({ kind: "error", title: "Error al eliminar" });
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      pushToast({ kind: "error", title: "Error al eliminar" });
-    } finally {
-      setLoading(false);
-    }
-  }, [schedule, api, pushToast]);
+    },
+    [api.horarios, pushToast],
+  );
 
   const fullName = `${member.firstName || ""} ${member.lastName || ""}`.trim() || `Miembro #${member.id}`;
-  const hasSchedule = !!schedule;
   const isActive = !!activeEntry;
 
   return (
@@ -301,39 +312,7 @@ export function MemberShiftModal({
 
         {!loading && (
           <>
-            {hasSchedule && !isActive && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-current-shift">
-                <div className="bo-shiftModalLabel" data-slot="shift-modal-section-label">Turno actual</div>
-                <div className="bo-shiftModalTimes" data-slot="shift-modal-times">
-                  <TimeAdjustCounter
-                    label="Entrada"
-                    value={schedule.startTime}
-                    onMinus={() => adjustTime("startTime", -15)}
-                    onPlus={() => adjustTime("startTime", 15)}
-                    disabled={loading}
-                  />
-                  <TimeAdjustCounter
-                    label="Salida"
-                    value={schedule.endTime}
-                    onMinus={() => adjustTime("endTime", -15)}
-                    onPlus={() => adjustTime("endTime", 15)}
-                    disabled={loading}
-                  />
-                </div>
-                <div className="bo-shiftModalActions" data-slot="shift-modal-actions">
-                  <button className="bo-btn bo-btn--primary bo-btn--glass" type="button" onClick={startFichaje} disabled={loading} data-testid="member-shift-start-btn">
-                    <Play size={14} strokeWidth={1.8} />
-                    Iniciar fichaje
-                  </button>
-                  <button className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--glass" type="button" onClick={removeShift} disabled={loading} data-testid="member-shift-delete-btn">
-                    <Trash2 size={14} strokeWidth={1.8} />
-                    Quitar turno
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {hasSchedule && isActive && (
+            {isActive ? (
               <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-active-section">
                 <div className="bo-shiftModalLabel" data-slot="shift-modal-active-label">Trabajando</div>
                 <div className="bo-shiftModalActive bo-shiftModalActive--glass" data-slot="shift-modal-active-badge">
@@ -349,26 +328,71 @@ export function MemberShiftModal({
                   </button>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {!hasSchedule && (
-              <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-no-schedule">
-                <div className="bo-shiftModalLabel" data-slot="shift-modal-no-schedule-label">Sin turno asignado</div>
-                <button
-                  className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
-                  type="button"
-                  onClick={() => setShowAssignForm(true)}
-                  disabled={loading}
-                  data-testid="member-shift-assign-btn"
-                >
-                  <Plus size={14} strokeWidth={1.8} />
-                  Asignar turno
-                </button>
-              </div>
-            )}
+            {/* Schedule list: one block per shift, mobile-first stacked */}
+            <div className="flex flex-col gap-3" data-slot="shift-modal-schedule-list">
+              {schedules.length === 0 ? (
+                <div className="bo-shiftModalSection bo-shiftModalSection--glass" data-slot="shift-modal-no-schedule">
+                  <div className="bo-shiftModalLabel" data-slot="shift-modal-no-schedule-label">Sin turno asignado</div>
+                </div>
+              ) : (
+                schedules.map((schedule, index) => (
+                  <div
+                    key={schedule.id}
+                    className="bo-shiftModalSection bo-shiftModalSection--glass"
+                    data-slot="shift-modal-current-shift"
+                  >
+                    <div className="bo-shiftModalLabel" data-slot="shift-modal-section-label">
+                      Turno {index + 1} · {schedule.startTime} - {schedule.endTime}
+                    </div>
+                    <div className="bo-shiftModalTimes" data-slot="shift-modal-times">
+                      <TimeAdjustCounter
+                        label="Entrada"
+                        value={schedule.startTime}
+                        onMinus={() => adjustTime(schedule.id, "startTime", -15)}
+                        onPlus={() => adjustTime(schedule.id, "startTime", 15)}
+                        disabled={loading}
+                      />
+                      <TimeAdjustCounter
+                        label="Salida"
+                        value={schedule.endTime}
+                        onMinus={() => adjustTime(schedule.id, "endTime", -15)}
+                        onPlus={() => adjustTime(schedule.id, "endTime", 15)}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="bo-shiftModalActions" data-slot="shift-modal-actions">
+                      {!isActive ? (
+                        <button className="bo-btn bo-btn--primary bo-btn--glass" type="button" onClick={startFichaje} disabled={loading} data-testid="member-shift-start-btn">
+                          <Play size={14} strokeWidth={1.8} />
+                          Iniciar fichaje
+                        </button>
+                      ) : null}
+                      <button className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--glass" type="button" onClick={() => removeShift(schedule.id)} disabled={loading} data-testid={`member-shift-delete-${schedule.id}`}>
+                        <Trash2 size={14} strokeWidth={1.8} />
+                        Quitar turno
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Add another shift */}
+            <button
+              className="bo-btn bo-btn--ghost bo-btn--full bo-shiftModalAddBtn bo-btn--glass"
+              type="button"
+              onClick={() => setShowAssignForm((v) => !v)}
+              disabled={loading}
+              data-testid="member-shift-toggle-add-btn"
+            >
+              <Plus size={14} strokeWidth={1.8} />
+              {showAssignForm ? "Cancelar" : "Añadir otro turno"}
+            </button>
 
             <AnimatePresence>
-              {((!hasSchedule && showAssignForm) || (hasSchedule && !isActive)) && (
+              {showAssignForm && (
                 <motion.div
                   className="bo-shiftModalAssign bo-shiftModalAssign--glass"
                   initial={{ opacity: 0, height: 0 }}
@@ -431,108 +455,6 @@ export function MemberShiftModal({
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {hasSchedule && !isActive && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                data-slot="shift-modal-add-shift-toggle"
-              >
-                <button
-                  className="bo-btn bo-btn--ghost bo-btn--full bo-shiftModalAddBtn bo-btn--glass"
-                  type="button"
-                  onClick={() => setShowAssignForm(!showAssignForm)}
-                  disabled={loading}
-                  data-testid="member-shift-toggle-add-btn"
-                >
-                  <Plus size={14} strokeWidth={1.8} />
-                  {showAssignForm ? "Cancelar" : "Añadir otro turno"}
-                </button>
-              </motion.div>
-            )}
-
-            {hasSchedule && isActive && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                data-slot="shift-modal-active-add-toggle"
-              >
-                <button
-                  className="bo-btn bo-btn--ghost bo-btn--full bo-btn--glass"
-                  type="button"
-                  onClick={() => setShowAssignForm(!showAssignForm)}
-                  disabled={loading}
-                  data-testid="member-shift-toggle-add-btn"
-                >
-                  <Plus size={14} strokeWidth={1.8} />
-                  {showAssignForm ? "Cancelar" : "Añadir otro turno"}
-                </button>
-
-                {showAssignForm && (
-                  <motion.div
-                    className="bo-shiftModalAssign bo-shiftModalAssign--glass"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                    data-slot="shift-modal-assign-form"
-                  >
-                    <div className="bo-shiftModalLabel" data-slot="shift-modal-assign-label">Nuevo turno</div>
-                    <div className="bo-shiftModalWheels" data-slot="shift-modal-wheels">
-                      <div className="bo-shiftModalWheelGroup" data-slot="shift-modal-start-wheel-group">
-                        <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de entrada</div>
-                        <div className="bo-shiftModalWheelRow" data-slot="shift-modal-wheel-row">
-                          <SpinWheel
-                            values={HOUR_OPTIONS}
-                            value={assignEntryHour}
-                            onChange={(v) => setAssignEntryTime(v, assignEntryMinute)}
-                            ariaLabel="Hora de entrada"
-                            className="bo-shiftModalWheelSpin"
-                          />
-                          <SpinWheel
-                            values={MINUTE_OPTIONS}
-                            value={assignEntryMinute}
-                            onChange={(v) => setAssignEntryTime(assignEntryHour, v)}
-                            ariaLabel="Minutos de entrada"
-                            className="bo-shiftModalWheelSpin"
-                          />
-                        </div>
-                      </div>
-                      <div className="bo-shiftModalWheelGroup" data-slot="shift-modal-end-wheel-group">
-                        <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de salida</div>
-                        <div className="bo-shiftModalWheelRow" data-slot="shift-modal-wheel-row">
-                          <SpinWheel
-                            values={exitHourOptions}
-                            value={assignExitHour}
-                            onChange={setAssignExitHour}
-                            ariaLabel="Hora de salida"
-                            className="bo-shiftModalWheelSpin"
-                          />
-                          <SpinWheel
-                            values={exitMinuteOptions}
-                            value={assignExitMinute}
-                            onChange={setAssignExitMinute}
-                            ariaLabel="Minutos de salida"
-                            className="bo-shiftModalWheelSpin"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      className="bo-btn bo-btn--primary bo-btn--full bo-btn--glass"
-                      type="button"
-                      onClick={assignShift}
-                      disabled={loading}
-                      data-testid="member-shift-submit-btn"
-                    >
-                      <Plus size={14} strokeWidth={1.8} />
-                      Asignar turno
-                    </button>
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
           </>
         )}
       </div>

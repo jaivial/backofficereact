@@ -62,9 +62,12 @@ export function MyScheduleView({ initialSchedules }: { initialSchedules: Fichaje
   }, [api.horarios, dateFrom, dateTo]);
 
   const schedulesByDate = useMemo(() => {
-    const map = new Map<string, FichajeSchedule>();
+    const map = new Map<string, FichajeSchedule[]>();
     for (const s of schedules) {
-      if (s.date) map.set(s.date, s);
+      if (!s.date) continue;
+      const list = map.get(s.date) ?? [];
+      list.push(s);
+      map.set(s.date, list);
     }
     return map;
   }, [schedules]);
@@ -132,7 +135,7 @@ export function MyScheduleView({ initialSchedules }: { initialSchedules: Fichaje
               <DailyScheduleCard
                 key={date}
                 date={date}
-                schedule={schedulesByDate.get(date) || null}
+                schedules={schedulesByDate.get(date) || []}
               />
             ))}
           </div>
