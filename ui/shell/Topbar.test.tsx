@@ -45,6 +45,10 @@ vi.mock("../theme/ThemeToggle", () => ({
   ThemeToggle: () => <div data-testid="theme-toggle" />,
 }));
 
+vi.mock("../forky/ForkyToggle", () => ({
+  ForkyToggle: () => <div data-testid="forky-toggle" />,
+}));
+
 vi.mock("../feedback/useToasts", () => ({
   useToasts: () => ({ pushToast: vi.fn() }),
 }));

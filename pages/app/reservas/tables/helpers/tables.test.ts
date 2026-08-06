@@ -8,6 +8,10 @@ import {
   resolveAssignments,
   assignmentsDisplayName,
   seatedNamesForTable,
+  initialDateFromSearch,
+  isValidISODate,
+  normalizeDateView,
+  withDateParam,
 } from "./tables";
 
 describe("normalizeTableSize / previewGeometry (editor resize)", () => {
@@ -110,5 +114,115 @@ describe("assignment helpers (multi-table booking)", () => {
     expect(seatedNamesForTable(assignments, "Mesa 1")).toEqual(["Ana", "Luis"]);
     expect(seatedNamesForTable(assignments, "Mesa 2")).toEqual(["Paz"]);
     expect(seatedNamesForTable(assignments, "Mesa 3")).toEqual([]);
+  });
+});
+
+describe("table map date helpers", () => {
+  describe("isValidISODate", () => {
+    it("accepts a well-formed YYYY-MM-DD date", () => {
+      expect(isValidISODate("2026-04-05")).toBe(true);
+    });
+
+    it("accepts a real calendar date in any valid month/day range", () => {
+      expect(isValidISODate("2024-02-29")).toBe(true); // leap year
+      expect(isValidISODate("2026-12-31")).toBe(true);
+      expect(isValidISODate("2026-01-01")).toBe(true);
+    });
+
+    it("rejects malformed formats", () => {
+      expect(isValidISODate("05-04-2026")).toBe(false);
+      expect(isValidISODate("2026/04/05")).toBe(false);
+      expect(isValidISODate("2026-4-5")).toBe(false);
+      expect(isValidISODate("foo")).toBe(false);
+      expect(isValidISODate("")).toBe(false);
+      expect(isValidISODate("2026-04-05T10:00:00Z")).toBe(false);
+    });
+
+    it("rejects impossible calendar dates", () => {
+      expect(isValidISODate("2026-13-01")).toBe(false); // month 13
+      expect(isValidISODate("2026-00-10")).toBe(false); // month 0
+      expect(isValidISODate("2026-04-31")).toBe(false); // April has 30 days
+      expect(isValidISODate("2026-02-30")).toBe(false); // Feb 30
+      expect(isValidISODate("2025-02-29")).toBe(false); // not a leap year
+      expect(isValidISODate("2026-04-00")).toBe(false); // day 0
+    });
+
+    it("rejects non-string values", () => {
+      expect(isValidISODate(undefined)).toBe(false);
+      expect(isValidISODate(null)).toBe(false);
+      expect(isValidISODate(20260405 as unknown)).toBe(false);
+      expect(isValidISODate(["2026-04-05"] as unknown)).toBe(false);
+      expect(isValidISODate({ date: "2026-04-05" } as unknown)).toBe(false);
+    });
+  });
+
+  describe("initialDateFromSearch", () => {
+    it("returns the valid date from the search param", () => {
+      expect(initialDateFromSearch("2026-04-05")).toBe("2026-04-05");
+    });
+
+    it("falls back to today when the search param is missing", () => {
+      const fallback = initialDateFromSearch(undefined);
+      expect(isValidISODate(fallback)).toBe(true);
+    });
+
+    it("falls back to today when the search param is empty", () => {
+      const fallback = initialDateFromSearch("");
+      expect(isValidISODate(fallback)).toBe(true);
+    });
+
+    it("falls back when the search param is not a valid ISO date", () => {
+      const fallback = initialDateFromSearch("not-a-date");
+      expect(isValidISODate(fallback)).toBe(true);
+    });
+
+    it("falls back when the search param is an impossible calendar date", () => {
+      const fallback = initialDateFromSearch("2026-13-45");
+      expect(isValidISODate(fallback)).toBe(true);
+      expect(fallback).not.toBe("2026-13-45");
+    });
+
+    it("uses the provided fallback when the search param is invalid", () => {
+      expect(initialDateFromSearch("bogus", "2026-01-01")).toBe("2026-01-01");
+    });
+  });
+
+  describe("normalizeDateView", () => {
+    it("builds a view from a valid ISO date", () => {
+      expect(normalizeDateView("2026-04-05")).toEqual({ year: 2026, month: 4 });
+    });
+
+    it("falls back to the current month for garbage input", () => {
+      const view = normalizeDateView("not-a-date");
+      expect(Number.isFinite(view.year)).toBe(true);
+      expect(view.month).toBeGreaterThanOrEqual(1);
+      expect(view.month).toBeLessThanOrEqual(12);
+    });
+  });
+
+  describe("withDateParam", () => {
+    it("sets the date param on a URL without query params", () => {
+      expect(withDateParam("https://app.test/app/reservas/tables", "2026-04-05")).toBe(
+        "https://app.test/app/reservas/tables?date=2026-04-05",
+      );
+    });
+
+    it("overwrites an existing date param", () => {
+      expect(
+        withDateParam("https://app.test/app/reservas/tables?date=2026-01-01", "2026-04-05"),
+      ).toBe("https://app.test/app/reservas/tables?date=2026-04-05");
+    });
+
+    it("preserves other query params while changing the date", () => {
+      const next = withDateParam("https://app.test/app/reservas/tables?floor=1&date=2026-01-01", "2026-04-05");
+      expect(next).toContain("date=2026-04-05");
+      expect(next).toContain("floor=1");
+    });
+
+    it("works with a relative URL", () => {
+      expect(withDateParam("/app/reservas/tables", "2026-04-05")).toBe(
+        "/app/reservas/tables?date=2026-04-05",
+      );
+    });
   });
 });

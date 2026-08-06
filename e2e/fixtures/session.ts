@@ -6,8 +6,8 @@ import {
 } from "@playwright/test";
 import type { BOSession } from "../../api/types";
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@villacarmen.com";
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123";
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || process.env.LOGIN_USER || "admin@villacarmen.com";
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || process.env.LOGIN_PASSWORD || "admin123";
 
 export { expect, devices };
 export type { Page } from "@playwright/test";
@@ -21,7 +21,9 @@ export const test = base
     adminPage: async ({ browser }, use) => {
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       const page = await context.newPage();
-      const baseURL = process.env.BACKOFFICE_URL || `https://localhost:${process.env.PORT || "3001"}`;
+      const baseURL =
+        process.env.BACKOFFICE_URL ||
+        (process.env.URL ? `https://${process.env.URL}` : `https://localhost:${process.env.PORT || "3001"}`);
       await page.goto(`${baseURL}/login`, { waitUntil: "domcontentloaded" });
       const login = await page.evaluate(async ({ email, password }) => {
         const response = await fetch("/api/admin/login", {

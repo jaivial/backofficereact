@@ -180,6 +180,9 @@
 .bo-dateBtnLabel {
   font-size: 12px;
   font-weight: 720;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bo-datePop {
@@ -197,6 +200,48 @@
 
 .bo-dateRangePop {
   width: 312px;
+}
+
+/* Header month-calendar date picker: wider popover that hosts the full
+   MonthCalendar (booking occupancy per day) instead of a bare day grid. */
+.bo-datePop--mcal {
+  width: 344px;
+  padding: 10px;
+}
+
+.bo-datePop--mcal .bo-mcal {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.bo-datePop--mcal .bo-mcalHead {
+  margin-bottom: var(--bo-space-1);
+  padding-bottom: var(--bo-space-1);
+}
+
+.bo-datePop--mcal .bo-mcalTitle {
+  font-size: var(--bo-text-sm);
+}
+
+.bo-datePop--mcal .bo-mcalNav .bo-actionBtn {
+  width: 26px;
+  height: 26px;
+}
+
+.bo-datePop--mcal .bo-mcalGrid {
+  gap: 4px;
+}
+
+.bo-datePop--mcal .bo-mcalCell {
+  min-height: clamp(32px, 4.6vw, 44px);
+  border-radius: var(--bo-radius-sm);
+  padding: 3px 2px;
+}
+
+.bo-datePop--mcal .bo-mcalSub {
+  font-size: 10px;
 }
 
 .bo-dateHead {

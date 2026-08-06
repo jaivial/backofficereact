@@ -955,6 +955,55 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: form,
         });
       },
+      async getTemplate(floorNumber: number): Promise<
+        | (APISuccess<{
+            entity: "template";
+            floor_number: number;
+            has_template: boolean;
+            template: { limit_area_template_points?: Array<{ x: number; y: number }>; draw_elements_template?: Array<Record<string, unknown>>; [k: string]: unknown };
+            scope: "template" | "day";
+          }>)
+        | APIError
+      > {
+        return json(`/api/admin/tables/template/${floorNumber}`, { method: "GET" });
+      },
+      async saveTemplate(
+        floorNumber: number,
+        payload: {
+          data?: Record<string, unknown>;
+          template?: Record<string, unknown>;
+          limit_points?: Array<{ x: number; y: number }>;
+          elements?: Array<Record<string, unknown>>;
+        },
+      ): Promise<
+        | (APISuccess<{
+            entity: "template";
+            floor_number: number;
+            template: Record<string, unknown>;
+            scope: "template" | "day";
+          }>)
+        | APIError
+      > {
+        return json(`/api/admin/tables/template/${floorNumber}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      },
+      async deleteTemplate(
+        floorNumber: number,
+      ): Promise<
+        | (APISuccess<{
+            entity: "template";
+            floor_number: number;
+            template: Record<string, unknown>;
+            has_template: false;
+            scope: "day";
+          }>)
+        | APIError
+      > {
+        return json(`/api/admin/tables/template/${floorNumber}`, { method: "DELETE" });
+      },
     },
     arrozTypes: {
       async list(): Promise<string[]> {

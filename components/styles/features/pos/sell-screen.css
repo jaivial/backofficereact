@@ -74,21 +74,21 @@
 /* ===== Body layout ===== */
 .pos-sell__body {
   display: flex;
-  gap: var(--bo-space-3);
+  gap: 0px !important;
   flex: 1;
   min-height: 0;
 }
 .pos-sell__work {
   display: flex;
   flex-direction: column;
-  gap: var(--bo-space-3);
+  gap: 0px !important;
   flex: 1;
   min-width: 0;
   min-height: 0;
 }
 .pos-sell__row { display: grid; gap: var(--bo-space-3); min-height: 0; }
-.pos-sell__row--register { grid-template-columns: minmax(0, 1fr) 294px; flex: 0 0 38%; }
-.pos-sell__row--catalog { grid-template-columns: 210px minmax(0, 1fr); flex: 1; }
+.pos-sell__row--register { grid-template-columns: minmax(0, 1fr) 294px; flex: 0 0 38%; overflow: visible !important; padding: 1rem 1rem 0.5rem; }
+.pos-sell__row--catalog { grid-template-columns: 210px minmax(0, 1fr); flex: 1; padding: 0.5rem 1rem 1rem; }
 .pos-sell__row[hidden] { display: none; }
 .pos-sell__row--register.is-expanded { flex: 1; }
 .pos-ticketPanel--expanded { height: 100%; }
@@ -144,10 +144,6 @@
   cursor: pointer;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-accent) 38%, var(--bo-border));
   background: linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 6%, transparent), transparent 55%), color-mix(in srgb, var(--bo-surface-2) 86%, transparent);
-}
-.pos-ticketPanel.is-empty:hover {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-accent) 58%, var(--bo-border));
-  background: linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 52%), color-mix(in srgb, var(--bo-surface-2) 90%, transparent);
 }
 .pos-ticketPanel__empty { font-size: var(--bo-text-sm); color: var(--bo-faint); padding: var(--bo-space-4); text-align: center; }
 .pos-ticketPanel__tabs { display: flex; gap: var(--bo-space-2); overflow-x: auto; padding-bottom: var(--bo-space-2); flex: 0 0 auto; }
@@ -447,6 +443,7 @@
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
   align-content: start; overflow-y: auto; padding: var(--bo-space-3);
   width: 248px; flex: none;
+  margin: 1rem 1rem 1rem 0;
   border-radius: var(--bo-radius-lg);
   background: var(--bo-surface);
   border: 1px solid var(--bo-border);
@@ -697,7 +694,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: var(--bo-space-3);
+  gap: 0px;
   min-width: 0;
   min-height: 0;
   max-width: 100%;
@@ -711,10 +708,19 @@
   gap: var(--bo-space-3);
   min-width: 0;
   flex: 0 0 auto;
+  padding-inline: 1rem;
 }
 
 [data-ui="pos-heading"] {
   min-width: 0;
+}
+
+[data-ui="pos-title"] {
+  margin-top: 0;
+}
+
+[data-ui="pos-subtitle"] {
+  margin-bottom: 0;
 }
 
 [data-ui="pos-mode"] {
@@ -737,6 +743,15 @@
 .bo-main--pos-fullscreen {
   overflow-x: hidden !important;
   overflow-y: auto !important;
+}
+
+/* POS page: the main pane drops its left/right/bottom padding so the sell
+   screen can use the full width. */
+.bo-main--pos {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+  gap: 0 !important;
 }
 
 .pos-sell {
