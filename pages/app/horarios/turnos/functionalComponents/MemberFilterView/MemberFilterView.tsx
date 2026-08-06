@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, User, CalendarRange } from "lucide-react";
+import { CalendarDays, CalendarRange, Loader2, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
 
 import { createClient } from "../../../../../../api/client";
 import type { Member, FichajeSchedule } from "../../../../../../api/types";
 import type { MemberFilterViewProps } from "./types";
 
-import { Tabs } from "../../../../../../ui/nav/Tabs";
 import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import { ChevronButton } from "../../../../../../ui/widgets/ChevronButton";
 import { DateRangePicker } from "../../../../../../ui/inputs/DateRangePicker";
@@ -15,12 +14,8 @@ import { WeeklyScheduleTable } from "./WeeklyScheduleTable";
 import { generateDateRange, getWeekGroups } from "../../helpers";
 import { fullName } from "../../../../../../lib/member";
 
-const MEMBER_VIEW_TAB_ITEMS = [
-  { id: "diario", label: "Diario", href: "#" },
-  { id: "semanal", label: "Semanal", href: "#" },
-];
-
 const MEMBER_FILTER_VIEW_KEY = "bo_horarios_preview_member_view";
+const MEMBER_SIDEBAR_KEY = "bo_horarios_member_sidebar_open";
 
 function todayISO(): string {
   return new Date().toISOString().split("T")[0];
@@ -46,6 +41,10 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
   const [dateFrom, setDateFrom] = useState(() => todayISO());
   const [dateTo, setDateTo] = useState(() => addDays(todayISO(), 6));
   const [view, setView] = useState<"diario" | "semanal">(getInitialView);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return window.localStorage.getItem(MEMBER_SIDEBAR_KEY) !== "0";
+  });
   const [schedules, setSchedules] = useState<FichajeSchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +52,10 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
   useEffect(() => {
     localStorage.setItem(MEMBER_FILTER_VIEW_KEY, view);
   }, [view]);
+
+  useEffect(() => {
+    localStorage.setItem(MEMBER_SIDEBAR_KEY, sidebarOpen ? "1" : "0");
+  }, [sidebarOpen]);
 
   const filteredMembers = useMemo(() => {
     if (!searchValue.trim()) return members;
@@ -195,100 +198,148 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       `}</style>
     <div
       data-ui="memberFilterView"
-      className={`flex flex-col md:flex-row gap-4 w-full ${className}`}
+      className={`flex flex-col gap-4 w-full ${className}`}
     >
-      {/* Member selector sidebar */}
-      <aside
-        data-ui="memberSidebar"
-        className="w-full md:w-64 flex-shrink-0 rounded-xl p-4 border border-solid"
-        aria-label="Selector de miembro"
-        style={{
-          background: "linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)), color-mix(in srgb, var(--bo-surface) 90%, transparent)",
-          boxShadow: "0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04)",
-          borderColor: "color-mix(in srgb, var(--bo-accent) 16%, var(--bo-border))",
-        }}
+      {/* Top controls bar: date range + view switcher, above the whole section */}
+      <div
+        data-ui="controlsBar"
+        className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
       >
-        <div data-slot="sidebarHeader" className="flex items-center gap-2 mb-3">
-          <User data-slot="icon" size={16} strokeWidth={1.8} className="sidebar-icon text-[var(--bo-accent)]" aria-hidden="true" />
-          <span data-slot="title" className="sidebar-title text-sm font-medium text-purple-900">
-            Miembro
-          </span>
-          <span data-slot="count" className="sidebar-count ml-auto text-xs text-[var(--bo-faint)]">
-            {filteredMembers.length}
-          </span>
-        </div>
-
-        <div data-slot="searchWrapper" className="relative mb-3">
-          <input
-            data-ui="memberSearch"
-            type="text"
-            placeholder="Buscar..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="bo-input w-full"
-            aria-label="Buscar miembro"
+        <div data-slot="dateRange" className="flex items-center gap-2">
+          <CalendarRange data-slot="icon" size={16} strokeWidth={1.8} className="text-[var(--bo-muted)]" aria-hidden="true" />
+          <ChevronButton direction="left" ariaLabel="Rango anterior" onClick={handlePrevRange} />
+          <DateRangePicker
+            from={dateFrom}
+            to={dateTo}
+            onChange={handleDateRangeChange}
+            buttonLabel="Rango de fechas"
+            ariaLabel="Seleccionar rango de fechas"
           />
+          <ChevronButton direction="right" ariaLabel="Siguiente rango" onClick={handleNextRange} />
         </div>
 
-        <ScrollArea dataSlot="memberList" maxHeight={256}>
-          <div className="space-y-1">
-            {filteredMembers.map((member) => (
-              <button
-                key={member.id}
-                data-ui="memberOption"
-                type="button"
-                className={`w-full text-left px-3 py-2 max-sm:min-h-11 rounded-lg text-sm transition-all duration-150 border border-transparent ${
-                  selectedMemberId === member.id
-                    ? "is-selected bg-[color-mix(in_srgb,var(--bo-accent)_18%,transparent)] border-[var(--bo-accent)] text-[var(--bo-text)] font-medium"
-                    : "bg-transparent text-[var(--bo-muted)] hover:bg-[var(--bo-bg-hover)] hover:text-[var(--bo-text)]"
-                }`}
-                onClick={() => handleMemberSelect(member.id)}
-              >
-                {fullName(member)}
-              </button>
-            ))}
+        {/* Compact Diario/Semanal switcher: two small icons instead of tabs */}
+        <div data-slot="viewTabs" className="flex-1 flex justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => handleViewChange("diario")}
+            aria-label="Vista diaria"
+            title="Diario"
+            aria-pressed={view === "diario"}
+            className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
+              view === "diario"
+                ? "border-[var(--bo-accent)] bg-[color-mix(in_srgb,var(--bo-accent)_16%,transparent)] text-[var(--bo-accent)]"
+                : "border-transparent text-[var(--bo-muted)] hover:bg-[var(--bo-bg-hover)] hover:text-[var(--bo-text)]"
+            }`}
+          >
+            <CalendarDays size={16} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => handleViewChange("semanal")}
+            aria-label="Vista semanal"
+            title="Semanal"
+            aria-pressed={view === "semanal"}
+            className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
+              view === "semanal"
+                ? "border-[var(--bo-accent)] bg-[color-mix(in_srgb,var(--bo-accent)_16%,transparent)] text-[var(--bo-accent)]"
+                : "border-transparent text-[var(--bo-muted)] hover:bg-[var(--bo-bg-hover)] hover:text-[var(--bo-text)]"
+            }`}
+          >
+            <CalendarRange size={16} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
 
-            {filteredMembers.length === 0 ? (
-              <div data-ui="emptyState" className="text-center py-4 text-sm text-[var(--bo-faint)]">
-                Sin resultados
-              </div>
-            ) : null}
+      {/* Sidebar + schedule area */}
+      <div className="flex flex-col md:flex-row gap-4 w-full">
+      {sidebarOpen ? (
+        /* Member selector sidebar */
+        <aside
+          data-ui="memberSidebar"
+          className="w-full md:w-64 flex-shrink-0 rounded-xl p-4 border border-solid"
+          aria-label="Selector de miembro"
+          style={{
+            background: "linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)), color-mix(in srgb, var(--bo-surface) 90%, transparent)",
+            boxShadow: "0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04)",
+            borderColor: "color-mix(in srgb, var(--bo-accent) 16%, var(--bo-border))",
+          }}
+        >
+          <div data-slot="sidebarHeader" className="flex items-center gap-2 mb-3">
+            <User data-slot="icon" size={16} strokeWidth={1.8} className="sidebar-icon text-[var(--bo-accent)]" aria-hidden="true" />
+            <span data-slot="title" className="sidebar-title text-sm font-medium text-purple-900">
+              Miembro
+            </span>
+            <span data-slot="count" className="sidebar-count ml-auto text-xs text-[var(--bo-faint)]">
+              {filteredMembers.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Ocultar miembros"
+              title="Ocultar miembros"
+              className="flex size-6 items-center justify-center rounded-md text-[var(--bo-faint)] transition-colors hover:bg-white/10 hover:text-[var(--bo-text)]"
+            >
+              <PanelLeftClose size={15} strokeWidth={1.8} aria-hidden="true" />
+            </button>
           </div>
-        </ScrollArea>
-      </aside>
+
+          <div data-slot="searchWrapper" className="relative mb-3">
+            <input
+              data-ui="memberSearch"
+              type="text"
+              placeholder="Buscar..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="bo-input w-full"
+              aria-label="Buscar miembro"
+            />
+          </div>
+
+          <ScrollArea dataSlot="memberList" maxHeight={256}>
+            <div className="space-y-1">
+              {filteredMembers.map((member) => (
+                <button
+                  key={member.id}
+                  data-ui="memberOption"
+                  type="button"
+                  className={`w-full text-left px-3 py-2 max-sm:min-h-11 rounded-lg text-sm transition-all duration-150 border border-transparent ${
+                    selectedMemberId === member.id
+                      ? "is-selected bg-[color-mix(in_srgb,var(--bo-accent)_18%,transparent)] border-[var(--bo-accent)] text-[var(--bo-text)] font-medium"
+                      : "bg-transparent text-[var(--bo-muted)] hover:bg-[var(--bo-bg-hover)] hover:text-[var(--bo-text)]"
+                  }`}
+                  onClick={() => handleMemberSelect(member.id)}
+                >
+                  {fullName(member)}
+                </button>
+              ))}
+
+              {filteredMembers.length === 0 ? (
+                <div data-ui="emptyState" className="text-center py-4 text-sm text-[var(--bo-faint)]">
+                  Sin resultados
+                </div>
+              ) : null}
+            </div>
+          </ScrollArea>
+        </aside>
+      ) : (
+        /* Collapsed rail: single button to reopen the member list */
+        <div className="flex w-full md:w-10 flex-shrink-0 justify-start md:justify-center" data-slot="sidebarRail">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Mostrar miembros"
+            title="Mostrar miembros"
+            className="flex size-9 items-center justify-center rounded-xl border border-solid text-[var(--bo-muted)] transition-colors hover:text-[var(--bo-text)]"
+            style={{ borderColor: "color-mix(in srgb, var(--bo-accent) 16%, var(--bo-border))" }}
+          >
+            <PanelLeftOpen size={16} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {/* Schedule display area */}
       <div data-ui="scheduleArea" className="flex-1 min-w-0">
-        {/* Controls bar */}
-        <div
-          data-ui="controlsBar"
-          className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4"
-        >
-          <div data-slot="dateRange" className="flex items-center gap-2">
-            <CalendarRange data-slot="icon" size={16} strokeWidth={1.8} className="text-[var(--bo-muted)]" aria-hidden="true" />
-            <ChevronButton direction="left" ariaLabel="Rango anterior" onClick={handlePrevRange} />
-            <DateRangePicker
-              from={dateFrom}
-              to={dateTo}
-              onChange={handleDateRangeChange}
-              buttonLabel="Rango de fechas"
-              ariaLabel="Seleccionar rango de fechas"
-            />
-            <ChevronButton direction="right" ariaLabel="Siguiente rango" onClick={handleNextRange} />
-          </div>
-
-          <div data-slot="viewTabs" className="flex-1 flex justify-end">
-            <Tabs
-              tabs={MEMBER_VIEW_TAB_ITEMS}
-              activeId={view}
-              onNavigate={(_, id) => handleViewChange(id)}
-              ariaLabel="Cambiar vista"
-              className="bo-tabs--glass rounded-xl !w-fit"
-              layoutId="boMemberFilterViewTabIndicator"
-            />
-          </div>
-        </div>
-
         {/* Loading state */}
         {loading ? (
           <div data-ui="loadingState" className="flex items-center justify-center py-12">
@@ -319,6 +370,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             schedulesByDate={schedulesByDate}
           />
         )}
+      </div>
       </div>
     </div>
     </>
