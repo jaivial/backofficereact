@@ -48,9 +48,14 @@ test.describe("Miembros - Create Member", () => {
     await adminPage.waitForLoadState("networkidle");
     await waitForLoadingToFinish(adminPage);
 
-    await expect(adminPage.getByText(firstName)).toBeVisible();
-    await expect(adminPage.getByText(lastName)).toBeVisible();
-    await expect(adminPage.getByText(email)).toBeVisible();
+    // The success toast repeats the name, so scope assertions to the member card
+    // rather than using strict global text locators.
+    const memberCard = adminPage
+      .getByRole("link", { name: new RegExp(`E2E${ts}\\s+Test${ts}`) });
+    await expect(memberCard).toBeVisible();
+    await expect(memberCard).toContainText(firstName);
+    await expect(memberCard).toContainText(lastName);
+    await expect(memberCard).toContainText(email);
 
     const errorCheck2 = assertNoCriticalErrors(consoleCapture);
     expect(errorCheck2.hasErrors).toBeFalsy();
