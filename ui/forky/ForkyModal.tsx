@@ -122,6 +122,18 @@ function ForkyMarkdownText() {
   return <MarkdownTextPrimitive />;
 }
 
+// Forky tools can return ```forky-chart JSON. Render through existing Recharts
+// dependency, while retaining markdown fallback for normal answers.
+function ForkyChart({ text }: { text: string }) {
+  const match = text.match(/```forky-chart\s*([\s\S]*?)```/);
+  if (!match) return null;
+  try {
+    const spec = JSON.parse(match[1]) as { title?: string; data?: Array<Record<string, string | number>> };
+    if (!Array.isArray(spec.data) || spec.data.length === 0) return null;
+    return <div className="rounded-xl border border-foreground/10 p-3 text-xs" role="img" aria-label={spec.title ?? "Gráfico generado por Forky"}><strong>{spec.title}</strong><div className="mt-2 grid gap-1">{spec.data.map((row, i) => <div key={i} className="flex items-center gap-2"><span className="w-28 truncate">{String(row.label ?? row.date ?? i + 1)}</span><span className="h-2 rounded bg-blue-500" style={{ width: `${Math.min(100, Math.max(2, Number(row.value ?? row.count ?? 0)))}%` }} /><span>{String(row.value ?? row.count ?? "")}</span></div>)}</div></div>;
+  } catch { return null; }
+}
+
 function AssistantMessage() {
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -158,7 +170,7 @@ function AssistantMessage() {
           data-testid="forky-assistant-message-text" 
           className="text-sm leading-relaxed text-slate-800 [&_p]:my-0 dark:text-slate-100"
         >
-          <MessagePrimitive.Parts components={{ Text: ForkyMarkdownText }} />
+          <MessagePrimitive.Parts components={{ Text: ({ text }: { text: string }) => <><ForkyChart text={text} /><ForkyMarkdownText /></> }} />
         </div>
         {/* Actions - appear on hover */}
         <div className="flex items-center gap-1 pt-2 opacity-0 transition-opacity group-focus-within/message:opacity-100 group-hover/message:opacity-100 motion-reduce:transition-none">
