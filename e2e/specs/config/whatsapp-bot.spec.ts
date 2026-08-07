@@ -34,7 +34,7 @@ test.describe("WhatsApp bot connection in Contact config", () => {
 
     const state = await panel.getAttribute("data-state");
     if (state === "disconnected") {
-      await expect(panel.getByRole("button", { name: "Conectar WhatsApp" })).toBeVisible();
+      await expect(panel.getByRole("button", { name: "Conectar WhatsApp", exact: true })).toBeVisible();
       await expect(panel.getByLabel(/Número de teléfono/i)).toHaveCount(0);
     } else if (state === "connected") {
       await expect(panel.getByRole("button", { name: "Desconectar WhatsApp" })).toBeVisible();
@@ -121,7 +121,7 @@ test.describe("WhatsApp bot connection in Contact config", () => {
     });
     await adminPage.goto("/app/config?content=contacto");
     const panel = adminPage.locator('[data-ui="whatsapp-connection"]');
-    await panel.getByRole("button", { name: "Conectar WhatsApp" }).click();
+    await panel.getByRole("button", { name: "Conectar WhatsApp", exact: true }).click();
     await expect(panel).toHaveAttribute("data-state", "qr_ready");
     await expect(panel.getByAltText("Código QR para vincular WhatsApp")).toBeVisible();
     await expect(panel).toContainText("Dispositivos vinculados");
@@ -173,7 +173,7 @@ test.describe("WhatsApp bot connection in Contact config", () => {
       await expect(panel.getByAltText("Código QR para vincular WhatsApp")).toBeVisible();
       return;
     }
-    await panel.getByRole("button", { name: "Conectar WhatsApp" }).click();
+    await panel.getByRole("button", { name: "Conectar WhatsApp", exact: true }).click();
     await expect(panel).toHaveAttribute("data-state", /qr_ready|connected/, { timeout: 30_000 });
     if ((await panel.getAttribute("data-state")) === "qr_ready") {
       await expect(panel.getByAltText("Código QR para vincular WhatsApp")).toBeVisible();

@@ -50,7 +50,7 @@ test.describe("Horarios - Schedules", () => {
       if (members.success && members.members.length > 0) {
         const memberId = members.members[0].id;
         const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setDate(tomorrow.getDate() + 365 + (Date.now() % 300));
         const dateStr = tomorrow.toISOString().split("T")[0];
 
         const response = await api.post("/api/admin/horarios", {
@@ -74,7 +74,7 @@ test.describe("Horarios - Schedules", () => {
       if (members.success && members.members.length > 0) {
         const memberId = members.members[0].id;
         const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setDate(tomorrow.getDate() + 365 + (Date.now() % 300));
         const dateStr = tomorrow.toISOString().split("T")[0];
 
         const response = await api.post("/api/admin/horarios", {

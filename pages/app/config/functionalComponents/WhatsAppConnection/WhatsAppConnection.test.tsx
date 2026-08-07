@@ -1,5 +1,11 @@
 import React from "react";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -58,14 +64,28 @@ describe("WhatsAppConnection", () => {
   beforeEach(() => {
     MockWebSocket.instances = [];
     vi.stubGlobal("WebSocket", MockWebSocket);
-    mocks.connection.mockReset().mockResolvedValue({ success: true, entitled: true, connected: false, connection: null });
+    mocks.connection
+      .mockReset()
+      .mockResolvedValue({
+        success: true,
+        entitled: true,
+        connected: false,
+        connection: null,
+      });
     mocks.connect.mockReset().mockResolvedValue({
       success: true,
       entitled: true,
       connected: false,
       connection: { status: "pending", connected: false, qr: "AAAA" },
     });
-    mocks.disconnect.mockReset().mockResolvedValue({ success: true, entitled: true, connected: false, connection: null });
+    mocks.disconnect
+      .mockReset()
+      .mockResolvedValue({
+        success: true,
+        entitled: true,
+        connected: false,
+        connection: null,
+      });
     mocks.pushToast.mockReset();
   });
 
@@ -79,7 +99,9 @@ describe("WhatsAppConnection", () => {
     await screen.findByRole("button", { name: "Conectar WhatsApp" });
     expect(mocks.connection).toHaveBeenCalledTimes(1);
     expect(MockWebSocket.instances).toHaveLength(1);
-    expect(MockWebSocket.instances[0].url).toContain("/api/admin/members/whatsapp/ws");
+    expect(MockWebSocket.instances[0].url).toContain(
+      "/api/admin/members/whatsapp/ws",
+    );
 
     await act(async () => {
       MockWebSocket.instances[0].open();
@@ -91,7 +113,9 @@ describe("WhatsAppConnection", () => {
         connection: { status: "pending", connected: false, qr: "BBBB" },
       });
     });
-    expect(screen.getByAltText("Código QR para vincular WhatsApp")).toHaveAttribute("src", "data:image/png;base64,BBBB");
+    expect(
+      screen.getByAltText("Código QR para vincular WhatsApp"),
+    ).toHaveAttribute("src", "data:image/png;base64,BBBB");
 
     await act(async () => {
       MockWebSocket.instances[0].emit({
@@ -99,7 +123,11 @@ describe("WhatsAppConnection", () => {
         success: true,
         entitled: true,
         connected: true,
-        connection: { status: "connected", connected: true, phone: "34692747052" },
+        connection: {
+          status: "connected",
+          connected: true,
+          phone: "34692747052",
+        },
       });
     });
     expect(screen.getByText(/34692747052/)).toBeInTheDocument();
@@ -109,14 +137,82 @@ describe("WhatsAppConnection", () => {
     expect(MockWebSocket.instances[0].close).toHaveBeenCalled();
   });
 
+  it("starts pairing-code login from an accessible modal", async () => {
+    render(<WhatsAppConnection />);
+    mocks.connect.mockResolvedValue({
+      success: true,
+      entitled: true,
+      connected: false,
+      connection: {
+        status: "pending",
+        connected: false,
+        pair_code: "AB12-CD34",
+      },
+    });
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "Conectar WhatsApp con código de vinculación",
+      }),
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "Conectar con código de vinculación",
+    });
+    fireEvent.change(screen.getByLabelText("Número de teléfono"), {
+      target: { value: "+34 600 000 000" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generar código" }));
+    await waitFor(() =>
+      expect(mocks.connect).toHaveBeenCalledWith({ phone: "34600000000" }),
+    );
+    expect(
+      await screen.findByLabelText("Código de vinculación"),
+    ).toHaveTextContent("AB12-CD34");
+    expect(dialog).not.toBeVisible();
+  });
+
+  it("copies pairing code and shows copied state", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    mocks.connection.mockResolvedValue({
+      success: true,
+      entitled: true,
+      connected: false,
+      connection: {
+        status: "pending",
+        connected: false,
+        qr: "AAAA",
+        pair_code: "AB12-CD34",
+      },
+    });
+    render(<WhatsAppConnection />);
+
+    const copy = await screen.findByRole("button", {
+      name: "Copiar código de vinculación",
+    });
+    fireEvent.click(copy);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("AB12-CD34"));
+    expect(
+      screen.getByRole("button", { name: "Código copiado" }),
+    ).toHaveTextContent("Copiado");
+  });
+
   it("connects with one QR button", async () => {
     render(<WhatsAppConnection />);
-    const button = await screen.findByRole("button", { name: "Conectar WhatsApp" });
+    const button = await screen.findByRole("button", {
+      name: "Conectar WhatsApp",
+    });
     fireEvent.click(button);
 
     await waitFor(() => expect(mocks.connect).toHaveBeenCalledWith({}));
-    expect(await screen.findByAltText("Código QR para vincular WhatsApp")).toHaveAttribute("src", "data:image/png;base64,AAAA");
-    expect(screen.queryByLabelText(/Número de teléfono/)).not.toBeInTheDocument();
+    expect(
+      await screen.findByAltText("Código QR para vincular WhatsApp"),
+    ).toHaveAttribute("src", "data:image/png;base64,AAAA");
+    expect(
+      screen.queryByLabelText(/Número de teléfono/),
+    ).not.toBeInTheDocument();
   });
 
   it("cancels QR pairing and returns to disconnected UI", async () => {
@@ -128,9 +224,15 @@ describe("WhatsAppConnection", () => {
     });
     render(<WhatsAppConnection />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Cancelar vinculación" }));
-    await waitFor(() => expect(mocks.disconnect).toHaveBeenCalledWith({ delete_instance: false }));
-    expect(await screen.findByRole("button", { name: "Conectar WhatsApp" })).toBeEnabled();
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Cancelar vinculación" }),
+    );
+    await waitFor(() =>
+      expect(mocks.disconnect).toHaveBeenCalledWith({ delete_instance: false }),
+    );
+    expect(
+      await screen.findByRole("button", { name: "Conectar WhatsApp" }),
+    ).toBeEnabled();
   });
 
   it("renders nothing when subscription plan lacks WhatsApp", async () => {
@@ -152,37 +254,74 @@ describe("WhatsAppConnection", () => {
       success: true,
       entitled: true,
       connected: true,
-      connection: { status: "connected", connected: true, phone: "34692747052" },
+      connection: {
+        status: "connected",
+        connected: true,
+        phone: "34692747052",
+      },
     });
     let resolveDisconnect!: (value: unknown) => void;
-    mocks.disconnect.mockReturnValue(new Promise((resolve) => { resolveDisconnect = resolve; }));
+    mocks.disconnect.mockReturnValue(
+      new Promise((resolve) => {
+        resolveDisconnect = resolve;
+      }),
+    );
     render(<WhatsAppConnection />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Desconectar WhatsApp" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Desconectar WhatsApp" }),
+    );
     const dialog = screen.getByRole("dialog", { name: "Desconectar WhatsApp" });
     expect(dialog).toHaveTextContent("El bot dejará de responder");
     expect(mocks.disconnect).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: "Desconectar" }));
-    expect(await screen.findByRole("button", { name: "Procesando..." })).toBeDisabled();
+    expect(
+      await screen.findByRole("button", { name: "Procesando..." }),
+    ).toBeDisabled();
     await act(async () => {
-      resolveDisconnect({ success: true, entitled: true, connected: false, connection: null });
+      resolveDisconnect({
+        success: true,
+        entitled: true,
+        connected: false,
+        connection: null,
+      });
     });
 
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Desconectar WhatsApp" })).not.toBeInTheDocument());
-    expect(screen.getByRole("button", { name: "Conectar WhatsApp" })).toBeEnabled();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Desconectar WhatsApp" }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("button", { name: "Conectar WhatsApp" }),
+    ).toBeEnabled();
   });
 });
 
 describe("WhatsApp connection state", () => {
   it("normalizes QR sources", () => {
     expect(qrToSrc("AAAA")).toBe("data:image/png;base64,AAAA");
-    expect(qrToSrc("data:image/png;base64,BBBB")).toBe("data:image/png;base64,BBBB");
+    expect(qrToSrc("data:image/png;base64,BBBB")).toBe(
+      "data:image/png;base64,BBBB",
+    );
   });
 
   it("derives locked, pending and connected states", () => {
     expect(deriveState({ entitled: false })).toBe("locked");
-    expect(deriveState({ entitled: true, connected: false, connection: { status: "pending", connected: false, qr: "x" } })).toBe("qr_ready");
-    expect(deriveState({ entitled: true, connected: true, connection: { status: "connected", connected: true } })).toBe("connected");
+    expect(
+      deriveState({
+        entitled: true,
+        connected: false,
+        connection: { status: "pending", connected: false, qr: "x" },
+      }),
+    ).toBe("qr_ready");
+    expect(
+      deriveState({
+        entitled: true,
+        connected: true,
+        connection: { status: "connected", connected: true },
+      }),
+    ).toBe("connected");
   });
 });
