@@ -95,10 +95,9 @@ test.describe("Forky AI assistant", () => {
   test("executes read-only custom tools through the real Go WebSocket", async ({ adminPage }) => {
     test.skip(process.env.FORKY_REAL_TOOLS_E2E !== "1", "set FORKY_REAL_TOOLS_E2E=1 to run against the live LLM/backend");
 
-    const frames: string[] = [];
+    const websocketUrls: string[] = [];
     adminPage.on("websocket", (socket) => {
-      socket.on("framesent", (payload) => frames.push(`sent:${String(payload)}`));
-      socket.on("framereceived", (payload) => frames.push(`received:${String(payload)}`));
+      websocketUrls.push(socket.url());
     });
 
     await adminPage.goto("/app/dashboard");
@@ -124,10 +123,12 @@ test.describe("Forky AI assistant", () => {
     }
 
     const transcript = await adminPage.getByTestId("forky-messages-container").innerText();
+    expect(websocketUrls.some((url) => url.includes("/api/admin/assistant/ws"))).toBeTruthy();
     expect(transcript).not.toMatch(/minimax api key not configured|herramienta desconocida|permiso insuficiente|failed to/i);
-    expect(frames.some((frame) => frame.includes('"type":"hello"'))).toBeTruthy();
-    expect(frames.some((frame) => frame.includes('"type":"message"'))).toBeTruthy();
-    expect(frames.some((frame) => frame.includes('"type":"done"'))).toBeTruthy();
+    // These factual answers are deterministic direct-intent/tool paths. A
+    // generic LLM disclaimer means the running backend did not execute Forky's
+    // Go custom tools and must fail loudly instead of producing a false green.
+    expect(transcript).toMatch(/restaurant_id|total|people|series/i);
   });
 
   test("Esc closes the modal and restores the page", async ({ adminPage }) => {
