@@ -42,7 +42,7 @@ test.describe("Forky AI assistant", () => {
     expect(errorCheck.hasErrors).toBeFalsy();
   });
 
-  test("opens full-viewport modal with Forky canvas", async ({ adminPage }) => {
+  test("opens full-viewport modal with chat surface", async ({ adminPage }) => {
     await adminPage.goto("/app/dashboard");
     await adminPage.waitForLoadState("domcontentloaded");
     await waitForLoadingToFinish(adminPage);
@@ -51,7 +51,8 @@ test.describe("Forky AI assistant", () => {
     const modal = adminPage.getByTestId("forky-modal");
     await expect(modal).toBeVisible();
     await expect(modal).toHaveAttribute("role", "dialog");
-    await expect(adminPage.getByTestId("forky-canvas")).toBeVisible();
+    await expect(adminPage.getByTestId("forky-chat-panel")).toBeVisible();
+    await expect(adminPage.getByTestId("forky-composer-input")).toBeVisible();
   });
 
   test.fixme(
@@ -90,6 +91,44 @@ test.describe("Forky AI assistant", () => {
       await expect(reply).toBeVisible({ timeout: 15_000 });
     }
   );
+
+  test("executes read-only custom tools through the real Go WebSocket", async ({ adminPage }) => {
+    test.skip(process.env.FORKY_REAL_TOOLS_E2E !== "1", "set FORKY_REAL_TOOLS_E2E=1 to run against the live LLM/backend");
+
+    const frames: string[] = [];
+    adminPage.on("websocket", (socket) => {
+      socket.on("framesent", (payload) => frames.push(`sent:${String(payload)}`));
+      socket.on("framereceived", (payload) => frames.push(`received:${String(payload)}`));
+    });
+
+    await adminPage.goto("/app/dashboard");
+    await adminPage.waitForLoadState("domcontentloaded");
+    await waitForLoadingToFinish(adminPage);
+    await openForky(adminPage);
+
+    const composer = adminPage.getByTestId("forky-composer-input");
+    await expect(composer).toBeVisible();
+
+    const prompts = [
+      "¿Cuál es el nombre y teléfono del restaurante?",
+      "Dame un resumen de reservas de hoy.",
+      "Lista los menús disponibles.",
+      "¿Cuántos vinos hay?",
+      "Genera un informe de analítica de reservas de este mes.",
+    ];
+    for (const prompt of prompts) {
+      await composer.fill(prompt);
+      await adminPage.getByTestId("forky-composer-send").click();
+      await expect(composer).toHaveValue("");
+      await expect(adminPage.getByTestId("forky-assistant-message").last()).toBeVisible({ timeout: 60_000 });
+    }
+
+    const transcript = await adminPage.getByTestId("forky-messages-container").innerText();
+    expect(transcript).not.toMatch(/minimax api key not configured|herramienta desconocida|permiso insuficiente|failed to/i);
+    expect(frames.some((frame) => frame.includes('"type":"hello"'))).toBeTruthy();
+    expect(frames.some((frame) => frame.includes('"type":"message"'))).toBeTruthy();
+    expect(frames.some((frame) => frame.includes('"type":"done"'))).toBeTruthy();
+  });
 
   test("Esc closes the modal and restores the page", async ({ adminPage }) => {
     await adminPage.goto("/app/dashboard");
