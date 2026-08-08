@@ -7,7 +7,10 @@ import {
   ThreadPrimitive,
 } from "@assistant-ui/react";
 import { MarkdownTextPrimitive } from "@assistant-ui/react-markdown";
+import remarkGfm from "remark-gfm";
 import { useAtom } from "jotai";
+
+import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
 import { ThinkingOrb } from "thinking-orbs";
 import { 
   ArrowUpIcon, 
@@ -119,19 +122,22 @@ function AssistantLoading() {
 // Message Components (assistant-ui/elements/message-pair style)
 // ---------------------------------------------------------------------------
 function ForkyMarkdownText() {
-  return <MarkdownTextPrimitive />;
-}
-
-// Forky tools can return ```forky-chart JSON. Render through existing Recharts
-// dependency, while retaining markdown fallback for normal answers.
-function ForkyChart({ text }: { text: string }) {
-  const match = text.match(/```forky-chart\s*([\s\S]*?)```/);
-  if (!match) return null;
-  try {
-    const spec = JSON.parse(match[1]) as { title?: string; data?: Array<Record<string, string | number>> };
-    if (!Array.isArray(spec.data) || spec.data.length === 0) return null;
-    return <div className="rounded-xl border border-foreground/10 p-3 text-xs" role="img" aria-label={spec.title ?? "Gráfico generado por Forky"}><strong>{spec.title}</strong><div className="mt-2 grid gap-1">{spec.data.map((row, i) => <div key={i} className="flex items-center gap-2"><span className="w-28 truncate">{String(row.label ?? row.date ?? i + 1)}</span><span className="h-2 rounded bg-blue-500" style={{ width: `${Math.min(100, Math.max(2, Number(row.value ?? row.count ?? 0)))}%` }} /><span>{String(row.value ?? row.count ?? "")}</span></div>)}</div></div>;
-  } catch { return null; }
+  return (
+    <MarkdownTextPrimitive
+      remarkPlugins={[remarkGfm]}
+      // ForkyChart renders the chart JSON itself; strip the fenced block so the
+      // prose renderer never duplicates the raw JSON as a code block.
+      preprocess={stripForkyChartBlocks}
+      // Columnar data from the model arrives as GFM pipe tables; give them a
+      // lightweight, theme-aware styling so booking lists read as real tables.
+      components={{
+        table: (props) => <div className="my-2 overflow-x-auto" data-testid="forky-markdown-table"><table className="w-full border-collapse text-xs" {...props} /></div>,
+        thead: (props) => <thead className="bg-foreground/[0.04] text-left" {...props} />,
+        th: (props) => <th className="border border-foreground/10 px-2 py-1 font-semibold" {...props} />,
+        td: (props) => <td className="border border-foreground/10 px-2 py-1 tabular-nums" {...props} />,
+      }}
+    />
+  );
 }
 
 function AssistantMessage() {
@@ -170,7 +176,12 @@ function AssistantMessage() {
           data-testid="forky-assistant-message-text" 
           className="text-sm leading-relaxed text-slate-800 [&_p]:my-0 dark:text-slate-100"
         >
-          <MessagePrimitive.Parts components={{ Text: ({ text }: { text: string }) => <><ForkyChart text={text} /><ForkyMarkdownText /></> }} />
+          <MessagePrimitive.Parts components={{ Text: ({ text }: { text: string }) => (
+            <>
+              <ForkyChart text={text} />
+              <ForkyMarkdownText />
+            </>
+          ) }} />
         </div>
         {/* Actions - appear on hover */}
         <div className="flex items-center gap-1 pt-2 opacity-0 transition-opacity group-focus-within/message:opacity-100 group-hover/message:opacity-100 motion-reduce:transition-none">
