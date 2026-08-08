@@ -51,11 +51,12 @@ export function useMutateShortSide() {
 
 export function useBuildDraftState() {
   return useCallback(
-    (table: { id: number; name?: string; capacity?: number; shape?: string; fill_color?: string; outline_color?: string; style_preset?: string; texture_image_url?: string; metadata?: Record<string, unknown> }) => {
+    (table: { id: number; name?: string; numero_mesa?: string; capacity?: number; shape?: string; fill_color?: string; outline_color?: string; style_preset?: string; texture_image_url?: string; metadata?: Record<string, unknown> }) => {
       const capacity = clampCapacity(table.capacity || 4);
       const metadata = (table.metadata || {}) as Record<string, unknown>;
       return {
         name: table.name || "",
+        numeroMesa: table.numero_mesa || "",
         capacity,
         shape: (table.shape || "round") as TableShape,
         fillColor: table.fill_color || "",
@@ -77,10 +78,12 @@ export function useBuildTablePayload() {
   return useCallback(
     (draft: TableDraft, editingTableId: number | null, areaId: number, selectedDate: string, selectedFloor: number, tableId: number | null) => {
       const name = draft.name.trim();
+      const numeroMesa = draft.numeroMesa.trim();
       const payload: Record<string, unknown> = {
         entity: "table",
         area_id: areaId,
         name,
+        numero_mesa: numeroMesa,
         capacity: clampCapacity(draft.capacity),
         shape: draft.shape,
         fill_color: draft.fillColor,

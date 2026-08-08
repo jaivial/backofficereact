@@ -1,4 +1,5 @@
 import React from "react";
+import { Users } from "lucide-react";
 import ReactFlow, {
   Background,
   ControlButton,
@@ -34,8 +35,11 @@ function TableFromRFNode(data: TableNodeData): React.JSX.Element {
       {geom.chairs.map((chair, idx) => (
         <span key={`node-chair-${idx}`} data-ui="chair" className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }} />
       ))}
-      <div data-ui="node-name" className="bo-tableMapNodeName">{data.name}</div>
-      <div data-ui="node-capacity" className="bo-tableMapNodeCap">{data.capacity}</div>
+      <div data-ui="node-pax" className="bo-tableMapNodePax">
+        <Users size={11} strokeWidth={1.8} aria-hidden="true" />
+        <span data-ui="node-pax-value">{data.capacity} pax</span>
+      </div>
+      <div data-ui="node-number" className="bo-tableMapNodeNum">{data.numeroMesa || data.id}</div>
       <div data-ui="node-status" className={`bo-tableMapNodeStatus is-${data.status}`}>{STATUS_LABEL[data.status]}</div>
     </div>
   );

@@ -5,6 +5,8 @@ export type RectShortSides = Record<RectShortSide, boolean>;
 
 export type TableDraft = {
   name: string;
+  /** Per-restaurant unique alphanumeric table number (e.g. "4", "4B"). */
+  numeroMesa: string;
   capacity: number;
   shape: TableShape;
   fillColor: string;
@@ -19,6 +21,8 @@ export type TableDraft = {
 export type TableNodeData = {
   id: number;
   name: string;
+  /** Per-restaurant unique alphanumeric table number shown big on the node. */
+  numeroMesa: string;
   capacity: number;
   status: "available" | "occupied" | "reserved";
   shape: TableShape;
