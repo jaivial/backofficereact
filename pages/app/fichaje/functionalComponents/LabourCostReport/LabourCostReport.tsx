@@ -22,7 +22,6 @@ export function LabourCostReport({ report, loading, onRangeChange }: Props) {
   return (
     <section className="bo-labourReport" data-ui="labour-report">
       <Panel
-        className="bo-labourReportPanel"
         title={
           <span className="bo-labourReportTitle" data-ui="labour-report-title">
             <Coins size={16} strokeWidth={1.8} aria-hidden="true" />
