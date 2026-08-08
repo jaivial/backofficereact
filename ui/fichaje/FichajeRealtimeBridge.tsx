@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 
+import { createClient } from "../../api/client";
 import { createFichajeStateClient } from "../../api/fichaje-state-client";
 import type {
   FichajeActiveEntry,
+  FichajePosRevenue,
   FichajeSchedule,
   FichajeState,
 } from "../../api/types";
@@ -37,6 +39,9 @@ const EMPTY_STATE = (restaurantId: number | null): FichajeRealtimeState => ({
   activeEntry: null,
   scheduleToday: null,
   pendingScheduleUpdates: false,
+  posRevenueToday: null,
+  hourlyCosts: [],
+  ticketSeries: [],
 });
 
 let activeConnection: FichajeConnection | null = null;
@@ -78,6 +83,7 @@ function createConnection(session: FichajeSession): FichajeConnection {
   const key = sessionKey(session);
   const subscribers = new Set<Subscriber>();
   const api = createFichajeStateClient({ baseUrl: "" });
+  const client = createClient({ baseUrl: "" });
   let snapshot = EMPTY_STATE(session.activeRestaurantId);
   let retryTimer: number | null = null;
   let ws: WebSocket | null = null;
@@ -208,6 +214,19 @@ function createConnection(session: FichajeSession): FichajeConnection {
               return { ...prev, scheduleToday: null, pendingScheduleUpdates: true, lastSyncAt: Date.now() };
             });
           }
+        } else if (type === "pos_revenue_updated") {
+          const revenue = msg as unknown as FichajePosRevenue & { type: string };
+          emit((prev) => ({
+            ...prev,
+            posRevenueToday: {
+              date: revenue.date,
+              totalGrossCents: Number(revenue.totalGrossCents ?? 0),
+              byHour: Array.isArray(revenue.byHour)
+                ? revenue.byHour.map((h) => ({ hour: Number((h as { hour: number }).hour), grossCents: Number((h as { grossCents: number }).grossCents) }))
+                : [],
+            },
+            lastSyncAt: Date.now(),
+          }));
         }
       } catch {
         // Ignore malformed realtime payloads.
@@ -236,6 +255,21 @@ function createConnection(session: FichajeSession): FichajeConnection {
         return;
       }
       mergeFromState(res.state);
+      const today = todayISO();
+      const [revRes, costsRes, seriesRes] = await Promise.all([
+        client.pos.tickets.hourly({ date: today }),
+        client.fichaje.hourlyCosts({ date: today }),
+        client.pos.tickets.series({ date: today }),
+      ]);
+      if (closed) return;
+      emit((prev) => ({
+        ...prev,
+        posRevenueToday: revRes.success
+          ? { date: today, totalGrossCents: revRes.totalGrossCents, byHour: revRes.byHour }
+          : prev.posRevenueToday,
+        hourlyCosts: costsRes.success ? costsRes.members : prev.hourlyCosts,
+        ticketSeries: seriesRes.success ? seriesRes.series : prev.ticketSeries,
+      }));
     } catch {
       if (closed) return;
       emit((prev) => ({
@@ -249,6 +283,9 @@ function createConnection(session: FichajeSession): FichajeConnection {
         activeEntry: null,
         scheduleToday: null,
         pendingScheduleUpdates: false,
+        posRevenueToday: null,
+        hourlyCosts: [],
+        ticketSeries: [],
       }));
       return;
     }

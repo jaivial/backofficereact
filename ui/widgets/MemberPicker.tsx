@@ -9,6 +9,8 @@ export type MemberPickerItem = {
   name: string;
   meta?: string;
   live?: boolean;
+  /** Elapsed work time of an active clock entry, shown bottom-right. */
+  elapsed?: string;
 };
 
 export function MemberPicker({
@@ -62,7 +64,14 @@ export function MemberPicker({
               {item.name}
               {item.live ? <span className="bo-horariosLiveDot" aria-hidden="true" data-slot="member-picker-item-live" /> : null}
             </span>
-            {item.meta ? <span className="bo-memberPickerMeta" data-slot="member-picker-item-meta">{item.meta}</span> : null}
+            <span className="bo-memberPickerMeta" data-slot="member-picker-item-meta">
+              {item.meta ? <span data-slot="member-picker-item-status">{item.meta}</span> : null}
+              {item.elapsed ? (
+                <span className="bo-memberPickerElapsed" data-slot="member-picker-item-elapsed" title={`Fichaje en curso · ${item.elapsed}`}>
+                  {item.elapsed}
+                </span>
+              ) : null}
+            </span>
           </button>
         ))}
 
