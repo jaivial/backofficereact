@@ -21,6 +21,7 @@
 
 .bo-modal,
 .bo-modal-content {
+  position: relative;
   width: min(var(--bo-modal-w, 520px), calc(100vw - 36px));
   max-width: 100%;
   max-height: 80vh;
@@ -95,12 +96,46 @@
   gap: 8px;
 }
 
+.bo-modalX,
+.bo-modalClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-muted);
+  cursor: pointer;
+  transition: color var(--bo-transition-base) var(--bo-ease),
+              background var(--bo-transition-base) var(--bo-ease),
+              border-color var(--bo-transition-base) var(--bo-ease);
+}
+
 .bo-modalX {
   width: 32px;
   height: 32px;
-  border-radius: 12px;
-  border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--bo-muted);
+}
+
+.bo-modalClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  z-index: 1;
+}
+
+.bo-modalX:hover,
+.bo-modalClose:hover {
+  color: var(--bo-text);
+  background: color-mix(in srgb, var(--bo-surface-3) 60%, transparent);
+  border-color: var(--bo-border-2);
+}
+
+.bo-modalX:focus-visible,
+.bo-modalClose:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
 }
 
