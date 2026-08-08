@@ -356,8 +356,11 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
       {geom.chairs.map((chair, idx) => (
         <span key={`node-chair-${idx}`} data-ui="chair" className="bo-tableMapChair" style={{ transform: `translate(${chair.x}px, ${chair.y}px)` }} />
       ))}
-      <div data-ui="node-name" className="bo-tableMapNodeName">{data.name}</div>
-      <div data-ui="node-capacity" className="bo-tableMapNodeCap">{data.capacity}</div>
+      <div data-ui="node-pax" className="bo-tableMapNodePax">
+        <Users size={11} strokeWidth={1.8} aria-hidden="true" />
+        <span data-ui="node-pax-value">{data.capacity} pax</span>
+      </div>
+      <div data-ui="node-number" className="bo-tableMapNodeNum">{data.numeroMesa || data.id}</div>
       <div data-ui="node-status" className={`bo-tableMapNodeStatus is-${data.status}`}>{STATUS_LABEL[data.status]}</div>
       {seatedNames.length > 0 ? (
         <div data-ui="node-seated-names" className="bo-tableMapNodeSeatedNames">{seatedNames.join(", ")}</div>
@@ -1169,6 +1172,18 @@ export default function TableManagerPage() {
     return n;
   }, [areas]);
 
+  // Suggested next numero_mesa: scan numeric numero_mesa values already in use
+  // and return max+1 as a string. Non-numeric labels (e.g. "4B") are ignored,
+  // so they never block a plain numeric suggestion. The backend validates
+  // final uniqueness, so this is only a best-effort prefill.
+  const nextTableNumero = useMemo(() => {
+    const allTables = areas.flatMap((a) => a.tables || []);
+    const used = new Set(allTables.map((t) => normalizeTableKey(String(t.numero_mesa ?? ""))));
+    let n = allTables.length + 1;
+    while (used.has(normalizeTableKey(String(n)))) n += 1;
+    return String(n);
+  }, [areas]);
+
   const occupancy = useMemo(() => {
     const totalPeople = dailyLimit?.totalPeople ?? metrics?.totalPeople ?? 0;
     const limit = dailyLimit?.limit ?? 0;
@@ -1544,6 +1559,7 @@ export default function TableManagerPage() {
             data: {
               id: table.id,
               name: table.name || `Mesa ${table.id}`,
+              numeroMesa: table.numero_mesa || String(table.id),
               capacity: clampCapacity(table.capacity || 4),
               status: nodeStatus as TableMapItem["status"],
               shape: (table.shape || "round") as TableShape,
@@ -2339,12 +2355,12 @@ export default function TableManagerPage() {
 
   const openAddModal = useCallback(() => {
     setEditingTableId(null);
-    setDraft(defaultDraft(nextTableNumber));
+    setDraft(defaultDraft(nextTableNumber, nextTableNumero));
     setDraftTextureFile(null);
     setShortSideHover(null);
     setEditorOpen(true);
     setMenuVisible(false);
-  }, [nextTableNumber]);
+  }, [nextTableNumber, nextTableNumero]);
 
   const openEditModal = useCallback((table: TableMapItem) => {
     const capacity = clampCapacity(table.capacity || 4);
@@ -2352,6 +2368,7 @@ export default function TableManagerPage() {
     setEditingTableId(table.id);
     setDraft({
       name: table.name || "",
+      numeroMesa: table.numero_mesa || "",
       capacity,
       shape: (table.shape || "round") as TableShape,
       fillColor: table.fill_color || COLOR_PRESETS[0].fill,
@@ -2392,6 +2409,11 @@ export default function TableManagerPage() {
       pushToast({ kind: "error", title: "Error", message: "Nombre de mesa requerido" });
       return;
     }
+    const numeroMesa = draft.numeroMesa.trim();
+    if (!numeroMesa) {
+      pushToast({ kind: "error", title: "Error", message: "Número de mesa requerido" });
+      return;
+    }
 
     setSaving(true);
     try {
@@ -2403,6 +2425,7 @@ export default function TableManagerPage() {
         entity: "table",
         area_id: areaId,
         name,
+        numero_mesa: numeroMesa,
         capacity: clampCapacity(draft.capacity),
         shape: draft.shape,
         fill_color: draft.fillColor,
@@ -4776,13 +4799,25 @@ export default function TableManagerPage() {
 
                   <div data-slot="editor-config" className="bo-tableEditorConfig">
                     <div data-ui="field-name" className="bo-field">
-                      <label data-ui="name-label" className="bo-label" htmlFor="table-name">Nombre/numero</label>
+                      <label data-ui="name-label" className="bo-label" htmlFor="table-name">Nombre/etiqueta</label>
                       <input
                         data-ui="name-input"
                         id="table-name"
                         className="bo-input"
                         value={draft.name}
                         onChange={(e) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
+                      />
+                    </div>
+
+                    <div data-ui="field-number" className="bo-field">
+                      <label data-ui="number-label" className="bo-label" htmlFor="table-number">Número de mesa</label>
+                      <input
+                        data-ui="number-input"
+                        id="table-number"
+                        className="bo-input"
+                        placeholder="4, 4B, 4-B..."
+                        value={draft.numeroMesa}
+                        onChange={(e) => setDraft((prev) => ({ ...prev, numeroMesa: e.target.value }))}
                       />
                     </div>
 

@@ -350,6 +350,28 @@ body.is-dragging .bo-tableMapFlowWrap {
   font-weight: var(--bo-weight-bold);
 }
 
+/* Top row: max diners (pax) with a Users icon, shown smaller than the number. */
+.bo-tableMapNodePax {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-1);
+  font-size: var(--bo-text-xs);
+  line-height: 1;
+  color: var(--bo-muted);
+}
+
+.bo-tableMapNodePax svg {
+  flex: 0 0 auto;
+}
+
+/* Big table number (alphanumeric identifier), the node's focal element. */
+.bo-tableMapNodeNum {
+  font-size: var(--bo-text-2xl);
+  line-height: 1;
+  font-weight: var(--bo-weight-bold);
+  letter-spacing: -0.02em;
+}
+
 .bo-tableMapNodeStatus {
   font-size: var(--bo-text-xs);
   color: var(--bo-muted);

@@ -127,11 +127,12 @@ export function shortSidesFromMetadata(raw: unknown, capacity: number): RectShor
 
 // === Table draft helpers ===
 
-export function defaultDraft(nextNumber: number): TableDraft {
+export function defaultDraft(nextNumber: number, numeroMesaSuggestion?: string): TableDraft {
   const preset = COLOR_PRESETS[0];
   const capacity = 4;
   return {
     name: `Mesa ${nextNumber}`,
+    numeroMesa: numeroMesaSuggestion ?? String(nextNumber),
     capacity,
     shape: "round",
     fillColor: preset.fill,
