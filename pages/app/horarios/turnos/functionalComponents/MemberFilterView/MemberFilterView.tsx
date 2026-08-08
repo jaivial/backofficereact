@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
 
 import { createClient } from "../../../../../../api/client";
@@ -55,6 +55,9 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
   const [shiftMember, setShiftMember] = useState<Member | null>(null);
   const [shiftDate, setShiftDate] = useState("");
   const [shiftOpen, setShiftOpen] = useState(false);
+  const scheduleAreaRef = useRef<HTMLDivElement>(null);
+  const memberSidebarRef = useRef<HTMLElement>(null);
+  const [sidebarCappedHeight, setSidebarCappedHeight] = useState<number | null>(null);
 
   useEffect(() => {
     localStorage.setItem(MEMBER_FILTER_VIEW_KEY, view);
@@ -63,6 +66,35 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
   useEffect(() => {
     localStorage.setItem(MEMBER_SIDEBAR_KEY, sidebarOpen ? "1" : "0");
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    const scheduleArea = scheduleAreaRef.current;
+    if (!scheduleArea) return;
+
+    let frameId = 0;
+    const updateSidebarCap = () => {
+      const scheduleHeight = Math.round(scheduleArea.getBoundingClientRect().height);
+      const sidebar = memberSidebarRef.current;
+      const naturalHeight = sidebar ? Math.round(sidebar.scrollHeight) : 0;
+      const nextHeight = naturalHeight > scheduleHeight ? scheduleHeight : null;
+      setSidebarCappedHeight((prev) => (prev === nextHeight ? prev : nextHeight));
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateSidebarCap);
+    });
+    resizeObserver.observe(scheduleArea);
+
+    updateSidebarCap();
+    window.addEventListener("resize", updateSidebarCap);
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateSidebarCap);
+    };
+  }, [searchValue, members.length]);
 
   // Always keep a member selected: default to the first one once members are
   // available (props may load asynchronously).
@@ -284,7 +316,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       </div>
 
       {/* Sidebar + schedule area */}
-      <div className="flex flex-col md:flex-row gap-4 w-full">
+      <div className="flex flex-col md:flex-row gap-4 w-full md:items-start">
       {/* Mobile: dropdown selector above schedule */}
       <div className="md:hidden w-full min-w-0" data-ui="mobile-member-selector">
         <Select
@@ -308,10 +340,12 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       {sidebarOpen && (
         /* Member selector sidebar */
         <aside
+          ref={memberSidebarRef}
           data-ui="memberSidebar"
-          className="hidden md:flex md:w-64 flex-shrink-0 rounded-xl p-4 border border-solid flex-col"
+          className="hidden md:flex md:w-64 flex-shrink-0 rounded-xl p-4 border border-solid flex-col overflow-hidden"
           aria-label="Selector de miembro"
           style={{
+            ...(sidebarCappedHeight ? { height: sidebarCappedHeight } : {}),
             background: "linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 8%, white), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(242, 244, 251, 0.76)), color-mix(in srgb, var(--bo-surface) 90%, transparent)",
             boxShadow: "0 8px 24px rgba(124, 92, 231, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04)",
             borderColor: "color-mix(in srgb, var(--bo-accent) 16%, var(--bo-border))",
@@ -348,7 +382,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             />
           </div>
 
-          <ScrollArea dataSlot="memberList" maxHeight="auto">
+          <ScrollArea dataSlot="memberList" maxHeight="auto" className="grow min-h-0 !h-auto">
             <div className="space-y-1">
               {filteredMembers.map((member) => (
                 <button
@@ -392,7 +426,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       )}
 
       {/* Schedule display area */}
-      <div data-ui="scheduleArea" className="flex-1 min-w-0">
+      <div ref={scheduleAreaRef} data-ui="scheduleArea" className="flex-1 min-w-0">
         {/* Loading state */}
         {loading ? (
           <div data-ui="loadingState" className="flex items-center justify-center py-12">
