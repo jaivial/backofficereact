@@ -63,3 +63,22 @@ export async function waitForURLMatch(
 ) {
   await page.waitForURL(pattern, { timeout });
 }
+
+/**
+ * Wait until React has hydrated the app.
+ *
+ * In dev (Vite) el HTML SSR aparece antes de que React hidrate: clicar
+ * demasiado pronto dispara el click sobre un elemento sin handlers y la
+ * acción no ocurre. Este helper espera a que los nodos del layout tengan
+ * props de React (__reactFiber$) como señal de hidratación.
+ */
+export async function waitForHydration(page: Page, timeout = 25_000) {
+  await page.waitForFunction(() => {
+    const hasReactFiber = (node: Element): boolean =>
+      Object.keys(node).some((k) => k.startsWith("__reactFiber"));
+    const el = document.querySelector("#bo-portal");
+    if (!el) return false;
+    if (hasReactFiber(el)) return true;
+    return Array.from(el.querySelectorAll("*")).some(hasReactFiber);
+  }, { timeout });
+}

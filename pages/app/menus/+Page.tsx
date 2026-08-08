@@ -176,7 +176,7 @@ const MenuFilters = React.memo(function MenuFilters({
                   data-testid="menus-page-clear-filters-button"
                 >
                   <FilterX size={15} />
-                  Limipiar filtros
+                  Limpiar filtros
                 </button>
               </div>
             </div>
