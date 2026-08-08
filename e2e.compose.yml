@@ -1,0 +1,54 @@
+# Docker e2e aislado para el trabajo de tests Playwright.
+# Backoffice dev server (3013) + Backend Go (8085). Sin preact.
+# Reutiliza la MySQL host (127.0.0.1:3306, schema newvillacarmen).
+# network_mode: host -> los puertos se bindan en el host directamente.
+name: newvillacarmen-e2e
+
+services:
+  backend-e2e:
+    build:
+      context: ../backend-e2e
+      dockerfile: Dockerfile.dev
+    container_name: newvillacarmen-backend-e2e
+    restart: unless-stopped
+    env_file:
+      - ../backend-e2e/.env
+    network_mode: host
+    environment:
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_USER: villacarmen
+      DB_PASSWORD: villacarmen
+      DB_NAME: newvillacarmen
+      DEFAULT_RESTAURANT_ID: "1"
+      PORT: "8085"
+      STATIC_DIR: /app/static
+      CORS_ALLOW_ORIGINS: "https://localhost:3013"
+
+  backoffice-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: newvillacarmen-backoffice-e2e
+    restart: unless-stopped
+    network_mode: host
+    working_dir: /app
+    env_file:
+      - ./.env
+      - ./.env.local
+    environment:
+      NODE_ENV: development
+      PORT: "3013"
+      BACKEND_ORIGIN: http://127.0.0.1:8085
+      HMR_CLIENT_HOST: localhost
+      HMR_CLIENT_PROTOCOL: wss
+      HMR_CLIENT_PORT: "3013"
+    volumes:
+      - .:/app
+      - backoffice_node_modules:/app/node_modules
+      - ./.tls:/run/tls:ro
+    depends_on:
+      - backend-e2e
+
+volumes:
+  backoffice_node_modules:
