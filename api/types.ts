@@ -618,6 +618,8 @@ export type TableMapItem = {
   restaurant_id: number;
   area_id: number;
   name: string;
+  /** Per-restaurant unique alphanumeric table number shown on the map node (e.g. "4", "4B"). */
+  numero_mesa: string;
   capacity: number;
   status: "available" | "occupied" | "reserved";
   x_pos: number;
