@@ -26,26 +26,6 @@
   align-content: start;
 }
 
-.bo-modal--memberShift .bo-modalClose {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--bo-muted);
-  cursor: pointer;
-}
-
-.bo-modal--memberShift .bo-modalClose:hover {
-  color: var(--bo-text);
-}
-
 .bo-shiftModalValidation {
   color: var(--bo-text-danger, #ef4444);
   font-size: 11px;
