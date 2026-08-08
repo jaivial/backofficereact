@@ -9,12 +9,12 @@ name: newvillacarmen-e2e
 services:
   backend-e2e:
     build:
-      context: ../backend-e2e
+      context: ../backend
       dockerfile: Dockerfile.dev
     container_name: newvillacarmen-backend-e2e
     restart: unless-stopped
     env_file:
-      - ../backend-e2e/.env
+      - ../backend/.env
     network_mode: host
     environment:
       DB_HOST: 127.0.0.1
