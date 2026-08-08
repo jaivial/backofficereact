@@ -3,7 +3,8 @@ import { useAtomValue } from "jotai";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ArrowDownRight, ArrowUpRight, Coins } from "lucide-react";
 
-import type { LabourCostReport as Report, FichajeActiveEntry } from "../../../../../api/types";
+import { createClient } from "../../../../../api/client";
+import type { FichajePosRevenue, FichajePosSeriesPoint, FichajeHourlyCost, LabourCostReport as Report, FichajeActiveEntry } from "../../../../../api/types";
 import { fichajeRealtimeAtom } from "../../../../../state/atoms";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
 import { Panel } from "../../../../../ui/shell/Panel";
@@ -44,9 +45,40 @@ const chartConfig = {
 
 export function LabourCostReport({ report, loading, onRangeChange }: Props) {
   const realtime = useAtomValue(fichajeRealtimeAtom);
+  const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [tick, setTick] = useState(() => Date.now());
   const [from, setFrom] = useState(report?.from || todayISO());
   const [to, setTo] = useState(report?.to || todayISO());
+  const [dayRevenue, setDayRevenue] = useState<FichajePosRevenue | null>(null);
+  const [daySeries, setDaySeries] = useState<FichajePosSeriesPoint[]>([]);
+  const [dayHourlyCosts, setDayHourlyCosts] = useState<FichajeHourlyCost[]>([]);
+
+  const today = todayISO();
+
+  useEffect(() => {
+    if (to === today) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [revRes, seriesRes, costsRes] = await Promise.all([
+          api.pos.tickets.hourly({ date: to }),
+          api.pos.tickets.series({ date: to }),
+          api.fichaje.hourlyCosts({ date: to }),
+        ]);
+        if (cancelled) return;
+        if (revRes.success) setDayRevenue(revRes);
+        if (seriesRes.success) setDaySeries(seriesRes.series);
+        if (costsRes.success) setDayHourlyCosts(costsRes.members);
+      } catch {
+        // Non-critical: the panel falls back to today's realtime data.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [api, to, today]);
+
+  const revenue = to === today ? realtime.posRevenueToday : dayRevenue;
+  const series = to === today ? realtime.ticketSeries : daySeries;
+  const hourlyCosts = to === today ? realtime.hourlyCosts : dayHourlyCosts;
 
   const activeEntriesForDate = useMemo(() => {
     const out = new Map<number, FichajeActiveEntry>();
@@ -65,9 +97,9 @@ export function LabourCostReport({ report, loading, onRangeChange }: Props) {
 
   const hourlyByMember = useMemo(() => {
     const out = new Map<number, number>();
-    for (const item of realtime.hourlyCosts) out.set(item.memberId, item.effectiveHourlyCost);
+    for (const item of hourlyCosts) out.set(item.memberId, item.effectiveHourlyCost);
     return out;
-  }, [realtime.hourlyCosts]);
+  }, [hourlyCosts]);
 
   // Live cost: closed entries from the report + in-progress clock entries.
   const { totalMinutes, totalCost, members } = useMemo(() => {
@@ -102,16 +134,15 @@ export function LabourCostReport({ report, loading, onRangeChange }: Props) {
 
   const seriesData = useMemo(
     () =>
-      realtime.ticketSeries.map((point) => ({
+      series.map((point) => ({
         time: point.time,
         gross: point.grossCents,
         cost: point.costCents,
       })),
-    [realtime.ticketSeries],
+    [series],
   );
 
-  const revenueTotal = realtime.posRevenueToday?.totalGrossCents ?? 0;
-  const revenueCents = revenueTotal;
+  const revenueCents = revenue?.totalGrossCents ?? 0;
   const costCents = Math.round(totalCost * 100);
   const balanceCents = revenueCents - costCents;
   const isPositive = balanceCents >= 0;
@@ -192,9 +223,9 @@ export function LabourCostReport({ report, loading, onRangeChange }: Props) {
             <strong data-ui="labour-report-revenue-title">Ingresos hoy</strong>
             <span className="bo-badge bo-badge--ok" data-ui="labour-report-revenue-total">{money.format(revenueCents / 100)}</span>
           </div>
-          {realtime.posRevenueToday?.byHour.length ? (
+          {revenue?.byHour.length ? (
             <div className="bo-labourReportRevenueHours" data-ui="labour-report-revenue-hours">
-              {realtime.posRevenueToday.byHour
+              {revenue.byHour
                 .slice()
                 .sort((a, b) => a.hour - b.hour)
                 .map((h) => (
