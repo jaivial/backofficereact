@@ -1695,7 +1695,6 @@
 .bo-fichajeAdminPage .bo-fichajeAdminScheduleGrid .bo-timeAdjustValue {
   height: 36px;
   width: fit-content;
-  min-width: fit-content;
   padding-inline: 1rem;
   border-radius: 10px;
   font-size: 15px;
