@@ -3,3 +3,10 @@ node_modules
 .env*
 dist
 .tls
+storybook-static
+*.blend
+*.blend1
+backup
+tmp
+test-results
+e2e/screenshots
