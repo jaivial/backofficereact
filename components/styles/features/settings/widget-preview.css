@@ -526,6 +526,14 @@
   }
 }
 
+.bo-bookingPanel--customer {
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .bo-bookingPanel--customer {
+  box-shadow: none;
+}
+
 @media (max-width: 550px) {
   .bo-bookingPanel--customer .bo-panelHead {
     flex-direction: column;
