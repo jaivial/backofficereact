@@ -9,4 +9,11 @@ describe("LabourCostReport", () => {
     expect(screen.getByText("150,00 €")).toBeInTheDocument();
     expect(screen.getByText("10,00 h")).toBeInTheDocument();
   });
+
+  it("shows empty state and warns about missing compensation", () => {
+    render(<LabourCostReport report={{from:"2026-01-01",to:"2026-01-31",totalMinutes:0,totalCost:0,missingCompensationMembers:["Pedro"],members:[{memberId:2,name:"Pedro",minutesWorked:0,cost:0,missingCompensation:true}]}} loading={false} onRangeChange={()=>undefined} />);
+    expect(screen.getByTestId("labour-report-panel")).toBeInTheDocument();
+    expect(screen.getByText("sin salario")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Falta salario: Pedro");
+  });
 });
