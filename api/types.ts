@@ -865,6 +865,29 @@ export type FichajeMemberRef = {
   dni: string | null;
 };
 
+export type FichajeHourlyCost = {
+  memberId: number;
+  name: string;
+  effectiveHourlyCost: number;
+};
+
+export type FichajePosRevenueHour = {
+  hour: number;
+  grossCents: number;
+};
+
+export type FichajePosRevenue = {
+  date: string;
+  totalGrossCents: number;
+  byHour: FichajePosRevenueHour[];
+};
+
+export type FichajePosSeriesPoint = {
+  time: string;
+  grossCents: number;
+  costCents: number;
+};
+
 export type FichajeActiveEntry = {
   id: number;
   memberId: number;

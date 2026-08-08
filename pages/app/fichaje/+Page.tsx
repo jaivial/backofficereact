@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarClock, Clock3, Play, Square, Wifi, WifiOff } from "lucide-react";
+import { CalendarClock, Clock3, Play, Square, SquareStop, Wifi, WifiOff } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { FichajeActiveEntry, FichajeSchedule, LabourCostReport as LabourCostReportType, Member } from "../../../api/types";
@@ -12,6 +12,7 @@ import type { Data } from "./+data";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { DatePicker } from "../../../ui/inputs/DatePicker";
 import { MemberPicker, type MemberPickerItem } from "../../../ui/widgets/MemberPicker";
+import { ScheduleModal, fromMinutes, splitHHMM, toMinutes } from "../../../ui/widgets/ScheduleModal";
 import { TimeAdjust } from "../../../ui/widgets/TimeAdjust";
 import { Panel } from "../../../ui/shell/Panel";
 import { fullName } from "../../../lib/member";
@@ -101,6 +102,11 @@ export default function Page() {
   const [busyScheduleUpdate, setBusyScheduleUpdate] = useState(false);
   const [labourCost,setLabourCost]=useState<LabourCostReportType|null>(data.labourCost||null);
   const [labourLoading,setLabourLoading]=useState(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [entryHour, setEntryHour] = useState("09");
+  const [entryMinute, setEntryMinute] = useState("00");
+  const [exitHour, setExitHour] = useState("17");
+  const [exitMinute, setExitMinute] = useState("00");
 
   useEffect(() => {
     if (!data.state) return;
@@ -138,23 +144,6 @@ export default function Page() {
     const timer = window.setInterval(() => setTick(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [activeEntriesForDate.size, realtime.activeEntry?.id, realtime.activeEntry?.startAtIso]);
-
-  const syncRealtimeState = useCallback(async () => {
-    const res = await api.fichaje.getState();
-    if (!res.success) return;
-    const byMember = toActiveEntriesByMember(res.state.activeEntries || []);
-    if (res.state.activeEntry?.memberId) {
-      byMember[res.state.activeEntry.memberId] = res.state.activeEntry;
-    }
-    setRealtime((prev) => ({
-      ...prev,
-      member: res.state.member,
-      activeEntriesByMember: byMember,
-      activeEntry: res.state.activeEntry,
-      scheduleToday: res.state.scheduleToday,
-      lastSyncAt: Date.now(),
-    }));
-  }, [api.fichaje, setRealtime]);
 
   const onStart = useCallback(
     async (ev: React.FormEvent) => {
@@ -279,13 +268,17 @@ export default function Page() {
     const sorted = [...members].sort((a, b) => fullName(a).localeCompare(fullName(b), "es", { sensitivity: "base" }));
     const query = memberSearch.trim().toLowerCase();
     const filtered = query ? sorted.filter((member) => fullName(member).toLowerCase().includes(query)) : sorted;
-    return filtered.map((member) => ({
-      id: member.id,
-      name: fullName(member),
-      meta: scheduleByMember.has(member.id) ? "Asignado" : "Sin horario",
-      live: activeEntriesForDate.has(member.id),
-    }));
-  }, [activeEntriesForDate, memberSearch, members, scheduleByMember]);
+    return filtered.map((member) => {
+      const entry = activeEntriesForDate.get(member.id) || null;
+      return {
+        id: member.id,
+        name: fullName(member),
+        meta: scheduleByMember.has(member.id) ? "Asignado" : "Sin horario",
+        live: Boolean(entry),
+        elapsed: entry ? elapsedForEntry(entry, tick) : undefined,
+      };
+    });
+  }, [activeEntriesForDate, memberSearch, members, scheduleByMember, tick]);
 
   const onSelectMember = useCallback(
     (memberId: number) => {
@@ -305,14 +298,19 @@ export default function Page() {
         setError(res.message || "No se pudo iniciar fichaje del miembro");
         return;
       }
-      await syncRealtimeState();
+      const started = res.activeEntry;
+      setRealtime((prev) => {
+        const nextByMember = { ...prev.activeEntriesByMember };
+        if (started?.memberId) nextByMember[started.memberId] = started;
+        return { ...prev, activeEntriesByMember: nextByMember, activeEntry: started, lastSyncAt: Date.now() };
+      });
       pushToast({ kind: "success", title: "Fichaje iniciado" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo iniciar fichaje del miembro");
     } finally {
       setBusyAdminAction(false);
     }
-  }, [api.fichaje, pushToast, selectedMemberId, syncRealtimeState]);
+  }, [api.fichaje, pushToast, selectedMemberId, setRealtime]);
 
   const onAdminStop = useCallback(async () => {
     if (!selectedMemberId) return;
@@ -324,14 +322,19 @@ export default function Page() {
         setError(res.message || "No se pudo cerrar fichaje del miembro");
         return;
       }
-      await syncRealtimeState();
+      const stoppedId = res.activeEntry?.memberId ?? selectedMemberId;
+      setRealtime((prev) => {
+        const nextByMember = { ...prev.activeEntriesByMember };
+        if (stoppedId) delete nextByMember[stoppedId];
+        return { ...prev, activeEntriesByMember: nextByMember, activeEntry: null, lastSyncAt: Date.now() };
+      });
       pushToast({ kind: "success", title: "Fichaje finalizado" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cerrar fichaje del miembro");
     } finally {
       setBusyAdminAction(false);
     }
-  }, [api.fichaje, pushToast, selectedMemberId, syncRealtimeState]);
+  }, [api.fichaje, pushToast, selectedMemberId, setRealtime]);
 
   const adjustSchedule = useCallback(
     async (field: "start" | "end", deltaMinutes: number) => {
@@ -370,6 +373,73 @@ export default function Page() {
   );
 
   const loadLabourCost=useCallback(async(from:string,to:string)=>{setLabourLoading(true);try{const res=await api.fichaje.getLabourCost({from,to});if(res.success)setLabourCost(res);else setError(res.message||"No se pudo calcular coste laboral")}catch(err){setError(err instanceof Error?err.message:"No se pudo calcular coste laboral")}finally{setLabourLoading(false)}},[api.fichaje]);
+
+  const openScheduleModal = useCallback(() => {
+    if (!selectedMember) return;
+    if (selectedSchedule) {
+      const inTime = splitHHMM(selectedSchedule.startTime);
+      const outTime = splitHHMM(selectedSchedule.endTime);
+      setEntryHour(inTime.h);
+      setEntryMinute(inTime.m);
+      setExitHour(outTime.h);
+      setExitMinute(outTime.m);
+    } else {
+      setEntryHour("09");
+      setEntryMinute("00");
+      setExitHour("17");
+      setExitMinute("00");
+    }
+    setScheduleModalOpen(true);
+  }, [selectedMember, selectedSchedule]);
+
+  const setEntryTime = useCallback(
+    (nextHour: string, nextMinute: string) => {
+      if (nextHour !== entryHour) setEntryHour(nextHour);
+      if (nextMinute !== entryMinute) setEntryMinute(nextMinute);
+
+      const nextEntryMinutes = toMinutes(nextHour, nextMinute);
+      const currentExitMinutes = toMinutes(exitHour, exitMinute);
+      if (nextEntryMinutes <= currentExitMinutes) return;
+
+      const fixed = fromMinutes(nextEntryMinutes);
+      if (fixed.h !== exitHour) setExitHour(fixed.h);
+      if (fixed.m !== exitMinute) setExitMinute(fixed.m);
+    },
+    [entryHour, entryMinute, exitHour, exitMinute],
+  );
+
+  const saveSchedule = useCallback(async () => {
+    if (!selectedMemberId) return;
+    const startTime = `${entryHour}:${entryMinute}`;
+    const normalizedExitMinutes = Math.max(toMinutes(entryHour, entryMinute), toMinutes(exitHour, exitMinute));
+    const normalizedExit = fromMinutes(normalizedExitMinutes);
+    const endTime = `${normalizedExit.h}:${normalizedExit.m}`;
+
+    if (normalizedExit.h !== exitHour || normalizedExit.m !== exitMinute) {
+      setExitHour(normalizedExit.h);
+      setExitMinute(normalizedExit.m);
+    }
+
+    setBusyScheduleUpdate(true);
+    setError(null);
+    try {
+      const res = await api.horarios.assign({ date, memberId: selectedMemberId, startTime, endTime });
+      if (!res.success) {
+        setError(res.message || "No se pudo asignar horario");
+        return;
+      }
+      setSchedules((prev) => {
+        const filtered = prev.filter((item) => item.memberId !== selectedMemberId || item.date !== date);
+        return [...filtered, res.schedule];
+      });
+      pushToast({ kind: "success", title: "Horario asignado" });
+      setScheduleModalOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo asignar horario");
+    } finally {
+      setBusyScheduleUpdate(false);
+    }
+  }, [api.horarios, date, entryHour, entryMinute, exitHour, exitMinute, pushToast, selectedMemberId]);
 
   const transition = reduceMotion ? { duration: 0 } : { duration: 0.22, ease: "easeOut" as const }; 
 
@@ -484,11 +554,6 @@ export default function Page() {
         actions={
           <div className="bo-horariosPreviewActions" data-testid="fichaje-admin-actions">
             <DatePicker value={date} onChange={(nextDate) => void onDateChange(nextDate)} />
-            <div className="bo-horariosDateBadge" data-testid="fichaje-admin-date">{date}</div>
-            <div className={`bo-fichajeConn${realtime.wsConnected ? " is-live" : ""}`} data-testid="fichaje-admin-connection">
-              {realtime.wsConnected ? <Wifi size={15} strokeWidth={1.8} /> : <WifiOff size={15} strokeWidth={1.8} />}
-              {realtime.wsConnected ? "WS" : "OFF"}
-            </div>
           </div>
         }
         data-testid="fichaje-admin-panel"
@@ -520,9 +585,8 @@ export default function Page() {
                 <div className="bo-fichajeCounter" aria-live="polite" data-testid="fichaje-admin-counter">
                   {elapsedForEntry(selectedEntry, tick)}
                 </div>
-                <div className="bo-fichajeMemberName" data-testid="fichaje-admin-member-entry-name">{selectedEntry.memberName}</div>
                 <button className="bo-btn bo-btn--ghost bo-fichajeStopBtn" type="button" disabled={busyAdminAction} onClick={() => void onAdminStop()} data-testid="fichaje-admin-stop-button">
-                  <Square size={16} strokeWidth={1.8} />
+                  <SquareStop size={16} strokeWidth={1.8} />
                   {busyAdminAction ? "Cerrando..." : "Finalizar fichaje"}
                 </button>
               </div>
@@ -558,12 +622,39 @@ export default function Page() {
                   />
                 </div>
               ) : (
-                <div className="bo-mutedText" data-testid="fichaje-admin-schedule-note">Asigna el horario desde la sección Horarios para habilitar ajustes rápidos.</div>
+                <div className="bo-fichajeAdminScheduleEmpty" data-testid="fichaje-admin-schedule-note">
+                  <div className="bo-mutedText">Este miembro no tiene turno asignado para esta fecha.</div>
+                  <button
+                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    type="button"
+                    disabled={!selectedMemberId || busyScheduleUpdate}
+                    onClick={openScheduleModal}
+                    data-testid="fichaje-admin-schedule-assign"
+                  >
+                    <CalendarClock size={14} strokeWidth={1.8} />
+                    Asignar horario
+                  </button>
+                </div>
               )}
             </div>
           </section>
         </div>
       </Panel>
+      <ScheduleModal
+        open={scheduleModalOpen}
+        selectedMember={selectedMember}
+        selectedDate={date}
+        entryHour={entryHour}
+        entryMinute={entryMinute}
+        exitHour={exitHour}
+        exitMinute={exitMinute}
+        busy={busyScheduleUpdate}
+        onClose={() => setScheduleModalOpen(false)}
+        onSave={() => void saveSchedule()}
+        onSetEntryTime={setEntryTime}
+        onSetExitHour={setExitHour}
+        onSetExitMinute={setExitMinute}
+      />
       {data.canViewLabourCost ? <LabourCostReport report={labourCost} loading={labourLoading} onRangeChange={(from,to)=>void loadLabourCost(from,to)} /> : null}
     </section>
   );

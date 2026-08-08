@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { BOSession, FichajeActiveEntry, FichajeMemberRef, FichajeSchedule } from "../api/types";
+import type { BOSession, FichajeActiveEntry, FichajeHourlyCost, FichajeMemberRef, FichajePosRevenue, FichajePosSeriesPoint, FichajeSchedule } from "../api/types";
 
 export type ThemeMode = "dark" | "light";
 
@@ -37,6 +37,9 @@ export type FichajeRealtimeState = {
   activeEntry: FichajeActiveEntry | null;
   scheduleToday: FichajeSchedule | null;
   pendingScheduleUpdates: boolean;
+  posRevenueToday: FichajePosRevenue | null;
+  hourlyCosts: FichajeHourlyCost[];
+  ticketSeries: FichajePosSeriesPoint[];
 };
 
 export const fichajeRealtimeAtom = atom<FichajeRealtimeState>({
@@ -49,4 +52,7 @@ export const fichajeRealtimeAtom = atom<FichajeRealtimeState>({
   activeEntry: null,
   scheduleToday: null,
   pendingScheduleUpdates: false,
+  posRevenueToday: null,
+  hourlyCosts: [],
+  ticketSeries: [],
 });
