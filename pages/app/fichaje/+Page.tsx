@@ -375,7 +375,7 @@ export default function Page() {
 
   if (!data.isAdminView) {
     return (
-      <section aria-label="Fichaje" className="bo-content-grid bo-fichajePage" data-testid="fichaje-section">
+      <section aria-label="Fichaje" className="bo-fichajePage" data-testid="fichaje-section">
         <Panel
           className="bo-fichajePanel"
           title={<><Clock3 size={16} strokeWidth={1.8} /> Fichaje</>}
@@ -476,7 +476,7 @@ export default function Page() {
   }
 
   return (
-    <section aria-label="Fichaje administrado" className="bo-fichajePage bo-fichajeAdminPage" data-testid="fichaje-admin-section">
+    <section aria-label="Fichaje administrado" className="bo-fichajeAdminPage" data-testid="fichaje-admin-section">
       <Panel
         className="bo-fichajeAdminPanel"
         title={<><Clock3 size={16} strokeWidth={1.8} /> Fichaje Admin</>}
