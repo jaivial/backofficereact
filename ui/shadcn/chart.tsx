@@ -44,10 +44,14 @@ function ChartStyle({ id, config, "data-ui": dataUi }: { id: string; config: Cha
 export type ChartContainerProps = React.HTMLAttributes<HTMLDivElement> & {
   config: ChartConfig;
   "data-testid"?: string;
+  /** Accessible name announced for the chart. */
+  "aria-label"?: string;
+  /** Optional description id referenced by the chart. */
+  "aria-describedby"?: string;
 };
 
 export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(function ChartContainer(
-  { id, className, children, config, "data-testid": dataTestId, ...props },
+  { id, className, children, config, "data-testid": dataTestId, "aria-label": ariaLabel, "aria-describedby": ariaDescribedBy, ...props },
   ref,
 ) {
   const generatedId = useId().replace(/:/g, "");
@@ -60,6 +64,9 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
         data-chart={chartId}
         data-testid={dataTestId ?? "chart-container"}
         data-ui="chart-container"
+        role="img"
+        aria-label={ariaLabel ?? "Gráfico"}
+        aria-describedby={ariaDescribedBy}
         {...props}
       >
         <ChartStyle id={chartId} config={config} data-ui={`chart-style-${chartId}`} />
@@ -118,7 +125,7 @@ export function ChartTooltipContent({
   const formattedLabel = labelFormatter ? labelFormatter(label, payload) : label;
 
   return (
-    <div className={cn("grid min-w-[9rem] gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-xs text-card-foreground shadow-xl", className)} data-ui="chart-tooltip-content" {...props}>
+    <div role="tooltip" aria-live="polite" className={cn("grid min-w-[9rem] gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-xs text-card-foreground shadow-xl", className)} data-ui="chart-tooltip-content" {...props}>
       {!hideLabel && formattedLabel ? <div className="font-medium" data-ui="chart-tooltip-label">{formattedLabel}</div> : null}
       <div className="grid gap-1.5" data-ui="chart-tooltip-items">
         {payload.map((item, index) => {
@@ -162,12 +169,12 @@ export function ChartLegendContent({ payload, verticalAlign = "bottom", nameKey,
   if (!payload?.length) return null;
 
   return (
-    <div className={cn("flex items-center justify-center gap-4", verticalAlign === "top" ? "pb-3" : "pt-3", className)} data-ui="chart-legend-content" {...props}>
+    <div role="list" aria-label="Leyenda del gráfico" className={cn("flex items-center justify-center gap-4", verticalAlign === "top" ? "pb-3" : "pt-3", className)} data-ui="chart-legend-content" {...props}>
       {payload.map((item, index) => {
         const key = String(nameKey ? item[nameKey as keyof LegendPayloadItem] ?? item.dataKey ?? "" : item.dataKey ?? "");
         const itemConfig = config[key];
         return (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground" key={`${key}-${index}`} data-ui={`chart-legend-item-${index}`}>
+          <div role="listitem" className="flex items-center gap-1.5 text-xs text-muted-foreground" key={`${key}-${index}`} data-ui={`chart-legend-item-${index}`}>
             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color ?? `var(--color-${key})` }} data-ui={`chart-legend-indicator-${index}`} />
             <span data-ui={`chart-legend-label-${index}`}>{itemConfig?.label ?? item.value ?? key}</span>
           </div>
