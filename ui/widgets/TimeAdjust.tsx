@@ -23,13 +23,11 @@ export function TimeAdjust({
       <div className="bo-timeAdjustLabel" data-slot="time-adjust-label">{label}</div>
       <div className="bo-timeAdjustCtrls" data-slot="time-adjust-controls">
         <button className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-timeAdjustBtn" type="button" onClick={onMinus} disabled={disabled} aria-label={`${label} menos 15 minutos`} data-testid="time-adjust-minus">
-          <Minus size={14} strokeWidth={2} aria-hidden="true" />
-          <span data-slot="time-adjust-minus-text">15</span>
+          <Minus size={14} strokeWidth={2.2} aria-hidden="true" />
         </button>
         <div className="bo-timeAdjustValue bo-timeAdjustValue--glass" data-slot="time-adjust-value">{value}</div>
         <button className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--glass bo-timeAdjustBtn" type="button" onClick={onPlus} disabled={disabled} aria-label={`${label} mas 15 minutos`} data-testid="time-adjust-plus">
-          <Plus size={14} strokeWidth={2} aria-hidden="true" />
-          <span data-slot="time-adjust-plus-text">15</span>
+          <Plus size={14} strokeWidth={2.2} aria-hidden="true" />
         </button>
       </div>
     </div>

@@ -1694,6 +1694,8 @@
 
 .bo-fichajeAdminPage .bo-fichajeAdminScheduleGrid .bo-timeAdjustValue {
   height: 36px;
+  width: fit-content;
+  padding-inline: 1rem;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 780;
@@ -1702,13 +1704,17 @@
     "Courier New", monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
+  justify-self: center;
 }
 
 .bo-fichajeAdminPage .bo-fichajeAdminScheduleGrid .bo-timeAdjustBtn {
-  width: 38px;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
   padding: 0;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 50%;
   color: var(--bo-muted);
 }
 
