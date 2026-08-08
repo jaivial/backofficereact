@@ -1,7 +1,8 @@
 import { test } from "@playwright/test";
-import { openChat, runReadCase, runWriteCase } from "../../helpers/forkyTools";
+import { openChat, runReadCase, runWriteCase, forkyToolsEnabled } from "../../helpers/forkyTools";
 
 test.describe("Forky tools · miembros y estado de cuenta", () => {
+  test.skip(!forkyToolsEnabled, "requires FORKY_REAL_TOOLS_E2E=1");
   test.beforeEach(async ({ page }) => {
     test.setTimeout(420_000);
     await openChat(page);

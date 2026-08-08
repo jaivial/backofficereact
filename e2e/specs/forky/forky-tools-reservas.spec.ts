@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { gotoDashboard, openForkyModal, runReadCase, runWriteCase, loginAsAdmin } from "../../helpers/forkyTools";
+import { gotoDashboard, openForkyModal, runReadCase, runWriteCase, loginAsAdmin, forkyToolsEnabled } from "../../helpers/forkyTools";
 
 const before = async ({ page }: { page: import("@playwright/test").Page }) => {
   test.setTimeout(420_000);
@@ -9,6 +9,7 @@ const before = async ({ page }: { page: import("@playwright/test").Page }) => {
 };
 
 test.describe("Forky tools · reservas", () => {
+  test.skip(!forkyToolsEnabled, "requires FORKY_REAL_TOOLS_E2E=1");
   test("restaurant_info (3 edge cases)", async ({ page }) => {
     await before({ page });
     await runReadCase(page, "¿Cómo se llama el restaurante y cuál es su teléfono?", ["villa carmen", "restaurante", "teléfono", "phone"], "restaurant_info/1");

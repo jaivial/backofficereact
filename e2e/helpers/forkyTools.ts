@@ -10,18 +10,31 @@ import { expect, type Page } from "@playwright/test";
 export const FORKY_ORB_WAIT_MS = 4000;
 export const FORKY_PROMPT_TIMEOUT = 90_000;
 
+/**
+ * The tool suite drives the REAL MiniMax LLM against a live backend, so it is
+ * opt-in only: set FORKY_REAL_TOOLS_E2E=1 to run it. It must never run
+ * implicitly in CI (slow, costs LLM tokens, per-IP rate limits).
+ */
+export const forkyToolsEnabled = process.env.FORKY_REAL_TOOLS_E2E === "1";
+
+const E2E_ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@villacarmen.com";
+const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123";
+
 /** Log in via the page-origin API (same pattern as the session fixture). */
 export async function loginAsAdmin(page: Page) {
   await page.goto("/login", { waitUntil: "domcontentloaded" });
-  const login = await page.evaluate(async () => {
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ identifier: "admin@villacarmen.com", password: "admin123" }),
-    });
-    return { ok: res.ok, body: await res.json() };
-  });
+  const login = await page.evaluate(
+    async ({ email, password }) => {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ identifier: email, password }),
+      });
+      return { ok: res.ok, body: await res.json() };
+    },
+    { email: E2E_ADMIN_EMAIL, password: E2E_ADMIN_PASSWORD }
+  );
   expect(login.ok && (login.body as { success?: boolean })?.success, `login failed: ${JSON.stringify(login.body)}`).toBeTruthy();
 }
 
