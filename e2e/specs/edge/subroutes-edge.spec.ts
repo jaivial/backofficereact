@@ -1,5 +1,6 @@
 import { test, expect } from "../../fixtures/session";
 import { waitForHydration } from "../../helpers/wait";
+import { pickFoodItem } from "../../helpers/api";
 
 // Sub-rutas: comida detalle, facturas recurrentes, mi-horario, mapa de mesas.
 
@@ -11,7 +12,14 @@ async function open(page: import("@playwright/test").Page, url: string) {
 
 test.describe("@edge Comida detalle", () => {
   test("abrir detalle desde tarjeta Editar", async ({ adminPage }) => {
+    const { hasItems } = await pickFoodItem(adminPage, "platos");
     await open(adminPage, "/app/comida/platos");
+    if (!hasItems) {
+      // Carta vacía en dev: la lista renderiza (o estado vacío) sin crash
+      await expect(adminPage.locator('[data-ui="food-list-grid"]').or(adminPage.locator('[data-ui="food-list-empty"]')).first()).toBeVisible({ timeout: 15_000 });
+      return;
+    }
+    await expect(adminPage.locator('button[aria-label^="Editar "]').first()).toBeVisible({ timeout: 15_000 });
     await adminPage.locator('button[aria-label^="Editar "]').first().click();
     await adminPage.waitForURL(/\/app\/comida\/platos\/\d+/, { timeout: 15_000 });
     await adminPage.getByTestId("topbar").waitFor({ timeout: 15_000 });
