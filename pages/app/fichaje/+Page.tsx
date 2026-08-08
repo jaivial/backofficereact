@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CalendarClock, Clock3, Play, Square, SquareStop, Wifi, WifiOff } from "lucide-react";
+import { CalendarClock, Clock3, Play, SquareStop, Wifi, WifiOff } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { FichajeActiveEntry, FichajeSchedule, LabourCostReport as LabourCostReportType, Member } from "../../../api/types";
@@ -486,7 +486,7 @@ export default function Page() {
                       : "Sin horario previsto para hoy"}
                   </div>
                   <button className="bo-btn bo-btn--ghost bo-fichajeStopBtn" type="button" disabled={busyStop} onClick={onStop} data-testid="fichaje-stop-button">
-                    <Square size={16} strokeWidth={1.8} />
+                    <SquareStop size={16} strokeWidth={1.8} />
                     {busyStop ? "Cerrando..." : "Finalizar fichaje"}
                   </button>
                 </motion.div>
