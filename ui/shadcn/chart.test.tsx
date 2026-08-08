@@ -5,6 +5,11 @@ import { describe, expect, it } from "vitest";
 import { ChartContainer } from "./chart";
 
 describe("ChartContainer", () => {
+  it("is announced as an image with an accessible name", () => {
+    render(React.createElement(ChartContainer, { id: "occupancy", config: {}, "aria-label": "Ocupación por mes" }));
+    expect(screen.getByRole("img", { name: "Ocupación por mes" })).toBeInTheDocument();
+  });
+
   it("exposes chart id and config CSS variables for Recharts", () => {
     render(
       React.createElement(
