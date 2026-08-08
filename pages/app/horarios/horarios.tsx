@@ -15,7 +15,7 @@ import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { diffLabel, elapsedForEntry, fullName, fromMinutes, monthCalendarData, splitHHMM, todayISO, toMinutes } from "./utils";
 import { HOUR_OPTIONS, MINUTE_OPTIONS, HorariosCalendarTab } from "./constants";
 import { MyScheduleView } from "./functionalComponents/MyScheduleView/MyScheduleView";
-import { ScheduleModal } from "./functionalComponents/ScheduleModal/ScheduleModal";
+import { ScheduleModal } from "../../../ui/widgets/ScheduleModal";
 import { TurnosView } from "./turnos/TurnosView";
 import { Panel } from "../../../ui/shell/Panel";
 import { ScrollArea } from "../../../ui/layout/ScrollArea";

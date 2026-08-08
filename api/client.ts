@@ -33,6 +33,9 @@ import type {
   GroupMenuSummary,
   HorarioMonthPoint,
   FichajeActiveEntry,
+  FichajeHourlyCost,
+  FichajePosRevenue,
+  FichajePosSeriesPoint,
   FichajeSchedule,
   FichajeState,
   TimeEntry,
@@ -1340,6 +1343,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
     fichaje: {
       async getLabourCost(params: { from: string; to: string }): Promise<APISuccess<LabourCostReport> | APIError> {
         return json(withQuery("/api/admin/fichaje/labour-cost", params), { method: "GET" });
+      },
+      async hourlyCosts(params: { date: string }): Promise<APISuccess<{ date: string; members: FichajeHourlyCost[] }> | APIError> {
+        return json(withQuery("/api/admin/fichaje/hourly-costs", params), { method: "GET" });
       },
       async getState(): Promise<APISuccess<{ state: FichajeState }> | APIError> {
         return json("/api/admin/fichaje/state", { method: "GET" });
@@ -2697,6 +2703,8 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       tickets: {
         addLine(id: number, input: { productId: number; quantity: number; notes?: string; idempotencyKey: string }): Promise<APISuccess<{ ticket: POSTicket }> | APIError> { return json(`/api/admin/pos/tickets/${id}/lines`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) }); },
         checkout(id: number, input: { idempotencyKey: string; expectedVersion: number; payments: Array<{ method: string; amountCents: number; idempotencyKey: string }>; closeVisit: boolean }): Promise<APISuccess<{ ticket: POSTicket; stockStatus: string; visitClosed: boolean }> | APIError> { return json(`/api/admin/pos/tickets/${id}/checkout`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) }); },
+        hourly(params: { date: string }): Promise<APISuccess<FichajePosRevenue> | APIError> { return json(withQuery("/api/admin/pos/tickets/hourly", params), { method: "GET" }); },
+        series(params: { date: string }): Promise<APISuccess<{ date: string; series: FichajePosSeriesPoint[] }> | APIError> { return json(withQuery("/api/admin/pos/tickets/series", params), { method: "GET" }); },
       },
     },
 

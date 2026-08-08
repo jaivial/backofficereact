@@ -1670,6 +1670,17 @@
   width: 100%;
 }
 
+.bo-fichajeAdminScheduleEmpty {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+}
+
+.bo-fichajeAdminScheduleEmpty .bo-btn {
+  width: fit-content;
+}
+
 .bo-labourReport {
   min-width: 0;
 }
@@ -1702,7 +1713,8 @@
   flex-wrap: wrap;
 }
 
-.bo-labourReportRange label {
+.bo-labourReportRange label,
+.bo-labourReportRangeField {
   display: grid;
   gap: 6px;
   font-size: 12px;
@@ -1760,6 +1772,99 @@
   color: var(--bo-text-warning);
 }
 
+.bo-labourReportRevenue {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-labourReportRevenueHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--bo-text);
+}
+
+.bo-labourReportRevenueHours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bo-labourReportRevenueHour {
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-3);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bo-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bo-labourReportChart {
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+
+.bo-labourReportBalance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  padding: 12px;
+  font-size: 13px;
+}
+
+.bo-labourReportBalance.is-positive {
+  border-color: rgba(22, 163, 74, 0.38);
+  background: rgba(22, 163, 74, 0.10);
+  color: var(--bo-text);
+}
+
+.bo-labourReportBalance.is-negative {
+  border-color: rgba(220, 38, 38, 0.38);
+  background: rgba(220, 38, 38, 0.10);
+  color: var(--bo-text);
+}
+
+.bo-labourReportBalance svg {
+  flex: 0 0 auto;
+}
+
+.bo-labourReportBalance.is-positive svg {
+  color: var(--bo-color-success);
+}
+
+.bo-labourReportBalance.is-negative svg {
+  color: var(--bo-color-danger);
+}
+
+.bo-labourReportBalanceBody {
+  display: grid;
+  gap: 2px;
+}
+
+.bo-labourReportBalanceLabel {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-labourReportBalanceValue {
+  font-size: 18px;
+  font-weight: 780;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 720px),
 (max-aspect-ratio: 9/16) {
   .bo-labourReportSummary {
@@ -1771,7 +1876,8 @@
     width: 100%;
   }
 
-  .bo-labourReportRange label {
+  .bo-labourReportRange label,
+  .bo-labourReportRangeField {
     flex: 1 1 100%;
   }
 }
@@ -2874,6 +2980,30 @@
 .bo-memberPickerMeta {
   color: var(--bo-muted);
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bo-memberPickerElapsed {
+  flex: 0 0 auto;
+  min-width: 72px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(147, 239, 231, 0.34);
+  background: rgba(147, 239, 231, 0.10);
+  color: rgba(147, 239, 231, 0.95);
+  font-size: 11px;
+  font-weight: 760;
+  text-align: center;
+  letter-spacing: 0.02em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
 }
 
 .bo-memberPickerEmpty {
