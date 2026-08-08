@@ -383,14 +383,102 @@ type ChatModelRunOptionsMessages = ReadonlyArray<{
   content: string | ReadonlyArray<{ type: string; text?: string }>;
 }>;
 
+// The MiniMax model intermittently wraps a whole reply in base64 (an encoding
+// quirk). The backend recovers most cases, but this client-side guard keeps the
+// live chat readable even when a raw blob reaches the browser or comes back from
+// history. Idempotent: ordinary Spanish prose is never base64-sniffable.
+export function recoverEncodedReply(text: string): string {
+  // Strip markdown code-fence backticks / quotes MiniMax sometimes wraps
+  // around a base64-wrapped reply, then cleanse CJK/filler glyphs first so
+  // every short-circuit below returns clean text.
+  const wrapped = stripBase64Wrapper(text);
+  const input = cleanseMinimaxReply(wrapped);
+  const stripped = input.replace(/[\s]+/g, "");
+  const body = stripped.replace(/=+$/, "");
+  if (body.length < 16) return input;
+  if (!/^[A-Za-z0-9+/_-]+$/.test(body)) return input;
+
+  // Decode the largest clean base64 chunk. MiniMax sometimes truncates the
+  // payload mid-stream (len%4==1 makes atob throw), so drop trailing chars and
+  // keep the longest prefix that decodes to readable text.
+  for (let drop = 0; drop <= 8; drop++) {
+    const candidate = drop === 0 ? body : body.slice(0, body.length - drop);
+    if (candidate.length % 4 === 1) continue; // never a valid quad
+    const t = candidate.replace(/-/g, "+").replace(/_/g, "/");
+    let dec: string;
+    try {
+      const bin = atob(t + "=".repeat((4 - (t.length % 4)) % 4));
+      const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      dec = new TextDecoder("utf-8").decode(bytes);
+    } catch {
+      continue;
+    }
+    if (dec.length === 0) continue;
+    // Accept only if mostly printable human text. Replacement chars (�)
+    // from a truncated tail count as NON-printable, so a cut-off reply still
+    // passes (head is readable) while binary garbage is rejected.
+    let printable = 0;
+    for (const ch of dec) {
+      const cp = ch.codePointAt(0)!;
+      if (cp === 0xfffd) continue;
+      if (cp >= 0x20 || ch === "\n" || ch === "\r" || ch === "\t") printable++;
+    }
+    if (printable / dec.length < 0.9) continue;
+    // Repair double-escaped newlines/tabs, then cleanse once more.
+    const repaired = dec.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
+    return cleanseMinimaxReply(repaired);
+  }
+  return input;
+}
+
+// Remove markdown code-fence backticks / quotes / labels MiniMax may print
+// around a base64-wrapped reply. Never touches the interior payload.
+function stripBase64Wrapper(text: string): string {
+  // Only strip backtick fences / quotes / fence language-tags that actually
+  // wrap the payload. Do NOT trim general whitespace/newlines here: ordinary
+  // prose must round-trip unchanged.
+  let t = text;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const p of ["```", "`", '"', "'", "<base64>", "data:"]) {
+      if (t.startsWith(p)) { t = t.slice(p.length); changed = true; }
+    }
+    // A fence with a language tag ("```json..."): drop everything after the
+    // fence up to (and including) the first non-tag character run / newline.
+    if (t.startsWith("json") || t.startsWith("text") || t.startsWith("base64")) {
+      const endTag = t.search(/[\s`]/);
+      t = endTag === -1 ? "" : t.slice(endTag);
+      changed = true;
+    }
+    for (const p of ["```", "`", '"', "'"]) {
+      if (t.endsWith(p)) { t = t.slice(0, t.length - p.length); changed = true; }
+    }
+  }
+  return t;
+}
+
+function cleanseMinimaxReply(text: string): string {
+  const cleaned = text.replace(/[\u{3400}-\u{4dbf}\u{4e00}-\u{9fff}\u{f900}-\u{faff}\u{20000}-\u{2fa1f}\u{3000}\u{3001}\u{3002}\u{300c}\u{300d}\u{ff01}\u{ff0c}\u{ff1f}\u{2140}-\u{2aff}\u{a9}\u{26b3}]/gu, "");
+  if (cleaned === text) return text;
+  // Re-flow whitespace: strip leading/trailing spaces per line, collapse runs.
+  return cleaned
+    .split("\n")
+    .map((ln) => ln.replace(/^ +| +$/g, "").replace(/ +/g, " "))
+    .join("\n")
+    .replace(/^\n+|\n+$/g, "")
+    .trim();
+}
+
 /** Build a ChatModelAdapter that drives the given WS client. */
 export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAdapter {
   return {
     async *run({ messages, abortSignal }) {
       const content = lastUserText(messages as unknown as ChatModelRunOptionsMessages);
-      let text = "";
+      let raw = "";
       setForkyVisualState("think");
       let started = false;
+      const display = () => recoverEncodedReply(raw);
       for await (const event of client.runTurn(content, abortSignal)) {
         if (event.type === "status") {
           if (!started) {
@@ -398,24 +486,24 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
             setForkyVisualState("think");
           }
           yield {
-            content: text ? [{ type: "text", text }] : [],
+            content: raw ? [{ type: "text", text: display() }] : [],
             status: { type: "running" },
           } satisfies ChatModelRunResult;
         } else if (event.type === "delta") {
-          text += event.text;
+          raw += event.text;
           if (!started) {
             started = true;
             setForkyVisualState("talk");
           }
           yield {
-            content: [{ type: "text", text }],
+            content: [{ type: "text", text: display() }],
             status: { type: "running" },
           } satisfies ChatModelRunResult;
         } else if (event.type === "done") {
           setForkyVisualState("happy");
           window.setTimeout(() => setForkyVisualState("idle"), 1200);
           yield {
-            content: [{ type: "text", text }],
+            content: [{ type: "text", text: display() }],
             status: { type: "complete", reason: "stop" },
           } satisfies ChatModelRunResult;
           return;
@@ -438,8 +526,12 @@ function seedHistory(runtime: AssistantRuntime, history: ForkyHistoryMessage[]):
   const messages: Array<{ message: ReturnType<typeof fromThreadMessageLike>; parentId: string | null }> = [];
   let parentId: string | null = null;
   for (const item of history) {
+    // Old base64-wrapped replies persisted before the guard existed must render
+    // as readable text when replayed from history.
+    const content =
+      item.role === "assistant" ? recoverEncodedReply(item.content) : item.content;
     const message = fromThreadMessageLike(
-      { role: item.role, content: item.content },
+      { role: item.role, content },
       generateId(),
       { type: "complete", reason: "unknown" },
     );
