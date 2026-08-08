@@ -1,10 +1,12 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Pantalla 5: shell de la app (home, sidebar, topbar, switcher restaurante, Forky, logout).
-// Las páginas app requieren hidratación React: usar networkidle antes de interactuar.
+// Las páginas app requieren hidratación React antes de interactuar.
 
 async function goHome(page: import("@playwright/test").Page) {
   await page.goto("/app/backoffice", { waitUntil: "networkidle" });
+  await waitForHydration(page);
   await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
 }
 
@@ -79,21 +81,19 @@ test.describe("@edge Shell", () => {
     }
 
     await option.click();
-    // El cambio dispara reload de la app; esperar a que cargue de nuevo
-    await adminPage.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {});
-    await adminPage.waitForTimeout(1500);
-
-    const after = await adminPage.evaluate(async () => {
-      const res = await (await fetch("/api/admin/me", { credentials: "include" })).json();
-      return res.session.activeRestaurantId;
-    });
-    expect(after).not.toBe(before);
+    // El cambio dispara reload; verificar por polling hasta que el restaurante activo cambie
+    await expect(async () => {
+      const id = await adminPage.evaluate(async () => (await (await fetch("/api/admin/me", { credentials: "include" })).json()).session.activeRestaurantId);
+      expect(id).not.toBe(before);
+    }).toPass({ timeout: 20_000 });
 
     // Restaurar el restaurante original para no dejar estado alterado
     await adminPage.getByLabel("Restaurante").click();
     await adminPage.getByRole("option", { name: "Alqueria Villa Carmen" }).click();
-    await adminPage.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {});
-    await adminPage.waitForTimeout(1500);
+    await expect(async () => {
+      const id = await adminPage.evaluate(async () => (await (await fetch("/api/admin/me", { credentials: "include" })).json()).session.activeRestaurantId);
+      expect(id).toBe(before);
+    }).toPass({ timeout: 20_000 });
   });
 
   test("forky abre y cierra el asistente", async ({ adminPage }) => {

@@ -2,6 +2,8 @@
 # Backoffice dev server (3013) + Backend Go (8085). Sin preact.
 # Reutiliza la MySQL host (127.0.0.1:3306, schema newvillacarmen).
 # network_mode: host -> los puertos se bindan en el host directamente.
+#
+# Run: sudo docker compose --env-file /var/www/newvillacarmen/.env -f e2e.compose.yml up -d --build
 name: newvillacarmen-e2e
 
 services:
@@ -18,7 +20,7 @@ services:
       DB_HOST: 127.0.0.1
       DB_PORT: "3306"
       DB_USER: villacarmen
-      DB_PASSWORD: villacarmen
+      DB_PASSWORD: "${DB_PASSWORD:?Set DB_PASSWORD en /var/www/newvillacarmen/.env}"
       DB_NAME: newvillacarmen
       DEFAULT_RESTAURANT_ID: "1"
       PORT: "8085"

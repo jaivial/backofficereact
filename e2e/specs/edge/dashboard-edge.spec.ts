@@ -1,11 +1,12 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Pantalla 6: Dashboard. SSR con ?date=. Interacción real de navegación.
 
 async function openDash(page: import("@playwright/test").Page, url = "/app/dashboard") {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await waitForHydration(page);
   await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
-  await page.waitForTimeout(1000);
 }
 
 test.describe("@edge Dashboard", () => {

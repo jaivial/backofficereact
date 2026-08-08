@@ -1,11 +1,12 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Pantalla 12: Miembros.
 
 async function openMiembros(page: import("@playwright/test").Page, url = "/app/miembros") {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await waitForHydration(page);
   await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
-  await page.waitForTimeout(1800);
 }
 
 test.describe("@edge Miembros", () => {
@@ -28,7 +29,6 @@ test.describe("@edge Miembros", () => {
     await openMiembros(adminPage);
     await adminPage.getByTestId("tab-roles").click();
     await adminPage.waitForURL(/\/app\/miembros\/roles/, { timeout: 15_000 });
-    await adminPage.waitForTimeout(1200);
     await expect(adminPage.getByText(/roles y jerarqu/i).first()).toBeVisible({ timeout: 10_000 });
     await expect(adminPage.getByText(/\d+ roles/).first()).toBeVisible({ timeout: 10_000 });
   });

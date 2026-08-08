@@ -36,19 +36,17 @@ test.describe("@edge Auth & public pages", () => {
       await context.close();
     });
 
-    test("identificador con espacios alrededor no rompe el flujo", async ({ browser }) => {
+    test("identificador con espacios alrededor se recorta y hace login", async ({ browser }) => {
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       const page = await context.newPage();
       await page.goto("/login", { waitUntil: "networkidle" });
 
       await page.getByTestId("login-identifier-input").fill("  admin@villacarmen.com  ");
-      await page.getByTestId("login-password-input").fill("wrongpass");
+      await page.getByTestId("login-password-input").fill("admin123");
       await page.getByTestId("login-submit-btn").click();
 
-      // Sin trim el login falla (toast) pero NO debe crashear ni navegar fuera del dominio.
-      await page.waitForTimeout(1500);
-      const url = new URL(page.url());
-      expect(url.hostname).toBe("localhost");
+      // El backend recorta el identifier: login correcto y redirige a /app
+      await page.waitForURL("**/app/**", { timeout: 15_000 });
       await context.close();
     });
   });

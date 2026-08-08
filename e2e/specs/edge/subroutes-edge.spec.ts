@@ -1,11 +1,12 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Sub-rutas: comida detalle, facturas recurrentes, mi-horario, mapa de mesas.
 
 async function open(page: import("@playwright/test").Page, url: string) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await waitForHydration(page);
   await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
-  await page.waitForTimeout(1800);
 }
 
 test.describe("@edge Comida detalle", () => {
@@ -14,7 +15,6 @@ test.describe("@edge Comida detalle", () => {
     await adminPage.locator('button[aria-label^="Editar "]').first().click();
     await adminPage.waitForURL(/\/app\/comida\/platos\/\d+/, { timeout: 15_000 });
     await adminPage.getByTestId("topbar").waitFor({ timeout: 15_000 });
-    await adminPage.waitForTimeout(1200);
     await expect(adminPage.getByTestId("food-detail-topbar").or(adminPage.locator('[data-ui="food-detail-topbar"]')).first()).toBeVisible({ timeout: 15_000 });
   });
 
@@ -54,8 +54,10 @@ test.describe("@edge Mapa de mesas", () => {
   test("mapa renderiza nodos de mesa", async ({ adminPage }) => {
     // Página immersive: no tiene topbar; usa data-ui
     await adminPage.goto("/app/reservas/tables", { waitUntil: "domcontentloaded" });
+    await waitForHydration(adminPage);
     await expect(adminPage.locator('[data-ui="table-map-page"]')).toBeVisible({ timeout: 20_000 });
-    await adminPage.waitForTimeout(1200);
+    // Los nodos cargan tras el fetch de mesas: esperar el primero
+    await expect(adminPage.locator('[data-ui="table-node"]').first()).toBeVisible({ timeout: 15_000 });
     const nodes = await adminPage.locator('[data-ui="table-node"]').count();
     expect(nodes).toBeGreaterThan(0);
     await expect(adminPage.locator('[data-ui="add-table-top-btn"]')).toBeVisible({ timeout: 10_000 });

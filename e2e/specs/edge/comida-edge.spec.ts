@@ -1,11 +1,13 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Pantalla 9: Comida (hub + listas por tipo).
 
 async function openComida(page: import("@playwright/test").Page, url = "/app/comida") {
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
-  await page.waitForTimeout(1800);
+  await waitForHydration(page);
+  // Espera web-first: hub o grid según la ruta
+  await expect(page.locator('[data-ui="food-hub-section"]').or(page.locator('[data-ui="food-list-grid"]')).first()).toBeVisible({ timeout: 25_000 });
 }
 
 test.describe("@edge Comida", () => {
@@ -32,11 +34,9 @@ test.describe("@edge Comida", () => {
     const enabled = await next.isEnabled();
     if (enabled) {
       await next.click();
-      await adminPage.waitForTimeout(1200);
       const prev = adminPage.locator('[data-role="food-list-pager-prev"]');
       await expect(prev).toBeEnabled({ timeout: 10_000 });
       await prev.click();
-      await adminPage.waitForTimeout(1200);
       await expect(adminPage.locator('[data-ui="food-list-grid"]')).toBeVisible();
     }
   });

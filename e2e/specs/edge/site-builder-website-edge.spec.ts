@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Pantalla 22: Site Builder / Website.
 // /app/website usa pages/app/website/+Page.tsx (sin data-testid, assert por texto).
@@ -8,8 +9,8 @@ const ui = (name: string) => `[data-ui="${name}"]`;
 
 async function open(page: import("@playwright/test").Page, url: string) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await waitForHydration(page);
   await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
-  await page.waitForTimeout(1800);
 }
 
 test.describe("@edge Site Builder", () => {

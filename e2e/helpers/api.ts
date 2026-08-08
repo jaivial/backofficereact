@@ -35,3 +35,52 @@ export async function apiPost(
   const res = await page.request.post(absoluteUrl(path), { data: body });
   return res.json();
 }
+
+/** Fecha ISO local (YYYY-MM-DD) para una Date dada. */
+export function isoDate(d: Date): string {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+type BookingsDay = { success?: boolean; total_count?: number };
+
+/**
+ * Busca dinámicamente una fecha con reservas y una fecha sin reservas en la DB
+ * de dev, para que los tests no dependan de fechas hardcodeadas.
+ */
+export async function pickBookingDates(
+  page: Page
+): Promise<{ withBookings: string; empty: string }> {
+  const now = new Date();
+  const past: string[] = [];
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    past.push(isoDate(d));
+  }
+
+  let withBookings = past[0];
+  for (const date of past) {
+    const data = (await apiGet(page, `/api/admin/bookings?date=${date}&page=1&count=1`)) as BookingsDay;
+    if (data.success && (data.total_count ?? 0) > 0) {
+      withBookings = date;
+      break;
+    }
+  }
+
+  let empty = isoDate(now);
+  for (let i = 1; i <= 60; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + i);
+    const date = isoDate(d);
+    const data = (await apiGet(page, `/api/admin/bookings?date=${date}&page=1&count=1`)) as BookingsDay;
+    if (data.success && (data.total_count ?? 0) === 0) {
+      empty = date;
+      break;
+    }
+  }
+
+  return { withBookings, empty };
+}

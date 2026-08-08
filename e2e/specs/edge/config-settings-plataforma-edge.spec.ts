@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Pantallas 19-21: Config (+booking), Settings, Plataforma, Comsit.
 // Nota: estas páginas usan data-ui (no data-testid) para wrappers/paneles.
@@ -7,8 +8,8 @@ const ui = (name: string) => `[data-ui="${name}"]`;
 
 async function open(page: import("@playwright/test").Page, url: string) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await waitForHydration(page);
   await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
-  await page.waitForTimeout(1800);
 }
 
 test.describe("@edge Config", () => {
@@ -30,7 +31,6 @@ test.describe("@edge Config", () => {
   test("config restaurante renderiza paneles de horarios y limites", async ({ adminPage }) => {
     await open(adminPage, "/app/config");
     await adminPage.getByTestId("tab-restaurante").click();
-    await adminPage.waitForTimeout(800);
     await expect(adminPage.locator(ui("config-restaurante-hours-panel"))).toBeVisible({ timeout: 10_000 });
     await expect(adminPage.locator(ui("config-restaurante-limits-panel"))).toBeVisible({ timeout: 10_000 });
   });
@@ -62,7 +62,7 @@ test.describe("@edge Plataforma", () => {
   test("navegar a tab de restaurantes", async ({ adminPage }) => {
     await open(adminPage, "/app/plataforma");
     await adminPage.locator(ui("platform-tab-restaurants")).click();
-    await adminPage.waitForTimeout(1000);
+    await expect(adminPage.locator(ui("restaurants-tab"))).toBeVisible({ timeout: 10_000 });
     await expect(adminPage.locator(ui("platform-page"))).toBeVisible({ timeout: 10_000 });
   });
 });

@@ -1,11 +1,12 @@
 import { test, expect } from "../../fixtures/session";
+import { waitForHydration } from "../../helpers/wait";
 
 // Pantallas 15-18: Facturas, Estadisticas, Estado de Cuenta, Reportes.
 
 async function open(page: import("@playwright/test").Page, url: string) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await waitForHydration(page);
   await page.getByTestId("topbar").waitFor({ timeout: 20_000 });
-  await page.waitForTimeout(1800);
 }
 
 test.describe("@edge Facturas", () => {
@@ -16,12 +17,12 @@ test.describe("@edge Facturas", () => {
     await expect(adminPage.getByTestId("invoice-filter-search-input")).toBeVisible({ timeout: 10_000 });
   });
 
-  test("toggle de filtros de facturas", async ({ adminPage }) => {
+  test("toggle de filtros de facturas presente y clickable", async ({ adminPage }) => {
     await open(adminPage, "/app/facturas");
-    await adminPage.getByTestId("invoice-filters-toggle-btn").click();
-    await adminPage.waitForTimeout(500);
-    await adminPage.getByTestId("invoice-filters-toggle-btn").click();
-    await adminPage.waitForTimeout(500);
+    const toggle = adminPage.getByTestId("invoice-filters-toggle-btn");
+    await expect(toggle).toBeVisible({ timeout: 10_000 });
+    await expect(toggle).toBeEnabled();
+    await toggle.click();
     await expect(adminPage.getByTestId("tab-resumen")).toBeVisible();
   });
 });
