@@ -4816,6 +4816,7 @@ export default function TableManagerPage() {
                         id="table-number"
                         className="bo-input"
                         placeholder="4, 4B, 4-B..."
+                        maxLength={32}
                         value={draft.numeroMesa}
                         onChange={(e) => setDraft((prev) => ({ ...prev, numeroMesa: e.target.value }))}
                       />
