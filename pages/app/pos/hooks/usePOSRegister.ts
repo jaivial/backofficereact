@@ -24,7 +24,7 @@ export function money(cents: number): string {
  * Register state for the POS sell screen: bootstrap data, current visit/ticket,
  * split tickets, payments and kitchen dispatch. Extracted from pos.tsx.
  */
-export function usePOSRegister() {
+export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
@@ -63,10 +63,10 @@ export function usePOSRegister() {
   const load = useCallback(async () => {
     setError("");
     try {
-      const data = await request<Bootstrap>("/bootstrap");
+      const data = await request<Bootstrap>(date ? `/bootstrap?date=${encodeURIComponent(date)}` : "/bootstrap");
       setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
-  }, []);
+  }, [date]);
   useEffect(() => { void load(); }, [load]);
 
   const filteredProducts = useMemo(() => products.filter((product) => product.isActive && product.name.toLowerCase().includes(query.trim().toLowerCase())), [products, query]);
