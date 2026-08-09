@@ -23,16 +23,3 @@ export const Default: Story = {
     onNextMonth: () => {},
   },
 };
-
-export const WithOpenDay: Story = {
-  name: "Con el día en curso abierto",
-  args: {
-    ...Default.args,
-    liveDay: {
-      id: 900, date: "2026-03-07", status: "OPEN", openedBy: 7, openedByName: "Ana",
-      closedBy: null, closedByName: "", openingCashCents: 10000,
-      openedAt: "2026-03-07T08:00:00Z", closedAt: null, forcedOpen: false, notes: null,
-      totalGrossCents: 128400, ticketCount: 42, covers: 96,
-    },
-  },
-};

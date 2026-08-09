@@ -1,8 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { createClient } from "../../api/client";
-import type { POSCashDay } from "../../api/types";
+import type { CalendarDay, POSCashDay } from "../../api/types";
+import { cn } from "../shadcn/utils";
 import { MonthCalendar } from "./MonthCalendar";
+
+/**
+ * The reservations payload drives the lock icon and the pax ratio, both of
+ * which this calendar replaces. Hoisted so MonthCalendar's memo is not defeated
+ * by a fresh array identity on every render.
+ */
+const NO_RESERVATION_DAYS: CalendarDay[] = [];
 
 const eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
@@ -22,11 +30,6 @@ export type POSCashDayCalendarProps = {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   className?: string;
-  /**
-   * Day pushed by the live cash day state. It overrides whatever the month
-   * request returned, so opening the till repaints its own cell at once.
-   */
-  liveDay?: POSCashDay | null;
 };
 
 /**
@@ -35,7 +38,7 @@ export type POSCashDayCalendarProps = {
  * `dayClassName` hooks so the reservations calendar keeps its own subtitle and
  * occupancy tones untouched.
  */
-export function POSCashDayCalendar({ year, month, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, className, liveDay }: POSCashDayCalendarProps) {
+export function POSCashDayCalendar({ year, month, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, className }: POSCashDayCalendarProps) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [days, setDays] = useState<POSCashDay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,9 +67,8 @@ export function POSCashDayCalendar({ year, month, selectedDateISO, onSelectDate,
   const byDate = useMemo(() => {
     const map = new Map<string, POSCashDay>();
     for (const day of days) map.set(day.date, day);
-    if (liveDay) map.set(liveDay.date, liveDay);
     return map;
-  }, [days, liveDay]);
+  }, [days]);
 
   const renderDaySub = useCallback((dateISO: string) => {
     const day = byDate.get(dateISO);
@@ -85,21 +87,29 @@ export function POSCashDayCalendar({ year, month, selectedDateISO, onSelectDate,
     return day.status === "OPEN" ? "is-cashOpen" : "is-cashClosed";
   }, [byDate]);
 
+  // MonthCalendar's own name reads "abierto" for every day here, because no
+  // reservations payload is passed. That is the opposite of what the cell says
+  // for a day the till never opened.
+  const dayAriaLabel = useCallback((dateISO: string) => {
+    const day = byDate.get(dateISO);
+    if (!day) return `${dateISO}: sin caja`;
+    return `${dateISO}: caja ${day.status === "OPEN" ? "abierta" : "cerrada"}, ${eur.format((day.totalGrossCents || 0) / 100)}`;
+  }, [byDate]);
+
   return (
     <MonthCalendar
       year={year}
       month={month}
-      // The reservations payload drives the lock icon and the pax ratio, both of
-      // which this calendar replaces. An empty list keeps every day selectable.
-      days={[]}
+      days={NO_RESERVATION_DAYS}
       selectedDateISO={selectedDateISO}
       onSelectDate={onSelectDate}
       onPrevMonth={onPrevMonth}
       onNextMonth={onNextMonth}
       loading={loading}
-      className={className}
+      className={cn("bo-mcal--cash", className)}
       renderDaySub={renderDaySub}
       dayClassName={dayClassName}
+      dayAriaLabel={dayAriaLabel}
     />
   );
 }

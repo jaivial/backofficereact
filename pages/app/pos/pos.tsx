@@ -96,9 +96,12 @@ export default function Page() {
   }, [activeDate]);
 
   // A date with no till open cannot take sales, so the sell screen is replaced
-  // by the gate rather than shown behind it.
-  const needsCashDay = scopeReady && !cashDayState.loading && !cashDayState.cashDay;
-  const openDay = useCallback(async (openingCashCents: number) => cashDayState.openDay({ openingCashCents }), [cashDayState]);
+  // by the gate rather than shown behind it. Deliberately not conditioned on
+  // `loading`: every date change flips loading back on for a render, and
+  // dropping the gate meanwhile would expose a live sell screen scoped to the
+  // day the operator just left.
+  const needsCashDay = scopeReady && !cashDayState.cashDay;
+  const openDay = useCallback(async (openingCashCents: number) => cashDayState.openDay({ openingCashCents }), [cashDayState.openDay]);
   const pickDate = useCallback((iso: string) => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -146,7 +149,7 @@ export default function Page() {
     <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span><POSSectionMenu section={section} onChange={setSection}/></header>
     {error?<div className="mb-4 rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-error">{error}</div>:null}{message?<div className="mb-4 rounded-lg border border-[var(--bo-color-success)] p-3 text-[var(--bo-text-success)]" role="status" data-ui="pos-message">{message}</div>:null}
 
-    {section==="sell"&&scopeReady?(needsCashDay?<POSNoCashDayModal date={activeDate||""} error={cashDayState.error} liveDay={cashDayState.cashDay} onOpenDay={openDay} onPickDate={pickDate}/>:<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>):null}
+    {section==="sell"&&scopeReady?(needsCashDay?(activeDate?<POSNoCashDayModal date={activeDate} error={cashDayState.error} onOpenDay={openDay} onPickDate={pickDate}/>:<section className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4" data-ui="pos-cash-day-unavailable"><h2 className="font-semibold text-[var(--bo-text)]" data-ui="pos-cash-day-unavailable-title">No se pudo determinar el día de caja</h2><p className="mt-1 text-sm text-[var(--bo-muted)]" data-ui="pos-cash-day-unavailable-detail">{cashDayState.error||"Sin respuesta del servidor."}</p><button className="mt-3 min-h-11 rounded-lg border border-[var(--bo-border-2)] px-4 text-[var(--bo-accent)]" type="button" onClick={()=>void cashDayState.refresh()} data-ui="pos-cash-day-retry" data-testid="pos-cash-day-retry">Reintentar</button></section>):<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>):null}
 
     {section==="kitchen"?<KitchenDisplay/>:null}
 

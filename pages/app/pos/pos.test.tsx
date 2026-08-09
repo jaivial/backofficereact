@@ -5,16 +5,6 @@ import { Provider } from "jotai";
 
 import Page from "./pos";
 
-vi.mock("lucide-react", async () => {
-  const { createElement } = await import("react");
-  const icon = (name: string) => (props: Record<string, unknown>) => createElement("span", { "data-icon": name, ...props });
-  return {
-    Delete: icon("delete"), LayoutGrid: icon("layout-grid"), Maximize2: icon("maximize"), Minimize2: icon("minimize"),
-    Minus: icon("minus"), Plus: icon("plus"), Receipt: icon("receipt"), Trash2: icon("trash"), Users: icon("users"), X: icon("x"),
-    CreditCard: icon("card"), Search: icon("search"), UtensilsCrossed: icon("utensils"), Upload: icon("upload"), MoreVertical: icon("more"),
-  };
-});
-
 const bootstrap = {
   success: true,
   settings: { isEnabled: true, stockMode: "SHADOW", coversMode: "SHADOW", timezone: "Europe/Madrid", businessDayCutoff: "05:00" },
@@ -31,6 +21,10 @@ const openCashDay = {
 
 describe("POSPage", () => {
   beforeEach(() => {
+    // The page writes the resolved business date back into the URL, and jsdom
+    // keeps it for the rest of the file: without this every later test would
+    // start already scoped to whatever day the previous one landed on.
+    window.history.replaceState(null, "", "/app/pos");
     vi.stubGlobal("crypto", { randomUUID: () => "command-1" });
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -92,6 +86,42 @@ describe("POSPage", () => {
     render(<Provider><Page /></Provider>);
     expect(await screen.findByTestId("pos-no-cash-day-modal")).toBeInTheDocument();
     expect(screen.getByTestId("pos-no-cash-day-title")).toHaveTextContent("17 de febrero de 2026");
+    expect(screen.queryByTestId("pos-sell-screen")).toBeNull();
+  });
+
+  // Changing the date puts the cash day hook back into loading for a render.
+  // If the gate lifted meanwhile, a live sell screen scoped to the day the
+  // operator just left would be on screen and taking orders.
+  it("keeps the gate up while a date change is still in flight", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/cash-days/current")) return new Response(JSON.stringify({ success: true, date: "2026-02-17", cashDay: null, unclosedPrevious: [] }));
+      if (url.includes("/bootstrap")) return new Response(JSON.stringify(bootstrap));
+      return new Response(JSON.stringify({ success: true, items: [] }));
+    }));
+    render(<Provider><Page /></Provider>);
+    await screen.findByTestId("pos-no-cash-day-modal");
+
+    fireEvent.click(screen.getByTestId("pos-no-cash-day-picker"));
+    fireEvent.click(await screen.findByTestId("month-calendar-day-20"));
+
+    // Synchronously after the click the refetch is in flight and unanswered.
+    expect(screen.getByTestId("pos-no-cash-day-modal")).toBeInTheDocument();
+    expect(screen.queryByTestId("pos-sell-screen")).toBeNull();
+  });
+
+  // A cash day that never resolves leaves no date to gate on, and opening a
+  // day with no date would let the server pick one.
+  it("offers a retry instead of a dateless gate when the cash day fails", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/cash-days/current")) return new Response(JSON.stringify({ success: false, error: "Servidor caído" }), { status: 500 });
+      if (url.includes("/bootstrap")) return new Response(JSON.stringify(bootstrap));
+      return new Response(JSON.stringify({ success: true, items: [] }));
+    }));
+    render(<Provider><Page /></Provider>);
+    expect(await screen.findByTestId("pos-cash-day-retry")).toBeInTheDocument();
+    expect(screen.queryByTestId("pos-no-cash-day-modal")).toBeNull();
     expect(screen.queryByTestId("pos-sell-screen")).toBeNull();
   });
 });

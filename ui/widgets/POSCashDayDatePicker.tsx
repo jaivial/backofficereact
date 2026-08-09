@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { CalendarDays } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import type { POSCashDay } from "../../api/types";
 import { cn } from "../shadcn/utils";
 import { POSCashDayCalendar } from "./POSCashDayCalendar";
 
@@ -12,7 +11,6 @@ type Pos = { top: number; left: number };
 type POSCashDayDatePickerProps = {
   value: string;
   onChange: (iso: string) => void;
-  liveDay?: POSCashDay | null;
   disabled?: boolean;
   popoverOffsetX?: number;
   id?: string;
@@ -42,7 +40,6 @@ function formatDateLabel(iso: string): string {
 export function POSCashDayDatePicker({
   value,
   onChange,
-  liveDay,
   disabled = false,
   popoverOffsetX = 0,
   id,
@@ -70,11 +67,13 @@ export function POSCashDayDatePicker({
     const el = btnRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const popH = 400;
+    // Taller than the reservations popover: the cash cells carry two lines of
+    // detail, so a six-week month needs about 415px.
+    const popH = 440;
     const spaceBelow = window.innerHeight - r.bottom - 8;
     setPos({
       top: spaceBelow < popH ? Math.max(8, r.top - 8 - popH) : r.bottom + 8,
-      left: clamp(r.left + popoverOffsetX, 8, window.innerWidth - 360 - 8),
+      left: clamp(r.left + popoverOffsetX, 8, window.innerWidth - 344 - 8),
     });
   }, [open, popoverOffsetX]);
 
@@ -141,7 +140,6 @@ export function POSCashDayDatePicker({
           onSelectDate={handleSelectDate}
           onPrevMonth={prevMonth}
           onNextMonth={nextMonth}
-          liveDay={liveDay}
         />
       </motion.div>
     </AnimatePresence>,

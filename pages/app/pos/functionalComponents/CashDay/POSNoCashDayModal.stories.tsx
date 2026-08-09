@@ -1,13 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { POSNoCashDayModal } from "./POSNoCashDayModal";
-import "../../../../../components/styles/features/pos/sell-screen.css";
 import "../../../../../components/styles/features/pos/cash-day.css";
 
 const meta = {
   title: "pos/CashDay/POSNoCashDayModal",
   component: POSNoCashDayModal,
   tags: ["autodocs"],
-  parameters: { layout: "fullscreen" },
+  parameters: { layout: "padded" },
 } satisfies Meta<typeof POSNoCashDayModal>;
 
 export default meta;

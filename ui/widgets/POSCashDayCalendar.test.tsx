@@ -54,23 +54,49 @@ describe("POSCashDayCalendar", () => {
   });
 
   // The reservations palette answers a different question; painting both on the
-  // same cell would make neither readable.
-  it("never paints the reservations occupancy tones", async () => {
-    vi.stubGlobal("fetch", mockList([day("2026-03-07", "OPEN", 999999)]));
-    const { container } = render(<POSCashDayCalendar {...base} />);
-    await waitFor(() => expect(screen.getByTestId("month-calendar-day-7")).toHaveClass("is-cashOpen"));
+  // same cell would make neither readable. Driven through MonthCalendar with a
+  // payload that does produce a tone, so the assertion can actually fail.
+  it("never paints the reservations occupancy tones", () => {
+    const busy: CalendarDay[] = [
+      { date: "2026-03-05", total_people: 55, limit: 60, is_open: true } as CalendarDay,
+      { date: "2026-03-06", total_people: 0, limit: 60, is_open: false } as CalendarDay,
+    ];
+    const { container } = render(
+      <MonthCalendar
+        year={2026} month={3} days={busy} selectedDateISO="2026-03-05"
+        onSelectDate={noop} onPrevMonth={noop} onNextMonth={noop} loading={false}
+        dayClassName={() => "is-noCash"}
+      />,
+    );
     expect(container.querySelectorAll("[class*='occ-']")).toHaveLength(0);
+    expect(screen.getByTestId("month-calendar-day-6")).not.toHaveClass("is-closed");
+    expect(screen.getByTestId("month-calendar-day-5")).toHaveClass("is-noCash");
   });
 
-  // Opening the till must repaint its own cell without waiting for the month
-  // request to be issued again.
-  it("lets the live day override the month payload", async () => {
+  // MonthCalendar's own name reads "abierto" for every cell here, because no
+  // reservations payload is passed — the opposite of what a day with no till
+  // shows on screen.
+  it("names each day by its cash state, not by the reservations default", async () => {
+    vi.stubGlobal("fetch", mockList([day("2026-03-05", "CLOSED", 128400), day("2026-03-07", "OPEN", 4250)]));
+    render(<POSCashDayCalendar {...base} />);
+    await waitFor(() => expect(screen.getByTestId("month-calendar-day-5")).toHaveAttribute("aria-label", expect.stringContaining("caja cerrada")));
+    expect(screen.getByTestId("month-calendar-day-7")).toHaveAttribute("aria-label", expect.stringContaining("caja abierta"));
+    expect(screen.getByTestId("month-calendar-day-9")).toHaveAttribute("aria-label", "2026-03-09: sin caja");
+    expect(screen.getByTestId("month-calendar-day-9").getAttribute("aria-label")).not.toContain("abierto");
+  });
+
+  // `.bo-mcal--glass .bo-mcalCell.is-selected.is-open` in stepper.css paints the
+  // selected day the reservations green. Every cell here would carry `is-open`,
+  // so the selected day would claim the till was open on a day it never was.
+  it("carries none of the reservations state classes", async () => {
     vi.stubGlobal("fetch", mockList([day("2026-03-07", "CLOSED", 100)]));
-    const { rerender } = render(<POSCashDayCalendar {...base} />);
-    await waitFor(() => expect(screen.getByTestId("month-calendar-day-7")).toHaveTextContent("Cerrado"));
-    rerender(<POSCashDayCalendar {...base} liveDay={day("2026-03-07", "OPEN", 50000) as never} />);
-    expect(screen.getByTestId("month-calendar-day-7")).toHaveTextContent("Abierto");
-    expect(screen.getByTestId("month-calendar-day-7")).toHaveClass("is-cashOpen");
+    render(<POSCashDayCalendar {...base} />);
+    await waitFor(() => expect(screen.getByTestId("month-calendar-day-7")).toHaveClass("is-cashClosed"));
+    expect(screen.getByTestId("month-calendar")).toHaveClass("bo-mcal--cash");
+    expect(screen.getByTestId("month-calendar-day-7")).toHaveClass("is-selected");
+    expect(screen.getByTestId("month-calendar-day-7")).not.toHaveClass("is-open");
+    expect(screen.getByTestId("month-calendar-day-9")).not.toHaveClass("is-open");
+    expect(screen.getByTestId("month-calendar-day-9")).not.toHaveClass("is-closed");
   });
 
   // A month that fails to load must still let the user reach a day that exists.
@@ -96,6 +122,12 @@ describe("MonthCalendar without the POS props", () => {
     render(<MonthCalendar year={2026} month={3} days={days} selectedDateISO="2026-03-05" onSelectDate={noop} onPrevMonth={noop} onNextMonth={noop} loading={false} />);
     expect(screen.getByTestId("month-calendar-day-5")).toHaveTextContent("30/60");
     expect(screen.getByTestId("month-calendar-day-5")).toHaveClass("occ-50");
+  });
+
+  it("keeps the reservations state classes", () => {
+    render(<MonthCalendar year={2026} month={3} days={days} selectedDateISO="2026-03-05" onSelectDate={noop} onPrevMonth={noop} onNextMonth={noop} loading={false} />);
+    expect(screen.getByTestId("month-calendar-day-5")).toHaveClass("is-open");
+    expect(screen.getByTestId("month-calendar-day-6")).toHaveClass("is-closed");
   });
 
   it("keeps the lock on a closed day", () => {

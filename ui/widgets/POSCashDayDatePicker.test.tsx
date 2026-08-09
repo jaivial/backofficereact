@@ -20,7 +20,8 @@ describe("POSCashDayDatePicker", () => {
   it("uses the same popover shell as the reservations picker", async () => {
     render(<POSCashDayDatePicker value="2026-03-07" onChange={() => {}} data-testid="picker" />);
     await open();
-    expect(document.querySelector("[data-ui='date-picker-popover']")?.className).toBe("bo-datePop bo-datePop--glass bo-datePop--mcal");
+    const popover = document.querySelector("[data-ui='date-picker-popover']");
+    expect(popover).toHaveClass("bo-datePop", "bo-datePop--glass", "bo-datePop--mcal");
   });
 
   it("opens on the month of the selected day", async () => {
