@@ -1,0 +1,54 @@
+/*
+ * Cash day tones for the POS calendar.
+ *
+ * These sit alongside the reservations `occ-*` tones on the same `.bo-mcalCell`
+ * base without replacing them: the two calendars answer different questions
+ * (how full the day is vs. whether the till is sealed) and a day can only ever
+ * be painted by one of them at a time.
+ */
+
+.bo-mcalCell.is-cashOpen {
+  background: rgba(72, 199, 142, 0.16);
+  border-color: rgba(72, 199, 142, 0.28);
+}
+
+.bo-mcalCell.is-cashClosed {
+  background: rgba(120, 132, 158, 0.14);
+  border-color: rgba(120, 132, 158, 0.24);
+}
+
+/* A day the till never opened reads as absent, not as an empty day of takings. */
+.bo-mcalCell.is-noCash {
+  opacity: 0.45;
+}
+
+.bo-cashDaySub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.15;
+  width: 100%;
+}
+
+.bo-cashDayState {
+  font-weight: 760;
+  font-size: clamp(8px, 2.1vw, 10px);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.bo-mcalCell.is-cashOpen .bo-cashDayState {
+  color: var(--bo-text-success);
+}
+
+.bo-mcalCell.is-cashClosed .bo-cashDayState {
+  color: var(--bo-muted);
+}
+
+.bo-cashDayTotal {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: clamp(9px, 2.4vw, 12px);
+  color: var(--bo-text);
+}

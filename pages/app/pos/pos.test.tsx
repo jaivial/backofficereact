@@ -23,12 +23,21 @@ const bootstrap = {
   tables: [{ id: 7, name: "Mesa 1", capacity: 4, occupied: false }],
 };
 
+const openCashDay = {
+  id: 900, date: "2026-07-27", status: "OPEN", openedBy: 7, openedByName: "Ana",
+  closedBy: null, closedByName: "", openingCashCents: 0, openedAt: "2026-07-27T08:00:00Z",
+  closedAt: null, forcedOpen: false, notes: null, totalGrossCents: 0, ticketCount: 0, covers: 0,
+};
+
 describe("POSPage", () => {
   beforeEach(() => {
     vi.stubGlobal("crypto", { randomUUID: () => "command-1" });
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.endsWith("/bootstrap")) return new Response(JSON.stringify(bootstrap));
+      // The sell screen is gated behind an open cash day, so these tests have
+      // to stand a till up before they can reach it.
+      if (url.includes("/cash-days/current")) return new Response(JSON.stringify({ success: true, date: "2026-07-27", cashDay: openCashDay, unclosedPrevious: [] }));
+      if (url.includes("/bootstrap")) return new Response(JSON.stringify(bootstrap));
       if (url.includes("/reservations/eligible")) return new Response(JSON.stringify({ success: true, items: [{ id: 22, customerName: "Ana", reservationDate: "2026-07-27", reservationTime: "14:00", partySize: 3, status: "confirmed" }] }));
       if (url.endsWith("/visits") && init?.method === "POST") return new Response(JSON.stringify({ success: true, visit: { id: 10, covers: 2, tableId: 7 }, ticket: { id: 11, version: 1, status: "OPEN", lines: [], totalGrossCents: 0 } }), { status: 201 });
       if (url.includes("/lines") && init?.method === "POST") return new Response(JSON.stringify({ success: true, ticket: { id: 11, version: 2, status: "OPEN", lines: [{ id: 12, productName: "Agua", quantity: 1, unitPriceGrossCents: 250, lineTotalGrossCents: 250, status: "ACTIVE" }], totalGrossCents: 250 } }), { status: 201 });
@@ -69,5 +78,20 @@ describe("POSPage", () => {
     await waitFor(() => expect(screen.getByTestId("pos-ticket-panel")).toHaveTextContent("Agua"));
     fireEvent.click(screen.getByTestId("pos-rail-cocina"));
     await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/admin/pos/tickets/11/kitchen-dispatches", expect.objectContaining({ method: "POST" })));
+  });
+
+  // Without a till open there is nothing to book the sales against, so the gate
+  // replaces the sell screen instead of sitting on top of a usable one.
+  it("gates the sell screen when the day has no cash day", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/cash-days/current")) return new Response(JSON.stringify({ success: true, date: "2026-02-17", cashDay: null, unclosedPrevious: [] }));
+      if (url.includes("/bootstrap")) return new Response(JSON.stringify(bootstrap));
+      return new Response(JSON.stringify({ success: true, items: [] }));
+    }));
+    render(<Provider><Page /></Provider>);
+    expect(await screen.findByTestId("pos-no-cash-day-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("pos-no-cash-day-title")).toHaveTextContent("17 de febrero de 2026");
+    expect(screen.queryByTestId("pos-sell-screen")).toBeNull();
   });
 });

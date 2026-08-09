@@ -19,6 +19,13 @@ type MonthCalendarProps = {
   className?: string;
   /** Optional per-day tooltip content shown on hover/tap. Return null to skip a day. */
   renderDayTooltip?: (dateISO: string) => React.ReactNode;
+  /**
+   * Replaces the contents of `.bo-mcalSub`. Callers that do not pass it keep
+   * the reservations subtitle (lock icon or pax ratio) untouched.
+   */
+  renderDaySub?: (dateISO: string) => React.ReactNode;
+  /** Extra per-day classes, for palettes other than the reservations `occ-*` tones. */
+  dayClassName?: (dateISO: string) => string;
 };
 
 type MonthCalendarCell =
@@ -74,6 +81,7 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
   onDayEnter,
   onDayLeave,
   setCellRef,
+  renderDaySub,
 }: {
   cells: MonthCalendarCell[];
   onSelectDate: (dateISO: string) => void;
@@ -81,6 +89,7 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
   onDayEnter?: (dateISO: string) => void;
   onDayLeave?: () => void;
   setCellRef?: (dateISO: string, el: HTMLButtonElement | null) => void;
+  renderDaySub?: (dateISO: string) => React.ReactNode;
 }) {
   const handleSelectDate = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -125,7 +134,9 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
           >
             <div className="bo-mcalNum" data-slot="month-calendar-day-number">{cell.day}</div>
             <div className="bo-mcalSub" data-slot="month-calendar-day-sub">
-              {!cell.isOpen ? <Lock className="bo-ico" /> : <span className="bo-mcalRatio" data-slot="month-calendar-day-ratio">{cell.ratioLabel}</span>}
+              {renderDaySub
+                ? renderDaySub(cell.dateISO)
+                : !cell.isOpen ? <Lock className="bo-ico" /> : <span className="bo-mcalRatio" data-slot="month-calendar-day-ratio">{cell.ratioLabel}</span>}
             </div>
           </button>
         );
@@ -136,7 +147,7 @@ const MonthCalendarGrid = memo(function MonthCalendarGrid({
 
 MonthCalendarGrid.displayName = "MonthCalendarGrid";
 
-function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, loading, className, renderDayTooltip }: MonthCalendarProps) {
+function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDate, onPrevMonth, onNextMonth, loading, className, renderDayTooltip, renderDaySub, dayClassName }: MonthCalendarProps) {
   // "today" is cosmetic only — compute it client-side to avoid SSR hydration mismatch
   // caused by server (UTC) and browser (local) timezone differences crossing midnight.
   const [today, setToday] = useState<string | null>(null);
@@ -217,6 +228,7 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
           isToday ? "is-today" : "",
           !isOpen ? "is-closed" : "is-open",
           occClass,
+          dayClassName ? dayClassName(dateISO) : "",
         ]
           .filter(Boolean)
           .join(" "),
@@ -227,7 +239,7 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
     }
 
     return nextCells;
-  }, [days, month, selectedDateISO, today, year]);
+  }, [dayClassName, days, month, selectedDateISO, today, year]);
 
   return (
     <section className={cn("bo-mcal bo-mcal--glass", className)} aria-label="Calendario mensual" aria-busy={loading} data-testid="month-calendar">
@@ -258,6 +270,7 @@ function MonthCalendarComponent({ year, month, days, selectedDateISO, onSelectDa
         onDayEnter={renderDayTooltip ? handleDayEnter : undefined}
         onDayLeave={renderDayTooltip ? handleDayLeave : undefined}
         setCellRef={renderDayTooltip ? setCellRef : undefined}
+        renderDaySub={renderDaySub}
       />
 
       {typeof document !== "undefined" && tooltipContent && popoverPos

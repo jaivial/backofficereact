@@ -9,6 +9,8 @@ import { KitchenSettings } from "./functionalComponents/KitchenSettings/KitchenS
 import { CardReconciliation } from "./functionalComponents/CardReconciliation/CardReconciliation";
 import { CashControl } from "./functionalComponents/CashControl/CashControl";
 import { usePOSCashDay, isValidPOSDate } from "./hooks/usePOSCashDay";
+import { POSNoCashDayModal } from "./functionalComponents/CashDay/POSNoCashDayModal";
+import "../../../components/styles/features/pos/cash-day.css";
 
 type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string };
 type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean };
@@ -50,7 +52,7 @@ function dateFromLocation(): string | null {
 }
 
 export default function Page() {
-  const [requestedDate] = useState<string | null>(dateFromLocation);
+  const [requestedDate, setRequestedDate] = useState<string | null>(dateFromLocation);
   const cashDayState = usePOSCashDay(requestedDate);
   const activeDate = cashDayState.date;
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -93,6 +95,19 @@ export default function Page() {
     window.history.replaceState(window.history.state, "", url.toString());
   }, [activeDate]);
 
+  // A date with no till open cannot take sales, so the sell screen is replaced
+  // by the gate rather than shown behind it.
+  const needsCashDay = scopeReady && !cashDayState.loading && !cashDayState.cashDay;
+  const openDay = useCallback(async (openingCashCents: number) => cashDayState.openDay({ openingCashCents }), [cashDayState]);
+  const pickDate = useCallback((iso: string) => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("date", iso);
+      window.history.replaceState(window.history.state, "", url.toString());
+    }
+    setRequestedDate(iso);
+  }, []);
+
   const load = useCallback(async () => {
     if (!scopeReady) return;
     setError("");
@@ -131,7 +146,7 @@ export default function Page() {
     <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span><POSSectionMenu section={section} onChange={setSection}/></header>
     {error?<div className="mb-4 rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-error">{error}</div>:null}{message?<div className="mb-4 rounded-lg border border-[var(--bo-color-success)] p-3 text-[var(--bo-text-success)]" role="status" data-ui="pos-message">{message}</div>:null}
 
-    {section==="sell"&&scopeReady?<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>:null}
+    {section==="sell"&&scopeReady?(needsCashDay?<POSNoCashDayModal date={activeDate||""} error={cashDayState.error} liveDay={cashDayState.cashDay} onOpenDay={openDay} onPickDate={pickDate}/>:<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>):null}
 
     {section==="kitchen"?<KitchenDisplay/>:null}
 
