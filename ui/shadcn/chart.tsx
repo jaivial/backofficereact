@@ -164,12 +164,29 @@ export type ChartLegendContentProps = React.HTMLAttributes<HTMLDivElement> & {
   nameKey?: string;
 };
 
+// Recharts injects internal props into the Legend `content` render prop. They are
+// not valid DOM attributes and React logs "does not recognize the prop" errors
+// if they reach the DOM node, so they must be stripped before spreading.
+const RECHARTS_LEGEND_PROPS = [
+  "iconSize",
+  "inactiveColor",
+  "itemSorter",
+  "chartWidth",
+  "chartHeight",
+  "payload",
+  "verticalAlign",
+] as const;
+
 export function ChartLegendContent({ payload, verticalAlign = "bottom", nameKey, className, ...props }: ChartLegendContentProps) {
   const { config } = useChart();
   if (!payload?.length) return null;
 
+  const domProps = Object.fromEntries(
+    Object.entries(props).filter(([key]) => !(RECHARTS_LEGEND_PROPS as readonly string[]).includes(key)),
+  );
+
   return (
-    <div role="list" aria-label="Leyenda del gráfico" className={cn("flex items-center justify-center gap-4", verticalAlign === "top" ? "pb-3" : "pt-3", className)} data-ui="chart-legend-content" {...props}>
+    <div role="list" aria-label="Leyenda del gráfico" className={cn("flex items-center justify-center gap-4", verticalAlign === "top" ? "pb-3" : "pt-3", className)} data-ui="chart-legend-content" {...domProps}>
       {payload.map((item, index) => {
         const key = String(nameKey ? item[nameKey as keyof LegendPayloadItem] ?? item.dataKey ?? "" : item.dataKey ?? "");
         const itemConfig = config[key];
