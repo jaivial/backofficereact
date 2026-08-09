@@ -1872,6 +1872,13 @@
   padding: 12px;
   background: rgba(255, 255, 255, 0.02);
   min-width: 0;
+  width: 100%;
+  min-height: 264px;
+  display: block;
+}
+
+.bo-labourReportChart .recharts-responsive-container {
+  min-width: 0;
 }
 
 .bo-labourReportBalance {
