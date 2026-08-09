@@ -2201,3 +2201,79 @@ export type LegalPageUpsertRequest = {
   contentJson: string;
   contentHtml: string;
 };
+
+/**
+ * A POS cash day: the accounting unit the till opens in the morning and seals
+ * with a Z closure at night. `date` is the business date, which after the
+ * cutoff is not the same as the calendar day.
+ */
+export type POSCashDay = {
+  id: number;
+  date: string;
+  status: "OPEN" | "CLOSED";
+  openedBy: number;
+  openedByName: string;
+  closedBy: number | null;
+  closedByName: string;
+  openingCashCents: number;
+  openedAt: string;
+  closedAt: string | null;
+  forcedOpen: boolean;
+  notes: string | null;
+  /**
+   * Headline figures. Only `GET /pos/cash-days/current` and the range report
+   * enrich the day with them; the open/close responses and their socket frames
+   * carry the bare day, so a consumer must be ready for them to be absent.
+   */
+  totalGrossCents?: number;
+  ticketCount?: number;
+  covers?: number;
+};
+
+/** Headline figures of a day, as pushed by `pos_cash_day_totals`. */
+export type POSCashDayTotals = {
+  date: string;
+  totalGrossCents: number;
+  ticketCount: number;
+  covers: number;
+};
+
+export type POSCashDayTicket = {
+  id: number;
+  ticketNumber: string;
+  status: string;
+  totalGrossCents: number;
+  refundedCents: number;
+};
+
+export type POSCashDayVisit = {
+  visitId: number;
+  status: string;
+  covers: number;
+  channel: string;
+  openedAt: string;
+  closedAt: string | null;
+  totalGrossCents: number;
+  tickets: POSCashDayTicket[];
+};
+
+export type POSCashDayTable = {
+  tableId: number | null;
+  tableName: string;
+  covers: number;
+  totalGrossCents: number;
+  visits: POSCashDayVisit[];
+};
+
+export type POSCashDayTables = {
+  date: string;
+  readOnly: boolean;
+  tables: POSCashDayTable[];
+  adjustedCovers: number;
+};
+
+export type POSCashDayCurrent = {
+  date: string;
+  cashDay: POSCashDay | null;
+  unclosedPrevious: POSCashDay[];
+};
