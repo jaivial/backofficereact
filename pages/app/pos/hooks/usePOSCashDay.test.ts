@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { isValidPOSDate, usePOSCashDay } from "./usePOSCashDay";
 
@@ -59,6 +59,10 @@ describe("usePOSCashDay", () => {
     vi.stubGlobal("WebSocket", FakeSocket as unknown as typeof WebSocket);
   });
 
+  // The suite has no unstubGlobals, so a WebSocket left replaced here would
+  // follow the worker into whatever file runs next.
+  afterEach(() => { vi.unstubAllGlobals(); });
+
   it("loads the requested date", async () => {
     const fetchMock = mockCurrent({ date: "2026-03-07", cashDay: openDay, unclosedPrevious: [] });
     vi.stubGlobal("fetch", fetchMock);
@@ -68,6 +72,9 @@ describe("usePOSCashDay", () => {
     expect(result.current.totals).toEqual({ date: "2026-03-07", totalGrossCents: 12500, ticketCount: 4, covers: 9 });
     expect(result.current.readOnly).toBe(false);
     expect(String(fetchMock.mock.calls[0][0])).toContain("date=2026-03-07");
+    // The till reloads on every shift change, so the busiest screen of the POS
+    // must not pay for the same answer twice.
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]).includes("/current"))).toHaveLength(1);
   });
 
   // The cutoff means the business date is not always today's calendar date, so
@@ -116,6 +123,32 @@ describe("usePOSCashDay", () => {
     expect(result.current.totals?.totalGrossCents).toBe(12500);
   });
 
+  // Open/close payloads carry the bare day, without figures. Trusting them
+  // would blank the takings on the very screen used to sign the Z closure.
+  it("keeps the totals when a closure frame arrives without figures", async () => {
+    vi.stubGlobal("fetch", mockCurrent({ date: "2026-03-07", cashDay: openDay, unclosedPrevious: [] }));
+    const { result } = renderHook(() => usePOSCashDay("2026-03-07"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    const bare = { ...openDay, status: "CLOSED" } as Record<string, unknown>;
+    delete bare.totalGrossCents; delete bare.ticketCount; delete bare.covers;
+    act(() => { FakeSocket.last?.emit({ type: "pos_cash_day_closed", data: { cashDay: bare } }); });
+    expect(result.current.readOnly).toBe(true);
+    expect(result.current.totals?.totalGrossCents).toBe(12500);
+    expect(result.current.cashDay?.totalGrossCents).toBe(12500);
+  });
+
+  // A pending day is by definition earlier than the one on screen, so the
+  // warning would never clear if the event had to match the active date.
+  it("drops a previous day closed from another till", async () => {
+    const previous = { ...openDay, id: 899, date: "2026-03-06" };
+    vi.stubGlobal("fetch", mockCurrent({ date: "2026-03-07", cashDay: openDay, unclosedPrevious: [previous] }));
+    const { result } = renderHook(() => usePOSCashDay("2026-03-07"));
+    await waitFor(() => expect(result.current.unclosedPrevious).toHaveLength(1));
+    act(() => { FakeSocket.last?.emit({ type: "pos_cash_day_closed", data: { cashDay: { ...previous, status: "CLOSED" } } }); });
+    expect(result.current.unclosedPrevious).toHaveLength(0);
+    expect(result.current.cashDay?.id).toBe(900);
+  });
+
   it("survives a malformed frame", async () => {
     vi.stubGlobal("fetch", mockCurrent({ date: "2026-03-07", cashDay: openDay, unclosedPrevious: [] }));
     const { result } = renderHook(() => usePOSCashDay("2026-03-07"));
@@ -151,5 +184,31 @@ describe("usePOSCashDay", () => {
     expect(outcome).toBe(false);
     expect(result.current.error).toBe("Hay días anteriores sin cerrar");
     expect(result.current.cashDay).toBeNull();
+  });
+
+  // FE-2 draws the pending-days warning off this list, so closing a day from
+  // this very screen must not keep warning about the day just handled.
+  it("drops a day from the pending list once it is closed here", async () => {
+    const pending = { ...openDay, id: 899, date: "2026-03-06" };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/current")) return new Response(JSON.stringify({ success: true, date: "2026-03-06", cashDay: pending, unclosedPrevious: [pending] }));
+      return new Response(JSON.stringify({ success: true, cashDay: { ...pending, status: "CLOSED" } }));
+    }));
+    const { result } = renderHook(() => usePOSCashDay("2026-03-06"));
+    await waitFor(() => expect(result.current.unclosedPrevious).toHaveLength(1));
+    await act(async () => { await result.current.closeDay({ countedCashCents: 0 }); });
+    expect(result.current.unclosedPrevious).toHaveLength(0);
+    expect(result.current.readOnly).toBe(true);
+  });
+
+  it("explains a close with no open day instead of failing mutely", async () => {
+    vi.stubGlobal("fetch", mockCurrent({ date: "2026-03-07", cashDay: null, unclosedPrevious: [] }));
+    const { result } = renderHook(() => usePOSCashDay("2026-03-07"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    let outcome = true;
+    await act(async () => { outcome = await result.current.closeDay({ countedCashCents: 0 }); });
+    expect(outcome).toBe(false);
+    expect(result.current.error).toBe("No hay caja abierta que cerrar");
   });
 });

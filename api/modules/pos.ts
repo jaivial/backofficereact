@@ -32,7 +32,7 @@ export function createPOSModule(json: JsonRequestFn): POSModule {
         return json(`/api/admin/pos/cash-days?${q.toString()}`, { method: "GET" });
       },
       async tables(params: { date: string }): Promise<APISuccess<POSCashDayTables> | APIError> {
-        return json(`/api/admin/pos/cash-days/${params.date}/tables`, { method: "GET" });
+        return json(`/api/admin/pos/cash-days/${encodeURIComponent(params.date)}/tables`, { method: "GET" });
       },
       async open(params: { date?: string; openingCashCents?: number; force?: boolean; notes?: string }): Promise<APISuccess<{ cashDay: POSCashDay }> | APIError> {
         return json("/api/admin/pos/cash-days", { method: "POST", headers: jsonHeaders, body: JSON.stringify(params) });

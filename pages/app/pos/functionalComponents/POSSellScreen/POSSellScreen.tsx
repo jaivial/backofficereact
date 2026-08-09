@@ -6,7 +6,7 @@ import { POSCategoryPanel } from "./POSCategoryPanel";
 import { POSProductGrid } from "./POSProductGrid";
 import { POSTicketPanel } from "./POSTicketPanel";
 import { POSKeypad } from "./POSKeypad";
-import { POSControlRail, type RailFeatureKey } from "./POSControlRail";
+import { POSControlRail, RAIL_FEATURES, type RailFeatureKey } from "./POSControlRail";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { splitShares } from "../../utils/splitShares";
 import { POSPromptModal } from "./POSPromptModal";
@@ -64,6 +64,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
   }, []);
 
   const confirmKeypad = useCallback(() => {
+    if (readOnly) return;
     if (keypadContext.kind === "quantity") {
       const line = register.activeTicketLines.find((entry) => entry.id === selectedLineId);
       if (line && keypadNumber > 0) void register.setLineQuantity(line, keypadNumber);
@@ -78,7 +79,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
       if (keypadNumber > 0) register.setCovers(String(Math.round(keypadNumber)));
     }
     setKeypadValue("");
-  }, [keypadContext.kind, keypadNumber, keypadValue, register, selectedLineId]);
+  }, [keypadContext.kind, keypadNumber, keypadValue, readOnly, register, selectedLineId]);
 
   const confirmVoidLine = useCallback(async () => {
     if (!lineToVoid) return;
@@ -105,6 +106,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
   }, [divideShares, register]);
 
   const selectTable = useCallback((table: Table) => {
+    if (readOnly) return;
     if (register.visit) {
       if (table.id === register.visit.tableId) { setShowTables(false); return; }
       void register.moveVisitToTable(table).then(() => setShowTables(false));
@@ -116,7 +118,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
       return;
     }
     register.setSelectedTable(table);
-  }, [register]);
+  }, [readOnly, register]);
 
   const selectedLine = useMemo(
     () => register.activeTicketLines.find((line) => line.id === selectedLineId) || null,
@@ -215,6 +217,8 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
   }, [register.amountDueCents]);
 
   const disabledRailKeys = useMemo<RailFeatureKey[]>(() => {
+    // A sealed day is a signed Z closure: nothing on the rail may touch it.
+    if (readOnly) return RAIL_FEATURES.map((feature) => feature.key);
     const keys: RailFeatureKey[] = [];
     if (!register.hasPendingKitchenLines) keys.push("cocina");
     if (!register.activeTicketLines.length || comandaBusy) keys.push("comanda");
@@ -223,7 +227,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
     if (register.visit) keys.push("barra");
     if (register.settings.requireOpenShift && register.currentShift?.status !== "OPEN") keys.push("cajon");
     return keys;
-  }, [comandaBusy, register.activeTicketLines.length, register.currentShift?.status, register.hasPendingKitchenLines, register.settings.requireOpenShift, register.ticket, register.visit, selectedLine]);
+  }, [comandaBusy, readOnly, register.activeTicketLines.length, register.currentShift?.status, register.hasPendingKitchenLines, register.settings.requireOpenShift, register.ticket, register.visit, selectedLine]);
 
   const moveLineToTarget = useCallback((line: TicketLine) => {
     const target = register.otherOpenSplitTickets[0];
@@ -309,6 +313,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
   return (
     <div className="pos-sell" data-ui="pos-sell-screen" data-testid="pos-sell-screen" data-readonly={readOnly ? "true" : undefined}>
       <div className="pos-sell__top" data-testid="pos-sell-top">
+        {readOnly ? <div className="pos-sell__alert" role="status" data-ui="pos-readonly-notice" data-testid="pos-readonly-notice">Día cerrado: solo consulta.</div> : null}
         {register.error ? <div className="pos-sell__alert" role="alert" data-ui="pos-error" data-testid="pos-error">{register.error}</div> : null}
         {register.lastPaidTicket ? (
           <div className="pos-sell__status" data-ui="pos-last-receipt" data-testid="pos-last-receipt">
@@ -338,13 +343,13 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
               onMoveLine={moveLineToTarget}
               onMergeSplitTickets={() => void register.mergeSplitTickets()}
               onDeleteEmptyTicket={(t) => void register.voidEmptyTicket(t)}
-              busy={register.busy}
+              busy={register.busy || readOnly}
             />
             <POSKeypad value={keypadValue} onChange={setKeypadValue} contextLabel={contextLabel} onConfirm={confirmKeypad} confirmLabel="OK" onMultiplier={handleKeypadMultiplier} multiplierQty={keypadMultiplierQty} onClearMultiplier={clearKeypadMultiplier} />
           </div>
           <div className="pos-sell__row pos-sell__row--catalog" data-testid="pos-sell-row-catalog" hidden={ticketExpanded}>
             <POSCategoryPanel categories={categories} active={category} onSelect={setCategory} />
-            <POSProductGrid products={visibleProducts} busy={register.busy || !register.ticket} onAdd={handleAddProduct} />
+            <POSProductGrid products={visibleProducts} busy={register.busy || !register.ticket || readOnly} onAdd={handleAddProduct} />
           </div>
         </div>
         <POSControlRail onAction={railAction} disabledKeys={disabledRailKeys} />

@@ -2220,9 +2220,14 @@ export type POSCashDay = {
   closedAt: string | null;
   forcedOpen: boolean;
   notes: string | null;
-  totalGrossCents: number;
-  ticketCount: number;
-  covers: number;
+  /**
+   * Headline figures. Only `GET /pos/cash-days/current` and the range report
+   * enrich the day with them; the open/close responses and their socket frames
+   * carry the bare day, so a consumer must be ready for them to be absent.
+   */
+  totalGrossCents?: number;
+  ticketCount?: number;
+  covers?: number;
 };
 
 /** Headline figures of a day, as pushed by `pos_cash_day_totals`. */

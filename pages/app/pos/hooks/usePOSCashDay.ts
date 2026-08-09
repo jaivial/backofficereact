@@ -27,9 +27,21 @@ export type POSCashDayState = {
 const RECONNECT_BASE_MS = 1000;
 const RECONNECT_MAX_MS = 30000;
 
-function totalsOf(day: POSCashDay | null): POSCashDayTotals | null {
+/**
+ * Totals for a day, keeping the ones already on screen when the payload does
+ * not carry them: the open/close responses and their socket frames serialize
+ * the bare day, so taking those figures at face value would blank the takings
+ * at the exact moment of the Z closure.
+ */
+function totalsOf(day: POSCashDay | null, previous: POSCashDayTotals | null): POSCashDayTotals | null {
   if (!day) return null;
-  return { date: day.date, totalGrossCents: day.totalGrossCents, ticketCount: day.ticketCount, covers: day.covers };
+  if (day.totalGrossCents === undefined) return previous && previous.date === day.date ? previous : null;
+  return { date: day.date, totalGrossCents: day.totalGrossCents, ticketCount: day.ticketCount ?? 0, covers: day.covers ?? 0 };
+}
+
+/** Merge a bare day onto the one on screen so its enriched figures survive. */
+function mergeDay(current: POSCashDay | null, next: POSCashDay): POSCashDay {
+  return current && current.date === next.date ? { ...current, ...next } : next;
 }
 
 /**
@@ -56,7 +68,10 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.pos.cashDays.current(isValidPOSDate(requestedDate) ? { date: requestedDate } : undefined);
+      // Once the backend has resolved the business date, stay on it: a refresh
+      // must not silently jump to another day because the URL carried none.
+      const scope = isValidPOSDate(requestedDate) ? requestedDate : dateRef.current;
+      const response = await api.pos.cashDays.current(scope ? { date: scope } : undefined);
       if (!response.success) {
         setError(response.message || "No se pudo cargar el día de caja");
         return;
@@ -64,7 +79,7 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
       setError("");
       setDate(response.date);
       setCashDay(response.cashDay);
-      setTotals(totalsOf(response.cashDay));
+      setTotals((current) => totalsOf(response.cashDay, current));
       setUnclosedPrevious(response.unclosedPrevious || []);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No se pudo cargar el día de caja");
@@ -93,12 +108,15 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
         const active = dateRef.current;
         if (payload.type === "pos_cash_day_opened" || payload.type === "pos_cash_day_closed") {
           const day = payload.data?.cashDay as POSCashDay | undefined;
-          if (!day || day.date !== active) return;
-          setCashDay(day);
-          setTotals(totalsOf(day));
+          if (!day) return;
           // A day that just closed stops being a pending one, and a day that
-          // just opened was never pending for its own date.
+          // just opened was never pending for its own date. This runs before
+          // the date filter on purpose: pending days are by definition earlier
+          // than the one on screen, so gating it would never clear anything.
           setUnclosedPrevious((current) => current.filter((entry) => entry.date !== day.date));
+          if (day.date !== active) return;
+          setCashDay((current) => mergeDay(current, day));
+          setTotals((current) => totalsOf(day, current));
           return;
         }
         if (payload.type === "pos_cash_day_totals") {
@@ -135,8 +153,11 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
       const response = await api.pos.cashDays.open({ date: date || undefined, openingCashCents: params?.openingCashCents ?? 0, force: params?.force, notes: params?.notes });
       if (!response.success) { setError(response.message || "No se pudo abrir la caja"); return false; }
       setError("");
-      setCashDay(response.cashDay);
-      setTotals(totalsOf(response.cashDay));
+      setCashDay((current) => mergeDay(current, response.cashDay));
+      setTotals((current) => totalsOf(response.cashDay, current));
+      // Opening a pending day settles it, and FE-2 draws its warning off this
+      // list: leaving it stale would keep warning about the day just handled.
+      setUnclosedPrevious((current) => current.filter((entry) => entry.date !== response.cashDay.date));
       return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No se pudo abrir la caja");
@@ -145,13 +166,17 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
   }, [api, date]);
 
   const closeDay = useCallback(async (params: { countedCashCents: number; notes?: string; discrepancyReason?: string }) => {
-    if (!cashDay) return false;
+    if (!cashDay) {
+      setError("No hay caja abierta que cerrar");
+      return false;
+    }
     try {
       const response = await api.pos.cashDays.close({ id: cashDay.id, ...params });
       if (!response.success) { setError(response.message || "No se pudo cerrar la caja"); return false; }
       setError("");
-      setCashDay(response.cashDay);
-      setTotals(totalsOf(response.cashDay));
+      setCashDay((current) => mergeDay(current, response.cashDay));
+      setTotals((current) => totalsOf(response.cashDay, current));
+      setUnclosedPrevious((current) => current.filter((entry) => entry.date !== response.cashDay.date));
       return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No se pudo cerrar la caja");

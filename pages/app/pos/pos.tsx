@@ -50,7 +50,7 @@ function dateFromLocation(): string | null {
 }
 
 export default function Page() {
-  const [requestedDate, setRequestedDate] = useState<string | null>(dateFromLocation);
+  const [requestedDate] = useState<string | null>(dateFromLocation);
   const cashDayState = usePOSCashDay(requestedDate);
   const activeDate = cashDayState.date;
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -75,6 +75,13 @@ export default function Page() {
   const [salesRows, setSalesRows] = useState<Array<{ date: string; serviceType: string; tickets: number; netCents: number; covers: number }>>([]);
   const [importItems, setImportItems] = useState<Array<{ sourceType: string; sourceId: number; name: string; priceGrossCents: number; imported: boolean }>>([]);
 
+  // The business date only exists once the cash day answers. Bootstrap is the
+  // heaviest POS endpoint, so it waits for that first answer instead of firing
+  // undated and again scoped. It latches: a later refresh must not unmount the
+  // sell screen and take the ticket in progress with it.
+  const [scopeReady, setScopeReady] = useState(false);
+  useEffect(() => { if (!cashDayState.loading) setScopeReady(true); }, [cashDayState.loading]);
+
   // Once the business date is known the URL states it outright, so a reload,
   // a bookmark or a shared link all land on the same day instead of drifting
   // to whatever "now" happens to be.
@@ -84,16 +91,16 @@ export default function Page() {
     if (url.searchParams.get("date") === activeDate) return;
     url.searchParams.set("date", activeDate);
     window.history.replaceState(window.history.state, "", url.toString());
-    setRequestedDate(activeDate);
   }, [activeDate]);
 
   const load = useCallback(async () => {
+    if (!scopeReady) return;
     setError("");
     try {
       const data = await request<Bootstrap>(activeDate ? `/bootstrap?date=${encodeURIComponent(activeDate)}` : "/bootstrap");
       setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setVisits(data.visits || []);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
-  }, [activeDate]);
+  }, [activeDate, scopeReady]);
   useEffect(() => { void load(); }, [load]);
 
   const saleStockItems = useMemo(()=>stockItems.filter(item=>item.deductionSource!=="PRODUCTION"),[stockItems]);
@@ -124,7 +131,7 @@ export default function Page() {
     <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span><POSSectionMenu section={section} onChange={setSection}/></header>
     {error?<div className="mb-4 rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-error">{error}</div>:null}{message?<div className="mb-4 rounded-lg border border-[var(--bo-color-success)] p-3 text-[var(--bo-text-success)]" role="status" data-ui="pos-message">{message}</div>:null}
 
-    {section==="sell"?<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>:null}
+    {section==="sell"&&scopeReady?<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>:null}
 
     {section==="kitchen"?<KitchenDisplay/>:null}
 

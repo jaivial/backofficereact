@@ -1,6 +1,6 @@
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Provider } from "jotai";
 
 import { POSSellScreen } from "./POSSellScreen";
@@ -768,5 +768,17 @@ describe("POSSellScreen", () => {
   it("flags a sealed day on the screen root", async () => {
     render(<Provider><POSSellScreen date="2026-03-07" readOnly /></Provider>);
     await waitFor(() => expect(screen.getByTestId("pos-sell-screen")).toHaveAttribute("data-readonly", "true"));
+    expect(screen.getByTestId("pos-readonly-notice")).toBeInTheDocument();
+  });
+
+  // The backend rejects any mutation on a closed day, so an enabled control
+  // could only ever produce an error the operator did not ask for.
+  it("locks every rail action on a sealed day", async () => {
+    render(<Provider><POSSellScreen date="2026-03-07" readOnly /></Provider>);
+    await waitFor(() => expect(screen.getByTestId("pos-sell-screen")).toBeInTheDocument());
+    const rail = screen.getByTestId("pos-control-rail");
+    const buttons = within(rail).getAllByRole("button");
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const button of buttons) expect(button).toBeDisabled();
   });
 });
