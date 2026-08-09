@@ -40,7 +40,7 @@ describe("POSSellScreen", () => {
     vi.stubGlobal("crypto", { randomUUID: () => "key-1" });
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.endsWith("/bootstrap")) return new Response(JSON.stringify(bootstrap));
+      if (url.includes("/bootstrap")) return new Response(JSON.stringify(bootstrap));
       if (url.endsWith("/visits") && init?.method === "POST") return new Response(JSON.stringify({ success: true, visit: { id: 10, covers: 2, tableId: 7 }, ticket: { id: 11, version: 1, status: "OPEN", lines: [], totalGrossCents: 0 } }), { status: 201 });
       if (url.includes("/tickets/11/lines/12/move") && init?.method === "POST") return new Response(JSON.stringify({
         success: true,
@@ -754,5 +754,19 @@ describe("POSSellScreen", () => {
         expect(JSON.parse(String((patchCalls[0][1] as RequestInit)?.body))).toMatchObject({ quantity: 2 });
       });
     });
+  });
+
+  // Without the date the screen would silently show today's tables while the
+  // header claims to be on the day the user picked.
+  it("scopes the register to the requested business date", async () => {
+    render(<Provider><POSSellScreen date="2026-03-07" /></Provider>);
+    await waitFor(() => expect(screen.getByTestId("pos-sell-screen")).toBeInTheDocument());
+    const bootstrapCall = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find((call) => String(call[0]).includes("/bootstrap"));
+    expect(String(bootstrapCall?.[0])).toContain("date=2026-03-07");
+  });
+
+  it("flags a sealed day on the screen root", async () => {
+    render(<Provider><POSSellScreen date="2026-03-07" readOnly /></Provider>);
+    await waitFor(() => expect(screen.getByTestId("pos-sell-screen")).toHaveAttribute("data-readonly", "true"));
   });
 });

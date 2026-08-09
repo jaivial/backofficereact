@@ -19,8 +19,8 @@ type KeypadContext = { kind: "quantity" } | { kind: "cash" } | { kind: "discount
  * Visual sell screen. Layout:
  *   [ column: [ticket | keypad] over [categories | products] ] [ control rail ]
  */
-export function POSSellScreen() {
-  const register = usePOSRegister();
+export function POSSellScreen({ date, readOnly = false }: { date?: string | null; readOnly?: boolean } = {}) {
+  const register = usePOSRegister(date);
   const [category, setCategory] = useState("");
   const [keypadValue, setKeypadValue] = useState("");
   const [keypadContext, setKeypadContext] = useState<KeypadContext>({ kind: "quantity" });
@@ -307,7 +307,7 @@ export function POSSellScreen() {
   const contextLabel = keypadContext.kind === "quantity" ? "Cantidad" : keypadContext.kind === "cash" ? "Efectivo" : keypadContext.kind === "discount" ? "Descuento €" : "Comensales";
 
   return (
-    <div className="pos-sell" data-ui="pos-sell-screen" data-testid="pos-sell-screen">
+    <div className="pos-sell" data-ui="pos-sell-screen" data-testid="pos-sell-screen" data-readonly={readOnly ? "true" : undefined}>
       <div className="pos-sell__top" data-testid="pos-sell-top">
         {register.error ? <div className="pos-sell__alert" role="alert" data-ui="pos-error" data-testid="pos-error">{register.error}</div> : null}
         {register.lastPaidTicket ? (

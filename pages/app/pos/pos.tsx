@@ -8,6 +8,7 @@ import { POSActivationPanel } from "./functionalComponents/POSActivationPanel/PO
 import { KitchenSettings } from "./functionalComponents/KitchenSettings/KitchenSettings";
 import { CardReconciliation } from "./functionalComponents/CardReconciliation/CardReconciliation";
 import { CashControl } from "./functionalComponents/CashControl/CashControl";
+import { usePOSCashDay, isValidPOSDate } from "./hooks/usePOSCashDay";
 
 type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string };
 type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean };
@@ -40,7 +41,18 @@ async function stockRequest<T>(path: string): Promise<T> {
 }
 function money(cents: number): string { return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents || 0) / 100); }
 
+function dateFromLocation(): string | null {
+  if (typeof window === "undefined") return null;
+  const value = new URLSearchParams(window.location.search).get("date");
+  // A malformed date falls back to the business date the backend resolves,
+  // rather than showing an empty till for a day that does not exist.
+  return isValidPOSDate(value) ? value : null;
+}
+
 export default function Page() {
+  const [requestedDate, setRequestedDate] = useState<string | null>(dateFromLocation);
+  const cashDayState = usePOSCashDay(requestedDate);
+  const activeDate = cashDayState.date;
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
@@ -63,13 +75,25 @@ export default function Page() {
   const [salesRows, setSalesRows] = useState<Array<{ date: string; serviceType: string; tickets: number; netCents: number; covers: number }>>([]);
   const [importItems, setImportItems] = useState<Array<{ sourceType: string; sourceId: number; name: string; priceGrossCents: number; imported: boolean }>>([]);
 
+  // Once the business date is known the URL states it outright, so a reload,
+  // a bookmark or a shared link all land on the same day instead of drifting
+  // to whatever "now" happens to be.
+  useEffect(() => {
+    if (!activeDate || typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("date") === activeDate) return;
+    url.searchParams.set("date", activeDate);
+    window.history.replaceState(window.history.state, "", url.toString());
+    setRequestedDate(activeDate);
+  }, [activeDate]);
+
   const load = useCallback(async () => {
     setError("");
     try {
-      const data = await request<Bootstrap>("/bootstrap");
+      const data = await request<Bootstrap>(activeDate ? `/bootstrap?date=${encodeURIComponent(activeDate)}` : "/bootstrap");
       setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setVisits(data.visits || []);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
-  }, []);
+  }, [activeDate]);
   useEffect(() => { void load(); }, [load]);
 
   const saleStockItems = useMemo(()=>stockItems.filter(item=>item.deductionSource!=="PRODUCTION"),[stockItems]);
@@ -100,7 +124,7 @@ export default function Page() {
     <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span><POSSectionMenu section={section} onChange={setSection}/></header>
     {error?<div className="mb-4 rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-error">{error}</div>:null}{message?<div className="mb-4 rounded-lg border border-[var(--bo-color-success)] p-3 text-[var(--bo-text-success)]" role="status" data-ui="pos-message">{message}</div>:null}
 
-    {section==="sell"?<POSSellScreen/>:null}
+    {section==="sell"?<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>:null}
 
     {section==="kitchen"?<KitchenDisplay/>:null}
 
