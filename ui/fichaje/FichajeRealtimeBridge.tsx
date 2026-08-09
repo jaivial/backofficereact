@@ -263,17 +263,22 @@ function createConnection(session: FichajeSession): FichajeConnection {
       // non-critical: each fetch is independent so one failing endpoint (e.g.
       // 403 when the role lacks POS access) can never reset the clock state or
       // prevent the WebSocket from connecting.
-      const revRes = await client.pos.tickets.hourly({ date: today }).catch(() => null);
-      const costsRes = await client.fichaje.hourlyCosts({ date: today }).catch(() => null);
-      const seriesRes = await client.pos.tickets.series({ date: today }).catch(() => null);
+      const [revRes, costsRes, seriesRes] = await Promise.allSettled([
+        client.pos.tickets.hourly({ date: today }),
+        client.fichaje.hourlyCosts({ date: today }),
+        client.pos.tickets.series({ date: today }),
+      ]);
       if (closed) return;
+      const rev = revRes.status === "fulfilled" ? revRes.value : null;
+      const costs = costsRes.status === "fulfilled" ? costsRes.value : null;
+      const series = seriesRes.status === "fulfilled" ? seriesRes.value : null;
       emit((prev) => ({
         ...prev,
-        posRevenueToday: revRes?.success
-          ? { date: today, totalGrossCents: revRes.totalGrossCents, byHour: revRes.byHour }
+        posRevenueToday: rev?.success
+          ? { date: today, totalGrossCents: rev.totalGrossCents, byHour: rev.byHour }
           : prev.posRevenueToday,
-        hourlyCosts: costsRes?.success ? costsRes.members : prev.hourlyCosts,
-        ticketSeries: seriesRes?.success ? seriesRes.series : prev.ticketSeries,
+        hourlyCosts: costs?.success ? costs.members : prev.hourlyCosts,
+        ticketSeries: series?.success ? series.series : prev.ticketSeries,
       }));
     } catch {
       // Only a failure of the core fichaje state fetch lands here; keep the
