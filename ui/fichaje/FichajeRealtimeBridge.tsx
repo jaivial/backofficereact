@@ -247,7 +247,9 @@ function createConnection(session: FichajeSession): FichajeConnection {
 
   const boot = async () => {
     try {
-      // One preflight state request per persistent session connection.
+      // One preflight state request per persistent session connection. This is
+      // the critical source of active clock entries — the WS is connected
+      // afterwards regardless of auxiliary data fetches.
       const res = await api.getState();
       if (closed) return;
       if (!res.success) {
@@ -256,39 +258,34 @@ function createConnection(session: FichajeSession): FichajeConnection {
       }
       mergeFromState(res.state);
       const today = todayISO();
-      const [revRes, costsRes, seriesRes] = await Promise.all([
+
+      // Auxiliary realtime data (POS income, hourly costs, 5' series) is
+      // non-critical: each fetch is independent so one failing endpoint (e.g.
+      // 403 when the role lacks POS access) can never reset the clock state or
+      // prevent the WebSocket from connecting.
+      const [revRes, costsRes, seriesRes] = await Promise.allSettled([
         client.pos.tickets.hourly({ date: today }),
         client.fichaje.hourlyCosts({ date: today }),
         client.pos.tickets.series({ date: today }),
       ]);
       if (closed) return;
+      const rev = revRes.status === "fulfilled" ? revRes.value : null;
+      const costs = costsRes.status === "fulfilled" ? costsRes.value : null;
+      const series = seriesRes.status === "fulfilled" ? seriesRes.value : null;
       emit((prev) => ({
         ...prev,
-        posRevenueToday: revRes.success
-          ? { date: today, totalGrossCents: revRes.totalGrossCents, byHour: revRes.byHour }
+        posRevenueToday: rev?.success
+          ? { date: today, totalGrossCents: rev.totalGrossCents, byHour: rev.byHour }
           : prev.posRevenueToday,
-        hourlyCosts: costsRes.success ? costsRes.members : prev.hourlyCosts,
-        ticketSeries: seriesRes.success ? seriesRes.series : prev.ticketSeries,
+        hourlyCosts: costs?.success ? costs.members : prev.hourlyCosts,
+        ticketSeries: series?.success ? series.series : prev.ticketSeries,
       }));
     } catch {
-      if (closed) return;
-      emit((prev) => ({
-        ...prev,
-        wsConnected: false,
-        wsConnecting: false,
-        restaurantId: session.activeRestaurantId,
-        lastSyncAt: null,
-        member: null,
-        activeEntriesByMember: {},
-        activeEntry: null,
-        scheduleToday: null,
-        pendingScheduleUpdates: false,
-        posRevenueToday: null,
-        hourlyCosts: [],
-        ticketSeries: [],
-      }));
-      return;
+      // Only a failure of the core fichaje state fetch lands here; keep the
+      // snapshot rather than wiping it so a transient error does not blank the
+      // panel or block the realtime socket.
     }
+    if (closed) return;
     connect();
   };
 
