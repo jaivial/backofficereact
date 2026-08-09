@@ -1,3 +1,4 @@
+import { createPOSModule } from "./modules/pos";
 import type {
   APIError,
   APISuccess,
@@ -2691,6 +2692,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
     },
 
     pos: {
+      ...createPOSModule(json),
       bootstrap(): Promise<POSBootstrap | APIError> { return json("/api/admin/pos/bootstrap", { method: "GET" }); },
       settings: {
         get(): Promise<APISuccess<{ settings: POSSettings }> | APIError> { return json("/api/admin/pos/settings", { method: "GET" }); },
