@@ -109,11 +109,14 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
         if (payload.type === "pos_cash_day_opened" || payload.type === "pos_cash_day_closed") {
           const day = payload.data?.cashDay as POSCashDay | undefined;
           if (!day) return;
-          // A day that just closed stops being a pending one, and a day that
-          // just opened was never pending for its own date. This runs before
-          // the date filter on purpose: pending days are by definition earlier
-          // than the one on screen, so gating it would never clear anything.
-          setUnclosedPrevious((current) => current.filter((entry) => entry.date !== day.date));
+          // The pending list tracks earlier days still open, so it must react to
+          // transitions on any date. Gating this behind the active date would
+          // never clear anything: a pending day is by definition another one.
+          const pending = day.status === "OPEN" && active !== null && day.date < active;
+          setUnclosedPrevious((current) => {
+            const rest = current.filter((entry) => entry.date !== day.date);
+            return pending ? [...rest, day].sort((a, b) => a.date.localeCompare(b.date)) : rest;
+          });
           if (day.date !== active) return;
           setCashDay((current) => mergeDay(current, day));
           setTotals((current) => totalsOf(day, current));

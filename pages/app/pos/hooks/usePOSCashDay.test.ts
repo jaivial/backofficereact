@@ -149,6 +149,16 @@ describe("usePOSCashDay", () => {
     expect(result.current.cashDay?.id).toBe(900);
   });
 
+  // A day forced open behind the one on screen becomes pending straight away,
+  // otherwise the warning only appears after a manual refresh.
+  it("adds a previous day forced open from another till", async () => {
+    vi.stubGlobal("fetch", mockCurrent({ date: "2026-03-07", cashDay: openDay, unclosedPrevious: [] }));
+    const { result } = renderHook(() => usePOSCashDay("2026-03-07"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    act(() => { FakeSocket.last?.emit({ type: "pos_cash_day_opened", data: { cashDay: { ...openDay, id: 899, date: "2026-03-06" } } }); });
+    expect(result.current.unclosedPrevious.map((entry) => entry.date)).toEqual(["2026-03-06"]);
+  });
+
   it("survives a malformed frame", async () => {
     vi.stubGlobal("fetch", mockCurrent({ date: "2026-03-07", cashDay: openDay, unclosedPrevious: [] }));
     const { result } = renderHook(() => usePOSCashDay("2026-03-07"));
