@@ -64,6 +64,28 @@ describe("HourSplitConfig", () => {
     expect(pushToast).toHaveBeenCalledWith(expect.objectContaining({ kind: "success" }));
   });
 
+  it("collapses and expands the cards via the accordion trigger", () => {
+    render(<HourSplitConfig {...baseProps} />);
+    const trigger = screen.getByTestId("hour-split-config-trigger");
+    const cards = screen.getByTestId("hour-split-cards");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(cards).not.toHaveAttribute("hidden");
+    expect(screen.getByTestId("hour-split-card-13:00")).toBeInTheDocument();
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(cards).toHaveAttribute("hidden");
+
+    // The toggle, helper and totals stay visible while the cards collapse.
+    expect(screen.getByTestId("hour-split-toggle")).toBeInTheDocument();
+    expect(screen.getByTestId("hour-split-totals-pct")).toBeInTheDocument();
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(cards).not.toHaveAttribute("hidden");
+    expect(screen.getByTestId("hour-split-card-13:00")).toBeInTheDocument();
+  });
+
   it("fires onToggleEnabled when switch flips", () => {
     render(<HourSplitConfig {...baseProps} />);
     fireEvent.click(screen.getByTestId("hour-split-toggle"));

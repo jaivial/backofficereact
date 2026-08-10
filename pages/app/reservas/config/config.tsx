@@ -43,6 +43,7 @@ export default function Page() {
     mesasDeDos: null,
     mesasDeTres: null,
     floors: [],
+    hourSplit: null,
     error: null,
   }) as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
@@ -63,7 +64,7 @@ export default function Page() {
   const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
 
   // By-hour client split state
-  const [hourSplit, setHourSplit] = useState<HourSplitConfig | null>(null);
+  const [hourSplit, setHourSplit] = useState<HourSplitConfig | null>(data.hourSplit ?? null);
 
   // Mandatory menu config state
   const [mandatoryMenuStatus, setMandatoryMenuStatus] = useState(false);

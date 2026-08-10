@@ -9,6 +9,7 @@ import type {
   ConfigMesasDeDos,
   ConfigMesasDeTres,
   ConfigOpeningHours,
+  HourSplitConfig,
 } from "../../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
@@ -37,15 +38,17 @@ export async function data(pageContext: PageContextServer) {
   let mesasDeDos: ConfigMesasDeDos | null = null;
   let mesasDeTres: ConfigMesasDeTres | null = null;
   let floors: ConfigFloor[] = [];
+  let hourSplit: HourSplitConfig | null = null;
 
   try {
-    const [d0, d1, d2, d3, d4, d5] = await Promise.all([
+    const [d0, d1, d2, d3, d4, d5, d6] = await Promise.all([
       api.config.getDay(date),
       api.config.getDailyLimit(date),
       api.config.getOpeningHours(date),
       api.config.getMesasDeDos(date),
       api.config.getMesasDeTres(date),
       api.config.getFloors(date),
+      api.config.getHourSplit(date),
     ]);
 
     if (d0.success) day = d0;
@@ -65,9 +68,12 @@ export async function data(pageContext: PageContextServer) {
 
     if (d5.success) floors = d5.floors || [];
     else if (!error) error = d5.message || "Error cargando plantas";
+
+    if (d6.success) hourSplit = d6;
+    else if (!error) error = d6.message || "Error cargando reparto por hora";
   } catch (e) {
     error = e instanceof Error ? e.message : "Error cargando configuración";
   }
 
-  return { date, day, dailyLimit, openingHours, mesasDeDos, mesasDeTres, floors, error };
+  return { date, day, dailyLimit, openingHours, mesasDeDos, mesasDeTres, floors, hourSplit, error };
 }
