@@ -10,6 +10,7 @@ import type {
   ConfigMesasDeDos,
   ConfigMesasDeTres,
   ConfigOpeningHours,
+  HourSplitConfig,
   MandatoryMenuConfig,
   MenuSelectorItem,
   OpeningMode,
@@ -22,6 +23,7 @@ import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
 import { CloseDateRangeModal } from "../../../../ui/widgets/CloseDateRangeModal";
+import { HourSplitConfig as HourSplitConfigWidget } from "../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
 import { Panel } from "../../../../ui/shell/Panel";
 import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 
@@ -60,6 +62,9 @@ export default function Page() {
   const [mesasDeTres, setMesasDeTres] = useState<ConfigMesasDeTres | null>(data.mesasDeTres);
   const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
 
+  // By-hour client split state
+  const [hourSplit, setHourSplit] = useState<HourSplitConfig | null>(null);
+
   // Mandatory menu config state
   const [mandatoryMenuStatus, setMandatoryMenuStatus] = useState(false);
   const [mandatoryMenuConfig, setMandatoryMenuConfig] = useState<MandatoryMenuConfig | null>(null);
@@ -91,6 +96,8 @@ export default function Page() {
     handleOpeningModeChange,
     handleMorningHour,
     handleNightHour,
+    toggleHourSplit,
+    commitHourSplitPercentages,
   } = useConfigDay({
     api,
     date,
@@ -100,6 +107,7 @@ export default function Page() {
     mesasDeDos,
     mesasDeTres,
     floors,
+    hourSplit,
     mandatoryMenuStatus,
     mandatoryBooking,
     selectedMenuIds,
@@ -113,6 +121,7 @@ export default function Page() {
     setMesasDeDos,
     setMesasDeTres,
     setFloors,
+    setHourSplit,
     setMandatoryMenuStatus,
     setMandatoryMenuConfig,
     setSelectedMenuIds,
@@ -402,6 +411,23 @@ export default function Page() {
                   ) : null}
                 </div>
               </div>
+
+              {hourSplit ? (
+                <HourSplitConfigWidget
+                  enabled={hourSplit.enabled}
+                  dailyLimit={hourSplit.dailyLimit}
+                  activeHours={hourSplit.activeHours}
+                  percentages={hourSplit.percentages}
+                  hourlyCapacities={hourSplit.hourlyCapacities}
+                  bookingsByHour={hourSplit.bookingsByHour}
+                  source={hourSplit.source}
+                  variant="day"
+                  busy={busy}
+                  onToggleEnabled={toggleHourSplit}
+                  onCommitPercentages={commitHourSplitPercentages}
+                  pushToast={pushToast}
+                />
+              ) : null}
 
               <Panel data-ui="tables-panel" title="Mesas" bodyClassName="bo-row bo-configTableLimitsRow">
                   <div data-slot="mesas-dos" className="bo-field bo-field--inline bo-configTableLimitField">
