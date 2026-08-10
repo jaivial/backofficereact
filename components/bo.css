@@ -45,6 +45,7 @@
 
 /* ── Features: Reservas — Calendar ────────────────────── */
 @import "./styles/features/reservas/calendar.css";
+@import "./styles/features/reservas/hour-split.css";
 
 /* ── Features: Facturas — Analytics ───────────────────── */
 @import "./styles/features/facturas/invoice-analytics.css";

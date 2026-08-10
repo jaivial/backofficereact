@@ -8,7 +8,7 @@ export type RestauranteContentProps = {
   setBusy: (v: boolean) => void;
   setError: (v: string | null) => void;
   api: { config: { setDefaults: (patch: Partial<ConfigDefaults>) => Promise<{ success: boolean; message?: string }>; setDefaultFloors: (patch: { count?: number; floorNumber?: number; active?: boolean }) => Promise<{ success: boolean; message?: string }> } };
-  pushToast: (t: { kind: "success"; title: string; message: string }) => void;
+  pushToast: (t: { kind: "success" | "error"; title: string; message?: string }) => void;
 };
 
 export type FloorCard = {

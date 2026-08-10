@@ -13,6 +13,8 @@ import { Switch } from "../../../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
 import { Tabs, type TabItem } from "../../../../../ui/nav/Tabs";
 import { Panel } from "../../../../../ui/shell/Panel";
+import { HourSplitConfig as HourSplitConfigWidget } from "../../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
+import { equalSplit, normalizePercentages, type Percentages } from "../../../../../ui/widgets/HourSplitConfig/lib/rebalance";
 
 export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast }: RestauranteContentProps) {
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
@@ -39,6 +41,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
         mesasDeDosLimit: string;
         mesasDeTresLimit: string;
         weekdayOpen: WeekdayOpen;
+        hourSplitEnabled: boolean;
+        defaultHourPercentages: Record<string, number>;
       }>,
       successMessage?: string,
     ) => {
@@ -107,6 +111,40 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
   const canShrink = useMemo(() => floorCount > 1, [floorCount]);
   const mesasDeDosValue = useMemo(() => normalizeTableLimit(defaults.mesasDeDosLimit), [defaults.mesasDeDosLimit]);
   const mesasDeTresValue = useMemo(() => normalizeTableLimit(defaults.mesasDeTresLimit), [defaults.mesasDeTresLimit]);
+
+  // By-hour client split defaults: synthesize an equal split when no template is stored.
+  const defaultActiveHours = useMemo(() => defaults.hours || [], [defaults.hours]);
+  const defaultPercentages = useMemo<Percentages>(() => {
+    const stored = normalizePercentages(defaults.defaultHourPercentages, defaultActiveHours);
+    const hasStored = defaults.defaultHourPercentages && Object.keys(defaults.defaultHourPercentages).length > 0;
+    return hasStored && defaultActiveHours.every((h) => (defaults.defaultHourPercentages?.[h] ?? 0) > 0)
+      ? stored
+      : equalSplit(defaultActiveHours);
+  }, [defaults.defaultHourPercentages, defaultActiveHours]);
+
+  const toggleHourSplitDefault = useCallback(
+    (enabled: boolean) => {
+      void saveDefaults({ hourSplitEnabled: enabled }, enabled ? "Reparto por hora activado" : "Reparto por hora desactivado");
+    },
+    [saveDefaults],
+  );
+
+  const commitDefaultPercentages = useCallback(
+    async (percentages: Percentages): Promise<boolean> => {
+      try {
+        const res = await api.config.setDefaults({ defaultHourPercentages: percentages });
+        if (!res.success) {
+          setError(readAPIMessage(res, "No se pudo guardar el reparto"));
+          return false;
+        }
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo guardar el reparto");
+        return false;
+      }
+    },
+    [api.config, setError],
+  );
 
   const morningHourCards = useMemo(() => {
     const active = new Set(defaults.morningHours || []);
@@ -284,6 +322,18 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             </div>
           </div>
       </Panel>
+
+      <HourSplitConfigWidget
+        enabled={defaults.hourSplitEnabled ?? true}
+        dailyLimit={defaults.dailyLimit ?? 45}
+        activeHours={defaultActiveHours}
+        percentages={defaultPercentages}
+        variant="default"
+        busy={busy}
+        onToggleEnabled={toggleHourSplitDefault}
+        onCommitPercentages={commitDefaultPercentages}
+        pushToast={pushToast}
+      />
 
       <Panel title="Calendario semanal" meta="Semana genérica (lunes a domingo)" bodyClassName="bo-configWeekdayGrid" data-ui="config-restaurante-weekday-panel">
           {weekdayCardsWithState.map((weekday: WeekdayCard & { isOpen: boolean }) => (
