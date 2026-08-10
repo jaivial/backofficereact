@@ -38,7 +38,6 @@ export function HourSplitConfig({
   dailyLimit,
   activeHours,
   percentages,
-  hourlyCapacities,
   bookingsByHour,
   source,
   variant = "day",
@@ -51,7 +50,6 @@ export function HourSplitConfig({
   const [local, setLocal] = React.useState<Percentages>(percentages);
   const [mode, setMode] = React.useState<HourSplitEditMode>("percentage");
   const commitTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inflight = React.useRef<Promise<boolean> | boolean | null>(null);
 
   // Re-sync local state when the source-of-truth percentages change (e.g. reload, date change).
   React.useEffect(() => {
@@ -64,17 +62,19 @@ export function HourSplitConfig({
     };
   }, []);
 
-  const capacities = React.useMemo<Record<string, number>>(() => {
-    if (hourlyCapacities) return hourlyCapacities;
-    return percentagesToPeople(local, dailyLimit);
-  }, [hourlyCapacities, local, dailyLimit]);
+  // Capacities are always derived from the local (optimistic) percentages so the
+  // donuts reflow live as the user edits. The server hourlyCapacities prop is only
+  // used to seed the initial render before the first edit.
+  const capacities = React.useMemo<Record<string, number>>(
+    () => percentagesToPeople(local, dailyLimit),
+    [local, dailyLimit],
+  );
 
   const scheduleCommit = React.useCallback(
     (next: Percentages) => {
       if (commitTimer.current) clearTimeout(commitTimer.current);
       commitTimer.current = setTimeout(async () => {
         const result = await Promise.resolve(onCommitPercentages(next));
-        inflight.current = result;
         if (result) {
           pushToast({ kind: "success", title: "Guardado", message: "Reparto por hora actualizado" });
         } else {
