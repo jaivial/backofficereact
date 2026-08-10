@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
+import { sessionAtom } from "../../../state/atoms";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -130,6 +132,7 @@ export default function Page() {
   const pageContext = usePageContext();
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const session = useAtomValue(sessionAtom);
   const { pushToast } = useToasts();
 
   const [busy, setBusy] = useState(false);
@@ -224,6 +227,16 @@ export default function Page() {
       setBusy(false);
     }
   }, [api.config]);
+
+  // F3: +data.ts returns an empty shell; fetch defaults/floors/info client-side
+  // on mount (once session is ready) unless SSR already hydrated data.
+  const bootstrapped = useRef(false);
+  useEffect(() => {
+    if (!session || bootstrapped.current) return;
+    bootstrapped.current = true;
+    if ((data as PageData).defaults) return;
+    void reload();
+  }, [data, reload, session]);
 
   const onNavigateContentTab = useCallback(
     (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
