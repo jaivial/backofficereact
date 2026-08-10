@@ -1955,6 +1955,25 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify({ date, limit }),
         });
       },
+      // By-hour client split configuration.
+      async getHourSplit(date: string): Promise<APISuccess<import("./types").HourSplitConfig> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/hour-split?${q.toString()}`, { method: "GET" });
+      },
+      async setHourSplit(date: string, enabled: boolean): Promise<APISuccess<{ date: string; enabled: boolean; source: "override" | "default" }> | APIError> {
+        return json("/api/admin/config/hour-split", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date, enabled }),
+        });
+      },
+      async setHourSplitPercentages(payload: import("./types").HourSplitPercentagesPayload): Promise<APISuccess<{ date: string; percentages: Record<string, number>; hourlyCapacities?: Record<string, number> }> | APIError> {
+        return json("/api/admin/config/hour-split-percentages", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      },
       async getRestaurantInfo(): Promise<APISuccess<{ restaurantInfo: import("./types").RestaurantInfo }> | APIError> {
         return json("/api/admin/config/restaurant-info", { method: "GET" });
       },

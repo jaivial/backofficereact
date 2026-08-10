@@ -6,6 +6,7 @@ import type {
   ConfigMesasDeDos,
   ConfigMesasDeTres,
   ConfigOpeningHours,
+  HourSplitConfig,
   MandatoryMenuConfig,
   MenuSelectorItem,
   OpeningMode,
@@ -22,6 +23,7 @@ interface UseConfigDayOptions {
   mesasDeDos: ConfigMesasDeDos | null;
   mesasDeTres: ConfigMesasDeTres | null;
   floors: ConfigFloor[];
+  hourSplit: HourSplitConfig | null;
   mandatoryMenuStatus: boolean;
   mandatoryBooking: boolean;
   selectedMenuIds: number[];
@@ -35,6 +37,7 @@ interface UseConfigDayOptions {
   setMesasDeDos: (mesas: ConfigMesasDeDos | null) => void;
   setMesasDeTres: (mesas: ConfigMesasDeTres | null) => void;
   setFloors: (floors: ConfigFloor[]) => void;
+  setHourSplit: (config: HourSplitConfig | null) => void;
   setMandatoryMenuStatus: (status: boolean) => void;
   setMandatoryMenuConfig: (config: MandatoryMenuConfig | null) => void;
   setSelectedMenuIds: (ids: number[]) => void;
@@ -54,6 +57,7 @@ export function useConfigDay({
   mesasDeDos,
   mesasDeTres,
   floors,
+  hourSplit,
   mandatoryMenuStatus,
   mandatoryBooking,
   selectedMenuIds,
@@ -67,6 +71,7 @@ export function useConfigDay({
   setMesasDeDos,
   setMesasDeTres,
   setFloors,
+  setHourSplit,
   setMandatoryMenuStatus,
   setMandatoryMenuConfig,
   setSelectedMenuIds,
@@ -88,13 +93,14 @@ export function useConfigDay({
       setBusy(true);
       setError(null);
       try {
-        const [d0, d1, d2, d3, d4, d5] = await Promise.all([
+        const [d0, d1, d2, d3, d4, d5, d6] = await Promise.all([
           api.config.getDay(d),
           api.config.getDailyLimit(d),
           api.config.getOpeningHours(d),
           api.config.getMesasDeDos(d),
           api.config.getMesasDeTres(d),
           api.config.getFloors(d),
+          api.config.getHourSplit(d),
         ]);
 
         let nextError: string | null = null;
@@ -117,6 +123,9 @@ export function useConfigDay({
         if (d5.success) setFloors(d5.floors || []);
         else nextError = nextError || d5.message || "Error cargando plantas";
 
+        if (d6.success) setHourSplit(d6);
+        else nextError = nextError || d6.message || "Error cargando reparto por hora";
+
         if (nextError) setError(nextError);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Error cargando configuración");
@@ -124,7 +133,7 @@ export function useConfigDay({
         setBusy(false);
       }
     },
-    [api, setBusy, setError, setDay, setDailyLimit, setOpeningHours, setMesasDeDos, setMesasDeTres, setFloors],
+    [api, setBusy, setError, setDay, setDailyLimit, setOpeningHours, setMesasDeDos, setMesasDeTres, setFloors, setHourSplit],
   );
 
   const loadMandatoryMenuConfig = useCallback(
@@ -466,6 +475,57 @@ export function useConfigDay({
     [openingHours?.nightHours, saveOpeningHours],
   );
 
+  const toggleHourSplit = useCallback(
+    async (enabled: boolean) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await api.config.setHourSplit(date, enabled);
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar el reparto por hora" });
+          return;
+        }
+        setHourSplit(hourSplit ? { ...hourSplit, enabled: res.enabled, source: res.source } : hourSplit);
+        pushToast({
+          kind: "success",
+          title: enabled ? "Reparto activado" : "Reparto desactivado",
+          message: enabled ? "Aforo repartido por hora" : "Aforo diario sin límite por hora",
+        });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo actualizar el reparto por hora");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api.config, date, hourSplit, pushToast, setBusy, setError, setHourSplit],
+  );
+
+  const commitHourSplitPercentages = useCallback(
+    async (percentages: Record<string, number>): Promise<boolean> => {
+      try {
+        const res = await api.config.setHourSplitPercentages({ date, percentages });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar el reparto" });
+          return false;
+        }
+        setHourSplit(
+          hourSplit
+            ? {
+                ...hourSplit,
+                percentages: res.percentages,
+                hourlyCapacities: res.hourlyCapacities ?? hourSplit.hourlyCapacities,
+              }
+            : hourSplit,
+        );
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo guardar el reparto");
+        return false;
+      }
+    },
+    [api.config, date, hourSplit, pushToast, setBusy, setError, setHourSplit],
+  );
+
   return {
     loadAll,
     loadMandatoryMenuConfig,
@@ -484,5 +544,7 @@ export function useConfigDay({
     handleOpeningModeChange,
     handleMorningHour,
     handleNightHour,
+    toggleHourSplit,
+    commitHourSplitPercentages,
   };
 }
