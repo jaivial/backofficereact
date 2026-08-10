@@ -125,15 +125,7 @@ export function HourSplitConfig({
       aria-label="Reparto por hora"
     >
       <div className="bo-panelHead bo-hsplitConfigHead" data-slot="hsplit-head">
-        <button
-          type="button"
-          className="bo-hsplitConfigTrigger"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls="bo-hsplit-cards"
-          data-testid="hour-split-config-trigger"
-          data-ui="hour-split-config-trigger"
-        >
+        <div className="bo-hsplitConfigTitle" data-slot="hsplit-title-row">
           <span className="bo-panelTitle" data-slot="hsplit-title">
             Reparto por hora
           </span>
@@ -142,10 +134,7 @@ export function HourSplitConfig({
               {source === "override" ? "Override del día" : "Por defecto"}
             </span>
           ) : null}
-          <span className="bo-accordionIcon" data-slot="hsplit-chevron" aria-hidden="true">
-            <ChevronDown size={16} strokeWidth={1.8} />
-          </span>
-        </button>
+        </div>
       </div>
 
       <div className="bo-panelBody bo-hsplitConfigBody" data-slot="hsplit-body">
@@ -170,6 +159,23 @@ export function HourSplitConfig({
 
         {enabled ? (
           <>
+            <button
+              type="button"
+              className="bo-hsplitConfigTrigger"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-controls="bo-hsplit-cards"
+              data-testid="hour-split-config-trigger"
+              data-ui="hour-split-config-trigger"
+            >
+              <span data-slot="hsplit-trigger-label">
+                {open ? "Ocultar detalle" : "Mostrar detalle"}
+              </span>
+              <span className="bo-accordionIcon" data-slot="hsplit-chevron" aria-hidden="true">
+                <ChevronDown size={16} strokeWidth={1.8} />
+              </span>
+            </button>
+
             <div
               className="bo-hsplitCards"
               data-slot="hsplit-cards"
@@ -195,7 +201,7 @@ export function HourSplitConfig({
               ))}
             </div>
 
-            <div className="bo-row bo-hsplitTotals" data-slot="hsplit-totals">
+            <div className="bo-row bo-hsplitTotals" data-slot="hsplit-totals" hidden={!open}>
               <div className="bo-mutedText" data-slot="hsplit-totals-pct" data-testid="hour-split-totals-pct">
                 Total: {Math.round(totalPct)}%
               </div>

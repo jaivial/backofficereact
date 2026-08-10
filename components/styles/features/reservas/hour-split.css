@@ -5,23 +5,37 @@
   display: block;
 }
 
-/* Accordion: the panel header toggles the cards section. */
+/* Section header is static (title + source). The collapse control only
+   governs the cards list below the toggle. */
 .bo-hsplitConfigHead {
   padding: 0;
 }
 
-.bo-hsplitConfigTrigger {
-  width: 100%;
+.bo-hsplitConfigTitle {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
   padding: 16px 18px 10px;
+}
+
+.bo-hsplitConfigTitle .bo-panelMeta {
+  flex: 0 0 auto;
+}
+
+.bo-hsplitConfigTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--bo-space-3);
+  padding: 4px 8px;
   background: transparent;
   border: none;
-  color: var(--bo-text);
+  color: var(--bo-accent);
   font: inherit;
-  text-align: left;
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-medium);
   cursor: pointer;
+  border-radius: var(--bo-radius-sm);
   transition: background-color var(--bo-transition-base) var(--bo-ease);
 }
 
@@ -35,32 +49,17 @@
 
 .bo-hsplitConfigTrigger:focus-visible {
   outline: 2px solid var(--bo-accent);
-  outline-offset: -2px;
-}
-
-.bo-hsplitConfigTrigger .bo-panelTitle {
-  flex: 1;
-  min-width: 0;
-}
-
-.bo-hsplitConfigTrigger .bo-panelMeta {
-  flex: 0 0 auto;
+  outline-offset: 2px;
 }
 
 .bo-hsplitConfigTrigger .bo-accordionIcon {
-  width: 20px;
-  height: 20px;
-  color: var(--bo-muted);
-  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
   transition: transform 200ms ease;
 }
 
 .bo-hsplitConfigTrigger[aria-expanded="true"] .bo-accordionIcon {
   transform: rotate(180deg);
-}
-
-.bo-hsplitConfigTrigger[aria-expanded="false"] .bo-accordionIcon {
-  transform: rotate(0deg);
 }
 
 .bo-hsplitToggleRow {
@@ -219,6 +218,63 @@
 
 .bo-hsplitReset {
   font-size: var(--bo-text-sm);
+}
+
+/* bo-row sets display:flex, which beats the UA [hidden] rule. */
+.bo-hsplitTotals[hidden] {
+  display: none;
+}
+
+/* Mobile: two columns, tighter cards, donuts sized to the available inner width. */
+@media (max-width: 767px) {
+  .bo-hsplitCards {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--bo-space-2);
+  }
+
+  .bo-hsplitCard {
+    padding: var(--bo-space-2);
+    gap: var(--bo-space-1);
+  }
+
+  /* Card head (hour + bookings) wraps instead of crowding a narrow column. */
+  .bo-hsplitCardHead {
+    flex-wrap: wrap;
+    gap: 2px var(--bo-space-2);
+  }
+
+  .bo-hsplitCardHour {
+    font-size: var(--bo-text-base);
+  }
+
+  .bo-hsplitCardBookings {
+    margin-left: auto;
+  }
+
+  /* Donut fills the available inner width, capped to stay square-ish. */
+  .bo-hsplitDonut {
+    width: 100%;
+    max-width: 84px;
+  }
+
+  .bo-hsplitDonutPct {
+    font-size: var(--bo-text-sm);
+  }
+
+  .bo-hsplitDonutMeta {
+    font-size: 10px;
+  }
+
+  .bo-hsplitModeBtn {
+    min-width: 32px;
+    min-height: 26px;
+    padding: 0 var(--bo-space-1);
+    font-size: 12px;
+  }
+
+  .bo-hsplitCardInput {
+    min-height: 28px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
