@@ -49,8 +49,10 @@ export function HourSplitDonut({ bookings, capacity, percentage, label, classNam
             data={data}
             dataKey="value"
             nameKey="name"
-            innerRadius={42}
-            outerRadius={62}
+            // Percent radii scale with the container, so the donut never
+            // overflows/clips a smaller (mobile) card. 100% = min(w,h)/2.
+            innerRadius="68%"
+            outerRadius="100%"
             paddingAngle={2}
             strokeWidth={0}
             isAnimationActive={false}
