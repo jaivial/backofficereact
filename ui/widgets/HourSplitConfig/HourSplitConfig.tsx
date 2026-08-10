@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ChevronDown } from "lucide-react";
 
 import { Switch } from "../../shadcn/Switch";
 import { cn } from "../../shadcn/utils";
@@ -49,6 +50,7 @@ export function HourSplitConfig({
 }: HourSplitConfigProps) {
   const [local, setLocal] = React.useState<Percentages>(percentages);
   const [mode, setMode] = React.useState<HourSplitEditMode>("percentage");
+  const [open, setOpen] = React.useState(true);
   const commitTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Re-sync local state when the source-of-truth percentages change (e.g. reload, date change).
@@ -117,21 +119,36 @@ export function HourSplitConfig({
 
   return (
     <section
-      className={cn("bo-panel bo-hsplitConfig", className)}
+      className={cn("bo-panel bo-hsplitConfig", open && "is-open", className)}
       data-testid="hour-split-config"
       data-ui="hour-split-config"
       aria-label="Reparto por hora"
     >
-      <div className="bo-panelHead" data-slot="hsplit-head">
-        <div className="bo-panelTitle" data-slot="hsplit-title">Reparto por hora</div>
-        {source ? (
-          <div className="bo-panelMeta" data-slot="hsplit-source" data-testid="hour-split-source">
-            {source === "override" ? "Override del día" : "Por defecto"}
-          </div>
-        ) : null}
+      <div className="bo-panelHead bo-hsplitConfigHead" data-slot="hsplit-head">
+        <button
+          type="button"
+          className="bo-hsplitConfigTrigger"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls="bo-hsplit-cards"
+          data-testid="hour-split-config-trigger"
+          data-ui="hour-split-config-trigger"
+        >
+          <span className="bo-panelTitle" data-slot="hsplit-title">
+            Reparto por hora
+          </span>
+          {source ? (
+            <span className="bo-panelMeta" data-slot="hsplit-source" data-testid="hour-split-source">
+              {source === "override" ? "Override del día" : "Por defecto"}
+            </span>
+          ) : null}
+          <span className="bo-accordionIcon" data-slot="hsplit-chevron" aria-hidden="true">
+            <ChevronDown size={16} strokeWidth={1.8} />
+          </span>
+        </button>
       </div>
 
-      <div className="bo-panelBody" data-slot="hsplit-body">
+      <div className="bo-panelBody bo-hsplitConfigBody" data-slot="hsplit-body">
         <div className="bo-row bo-hsplitToggleRow" data-slot="hsplit-toggle-row">
           <label className="bo-label bo-hsplitToggleLabel" htmlFor="hsplit-toggle" data-slot="hsplit-toggle-label">
             Reparto por hora activo
@@ -153,7 +170,14 @@ export function HourSplitConfig({
 
         {enabled ? (
           <>
-            <div className="bo-hsplitCards" data-slot="hsplit-cards" role="list">
+            <div
+              className="bo-hsplitCards"
+              data-slot="hsplit-cards"
+              data-testid="hour-split-cards"
+              id="bo-hsplit-cards"
+              role="list"
+              hidden={!open}
+            >
               {activeHours.map((hour) => (
                 <div role="listitem" key={hour} data-slot="hsplit-card-wrapper">
                   <HourSplitCard

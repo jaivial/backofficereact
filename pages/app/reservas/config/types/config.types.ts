@@ -5,6 +5,7 @@ import type {
   ConfigMesasDeDos,
   ConfigMesasDeTres,
   ConfigOpeningHours,
+  HourSplitConfig,
   MandatoryMenuConfig,
   MenuSelectorItem,
   OpeningMode,
@@ -18,7 +19,8 @@ export type PageData = {
   mesasDeDos: ConfigMesasDeDos | null;
   mesasDeTres: ConfigMesasDeTres | null;
   floors: ConfigFloor[];
+  hourSplit: HourSplitConfig | null;
   error: string | null;
 };
 
-export type { ConfigDailyLimit, ConfigDayStatus, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, MandatoryMenuConfig, MenuSelectorItem, OpeningMode };
+export type { ConfigDailyLimit, ConfigDayStatus, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, HourSplitConfig, MandatoryMenuConfig, MenuSelectorItem, OpeningMode };
