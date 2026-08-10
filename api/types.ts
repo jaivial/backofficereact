@@ -592,7 +592,28 @@ export type ConfigDefaults = {
   dailyLimit: number;
   mesasDeDosLimit: string;
   mesasDeTresLimit: string;
+  hourSplitEnabled: boolean;
+  defaultHourPercentages: Record<string, number>;
 };
+
+/** By-hour client split configuration for a date (effective flag + per-hour split). */
+export type HourSplitConfig = {
+  date: string;
+  enabled: boolean;
+  source: "override" | "default";
+  dailyLimit: number;
+  totalPeople: number;
+  activeHours: string[];
+  percentages: Record<string, number>;
+  /** Present only when `enabled` is true. */
+  hourlyCapacities?: Record<string, number>;
+  bookingsByHour: Record<string, number>;
+};
+
+export type HourSplitPercentagesPayload =
+  | { date: string; percentages: Record<string, number> }
+  | { date: string; hour: string; percentage: number }
+  | { date: string; hour: string; people: number };
 
 export type ConfigFloor = {
   id: number;
