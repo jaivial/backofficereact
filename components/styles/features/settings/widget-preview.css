@@ -226,11 +226,14 @@
 .bo-modalActions--reservas {
   opacity: 1;
   padding-bottom: 0;
+  /* Stretch the footer to the full modal width with no horizontal padding.
+     Vertical padding is preserved; horizontal insets are removed so the
+     footer's content edges align with the modal edges. */
+  padding-left: 0;
+  padding-right: 0;
   margin-left: -14px;
   margin-right: -14px;
   margin-bottom: -14px;
-  padding-left: 14px;
-  padding-right: 14px;
   background:
     linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 55%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.18)),
@@ -284,6 +287,18 @@
 
 .bo-reservasModal--edit .bo-modalActions--reservas {
   padding-bottom: 1rem;
+}
+
+/* On small screens the modal padding shrinks to 12px; keep the footer spanning
+   the full modal width (margin = -modal padding). No horizontal padding. */
+@media (max-width: 640px) {
+  .bo-modalActions--reservas {
+    margin-left: -12px;
+    margin-right: -12px;
+    margin-bottom: -12px;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 
@@ -634,10 +649,20 @@
 
   .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--date {
     order: 1;
+    /* Mobile: label and date picker stack as a column; the field shrinks to its
+       content and is centered, the picker is not stretched. */
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    width: auto;
   }
 
   .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--time {
     order: 2;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    width: auto;
   }
 
   .bo-bookingPanel--customer .bo-bookingRow--schedule .bo-bookingField--party {
