@@ -762,12 +762,13 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     pushToast({ kind: "info", title: "Datos filled", message: "Datos filled desde la reserva" });
   }, [pushToast, paymentTerms]);
 
-  // Autofill from a booking passed via URL (?booking_id=) — runs once on mount.
-  const initialReservationRef = useRef<ReservationSearchResult | null | undefined>(initialReservation);
+  // Autofill from a booking passed via URL (?booking_id=) — fires once when the
+  // prop arrives (it is fetched async by the page after mount).
+  const didFillRef = useRef(false);
   useEffect(() => {
-    if (!initialReservationRef.current) return;
-    const r = initialReservationRef.current;
-    initialReservationRef.current = null;
+    if (didFillRef.current || !initialReservation) return;
+    didFillRef.current = true;
+    const r = initialReservation;
     setCustomerName(r.customer_name.split(" ")[0] || "");
     setCustomerSurname(r.customer_name.split(" ").slice(1).join(" ") || "");
     setCustomerEmail(r.contact_email);
@@ -783,7 +784,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     setDueDate(due.toISOString().split("T")[0]);
     setPaymentDate(new Date().toISOString().split("T")[0]);
     pushToast({ kind: "info", title: "Datos cargados", message: "Datos cargados desde la reserva" });
-  }, [paymentTerms, pushToast]);
+  }, [initialReservation, paymentTerms, pushToast]);
 
   const handleFillFromReservationOnlyBooking = useCallback((reservation: ReservationSearchResult) => {
     setReservationId(reservation.id);

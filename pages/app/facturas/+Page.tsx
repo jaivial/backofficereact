@@ -111,7 +111,7 @@ export default function Page() {
         setIsCreatingNew(true);
         void api.reservas.get(bid).then((res) => {
           if (res.success) {
-            const b = (res as any).booking;
+            const b = res.booking;
             setInitialReservation({
               id: b.id,
               customer_name: b.customer_name,
@@ -246,6 +246,7 @@ export default function Page() {
     setEditingInvoice(null);
     setIsCreatingNew(true);
     setActiveTab("añadir");
+    setInitialReservation(null);
     updateUrl({ tab: "añadir", id: "" });
   }, []);
 
@@ -261,6 +262,7 @@ export default function Page() {
   const handleCancelEdit = useCallback(() => {
     setEditingInvoice(null);
     setIsCreatingNew(false);
+    setInitialReservation(null);
     updateUrl({ tab: "resumen", id: "" });
   }, []);
 
