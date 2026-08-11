@@ -563,10 +563,9 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       {prompt === "tags" ? <POSMultiSelectDialog testId="pos-tags" title="Etiquetas" confirmLabel="Guardar etiquetas" allowEmptySelection busy={register.busy} emptyLabel="No hay etiquetas disponibles." selectedIds={multiSelectIds} onChange={setMultiSelectIds} onClose={closePrompt} onConfirm={() => void saveTags()} entries={register.tags.filter((tag) => tag.isActive !== false || selectedLine?.tagIds?.includes(tag.id)).map((tag) => ({ id: tag.id, label: tag.name }))} /> : null}
 
       {prompt === "cerrar-mesas" ? (
-        <POSPromptModal testId="pos-bulk-close" title="Cerrar todas las mesas abiertas" confirmLabel="Cerrar mesas" busy={register.busy || comandaBusy}
-          fields={[{ name: "paymentMethod", label: "Método de pago", kind: "select", initialValue: "CASH", options: [{ value: "CASH", label: "Efectivo" }, { value: "CARD", label: "Tarjeta" }, { value: "BANK", label: "Banco" }, { value: "OTHER", label: "Otro" }] }]}
-          summary={() => openVisitCount > 0 ? `Se cobrarán ${openVisitCount} mesa(s) abierta(s) del día ${date || ""} con el método seleccionado y se cerrarán.` : "No hay mesas abiertas para cerrar."}
-          onClose={closePrompt} onConfirm={(values) => { void runBulkClose(values.paymentMethod || "CASH").then((ok) => { if (ok) closePrompt(); }); }} />
+        <POSPromptModal testId="pos-bulk-close" title="Cerrar todas las mesas abiertas" confirmLabel="Cerrar en efectivo" busy={register.busy || comandaBusy}
+          summary={() => openVisitCount > 0 ? `Se cobrarán ${openVisitCount} mesa(s) abierta(s) del día ${date || ""} en EFECTIVO y se cerrarán.` : "No hay mesas abiertas para cerrar."}
+          onClose={closePrompt} onConfirm={() => { void runBulkClose("CASH").then((ok) => { if (ok) closePrompt(); }); }} />
       ) : null}
 
       {prompt === "cerrar-dia" ? (
