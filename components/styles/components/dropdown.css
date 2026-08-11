@@ -203,6 +203,18 @@
   width: 312px;
 }
 
+/* DatePicker calendar: day cells must keep a 1:1 aspect ratio and scale with
+   the popover width (instead of a fixed 30x30), so they remain square at any
+   selector/popover width while still fitting on screen. Scoped to the plain
+   date picker popover only; the range picker (.bo-dateRangePop) and the
+   month-calendar (.bo-datePop--mcal) keep their own cell sizing. */
+.bo-datePop:not(.bo-dateRangePop):not(.bo-datePop--mcal) .bo-calDay {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+}
+
 /* Header month-calendar date picker: wider popover that hosts the full
    MonthCalendar (booking occupancy per day) instead of a bare day grid. */
 .bo-datePop--mcal {
