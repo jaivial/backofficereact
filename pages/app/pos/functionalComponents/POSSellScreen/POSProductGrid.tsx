@@ -4,9 +4,11 @@ import { FoodDishCard } from "../../../../../ui/widgets/food/FoodDishCard";
 import type { Product } from "../../hooks/usePOSRegister";
 
 /** Product tiles as dish-cards in a 2-column grid. One-tap add. No price on the card. */
-export function POSProductGrid({ products, busy, onAdd }: {
+export function POSProductGrid({ products, busy, readOnly = false, onAdd }: {
   products: Product[];
   busy: boolean;
+  /** Sealed day: tiles become view-only, no add. */
+  readOnly?: boolean;
   onAdd: (product: Product) => void;
 }) {
   return (
@@ -18,7 +20,7 @@ export function POSProductGrid({ products, busy, onAdd }: {
           key={product.id}
           inactive={!product.isActive}
           openAriaLabel={`Añadir ${product.name}`}
-          onOpen={busy ? undefined : () => onAdd(product)}
+          onOpen={busy || readOnly ? undefined : () => onAdd(product)}
         />
       ))}
     </section>

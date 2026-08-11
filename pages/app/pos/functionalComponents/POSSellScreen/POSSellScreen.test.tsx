@@ -74,6 +74,15 @@ describe("POSSellScreen", () => {
     expect(screen.getByTestId("pos-control-rail")).toBeInTheDocument();
   });
 
+  it("locks every input when the day is sealed (readOnly)", async () => {
+    render(<Provider><POSSellScreen readOnly date="2026-02-10" /></Provider>);
+    expect(screen.getByTestId("pos-readonly-notice")).toBeInTheDocument();
+    // A sealed day disables the whole rail and every keypad key.
+    expect(screen.getByTestId("pos-rail-comanda")).toBeDisabled();
+    expect(screen.getByTestId("pos-key-7")).toBeDisabled();
+    expect(screen.getByTestId("pos-keypad-confirm")).toBeDisabled();
+  });
+
   it("derives category tiles from products and filters grid on tap", async () => {
     render(<Provider><POSSellScreen /></Provider>);
     expect(await screen.findByTestId("pos-category-Arroces")).toBeInTheDocument();

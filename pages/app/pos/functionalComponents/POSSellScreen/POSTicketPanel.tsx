@@ -4,7 +4,7 @@ import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { money, type Operator, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
 
-export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, onMergeSplitTickets, onDeleteEmptyTicket, busy = false }: {
+export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
   ticket: Ticket | null;
   visit: Visit | null;
   operators?: Operator[];
@@ -24,6 +24,8 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
   onMergeSplitTickets?: () => void;
   onDeleteEmptyTicket?: (ticket: Ticket) => void;
   busy?: boolean;
+  /** Sealed day: the ticket is query-only, so every line action stays disabled. */
+  readOnly?: boolean;
 }) {
   const isOpen = (ticket?.status ?? visit?.status) === "OPEN";
   const openSplitTickets = useMemo(() => splitTickets.filter((t) => t.status === "OPEN"), [splitTickets]);
@@ -90,7 +92,7 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
                 <button
                   className="pos-ticketPanel__tabMerge"
                   type="button"
-                  disabled={busy}
+                  disabled={busy || readOnly}
                   onClick={onMergeSplitTickets}
                   title="Reagrupar todas las cuentas"
                   aria-label="Reagrupar todas las cuentas"
