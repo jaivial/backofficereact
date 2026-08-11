@@ -1,13 +1,14 @@
 import React from "react";
 
 export type RailFeatureKey =
-  | "total" | "comanda" | "aparcar" | "mesa" | "salon" | "juntar-mesas" | "borrar-comanda"
+  | "total" | "cerrar-mesas" | "comanda" | "aparcar" | "mesa" | "salon" | "juntar-mesas" | "borrar-comanda"
   | "combinado" | "cliente" | "cocina" | "cajon" | "descuento" | "recargo"
   | "invita" | "empleado" | "separar-comanda" | "tags" | "barra" | "comentario"
-  | "dividir-comanda" | "suplemento" | "propina" | "pack";
+  | "dividir-comanda" | "suplemento" | "propina" | "pack" | "cierre-x" | "cierre-y" | "cerrar-dia";
 
 export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; accent?: boolean }> = [
   { key: "total", label: "Total", accent: true },
+  { key: "cerrar-mesas", label: "Cerrar mesas", accent: true },
   { key: "comanda", label: "Comanda" },
   { key: "aparcar", label: "Aparcar" },
   { key: "mesa", label: "Mesa" },
@@ -30,6 +31,9 @@ export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; accent?:
   { key: "suplemento", label: "Suplemento" },
   { key: "propina", label: "Propina" },
   { key: "pack", label: "Pack" },
+  { key: "cierre-x", label: "Cierre X" },
+  { key: "cierre-y", label: "Cierre Y" },
+  { key: "cerrar-dia", label: "Cerrar día", accent: true },
 ];
 
 export function POSControlRail({ onAction, disabledKeys = [] }: { onAction: (key: RailFeatureKey) => void; disabledKeys?: RailFeatureKey[] }) {
