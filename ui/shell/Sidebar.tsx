@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone, Server } from "lucide-react";
+import { navigate } from "vike/client/router";
 
 import type { SidebarItemKey } from "../../lib/rbac";
 import { sidebarItemsForRole } from "../../lib/rbac";
@@ -94,7 +95,17 @@ export function Sidebar({
 
   return (
     <aside className={cn("bo-sidebar", className)} aria-label="Sidebar" data-testid="sidebar" data-ui="sidebar">
-      <a className="bo-brand" href="/app/backoffice" aria-label="Ir al inicio de Villa Carmen" data-testid="sidebar-logo">
+      <a
+        className="bo-brand"
+        href="/app/backoffice"
+        aria-label="Ir al inicio de Villa Carmen"
+        data-testid="sidebar-logo"
+        onClick={(e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          void navigate("/app/backoffice");
+        }}
+      >
         <img className="bo-logo-img" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="Villa Carmen" />
       </a>
 

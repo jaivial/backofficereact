@@ -25,6 +25,11 @@ vi.mock("lucide-react", () => ({
   Server: () => <span data-testid="icon-server" />,
 }));
 
+vi.mock("vike/client/router", () => ({
+  navigate: vi.fn(),
+  prefetch: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("../../lib/rbac", () => ({
   sidebarItemsForRole: () => [
     { key: "reservas", label: "Reservas", href: "/app/reservas" },
