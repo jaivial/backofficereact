@@ -419,6 +419,17 @@ describe("recoverEncodedReply", () => {
     expect(recoverEncodedReply(table)).toBe(table);
   });
 
+  it("preserves the closing fence of a forky-chart block", () => {
+    // stripBase64Wrapper trims trailing backticks globally. Returning that
+    // stripped string for non-base64 text ate the closing ``` and ForkyChart's
+    // parser (which requires the full fence) then rendered nothing.
+    const chart = '```forky-chart\n{"title":"Stock","data":[{"label":"a","value":1}]}\n```';
+    expect(recoverEncodedReply(chart)).toBe(chart);
+
+    const withProse = "Aqui tienes el resumen 📊\n\n" + chart;
+    expect(recoverEncodedReply(withProse)).toBe(withProse);
+  });
+
   it("rejects binary garbage (keeps original)", () => {
     const garbage = "wodobGEbm8gaGF5IHJlc2VydmFzIHBhcmEgaG95ICEgwr9BcsOtIHVuIGRpYSBtw6Fz";
     expect(recoverEncodedReply(garbage)).toBe(garbage);

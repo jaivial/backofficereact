@@ -478,14 +478,19 @@ export function recoverEncodedReply(text: string): string {
   // every short-circuit below returns clean text.
   const wrapped = stripBase64Wrapper(text);
   const input = cleanseMinimaxReply(wrapped);
+  // Bail-out value for "this is not base64". stripBase64Wrapper trims trailing
+  // backticks globally, which eats the closing fence of a ```forky-chart block
+  // and stops the chart from rendering, so non-base64 text must be returned
+  // from the ORIGINAL string, only glyph-cleansed.
+  const passthrough = cleanseMinimaxReply(text);
   // Only newlines are removed before sniffing. A real base64 blob may be hard
   // wrapped, but it never contains spaces; stripping those too made ordinary
   // unaccented Spanish ("Si es posible Revisalo y te cuento...") collapse into a
   // pure base64-alphabet string that then "decoded" to garbage.
   const stripped = input.replace(/[\n\r]+/g, "");
   const body = stripped.replace(/=+$/, "");
-  if (body.length < 16) return input;
-  if (!/^[A-Za-z0-9+/_-]+$/.test(body)) return input;
+  if (body.length < 16) return passthrough;
+  if (!/^[A-Za-z0-9+/_-]+$/.test(body)) return passthrough;
 
   // Decode the largest clean base64 chunk. MiniMax sometimes truncates the
   // payload mid-stream (len%4==1 makes atob throw), so drop trailing chars and
@@ -517,7 +522,7 @@ export function recoverEncodedReply(text: string): string {
     const repaired = dec.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
     return cleanseMinimaxReply(repaired);
   }
-  return input;
+  return passthrough;
 }
 
 // Remove markdown code-fence backticks / quotes / labels MiniMax may print
