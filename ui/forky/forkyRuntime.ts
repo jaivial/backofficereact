@@ -62,6 +62,10 @@ export type ForkyWsClientOptions = {
   reconnectBaseMs?: number;
   reconnectMaxMs?: number;
   maxReconnectAttempts?: number;
+  /** Client keepalive interval; keeps the server read deadline from expiring. */
+  keepaliveMs?: number;
+  /** Fail a turn when the server sends nothing at all for this long. */
+  turnIdleTimeoutMs?: number;
 };
 
 /** Minimal promise-backed FIFO queue bridging socket callbacks to the turn generator. */
@@ -85,6 +89,8 @@ type ActiveTurn = {
   queue: AsyncQueue<InternalTurnEvent>;
   content: string;
   acked: boolean;
+  /** Watchdog: fails the turn when the server goes silent (never fires after done/error). */
+  idleTimer: ReturnType<typeof setTimeout> | null;
 };
 
 export class ForkyWsClient {
@@ -93,6 +99,8 @@ export class ForkyWsClient {
   private readonly reconnectBaseMs: number;
   private readonly reconnectMaxMs: number;
   private readonly maxReconnectAttempts: number;
+  private readonly keepaliveMs: number;
+  private readonly turnIdleTimeoutMs: number;
 
   private ws: WebSocketLike | null = null;
   private connecting: Promise<void> | null = null;
@@ -108,6 +116,7 @@ export class ForkyWsClient {
   private activeTurn: ActiveTurn | null = null;
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private keepaliveTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(options: ForkyWsClientOptions) {
     this.url = options.url;
@@ -116,6 +125,8 @@ export class ForkyWsClient {
     this.reconnectBaseMs = options.reconnectBaseMs ?? 800;
     this.reconnectMaxMs = options.reconnectMaxMs ?? 8000;
     this.maxReconnectAttempts = options.maxReconnectAttempts ?? 5;
+    this.keepaliveMs = options.keepaliveMs ?? 30_000;
+    this.turnIdleTimeoutMs = options.turnIdleTimeoutMs ?? 120_000;
   }
 
   setHistoryHandler(handler: (history: ForkyHistoryMessage[]) => void): void {
@@ -147,8 +158,9 @@ export class ForkyWsClient {
 
     this.busy = true;
     const queue = new AsyncQueue<InternalTurnEvent>();
-    const turn: ActiveTurn = { queue, content, acked: false };
+    const turn: ActiveTurn = { queue, content, acked: false, idleTimer: null };
     this.activeTurn = turn;
+    this.armTurnIdleTimer(turn);
 
     const onAbort = () => {
       this.close(1000, "aborted");
@@ -174,6 +186,7 @@ export class ForkyWsClient {
       }
     } finally {
       abortSignal?.removeEventListener("abort", onAbort);
+      this.clearTurnIdleTimer(turn);
       this.activeTurn = null;
       this.busy = false;
     }
@@ -193,6 +206,7 @@ export class ForkyWsClient {
   private close(code: number, reason: string): void {
     this.intentionalClose = true;
     this.clearReconnectTimer();
+    this.stopKeepalive();
     this.connecting = null;
     this.handshakeDone = false;
     const ws = this.ws;
@@ -236,6 +250,8 @@ export class ForkyWsClient {
     } catch {
       return;
     }
+    // Any frame proves the server is alive: restart the turn watchdog.
+    if (this.activeTurn) this.armTurnIdleTimer(this.activeTurn);
     switch (frame.type) {
       case "hello": {
         const sessionId = frame.session_id;
@@ -243,6 +259,7 @@ export class ForkyWsClient {
         this.handshakeDone = true;
         this.connecting = null;
         this.reconnectAttempts = 0;
+        this.startKeepalive();
         if (!this.historyDelivered) {
           this.historyDelivered = true;
           const history = Array.isArray(frame.history) ? (frame.history as ForkyHistoryMessage[]) : [];
@@ -271,6 +288,15 @@ export class ForkyWsClient {
         }
         break;
       case "error":
+        // A handshake-time error ("session not found", "session_token required")
+        // arrives instead of the hello frame: reject the pending connect so the
+        // turn fails fast instead of awaiting a handshake that never resolves.
+        if (!this.handshakeDone && this.handshakeReject) {
+          this.rejectHandshake(new Error(String(frame.message ?? "error")));
+          this.forgetSessionId();
+          this.close(1000, "handshake_error");
+          break;
+        }
         if (this.activeTurn) {
           this.activeTurn.acked = true;
           this.activeTurn.queue.push({ type: "error", message: String(frame.message ?? "error") });
@@ -286,6 +312,7 @@ export class ForkyWsClient {
     const wasHandshaking = this.handshakeResolve !== null;
     this.handshakeDone = false;
     this.ws = null;
+    this.stopKeepalive();
 
     if (this.intentionalClose) {
       this.rejectHandshake(new Error("closed"));
@@ -334,6 +361,41 @@ export class ForkyWsClient {
     }
   }
 
+  /** Restart the per-turn silence watchdog. */
+  private armTurnIdleTimer(turn: ActiveTurn): void {
+    this.clearTurnIdleTimer(turn);
+    if (this.turnIdleTimeoutMs <= 0) return;
+    turn.idleTimer = setTimeout(() => {
+      turn.acked = true;
+      turn.queue.push({ type: "error", message: "timeout" });
+    }, this.turnIdleTimeoutMs);
+  }
+
+  private clearTurnIdleTimer(turn: ActiveTurn): void {
+    if (turn.idleTimer !== null) {
+      clearTimeout(turn.idleTimer);
+      turn.idleTimer = null;
+    }
+  }
+
+  /**
+   * Send an application-level ping periodically. The server enforces a read
+   * deadline on the socket and closes it when no client frame arrives in time,
+   * which otherwise kills idle chats between questions.
+   */
+  private startKeepalive(): void {
+    this.stopKeepalive();
+    if (this.keepaliveMs <= 0) return;
+    this.keepaliveTimer = setInterval(() => this.rawSend({ type: "ping" }), this.keepaliveMs);
+  }
+
+  private stopKeepalive(): void {
+    if (this.keepaliveTimer !== null) {
+      clearInterval(this.keepaliveTimer);
+      this.keepaliveTimer = null;
+    }
+  }
+
   private rawSend(frame: Record<string, unknown>): void {
     if (this.ws && this.ws.readyState === WS_OPEN) {
       this.ws.send(JSON.stringify(frame));
@@ -354,6 +416,15 @@ export class ForkyWsClient {
   private writeSessionId(sessionId: number): void {
     try {
       globalThis.localStorage?.setItem(SESSION_STORAGE_KEY, String(sessionId));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Drop a session id the server rejected so the next connect starts fresh. */
+  private forgetSessionId(): void {
+    try {
+      globalThis.localStorage?.removeItem(SESSION_STORAGE_KEY);
     } catch {
       /* ignore */
     }

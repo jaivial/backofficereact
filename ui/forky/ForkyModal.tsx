@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import {
   ActionBarPrimitive,
   ComposerPrimitive,
+  ErrorPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
 } from "@assistant-ui/react";
@@ -182,6 +183,18 @@ function AssistantMessage() {
               <ForkyMarkdownText />
             </>
           ) }} />
+          {/* A failed turn (WS/session/model error) must be visible: without
+              this the message stays an empty bubble and the chat looks stuck. */}
+          <MessagePrimitive.Error>
+            <ErrorPrimitive.Root
+              data-testid="forky-message-error"
+              className="mt-1 rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-700 dark:bg-red-500/10 dark:text-red-300"
+            >
+              <ErrorPrimitive.Message className="block">
+                No he podido responder. Revisa la conexión y vuelve a intentarlo.
+              </ErrorPrimitive.Message>
+            </ErrorPrimitive.Root>
+          </MessagePrimitive.Error>
         </div>
         {/* Actions - appear on hover */}
         <div className="flex items-center gap-1 pt-2 opacity-0 transition-opacity group-focus-within/message:opacity-100 group-hover/message:opacity-100 motion-reduce:transition-none">

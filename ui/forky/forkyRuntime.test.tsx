@@ -44,7 +44,11 @@ class FakeWebSocket {
   }
 }
 
-function makeClient(options?: { maxReconnectAttempts?: number }): {
+function makeClient(options?: {
+  maxReconnectAttempts?: number;
+  keepaliveMs?: number;
+  turnIdleTimeoutMs?: number;
+}): {
   client: ForkyWsClient;
   history: ForkyHistoryMessage[];
 } {
@@ -56,6 +60,8 @@ function makeClient(options?: { maxReconnectAttempts?: number }): {
     reconnectBaseMs: 5,
     reconnectMaxMs: 10,
     maxReconnectAttempts: options?.maxReconnectAttempts ?? 2,
+    keepaliveMs: options?.keepaliveMs ?? 0,
+    turnIdleTimeoutMs: options?.turnIdleTimeoutMs ?? 0,
   });
   return { client, history };
 }
@@ -192,8 +198,7 @@ describe("ForkyWsClient", () => {
     client.dispose();
   });
 
-  it("reconnects mid-turn and re-sends the pending message", async () => {
-    const { client } = makeClient({ maxReconnectAttempts: 3 });
+  it("reconnects mid-turn and re-sends the pending message", async () => {    const { client } = makeClient({ maxReconnectAttempts: 3 });
     const turn = collectTurn(client, "pendiente");
     const ws = FakeWebSocket.instances[0];
     ws.open();
@@ -216,6 +221,102 @@ describe("ForkyWsClient", () => {
     const events = await turn;
     expect(events.map((e) => e.type)).toEqual(["delta", "done"]);
     client.dispose();
+  });
+
+  it("fails the turn when the handshake answers with an error frame", async () => {
+    // The server replies to `hello` with `{type:"error"}` (e.g. a stale session
+    // id after a DB reset). The turn must fail instead of awaiting a handshake
+    // that never resolves, which left the UI thinking forever.
+    localStorage.setItem("forky_session_id", "999999");
+    const { client } = makeClient();
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive({ type: "error", message: "session not found" });
+
+    const events = await turn;
+    expect(events).toEqual([{ type: "error", message: "connection_failed" }]);
+    // The rejected session id is dropped so the next attempt starts a new one.
+    expect(localStorage.getItem("forky_session_id")).toBeNull();
+    client.dispose();
+  });
+
+  it("recovers on the next turn after a rejected handshake", async () => {
+    localStorage.setItem("forky_session_id", "999999");
+    const { client } = makeClient();
+    const first = collectTurn(client, "hola");
+    FakeWebSocket.instances[0].open();
+    FakeWebSocket.instances[0].receive({ type: "error", message: "session not found" });
+    await first;
+
+    const second = collectTurn(client, "otra vez");
+    const ws2 = FakeWebSocket.instances[1];
+    expect(ws2).toBeDefined();
+    ws2.open();
+    expect(ws2.lastSentJSON()).toEqual({ type: "hello", session_id: null });
+    ws2.receive(helloFrame(12));
+    await new Promise((r) => setTimeout(r, 0));
+    ws2.receive({ type: "delta", text: "ok" });
+    ws2.receive({ type: "done" });
+
+    const events = await second;
+    expect(events.map((e) => e.type)).toEqual(["delta", "done"]);
+    client.dispose();
+  });
+
+  it("fails the turn when the server goes silent past the idle timeout", async () => {
+    const { client } = makeClient({ turnIdleTimeoutMs: 20 });
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Server acknowledges the turn and then never answers.
+    ws.receive({ type: "status", state: "thinking" });
+
+    const events = await turn;
+    expect(events.map((e) => e.type)).toEqual(["status", "error"]);
+    expect(events.at(-1)).toMatchObject({ type: "error", message: "timeout" });
+    client.dispose();
+  });
+
+  it("keeps the watchdog quiet while deltas keep arriving", async () => {
+    const { client } = makeClient({ turnIdleTimeoutMs: 40 });
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    for (let i = 0; i < 4; i++) {
+      await new Promise((r) => setTimeout(r, 25));
+      ws.receive({ type: "delta", text: `t${i}` });
+    }
+    ws.receive({ type: "done" });
+
+    const events = await turn;
+    expect(events.map((e) => e.type)).toEqual(["delta", "delta", "delta", "delta", "done"]);
+    client.dispose();
+  });
+
+  it("pings periodically so the server read deadline never expires", async () => {
+    const { client } = makeClient({ keepaliveMs: 10 });
+    const connected = client.ensureConnected();
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(3));
+    await connected;
+
+    await new Promise((r) => setTimeout(r, 35));
+    const pings = ws.sent.filter((s) => JSON.parse(s).type === "ping");
+    expect(pings.length).toBeGreaterThanOrEqual(2);
+
+    // Disposing must stop the keepalive so no timer leaks past unmount.
+    client.dispose();
+    const after = ws.sent.length;
+    await new Promise((r) => setTimeout(r, 30));
+    expect(ws.sent.length).toBe(after);
   });
 });
 
