@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
-import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput } from "../../../api/types";
+import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput, ReservationSearchResult } from "../../../api/types";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { FileText, PlusCircle } from "lucide-react";
@@ -69,6 +69,9 @@ export default function Page() {
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
 
+  // Prefill from a booking (?booking_id=) — set when navigating from reservas grid.
+  const [initialReservation, setInitialReservation] = useState<ReservationSearchResult | null>(null);
+
   // Send email modal state
   const [emailInvoice, setEmailInvoice] = useState<Invoice | null>(null);
 
@@ -97,6 +100,29 @@ export default function Page() {
           const found = invoices.find((inv) => inv.id === id);
           if (found) setEditingInvoice(found);
         }
+      }
+    }
+    // Prefill from a booking passed via ?booking_id=
+    const bookingIdStr = getUrlParam("booking_id");
+    if (bookingIdStr) {
+      const bid = Number(bookingIdStr);
+      if (bid && !Number.isNaN(bid)) {
+        setActiveTab("añadir");
+        setIsCreatingNew(true);
+        void api.reservas.get(bid).then((res) => {
+          if (res.success) {
+            const b = res.booking;
+            setInitialReservation({
+              id: b.id,
+              customer_name: b.customer_name,
+              contact_email: b.contact_email || "",
+              contact_phone: b.contact_phone || "",
+              reservation_date: b.reservation_date,
+              reservation_time: b.reservation_time,
+              party_size: b.party_size,
+            });
+          }
+        });
       }
     }
   }, []); // ponytail: run once on mount; invoices from SSR data
@@ -220,6 +246,7 @@ export default function Page() {
     setEditingInvoice(null);
     setIsCreatingNew(true);
     setActiveTab("añadir");
+    setInitialReservation(null);
     updateUrl({ tab: "añadir", id: "" });
   }, []);
 
@@ -235,6 +262,7 @@ export default function Page() {
   const handleCancelEdit = useCallback(() => {
     setEditingInvoice(null);
     setIsCreatingNew(false);
+    setInitialReservation(null);
     updateUrl({ tab: "resumen", id: "" });
   }, []);
 
@@ -560,6 +588,7 @@ export default function Page() {
                   onSave={handleSaveInvoice}
                   onCancel={handleCancelEdit}
                   searchReservations={searchReservations}
+                  initialReservation={initialReservation}
                 />
             </Panel>
           </div>
