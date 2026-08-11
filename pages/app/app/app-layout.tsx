@@ -18,10 +18,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const prevRestaurant = useRef<number | null>(null);
 
   // `session` is guaranteed by server middleware, but keep render stable.
-  if (!session) return null;
-
   useEffect(() => {
-    const current = session.activeRestaurantId || null;
+    const current = session?.activeRestaurantId || null;
     if (!current) return;
     if (prevRestaurant.current === null) {
       prevRestaurant.current = current;
@@ -31,7 +29,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       // Force a full reload so SSR data + local state are consistent for the new tenant.
       window.location.reload();
     }
-  }, [session.activeRestaurantId]);
+  }, [session?.activeRestaurantId]);
+
+  if (!session) return null;
 
   return (
     <div className="bo-app bo-app--page" data-ui="app-shell">

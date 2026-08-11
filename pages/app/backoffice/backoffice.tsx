@@ -10,10 +10,7 @@ import type { OrbitItem } from "./types/index";
 export default function Page() {
   const session = useAtomValue(sessionAtom);
 
-  // Guaranteed by server middleware, but keep render stable.
-  if (!session) return null;
-
-  const { role, sectionAccess, roleImportance, name } = session.user;
+  const { role, sectionAccess, roleImportance, name } = session?.user ?? {};
 
   const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance), [role, roleImportance, sectionAccess]);
 
@@ -32,6 +29,9 @@ export default function Page() {
     const [first] = raw.split(/\s+/);
     return first || raw;
   }, [name]);
+
+  // Guaranteed by server middleware, but keep render stable.
+  if (!session) return null;
 
   return (
     <div className="bo-homePage" data-ui="backoffice-home">
