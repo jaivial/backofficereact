@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 
-import { usePOSRegister, money, type Table, type TicketLine } from "../../hooks/usePOSRegister";
+import { usePOSRegister, money, request, type Table, type TicketLine } from "../../hooks/usePOSRegister";
 import { POSCategoryPanel } from "./POSCategoryPanel";
 import { POSProductGrid } from "./POSProductGrid";
 import { POSTicketPanel } from "./POSTicketPanel";
@@ -12,6 +12,8 @@ import { splitShares } from "../../utils/splitShares";
 import { POSPromptModal } from "./POSPromptModal";
 import { POSMultiSelectDialog } from "./POSMultiSelectDialog";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
+import { createClient } from "../../../../../api/client";
+import type { POSCashDay, POSCashDayTotals } from "../../../../../api/types";
 
 type KeypadContext = { kind: "quantity" } | { kind: "cash" } | { kind: "discount" } | { kind: "covers" };
 
@@ -19,7 +21,7 @@ type KeypadContext = { kind: "quantity" } | { kind: "cash" } | { kind: "discount
  * Visual sell screen. Layout:
  *   [ column: [ticket | keypad] over [categories | products] ] [ control rail ]
  */
-export function POSSellScreen({ date, readOnly = false }: { date?: string | null; readOnly?: boolean } = {}) {
+export function POSSellScreen({ date, readOnly = false, cashDay = null, totals = null, cashDayError = "", onCloseDay }: { date?: string | null; readOnly?: boolean; cashDay?: POSCashDay | null; totals?: POSCashDayTotals | null; cashDayError?: string; onCloseDay?: (params: { countedCashCents: number; notes?: string; discrepancyReason?: string }) => Promise<boolean> } = {}) {
   const register = usePOSRegister(date);
   const [category, setCategory] = useState("");
   const [keypadValue, setKeypadValue] = useState("");
@@ -43,6 +45,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
   const [comandaBusy, setComandaBusy] = useState(false);
   const comandaInFlight = useRef(false);
   const [keypadMultiplierQty, setKeypadMultiplierQty] = useState<number | null>(null);
+  const [closeDayError, setCloseDayError] = useState("");
 
   const categories = useMemo(() => {
     const names = new Set<string>();
@@ -133,6 +136,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
   );
 
   const parkedVisits = useMemo(() => register.visits.filter((entry) => entry.parked), [register.visits]);
+  const openVisitCount = useMemo(() => register.visits.filter((entry) => entry.status === "OPEN").length, [register.visits]);
   const eligibleReservations = useMemo(() => register.reservations.filter((entry) => !entry.visitId), [register.reservations]);
   const mergeableVisits = useMemo(
     () => register.visits.filter((entry) => entry.status === "OPEN" && entry.channel === "DINE_IN" && !entry.parked && entry.id !== register.visit?.id),
@@ -210,6 +214,52 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
     }
   }, [register]);
 
+  // Cierre X / Y: a shift snapshot (X) or intermediate cut (Y). One POST, no
+  // modal — neither takes operator input. Z stays on the reports card where it
+  // seals the day and needs counted cash.
+  const runCierre = useCallback(async (closureType: "X" | "Y") => {
+    const shiftId = register.currentShift?.id;
+    if (!shiftId) { register.setError("Abre un turno antes de generar un cierre."); return; }
+    register.setError("");
+    try {
+      await request<{ closureId: number }>("/cash/closures", { method: "POST", body: JSON.stringify({ shiftId, closureType, idempotencyKey: `${shiftId}-${closureType}-${Date.now()}` }) });
+      register.setMessage(`Cierre ${closureType} generado.`);
+    } catch (reason) {
+      register.setError(reason instanceof Error ? reason.message : `No se pudo generar el cierre ${closureType}.`);
+    }
+  }, [register]);
+
+  // Bulk close: pay every open ticket for the business date with one method,
+  // the precondition that unblocks the day close.
+  const runBulkClose = useCallback(async (paymentMethod: string) => {
+    if (!date) return;
+    register.setError("");
+    setComandaBusy(true);
+    try {
+      const result = await createClient().pos.cashDays.bulkCheckout({ date, paymentMethod, idempotencyKey: `bulk-${date}-${paymentMethod}-${Date.now()}`, closeVisits: true });
+      if (!result.success) throw new Error(result.message);
+      register.setMessage(`Cerradas ${result.closedTickets} cuenta(s)${result.skippedTickets ? ` · ${result.skippedTickets} sin importe` : ""} · ${money(result.totalGrossCents)}.`);
+      await register.load();
+      return true;
+    } catch (reason) {
+      register.setError(reason instanceof Error ? reason.message : "No se pudo cerrar las mesas.");
+      return false;
+    } finally { setComandaBusy(false); }
+  }, [date, register]);
+
+  const runCloseDay = useCallback(async (values: Record<string, string>) => {
+    if (!onCloseDay) return false;
+    const countedCashCents = Math.round((Number((values.countedCash || "").replace(",", ".")) || 0) * 100);
+    setCloseDayError("");
+    const ok = await onCloseDay({ countedCashCents, discrepancyReason: values.discrepancyReason || "" });
+    if (ok) { register.setMessage("Día cerrado."); return true; }
+    // ponytail: cash-day hook returns only a boolean; surface a generic cause.
+    // The rail guard already blocks the common OPEN_POS_ITEMS case, so this path
+    // is mainly counted-cash discrepancies, which the operator retries inline.
+    setCloseDayError(cashDayError || "No se pudo cerrar el día. Revisa el efectivo contado.");
+    return false;
+  }, [cashDayError, onCloseDay, register]);
+
   const quickCashOptions = useMemo(() => {
     const exact = register.amountDueCents / 100;
     const notes = [5, 10, 20, 50].filter((note) => note > exact);
@@ -226,8 +276,14 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
     if (!selectedLine || (selectedLine.status && selectedLine.status !== "ACTIVE")) keys.push("invita", "comentario", "tags");
     if (register.visit) keys.push("barra");
     if (register.settings.requireOpenShift && register.currentShift?.status !== "OPEN") keys.push("cajon");
+    // Cierre X/Y and the bulk sweep all attribute to the open shift, so they
+    // share the cajón gate.
+    if (register.settings.requireOpenShift && register.currentShift?.status !== "OPEN") keys.push("cierre-x", "cierre-y", "cerrar-mesas");
+    // "Cerrar día" is the user's hard requirement: blocked while any table is
+    // still open, and blocked when there is no open cash day to seal.
+    if (openVisitCount > 0 || cashDay?.status !== "OPEN") keys.push("cerrar-dia");
     return keys;
-  }, [comandaBusy, readOnly, register.activeTicketLines.length, register.currentShift?.status, register.hasPendingKitchenLines, register.settings.requireOpenShift, register.ticket, register.visit, selectedLine]);
+  }, [cashDay?.status, comandaBusy, openVisitCount, readOnly, register.activeTicketLines.length, register.currentShift?.status, register.hasPendingKitchenLines, register.settings.requireOpenShift, register.ticket, register.visit, selectedLine]);
 
   const moveLineToTarget = useCallback((line: TicketLine) => {
     const target = register.otherOpenSplitTickets[0];
@@ -298,6 +354,10 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
       case "dividir-comanda": if (register.ticket) setDivideOpen(true); break;
       case "salon": setAreaFilter(0); setShowTables(true); break;
       case "barra": void register.openBar(); break;
+      case "cierre-x": void runCierre("X"); break;
+      case "cierre-y": void runCierre("Y"); break;
+      case "cerrar-mesas": setPrompt("cerrar-mesas"); break;
+      case "cerrar-dia": if (onCloseDay && cashDay?.status === "OPEN") { setCloseDayError(""); setPrompt("cerrar-dia"); } break;
       case "aparcar": case "recargo": case "invita": case "comentario": case "cajon":
       case "cliente": case "empleado": case "juntar-mesas": case "tags": case "propina":
         openPrompt(key); break;
@@ -306,7 +366,7 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
         break;
       default: register.setMessage(`Función "${key}" disponible próximamente.`); break;
     }
-  }, [openPrompt, printComanda, register]);
+  }, [cashDay?.status, onCloseDay, openPrompt, printComanda, register, runCierre]);
 
   const contextLabel = keypadContext.kind === "quantity" ? "Cantidad" : keypadContext.kind === "cash" ? "Efectivo" : keypadContext.kind === "discount" ? "Descuento €" : "Comensales";
 
@@ -501,6 +561,24 @@ export function POSSellScreen({ date, readOnly = false }: { date?: string | null
       {prompt === "juntar-mesas" ? <POSMultiSelectDialog testId="pos-merge" title="Juntar mesas" confirmLabel="Juntar en esta cuenta" busy={register.busy} emptyLabel="No hay otras mesas abiertas." selectedIds={multiSelectIds} onChange={setMultiSelectIds} onClose={closePrompt} onConfirm={() => { void register.mergeVisits(multiSelectIds).then((merged) => { if (merged) closePrompt(); }); }} entries={mergeableVisits.map((entry) => ({ id: entry.id, label: entry.tableName || `Visita ${entry.id}`, detail: `${entry.covers} comensales · ${entry.ticket?.lines.length || 0} líneas · ${money(entry.totalGrossCents || entry.ticket?.totalGrossCents || 0)}`, covers: entry.covers, amountCents: entry.totalGrossCents }))} /> : null}
 
       {prompt === "tags" ? <POSMultiSelectDialog testId="pos-tags" title="Etiquetas" confirmLabel="Guardar etiquetas" allowEmptySelection busy={register.busy} emptyLabel="No hay etiquetas disponibles." selectedIds={multiSelectIds} onChange={setMultiSelectIds} onClose={closePrompt} onConfirm={() => void saveTags()} entries={register.tags.filter((tag) => tag.isActive !== false || selectedLine?.tagIds?.includes(tag.id)).map((tag) => ({ id: tag.id, label: tag.name }))} /> : null}
+
+      {prompt === "cerrar-mesas" ? (
+        <POSPromptModal testId="pos-bulk-close" title="Cerrar todas las mesas abiertas" confirmLabel="Cerrar mesas" busy={register.busy || comandaBusy}
+          fields={[{ name: "paymentMethod", label: "Método de pago", kind: "select", initialValue: "CASH", options: [{ value: "CASH", label: "Efectivo" }, { value: "CARD", label: "Tarjeta" }, { value: "BANK", label: "Banco" }, { value: "OTHER", label: "Otro" }] }]}
+          summary={() => openVisitCount > 0 ? `Se cobrarán ${openVisitCount} mesa(s) abierta(s) del día ${date || ""} con el método seleccionado y se cerrarán.` : "No hay mesas abiertas para cerrar."}
+          onClose={closePrompt} onConfirm={(values) => { void runBulkClose(values.paymentMethod || "CASH").then((ok) => { if (ok) closePrompt(); }); }} />
+      ) : null}
+
+      {prompt === "cerrar-dia" ? (
+        <POSPromptModal testId="pos-close-day" title="Cerrar día de caja" confirmLabel="Cerrar día" busy={register.busy}
+          fields={[
+            { name: "countedCash", label: "Efectivo contado €", inputMode: "decimal", required: true },
+            { name: "discrepancyReason", label: "Motivo descuadre (si lo hay)" },
+          ]}
+          validate={(values) => Number((values.countedCash || "").replace(",", ".")) < 0 || !Number.isFinite(Number((values.countedCash || "").replace(",", "."))) ? "Introduce el efectivo contado." : null}
+          summary={() => `${totals ? `Ventas del día ${money(totals.totalGrossCents)}` : "Sin totales"}${closeDayError ? ` · ${closeDayError}` : ""}`}
+          onClose={() => { setCloseDayError(""); closePrompt(); }} onConfirm={(values) => { void runCloseDay(values).then((ok) => { if (ok) closePrompt(); }); }} />
+      ) : null}
 
       {divideOpen && register.ticket ? (
         <div className="pos-modalBackdrop" role="presentation" onClick={() => setDivideOpen(false)} data-testid="pos-divide-backdrop">

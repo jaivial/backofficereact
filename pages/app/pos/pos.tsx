@@ -59,7 +59,11 @@ export default function Page() {
   const [products, setProducts] = useState<Product[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
-  const [section, setSection] = useState<"sell" | "kitchen" | "catalog" | "stock" | "reports" | "settings">("sell");
+  const [section, setSection] = useState<"sell" | "kitchen" | "catalog" | "stock" | "reports" | "settings">(() => {
+    if (typeof window === "undefined") return "sell";
+    const value = new URLSearchParams(window.location.search).get("section");
+    return value === "kitchen" || value === "catalog" || value === "stock" || value === "reports" || value === "settings" ? value : "sell";
+  });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -149,7 +153,7 @@ export default function Page() {
     <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span><POSSectionMenu section={section} onChange={setSection}/></header>
     {error?<div className="mb-4 rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-error">{error}</div>:null}{message?<div className="mb-4 rounded-lg border border-[var(--bo-color-success)] p-3 text-[var(--bo-text-success)]" role="status" data-ui="pos-message">{message}</div>:null}
 
-    {section==="sell"&&scopeReady?(needsCashDay?(activeDate?<POSNoCashDayModal date={activeDate} error={cashDayState.error} onOpenDay={openDay} onPickDate={pickDate}/>:<section className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4" data-ui="pos-cash-day-unavailable"><h2 className="font-semibold text-[var(--bo-text)]" data-ui="pos-cash-day-unavailable-title">No se pudo determinar el día de caja</h2><p className="mt-1 text-sm text-[var(--bo-muted)]" data-ui="pos-cash-day-unavailable-detail">{cashDayState.error||"Sin respuesta del servidor."}</p><button className="mt-3 min-h-11 rounded-lg border border-[var(--bo-border-2)] px-4 text-[var(--bo-accent)]" type="button" onClick={()=>void cashDayState.refresh()} data-ui="pos-cash-day-retry" data-testid="pos-cash-day-retry">Reintentar</button></section>):<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly}/>):null}
+    {section==="sell"&&scopeReady?(needsCashDay?(activeDate?<POSNoCashDayModal date={activeDate} error={cashDayState.error} onOpenDay={openDay} onPickDate={pickDate}/>:<section className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4" data-ui="pos-cash-day-unavailable"><h2 className="font-semibold text-[var(--bo-text)]" data-ui="pos-cash-day-unavailable-title">No se pudo determinar el día de caja</h2><p className="mt-1 text-sm text-[var(--bo-muted)]" data-ui="pos-cash-day-unavailable-detail">{cashDayState.error||"Sin respuesta del servidor."}</p><button className="mt-3 min-h-11 rounded-lg border border-[var(--bo-border-2)] px-4 text-[var(--bo-accent)]" type="button" onClick={()=>void cashDayState.refresh()} data-ui="pos-cash-day-retry" data-testid="pos-cash-day-retry">Reintentar</button></section>):<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly} cashDay={cashDayState.cashDay} totals={cashDayState.totals} cashDayError={cashDayState.error} onCloseDay={cashDayState.closeDay}/>):null}
 
     {section==="kitchen"?<KitchenDisplay/>:null}
 
