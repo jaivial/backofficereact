@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reservas edit modal layout repro</title>
+<style>
+  :root { --bo-modal-w: 1040px; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family: system-ui, sans-serif; background: #111218; color: #eef0f6; }
+
+  /* === components/modal.css (relevant) === */
+  .bo-modal {
+    position: relative;
+    width: min(var(--bo-modal-w, 520px), calc(100vw - 36px));
+    max-width: 100%;
+    max-height: 80vh;
+    overflow-x: hidden; overflow-y: auto;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.06);
+    background: #2a2b34;
+    box-shadow: 0 18px 52px rgba(0,0,0,.55);
+    padding: 14px;
+  }
+  @media (max-width: 640px) {
+    .bo-modal { width: calc(100vw - 16px); padding: 12px; }
+  }
+
+  /* === layout/toolbar.css === */
+  .bo-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .bo-field--inline { display: flex; align-items: center; gap: 10px; }
+
+  /* === components/form.css === */
+  .bo-label { font-size: 12px; color: rgba(238,240,246,.64); font-weight: 650; }
+
+  /* === components/dropdown.css dateBtn === */
+  .bo-dateBtn {
+    height: 36px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.06);
+    background: rgba(255,255,255,.02); color: #eef0f6;
+    padding: 0 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .bo-dateBtnLabel { font-size: 12px; font-weight: 720; white-space: nowrap; }
+
+  /* === components/table.css calendar (CURRENT — fixed sizes) === */
+  .bo-calDows { display: grid; grid-template-columns: repeat(7,1fr); font-size: 11px; color: rgba(238,240,246,.52); text-align: center; margin-bottom: 8px; }
+  .bo-calGrid { display: grid; grid-template-columns: repeat(7,1fr); gap: 10px 6px; font-size: 12px; text-align: center; }
+  .bo-calDay { width: 100%; height: auto; aspect-ratio: 1 / 1; display: grid; place-items: center; margin: 0; border-radius: 999px; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+  .bo-calDay.is-selected { background: rgba(185,168,255,.28); }
+  .bo-calDay--empty { cursor: default; }
+
+  .bo-datePop { position: fixed; z-index: 9999; width: 280px; border-radius: 18px; border: 1px solid rgba(255,255,255,.06); background: #22232b; box-shadow: 0 10px 26px rgba(0,0,0,.36); padding: 12px; }
+  .bo-dateHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .bo-dateTitle { font-size: 13px; font-weight: 700; }
+
+  /* === widget-preview.css footer + reservas modal (CURRENT) === */
+  .bo-modalActions { position: sticky; bottom: 0; z-index: 1; flex-shrink: 0; display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; padding: 16px; border-top: 1px solid rgba(255,255,255,.06); background: #2a2b34; }
+  .bo-modalActions--reservas {
+    opacity: 1; padding-bottom: 0;
+    margin-left: -14px; margin-right: -14px; margin-bottom: -14px;
+    padding-left: 0; padding-right: 0;
+    background: #2a2b34;
+  }
+  @media (max-width: 640px) {
+    .bo-modalActions--reservas { margin-left: -12px; margin-right: -12px; margin-bottom: -12px; padding-left: 0; padding-right: 0; }
+  }
+  .bo-reservasModal { display: flex; flex-direction: column; max-height: min(88vh, 980px); overflow: hidden; }
+  @media (max-width: 768px) { .bo-reservasModal.bo-reservasModal--edit { max-height: 95dvh; } }
+  @media (max-width: 550px) {
+    .bo-bookingRow--schedule .bo-bookingField--date,
+    .bo-bookingRow--schedule .bo-bookingField--time { flex-direction: column; align-items: center; flex: 0 0 auto; width: auto; }
+  }
+  .bo-modalHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: 0 0 auto; }
+  .bo-modalTitle { font-size: 14px; font-weight: 760; }
+  .bo-stack { display: flex; flex-direction: column; gap: 18px; }
+  .bo-bookingEditor--stickyFooter { display: flex; flex-direction: column; min-height: 100%; }
+  .bo-modalOutline { flex: 1 1 auto; min-height: 0; }
+
+  /* visual helpers */
+  .panel { padding: 16px; border-radius: 14px; background: #22232b; }
+  .panel h3 { margin: 0 0 8px; font-size: 13px; }
+  .bo-input { height: 32px; border-radius: 10px; border: 1px solid rgba(255,255,255,.06); background: #1a1b22; color: inherit; }
+</style>
+</head>
+<body>
+<div class="bo-modalOverlay" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.46);display:grid;place-items:center;padding:18px;">
+  <div class="bo-modal bo-reservasModal bo-reservasModal--edit" id="edit-modal" role="dialog" aria-label="Editar reserva" style="--bo-modal-w:1040px">
+    <div class="bo-modalHead">
+      <div class="bo-modalTitle">Editar reserva</div>
+    </div>
+
+    <div class="bo-scrollArea" data-slot="reservas-modalOutline-edit" style="position:relative;display:flex;flex:1 1 auto;min-height:0;overflow:hidden">
+      <div class="bo-scrollAreaViewport" style="height:auto;overflow-x:hidden;overflow-y:auto;width:100%">
+        <div class="bo-modalOutline" style="margin-top:10px;display:flex;flex-direction:column;overflow:visible">
+          <div class="bo-stack bo-bookingEditor bo-bookingEditor--stickyFooter" style="gap:14px;min-height:auto">
+            <div class="bo-scrollArea" data-slot="booking-editor-body" style="height:auto;overflow:visible;position:relative;display:flex;flex:1 1 auto;min-height:0">
+              <div class="bo-scrollAreaViewport" style="height:auto;overflow:visible;width:100%">
+                <div class="bo-bookingEditorBody" style="display:grid;gap:14px;padding-bottom:14px">
+                  <section class="panel bo-bookingPanel--customer">
+                    <h3>Datos</h3>
+                    <div class="bo-panelBody bo-bookingPanelBody--customer" style="display:flex;flex-direction:column;align-items:center;max-width:500px;margin:0 auto;gap:12px">
+                      <div class="bo-row bo-bookingRow bo-bookingRow--schedule" id="schedule-row" style="width:100%;justify-content:center">
+                        <div class="bo-field bo-field--inline bo-bookingField bo-bookingField--date" id="date-field" data-slot="booking-editor-date">
+                          <div class="bo-label" style="text-align:left" id="date-label">Fecha</div>
+                          <button class="bo-dateBtn" id="date-btn" type="button">
+                            <span style="font-size:18px">📅</span>
+                            <span class="bo-dateBtnLabel">11 jul 2026</span>
+                          </button>
+                        </div>
+                        <div class="bo-field bo-field--inline bo-bookingField bo-bookingField--time" id="time-field" data-slot="booking-editor-time">
+                          <div class="bo-label" style="text-align:left" id="time-label">Hora</div>
+                          <button class="bo-dateBtn" id="time-btn" type="button">
+                            <span style="font-size:18px">🕐</span>
+                            <span class="bo-dateBtnLabel">13:00</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+
+            <div class="bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" id="editor-footer">
+              <button type="button" id="cancel-btn">Cerrar</button>
+              <button type="button" id="primary-action">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Portal where DatePicker popover is rendered -->
+<div id="bo-portal"></div>
+</body>
+</html>
