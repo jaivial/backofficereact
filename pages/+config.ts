@@ -6,4 +6,6 @@ export default {
   title: "Backoffice",
   description: "Backoffice multitenant",
   passToClient: ["bo"],
+  // Prefetch static assets (JS/CSS chunks) on link hover for faster navigation.
+  prefetchStaticAssets: "hover",
 } satisfies Config;
