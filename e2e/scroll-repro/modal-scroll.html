@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reservas edit modal scroll repro</title>
+<style>
+  :root {
+    --bo-modal-w: 1040px;
+    /* tokens */
+  }
+  /* The page constrains height like the app shell (100dvh). */
+  html, body { height: 100%; margin: 0; }
+  body { font-family: system-ui, sans-serif; background: #111218; color: #eef0f6; }
+  .stage { height: 100vh; height: 100dvh; display: grid; place-items: center; padding: 24px; }
+
+  /* === Copy of components/styles/components/modal.css (relevant) === */
+  .bo-modalOverlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.46);
+    display: grid; place-items: center;
+    padding: 18px;
+    overflow-x: hidden; overflow-y: auto;
+  }
+  .bo-modal {
+    position: relative;
+    width: min(var(--bo-modal-w, 520px), calc(100vw - 36px));
+    max-width: 100%;
+    max-height: 80vh;
+    overflow-x: hidden; overflow-y: auto;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.06);
+    background: #2a2b34;
+    box-shadow: 0 18px 52px rgba(0,0,0,.55);
+    padding: 14px;
+  }
+  .bo-modalHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .bo-modalTitle { font-size: 14px; font-weight: 760; }
+
+  /* === ScrollArea base (from ui/layout/ScrollArea.tsx className) === */
+  .bo-scrollArea { position: relative; display: flex; height: 100%; overflow: hidden; }
+  .bo-scrollAreaViewport { height: 100%; width: 100%; overflow: auto; overscroll-behavior: contain; }
+
+  /* === panel.css bo-stack === */
+  .bo-stack { display: flex; flex-direction: column; gap: 18px; }
+
+  /* === widget-preview.css relevant rules (CURRENT state) === */
+  .bo-modalActions { position: sticky; bottom: 0; z-index: 1; flex-shrink: 0; display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; padding: 16px; border-top: 1px solid rgba(255,255,255,.06); background: #2a2b34; }
+
+  .bo-reservasModal {
+    display: flex; flex-direction: column;
+    max-height: min(88vh, 980px);
+    overflow: hidden;
+  }
+  @media (max-width: 768px) {
+    .bo-reservasModal.bo-reservasModal--edit { max-height: 95dvh; }
+  }
+  .bo-reservasModal--edit { padding-bottom: 0; }
+  .bo-reservasModal .bo-modalHead { flex: 0 0 auto; }
+  .bo-reservasModal .bo-modalOutline { flex: 1 1 auto; min-height: 0; }
+
+  .bo-reservasModal--edit .bo-modalOutline { display: flex; flex-direction: column; overflow: visible; }
+  .bo-reservasModal--edit .bo-scrollArea { flex: 1 1 auto; min-height: 0; }
+  .bo-reservasModal--edit .bo-scrollAreaViewport { overflow-x: hidden; }
+  .bo-reservasModal--edit .bo-bookingEditorBody { display: grid; gap: 14px; padding-bottom: 14px; }
+  .bo-reservasModal--edit .bo-bookingEditorFooter { margin-top: auto; }
+  .bo-reservasModal--edit .bo-modalOutline .bo-scrollArea { height: auto; overflow: visible; }
+  .bo-reservasModal--edit .bo-modalOutline .bo-scrollAreaViewport { overflow: visible; }
+  .bo-reservasModal--edit .bo-bookingEditor--stickyFooter { min-height: auto; }
+
+  /* FIX: see components/styles/features/settings/widget-preview.css
+     (.bo-reservasModal--edit > .bo-scrollArea > .bo-scrollAreaViewport { height:auto }) */
+  .bo-reservasModal--edit > .bo-scrollArea > .bo-scrollAreaViewport {
+    height: auto;
+  }
+
+
+  .bo-bookingEditor--stickyFooter { display: flex; flex-direction: column; min-height: 100%; }
+
+  /* visual helpers for content */
+  .panel { padding: 16px; border-radius: 14px; background: #22232b; }
+  .panel h3 { margin: 0 0 8px; font-size: 13px; }
+  .row { height: 44px; margin: 6px 0; background: #1a1b22; border-radius: 8px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <!-- Mirrors the portal DOM produced by Modal + reservas.tsx edit modal -->
+  <div class="bo-modalOverlay">
+    <div class="bo-modal bo-reservasModal bo-reservasModal--edit" style="--bo-modal-w:1040px" role="dialog" aria-label="Editar reserva">
+      <div class="bo-modalHead">
+        <div class="bo-modalTitle">Editar reserva</div>
+      </div>
+
+      <!-- OUTER ScrollArea: data-slot="reservas-modalOutline-edit" -->
+      <div class="bo-scrollArea" data-slot="reservas-modalOutline-edit">
+        <div class="bo-scrollAreaViewport">
+          <div class="bo-modalOutline" style="margin-top:10px">
+            <!-- BookingEditor root -->
+            <div class="bo-stack bo-bookingEditor bo-bookingEditor--stickyFooter" style="gap:14px">
+              <!-- INNER ScrollArea: data-slot="booking-editor-body" -->
+              <div class="bo-scrollArea" data-slot="booking-editor-body">
+                <div class="bo-scrollAreaViewport">
+                  <div class="bo-bookingEditorBody">
+                    <section class="panel"><h3>Datos</h3>
+                      <div class="row"></div><div class="row"></div><div class="row"></div>
+                      <div class="row"></div><div class="row"></div><div class="row"></div>
+                    </section>
+                    <section class="panel"><h3>Cochecitos y tronas</h3>
+                      <div class="row"></div><div class="row"></div>
+                    </section>
+                    <section class="panel"><h3>Planta</h3>
+                      <div class="row"></div>
+                    </section>
+                    <section class="panel"><h3>Menú</h3>
+                      <div class="row"></div><div class="row"></div><div class="row"></div>
+                      <div class="row"></div><div class="row"></div>
+                    </section>
+                    <section class="panel" id="last-content"><h3>Comentario (last reachable?)</h3>
+                      <div class="row"></div>
+                    </section>
+                  </div>
+                </div>
+              </div>
+              <!-- footer -->
+              <div class="bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" id="editor-footer">
+                <button type="button">Cerrar</button>
+                <button type="button" id="primary-action">Guardar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
