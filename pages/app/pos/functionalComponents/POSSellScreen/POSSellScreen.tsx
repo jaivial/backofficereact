@@ -575,7 +575,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
             { name: "discrepancyReason", label: "Motivo descuadre (si lo hay)" },
           ]}
           validate={(values) => Number((values.countedCash || "").replace(",", ".")) < 0 || !Number.isFinite(Number((values.countedCash || "").replace(",", "."))) ? "Introduce el efectivo contado." : null}
-          summary={() => `${totals ? `Ventas del día ${money(totals.totalGrossCents)}` : "Sin totales"}${closeDayError ? ` · ${closeDayError}` : ""}`}
+          summary={() => `${totals ? `Ventas del día ${money(totals.totalGrossCents)}` : "Sin totales"}${cashDayError || closeDayError ? ` · ${cashDayError || closeDayError}` : ""}`}
           onClose={() => { setCloseDayError(""); closePrompt(); }} onConfirm={(values) => { void runCloseDay(values).then((ok) => { if (ok) closePrompt(); }); }} />
       ) : null}
 
