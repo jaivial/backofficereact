@@ -34,12 +34,13 @@ export const NavLink = memo(function NavLink({
   const handleClick = useCallback<React.MouseEventHandler<HTMLAnchorElement>>(
     (e) => {
       // Let the browser handle modified clicks (new tab, etc.)
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
         return;
       }
-      e.preventDefault();
+      // Allow consumer onClick to cancel navigation via e.preventDefault()
       onClick?.(e);
       if (e.defaultPrevented) return;
+      e.preventDefault();
       void navigate(href);
     },
     [href, onClick],
