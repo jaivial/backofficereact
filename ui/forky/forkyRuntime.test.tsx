@@ -44,7 +44,11 @@ class FakeWebSocket {
   }
 }
 
-function makeClient(options?: { maxReconnectAttempts?: number }): {
+function makeClient(options?: {
+  maxReconnectAttempts?: number;
+  keepaliveMs?: number;
+  turnIdleTimeoutMs?: number;
+}): {
   client: ForkyWsClient;
   history: ForkyHistoryMessage[];
 } {
@@ -56,6 +60,8 @@ function makeClient(options?: { maxReconnectAttempts?: number }): {
     reconnectBaseMs: 5,
     reconnectMaxMs: 10,
     maxReconnectAttempts: options?.maxReconnectAttempts ?? 2,
+    keepaliveMs: options?.keepaliveMs ?? 0,
+    turnIdleTimeoutMs: options?.turnIdleTimeoutMs ?? 0,
   });
   return { client, history };
 }
@@ -192,8 +198,7 @@ describe("ForkyWsClient", () => {
     client.dispose();
   });
 
-  it("reconnects mid-turn and re-sends the pending message", async () => {
-    const { client } = makeClient({ maxReconnectAttempts: 3 });
+  it("reconnects mid-turn and re-sends the pending message", async () => {    const { client } = makeClient({ maxReconnectAttempts: 3 });
     const turn = collectTurn(client, "pendiente");
     const ws = FakeWebSocket.instances[0];
     ws.open();
@@ -217,6 +222,155 @@ describe("ForkyWsClient", () => {
     expect(events.map((e) => e.type)).toEqual(["delta", "done"]);
     client.dispose();
   });
+
+  it("fails the turn when the handshake answers with an error frame", async () => {
+    // The server replies to `hello` with `{type:"error"}` (e.g. a stale session
+    // id after a DB reset). The turn must fail instead of awaiting a handshake
+    // that never resolves, which left the UI thinking forever.
+    localStorage.setItem("forky_session_id", "999999");
+    const { client } = makeClient();
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive({ type: "error", message: "session not found" });
+
+    const events = await turn;
+    expect(events).toEqual([{ type: "error", message: "connection_failed" }]);
+    // The rejected session id is dropped so the next attempt starts a new one.
+    expect(localStorage.getItem("forky_session_id")).toBeNull();
+    client.dispose();
+  });
+
+  it("recovers on the next turn after a rejected handshake", async () => {
+    localStorage.setItem("forky_session_id", "999999");
+    const { client } = makeClient();
+    const first = collectTurn(client, "hola");
+    FakeWebSocket.instances[0].open();
+    FakeWebSocket.instances[0].receive({ type: "error", message: "session not found" });
+    await first;
+
+    const second = collectTurn(client, "otra vez");
+    const ws2 = FakeWebSocket.instances[1];
+    expect(ws2).toBeDefined();
+    ws2.open();
+    expect(ws2.lastSentJSON()).toEqual({ type: "hello", session_id: null });
+    ws2.receive(helloFrame(12));
+    await new Promise((r) => setTimeout(r, 0));
+    ws2.receive({ type: "delta", text: "ok" });
+    ws2.receive({ type: "done" });
+
+    const events = await second;
+    expect(events.map((e) => e.type)).toEqual(["delta", "done"]);
+    client.dispose();
+  });
+
+  it("fails the turn when the server goes silent past the idle timeout", async () => {
+    const { client } = makeClient({ turnIdleTimeoutMs: 20 });
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Server acknowledges the turn and then never answers.
+    ws.receive({ type: "status", state: "thinking" });
+
+    const events = await turn;
+    expect(events.map((e) => e.type)).toEqual(["status", "error"]);
+    expect(events.at(-1)).toMatchObject({ type: "error", message: "timeout" });
+    client.dispose();
+  });
+
+  it("keeps the watchdog quiet while deltas keep arriving", async () => {
+    const { client } = makeClient({ turnIdleTimeoutMs: 40 });
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    for (let i = 0; i < 4; i++) {
+      await new Promise((r) => setTimeout(r, 25));
+      ws.receive({ type: "delta", text: `t${i}` });
+    }
+    ws.receive({ type: "done" });
+
+    const events = await turn;
+    expect(events.map((e) => e.type)).toEqual(["delta", "delta", "delta", "delta", "done"]);
+    client.dispose();
+  });
+
+  it("fails an in-flight turn when the mid-turn reconnect is rejected", async () => {
+    // The socket drops mid-turn and the reconnect's hello is answered with an
+    // error. The turn is no longer awaiting the handshake promise, so it must be
+    // failed through its own queue or it hangs until the watchdog.
+    const { client } = makeClient({ maxReconnectAttempts: 3 });
+    const turn = collectTurn(client, "pendiente");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(5));
+    await new Promise((r) => setTimeout(r, 0));
+
+    ws.close();
+    await new Promise((r) => setTimeout(r, 30));
+
+    const ws2 = FakeWebSocket.instances[1];
+    expect(ws2).toBeDefined();
+    ws2.open();
+    ws2.receive({ type: "error", message: "session not found" });
+
+    const events = await turn;
+    expect(events.at(-1)).toMatchObject({ type: "error", message: "session not found" });
+    client.dispose();
+  });
+
+  it("still times out a wedged turn while keepalive pongs keep arriving", async () => {
+    // Regression guard: the keepalive interval is shorter than the watchdog, so
+    // if pongs rearmed the watchdog it could never fire and the UI would think
+    // forever — exactly the bug this file exists to prevent. The pongs must keep
+    // flowing for longer than the watchdog window, otherwise a rearming bug
+    // would still pass once they stop.
+    const { client } = makeClient({ keepaliveMs: 5, turnIdleTimeoutMs: 40 });
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    // The server keeps answering pings but never answers the turn.
+    const pongs = setInterval(() => ws.receive({ type: "pong" }), 5);
+    try {
+      const events = await Promise.race([
+        turn,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("turn never settled while pongs flowed")), 400),
+        ),
+      ]);
+      expect(events.at(-1)).toMatchObject({ type: "error", message: "timeout" });
+    } finally {
+      clearInterval(pongs);
+      client.dispose();
+    }
+  });
+
+  it("pings periodically so the server read deadline never expires", async () => {
+    const { client } = makeClient({ keepaliveMs: 10 });
+    const connected = client.ensureConnected();
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(3));
+    await connected;
+
+    await new Promise((r) => setTimeout(r, 35));
+    const pings = ws.sent.filter((s) => JSON.parse(s).type === "ping");
+    expect(pings.length).toBeGreaterThanOrEqual(2);
+
+    // Disposing must stop the keepalive so no timer leaks past unmount.
+    client.dispose();
+    const after = ws.sent.length;
+    await new Promise((r) => setTimeout(r, 30));
+    expect(ws.sent.length).toBe(after);
+  });
 });
 
 describe("recoverEncodedReply", () => {
@@ -235,9 +389,74 @@ describe("recoverEncodedReply", () => {
     expect(recoverEncodedReply(plain)).toBe(plain);
   });
 
+  it("leaves unaccented prose untouched (base64-alphabet words)", () => {
+    // Every word is spelled with characters that also belong to the base64
+    // alphabet, so stripping spaces before sniffing made the whole sentence look
+    // like a payload and "decoded" it into garbage in the live chat.
+    for (const prose of [
+      "Si es posible Revisalo y te cuento el menu de comida disponible",
+      "Estos son los horarios que tenemos fijados en el sistema",
+      "Aqui tienes el resumen de stock con todas las categorias",
+      "Hola Soy Forky el asistente de tu restaurante",
+    ]) {
+      expect(recoverEncodedReply(prose)).toBe(prose);
+    }
+  });
+
+  it("keeps everyday emoji that are not MiniMax filler glyphs", () => {
+    for (const prose of [
+      "Listo ✅ la reserva quedo confirmada",
+      "Mesa lista ➡ pasa por caja ⚡",
+      "¡Todo correcto! ✔ Buen servicio ✨",
+      "¡Hola! 😊 Aqui tienes los horarios 🍽️ y la carta 🍴✨",
+    ]) {
+      expect(recoverEncodedReply(prose)).toBe(prose);
+    }
+  });
+
   it("leaves markdown tables untouched", () => {
     const table = "| Fecha | Hora |\n|---|---|\n| 10 | 20:30 |";
     expect(recoverEncodedReply(table)).toBe(table);
+  });
+
+  it("preserves the closing fence of a forky-chart block", () => {
+    // stripBase64Wrapper trims trailing backticks globally. Returning that
+    // stripped string for non-base64 text ate the closing ``` and ForkyChart's
+    // parser (which requires the full fence) then rendered nothing.
+    const chart = '```forky-chart\n{"title":"Stock","data":[{"label":"a","value":1}]}\n```';
+    expect(recoverEncodedReply(chart)).toBe(chart);
+
+    const withProse = "Aqui tienes el resumen 📊\n\n" + chart;
+    expect(recoverEncodedReply(withProse)).toBe(withProse);
+  });
+
+  it("decodes payloads glued together by a separator", () => {
+    // "blobA|blobB" is not valid base64 as a whole, so nothing was decoded and
+    // a raw blob reached the chat (observed live on "cuantas reservas hay hoy").
+    const a = btoa("Hola! Estas son las reservas de hoy.");
+    const b = btoa("Mesa 4 confirmada para 2 personas.");
+    const out = recoverEncodedReply(a + "|" + b);
+    expect(out).toContain("reservas de hoy");
+    expect(out).toContain("Mesa 4 confirmada");
+    expect(out).not.toContain(a);
+    expect(out).not.toContain(b);
+  });
+
+  it("decodes a payload embedded in surrounding prose", () => {
+    const blob = btoa("Resumen de stock: 222 articulos.");
+    const out = recoverEncodedReply("Aqui va el resumen:\n\n" + blob + "\n\nFin del informe.");
+    expect(out).toContain("Aqui va el resumen:");
+    expect(out).toContain("222 articulos");
+    expect(out).toContain("Fin del informe.");
+    expect(out).not.toContain(blob);
+  });
+
+  it("decodes payloads with emoji (surrogate pairs) without rejecting them", () => {
+    // printable/dec.length compared code points against UTF-16 units, so emoji
+    // dragged a good payload under the acceptance bar.
+    const msg = "¡Hola! 😊 Reservas de mañana: García y Muñoz. 🍽️✨";
+    const enc = btoa(String.fromCharCode(...new TextEncoder().encode(msg)));
+    expect(recoverEncodedReply(enc)).toBe(msg);
   });
 
   it("rejects binary garbage (keeps original)", () => {

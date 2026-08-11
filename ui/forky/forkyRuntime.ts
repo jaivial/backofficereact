@@ -62,6 +62,10 @@ export type ForkyWsClientOptions = {
   reconnectBaseMs?: number;
   reconnectMaxMs?: number;
   maxReconnectAttempts?: number;
+  /** Client keepalive interval; keeps the server read deadline from expiring. */
+  keepaliveMs?: number;
+  /** Fail a turn when the server sends nothing at all for this long. */
+  turnIdleTimeoutMs?: number;
 };
 
 /** Minimal promise-backed FIFO queue bridging socket callbacks to the turn generator. */
@@ -85,6 +89,8 @@ type ActiveTurn = {
   queue: AsyncQueue<InternalTurnEvent>;
   content: string;
   acked: boolean;
+  /** Watchdog: fails the turn when the server goes silent (never fires after done/error). */
+  idleTimer: ReturnType<typeof setTimeout> | null;
 };
 
 export class ForkyWsClient {
@@ -93,6 +99,8 @@ export class ForkyWsClient {
   private readonly reconnectBaseMs: number;
   private readonly reconnectMaxMs: number;
   private readonly maxReconnectAttempts: number;
+  private readonly keepaliveMs: number;
+  private readonly turnIdleTimeoutMs: number;
 
   private ws: WebSocketLike | null = null;
   private connecting: Promise<void> | null = null;
@@ -108,6 +116,7 @@ export class ForkyWsClient {
   private activeTurn: ActiveTurn | null = null;
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private keepaliveTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(options: ForkyWsClientOptions) {
     this.url = options.url;
@@ -116,6 +125,8 @@ export class ForkyWsClient {
     this.reconnectBaseMs = options.reconnectBaseMs ?? 800;
     this.reconnectMaxMs = options.reconnectMaxMs ?? 8000;
     this.maxReconnectAttempts = options.maxReconnectAttempts ?? 5;
+    this.keepaliveMs = options.keepaliveMs ?? 30_000;
+    this.turnIdleTimeoutMs = options.turnIdleTimeoutMs ?? 120_000;
   }
 
   setHistoryHandler(handler: (history: ForkyHistoryMessage[]) => void): void {
@@ -147,8 +158,9 @@ export class ForkyWsClient {
 
     this.busy = true;
     const queue = new AsyncQueue<InternalTurnEvent>();
-    const turn: ActiveTurn = { queue, content, acked: false };
+    const turn: ActiveTurn = { queue, content, acked: false, idleTimer: null };
     this.activeTurn = turn;
+    this.armTurnIdleTimer(turn);
 
     const onAbort = () => {
       this.close(1000, "aborted");
@@ -174,6 +186,7 @@ export class ForkyWsClient {
       }
     } finally {
       abortSignal?.removeEventListener("abort", onAbort);
+      this.clearTurnIdleTimer(turn);
       this.activeTurn = null;
       this.busy = false;
     }
@@ -193,6 +206,7 @@ export class ForkyWsClient {
   private close(code: number, reason: string): void {
     this.intentionalClose = true;
     this.clearReconnectTimer();
+    this.stopKeepalive();
     this.connecting = null;
     this.handshakeDone = false;
     const ws = this.ws;
@@ -236,6 +250,12 @@ export class ForkyWsClient {
     } catch {
       return;
     }
+    // Progress on the current turn rearms the watchdog. Keepalive pongs must
+    // NOT: the server answers those even when a generation is wedged, so
+    // counting them would keep the watchdog permanently disarmed.
+    if (this.activeTurn && (frame.type === "status" || frame.type === "delta")) {
+      this.armTurnIdleTimer(this.activeTurn);
+    }
     switch (frame.type) {
       case "hello": {
         const sessionId = frame.session_id;
@@ -243,6 +263,7 @@ export class ForkyWsClient {
         this.handshakeDone = true;
         this.connecting = null;
         this.reconnectAttempts = 0;
+        this.startKeepalive();
         if (!this.historyDelivered) {
           this.historyDelivered = true;
           const history = Array.isArray(frame.history) ? (frame.history as ForkyHistoryMessage[]) : [];
@@ -271,6 +292,25 @@ export class ForkyWsClient {
         }
         break;
       case "error":
+        // A handshake-time error ("session not found", "session_token required")
+        // arrives instead of the hello frame: reject the pending connect so the
+        // turn fails fast instead of awaiting a handshake that never resolves.
+        if (!this.handshakeDone && this.handshakeReject) {
+          this.rejectHandshake(new Error(String(frame.message ?? "error")));
+          this.forgetSessionId();
+          // A turn already in flight (the socket dropped mid-turn and the
+          // reconnect was rejected) must be failed too: it is not awaiting the
+          // handshake promise any more, only its own queue.
+          if (this.activeTurn && !this.activeTurn.acked) {
+            this.activeTurn.acked = true;
+            this.activeTurn.queue.push({
+              type: "error",
+              message: String(frame.message ?? "error"),
+            });
+          }
+          this.close(1000, "handshake_error");
+          break;
+        }
         if (this.activeTurn) {
           this.activeTurn.acked = true;
           this.activeTurn.queue.push({ type: "error", message: String(frame.message ?? "error") });
@@ -286,6 +326,7 @@ export class ForkyWsClient {
     const wasHandshaking = this.handshakeResolve !== null;
     this.handshakeDone = false;
     this.ws = null;
+    this.stopKeepalive();
 
     if (this.intentionalClose) {
       this.rejectHandshake(new Error("closed"));
@@ -334,6 +375,41 @@ export class ForkyWsClient {
     }
   }
 
+  /** Restart the per-turn silence watchdog. */
+  private armTurnIdleTimer(turn: ActiveTurn): void {
+    this.clearTurnIdleTimer(turn);
+    if (this.turnIdleTimeoutMs <= 0) return;
+    turn.idleTimer = setTimeout(() => {
+      turn.acked = true;
+      turn.queue.push({ type: "error", message: "timeout" });
+    }, this.turnIdleTimeoutMs);
+  }
+
+  private clearTurnIdleTimer(turn: ActiveTurn): void {
+    if (turn.idleTimer !== null) {
+      clearTimeout(turn.idleTimer);
+      turn.idleTimer = null;
+    }
+  }
+
+  /**
+   * Send an application-level ping periodically. The server enforces a read
+   * deadline on the socket and closes it when no client frame arrives in time,
+   * which otherwise kills idle chats between questions.
+   */
+  private startKeepalive(): void {
+    this.stopKeepalive();
+    if (this.keepaliveMs <= 0) return;
+    this.keepaliveTimer = setInterval(() => this.rawSend({ type: "ping" }), this.keepaliveMs);
+  }
+
+  private stopKeepalive(): void {
+    if (this.keepaliveTimer !== null) {
+      clearInterval(this.keepaliveTimer);
+      this.keepaliveTimer = null;
+    }
+  }
+
   private rawSend(frame: Record<string, unknown>): void {
     if (this.ws && this.ws.readyState === WS_OPEN) {
       this.ws.send(JSON.stringify(frame));
@@ -354,6 +430,15 @@ export class ForkyWsClient {
   private writeSessionId(sessionId: number): void {
     try {
       globalThis.localStorage?.setItem(SESSION_STORAGE_KEY, String(sessionId));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Drop a session id the server rejected so the next connect starts fresh. */
+  private forgetSessionId(): void {
+    try {
+      globalThis.localStorage?.removeItem(SESSION_STORAGE_KEY);
     } catch {
       /* ignore */
     }
@@ -393,14 +478,37 @@ export function recoverEncodedReply(text: string): string {
   // every short-circuit below returns clean text.
   const wrapped = stripBase64Wrapper(text);
   const input = cleanseMinimaxReply(wrapped);
-  const stripped = input.replace(/[\s]+/g, "");
+  // Bail-out value for "this is not base64". stripBase64Wrapper trims trailing
+  // backticks globally, which eats the closing fence of a ```forky-chart block
+  // and stops the chart from rendering, so non-base64 text must be returned
+  // from the ORIGINAL string, only glyph-cleansed.
+  const passthrough = cleanseMinimaxReply(text);
+  // Only newlines are removed before sniffing. A real base64 blob may be hard
+  // wrapped, but it never contains spaces; stripping those too made ordinary
+  // unaccented Spanish ("Si es posible Revisalo y te cuento...") collapse into a
+  // pure base64-alphabet string that then "decoded" to garbage.
+  const stripped = input.replace(/[\n\r]+/g, "");
   const body = stripped.replace(/=+$/, "");
-  if (body.length < 16) return input;
-  if (!/^[A-Za-z0-9+/_-]+$/.test(body)) return input;
+  if (body.length >= 16 && /^[A-Za-z0-9+/_-]+$/.test(body)) {
+    const whole = decodeBase64Payload(body);
+    if (whole !== null) return cleanseMinimaxReply(whole);
+  }
+  // The reply may instead embed one or more payloads inside other text: a
+  // tool-using turn concatenates each model round, and the blobs can be glued
+  // by a stray separator ("blobA|blobB") so the string as a whole is not valid
+  // base64. Decode every long base64 run in place and keep the rest verbatim.
+  const embedded = recoverEmbeddedPayloads(passthrough);
+  if (embedded !== null) return embedded;
+  return passthrough;
+}
 
-  // Decode the largest clean base64 chunk. MiniMax sometimes truncates the
-  // payload mid-stream (len%4==1 makes atob throw), so drop trailing chars and
-  // keep the longest prefix that decodes to readable text.
+/**
+ * Decode one base64 payload, returning null when it does not look like
+ * readable text. MiniMax sometimes truncates the payload mid-stream
+ * (len%4==1 makes atob throw), so trailing chars are dropped to find the
+ * longest prefix that decodes.
+ */
+function decodeBase64Payload(body: string): string | null {
   for (let drop = 0; drop <= 8; drop++) {
     const candidate = drop === 0 ? body : body.slice(0, body.length - drop);
     if (candidate.length % 4 === 1) continue; // never a valid quad
@@ -417,18 +525,57 @@ export function recoverEncodedReply(text: string): string {
     // Accept only if mostly printable human text. Replacement chars (�)
     // from a truncated tail count as NON-printable, so a cut-off reply still
     // passes (head is readable) while binary garbage is rejected.
+    // Count code points on both sides: `dec.length` is UTF-16 units, so emoji
+    // (surrogate pairs) would otherwise drag a good payload under the bar.
     let printable = 0;
+    let total = 0;
     for (const ch of dec) {
+      total++;
       const cp = ch.codePointAt(0)!;
       if (cp === 0xfffd) continue;
       if (cp >= 0x20 || ch === "\n" || ch === "\r" || ch === "\t") printable++;
     }
-    if (printable / dec.length < 0.9) continue;
-    // Repair double-escaped newlines/tabs, then cleanse once more.
-    const repaired = dec.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
-    return cleanseMinimaxReply(repaired);
+    if (total === 0 || printable / total < 0.9) continue;
+    // Repair double-escaped newlines/tabs.
+    return dec.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
   }
-  return input;
+  return null;
+}
+
+/** Long base64 run (optionally hard wrapped); 32+ chars keeps prose out. */
+const BASE64_RUN = /[A-Za-z0-9+/=_-]{32,}(?:\r?\n[A-Za-z0-9+/=_-]+)*/g;
+
+/**
+ * Decode base64 payloads embedded in surrounding text. Returns null when
+ * nothing was decoded, so plain replies fall through untouched. Identical
+ * repeats (the model often emits the same blob once per tool round) collapse.
+ */
+function recoverEmbeddedPayloads(text: string): string | null {
+  const runs = [...text.matchAll(BASE64_RUN)];
+  if (runs.length === 0) return null;
+  let out = "";
+  let last = 0;
+  let decodedAny = false;
+  const seen = new Set<string>();
+  for (const run of runs) {
+    const start = run.index!;
+    const raw = run[0];
+    const trimmed = raw.replace(/[\n\r]+/g, "");
+    if (trimmed.replace(/=+$/, "").length < 32) continue;
+    const dec = decodeBase64Payload(trimmed.replace(/=+$/, ""));
+    if (dec === null) continue;
+    const clean = cleanseMinimaxReply(dec);
+    if (clean.trim() === "") continue;
+    decodedAny = true;
+    out += text.slice(last, start);
+    if (!seen.has(clean)) {
+      seen.add(clean);
+      out += clean;
+    }
+    last = start + raw.length;
+  }
+  if (!decodedAny) return null;
+  return (out + text.slice(last)).trim();
 }
 
 // Remove markdown code-fence backticks / quotes / labels MiniMax may print
@@ -458,8 +605,15 @@ function stripBase64Wrapper(text: string): string {
   return t;
 }
 
+// Remove MiniMax's spurious CJK text and filler symbols. The filler ranges
+// deliberately exclude Dingbats (U+2700–27BF) and most Miscellaneous Symbols
+// (U+2600–26FF): those hold everyday emoji (✨ ✅ ❌ ✔ ➡ ⚡) the model uses
+// legitimately, and blanket-stripping them mangled normal replies.
 function cleanseMinimaxReply(text: string): string {
-  const cleaned = text.replace(/[\u{3400}-\u{4dbf}\u{4e00}-\u{9fff}\u{f900}-\u{faff}\u{20000}-\u{2fa1f}\u{3000}\u{3001}\u{3002}\u{300c}\u{300d}\u{ff01}\u{ff0c}\u{ff1f}\u{2140}-\u{2aff}\u{a9}\u{26b3}]/gu, "");
+  const cleaned = text.replace(
+    /[\u{3400}-\u{4dbf}\u{4e00}-\u{9fff}\u{f900}-\u{faff}\u{20000}-\u{2fa1f}\u{3000}\u{3001}\u{3002}\u{300c}\u{300d}\u{ff01}\u{ff0c}\u{ff1f}\u{2190}-\u{21ff}\u{2200}-\u{22ff}\u{2a00}-\u{2aff}\u{a9}\u{26b3}]/gu,
+    "",
+  );
   if (cleaned === text) return text;
   // Re-flow whitespace: strip leading/trailing spaces per line, collapse runs.
   return cleaned
