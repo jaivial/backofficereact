@@ -4684,7 +4684,7 @@ export default function TableManagerPage() {
                 </div>
               </aside>
 
-              <Modal open={editorOpen} title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} widthPx={980} className="bo-tableEditorModal">
+              <Modal open={editorOpen} title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} widthPx={980} className="bo-tableEditorModal" hideClose>
                 <ModalHeader data-slot="modal-head" data-ui="modal-title" title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} />
 
                 <div data-ui="editor-grid" className="bo-tableEditorGrid">
@@ -4992,7 +4992,7 @@ export default function TableManagerPage() {
                 ) : null}
               </Modal>
 
-              <Modal open={removeAreaConfirmOpen} title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} widthPx={480} className="bo-tableRemoveAreaModal">
+              <Modal open={removeAreaConfirmOpen} title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} widthPx={480} className="bo-tableRemoveAreaModal" hideClose>
                 <ModalHeader data-slot="modal-head" data-ui="modal-title" title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} />
                 <div data-ui="remove-area-confirm" className="bo-tableRemoveAreaConfirm">
                   <p data-ui="remove-area-message" className="bo-tableRemoveAreaText">

@@ -28,6 +28,7 @@ export function Modal({
   widthPx,
   size,
   className,
+  hideClose = false,
 }: {
   open: boolean;
   title: string;
@@ -36,6 +37,8 @@ export function Modal({
   widthPx?: number;
   size?: "sm" | "md" | "lg";
   className?: string;
+  /** Hide Modal's built-in close button (use when a ModalHeader inside renders its own). */
+  hideClose?: boolean;
 }) {
   useFocusRestore(open);
   const reduceMotion = useReducedMotion();
@@ -89,16 +92,18 @@ export function Modal({
             exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.16, ease: "easeOut" }}
           >
-            <button
-              type="button"
-              className="bo-modalClose"
-              onClick={onClose}
-              aria-label="Cerrar"
-              title="Cerrar"
-              data-ui="modal-close"
-            >
-              <X size={18} strokeWidth={1.8} aria-hidden="true" />
-            </button>
+            {!hideClose && (
+              <button
+                type="button"
+                className="bo-modalClose"
+                onClick={onClose}
+                aria-label="Cerrar"
+                title="Cerrar"
+                data-ui="modal-close"
+              >
+                <X size={18} strokeWidth={1.8} aria-hidden="true" />
+              </button>
+            )}
             {children}
           </motion.div>
         </motion.div>
