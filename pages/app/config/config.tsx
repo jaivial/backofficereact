@@ -238,6 +238,28 @@ export default function Page() {
     void reload();
   }, [data, reload, session]);
 
+  // If the bootstrap fetch failed (defaults still null but an error is set),
+  // show a retry affordance instead of an endless "Cargando" behind an
+  // unreachable Recargar button.
+  if (!defaults) {
+    return (
+      <section aria-label="Configuración" className="w-full max-w-3xl mx-auto max-sm:mx-0 max-sm:px-0" data-testid="config-section">
+        {error ? (
+          <>
+            <InlineAlert kind="error" title="No se pudo cargar la configuración" message={error} />
+            <div className="mt-4 text-center">
+              <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy} data-testid="config-reload-button">
+                Reintentar
+              </button>
+            </div>
+          </>
+        ) : (
+          <InlineAlert kind="info" title="Cargando" message="Preparando configuración..." />
+        )}
+      </section>
+    );
+  }
+
   const onNavigateContentTab = useCallback(
     (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
       void _href;
@@ -248,10 +270,6 @@ export default function Page() {
     },
     [],
   );
-
-  if (!defaults) {
-    return <InlineAlert kind="info" title="Cargando" message="Preparando configuración..." />;
-  }
 
   return (
     <>

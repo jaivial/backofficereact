@@ -37,7 +37,6 @@ function getBaseURL() {
 async function measure(page: Page, target: Target): Promise<Record<string, number>> {
   const start = Date.now();
   await page.goto(target.url, { waitUntil: "commit", timeout: 30_000 });
-  const shellStart = Date.now();
   await page.locator('[data-testid="app-layout-main"]').waitFor({ timeout: 20_000 });
   const shellPaint = Date.now() - start;
   await page.locator(target.contentSelector).waitFor({ timeout: 25_000 });
@@ -49,28 +48,29 @@ async function measure(page: Page, target: Target): Promise<Record<string, numbe
   return { ttfb, shellPaint, contentPaint };
 }
 
-test.describe("SSR latency baseline", () => {
+test("measure all pages (writes perf.json)", async ({ adminPage }) => {
+  const baseURL = getBaseURL();
+  const report: Record<string, unknown> = {};
+
+  // Serial on one page: each target's measurements must not race on the shared
+  // perf.json (three parallel tests used to read-modify-write it concurrently).
   for (const target of TARGETS) {
-    test(`measures ${target.name}`, async ({ adminPage }) => {
-      const baseURL = getBaseURL();
-      const r = await measure(adminPage, target);
-      expect(r.ttfb).toBeGreaterThan(0);
-      expect(r.contentPaint).toBeGreaterThan(0);
+    const r = await measure(adminPage, target);
+    expect(r.ttfb).toBeGreaterThan(0);
+    expect(r.contentPaint).toBeGreaterThan(0);
 
-      const reportPath = path.join(process.cwd(), "test-results", "perf.json");
-      const report = fs.existsSync(reportPath) ? JSON.parse(fs.readFileSync(reportPath, "utf8")) : {};
-      report[target.name] = {
-        url: `${baseURL}${target.url}`,
-        ...r,
-        measuredAt: new Date().toISOString(),
-      };
-      fs.mkdirSync(path.dirname(reportPath), { recursive: true });
-      fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-
-      test.info().annotations.push({
-        type: "perf",
-        description: `${target.name}: TTFB=${r.ttfb}ms shell=${r.shellPaint}ms content=${r.contentPaint}ms`,
-      });
+    report[target.name] = {
+      url: `${baseURL}${target.url}`,
+      ...r,
+      measuredAt: new Date().toISOString(),
+    };
+    test.info().annotations.push({
+      type: "perf",
+      description: `${target.name}: TTFB=${r.ttfb}ms shell=${r.shellPaint}ms content=${r.contentPaint}ms`,
     });
   }
+
+  const reportPath = path.join(process.cwd(), "test-results", "perf.json");
+  fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
 });
