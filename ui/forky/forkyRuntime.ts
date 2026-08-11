@@ -489,12 +489,26 @@ export function recoverEncodedReply(text: string): string {
   // pure base64-alphabet string that then "decoded" to garbage.
   const stripped = input.replace(/[\n\r]+/g, "");
   const body = stripped.replace(/=+$/, "");
-  if (body.length < 16) return passthrough;
-  if (!/^[A-Za-z0-9+/_-]+$/.test(body)) return passthrough;
+  if (body.length >= 16 && /^[A-Za-z0-9+/_-]+$/.test(body)) {
+    const whole = decodeBase64Payload(body);
+    if (whole !== null) return cleanseMinimaxReply(whole);
+  }
+  // The reply may instead embed one or more payloads inside other text: a
+  // tool-using turn concatenates each model round, and the blobs can be glued
+  // by a stray separator ("blobA|blobB") so the string as a whole is not valid
+  // base64. Decode every long base64 run in place and keep the rest verbatim.
+  const embedded = recoverEmbeddedPayloads(passthrough);
+  if (embedded !== null) return embedded;
+  return passthrough;
+}
 
-  // Decode the largest clean base64 chunk. MiniMax sometimes truncates the
-  // payload mid-stream (len%4==1 makes atob throw), so drop trailing chars and
-  // keep the longest prefix that decodes to readable text.
+/**
+ * Decode one base64 payload, returning null when it does not look like
+ * readable text. MiniMax sometimes truncates the payload mid-stream
+ * (len%4==1 makes atob throw), so trailing chars are dropped to find the
+ * longest prefix that decodes.
+ */
+function decodeBase64Payload(body: string): string | null {
   for (let drop = 0; drop <= 8; drop++) {
     const candidate = drop === 0 ? body : body.slice(0, body.length - drop);
     if (candidate.length % 4 === 1) continue; // never a valid quad
@@ -511,18 +525,57 @@ export function recoverEncodedReply(text: string): string {
     // Accept only if mostly printable human text. Replacement chars (�)
     // from a truncated tail count as NON-printable, so a cut-off reply still
     // passes (head is readable) while binary garbage is rejected.
+    // Count code points on both sides: `dec.length` is UTF-16 units, so emoji
+    // (surrogate pairs) would otherwise drag a good payload under the bar.
     let printable = 0;
+    let total = 0;
     for (const ch of dec) {
+      total++;
       const cp = ch.codePointAt(0)!;
       if (cp === 0xfffd) continue;
       if (cp >= 0x20 || ch === "\n" || ch === "\r" || ch === "\t") printable++;
     }
-    if (printable / dec.length < 0.9) continue;
-    // Repair double-escaped newlines/tabs, then cleanse once more.
-    const repaired = dec.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
-    return cleanseMinimaxReply(repaired);
+    if (total === 0 || printable / total < 0.9) continue;
+    // Repair double-escaped newlines/tabs.
+    return dec.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
   }
-  return passthrough;
+  return null;
+}
+
+/** Long base64 run (optionally hard wrapped); 32+ chars keeps prose out. */
+const BASE64_RUN = /[A-Za-z0-9+/=_-]{32,}(?:\r?\n[A-Za-z0-9+/=_-]+)*/g;
+
+/**
+ * Decode base64 payloads embedded in surrounding text. Returns null when
+ * nothing was decoded, so plain replies fall through untouched. Identical
+ * repeats (the model often emits the same blob once per tool round) collapse.
+ */
+function recoverEmbeddedPayloads(text: string): string | null {
+  const runs = [...text.matchAll(BASE64_RUN)];
+  if (runs.length === 0) return null;
+  let out = "";
+  let last = 0;
+  let decodedAny = false;
+  const seen = new Set<string>();
+  for (const run of runs) {
+    const start = run.index!;
+    const raw = run[0];
+    const trimmed = raw.replace(/[\n\r]+/g, "");
+    if (trimmed.replace(/=+$/, "").length < 32) continue;
+    const dec = decodeBase64Payload(trimmed.replace(/=+$/, ""));
+    if (dec === null) continue;
+    const clean = cleanseMinimaxReply(dec);
+    if (clean.trim() === "") continue;
+    decodedAny = true;
+    out += text.slice(last, start);
+    if (!seen.has(clean)) {
+      seen.add(clean);
+      out += clean;
+    }
+    last = start + raw.length;
+  }
+  if (!decodedAny) return null;
+  return (out + text.slice(last)).trim();
 }
 
 // Remove markdown code-fence backticks / quotes / labels MiniMax may print

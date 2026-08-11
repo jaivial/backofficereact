@@ -430,6 +430,35 @@ describe("recoverEncodedReply", () => {
     expect(recoverEncodedReply(withProse)).toBe(withProse);
   });
 
+  it("decodes payloads glued together by a separator", () => {
+    // "blobA|blobB" is not valid base64 as a whole, so nothing was decoded and
+    // a raw blob reached the chat (observed live on "cuantas reservas hay hoy").
+    const a = btoa("Hola! Estas son las reservas de hoy.");
+    const b = btoa("Mesa 4 confirmada para 2 personas.");
+    const out = recoverEncodedReply(a + "|" + b);
+    expect(out).toContain("reservas de hoy");
+    expect(out).toContain("Mesa 4 confirmada");
+    expect(out).not.toContain(a);
+    expect(out).not.toContain(b);
+  });
+
+  it("decodes a payload embedded in surrounding prose", () => {
+    const blob = btoa("Resumen de stock: 222 articulos.");
+    const out = recoverEncodedReply("Aqui va el resumen:\n\n" + blob + "\n\nFin del informe.");
+    expect(out).toContain("Aqui va el resumen:");
+    expect(out).toContain("222 articulos");
+    expect(out).toContain("Fin del informe.");
+    expect(out).not.toContain(blob);
+  });
+
+  it("decodes payloads with emoji (surrogate pairs) without rejecting them", () => {
+    // printable/dec.length compared code points against UTF-16 units, so emoji
+    // dragged a good payload under the acceptance bar.
+    const msg = "¡Hola! 😊 Reservas de mañana: García y Muñoz. 🍽️✨";
+    const enc = btoa(String.fromCharCode(...new TextEncoder().encode(msg)));
+    expect(recoverEncodedReply(enc)).toBe(msg);
+  });
+
   it("rejects binary garbage (keeps original)", () => {
     const garbage = "wodobGEbm8gaGF5IHJlc2VydmFzIHBhcmEgaG95ICEgwr9BcsOtIHVuIGRpYSBtw6Fz";
     expect(recoverEncodedReply(garbage)).toBe(garbage);
