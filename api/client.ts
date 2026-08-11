@@ -342,6 +342,14 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
     return next;
   }
 
+  // Fetch a single comida catalog item via the dedicated detail endpoint.
+  // Regression: get() methods used to list(limit:500) and filter client-side.
+  async function getComidaItem<T extends Record<string, unknown>>(basePath: string, id: number): Promise<APISuccess<T> | APIError> {
+    const res = await json<APISuccess<T> | APIError>(`${basePath}/${id}`, { method: "GET" });
+    if (!res.success) return res;
+    return res as APISuccess<T>;
+  }
+
   async function listComidaWithFallback(
     primaryPath: string,
     fallbackMenuPath: "/api/admin/menus/dia" | "/api/admin/menus/finde",
@@ -518,10 +526,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
       },
       async get(id: number): Promise<APISuccess<{ postre: Postre; item?: FoodItem }> | APIError> {
-        const res = await comidaApi.postres.list({ page: 1, limit: 500 });
+        const res = await getComidaItem<{ postre: Postre }>("/api/admin/comida/postres", id);
         if (!res.success) return res;
-        const postre = (res.postres ?? []).find((entry) => Number(entry?.num) === Number(id));
-        if (!postre) return { success: false, message: "Postre no encontrado" };
+        const postre = res.postre;
         const item: FoodItem = {
           num: postre.num,
           tipo: "POSTRE",
@@ -591,10 +598,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
       },
       async get(id: number): Promise<APISuccess<{ vino: Vino; item?: Vino }> | APIError> {
-        const res = await comidaApi.vinos.list({ page: 1, limit: 500 });
+        const res = await getComidaItem<{ vino: Vino }>("/api/admin/comida/vinos", id);
         if (!res.success) return res;
-        const vino = (res.vinos ?? []).find((entry) => Number(entry?.num) === Number(id));
-        if (!vino) return { success: false, message: "Vino no encontrado" };
+        const vino = res.vino;
         return { success: true, vino, item: vino };
       },
       async getSingle(id: number): Promise<APISuccess<{ vino: Vino }> | APIError> {
@@ -674,11 +680,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         return json(`/api/admin/bebidas/${id}/toggle`, { method: "POST" });
       },
       async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        const res = await comidaApi.bebidas.list({ page: 1, limit: 500 });
-        if (!res.success) return res;
-        const item = (res.items ?? []).find((entry) => Number(entry?.num) === Number(id));
-        if (!item) return { success: false, message: "Bebida no encontrada" };
-        return { success: true, item };
+        return getComidaItem<{ item: FoodItem }>("/api/admin/comida/bebidas", id);
       },
       async uploadImageAI(id: number, file: File): Promise<APISuccess<{ item_id: number; message?: string }> | APIError> {
         const form = new FormData();
@@ -733,11 +735,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         return toggleComidaWithFallback(`/api/admin/platos/${id}/toggle`, `/api/admin/menus/dia/dishes/${id}`, active, false);
       },
       async get(id: number): Promise<APISuccess<{ item: FoodItem }> | APIError> {
-        const res = await comidaApi.platos.list({ page: 1, limit: 500 });
-        if (!res.success) return res;
-        const item = (res.items ?? []).find((entry) => Number(entry?.num) === Number(id));
-        if (!item) return { success: false, message: "Plato no encontrado" };
-        return { success: true, item };
+        return getComidaItem<{ item: FoodItem }>("/api/admin/comida/platos", id);
       },
       async uploadImageAI(id: number, file: File): Promise<APISuccess<{ item_id: number; message?: string }> | APIError> {
         const form = new FormData();
