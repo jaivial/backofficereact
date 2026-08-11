@@ -35,6 +35,7 @@ type InvoiceFormProps = {
     time?: string;
   }) => Promise<ReservationSearchResult[]>;
   api?: ReturnType<typeof createClient>;
+  initialReservation?: ReservationSearchResult | null;
 };
 
 type AutoSaveStatus = "idle" | "saving" | "saved" | "error";
@@ -235,7 +236,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function InvoiceForm({ invoice, isDuplicate, isSubmitting = false, onSave, onCancel, searchReservations, api }: InvoiceFormProps, ref) {
+export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function InvoiceForm({ invoice, isDuplicate, isSubmitting = false, onSave, onCancel, searchReservations, api, initialReservation }: InvoiceFormProps, ref) {
   const { pushToast } = useToasts();
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -760,6 +761,30 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     setPendingReservationSelection(false);
     pushToast({ kind: "info", title: "Datos filled", message: "Datos filled desde la reserva" });
   }, [pushToast, paymentTerms]);
+
+  // Autofill from a booking passed via URL (?booking_id=) — fires once when the
+  // prop arrives (it is fetched async by the page after mount).
+  const didFillRef = useRef(false);
+  useEffect(() => {
+    if (didFillRef.current || !initialReservation) return;
+    didFillRef.current = true;
+    const r = initialReservation;
+    setCustomerName(r.customer_name.split(" ")[0] || "");
+    setCustomerSurname(r.customer_name.split(" ").slice(1).join(" ") || "");
+    setCustomerEmail(r.contact_email);
+    setCustomerPhone(r.contact_phone);
+    setReservationId(r.id);
+    setReservationDate(r.reservation_date);
+    setReservationCustomerName(r.customer_name);
+    setReservationPartySize(r.party_size);
+    setIsReservation(true);
+    setInvoiceDate(r.reservation_date);
+    const due = new Date(r.reservation_date);
+    due.setDate(due.getDate() + parseInt(paymentTerms || "30"));
+    setDueDate(due.toISOString().split("T")[0]);
+    setPaymentDate(new Date().toISOString().split("T")[0]);
+    pushToast({ kind: "info", title: "Datos cargados", message: "Datos cargados desde la reserva" });
+  }, [initialReservation, paymentTerms, pushToast]);
 
   const handleFillFromReservationOnlyBooking = useCallback((reservation: ReservationSearchResult) => {
     setReservationId(reservation.id);
