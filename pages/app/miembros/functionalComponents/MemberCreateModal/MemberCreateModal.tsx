@@ -107,7 +107,7 @@ export function MemberCreateModal({
   }, [firstName, hasContact, lastName, roleSlug, temporaryPassword, username]);
 
   return (
-    <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate">
+    <Modal open={open} title="Añadir miembro" onClose={onClose} widthPx={760} className="bo-modal--memberCreate" hideClose>
       <ModalHeader title="Añadir miembro" onClose={onClose} />
 
       <ScrollArea dataSlot="memberCreateModal-scrollArea" className="h-full"><div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="memberCreateModal-modalOutline">

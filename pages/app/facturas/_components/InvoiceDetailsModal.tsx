@@ -70,7 +70,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
   if (!invoice) return null;
 
   return (
-    <Modal open={open} title="Detalles de factura" onClose={onClose} size="md">
+    <Modal open={open} title="Detalles de factura" onClose={onClose} size="md" hideClose>
       <ModalHeader title="Detalles de factura" onClose={onClose} />
       <div className="bo-invoiceDetails">
         <ScrollArea dataSlot="invoice-details-body">

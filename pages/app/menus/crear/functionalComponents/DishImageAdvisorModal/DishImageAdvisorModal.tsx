@@ -24,7 +24,7 @@ export function DishImageAdvisorModalComponent({
 }) {
   const label = subjectLabel || "plato";
   return (
-    <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
+    <Modal open={open} title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} widthPx={620} hideClose>
       <ModalHeader title="Asesor IA de imagen" onClose={busy ? () => undefined : onClose} />
       <div className="bo-modalBody bo-dishAIAdvisorBody" data-slot="dishImageAdvisorModal-dishAIAdvisorBody">
         <div className="bo-dishAIAdvisorCopy" data-slot="dishImageAdvisorModal-dishAIAdvisorCopy">

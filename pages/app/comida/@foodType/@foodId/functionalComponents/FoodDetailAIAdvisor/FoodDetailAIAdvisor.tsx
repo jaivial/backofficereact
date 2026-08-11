@@ -24,7 +24,7 @@ export function FoodDetailAIAdvisor({
   const open = show && !!imagePreview;
 
   return (
-    <Modal open={open} title="Asesor IA de imagen" onClose={onClose} widthPx={460}>
+    <Modal open={open} title="Asesor IA de imagen" onClose={onClose} widthPx={460} hideClose>
       <ModalHeader
         title="Asesor IA de imagen"
         onClose={onClose}

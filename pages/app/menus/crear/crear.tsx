@@ -130,7 +130,7 @@ function DishImageCropModalComponent({
   }, [applyZoom, busy, zoom]);
 
   return (
-    <Modal open={open} title="Recortar imagen" onClose={busy ? () => undefined : onClose} widthPx={620}>
+    <Modal open={open} title="Recortar imagen" onClose={busy ? () => undefined : onClose} widthPx={620} hideClose>
       <ModalHeader title="Recorte 1:1" onClose={busy ? () => undefined : onClose} />
       <div className="bo-modalBody bo-dishCropBody" data-slot="crear-dishCropBody">
         <div className="bo-dishCropViewportWrap" data-slot="crear-dishCropViewportWrap">
@@ -746,7 +746,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
       />
 
       {/* Allergen modal */}
-      <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620}>
+      <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620} hideClose>
         <ModalHeader title="Selecciona alergenos" onClose={() => setAllergenModal(null)} />
         <div className="bo-modalBody" data-slot="crear-modalBody">
           <div className="bo-allergenGrid" data-testid="menu-crear-allergen-grid">
