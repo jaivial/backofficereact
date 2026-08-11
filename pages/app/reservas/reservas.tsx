@@ -729,7 +729,7 @@ export default function Page() {
 
       <ConfirmDialog open={confirm.open} title="Cancelar reserva" message={confirm.booking ? `Cancelar la reserva #${confirm.booking.id} de ${confirm.booking.customer_name}?` : ""} confirmText="Cancelar" danger onClose={() => setConfirm({ open: false, booking: null })} onConfirm={doCancel} />
 
-      <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details">
+      <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details" hideClose>
         <ModalHeader title="Reserva completa" onClose={closeDetails} />
         <ScrollArea dataSlot="reservas-modalOutline"><div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {details.booking && <BookingDetailsPanel booking={details.booking} floors={floors} />}
@@ -742,7 +742,7 @@ export default function Page() {
         </div>
       </Modal>
 
-      <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit">
+      <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit" hideClose>
         <ModalHeader title="Editar reserva" onClose={closeEdit} />
         <ScrollArea dataSlot="reservas-modalOutline-edit"><div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
           {edit.booking && editInitial ? (

@@ -276,7 +276,7 @@ export function MenuSliderPanel({
       />
 
       {/* Ver todas — full grid in the reused glass modal. */}
-      <Modal open={seeAll} title="Imagenes del slider" onClose={() => setSeeAll(false)} widthPx={640}>
+      <Modal open={seeAll} title="Imagenes del slider" onClose={() => setSeeAll(false)} widthPx={640} hideClose>
         <ModalHeader title="Imagenes del slider" onClose={() => setSeeAll(false)} />
         <div className="bo-modalBody">
           <div className="bo-sliderGrid bo-sliderGrid--all" data-slot="sliderPanel-allGrid">
@@ -292,6 +292,7 @@ export function MenuSliderPanel({
         title="Asesor IA de imagen"
         onClose={busy ? () => undefined : closeAdvisor}
         widthPx={620}
+        hideClose
       >
         <ModalHeader title="Asesor IA de imagen" onClose={busy ? () => undefined : closeAdvisor} />
         <div className="bo-modalBody bo-dishAIAdvisorBody">

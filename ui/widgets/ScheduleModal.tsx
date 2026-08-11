@@ -81,6 +81,7 @@ export function ScheduleModal({
       onClose={onClose}
       widthPx={760}
       className="max-md:w-[95vw] md:w-[620px]"
+      hideClose
     >
       <ModalHeader title="Asignar horario" onClose={onClose} />
 

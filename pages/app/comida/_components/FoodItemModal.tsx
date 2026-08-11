@@ -857,7 +857,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
         />
       ) : null}
 
-      <Modal open={showAIAdvisor && !!imagePreview} title="Asesor IA de imagen" onClose={aiBusy ? () => undefined : () => handleAIAdvisorClose()} widthPx={620}>
+      <Modal open={showAIAdvisor && !!imagePreview} title="Asesor IA de imagen" onClose={aiBusy ? () => undefined : () => handleAIAdvisorClose()} widthPx={620} hideClose>
         <ModalHeader title="Asesor IA de imagen" onClose={aiBusy ? () => undefined : () => handleAIAdvisorClose()} />
         <div className="bo-modalBody bo-dishAIAdvisorBody" data-slot="food-modal-ai-advisor-body">
           <div className="bo-dishAIAdvisorCopy" data-slot="food-modal-ai-advisor-copy">

@@ -706,12 +706,6 @@
   margin-top: auto;
 }
 
-/* ponytail: Modal renders .bo-modalClose AND ModalHeader renders .bo-modalX → dup X.
-   Hide Modal's; keep ModalHeader's (it carries the title). Generic Modal unchanged. */
-.bo-reservasModal .bo-modalClose {
-  display: none;
-}
-
 /* ponytail: two nested ScrollAreas fought for scroll (outer reservas-modalOutline-edit
    + inner booking-editor-body). Inner .bo-scrollArea h-full overflow-hidden clipped the
    body and .bo-bookingEditor--stickyFooter min-height:100% pushed the footer out of the
