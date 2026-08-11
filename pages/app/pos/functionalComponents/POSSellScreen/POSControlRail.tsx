@@ -36,7 +36,7 @@ export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; accent?:
   { key: "cerrar-dia", label: "Cerrar día", accent: true },
 ];
 
-export function POSControlRail({ onAction, disabledKeys = [] }: { onAction: (key: RailFeatureKey) => void; disabledKeys?: RailFeatureKey[] }) {
+export function POSControlRail({ onAction, disabledKeys = [], readOnly = false }: { onAction: (key: RailFeatureKey) => void; disabledKeys?: RailFeatureKey[]; /** Sealed day: disable every rail action. */ readOnly?: boolean }) {
   return (
     <nav className="pos-rail" aria-label="Acciones TPV" data-testid="pos-control-rail">
       {RAIL_FEATURES.map((feature) => (
@@ -44,7 +44,7 @@ export function POSControlRail({ onAction, disabledKeys = [] }: { onAction: (key
           className={feature.accent ? "pos-rail__btn pos-rail__btn--accent" : "pos-rail__btn"}
           type="button"
           key={feature.key}
-          disabled={disabledKeys.includes(feature.key)}
+          disabled={readOnly || disabledKeys.includes(feature.key)}
           onClick={() => onAction(feature.key)}
           data-testid={`pos-rail-${feature.key}`}
         >

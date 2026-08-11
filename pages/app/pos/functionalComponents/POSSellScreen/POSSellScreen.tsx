@@ -403,16 +403,17 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               onMoveLine={moveLineToTarget}
               onMergeSplitTickets={() => void register.mergeSplitTickets()}
               onDeleteEmptyTicket={(t) => void register.voidEmptyTicket(t)}
-              busy={register.busy || readOnly}
+              busy={register.busy}
+              readOnly={readOnly}
             />
-            <POSKeypad value={keypadValue} onChange={setKeypadValue} contextLabel={contextLabel} onConfirm={confirmKeypad} confirmLabel="OK" onMultiplier={handleKeypadMultiplier} multiplierQty={keypadMultiplierQty} onClearMultiplier={clearKeypadMultiplier} />
+            <POSKeypad value={keypadValue} onChange={setKeypadValue} contextLabel={contextLabel} onConfirm={confirmKeypad} confirmLabel="OK" onMultiplier={handleKeypadMultiplier} multiplierQty={keypadMultiplierQty} onClearMultiplier={clearKeypadMultiplier} readOnly={readOnly} />
           </div>
           <div className="pos-sell__row pos-sell__row--catalog" data-testid="pos-sell-row-catalog" hidden={ticketExpanded}>
             <POSCategoryPanel categories={categories} active={category} onSelect={setCategory} />
-            <POSProductGrid products={visibleProducts} busy={register.busy || !register.ticket || readOnly} onAdd={handleAddProduct} />
+            <POSProductGrid products={visibleProducts} busy={register.busy || !register.ticket} readOnly={readOnly} onAdd={handleAddProduct} />
           </div>
         </div>
-        <POSControlRail onAction={railAction} disabledKeys={disabledRailKeys} />
+        <POSControlRail onAction={railAction} disabledKeys={disabledRailKeys} readOnly={readOnly} />
       </div>
 
       <ConfirmDialog
