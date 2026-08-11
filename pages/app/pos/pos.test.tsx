@@ -89,6 +89,21 @@ describe("POSPage", () => {
     expect(screen.queryByTestId("pos-sell-screen")).toBeNull();
   });
 
+  // Earlier unsealed days take priority over the plain no-cash-day gate: the
+  // operator has to resolve them (close, or force-open) before opening today.
+  it("shows the unclosed-days gate before the no-cash-day gate when earlier days are open", async () => {
+    const unclosed = [{ id: 5, date: "2026-02-16", status: "OPEN", openedBy: 3, openedByName: "Lucía", closedBy: null, closedByName: "", openingCashCents: 0, openedAt: "2026-02-16T08:30:00Z", closedAt: null, forcedOpen: false, notes: null, totalGrossCents: 123456, ticketCount: 9, covers: 42 }];
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/cash-days/current")) return new Response(JSON.stringify({ success: true, date: "2026-02-17", cashDay: null, unclosedPrevious: unclosed }));
+      if (url.includes("/bootstrap")) return new Response(JSON.stringify(bootstrap));
+      return new Response(JSON.stringify({ success: true, items: [] }));
+    }));
+    render(<Provider><Page /></Provider>);
+    expect(await screen.findByTestId("pos-unclosed-modal")).toBeInTheDocument();
+    expect(screen.queryByTestId("pos-no-cash-day-modal")).toBeNull();
+  });
+
   // Changing the date puts the cash day hook back into loading for a render.
   // If the gate lifted meanwhile, a live sell screen scoped to the day the
   // operator just left would be on screen and taking orders.
