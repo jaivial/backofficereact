@@ -692,6 +692,18 @@
   min-height: 0;
 }
 
+/* The outer viewport (direct child of the modal's ScrollArea) is a flex item of
+   .bo-scrollArea (display:flex, default align-items:stretch). Its base `h-full`
+   (height:100%) does NOT resolve because the scrollArea's height comes from flex +
+   max-height rather than an explicit height, so the viewport grew to its full content
+   height and the modal's overflow:hidden clipped it → no vertical scroll reached.
+   Drop the percentage height so the default flex stretch sizes the viewport to the
+   scrollArea's bounded box. Scoped to the direct-child (outer) viewport only; the inner
+   booking-editor-body viewport is neutralized below. */
+.bo-reservasModal--edit > .bo-scrollArea > .bo-scrollAreaViewport {
+  height: auto;
+}
+
 .bo-reservasModal--edit .bo-scrollAreaViewport {
   overflow-x: hidden;
 }
