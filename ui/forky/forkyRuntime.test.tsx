@@ -300,6 +300,59 @@ describe("ForkyWsClient", () => {
     client.dispose();
   });
 
+  it("fails an in-flight turn when the mid-turn reconnect is rejected", async () => {
+    // The socket drops mid-turn and the reconnect's hello is answered with an
+    // error. The turn is no longer awaiting the handshake promise, so it must be
+    // failed through its own queue or it hangs until the watchdog.
+    const { client } = makeClient({ maxReconnectAttempts: 3 });
+    const turn = collectTurn(client, "pendiente");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(5));
+    await new Promise((r) => setTimeout(r, 0));
+
+    ws.close();
+    await new Promise((r) => setTimeout(r, 30));
+
+    const ws2 = FakeWebSocket.instances[1];
+    expect(ws2).toBeDefined();
+    ws2.open();
+    ws2.receive({ type: "error", message: "session not found" });
+
+    const events = await turn;
+    expect(events.at(-1)).toMatchObject({ type: "error", message: "session not found" });
+    client.dispose();
+  });
+
+  it("still times out a wedged turn while keepalive pongs keep arriving", async () => {
+    // Regression guard: the keepalive interval is shorter than the watchdog, so
+    // if pongs rearmed the watchdog it could never fire and the UI would think
+    // forever — exactly the bug this file exists to prevent. The pongs must keep
+    // flowing for longer than the watchdog window, otherwise a rearming bug
+    // would still pass once they stop.
+    const { client } = makeClient({ keepaliveMs: 5, turnIdleTimeoutMs: 40 });
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    // The server keeps answering pings but never answers the turn.
+    const pongs = setInterval(() => ws.receive({ type: "pong" }), 5);
+    try {
+      const events = await Promise.race([
+        turn,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("turn never settled while pongs flowed")), 400),
+        ),
+      ]);
+      expect(events.at(-1)).toMatchObject({ type: "error", message: "timeout" });
+    } finally {
+      clearInterval(pongs);
+      client.dispose();
+    }
+  });
+
   it("pings periodically so the server read deadline never expires", async () => {
     const { client } = makeClient({ keepaliveMs: 10 });
     const connected = client.ensureConnected();

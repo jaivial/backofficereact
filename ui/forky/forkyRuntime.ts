@@ -250,8 +250,12 @@ export class ForkyWsClient {
     } catch {
       return;
     }
-    // Any frame proves the server is alive: restart the turn watchdog.
-    if (this.activeTurn) this.armTurnIdleTimer(this.activeTurn);
+    // Progress on the current turn rearms the watchdog. Keepalive pongs must
+    // NOT: the server answers those even when a generation is wedged, so
+    // counting them would keep the watchdog permanently disarmed.
+    if (this.activeTurn && (frame.type === "status" || frame.type === "delta")) {
+      this.armTurnIdleTimer(this.activeTurn);
+    }
     switch (frame.type) {
       case "hello": {
         const sessionId = frame.session_id;
@@ -294,6 +298,16 @@ export class ForkyWsClient {
         if (!this.handshakeDone && this.handshakeReject) {
           this.rejectHandshake(new Error(String(frame.message ?? "error")));
           this.forgetSessionId();
+          // A turn already in flight (the socket dropped mid-turn and the
+          // reconnect was rejected) must be failed too: it is not awaiting the
+          // handshake promise any more, only its own queue.
+          if (this.activeTurn && !this.activeTurn.acked) {
+            this.activeTurn.acked = true;
+            this.activeTurn.queue.push({
+              type: "error",
+              message: String(frame.message ?? "error"),
+            });
+          }
           this.close(1000, "handshake_error");
           break;
         }
