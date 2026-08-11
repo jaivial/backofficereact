@@ -706,6 +706,32 @@
   margin-top: auto;
 }
 
+/* ponytail: Modal renders .bo-modalClose AND ModalHeader renders .bo-modalX → dup X.
+   Hide Modal's; keep ModalHeader's (it carries the title). Generic Modal unchanged. */
+.bo-reservasModal .bo-modalClose {
+  display: none;
+}
+
+/* ponytail: two nested ScrollAreas fought for scroll (outer reservas-modalOutline-edit
+   + inner booking-editor-body). Inner .bo-scrollArea h-full overflow-hidden clipped the
+   body and .bo-bookingEditor--stickyFooter min-height:100% pushed the footer out of the
+   inner scroll range, so bottom content was unreachable. Neutralize the inner scroller —
+   height auto, overflow visible — so the outer viewport is the sole scroller and the
+   footer flows at natural end. Sticky-footer desktop behavior (anadir page) is untouched
+   (scoped to --edit). */
+.bo-reservasModal--edit .bo-modalOutline .bo-scrollArea {
+  height: auto;
+  overflow: visible;
+}
+
+.bo-reservasModal--edit .bo-modalOutline .bo-scrollAreaViewport {
+  overflow: visible;
+}
+
+.bo-reservasModal--edit .bo-bookingEditor--stickyFooter {
+  min-height: auto;
+}
+
 .bo-hiddenFileInput {
   position: absolute;
   width: 1px;
