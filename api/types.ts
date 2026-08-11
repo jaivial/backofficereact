@@ -2259,6 +2259,17 @@ export type POSCashDayTotals = {
   covers: number;
 };
 
+/** Result of paying every open ticket for a date in one sweep (bulk checkout). */
+export type POSBulkCheckout = {
+  date: string;
+  paymentMethod: "CASH" | "CARD" | "BANK" | "OTHER";
+  closedTickets: number;
+  skippedTickets: number;
+  closedVisits: number;
+  totalGrossCents: number;
+  byMethod: { CASH: number; CARD: number; BANK: number; OTHER: number };
+};
+
 export type POSCashDayTicket = {
   id: number;
   ticketNumber: string;
