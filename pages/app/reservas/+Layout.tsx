@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import { navigate } from "vike/client/router";
 import { CalendarDays, PlusCircle, SlidersHorizontal, Map } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 
 const TAB_FADE_DURATION_MS = 500;
-const TAB_NAV_DELAY_MS = 600;
-const TAB_NAVIGATION_WAIT_MS = Math.max(0, TAB_NAV_DELAY_MS - TAB_FADE_DURATION_MS);
 
 function todayISO(): string {
   const d = new Date();
@@ -98,29 +97,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const onNavigateTab = useCallback(
     (_href: string, id: string) => {
-      if (isNavigatingOut) return;
       if (id === activeId) return;
-      if (reduceMotion) {
-        window.location.assign(_href);
-        return;
-      }
-      if (typeof window === "undefined") return;
-      if (!_href) return;
-      setIsNavigatingOut(true);
-      setPendingHref(_href);
+      // SPA nav: Vike client routing fetches .pageContext.json for the new route;
+      // no full reload. Keeps the shared app shell mounted.
+      void navigate(_href);
     },
-    [activeId, isNavigatingOut, reduceMotion],
+    [activeId],
   );
 
   const transition = reduceMotion ? { duration: 0 } : { duration: TAB_FADE_DURATION_MS / 1000, ease: "easeInOut" as const };
-
-  const handleExitComplete = useCallback(() => {
-    if (!isNavigatingOut || reduceMotion || !pendingHref) return;
-    const href = pendingHref;
-    window.setTimeout(() => {
-      window.location.assign(href);
-    }, TAB_NAVIGATION_WAIT_MS);
-  }, [isNavigatingOut, pendingHref, reduceMotion]);
 
   if (isTablesRoute) {
     return <>{children}</>;
@@ -129,18 +114,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Tabs tabs={tabs} activeId={activeId} ariaLabel="Pestañas reservas" className="bo-tabs--reservas flex flex-row rounded-xl w-fit my-0 mx-auto" onNavigate={onNavigateTab} />
-      <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
-        {!isNavigatingOut ? (
-          <motion.div
-            key={pathname}
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            animate={reduceMotion ? { opacity: 1 } : { opacity: 1 }}
-            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            transition={transition}
-          >
-            {children}
-          </motion.div>
-        ) : null}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+          animate={reduceMotion ? { opacity: 1 } : { opacity: 1 }}
+          exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+          transition={transition}
+        >
+          {children}
+        </motion.div>
       </AnimatePresence>
     </>
   );
