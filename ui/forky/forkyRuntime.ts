@@ -478,7 +478,11 @@ export function recoverEncodedReply(text: string): string {
   // every short-circuit below returns clean text.
   const wrapped = stripBase64Wrapper(text);
   const input = cleanseMinimaxReply(wrapped);
-  const stripped = input.replace(/[\s]+/g, "");
+  // Only newlines are removed before sniffing. A real base64 blob may be hard
+  // wrapped, but it never contains spaces; stripping those too made ordinary
+  // unaccented Spanish ("Si es posible Revisalo y te cuento...") collapse into a
+  // pure base64-alphabet string that then "decoded" to garbage.
+  const stripped = input.replace(/[\n\r]+/g, "");
   const body = stripped.replace(/=+$/, "");
   if (body.length < 16) return input;
   if (!/^[A-Za-z0-9+/_-]+$/.test(body)) return input;
@@ -543,8 +547,15 @@ function stripBase64Wrapper(text: string): string {
   return t;
 }
 
+// Remove MiniMax's spurious CJK text and filler symbols. The filler ranges
+// deliberately exclude Dingbats (U+2700–27BF) and most Miscellaneous Symbols
+// (U+2600–26FF): those hold everyday emoji (✨ ✅ ❌ ✔ ➡ ⚡) the model uses
+// legitimately, and blanket-stripping them mangled normal replies.
 function cleanseMinimaxReply(text: string): string {
-  const cleaned = text.replace(/[\u{3400}-\u{4dbf}\u{4e00}-\u{9fff}\u{f900}-\u{faff}\u{20000}-\u{2fa1f}\u{3000}\u{3001}\u{3002}\u{300c}\u{300d}\u{ff01}\u{ff0c}\u{ff1f}\u{2140}-\u{2aff}\u{a9}\u{26b3}]/gu, "");
+  const cleaned = text.replace(
+    /[\u{3400}-\u{4dbf}\u{4e00}-\u{9fff}\u{f900}-\u{faff}\u{20000}-\u{2fa1f}\u{3000}\u{3001}\u{3002}\u{300c}\u{300d}\u{ff01}\u{ff0c}\u{ff1f}\u{2190}-\u{21ff}\u{2200}-\u{22ff}\u{2a00}-\u{2aff}\u{a9}\u{26b3}]/gu,
+    "",
+  );
   if (cleaned === text) return text;
   // Re-flow whitespace: strip leading/trailing spaces per line, collapse runs.
   return cleaned

@@ -389,6 +389,31 @@ describe("recoverEncodedReply", () => {
     expect(recoverEncodedReply(plain)).toBe(plain);
   });
 
+  it("leaves unaccented prose untouched (base64-alphabet words)", () => {
+    // Every word is spelled with characters that also belong to the base64
+    // alphabet, so stripping spaces before sniffing made the whole sentence look
+    // like a payload and "decoded" it into garbage in the live chat.
+    for (const prose of [
+      "Si es posible Revisalo y te cuento el menu de comida disponible",
+      "Estos son los horarios que tenemos fijados en el sistema",
+      "Aqui tienes el resumen de stock con todas las categorias",
+      "Hola Soy Forky el asistente de tu restaurante",
+    ]) {
+      expect(recoverEncodedReply(prose)).toBe(prose);
+    }
+  });
+
+  it("keeps everyday emoji that are not MiniMax filler glyphs", () => {
+    for (const prose of [
+      "Listo ✅ la reserva quedo confirmada",
+      "Mesa lista ➡ pasa por caja ⚡",
+      "¡Todo correcto! ✔ Buen servicio ✨",
+      "¡Hola! 😊 Aqui tienes los horarios 🍽️ y la carta 🍴✨",
+    ]) {
+      expect(recoverEncodedReply(prose)).toBe(prose);
+    }
+  });
+
   it("leaves markdown tables untouched", () => {
     const table = "| Fecha | Hora |\n|---|---|\n| 10 | 20:30 |";
     expect(recoverEncodedReply(table)).toBe(table);
