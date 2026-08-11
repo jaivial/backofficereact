@@ -147,34 +147,6 @@ export function positionFromRectFrame(
   };
 }
 
-// === Drag debouncer ===
-
-export function createPersistLayoutDebouncer(onFlush: (elements: unknown[], states: Record<string, BookingState>, limitPoints: LinePoint[]) => void, delay = 120) {
-  const timerRef = { current: null as ReturnType<typeof setTimeout> | null };
-
-  const queue = useCallback(
-    (elements: unknown[], states: Record<string, BookingState>, limitPoints: LinePoint[]) => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
-        onFlush(elements, states, limitPoints);
-      }, delay);
-    },
-    [onFlush, delay],
-  );
-
-  const cancel = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
-
-  return { queue, cancel };
-}
-
 // === Menu tooltip position helpers ===
 
 export function useMenuTooltipPosition(menuVisible: boolean) {

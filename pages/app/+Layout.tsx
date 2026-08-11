@@ -30,13 +30,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (session) setSession(session);
   }, [session, setSession]);
 
-  // ponytail: never unmount during CSR, children handle missing session
-  if (!session) {
-    return <main className="bo-main">{children}</main>;
-  }
-
   useEffect(() => {
-    const current = session.activeRestaurantId || null;
+    const current = session?.activeRestaurantId || null;
     if (!current) return;
     if (prevRestaurant.current === null) {
       prevRestaurant.current = current;
@@ -45,7 +40,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (prevRestaurant.current !== current) {
       window.location.reload();
     }
-  }, [session.activeRestaurantId]);
+  }, [session?.activeRestaurantId]);
+
+  // ponytail: never unmount during CSR, children handle missing session
+  if (!session) {
+    return <main className="bo-main">{children}</main>;
+  }
 
   return (
     <div className="bo-app bo-app--page" data-slot="Layout-app--page">

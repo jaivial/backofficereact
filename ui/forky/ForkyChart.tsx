@@ -234,13 +234,13 @@ function ForkyChartEmpty({ kind, message }: { kind: "empty" | "loading" | "error
 
 /** Render a Recharts chart for a parsed `forky-chart` spec. */
 export function ForkyChartView({ spec }: { spec: ForkyChartSpec }) {
+  const reducedMotion = useReducedMotion() ?? false;
   const data = spec.data ?? [];
   if (data.length === 0) {
     return <ForkyChartEmpty kind="empty" />;
   }
   const labelVK = labelKey(data[0]);
   const series = chartSeries(spec);
-  const reducedMotion = useReducedMotion() ?? false;
   const kind = spec.type ?? "bar";
 
   const config = Object.fromEntries(series.map((s) => [s.key, { label: s.label, color: s.color }]));
