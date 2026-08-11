@@ -1,9 +1,6 @@
 import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
-import { createClient } from "../../../api/client";
-import type { CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics } from "../../../api/types";
-
 export type Data = Awaited<ReturnType<typeof data>>;
 
 function todayISO(): string {
@@ -14,74 +11,27 @@ function todayISO(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+// SSR no longer blocks on backend data for this page. The shell renders
+// immediately and reservas.tsx fetches bookings/calendar/metrics client-side
+// on mount (and on date change). This cuts first-load TTFB and, because the
+// shared app shell survives, makes tab SPA navigation feel instant.
 export async function data(pageContext: PageContextServer) {
   const config = useConfig();
   config({ title: "Reservas" });
 
   const date = typeof pageContext.urlParsed?.search?.date === "string" ? pageContext.urlParsed.search.date : todayISO();
-  const backendOrigin = pageContext.boRequest?.backendOrigin ?? "http://127.0.0.1:8080";
-  const cookieHeader = pageContext.boRequest?.cookieHeader ?? "";
-
-  const api = createClient({ baseUrl: backendOrigin, cookieHeader });
-
-  const safeCall = async <T>(promise: Promise<T>, fallback: T): Promise<T> => {
-    try {
-      return await promise;
-    } catch {
-      return fallback;
-    }
-  };
-
-  const [bookingsRes, calRes, limitRes, metricsRes, dayRes] = await Promise.all([
-    safeCall(
-      api.reservas.list({ date, page: 1, count: 15, sort: "reservation_time", dir: "asc" }),
-      { success: false, message: "Error consultando reservas" },
-    ),
-    safeCall(
-      (() => {
-        const [y, m] = date.split("-").map((x) => Number(x));
-        const year = Number.isFinite(y) ? y : new Date().getFullYear();
-        const month = Number.isFinite(m) ? m : new Date().getMonth() + 1;
-        return api.calendar.getMonth({ year, month });
-      })(),
-      { success: false, message: "Error consultando calendario" },
-    ),
-    safeCall(api.config.getDailyLimit(date), { success: false, message: "Error consultando límite diario" }),
-    safeCall(api.dashboard.getMetrics(date), { success: false, message: "Error consultando métricas" }),
-    safeCall(api.config.getDay(date), { success: false, message: "Error consultando estado del día" }),
-  ]);
-
-  let error: string | null = null;
-  const bookings = bookingsRes.success ? (bookingsRes as any).bookings : [];
-  const floors: ConfigFloor[] = bookingsRes.success ? ((bookingsRes as any).floors || []) : [];
-  const total_count = bookingsRes.success ? bookingsRes.total_count : 0;
-  const page = bookingsRes.success ? bookingsRes.page : 1;
-  const count = bookingsRes.success ? bookingsRes.count : 15;
-  if (!bookingsRes.success) error = bookingsRes.message || "Error consultando reservas";
-
-  const calendarDays: CalendarDay[] = calRes.success ? (calRes as any).data : [];
-  const dailyLimit: ConfigDailyLimit | null = limitRes.success ? (limitRes as any) : null;
-  const metrics: DashboardMetrics | null = metricsRes.success ? (metricsRes as any).metrics : null;
-  const day: ConfigDayStatus | null = dayRes.success ? (dayRes as any) : null;
-
-  if (!error) {
-    if (!calRes.success) error = calRes.message || "Error consultando calendario";
-    if (!limitRes.success) error = error || limitRes.message || "Error consultando límite diario";
-    if (!metricsRes.success) error = error || metricsRes.message || "Error consultando métricas";
-    if (!dayRes.success) error = error || dayRes.message || "Error consultando estado del día";
-  }
 
   return {
     date,
-    bookings,
-    floors,
-    total_count,
-    page,
-    count,
-    calendarDays,
-    dailyLimit,
-    metrics,
-    day,
-    error,
+    bookings: [],
+    floors: [],
+    total_count: 0,
+    page: 1,
+    count: 15,
+    calendarDays: [],
+    dailyLimit: null,
+    metrics: null,
+    day: null,
+    error: null,
   };
 }

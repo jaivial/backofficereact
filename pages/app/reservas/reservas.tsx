@@ -429,6 +429,18 @@ export default function Page() {
     setFiltersOpen(false);
   }, [day?.isOpen]);
 
+  // F3: +data.ts now returns an empty shell; fetch everything client-side.
+  // Fire once per mount once the session is available, unless SSR hydrated data.
+  const bootstrapped = useRef(false);
+  useEffect(() => {
+    if (!session || bootstrapped.current) return;
+    bootstrapped.current = true;
+    if ((data as PageData).bookings.length > 0) return;
+    void loadBookings({ date, status, q, sort, dir, page, count });
+    void loadMonth(view.year, view.month);
+    void loadSummary(date);
+  }, [count, data, date, dir, loadBookings, loadMonth, loadSummary, page, q, session, sort, status, view]);
+
   const editInitial = useMemo<BookingEditorDraft | null>(() => {
     const b = edit.booking;
     if (!b) return null;
