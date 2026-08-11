@@ -682,6 +682,20 @@
   overflow: visible;
 }
 
+/* ponytail: ScrollArea is the real flex child of the column modal, not .bo-modalOutline.
+   h-full alone can't resolve against a max-height parent, so the viewport never got a
+   bounded height → content clipped by .bo-reservasModal overflow:hidden (no Y scroll),
+   and overflow:auto on the viewport let touch drag horizontally. Fix the flex sizing +
+   clip X so only vertical scroll remains. */
+.bo-reservasModal--edit .bo-scrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.bo-reservasModal--edit .bo-scrollAreaViewport {
+  overflow-x: hidden;
+}
+
 .bo-reservasModal--edit .bo-bookingEditorBody {
   display: grid;
   gap: 14px;
