@@ -35,7 +35,16 @@ export default [
       'no-case-declarations': 'off',
       'no-empty': 'off',
       'no-useless-escape': 'off',
+      // Conditional hooks (e.g. after an early `if (!session) return`) crash the
+      // whole page with "Rendered more hooks than during the previous render",
+      // which silently kills navigation and every button on the page.
+      'react-hooks/rules-of-hooks': 'error',
     },
+  },
+  {
+    // Vike's `useConfig` is not a React hook; it is valid inside `+data.ts`.
+    files: ['**/+data.ts', '**/+data.tsx'],
+    rules: { 'react-hooks/rules-of-hooks': 'off' },
   },
   {
     // Custom rule: prevent data-* after self-closing tag
