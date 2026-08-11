@@ -19,9 +19,12 @@ const SECTIONS: ReadonlyArray<{ id: POSSection; label: string }> = [
 
 /** Three-dots menu that hosts the POS section switcher (replaces the old
  *  inline pos-nav). Reuses the shared Popover overlay. */
-export function POSSectionMenu({ section, onChange }: {
+export function POSSectionMenu({ section, onChange, onOpenCalendar }: {
   section: POSSection;
   onChange: (next: POSSection) => void;
+  /** Opens the cash-day calendar modal. Not a section, so it gets a plain
+   *  menuitem rather than a menuitemradio. */
+  onOpenCalendar?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement | null>(null);
@@ -66,6 +69,18 @@ export function POSSectionMenu({ section, onChange }: {
               </button>
             </li>
           ))}
+          <li role="separator" className="pos-sectionMenuSeparator" />
+          <li role="none">
+            <button
+              type="button"
+              role="menuitem"
+              className="pos-sectionMenuItem"
+              data-testid="pos-section-calendar"
+              onClick={() => { onOpenCalendar?.(); setOpen(false); }}
+            >
+              Calendario
+            </button>
+          </li>
           <li role="separator" className="pos-sectionMenuSeparator" />
           <li role="none">
             <button

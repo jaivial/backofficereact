@@ -22,7 +22,7 @@ function calcEval(expr: string): string {
 }
 
 /** Contextual numeric keypad with calculator operators column. OK doubles as equals. */
-export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLabel, onMultiplier, multiplierQty, onClearMultiplier }: {
+export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLabel, onMultiplier, multiplierQty, onClearMultiplier, readOnly = false }: {
   value: string;
   onChange: (next: string) => void;
   contextLabel: string;
@@ -34,6 +34,8 @@ export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLab
   multiplierQty?: number | null;
   /** Called when multiplier should be cleared (backspace with no value) */
   onClearMultiplier?: () => void;
+  /** Sealed day: disable every key so no value can be entered. */
+  readOnly?: boolean;
 }) {
   const [calcExpr, setCalcExpr] = React.useState("");
 
@@ -93,18 +95,18 @@ export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLab
       <div className="pos-keypad__body">
         <div className="pos-keypad__grid">
           {KEYS.map((key) => (
-            <button className="pos-keypad__key" type="button" key={key} onClick={() => press(key)} data-testid={`pos-key-${key === "⌫" ? "back" : key === "," ? "comma" : key}`} aria-label={key === "⌫" ? "Borrar" : key}>
+            <button className="pos-keypad__key" type="button" key={key} disabled={readOnly} onClick={() => press(key)} data-testid={`pos-key-${key === "⌫" ? "back" : key === "," ? "comma" : key}`} aria-label={key === "⌫" ? "Borrar" : key}>
               {key === "⌫" ? <Delete className="h-5 w-5" aria-hidden="true" /> : key}
             </button>
           ))}
         </div>
         <div className="pos-keypad__calcCol">
           {OPS.map((op) => (
-            <button className="pos-keypad__calcOp" type="button" key={op.testId} onClick={() => calcOp(op.symbol)} data-testid={`pos-key-op-${op.testId}`} aria-label={`Operador ${op.symbol}`}>{op.symbol}</button>
+            <button className="pos-keypad__calcOp" type="button" key={op.testId} disabled={readOnly} onClick={() => calcOp(op.symbol)} data-testid={`pos-key-op-${op.testId}`} aria-label={`Operador ${op.symbol}`}>{op.symbol}</button>
           ))}
         </div>
       </div>
-      <button className="pos-keypad__confirm" type="button" onClick={handleConfirm} data-testid="pos-keypad-confirm">{confirmLabel}</button>
+      <button className="pos-keypad__confirm" type="button" disabled={readOnly} onClick={handleConfirm} data-testid="pos-keypad-confirm">{confirmLabel}</button>
     </section>
   );
 }
