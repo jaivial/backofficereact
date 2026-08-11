@@ -128,7 +128,7 @@ export function CalendarModal({ open, onClose, onSelectDate, year, month, curren
   ) : null;
 
   return (
-    <Modal open={open} title="Calendario de horarios" onClose={onClose} size="md" data-slot="calendar-modal">
+    <Modal open={open} title="Calendario de horarios" onClose={onClose} size="md" data-slot="calendar-modal" hideClose>
       <ModalHeader title="Calendario de horarios" onClose={onClose} />
 
       <div className="px-4 pb-4">

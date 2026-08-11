@@ -295,6 +295,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           title={`Detalle de línea ${lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}`}
           onClose={closeLineItemDetails}
           size="sm"
+          hideClose
         >
           <ModalHeader title={`Detalle de línea ${lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}`} onClose={closeLineItemDetails} />
 
