@@ -505,11 +505,12 @@ describe("POSSellScreen", () => {
     expect(screen.queryByTestId("pos-void-order-modal")).not.toBeInTheDocument();
   });
 
-  it("renders comanda right below total in the rail", async () => {
+  it("renders the accent closing actions first in the rail", async () => {
     render(<Provider><POSSellScreen /></Provider>);
     const rail = await screen.findByTestId("pos-control-rail");
     const keys = [...rail.querySelectorAll("button")].map((button) => button.getAttribute("data-testid"));
-    expect(keys.slice(0, 2)).toEqual(["pos-rail-total", "pos-rail-comanda"]);
+    // Total + Cerrar mesas are the accent actions and lead the rail; comanda follows.
+    expect(keys.slice(0, 3)).toEqual(["pos-rail-total", "pos-rail-cerrar-mesas", "pos-rail-comanda"]);
   });
 
   it("keeps comanda disabled without a ticket and without active lines", async () => {
