@@ -197,6 +197,16 @@ export default function Page() {
 
   useErrorToast(error);
 
+  const onNavigateContentTab = useCallback(
+    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
+      void _href;
+      event.preventDefault();
+      setContentTab(id as ContentTab);
+      window.history.replaceState(null, "", `${window.location.pathname}?content=${id}`);
+    },
+    [],
+  );
+
   const reload = useCallback(async () => {
     setBusy(true);
     setError(null);
@@ -259,17 +269,6 @@ export default function Page() {
       </section>
     );
   }
-
-  const onNavigateContentTab = useCallback(
-    (_href: string, id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
-      void _href;
-      event.preventDefault();
-      setContentTab(id as ContentTab);
-      // ponytail: sync URL so tab survives refresh
-      window.history.replaceState(null, "", `${window.location.pathname}?content=${id}`);
-    },
-    [],
-  );
 
   return (
     <>
