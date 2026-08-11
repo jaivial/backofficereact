@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Download, FileText, Filter, Pencil, XCircle, ExternalLink } from "lucide-react";
+import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid } from "lucide-react";
 import { createClient } from "../../../api/client";
 import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
@@ -27,6 +27,9 @@ import { BookingSearch, type BookingSearchParams } from "./functionalComponents/
 import { BookingDetailsPanel } from "./functionalComponents/BookingDetailsPanel";
 import { SearchResultsTable } from "./functionalComponents/SearchResultsTable";
 import { BookingsViewTabs, type ViewTabId } from "./functionalComponents/BookingsViewTabs/BookingsViewTabs";
+import { BookingCardGrid } from "./functionalComponents/BookingCardGrid/BookingCardGrid";
+
+type DisplayMode = "tabla" | "grid";
 
 type PageData = {
   date: string;
@@ -246,6 +249,7 @@ export default function Page() {
   const [edit, setEdit] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
 
   const [viewTab, setViewTab] = useState<ViewTabId>("activas");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("tabla");
 
   const [searchMode, setSearchMode] = useState(false);
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
@@ -491,6 +495,10 @@ export default function Page() {
     } finally { setBusy(false); }
   }, [api.reservas, pushToast]);
 
+  const onCrearFactura = useCallback((b: Booking) => {
+    window.location.href = `/app/facturas?tab=añadir&booking_id=${b.id}`;
+  }, []);
+
   const openDay = useCallback(async () => {
     if (day?.isOpen) return;
     setBusy(true);
@@ -563,6 +571,18 @@ export default function Page() {
   const occPeople = dailyLimit?.totalPeople ?? 0;
   const occLimit = dailyLimit?.limit ?? 45;
 
+  const pagerEl = (
+    <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
+      <div className="bo-pagerText" data-slot="reservas-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
+      {showPagerBtns ? (
+        <div className="bo-pagerBtns" data-slot="reservas-page-pagination-btns">
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1} data-testid="reservas-page-pagination-prev">Anterior</button>
+          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages} data-testid="reservas-page-pagination-next">Siguiente</button>
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <section aria-label="Reservas" data-testid="reservas-section">
       <AnimatePresence initial={false}>
@@ -625,44 +645,59 @@ export default function Page() {
                     reduceMotion={reduceMotion === true}
                   />
                   {viewTab === "activas" ? (
-                    <div className="bo-tableWrap" style={{ marginTop: 14 }} data-slot="reservas-tableWrap">
-                      <div className="bo-tableScroll" data-slot="reservas-tableScroll">
-                        <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
-                          <thead data-slot="reservas-thead">
-                            <tr data-slot="reservas-tr">
-                              <th className="col-added" data-slot="reservas-col-added">Añadida</th>
-                              <th className="col-mesa" data-slot="reservas-col-mesa">Mesa</th>
-                              <th className="col-time" data-slot="reservas-col-time">Hora</th>
-                              <th className="col-client" data-slot="reservas-col-client">Cliente</th>
-                              <th className="col-status" data-slot="reservas-col-status">Estado</th>
-                              <th className="num" data-slot="reservas-num">Pax</th>
-                              <th className="col-children num" data-slot="reservas-num">Niños</th>
-                              <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
-                              <th className="col-rice" data-slot="reservas-col-rice">Arroz</th>
-                              <th className="col-comment" data-slot="reservas-col-comment">Comentario</th>
-                              <th className="end" data-slot="reservas-end" />
-                            </tr>
-                          </thead>
-                          <tbody data-slot="reservas-tbody">
-                            {rows.map((b) => (
-                              <BookingRow key={b.id} booking={b} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
-                            ))}
-                            {!rows.length ? (
-                              <tr data-slot="reservas-tro"><td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
-                            ) : null}
-                          </tbody>
-                        </table>
+                    <>
+                      <div className="bo-displayToggle" role="tablist" aria-label="Vista reservas" style={{ marginTop: 14 }} data-slot="reservas-display-toggle">
+                        <button type="button" role="tab" aria-selected={displayMode === "tabla"} className={`bo-displayToggleBtn${displayMode === "tabla" ? " is-active" : ""}`} onClick={() => setDisplayMode("tabla")} data-testid="reservas-display-tabla">
+                          <TableIcon size={16} strokeWidth={1.8} /> <span>Tabla</span>
+                        </button>
+                        <button type="button" role="tab" aria-selected={displayMode === "grid"} className={`bo-displayToggleBtn${displayMode === "grid" ? " is-active" : ""}`} onClick={() => setDisplayMode("grid")} data-testid="reservas-display-grid">
+                          <LayoutGrid size={16} strokeWidth={1.8} /> <span>Grid</span>
+                        </button>
                       </div>
-                      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
-                        <div className="bo-pagerText" data-slot="reservas-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
-                        {showPagerBtns ? (
-                          <div className="bo-pagerBtns" data-slot="reservas-page-pagination-btns">
-                            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page - 1)} disabled={busy || page <= 1} data-testid="reservas-page-pagination-prev">Anterior</button>
-                            <button className="bo-btn bo-btn--ghost" type="button" onClick={() => onPageChange(page + 1)} disabled={busy || page >= totalPages} data-testid="reservas-page-pagination-next">Siguiente</button>
+                      {displayMode === "tabla" ? (
+                        <div className="bo-tableWrap" style={{ marginTop: 10 }} data-slot="reservas-tableWrap">
+                          <div className="bo-tableScroll" data-slot="reservas-tableScroll">
+                            <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
+                              <thead data-slot="reservas-thead">
+                                <tr data-slot="reservas-tr">
+                                  <th className="col-added" data-slot="reservas-col-added">Añadida</th>
+                                  <th className="col-mesa" data-slot="reservas-col-mesa">Mesa</th>
+                                  <th className="col-time" data-slot="reservas-col-time">Hora</th>
+                                  <th className="col-client" data-slot="reservas-col-client">Cliente</th>
+                                  <th className="col-status" data-slot="reservas-col-status">Estado</th>
+                                  <th className="num" data-slot="reservas-num">Pax</th>
+                                  <th className="col-children num" data-slot="reservas-num">Niños</th>
+                                  <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
+                                  <th className="col-rice" data-slot="reservas-col-rice">Arroz</th>
+                                  <th className="col-comment" data-slot="reservas-col-comment">Comentario</th>
+                                  <th className="end" data-slot="reservas-end" />
+                                </tr>
+                              </thead>
+                              <tbody data-slot="reservas-tbody">
+                                {rows.map((b) => (
+                                  <BookingRow key={b.id} booking={b} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
+                                ))}
+                                {!rows.length ? (
+                                  <tr data-slot="reservas-tro"><td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
+                                ) : null}
+                              </tbody>
+                            </table>
                           </div>
-                        ) : null}
-                      </div>
-                    </div>
+                        </div>
+                      ) : (
+                        <div className="bo-bookingCardsWrap" style={{ marginTop: 10 }} data-slot="reservas-booking-cards-wrap">
+                          <BookingCardGrid
+                            bookings={rows}
+                            busy={busy}
+                            onOpenDetails={openDetails}
+                            onEdit={openEdit}
+                            onCancel={onCancel}
+                            onCrearFactura={onCrearFactura}
+                          />
+                        </div>
+                      )}
+                      {pagerEl}
+                    </>
                   ) : null}
                 </motion.div>
               ) : (

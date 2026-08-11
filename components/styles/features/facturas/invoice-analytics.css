@@ -502,6 +502,174 @@
   text-align: center;
 }
 
+/* ── Reservas: Tabla/Grid display toggle ──────────────────────────────────── */
+.bo-displayToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  background: var(--bo-surface-2);
+}
+
+.bo-displayToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+
+.bo-displayToggleBtn:hover {
+  color: var(--bo-text);
+}
+
+.bo-displayToggleBtn.is-active {
+  background: var(--bo-accent);
+  color: #fff;
+}
+
+/* ── Reservas: booking cards grid (max 2 cols) ────────────────────────────── */
+.bo-bookingCardsWrap {
+  width: 100%;
+}
+
+.bo-bookingCards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 880px) {
+  .bo-bookingCards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.bo-bookingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--bo-border);
+  border-radius: 14px;
+  background: var(--bo-surface);
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.bo-bookingCard:hover,
+.bo-bookingCard:focus-visible {
+  border-color: var(--bo-accent);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .08);
+  outline: none;
+}
+
+.bo-bookingCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-bookingCardWho {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bo-bookingCardName {
+  font-weight: 720;
+  font-size: 15px;
+  color: var(--bo-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-bookingCardTime {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-bookingCardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  margin: 0;
+}
+
+.bo-bookingCardField {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.bo-bookingCardField--wide,
+.bo-bookingCardField--full {
+  grid-column: 1 / -1;
+}
+
+.bo-bookingCardField dt {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--bo-faint);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.bo-bookingCardField dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--bo-text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.bo-bookingCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 10px;
+  margin-top: 2px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-bookingCardActions .bo-btn {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
+}
+
+.bo-bookingCardsEmpty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--bo-muted);
+  border: 1px dashed var(--bo-border);
+  border-radius: 14px;
+}
+
+@media (max-width: 520px) {
+  .bo-bookingCardActions .bo-btn span {
+    display: none;
+  }
+  .bo-bookingCardActions .bo-btn {
+    flex: 1;
+  }
+}
+
+
+
 .bo-bookingKeyLabel {
   font-size: 11px;
   color: var(--bo-faint);
