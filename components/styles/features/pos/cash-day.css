@@ -169,3 +169,127 @@
   align-items: center;
   gap: var(--bo-space-2);
 }
+
+/* ponytail: unclosed days modal - upgrade to motion/react if animation needed */
+.pos-unclosedModal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: var(--bo-space-4);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.pos-unclosedModal {
+  position: relative;
+  display: grid;
+  gap: var(--bo-space-4);
+  width: min(28rem, 100%);
+  max-height: calc(100vh - var(--bo-space-8));
+  overflow-y: auto;
+  padding: var(--bo-space-5);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-xl);
+  background: var(--bo-surface);
+  box-shadow: var(--bo-shadow-lg);
+}
+
+.pos-unclosedModal__close {
+  position: absolute;
+  top: var(--bo-space-3);
+  right: var(--bo-space-3);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: var(--bo-radius-md);
+  background: transparent;
+  color: var(--bo-muted);
+  cursor: pointer;
+}
+
+.pos-unclosedModal__close:hover {
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+}
+
+.pos-unclosedModal__header {
+  display: grid;
+  gap: var(--bo-space-2);
+  text-align: center;
+}
+
+.pos-unclosedModal__icon {
+  justify-self: center;
+  color: var(--bo-text-warning);
+}
+
+.pos-unclosedModal__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.pos-unclosedModal__desc {
+  font-size: 0.875rem;
+  color: var(--bo-muted);
+}
+
+.pos-unclosedModal__list {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.pos-unclosedCard {
+  display: grid;
+  gap: 2px;
+  padding: var(--bo-space-3);
+  border: 1px solid var(--bo-color-warning);
+  border-radius: var(--bo-radius-md);
+  background: rgba(255, 193, 7, 0.08);
+}
+
+.pos-unclosedCard__date {
+  font-weight: 700;
+  color: var(--bo-text);
+  text-transform: capitalize;
+}
+
+.pos-unclosedCard__meta {
+  font-size: 0.75rem;
+  color: var(--bo-muted);
+}
+
+.pos-unclosedModal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--bo-space-2);
+}
+
+.pos-unclosedModal__link {
+  min-height: 2.75rem;
+  padding: 0 var(--bo-space-4);
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-accent);
+  color: var(--bo-bg);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pos-unclosedModal__dismiss {
+  min-height: 2.75rem;
+  padding: 0 var(--bo-space-4);
+  border: 1px solid var(--bo-border-2);
+  border-radius: var(--bo-radius-md);
+  background: transparent;
+  color: var(--bo-text);
+  cursor: pointer;
+}
