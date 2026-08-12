@@ -7,6 +7,7 @@ import ReactFlow, {
   type Node,
   type NodeChange,
   NodeResizer,
+  Panel,
   ReactFlowProvider,
   applyNodeChanges,
   type XYPosition,
@@ -16,7 +17,7 @@ import ReactFlow, {
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   CalendarDays, ChevronDown, ChevronLeft, ClipboardList, DoorOpen, Ellipsis, FileDown, FileText, GripVertical,
-  Hand, ImagePlus, Layers, Leaf, Minus, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
+  Hand, ImagePlus, Layers, Leaf, Maximize2, Minus, Minimize2, MousePointer2, PanelRightClose, PanelRightOpen, Pencil,
   Plus, Redo2, RotateCcw, RotateCw, Sofa, Square, SquareMinus, Trash2, Undo, X, Circle,
   CalendarRange, Users, LayoutGrid, MapPin,
 } from "lucide-react";
@@ -895,6 +896,7 @@ export default function TableManagerPage() {
   const [isEditingLimitArea, setIsEditingLimitArea] = useState(false);
   const [draggingLimitVertexIndex, setDraggingLimitVertexIndex] = useState<number | null>(null);
   const [interactionMode, setInteractionMode] = useState<"select" | "pan">("pan");
+  const [controlsCollapsed, setControlsCollapsed] = useState(false);
   const [calendarExpanded, setCalendarExpanded] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookingForAssignment, setBookingForAssignment] = useState<Booking | null>(null);
@@ -938,6 +940,15 @@ export default function TableManagerPage() {
       document.body.classList.remove("is-dragging");
     };
   }, [isDragging]);
+
+  // Toggle body class while the map editor is active so the mobile bottom
+  // navbar can be hidden (see .bo-tableMap bottom-nav media query).
+  useEffect(() => {
+    document.body.classList.toggle("is-table-edit-mode", editMode);
+    return () => {
+      document.body.classList.remove("is-table-edit-mode");
+    };
+  }, [editMode]);
 
   useErrorToast(error);
 
@@ -3720,33 +3731,56 @@ export default function TableManagerPage() {
                   style={{ touchAction: "none" }}
                 >
                   <Background gap={20} />
-                  <Controls>
-                    <ControlButton
-                      onClick={() => setInteractionMode("select")}
-                      className={interactionMode === "select" ? "is-active" : ""}
-                      title="Seleccionar (cursor)"
-                      aria-label="Seleccionar (cursor)"
-                    >
-                      <MousePointer2 size={14} strokeWidth={1.9} />
-                    </ControlButton>
-                    <ControlButton
-                      onClick={() => setInteractionMode("pan")}
-                      className={interactionMode === "pan" ? "is-active" : ""}
-                      title="Mover lienzo (mano)"
-                      aria-label="Mover lienzo (mano)"
-                    >
-                      <Hand size={14} strokeWidth={1.9} />
-                    </ControlButton>
-                    {isEditingLimitArea && editMode ? (
-                      <ControlButton
-                        onClick={() => reactFlowInstance?.fitView?.({ padding: 0.2, duration: 220 })}
-                        title="Reencuadrar area"
-                        aria-label="Reencuadrar area"
+                  {controlsCollapsed ? (
+                    <Panel position="bottom-left" className="bo-tableMapControlsExpand" data-ui="controls-expand-panel">
+                      <button
+                        data-ui="controls-expand-btn"
+                        type="button"
+                        className="bo-tableMapControlsToggle"
+                        aria-label="Expandir panel de controles"
+                        aria-expanded="false"
+                        onClick={() => setControlsCollapsed(false)}
                       >
-                        <RotateCcw size={14} strokeWidth={1.9} />
+                        <Maximize2 size={16} strokeWidth={1.9} />
+                      </button>
+                    </Panel>
+                  ) : (
+                    <Controls>
+                      <ControlButton
+                        data-ui="controls-collapse-btn"
+                        onClick={() => setControlsCollapsed(true)}
+                        title="Colapsar controles"
+                        aria-label="Colapsar controles"
+                      >
+                        <Minimize2 size={14} strokeWidth={1.9} />
                       </ControlButton>
-                    ) : null}
-                  </Controls>
+                      <ControlButton
+                        onClick={() => setInteractionMode("select")}
+                        className={interactionMode === "select" ? "is-active" : ""}
+                        title="Seleccionar (cursor)"
+                        aria-label="Seleccionar (cursor)"
+                      >
+                        <MousePointer2 size={14} strokeWidth={1.9} />
+                      </ControlButton>
+                      <ControlButton
+                        onClick={() => setInteractionMode("pan")}
+                        className={interactionMode === "pan" ? "is-active" : ""}
+                        title="Mover lienzo (mano)"
+                        aria-label="Mover lienzo (mano)"
+                      >
+                        <Hand size={14} strokeWidth={1.9} />
+                      </ControlButton>
+                      {isEditingLimitArea && editMode ? (
+                        <ControlButton
+                          onClick={() => reactFlowInstance?.fitView?.({ padding: 0.2, duration: 220 })}
+                          title="Reencuadrar area"
+                          aria-label="Reencuadrar area"
+                        >
+                          <RotateCcw size={14} strokeWidth={1.9} />
+                        </ControlButton>
+                      ) : null}
+                    </Controls>
+                  )}
                 </ReactFlow>
 
                 {lineDrawing.points.length > 0 && (
