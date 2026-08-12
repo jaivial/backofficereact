@@ -91,6 +91,7 @@ export function BookingEditor({
   stickyFooter = false,
   floors = [],
   bodyClassName,
+  renderFooter,
 }: {
   api: API;
   initial: BookingEditorDraft;
@@ -102,6 +103,10 @@ export function BookingEditor({
   floors?: ConfigFloor[];
   /** Extra class(es) appended to the scrollable body wrapper for custom CSS overrides. */
   bodyClassName?: string;
+  /** When provided, the footer is passed to this callback instead of being
+   *  rendered inside the editor. Used with stickyFooter so the parent can
+   *  place the footer at the modal level for full-width spanning. */
+  renderFooter?: (footer: React.ReactNode) => void;
 }) {
   const reduceMotion = useReducedMotion();
   const [draft, setDraft] = useState<BookingEditorDraft>(initial);
@@ -364,6 +369,32 @@ export function BookingEditor({
 
   const isCreate = submitLabel === "Crear";
   const submitDisabled = busy || (isCreate && !requiredFieldsComplete);
+
+  const footerNode = (
+    <div
+      className={stickyFooter ? "bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" : `bo-row${isCreate ? " bo-bookingEditorActions--create" : ""}`}
+      style={stickyFooter ? undefined : { justifyContent: isCreate ? "center" : "flex-end" }}
+      data-slot="booking-editor-actions"
+    >
+      {onCancel ? (
+        <button className="bo-btn bo-btn--ghost" type="button" onClick={onCancel} disabled={busy} data-slot="booking-editor-cancel">
+          Cerrar
+        </button>
+      ) : null}
+      <button className="bo-btn bo-btn--primary" type="button" onClick={() => void submit()} disabled={submitDisabled} data-slot="booking-editor-submit">
+        {submitLabel}
+      </button>
+      {isCreate && !requiredFieldsComplete ? <div className="bo-bookingEditorRequiredHint" data-slot="booking-editor-required-hint">Por favor rellena los campos obligatorios</div> : null}
+    </div>
+  );
+
+  // When renderFooter is provided, pass the footer element up so the parent
+  // can render it at the modal level (direct child of Modal) for full-width.
+  useEffect(() => {
+    if (renderFooter && stickyFooter) {
+      renderFooter(footerNode);
+    }
+  });
 
   return (
     <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }} data-slot="bookingEditor-div">
@@ -703,21 +734,10 @@ export function BookingEditor({
       </div>
       </ScrollArea>
 
-      <div
-        className={stickyFooter ? "bo-modalActions bo-modalActions--reservas bo-bookingEditorFooter" : `bo-row${isCreate ? " bo-bookingEditorActions--create" : ""}`}
-        style={stickyFooter ? undefined : { justifyContent: isCreate ? "center" : "flex-end" }}
-        data-slot="booking-editor-actions"
-      >
-        {onCancel ? (
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={onCancel} disabled={busy} data-slot="booking-editor-cancel">
-            Cerrar
-          </button>
-        ) : null}
-        <button className="bo-btn bo-btn--primary" type="button" onClick={() => void submit()} disabled={submitDisabled} data-slot="booking-editor-submit">
-          {submitLabel}
-        </button>
-        {isCreate && !requiredFieldsComplete ? <div className="bo-bookingEditorRequiredHint" data-slot="booking-editor-required-hint">Por favor rellena los campos obligatorios</div> : null}
-      </div>
+      {/* When stickyFooter, the footer is rendered by the parent via renderFooter
+          so it can be placed at the modal level (direct child of Modal) for
+          full-width spanning. When not stickyFooter, render inline. */}
+      {!stickyFooter && footerNode}
     </div>
   );
 }
