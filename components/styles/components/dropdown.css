@@ -227,7 +227,11 @@
 /* Header month-calendar date picker: wider popover that hosts the full
    MonthCalendar (booking occupancy per day) instead of a bare day grid. */
 .bo-datePop--mcal {
-  width: 344px;
+  width: min(344px, 95vw);
+  /* 1:1 square so the day grid stays proportional and the popover never
+     overflows narrow viewports. A 6-row month may push height slightly past
+     width; that stays on-screen and within the 95vw cap. */
+  aspect-ratio: 1 / 1;
   padding: 10px;
 }
 
