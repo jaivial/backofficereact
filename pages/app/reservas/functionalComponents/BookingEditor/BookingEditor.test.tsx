@@ -176,10 +176,11 @@ describe("BookingEditor", () => {
 
   // ── Footer placement (Issue 1) ────────────────────────────────────
   describe("sticky footer placement", () => {
-    it("passes footer to renderFooter callback when stickyFooter is true", async () => {
+    it("portals footer into footerContainerRef when stickyFooter is true", async () => {
       const api = { menus: { grupos: { list: async () => ({ success: true, menus: [] }), get: async () => ({ success: false }) } } } as any;
-      let renderedFooter: React.ReactNode = null;
-      render(
+      const footerContainer = document.createElement("div");
+      const ref = { current: footerContainer };
+      const { container } = render(
         <BookingEditor
           api={api}
           initial={initial}
@@ -188,7 +189,7 @@ describe("BookingEditor", () => {
           stickyFooter
           onSubmit={async () => {}}
           onCancel={() => {}}
-          renderFooter={(f) => { renderedFooter = f; }}
+          footerContainerRef={ref}
         />,
       );
 
@@ -196,11 +197,9 @@ describe("BookingEditor", () => {
         await vi.advanceTimersByTimeAsync(1000);
       });
 
-      // The footer should have been passed to the renderFooter callback
-      expect(renderedFooter).toBeTruthy();
-      // The footer element should contain the submit button
-      const footerDiv = renderedFooter as React.ReactElement;
-      expect(footerDiv).toBeTruthy();
+      // The footer should be portaled into the container, not inside the editor root
+      expect(footerContainer.querySelector('[data-slot="booking-editor-actions"]')).toBeTruthy();
+      expect(container.querySelector('[data-slot="booking-editor-actions"]')).toBeNull();
     });
 
     it("renders footer inline when stickyFooter is false", async () => {
