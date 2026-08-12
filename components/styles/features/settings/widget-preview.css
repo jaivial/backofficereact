@@ -516,6 +516,16 @@
     text-align: start;
   }
 
+  /* Vertically center the "Seleccionar menú" label and the select trigger
+     on mobile so they align middle. */
+  .bo-bookingMenuSelectField {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
   [data-slot="booking-editor-menu-principales"] .bo-bookingChoiceRow,
   [data-slot="booking-editor-arroz-content"] .bo-bookingChoiceRow {
     flex-direction: column;
@@ -525,6 +535,7 @@
   [data-slot="booking-editor-menu-principales"] .bo-bookingChoiceSelectorRow,
   [data-slot="booking-editor-arroz-content"] .bo-bookingChoiceSelectorRow {
     width: 100%;
+    align-items: center;
   }
 
   [data-slot="booking-editor-menu-principales"] .bo-selectBtn.bo-bookingChoiceSelect,
@@ -743,24 +754,20 @@
   margin-top: auto;
 }
 
-/* ponytail: two nested ScrollAreas fought for scroll (outer reservas-modalOutline-edit
-   + inner booking-editor-body). Inner .bo-scrollArea h-full overflow-hidden clipped the
-   body and .bo-bookingEditor--stickyFooter min-height:100% pushed the footer out of the
-   inner scroll range, so bottom content was unreachable. Neutralize the inner scroller —
-   height auto, overflow visible — so the outer viewport is the sole scroller and the
-   footer flows at natural end. Sticky-footer desktop behavior (anadir page) is untouched
-   (scoped to --edit). */
-.bo-reservasModal--edit .bo-modalOutline .bo-scrollArea {
-  height: auto;
-  overflow: visible;
-}
-
-.bo-reservasModal--edit .bo-modalOutline .bo-scrollAreaViewport {
-  overflow: visible;
-}
-
+/* The edit modal now renders BookingEditor directly (no outer ScrollArea wrapper).
+   The editor's own ScrollArea handles the body scroll; the footer flows after it
+   at full modal width.  The editor fills the available modal height so the
+   footer sticks to the bottom. */
 .bo-reservasModal--edit .bo-bookingEditor--stickyFooter {
-  min-height: auto;
+  min-height: 100%;
+  height: 100%;
+}
+
+.bo-reservasModal--edit [data-slot="reservas-modalOutline-edit"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .bo-hiddenFileInput {
