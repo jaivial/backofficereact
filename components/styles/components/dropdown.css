@@ -210,6 +210,7 @@
    month-calendar (.bo-datePop--mcal) keep their own cell sizing. */
 .bo-datePop:not(.bo-dateRangePop):not(.bo-datePop--mcal) .bo-calDay {
   width: 100%;
+  min-width: 0;
   height: auto;
   aspect-ratio: 1 / 1;
   margin: 0;
