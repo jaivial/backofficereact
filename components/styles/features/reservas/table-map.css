@@ -603,7 +603,12 @@ body.is-dragging .bo-tableMapFlowWrap {
   display: grid;
   gap: var(--bo-space-3);
   align-content: start;
-  overflow: hidden;
+  /* Scroll vertically instead of clipping: overflow:hidden chopped the whole
+     month calendar on short/narrow screens. min-height:0 lets the 1fr grid
+     track become a real scroll container. */
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .bo-tableMapSheetContent {
@@ -635,7 +640,9 @@ body.is-dragging .bo-tableMapFlowWrap {
   border: 1px solid color-mix(in srgb, var(--bo-border) 50%, transparent);
   border-radius: var(--bo-radius-md);
   background: color-mix(in srgb, var(--bo-surface-2) 40%, transparent);
-  overflow: hidden;
+  /* No overflow:hidden: it clipped the rounded corner date cells. The wrapper
+     background is rounded by its own border-radius; nothing inside needs
+     clipping (the hosted .bo-mcal is transparent here). */
 }
 
 .bo-tableMapCalendarWrapper .bo-mcal {

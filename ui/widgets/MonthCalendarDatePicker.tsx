@@ -78,10 +78,14 @@ export function MonthCalendarDatePicker({
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const popH = 400;
+    // Popover is responsive + square (width: min(344px, 95vw); aspect-ratio 1/1),
+    // so derive its on-screen footprint from the viewport instead of the old
+    // fixed 360x400 guesses — otherwise the clamp lets it overflow narrow screens.
+    const popW = Math.min(344, vw * 0.95);
+    const popH = popW; // square popover
     const spaceBelow = vh - r.bottom - 8;
     const top = spaceBelow < popH ? Math.max(8, r.top - 8 - popH) : r.bottom + 8;
-    const left = clamp(r.left + popoverOffsetX, 8, vw - 360 - 8);
+    const left = clamp(r.left + popoverOffsetX, 8, vw - popW - 8);
     setPos({ top, left });
   }, [open, popoverOffsetX]);
 
