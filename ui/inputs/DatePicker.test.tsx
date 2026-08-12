@@ -59,4 +59,49 @@ describe("DatePicker popover width", () => {
       expect(widthPx).toBeGreaterThanOrEqual(300);
     }
   });
+
+  it("centers the popover horizontally on narrow viewports (≤480px)", () => {
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
+
+    const { container } = render(<DatePicker value="2026-07-11" onChange={() => {}} />);
+
+    const btn = screen.getByRole("button", { name: "Select date" });
+    // Button at far-left edge of screen
+    vi.spyOn(btn, "getBoundingClientRect").mockReturnValue(mockButtonRect(0, 100, 100));
+
+    act(() => {
+      fireEvent.click(btn);
+    });
+
+    const popover = container.ownerDocument.querySelector('[data-ui="date-picker-popover"]') as HTMLElement | null;
+    expect(popover).toBeTruthy();
+
+    // On a 390px viewport with popW = min(340, 390-16) = 340,
+    // centered left = round((390 - 340) / 2) = 25
+    const left = parseInt(popover!.style.left, 10);
+    expect(left).toBe(25);
+  });
+
+  it("applies custom popoverClassName and popoverStyle", () => {
+    const { container } = render(
+      <DatePicker
+        value="2026-07-11"
+        onChange={() => {}}
+        popoverClassName="my-custom-pop"
+        popoverStyle={{ borderRadius: 20 }}
+      />,
+    );
+
+    const btn = screen.getByRole("button", { name: "Select date" });
+    vi.spyOn(btn, "getBoundingClientRect").mockReturnValue(mockButtonRect(100, 100));
+
+    act(() => {
+      fireEvent.click(btn);
+    });
+
+    const popover = container.ownerDocument.querySelector('[data-ui="date-picker-popover"]') as HTMLElement | null;
+    expect(popover).toBeTruthy();
+    expect(popover!.className).toContain("my-custom-pop");
+    expect(popover!.style.borderRadius).toBe("20px");
+  });
 });
