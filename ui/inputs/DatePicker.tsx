@@ -79,10 +79,11 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const popW = Math.min(320, vw - 16);
     const popH = 320;
     const spaceBelow = vh - r.bottom - 8;
     const top = spaceBelow < popH ? Math.max(8, r.top - 8 - popH) : r.bottom + 8;
-    const left = clamp(r.left + popoverOffsetX, 8, vw - 280 - 8);
+    const left = clamp(r.left + popoverOffsetX, 8, vw - popW - 8);
     setPos({ top, left });
   }, [open, popoverOffsetX]);
 

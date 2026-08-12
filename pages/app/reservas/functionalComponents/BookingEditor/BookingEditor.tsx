@@ -530,7 +530,7 @@ export function BookingEditor({
               transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
               data-slot="bookingEditor-div"
             >
-              <div className="bo-field" data-slot="booking-editor-menu-select-field">
+              <div className="bo-field bo-bookingMenuSelectField" data-slot="booking-editor-menu-select-field">
                 <div className="bo-label" data-slot="bookingEditor-label">Seleccionar menú</div>
                 <Select
                   className="bo-selectBtn--sm"
