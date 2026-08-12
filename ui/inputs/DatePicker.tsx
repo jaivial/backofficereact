@@ -16,6 +16,10 @@ type DatePickerProps = {
   maxDate?: string;
   id?: string;
   className?: string;
+  /** Extra class(es) appended to the calendar popover element for custom overrides. */
+  popoverClassName?: string;
+  /** Extra inline style merged into the calendar popover element. */
+  popoverStyle?: React.CSSProperties;
   "data-testid"?: string;
 };
 
@@ -54,7 +58,7 @@ function buildMonthGrid(year: number, month0: number) {
   return cells;
 }
 
-export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = false, minDate, maxDate, id, className, "data-testid": dataTestId }: DatePickerProps) {
+export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = false, minDate, maxDate, id, className, popoverClassName, popoverStyle, "data-testid": dataTestId }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -79,11 +83,15 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const popW = Math.min(320, vw - 16);
+    const popW = Math.min(340, vw - 16);
     const popH = 320;
     const spaceBelow = vh - r.bottom - 8;
     const top = spaceBelow < popH ? Math.max(8, r.top - 8 - popH) : r.bottom + 8;
-    const left = clamp(r.left + popoverOffsetX, 8, vw - popW - 8);
+    // On narrow viewports (≤480px) center the popover horizontally so it
+    // doesn't get clipped by the screen edge regardless of button position.
+    const left = vw <= 480
+      ? Math.round((vw - popW) / 2)
+      : clamp(r.left + popoverOffsetX, 8, vw - popW - 8);
     setPos({ top, left });
   }, [open, popoverOffsetX]);
 
@@ -140,12 +148,12 @@ export function DatePicker({ value, onChange, popoverOffsetX = 0, disabled = fal
       <AnimatePresence>
         <motion.div
           ref={popRef}
-          className="bo-datePop bo-datePop--glass"
+          className={cn("bo-datePop bo-datePop--glass", popoverClassName)}
           initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }}
-          style={{ top: pos.top, left: pos.left }}
+          style={{ top: pos.top, left: pos.left, ...popoverStyle }}
           role="dialog"
           aria-label="Calendar"
           data-ui="date-picker-popover"
