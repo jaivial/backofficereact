@@ -704,6 +704,18 @@ async function start() {
       if (sessionCookie) headers.set("cookie", sessionCookie);
       else headers.delete("cookie");
 
+      // A preference write changes session.preferences, which the SSR session
+      // cache would otherwise keep serving stale for up to SESSION_CACHE_TTL_MS.
+      // Drop both security-scope entries so the next render re-fetches fresh.
+      if (req.method === "PUT" && req.path === "/me/preferences") {
+        const prefToken = sessionTokenFromCookie(sessionCookie);
+        if (prefToken) {
+          const prefHash = sessionCacheKey(prefToken);
+          sessionCache.delete(`${prefHash}:high`);
+          sessionCache.delete(`${prefHash}:normal`);
+        }
+      }
+
       // Avoid upstream compression: the proxy buffers the body and can otherwise
       // end up forwarding mismatched `content-encoding`/`content-length` headers.
       headers.set("accept-encoding", "identity");
