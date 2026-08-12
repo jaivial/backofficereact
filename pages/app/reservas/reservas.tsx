@@ -709,6 +709,7 @@ export default function Page() {
                             onEdit={openEdit}
                             onCancel={onCancel}
                             onCrearFactura={onCrearFactura}
+                            onSaveTable={saveTableNumber}
                           />
                         </div>
                       )}
