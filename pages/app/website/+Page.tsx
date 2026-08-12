@@ -5,15 +5,7 @@ import { createClient } from "../../../api/client";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { Button } from "../../../ui/shadcn/button";
-
-interface WebsiteConfig {
-  id: number;
-  restaurant_id: number;
-  template_id: string | null;
-  custom_html: string | null;
-  domain: string | null;
-  is_published: boolean;
-}
+import type { WebsiteConfig } from "./+data";
 
 const TEMPLATES = [
   { id: "tmpl_1", name: "Modern Minimal", img: "https://placehold.co/300x200?text=Modern+Minimal" },
@@ -29,13 +21,14 @@ const TEMPLATES = [
 ];
 
 export default function WebsiteBuilderPage() {
-  const { urlParsed } = usePageContext();
+  const pageContext = usePageContext();
+  const initData = (pageContext.data ?? { config: null, error: null }) as { config: WebsiteConfig | null; error: string | null };
   const { addToast } = useToasts();
   const { handleError } = useErrorToast();
   const client = createClient();
 
-  const [config, setConfig] = useState<WebsiteConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<WebsiteConfig | null>(initData.config);
+  const [loading, setLoading] = useState(initData.config === null);
   
   const [activeTab, setActiveTab] = useState<"templates" | "ai" | "domain">("templates");
   const [prompt, setPrompt] = useState("");
@@ -46,25 +39,28 @@ export default function WebsiteBuilderPage() {
   const [searchingDomain, setSearchingDomain] = useState(false);
   const [registeringDomain, setRegisteringDomain] = useState(false);
 
+  // SSR already supplied the website config, so first paint shows it instantly.
+  // Only fall back to a client fetch when SSR had no config (e.g. backend hiccup)
+  // to avoid a stuck loading state.
   useEffect(() => {
-    loadConfig();
-  }, []);
-
-  async function loadConfig() {
-    try {
-      setLoading(true);
-      const res = await client.request<{ success: boolean; data: WebsiteConfig | null }>("/admin/website", {
-        method: "GET",
-      });
-      if (res.success && res.data) {
-        setConfig(res.data);
+    if (initData.config !== null) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await client.request<{ success: boolean; data: WebsiteConfig | null }>("/admin/website", {
+          method: "GET",
+        });
+        if (!cancelled && res.success && res.data) setConfig(res.data);
+      } catch (err) {
+        handleError(err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setLoading(false);
-    }
-  }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSave(updates: Partial<WebsiteConfig>) {
     try {

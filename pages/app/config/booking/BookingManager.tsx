@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
+import { usePageContext } from "vike-react/usePageContext";
 import { sessionAtom } from "../../../../state/atoms";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
@@ -37,19 +38,22 @@ export function BookingManager() {
   const session = useAtomValue(sessionAtom);
   const restaurantId = String(session?.activeRestaurantId ?? "");
 
-  const [settings, setSettings] = useState<WidgetSettings>(DEFAULT_SETTINGS);
-  const [loading, setLoading] = useState(true);
+  const pageContext = usePageContext();
+  const initData = (pageContext.data ?? { settings: null, error: null }) as { settings: WidgetSettings | null; error: string | null };
+
+  const [settings, setSettings] = useState<WidgetSettings>(initData.settings ?? DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(initData.settings === null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initData.error);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load current settings.
+  // Settings are supplied server-side via +data.ts, so the first paint shows
+  // them without a client fetch. Only fall back to a client load when SSR had
+  // none (e.g. backend hiccup) to avoid a stuck loading state.
   useEffect(() => {
+    if (initData.settings !== null) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-
     api.widget.getSettings().then((res) => {
       if (cancelled) return;
       if (!("success" in res) || !res.success) {
@@ -58,12 +62,11 @@ export function BookingManager() {
       }
       setSettings(res.settings ?? DEFAULT_SETTINGS);
     }).catch((e: Error) => {
-      if (cancelled) return;
+      if (!cancelled) return;
       setError(e.message || "Error cargando ajustes");
     }).finally(() => {
       if (!cancelled) setLoading(false);
     });
-
     return () => {
       cancelled = true;
     };
