@@ -52,7 +52,7 @@ export function TimePicker({
   const times = useMemo(() => buildTimes(stepMinutes ?? 5), [stepMinutes]);
   const selected = useMemo(() => normalizeHHMM(value), [value]);
 
-  const [listPosition, setListPosition] = useState({ top: 0, left: 0, width: 0, openUp: false });
+  const [listPosition, setListPosition] = useState({ top: 0, left: 0, openUp: false });
 
   const close = useCallback(() => setOpen(false), []);
   const toggle = useCallback(() => setOpen((v) => !v), []);
@@ -70,7 +70,6 @@ export function TimePicker({
     setListPosition({
       top: openUp ? rect.top - desiredHeight - 6 : rect.bottom + 6,
       left: rect.left,
-      width: Math.max(rect.width, 120),
       openUp,
     });
   }, [open]);
@@ -171,7 +170,6 @@ export function TimePicker({
                   position: "fixed",
                   top: `${listPosition.top}px`,
                   left: `${listPosition.left}px`,
-                  width: `${listPosition.width}px`,
                 }}
                 data-ui="time-picker-list"
               >
