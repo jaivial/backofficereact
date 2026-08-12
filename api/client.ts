@@ -810,6 +810,16 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify({ restaurantId }),
         });
       },
+      async setPreference(
+        key: string,
+        value: string,
+      ): Promise<APISuccess<{ preferences: Record<string, string> }> | APIError> {
+        return json("/api/admin/me/preferences", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ key, value }),
+        });
+      },
     },
     dashboard: {
       async getMetrics(date: string): Promise<APISuccess<{ metrics: DashboardMetrics; invoiceMetrics: InvoiceDashboardMetrics | null }> | APIError> {
