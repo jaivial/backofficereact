@@ -910,7 +910,9 @@
   box-shadow: var(--bo-shadow-soft);
   padding: 14px;
   min-width: 0;
-  overflow: hidden;
+  /* No overflow:hidden: combined with the large border-radius it cut the
+     corner date cells. The glass background is rounded by border-radius alone;
+     cell hover/selected shadows are meant to be visible. */
   container-type: inline-size;
   container-name: mcal;
 }
