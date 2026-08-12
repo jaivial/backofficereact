@@ -17,6 +17,7 @@ export type AuthModule = {
   ): Promise<
     APISuccess<{ activeRestaurantId: number; role: BORole; roleImportance: number; sectionAccess: string[] }> | APIError
   >;
+  setPreference(key: string, value: string): Promise<APISuccess<{ preferences: Record<string, string> }> | APIError>;
 };
 
 export function createAuthModule(json: JsonRequestFn): AuthModule {
@@ -58,6 +59,14 @@ export function createAuthModule(json: JsonRequestFn): AuthModule {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ restaurantId }),
+      });
+    },
+
+    async setPreference(key: string, value: string): Promise<APISuccess<{ preferences: Record<string, string> }> | APIError> {
+      return json("/api/admin/me/preferences", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ key, value }),
       });
     },
   };

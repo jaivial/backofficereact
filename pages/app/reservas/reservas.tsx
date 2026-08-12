@@ -33,6 +33,7 @@ type DisplayMode = "tabla" | "grid";
 
 type PageData = {
   date: string;
+  displayMode: DisplayMode;
   bookings: Booking[];
   floors: ConfigFloor[];
   total_count: number;
@@ -201,6 +202,7 @@ export default function Page() {
   const pageContext = usePageContext();
   const data = (pageContext.data ?? {
     date: "",
+    displayMode: "tabla" as DisplayMode,
     bookings: [],
     floors: [],
     total_count: 0,
@@ -250,7 +252,7 @@ export default function Page() {
   const editFooterRef = useRef<HTMLDivElement | null>(null);
 
   const [viewTab, setViewTab] = useState<ViewTabId>("activas");
-  const [displayMode, setDisplayMode] = useState<DisplayMode>("tabla");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(data.displayMode === "grid" ? "grid" : "tabla");
 
   const [searchMode, setSearchMode] = useState(false);
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
@@ -404,6 +406,17 @@ export default function Page() {
   const closeDetails = useCallback(() => setDetails({ open: false, booking: null }), []);
 
   const onViewTabChange = useCallback((id: ViewTabId) => setViewTab(id), []);
+
+  // Persist the tabla/grid choice per user + active restaurant (PUT /api/admin/me/preferences).
+  // The initial value hydrates from SSR (data.displayMode) so no save fires for the default.
+  const changeDisplayMode = useCallback((mode: DisplayMode) => {
+    if (mode === displayMode) return;
+    setDisplayMode(mode);
+    if (!session) return;
+    void api.auth.setPreference("reservasDisplayMode", mode).then((res) => {
+      if (!res.success) pushToast({ kind: "error", title: "Preferencia", message: res.message || "No se pudo guardar" });
+    });
+  }, [api.auth, displayMode, session, pushToast]);
   const onReactivate = useCallback(() => {
     void loadBookings({ date, status, q, sort, dir, page, count });
     void loadSummary(date);
@@ -648,10 +661,10 @@ export default function Page() {
                   {viewTab === "activas" ? (
                     <>
                       <div className="bo-displayToggle" role="tablist" aria-label="Vista reservas" style={{ marginTop: 14 }} data-slot="reservas-display-toggle">
-                        <button type="button" role="tab" aria-selected={displayMode === "tabla"} className={`bo-displayToggleBtn${displayMode === "tabla" ? " is-active" : ""}`} onClick={() => setDisplayMode("tabla")} data-testid="reservas-display-tabla">
+                        <button type="button" role="tab" aria-selected={displayMode === "tabla"} className={`bo-displayToggleBtn${displayMode === "tabla" ? " is-active" : ""}`} onClick={() => changeDisplayMode("tabla")} data-testid="reservas-display-tabla">
                           <TableIcon size={16} strokeWidth={1.8} /> <span>Tabla</span>
                         </button>
-                        <button type="button" role="tab" aria-selected={displayMode === "grid"} className={`bo-displayToggleBtn${displayMode === "grid" ? " is-active" : ""}`} onClick={() => setDisplayMode("grid")} data-testid="reservas-display-grid">
+                        <button type="button" role="tab" aria-selected={displayMode === "grid"} className={`bo-displayToggleBtn${displayMode === "grid" ? " is-active" : ""}`} onClick={() => changeDisplayMode("grid")} data-testid="reservas-display-grid">
                           <LayoutGrid size={16} strokeWidth={1.8} /> <span>Grid</span>
                         </button>
                       </div>
