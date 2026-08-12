@@ -247,7 +247,7 @@ export default function Page() {
   const [confirm, setConfirm] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
   const [details, setDetails] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
   const [edit, setEdit] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
-  const [editFooter, setEditFooter] = useState<React.ReactNode>(null);
+  const editFooterRef = useRef<HTMLDivElement | null>(null);
 
   const [viewTab, setViewTab] = useState<ViewTabId>("activas");
   const [displayMode, setDisplayMode] = useState<DisplayMode>("tabla");
@@ -424,7 +424,7 @@ export default function Page() {
   }, [api.reservas, confirm.booking, count, date, dir, loadBookings, loadSummary, page, pushToast, q, sort, status]);
 
   const openEdit = useCallback((b: Booking) => setEdit({ open: true, booking: b }), []);
-  const closeEdit = useCallback(() => { setEdit({ open: false, booking: null }); setEditFooter(null); }, []);
+  const closeEdit = useCallback(() => setEdit({ open: false, booking: null }), []);
 
   useEffect(() => {
     if (day?.isOpen !== false) return;
@@ -747,10 +747,10 @@ export default function Page() {
         <ModalHeader title="Editar reserva" onClose={closeEdit} />
         <div style={{ marginTop: 10, flex: "1 1 auto", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }} data-slot="reservas-modalOutline-edit">
           {edit.booking && editInitial ? (
-            <BookingEditor api={api} initial={editInitial} busy={busy} submitLabel="Guardar" onSubmit={submitEdit} onCancel={closeEdit} stickyFooter renderFooter={setEditFooter} floors={floors} />
+            <BookingEditor api={api} initial={editInitial} busy={busy} submitLabel="Guardar" onSubmit={submitEdit} onCancel={closeEdit} stickyFooter footerContainerRef={editFooterRef} floors={floors} />
           ) : <InlineAlert kind="info" title="Cargando" message="Preparando editor..." />}
         </div>
-        {editFooter}
+        <div ref={editFooterRef} data-slot="reservas-edit-footer" />
       </Modal>
     </section>
   );

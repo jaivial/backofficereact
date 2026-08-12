@@ -737,11 +737,16 @@
 .bo-reservasModal--edit .bo-scrollArea {
   flex: 1 1 auto;
   min-height: 0;
+  /* Override Tailwind h-full: let the flex column size this instead of
+     resolving height:100% against a max-height-only ancestor (unreliable
+     on mobile). */
+  height: auto;
 }
 
 .bo-reservasModal--edit .bo-scrollAreaViewport {
   overflow-x: hidden;
   overflow-y: auto;
+  height: auto;
   -webkit-overflow-scrolling: touch;
 }
 
