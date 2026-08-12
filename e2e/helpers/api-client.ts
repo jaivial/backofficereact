@@ -3,6 +3,7 @@
  * Makes direct API calls via the page context to set up test data.
  */
 import type { Page } from "@playwright/test";
+import { e2eEnv } from "../config";
 
 export interface ApiResponse {
   success: boolean;
@@ -31,7 +32,7 @@ export interface MenusResponse extends ApiResponse {
   menu?: { menu_title?: string; sections?: unknown[]; [key: string]: unknown };
 }
 
-const BASE_URL = process.env.BACKOFFICE_URL || "https://localhost:3001";
+const BASE_URL = e2eEnv.baseURL;
 
 function absoluteUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;

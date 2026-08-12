@@ -7,11 +7,11 @@ import {
   MessagePrimitive,
   ThreadPrimitive,
 } from "@assistant-ui/react";
-import { MarkdownTextPrimitive } from "@assistant-ui/react-markdown";
-import remarkGfm from "remark-gfm";
 import { useAtom } from "jotai";
 
 import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
+import { repairGfmTables } from "./repairGfmTables";
+import { MarkdownText } from "../assistant-ui/markdown-text";
 import { ThinkingOrb } from "thinking-orbs";
 import { 
   ArrowUpIcon, 
@@ -122,24 +122,11 @@ function AssistantLoading() {
 // ---------------------------------------------------------------------------
 // Message Components (assistant-ui/elements/message-pair style)
 // ---------------------------------------------------------------------------
-function ForkyMarkdownText() {
-  return (
-    <MarkdownTextPrimitive
-      remarkPlugins={[remarkGfm]}
-      // ForkyChart renders the chart JSON itself; strip the fenced block so the
-      // prose renderer never duplicates the raw JSON as a code block.
-      preprocess={stripForkyChartBlocks}
-      // Columnar data from the model arrives as GFM pipe tables; give them a
-      // lightweight, theme-aware styling so booking lists read as real tables.
-      components={{
-        table: (props) => <div className="my-2 overflow-x-auto" data-testid="forky-markdown-table"><table className="w-full border-collapse text-xs" {...props} /></div>,
-        thead: (props) => <thead className="bg-foreground/[0.04] text-left" {...props} />,
-        th: (props) => <th className="border border-foreground/10 px-2 py-1 font-semibold" {...props} />,
-        td: (props) => <td className="border border-foreground/10 px-2 py-1 tabular-nums" {...props} />,
-      }}
-    />
-  );
-}
+// Strip ForkyChart JSON blocks (rendered separately) and repair the GFM table
+// delimiter rows MiniMax intermittently mangles, so columnar data renders as a
+// real table instead of literal pipes.
+const forkyPreprocess = (text: string): string =>
+  repairGfmTables(stripForkyChartBlocks(text));
 
 function AssistantMessage() {
   const [copied, setCopied] = useState(false);
@@ -180,7 +167,7 @@ function AssistantMessage() {
           <MessagePrimitive.Parts components={{ Text: ({ text }: { text: string }) => (
             <>
               <ForkyChart text={text} />
-              <ForkyMarkdownText />
+              <MarkdownText preprocess={forkyPreprocess} />
             </>
           ) }} />
           {/* A failed turn (WS/session/model error) must be visible: without
