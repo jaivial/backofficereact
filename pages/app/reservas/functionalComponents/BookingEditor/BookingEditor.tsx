@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -91,7 +92,7 @@ export function BookingEditor({
   stickyFooter = false,
   floors = [],
   bodyClassName,
-  renderFooter,
+  footerContainerRef,
 }: {
   api: API;
   initial: BookingEditorDraft;
@@ -103,10 +104,10 @@ export function BookingEditor({
   floors?: ConfigFloor[];
   /** Extra class(es) appended to the scrollable body wrapper for custom CSS overrides. */
   bodyClassName?: string;
-  /** When provided, the footer is passed to this callback instead of being
-   *  rendered inside the editor. Used with stickyFooter so the parent can
-   *  place the footer at the modal level for full-width spanning. */
-  renderFooter?: (footer: React.ReactNode) => void;
+  /** When provided (with stickyFooter), the footer is rendered via portal into
+   *  this container so the parent can place it at the modal level for
+   *  full-width spanning. */
+  footerContainerRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const reduceMotion = useReducedMotion();
   const [draft, setDraft] = useState<BookingEditorDraft>(initial);
@@ -388,15 +389,17 @@ export function BookingEditor({
     </div>
   );
 
-  // When renderFooter is provided, pass the footer element up so the parent
-  // can render it at the modal level (direct child of Modal) for full-width.
+  // The footer is rendered via portal into footerContainerRef (when provided)
+  // so the parent can place it at the modal level for full-width spanning.
+  const [footerMounted, setFooterMounted] = useState(false);
   useEffect(() => {
-    if (renderFooter && stickyFooter) {
-      renderFooter(footerNode);
-    }
-  });
+    setFooterMounted(true);
+  }, []);
+  const footerTarget = stickyFooter ? footerContainerRef?.current : null;
 
   return (
+    <>
+      {footerMounted && footerTarget ? createPortal(footerNode, footerTarget) : null}
     <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }} data-slot="bookingEditor-div">
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
       <ScrollArea dataSlot="booking-editor-body" className={bodyClassName}><div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`} data-slot="bookingEditor-div">
@@ -734,11 +737,11 @@ export function BookingEditor({
       </div>
       </ScrollArea>
 
-      {/* When stickyFooter, the footer is rendered by the parent via renderFooter
-          so it can be placed at the modal level (direct child of Modal) for
-          full-width spanning. When not stickyFooter, render inline. */}
+      {/* When stickyFooter, the footer is portaled to the parent-provided
+          container at the modal level. When not stickyFooter, render inline. */}
       {!stickyFooter && footerNode}
     </div>
+    </>
   );
 }
 
