@@ -737,6 +737,8 @@
 
 .bo-reservasModal--edit .bo-scrollAreaViewport {
   overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .bo-reservasModal--edit .bo-bookingEditorBody {

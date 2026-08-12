@@ -189,7 +189,7 @@
 .bo-datePop {
   position: fixed;
   z-index: 9999;
-  width: min(320px, calc(100vw - 16px));
+  width: min(340px, calc(100vw - 16px));
   border-radius: var(--bo-radius-lg);
   border: 1px solid var(--bo-border);
   background:

@@ -246,4 +246,22 @@ describe("BookingEditor", () => {
       expect(selectorRow!.contains(trashBtn)).toBe(true);
     });
   });
+
+  // ── bodyClassName prop for custom CSS overrides ───────────────────
+  describe("bodyClassName prop", () => {
+    it("applies bodyClassName to the ScrollArea wrapper", async () => {
+      const api = { menus: { grupos: { list: async () => ({ success: true, menus: [] }), get: async () => ({ success: false }) } } } as any;
+      const { container } = render(
+        <BookingEditor api={api} initial={initial} busy={false} submitLabel="Guardar" bodyClassName="my-scroll-override" onSubmit={async () => {}} />,
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      const scrollArea = container.querySelector('[data-slot="booking-editor-body"]');
+      expect(scrollArea).toBeTruthy();
+      expect(scrollArea!.className).toContain("my-scroll-override");
+    });
+  });
 });
