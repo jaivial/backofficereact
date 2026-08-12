@@ -714,9 +714,10 @@
   }
 }
 
-/* Edit modal: the wrapper div (data-slot) is a flex child of the column modal.
-   It grows to fill available space so the editor inside can manage its own
-   scroll area + sticky footer layout. */
+/* Edit modal: the wrapper div is a flex child of the column modal.
+   It grows to fill available space and clips so the inner scroll area works.
+   The footer is rendered as a direct child of the Modal (sibling of this
+   wrapper) so it spans full modal width. */
 .bo-reservasModal--edit [data-slot="reservas-modalOutline-edit"] {
   flex: 1 1 auto;
   min-height: 0;
@@ -725,8 +726,6 @@
   overflow: hidden;
 }
 
-/* The editor fills the wrapper so its internal scroll area gets a bounded
-   height and the footer sticks to the bottom. */
 .bo-reservasModal--edit .bo-bookingEditor--stickyFooter {
   flex: 1 1 auto;
   min-height: 0;
@@ -750,10 +749,6 @@
   display: grid;
   gap: 14px;
   padding-bottom: 14px;
-}
-
-.bo-reservasModal--edit .bo-bookingEditorFooter {
-  margin-top: auto;
 }
 
 .bo-hiddenFileInput {
