@@ -744,11 +744,11 @@ export default function Page() {
 
       <Modal open={edit.open} title="Editar reserva" onClose={closeEdit} widthPx={1040} className="bo-reservasModal bo-reservasModal--edit" hideClose>
         <ModalHeader title="Editar reserva" onClose={closeEdit} />
-        <ScrollArea dataSlot="reservas-modalOutline-edit"><div className="bo-modalOutline" style={{ marginTop: 10 }} data-slot="reservas-modalOutline">
+        <div style={{ marginTop: 10 }} data-slot="reservas-modalOutline-edit">
           {edit.booking && editInitial ? (
             <BookingEditor api={api} initial={editInitial} busy={busy} submitLabel="Guardar" onSubmit={submitEdit} onCancel={closeEdit} stickyFooter floors={floors} />
           ) : <InlineAlert kind="info" title="Cargando" message="Preparando editor..." />}
-        </div></ScrollArea>
+        </div>
       </Modal>
     </section>
   );
