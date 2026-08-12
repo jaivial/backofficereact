@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid } from "lucide-react";
@@ -215,6 +215,7 @@ export default function Page() {
     error: null,
   }) as PageData;
   const session = useAtomValue(sessionAtom);
+  const setSession = useSetAtom(sessionAtom);
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const reduceMotion = useReducedMotion();
@@ -413,10 +414,11 @@ export default function Page() {
     if (mode === displayMode) return;
     setDisplayMode(mode);
     if (!session) return;
+    setSession((prev) => (prev ? { ...prev, preferences: { ...(prev.preferences ?? {}), reservasDisplayMode: mode } } : prev));
     void api.auth.setPreference("reservasDisplayMode", mode).then((res) => {
       if (!res.success) pushToast({ kind: "error", title: "Preferencia", message: res.message || "No se pudo guardar" });
     });
-  }, [api.auth, displayMode, session, pushToast]);
+  }, [api.auth, displayMode, session, setSession, pushToast]);
   const onReactivate = useCallback(() => {
     void loadBookings({ date, status, q, sort, dir, page, count });
     void loadSummary(date);
