@@ -6,6 +6,18 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 
+// Prevent vike from treating test/spec files as route files. Vike crawls every
+// script file whose basename starts with "+" (e.g. `+data.ts`) and loads it as
+// a "value file". A stray `+data.test.ts` (or any `+*.test.*` / `+*.spec.*`)
+// would then be imported during SSR and crash the page with a 500 — e.g. a
+// test importing `vitest` throws "Vitest failed to access its internal state".
+// vike reads VIKE_CRAWL at config-resolution time, so set it before any
+// renderPage/dev-middleware runs. Only set when absent: an explicit VIKE_CRAWL
+// (docker-compose, CI) is respected as-is.
+if (!process.env.VIKE_CRAWL) {
+  process.env.VIKE_CRAWL = JSON.stringify({ ignore: ["**/*.test.*", "**/*.spec.*"] });
+}
+
 const MOBILE_UA_REGEX = /(android|iphone|ipad|ipod|mobile|webos|blackberry|windows phone)/i;
 
 function isMobileUA(userAgent: string | undefined): boolean {
@@ -1255,7 +1267,7 @@ async function start() {
       setServerTiming(res, { session: sessionDuration, render: renderDuration, total: performance.now() - requestStartedAt });
       sendHttpResponse(res, httpResponse, { pageContextRequest });
     } catch (err) {
-      console.error("[backoffice] SSR error", err);
+      console.error(`[backoffice] SSR error ${req.method} ${req.originalUrl}:`, err);
       next(err);
       return;
     }
@@ -1275,7 +1287,7 @@ async function start() {
 
   // Error handler middleware - render error page instead of default Express error
   app.use(async (err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error("[backoffice] error handler:", err);
+    console.error(`[backoffice] error handler ${req.method} ${req.originalUrl}:`, err);
 
     const rawStatusCode = Number((err as any)?.statusCode ?? (err as any)?.status);
     const isHttpError = Number.isFinite(rawStatusCode) && rawStatusCode >= 400 && rawStatusCode < 600;
@@ -1310,7 +1322,11 @@ async function start() {
       }
     }
 
-    const message = isHttpError ? String((err as any)?.message ?? "").trim() : undefined;
+    const message = isHttpError
+      ? String((err as any)?.message ?? "").trim()
+      : isProd
+        ? undefined
+        : String((err as any)?.message ?? (err as any)?.stack ?? "").trim();
     if (pageContextRequest) {
       res.status(statusCode);
       res.type("application/json");
