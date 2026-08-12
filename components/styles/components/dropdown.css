@@ -122,6 +122,9 @@
 }
 
 .bo-timeList {
+  width: fit-content;
+  min-width: 100px;
+  max-width: min(320px, calc(100vw - 16px));
   max-height: min(360px, calc(100vh - 140px));
   overflow: auto;
   -webkit-overflow-scrolling: touch;
