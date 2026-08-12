@@ -90,6 +90,7 @@ export function BookingEditor({
   onCancel,
   stickyFooter = false,
   floors = [],
+  bodyClassName,
 }: {
   api: API;
   initial: BookingEditorDraft;
@@ -99,6 +100,8 @@ export function BookingEditor({
   onCancel?: () => void;
   stickyFooter?: boolean;
   floors?: ConfigFloor[];
+  /** Extra class(es) appended to the scrollable body wrapper for custom CSS overrides. */
+  bodyClassName?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const [draft, setDraft] = useState<BookingEditorDraft>(initial);
@@ -365,7 +368,7 @@ export function BookingEditor({
   return (
     <div className={`bo-stack bo-bookingEditor${stickyFooter ? " bo-bookingEditor--stickyFooter" : ""}`} style={{ gap: 14 }} data-slot="bookingEditor-div">
       {formError ? <InlineAlert kind="error" title="Error" message={formError} /> : null}
-      <ScrollArea dataSlot="booking-editor-body"><div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`} data-slot="bookingEditor-div">
+      <ScrollArea dataSlot="booking-editor-body" className={bodyClassName}><div className={`bo-bookingEditorBody${stickyFooter ? "" : " bo-bookingEditorBody--inline"}`} data-slot="bookingEditor-div">
 
       <div className="bo-panel bo-bookingPanel--customer" data-slot="bookingEditor-bookingPanel--customer">
         <div className="bo-panelHead" data-slot="bookingEditor-panelHead">
