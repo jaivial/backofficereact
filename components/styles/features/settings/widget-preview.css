@@ -756,6 +756,14 @@
   padding-bottom: 14px;
 }
 
+.bo-reservasModal--edit .bo-bookingChoiceSelectorRow {
+  justify-content: center;
+}
+
+.bo-reservasModal--edit .bo-mutedText {
+  text-align: center;
+}
+
 .bo-hiddenFileInput {
   position: absolute;
   width: 1px;

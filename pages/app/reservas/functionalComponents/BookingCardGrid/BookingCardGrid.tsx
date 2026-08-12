@@ -105,37 +105,53 @@ export const BookingCard = React.memo(function BookingCard({
       </header>
 
       <dl className="bo-bookingCardGrid" data-slot="reservas-booking-card-grid">
-        <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
-          <dt>Mesa</dt>
-          <dd>
-            <input
-              className="bo-input bo-input--xs bo-input--mesa"
-              value={draftMesa}
-              onChange={(e) => setDraftMesa(e.target.value)}
-              onBlur={() => void saveTable()}
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-              disabled={saving}
-              aria-label={`Mesa reserva #${booking.id}`}
-              data-testid={`reservas-card-mesa-${booking.id}`}
-            />
-          </dd>
+        <div className="bo-bookingCardRow" data-slot="reservas-booking-card-row">
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Mesa</dt>
+            <dd>
+              <input
+                className="bo-input bo-input--xs bo-input--mesa"
+                value={draftMesa}
+                onChange={(e) => setDraftMesa(e.target.value)}
+                onBlur={() => void saveTable()}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                disabled={saving}
+                aria-label={`Mesa reserva #${booking.id}`}
+                data-testid={`reservas-card-mesa-${booking.id}`}
+              />
+            </dd>
+          </div>
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Niños</dt><dd>{booking.children ?? 0}</dd>
+          </div>
         </div>
-        <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
-          <dt>Niños</dt><dd>{booking.children ?? 0}</dd>
+        <div className="bo-bookingCardRow" data-slot="reservas-booking-card-row">
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Carros</dt><dd>{booking.babyStrollers ?? 0}</dd>
+          </div>
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Tronas</dt><dd>{booking.highChairs ?? 0}</dd>
+          </div>
         </div>
-        <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
-          <dt>Teléfono</dt><dd>{formatPhone(booking.contact_phone_country_code, booking.contact_phone) || "—"}</dd>
+        <div className="bo-bookingCardRow" data-slot="reservas-booking-card-row">
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Teléfono</dt><dd>{formatPhone(booking.contact_phone_country_code, booking.contact_phone) || "—"}</dd>
+          </div>
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Añadida</dt><dd>{added || "—"}</dd>
+          </div>
         </div>
-        <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
-          <dt>Añadida</dt><dd>{added || "—"}</dd>
-        </div>
-        <div className="bo-bookingCardField bo-bookingCardField--wide" data-slot="reservas-booking-card-field">
-          <dt>Arroz</dt><dd>{arroz || "—"}</dd>
+        <div className="bo-bookingCardRow" data-slot="reservas-booking-card-row">
+          <div className="bo-bookingCardField bo-bookingCardField--wide" data-slot="reservas-booking-card-field">
+            <dt>Arroz</dt><dd>{arroz || "—"}</dd>
+          </div>
         </div>
         {booking.commentary ? (
-          <div className="bo-bookingCardField bo-bookingCardField--full" data-slot="reservas-booking-card-field">
-            <dt>Comentario</dt><dd>{booking.commentary}</dd>
+          <div className="bo-bookingCardRow" data-slot="reservas-booking-card-row">
+            <div className="bo-bookingCardField bo-bookingCardField--full" data-slot="reservas-booking-card-field">
+              <dt>Comentario</dt><dd>{booking.commentary}</dd>
+            </div>
           </div>
         ) : null}
       </dl>

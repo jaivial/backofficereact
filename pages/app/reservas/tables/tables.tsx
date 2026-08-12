@@ -70,6 +70,7 @@ import {
 } from "./mapLimits";
 import { areaMetadata, floorNumberForArea, limitAreaTemplatePointsForFloor, normalizeTableArea } from "./areaLayout";
 import { LineDrawingToolbar } from "./functionalComponents/LineDrawingToolbar/LineDrawingToolbar";
+import { LimitAreaOverlay } from "./functionalComponents/LimitAreaOverlay/LimitAreaOverlay";
 
 // Re-export types that companion files depend on
 export type { TableNodeData, DrawNodeData, DrawElement, BookingState } from "./types/tables";
@@ -3326,16 +3327,39 @@ export default function TableManagerPage() {
     queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, restoredPoints);
   }, [isEditingLimitArea, lineDrawing.isDrawing, queuePersistLayout]);
 
-  const onLimitVertexMouseDown = useCallback(
-    (index: number, event: React.MouseEvent<SVGCircleElement>) => {
-      if (!isEditingLimitArea || !reactFlowInstance) return;
-      event.preventDefault();
-      event.stopPropagation();
-      limitEditHistoryRef.current.push(cloneLinePoints(lineDrawingPointsRef.current));
-      setDraggingLimitVertexIndex(index);
-    },
-    [isEditingLimitArea, reactFlowInstance],
+  const screenToFlowPosition = useCallback(
+    (client: { x: number; y: number }): LinePoint =>
+      reactFlowInstance
+        ? (reactFlowInstance.screenToFlowPosition({ x: client.x, y: client.y }) as LinePoint)
+        : { x: 0, y: 0 },
+    [reactFlowInstance],
   );
+
+  const onVertexActivate = useCallback((index: number) => {
+    setDraggingLimitVertexIndex(index);
+  }, []);
+
+  const onVertexDragStart = useCallback((_index: number) => {
+    limitEditHistoryRef.current.push(cloneLinePoints(lineDrawingPointsRef.current));
+  }, []);
+
+  const onVertexDragMove = useCallback((index: number, flowPoint: LinePoint) => {
+    setLineDrawing((prev) => {
+      if (!prev.points[index]) return prev;
+      const nextPoints = prev.points.map((point, idx) => (idx === index ? flowPoint : point));
+      lineDrawingPointsRef.current = nextPoints;
+      return { ...prev, points: nextPoints, isDrawing: false };
+    });
+  }, []);
+
+  const onVertexDragEnd = useCallback(() => {
+    setDraggingLimitVertexIndex(null);
+    queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, lineDrawingPointsRef.current);
+  }, [queuePersistLayout]);
+
+  const onVertexDeactivate = useCallback(() => {
+    setDraggingLimitVertexIndex(null);
+  }, []);
 
   // Double-click on a joint circle deletes that joint (keeps a valid polygon).
   const deleteLimitVertex = useCallback(
@@ -3411,32 +3435,6 @@ export default function TableManagerPage() {
     queuePersistLayout(nextElements, bookingStatesRef.current, nextPoints);
     pushToast({ kind: "success", title: "Area eliminada", message: "Limites y elementos del mapa eliminados." });
   }, [pushToast, queuePersistLayout]);
-
-  useEffect(() => {
-    if (draggingLimitVertexIndex === null || !isEditingLimitArea || !reactFlowInstance) return;
-
-    const handleMouseMove = (event: MouseEvent) => {
-      const flowPoint = reactFlowInstance.screenToFlowPosition({ x: event.clientX, y: event.clientY }) as LinePoint;
-      setLineDrawing((prev) => {
-        if (!prev.points[draggingLimitVertexIndex]) return prev;
-        const nextPoints = prev.points.map((point, idx) => (idx === draggingLimitVertexIndex ? flowPoint : point));
-        lineDrawingPointsRef.current = nextPoints;
-        return { ...prev, points: nextPoints, isDrawing: false };
-      });
-    };
-
-    const handleMouseUp = () => {
-      setDraggingLimitVertexIndex(null);
-      queuePersistLayout(drawElementsRef.current, bookingStatesRef.current, lineDrawingPointsRef.current);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [draggingLimitVertexIndex, isEditingLimitArea, queuePersistLayout, reactFlowInstance]);
 
   const lineOverlayPoints = useMemo(
     () => lineDrawing.points.map((point) => projectFlowPointToOverlay(point, flowViewport)),
@@ -3627,7 +3625,12 @@ export default function TableManagerPage() {
                 onCancel={cancelLineDrawing}
               />
 
-              <div ref={flowWrapRef} data-ui="flow-wrapper" className="bo-tableMapFlowWrap">
+              <div
+                ref={flowWrapRef}
+                data-ui="flow-wrapper"
+                className="bo-tableMapFlowWrap"
+                style={isEditingLimitArea ? { touchAction: "none" } : undefined}
+              >
                 <ReactFlow
                   nodes={nodes}
                   edges={edges}
@@ -3691,7 +3694,7 @@ export default function TableManagerPage() {
                   fitViewOptions={DEFAULT_TABLE_MAP_FIT_VIEW_OPTIONS}
                   minZoom={0.08}
                   nodesDraggable={editMode}
-                  panOnDrag={interactionMode === "pan"}
+                  panOnDrag={interactionMode === "pan" && !isEditingLimitArea}
                   selectionOnDrag={interactionMode === "select"}
                   selectNodesOnDrag={false}
                   onNodeDragStop={(_event, node) => {
@@ -3747,104 +3750,21 @@ export default function TableManagerPage() {
                 </ReactFlow>
 
                 {lineDrawing.points.length > 0 && (
-                  <svg
-                    data-ui="line-draw-overlay"
-                    className="bo-tableMapLineDrawOverlay"
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      // The overlay must not create a full-screen hit target. Only
-                      // the joint circles and line segments below handle input.
-                      pointerEvents: "none",
-                      overflow: "visible",
-                    }}
-                  >
-                    {lineOverlayPoints.map((point, idx) => (
-                      <g key={idx} data-ui="line-vertex-group">
-                        <circle
-                          data-ui="line-vertex"
-                          cx={point.x}
-                          cy={point.y}
-                          r={isEditingLimitArea && editMode ? 14 : 6}
-                          fill={isEditingLimitArea && editMode ? "color-mix(in srgb, var(--bo-accent) 70%, var(--bo-surface))" : "var(--bo-accent)"}
-                          stroke="var(--bo-surface)"
-                          strokeWidth={2}
-                          style={{
-                            cursor: isEditingLimitArea && editMode ? "pointer" : "default",
-                            pointerEvents: isEditingLimitArea && editMode ? "all" : "none",
-                          }}
-                          onMouseDown={(event) => onLimitVertexMouseDown(idx, event)}
-                          onDoubleClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            deleteLimitVertex(idx);
-                          }}
-                        />
-                        {idx > 0 && (
-                          <line
-                            data-ui="line-segment"
-                            x1={lineOverlayPoints[idx - 1].x}
-                            y1={lineOverlayPoints[idx - 1].y}
-                            x2={point.x}
-                            y2={point.y}
-                            stroke="var(--bo-accent)"
-                            strokeWidth={isEditingLimitArea && editMode ? 5 : 2}
-                            strokeOpacity={isEditingLimitArea && editMode ? 0.5 : 1}
-                            strokeLinecap="round"
-                            strokeDasharray={lineDrawing.isDrawing ? "5,5" : "none"}
-                            style={{
-                              cursor: isEditingLimitArea && editMode ? "copy" : "default",
-                              pointerEvents: isEditingLimitArea && editMode ? "all" : "none",
-                            }}
-                            onDoubleClick={(event) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              addLimitVertexOnSegment(idx);
-                            }}
-                          />
-                        )}
-                      </g>
-                    ))}
-                    {lineDrawing.points.length >= 2 && !lineDrawing.isDrawing && (() => {
-                      const first = lineOverlayPoints[0];
-                      const last = lineOverlayPoints[lineOverlayPoints.length - 1];
-                      return (
-                        <line
-                          data-ui="line-segment-closing"
-                          x1={last.x}
-                          y1={last.y}
-                          x2={first.x}
-                          y2={first.y}
-                          stroke="var(--bo-accent)"
-                          strokeWidth={isEditingLimitArea && editMode ? 5 : 2}
-                          strokeOpacity={isEditingLimitArea && editMode ? 0.5 : 1}
-                          strokeLinecap="round"
-                          style={{
-                            cursor: isEditingLimitArea && editMode ? "copy" : "default",
-                            pointerEvents: isEditingLimitArea && editMode ? "all" : "none",
-                          }}
-                          onDoubleClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            addLimitVertexOnClosingSegment();
-                          }}
-                        />
-                      );
-                    })()}
-                    {lineDrawing.points.length >= 2 && !lineDrawing.isDrawing && (
-                      <polygon
-                        data-ui="limit-area-polygon"
-                        points={lineOverlayPoints.map((p) => `${p.x},${p.y}`).join(" ")}
-                        fill="none"
-                        stroke="var(--bo-accent)"
-                        strokeWidth={2}
-                        style={{ pointerEvents: "none" }}
-                      />
-                    )}
-                  </svg>
+                  <LimitAreaOverlay
+                    points={lineOverlayPoints}
+                    isEditing={isEditingLimitArea && editMode}
+                    isDrawing={lineDrawing.isDrawing}
+                    activeVertexIndex={draggingLimitVertexIndex}
+                    screenToFlow={screenToFlowPosition}
+                    onVertexActivate={onVertexActivate}
+                    onVertexDragStart={onVertexDragStart}
+                    onVertexDragMove={onVertexDragMove}
+                    onVertexDragEnd={onVertexDragEnd}
+                    onVertexDeactivate={onVertexDeactivate}
+                    onDeleteVertex={deleteLimitVertex}
+                    onAddVertexOnSegment={addLimitVertexOnSegment}
+                    onAddVertexOnClosingSegment={addLimitVertexOnClosingSegment}
+                  />
                 )}
               </div>
 

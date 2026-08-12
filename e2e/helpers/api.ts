@@ -4,8 +4,9 @@
  */
 import type { Page } from "@playwright/test";
 import type { BOSession } from "../../api/types";
+import { e2eEnv } from "../config";
 
-const BASE_URL = process.env.BACKOFFICE_URL || "https://localhost:3001";
+const BASE_URL = e2eEnv.baseURL;
 
 function absoluteUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;

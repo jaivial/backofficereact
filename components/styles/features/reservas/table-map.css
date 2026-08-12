@@ -269,6 +269,11 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableMapFlow {
   width: 100%;
   height: 100%;
+  /* React Flow sets an inline `z-index: 0` on its root, which creates a
+     stacking context that traps the controls panel underneath the sibling
+     line-draw overlay. Drop it so the panel's own z-index competes with the
+     overlay directly. */
+  z-index: auto !important;
 }
 
 .bo-tableMapFlow .react-flow__renderer {
@@ -299,6 +304,16 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableMapFlow .react-flow__controls-button.is-active {
   color: var(--bo-accent);
   background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+}
+
+.bo-tableMapFlow .react-flow__controls-button:first-child {
+  border-top-left-radius: calc(var(--bo-radius-md) - 1px);
+  border-top-right-radius: calc(var(--bo-radius-md) - 1px);
+}
+
+.bo-tableMapFlow .react-flow__controls-button:last-child {
+  border-bottom-left-radius: calc(var(--bo-radius-md) - 1px);
+  border-bottom-right-radius: calc(var(--bo-radius-md) - 1px);
 }
 
 .bo-tableMapFlow .react-flow__background {
@@ -1877,7 +1892,7 @@ body.is-dragging .bo-tableMapFlowWrap {
 /* Line draw overlay */
 .bo-tableMapLineDrawOverlay {
   pointer-events: none;
-  z-index: 10;
+  z-index: 4;
 }
 
 /* Table sheet detail view */

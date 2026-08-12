@@ -420,6 +420,48 @@ bun test:watch       # Watch mode (desarrollo)
 # E2E tests
 bun test:e2e         # Run e2e tests
 bun test:e2e:ui      # Run e2e con UI de Playwright
+
+# E2E: un solo spec (rápido, sin matrix completa)
+bunx playwright test e2e/specs/<area>/<name>.spec.ts --project=chromium-1440 --reporter=list
+
+# E2E: scaffold nuevo spec cableado al mega-fixture
+bun run e2e:new <area>/<name>          # ej: bun run e2e:new reservas/my-feature
+bun run e2e:new <area>/<name> --no-factory
+```
+
+### Setup reutilizable (LEER antes de crear un spec)
+
+Todo spec usa el **mega-fixture** de `e2e/fixtures/session.ts`:
+
+```ts
+import { test, expect } from "../../fixtures/session";
+// fixtures disponibles: adminPage (page ya logueada), api, session,
+// bookingFactory, comidaFactory, menuFactory, stockItemFactory, posProductFactory,
+// scheduleFactory, compensationFactory, ...
+test("reservas: <behavior>", async ({ adminPage, api, bookingFactory }) => { ... });
+```
+
+- `adminPage`: `Page` ya autenticado (`bo_session`). No hagas login manual.
+- `api`: `TestApiClient` (`e2e/helpers/api-client.ts`) — llama `/api/admin/*` vía `page.request` (comparte cookies, sin CORS). Úsalo para seedear datos en vez de clicks.
+- Factories: crean datos de test y hacen **cleanup automático** al terminar el test. Úsalas siempre que existan; no crees datos persistentes sin cleanup.
+
+Helpers listos:
+- `e2e/helpers/wait.ts` → `waitForLoadingToFinish`, `waitForHydration` (espera hidratación React en dev/Vite), `waitForAPIResponse`.
+- `e2e/helpers/navigation.ts` → `APP_ROUTES` (rutas tipadas), `navigateTo`, `gotoAndWait`, `waitForAppReady`.
+- `e2e/helpers/auth.ts` → `login`, `injectSessionCookie` (solo para specs que ya tienen un token).
+
+Entorno (`e2e/config.ts`, se resuelve desde env, NUNCA hardcodear):
+- `baseURL`: `BACKOFFICE_URL` > `https://$URL` > `https://localhost:$PORT`. En dev apunta al servidor real vía nginx (`https://backoffice-dev.menustudioai.com`).
+- admin: `E2E_ADMIN_EMAIL` > `BOOTSTRAP_ADMIN_EMAIL` > `LOGIN_USER` > default; password `E2E_ADMIN_PASSWORD` > `BOOTSTRAP_ADMIN_PASSWORD` > `LOGIN_PASSWORD` > default. `backoffice/.env` define `E2E_ADMIN_PASSWORD`.
+- Los tests corren contra **app real + backend/DB real**. Usa factories con cleanup; no dependas de datos preexistentes en DB.
+
+Selectores: la app obliga `data-*` en todo tag, así que prefiere `[data-ui="..."]` / `[data-slot="..."]` / `[data-testid="..."]` (ver regla de selectores abajo).
+
+Assertion de stacking/pintado CSS: el overlay de líneas (`pointer-events:none`) no responde a `elementFromPoint`; para bugs de z-index usa computed style, ej. en `e2e/specs/tables/table-map-controls-stacking.spec.ts`:
+
+```ts
+const z = await page.locator(".bo-tableMapFlow").evaluate((el) => getComputedStyle(el).zIndex);
+expect(z).toBe("auto");
 ```
 
 ### Cobertura minima

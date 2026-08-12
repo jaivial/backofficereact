@@ -644,13 +644,33 @@
 
 .bo-bookingCardGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
+  grid-template-columns: 1fr;
+  gap: 0;
   margin: 0;
   padding: 10px 12px;
   background: var(--bo-surface-2);
-  border: 1px solid var(--bo-border);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 55%, transparent);
   border-radius: var(--bo-radius-md);
+}
+
+.bo-bookingCardRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.bo-bookingCardRow + .bo-bookingCardRow {
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-bookingCardRow:first-child {
+  padding-top: 0;
+}
+
+.bo-bookingCardRow:last-child {
+  padding-bottom: 0;
 }
 
 .bo-bookingCardField {
@@ -671,6 +691,7 @@
   color: var(--bo-faint);
   text-transform: uppercase;
   letter-spacing: .04em;
+  text-align: center;
 }
 
 .bo-bookingCardField dd {
@@ -680,6 +701,7 @@
   color: var(--bo-text);
   white-space: pre-line;
   overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .bo-bookingCardField .bo-input--mesa {

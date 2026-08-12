@@ -65,6 +65,8 @@ vi.mock("@assistant-ui/react", () => ({
 
 vi.mock("@assistant-ui/react-markdown", () => ({
   MarkdownTextPrimitive: () => <div />,
+  unstable_memoizeMarkdownComponents: (components: Record<string, unknown>) => components,
+  useIsMarkdownCodeBlock: () => false,
 }));
 
 afterEach(() => {
