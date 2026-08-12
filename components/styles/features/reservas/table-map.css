@@ -672,7 +672,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 .bo-tableMapCalendarWrapper .bo-mcalGrid {
-  gap: 2px;
+  /* Responsive gap tied to the calendar's own width (.bo-mcal is an inline-size
+     container): replaces the fixed 2px that let cells visually touch. */
+  gap: clamp(4px, 1.8cqw, 8px);
 }
 
 .bo-tableMapCalendarWrapper .bo-mcalCell {
