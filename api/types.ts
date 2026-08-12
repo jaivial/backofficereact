@@ -21,6 +21,7 @@ export type BOSession = {
   user: BOUser;
   restaurants: BORestaurant[];
   activeRestaurantId: number;
+  preferences?: Record<string, string>;
 };
 
 export type APIError = {
