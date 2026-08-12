@@ -257,11 +257,18 @@
 }
 
 .bo-datePop--mcal .bo-mcalGrid {
-  gap: 4px;
+  /* Responsive gap tied to the calendar's own width (.bo-mcal is an inline-size
+     container), so cells always keep visible separation and never touch. */
+  gap: clamp(4px, 1.8cqw, 8px);
 }
 
 .bo-datePop--mcal .bo-mcalCell {
-  min-height: clamp(32px, 4.6vw, 44px);
+  /* No min-height: the old vw-based clamp forced height (and via aspect-ratio,
+     width) larger than the grid track on wide screens, so cells overflowed the
+     track and ate the gap. With min-height:0 the cells size to the track
+     (width) and stay square via aspect-ratio — genuinely responsive to the
+     popover width, gap always respected. */
+  min-height: 0;
   border-radius: var(--bo-radius-sm);
   padding: 3px 2px;
 }
