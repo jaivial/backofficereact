@@ -712,32 +712,25 @@
   }
 }
 
-.bo-reservasModal--edit .bo-modalOutline {
+/* Edit modal: the wrapper div (data-slot) is a flex child of the column modal.
+   It grows to fill available space so the editor inside can manage its own
+   scroll area + sticky footer layout. */
+.bo-reservasModal--edit [data-slot="reservas-modalOutline-edit"] {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: visible;
 }
 
-/* ponytail: ScrollArea is the real flex child of the column modal, not .bo-modalOutline.
-   h-full alone can't resolve against a max-height parent, so the viewport never got a
-   bounded height → content clipped by .bo-reservasModal overflow:hidden (no Y scroll),
-   and overflow:auto on the viewport let touch drag horizontally. Fix the flex sizing +
-   clip X so only vertical scroll remains. */
+/* The editor fills the wrapper and clips X overflow on its scroll viewport. */
+.bo-reservasModal--edit .bo-bookingEditor--stickyFooter {
+  min-height: 100%;
+  height: 100%;
+}
+
 .bo-reservasModal--edit .bo-scrollArea {
   flex: 1 1 auto;
   min-height: 0;
-}
-
-/* The outer viewport (direct child of the modal's ScrollArea) is a flex item of
-   .bo-scrollArea (display:flex, default align-items:stretch). Its base `h-full`
-   (height:100%) does NOT resolve because the scrollArea's height comes from flex +
-   max-height rather than an explicit height, so the viewport grew to its full content
-   height and the modal's overflow:hidden clipped it → no vertical scroll reached.
-   Drop the percentage height so the default flex stretch sizes the viewport to the
-   scrollArea's bounded box. Scoped to the direct-child (outer) viewport only; the inner
-   booking-editor-body viewport is neutralized below. */
-.bo-reservasModal--edit > .bo-scrollArea > .bo-scrollAreaViewport {
-  height: auto;
 }
 
 .bo-reservasModal--edit .bo-scrollAreaViewport {
@@ -752,22 +745,6 @@
 
 .bo-reservasModal--edit .bo-bookingEditorFooter {
   margin-top: auto;
-}
-
-/* The edit modal now renders BookingEditor directly (no outer ScrollArea wrapper).
-   The editor's own ScrollArea handles the body scroll; the footer flows after it
-   at full modal width.  The editor fills the available modal height so the
-   footer sticks to the bottom. */
-.bo-reservasModal--edit .bo-bookingEditor--stickyFooter {
-  min-height: 100%;
-  height: 100%;
-}
-
-.bo-reservasModal--edit [data-slot="reservas-modalOutline-edit"] {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 .bo-hiddenFileInput {
