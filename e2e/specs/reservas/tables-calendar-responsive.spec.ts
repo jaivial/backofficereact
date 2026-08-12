@@ -24,11 +24,27 @@ const INLINE_CELLS = '[data-ui="calendar-wrapper"] [data-slot="month-calendar-da
 const WIDTHS = [1280, 1024, 768, 390, 360, 320];
 
 type CellRect = { l: number; t: number; r: number; b: number; w: number; h: number };
+
+/** Min measured gap (px) between same-row neighbours (h) and between rows (v).
+ *  Guards the "cells must not touch" requirement: a responsive gap keeps visible
+ *  separation at every width. */
+function minGaps(cells: CellRect[]): { h: number; v: number } {
+  if (cells.length < 2) return { h: Infinity, v: Infinity };
+  let h = Infinity, v = Infinity;
+  for (let i = 1; i < cells.length; i++) {
+    const a = cells[i - 1], b = cells[i];
+    if (Math.abs(a.t - b.t) < 2) h = Math.min(h, b.l - a.r);          // same row
+    else v = Math.min(v, b.t - cells[i - 1].b);                        // new row
+  }
+  return { h, v };
+}
 type PopGeom = {
   pop: { w: number; h: number; l: number; r: number };
   ratio: number | null;
   vw: number;
   cells: CellRect[];
+  minHGap: number;
+  minVGap: number;
 };
 
 async function openTablesAt(page: Page, width: number, height: number) {
@@ -44,20 +60,28 @@ async function openPopover(page: Page) {
 }
 
 async function measurePopover(page: Page): Promise<PopGeom> {
-  return page.evaluate((sel) => {
+  const raw = await page.evaluate((sel) => {
     const pop = document.querySelector(sel)!;
     const pr = pop.getBoundingClientRect();
     const cells = [...document.querySelectorAll(`${sel} [data-slot="month-calendar-day-cell"]`)].map((c) => {
       const r = (c as HTMLElement).getBoundingClientRect();
       return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height };
     });
+    let gh = Infinity, gv = Infinity;
+    for (let i = 1; i < cells.length; i++) {
+      const a = cells[i - 1], b = cells[i];
+      if (Math.abs(a.t - b.t) < 2) gh = Math.min(gh, b.l - a.r);
+      else gv = Math.min(gv, b.t - a.b);
+    }
     return {
       pop: { w: pr.width, h: pr.height, l: pr.left, r: pr.right },
       ratio: pr.height ? pr.width / pr.height : null,
       vw: window.innerWidth,
       cells,
+      gh, gv,
     };
   }, POPOVER);
+  return { ...raw, minHGap: raw.gh, minVGap: raw.gv };
 }
 
 type InlineGeom = {
@@ -65,6 +89,8 @@ type InlineGeom = {
   cells: CellRect[];
   collisions: number;
   clipped: number;
+  minHGap: number;
+  minVGap: number;
 };
 
 async function measureInline(page: Page): Promise<InlineGeom> {
@@ -87,11 +113,19 @@ async function measureInline(page: Page): Promise<InlineGeom> {
     const pT = parseFloat(ws.paddingTop) || 0, pB = parseFloat(ws.paddingBottom) || 0;
     const cL = wr.left + pL, cR = wr.right - pR, cT = wr.top + pT, cB = wr.bottom - pB;
     const clipped = cells.filter((c) => c.l < cL - 0.5 || c.r > cR + 0.5 || c.t < cT - 0.5 || c.b > cB + 0.5).length;
+    let gh = Infinity, gv = Infinity;
+    for (let i = 1; i < cells.length; i++) {
+      const a = cells[i - 1], b = cells[i];
+      if (Math.abs(a.t - b.t) < 2) gh = Math.min(gh, b.l - a.r);
+      else gv = Math.min(gv, b.t - a.b);
+    }
     return {
       wrap: { w: wr.width, h: wr.height, radius: ws.borderRadius, overflow: ws.overflow },
       cells,
       collisions,
       clipped,
+      minHGap: gh,
+      minVGap: gv,
     };
   }, INLINE_CELLS);
 }
@@ -193,6 +227,9 @@ test.describe("table-map calendar responsive layout", () => {
         expect(g.ratio, `popover ~1:1 ratio at ${w}`).toBeLessThan(1.2);
         // (1) square cells, no collision
         expectNoCollisionOrClip(g.cells, { w, h: 900 });
+        // (1b) cells never touch — responsive gap keeps visible separation
+        expect(g.minHGap, `popover min horizontal gap ≥3px at ${w}`).toBeGreaterThanOrEqual(3);
+        expect(g.minVGap, `popover min vertical gap ≥3px at ${w}`).toBeGreaterThanOrEqual(3);
       } finally {
         await ctx.close();
       }
@@ -218,6 +255,9 @@ test.describe("table-map calendar responsive layout", () => {
         // (1) square cells + no collision
         expectNoCollisionOrClip(g.cells, { w, h: 900 });
         expect(g.collisions, `no collisions at ${w}`).toBe(0);
+        // cells never touch — responsive gap keeps visible separation
+        expect(g.minHGap, `inline min horizontal gap ≥3px at ${w}`).toBeGreaterThanOrEqual(3);
+        expect(g.minVGap, `inline min vertical gap ≥3px at ${w}`).toBeGreaterThanOrEqual(3);
         // wrapper must be tall enough to show all rows (not collapsed)
         const rows = new Set(g.cells.map((c) => Math.round(c.t / 4)));
         expect(rows.size, `all rows visible at ${w}`).toBeGreaterThanOrEqual(5);
