@@ -456,17 +456,21 @@
 .bo-calDows {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  font-size: 11px;
+  font-size: clamp(10px, 2.5vw, 11px);
   color: var(--bo-faint);
   text-align: center;
   margin-bottom: 8px;
 }
 
+.bo-calDows > * {
+  min-width: 0;
+}
+
 .bo-calGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 10px 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: clamp(11px, 3vw, 12px);
   color: var(--bo-text);
   text-align: center;
 }
