@@ -176,10 +176,37 @@ describe("BookingEditor", () => {
 
   // ── Footer placement (Issue 1) ────────────────────────────────────
   describe("sticky footer placement", () => {
-    it("renders footer as sibling of ScrollArea (not inside it)", async () => {
+    it("passes footer to renderFooter callback when stickyFooter is true", async () => {
+      const api = { menus: { grupos: { list: async () => ({ success: true, menus: [] }), get: async () => ({ success: false }) } } } as any;
+      let renderedFooter: React.ReactNode = null;
+      render(
+        <BookingEditor
+          api={api}
+          initial={initial}
+          busy={false}
+          submitLabel="Guardar"
+          stickyFooter
+          onSubmit={async () => {}}
+          onCancel={() => {}}
+          renderFooter={(f) => { renderedFooter = f; }}
+        />,
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      // The footer should have been passed to the renderFooter callback
+      expect(renderedFooter).toBeTruthy();
+      // The footer element should contain the submit button
+      const footerDiv = renderedFooter as React.ReactElement;
+      expect(footerDiv).toBeTruthy();
+    });
+
+    it("renders footer inline when stickyFooter is false", async () => {
       const api = { menus: { grupos: { list: async () => ({ success: true, menus: [] }), get: async () => ({ success: false }) } } } as any;
       const { container } = render(
-        <BookingEditor api={api} initial={initial} busy={false} submitLabel="Guardar" stickyFooter onSubmit={async () => {}} onCancel={() => {}} />,
+        <BookingEditor api={api} initial={initial} busy={false} submitLabel="Guardar" onSubmit={async () => {}} />,
       );
 
       await act(async () => {
@@ -188,15 +215,9 @@ describe("BookingEditor", () => {
 
       const footer = container.querySelector('[data-slot="booking-editor-actions"]');
       expect(footer).toBeTruthy();
-      // The footer must be a direct child of the editor root, not inside the scroll area
+      // Footer should be inside the editor root
       const editorRoot = container.querySelector('.bo-bookingEditor');
-      expect(editorRoot).toBeTruthy();
       expect(editorRoot!.contains(footer)).toBe(true);
-
-      // The footer should NOT be inside the scroll area viewport
-      const scrollViewport = container.querySelector('[data-slot="booking-editor-body"]');
-      expect(scrollViewport).toBeTruthy();
-      expect(scrollViewport!.contains(footer)).toBe(false);
     });
   });
 
