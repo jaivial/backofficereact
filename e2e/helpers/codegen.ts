@@ -1,42 +1,23 @@
 import type { Page } from "@playwright/test";
 
-// Global session injected by the Playwright e2e fixture / seed script.
-declare const __e2eSession__: string;
-
-interface WithSessionOptions {
-  /** Override the cookie value. Defaults to global __e2eSession__. */
-  sessionToken?: string;
-}
+import { injectSessionCookie } from "./auth";
 
 /**
- * Injects the `bo_session` cookie into the given page context,
- * simulating a logged-in backoffice session.
+ * @deprecated Use `injectSessionCookie` from helpers/auth.ts directly.
  *
- * Usage:
- * ```ts
- * test("my test", async ({ page }) => {
- *   await withSession(page);
- *   await page.goto("/app/dashboard");
- * });
- * ```
+ * Kept as a thin wrapper so existing callers keep working; it no longer relies
+ * on the undefined global `__e2eSession__` that never existed.
  */
 export async function withSession(
   page: Page,
-  options: WithSessionOptions = {}
+  options: { sessionToken?: string } = {},
 ): Promise<void> {
-  const token =
-    options.sessionToken ?? (typeof __e2eSession__ !== "undefined" ? __e2eSession__ : "");
-  await page.context().addCookies([
-    {
-      name: "bo_session",
-      value: token,
-      domain: "localhost",
-      path: "/",
-      httpOnly: true,
-      secure: true,
-      sameSite: "Lax",
-    },
-  ]);
+  if (!options.sessionToken) {
+    throw new Error(
+      "withSession requires options.sessionToken (read it from the session cache or pass the bo_session value)",
+    );
+  }
+  await injectSessionCookie(page, options.sessionToken);
 }
 
 /**
@@ -58,13 +39,12 @@ export function generateTestFromTrace(tracePath: string): string {
  * Review and adjust selectors before committing.
  */
 
-// TODO: replace with real URL or use page.goto('') then navigate.
-const BASE_URL = "https://localhost:3001";
-
 test("generated test", async ({ page }: { page: Page }) => {
-  // TODO: add withSession(page) if the page requires auth.
+  // TODO: authenticate via the session fixture instead of manual login:
+  //   import { test } from "../../fixtures/session";
+  //   test("...", async ({ adminPage }) => { ... });
 
-  await page.goto(BASE_URL);
+  await page.goto("/app");
 
   // TODO: replace with real selectors (use data-testid where possible).
   await page.waitForSelector("[data-testid='TODO']");
