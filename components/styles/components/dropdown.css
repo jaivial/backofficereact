@@ -122,12 +122,17 @@
 }
 
 .bo-timeList {
-  width: fit-content;
-  min-width: 100px;
+  width: max-content;
   max-width: min(320px, calc(100vw - 16px));
   max-height: min(360px, calc(100vh - 140px));
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Time options are short (HH:MM); size each item to its content so the
+   dropdown hugs the value width instead of stretching to the trigger. */
+.bo-timeList .bo-selectItem {
+  width: auto;
 }
 
 .bo-selectItem {
