@@ -669,3 +669,44 @@ Los colores de estado deben mantener contraste WCAG AA en ambos temas:
    // MAL
    className={"bo-btn " + (variant ? "bo-btn--" + variant : "") + " " + className}
    ```
+
+---
+
+## Workflow por tarea (obligatorio)
+
+Toda tarea nueva sigue este flujo completo, sin omitir pasos:
+
+1. **Plan en worktree nuevo**:
+   ```bash
+   git worktree add /home/jaime/wt/backoffice-<tarea> -b <tipo>/<tarea> main
+   cd /home/jaime/wt/backoffice-<tarea>
+   ```
+2. **Editar + test**: implementar cambios, correr build/typecheck del repo (`bun run build`, `bun run typecheck` o equivalentes).
+3. **Commit + push** de todos los cambios al branch nuevo:
+   ```bash
+   git add -A && git commit -m "<conventional commit msg>"
+   git push -u origin <tipo>/<tarea>
+   ```
+4. **Abrir PR** contra `main` del repo base.
+5. **Loop de review** con el skill `pr-review`:
+   - Corregir todo blocker importante o medio encontrado.
+   - Re-correr `pr-review` tras cada fix.
+   - Repetir hasta que no queden blockers importantes ni medios.
+6. **Merge** del PR.
+7. **Refetch + pull** en el repo base:
+   ```bash
+   git fetch --all --prune
+   git checkout main && git pull --ff-only
+   ```
+8. **Limpiar worktree y branches** del PR ya mergeado:
+   ```bash
+   git worktree remove /home/jaime/wt/backoffice-<tarea>
+   git branch -D <tipo>/<tarea>
+   git push origin --delete <tipo>/<tarea>
+   ```
+
+Reglas del workflow:
+- Una tarea = un worktree = un branch = un PR.
+- Nunca editar directo sobre `main`.
+- Si una tarea afecta varios repos (`backend`, `preactvillacarmen`, `backoffice`), abrir un PR por repo con los cambios relacionados; coordinar merges.
+- El loop `pr-review` → fix → `pr-review` es obligatorio antes del merge.
