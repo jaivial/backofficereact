@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { Eye, Pencil, Trash2, ReceiptText } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Eye, Pencil, Trash2, ReceiptText, Clock, Users } from "lucide-react";
 import type { Booking } from "../../../../../api/types";
 import { formatArrozShort, formatHHMM, formatPhone } from "../../../../../ui/lib/format";
 
@@ -10,6 +10,7 @@ type Props = {
   onEdit: (b: Booking) => void;
   onCancel: (b: Booking) => void;
   onCrearFactura: (b: Booking) => void;
+  onSaveTable: (b: Booking, value: string) => Promise<boolean>;
 };
 
 function formatAddedDate(ts: string | null | undefined): string {
@@ -23,12 +24,19 @@ function formatAddedDate(ts: string | null | undefined): string {
   return s;
 }
 
+function normalizeTableNumber(v: string): string {
+  const raw = String(v || "").trim();
+  if (!raw) return "";
+  return raw.replace(/^mesa\b[\s#:\-]*/i, "").trim();
+}
+
 export const BookingCard = React.memo(function BookingCard({
   booking,
   onOpenDetails,
   onEdit,
   onCancel,
   onCrearFactura,
+  onSaveTable,
 }: Props) {
   const arroz = useMemo(
     () => formatArrozShort(booking.arroz_type, booking.arroz_servings),
@@ -36,6 +44,29 @@ export const BookingCard = React.memo(function BookingCard({
   );
   const added = useMemo(() => formatAddedDate(booking.added_date), [booking.added_date]);
   const confirmed = booking.status === "confirmed";
+
+  const [draftMesa, setDraftMesa] = useState<string>(() => normalizeTableNumber(booking.table_number || ""));
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraftMesa(normalizeTableNumber(booking.table_number || ""));
+  }, [booking.table_number]);
+
+  const saveTable = useCallback(async () => {
+    const next = normalizeTableNumber(draftMesa);
+    const cur = normalizeTableNumber(booking.table_number || "");
+    if (next === cur) {
+      if (draftMesa !== next) setDraftMesa(next);
+      return;
+    }
+    setSaving(true);
+    try {
+      const ok = await onSaveTable(booking, next);
+      if (!ok) setDraftMesa(cur);
+    } finally {
+      setSaving(false);
+    }
+  }, [booking, draftMesa, onSaveTable]);
 
   const stop = (fn: () => void) => (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,16 +86,40 @@ export const BookingCard = React.memo(function BookingCard({
       <header className="bo-bookingCardHead" data-slot="reservas-booking-card-head">
         <div className="bo-bookingCardWho" data-slot="reservas-booking-card-who">
           <span className="bo-bookingCardName" data-slot="reservas-booking-card-name">{booking.customer_name}</span>
-          <span className="bo-bookingCardTime" data-slot="reservas-booking-card-time">{formatHHMM(booking.reservation_time)} · {booking.party_size} pax</span>
+          <div className="bo-bookingCardMeta" data-slot="reservas-booking-card-meta">
+            <span className="bo-bookingCardChip" data-slot="reservas-booking-card-chip">
+              <Clock size={18} strokeWidth={1.8} aria-hidden="true" data-slot="reservas-booking-card-chip-icon" />
+              <span className="bo-bookingCardChipValue" data-slot="reservas-booking-card-chip-value">{formatHHMM(booking.reservation_time)}</span>
+              <span className="bo-bookingCardChipLabel" data-slot="reservas-booking-card-chip-label">hora</span>
+            </span>
+            <span className="bo-bookingCardChip" data-slot="reservas-booking-card-chip">
+              <Users size={18} strokeWidth={1.8} aria-hidden="true" data-slot="reservas-booking-card-chip-icon" />
+              <span className="bo-bookingCardChipValue" data-slot="reservas-booking-card-chip-value">{booking.party_size}</span>
+              <span className="bo-bookingCardChipLabel" data-slot="reservas-booking-card-chip-label">pax</span>
+            </span>
+          </div>
         </div>
-        <span className={`bo-badge bo-badge--sm ${confirmed ? "bo-badge--success" : "bo-badge--warn"}`} data-slot="reservas-booking-card-status">
+        <span className={`bo-bookingCardStatus bo-badge bo-badge--sm ${confirmed ? "bo-badge--success" : "bo-badge--warn"}`} data-slot="reservas-booking-card-status">
           {confirmed ? "Confirmada" : "Pendiente"}
         </span>
       </header>
 
       <dl className="bo-bookingCardGrid" data-slot="reservas-booking-card-grid">
         <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
-          <dt>Mesa</dt><dd>{booking.table_number || "—"}</dd>
+          <dt>Mesa</dt>
+          <dd>
+            <input
+              className="bo-input bo-input--xs bo-input--mesa"
+              value={draftMesa}
+              onChange={(e) => setDraftMesa(e.target.value)}
+              onBlur={() => void saveTable()}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+              disabled={saving}
+              aria-label={`Mesa reserva #${booking.id}`}
+              data-testid={`reservas-card-mesa-${booking.id}`}
+            />
+          </dd>
         </div>
         <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
           <dt>Niños</dt><dd>{booking.children ?? 0}</dd>
@@ -110,6 +165,7 @@ export function BookingCardGrid({
   onEdit,
   onCancel,
   onCrearFactura,
+  onSaveTable,
 }: {
   bookings: Booking[];
   busy: boolean;
@@ -117,6 +173,7 @@ export function BookingCardGrid({
   onEdit: (b: Booking) => void;
   onCancel: (b: Booking) => void;
   onCrearFactura: (b: Booking) => void;
+  onSaveTable: (b: Booking, value: string) => Promise<boolean>;
 }) {
   if (!bookings.length) {
     return (
@@ -135,6 +192,7 @@ export function BookingCardGrid({
           onEdit={onEdit}
           onCancel={onCancel}
           onCrearFactura={onCrearFactura}
+          onSaveTable={onSaveTable}
         />
       ))}
     </div>
