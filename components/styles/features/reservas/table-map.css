@@ -316,6 +316,35 @@ body.is-dragging .bo-tableMapFlowWrap {
   border-bottom-right-radius: calc(var(--bo-radius-md) - 1px);
 }
 
+/* Collapsed-state toggle pinned to the same bottom-left slot as the controls
+   panel (react-flow Panel `bottom-left`, 15px margin). */
+.bo-tableMapFlow .bo-tableMapControlsToggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.16)),
+    color-mix(in srgb, var(--bo-surface-2) 88%, transparent);
+  box-shadow: var(--bo-shadow-soft);
+  color: var(--bo-text);
+  cursor: pointer;
+  transition:
+    background var(--bo-transition-base) var(--bo-ease),
+    color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-tableMapFlow .bo-tableMapControlsToggle:hover {
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+}
+
+.bo-tableMapFlow .bo-tableMapControlsToggle:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
 .bo-tableMapFlow .react-flow__background {
   opacity: 0.56;
 }
@@ -3306,4 +3335,17 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 .bo-tableMultiSelectBtn--remove:hover {
   background: var(--bo-color-danger-hover);
+}
+
+/* Hide the mobile bottom navbar while the map editor is active so the drawing
+   canvas gets the full viewport. The desktop (left sidebar) layout is
+   unaffected because these rules live inside the mobile breakpoint. */
+@media (max-width: 720px), (max-aspect-ratio: 9 / 16) {
+  body.is-table-edit-mode .bo-app--page {
+    grid-template-rows: 1fr;
+  }
+
+  body.is-table-edit-mode .bo-app--page .bo-sidebar {
+    display: none;
+  }
 }
