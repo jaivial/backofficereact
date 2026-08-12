@@ -517,7 +517,9 @@
   }
 
   /* Vertically center the "Seleccionar menú" label and the select trigger
-     on mobile so they align middle. */
+     on mobile so they align middle.
+     NOTE: This class is only styled inside this media query (≤640px).
+     On desktop the panel's own centering rules handle layout. */
   .bo-bookingMenuSelectField {
     display: flex;
     flex-direction: row;
@@ -722,9 +724,9 @@
   flex-direction: column;
 }
 
-/* The editor fills the wrapper and clips X overflow on its scroll viewport. */
+/* The editor fills the wrapper so its internal scroll area gets a bounded
+   height and the footer sticks to the bottom. */
 .bo-reservasModal--edit .bo-bookingEditor--stickyFooter {
-  min-height: 100%;
   height: 100%;
 }
 

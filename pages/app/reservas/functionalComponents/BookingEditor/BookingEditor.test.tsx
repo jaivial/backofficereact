@@ -232,13 +232,13 @@ describe("BookingEditor", () => {
         arroz_enabled: true,
         arroz: [{ type: "", servings: 2 }],
       };
-      render(<BookingEditor api={api} initial={riceInitial} busy={false} submitLabel="Guardar" onSubmit={async () => {}} />);
+      const { container } = render(<BookingEditor api={api} initial={riceInitial} busy={false} submitLabel="Guardar" onSubmit={async () => {}} />);
 
       await act(async () => {
         await Promise.resolve();
       });
 
-      const selectorRow = document.querySelector('[data-slot="booking-editor-rice-selector-row"]');
+      const selectorRow = container.querySelector('[data-slot="booking-editor-rice-selector-row"]');
       expect(selectorRow).toBeTruthy();
       expect(selectorRow!.className).toContain("bo-bookingChoiceSelectorRow");
       // The trash button should be present in the same row
