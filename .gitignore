@@ -20,4 +20,3 @@ pnpm-debug.log*
 test-results/
 storybook-static/
 *.build-*.mjs
-node_modules/
