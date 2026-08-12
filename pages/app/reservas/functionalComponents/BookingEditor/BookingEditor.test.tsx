@@ -173,4 +173,77 @@ describe("BookingEditor", () => {
     expect(screen.queryByRole("button", { name: "Añadir principal" })).not.toBeInTheDocument();
     expect(screen.getByText("Raciones")).toHaveAttribute("data-max", "4");
   });
+
+  // ── Footer placement (Issue 1) ────────────────────────────────────
+  describe("sticky footer placement", () => {
+    it("renders footer as sibling of ScrollArea (not inside it)", async () => {
+      const api = { menus: { grupos: { list: async () => ({ success: true, menus: [] }), get: async () => ({ success: false }) } } } as any;
+      const { container } = render(
+        <BookingEditor api={api} initial={initial} busy={false} submitLabel="Guardar" stickyFooter onSubmit={async () => {}} onCancel={() => {}} />,
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      const footer = container.querySelector('[data-slot="booking-editor-actions"]');
+      expect(footer).toBeTruthy();
+      // The footer must be a direct child of the editor root, not inside the scroll area
+      const editorRoot = container.querySelector('.bo-bookingEditor');
+      expect(editorRoot).toBeTruthy();
+      expect(editorRoot!.contains(footer)).toBe(true);
+
+      // The footer should NOT be inside the scroll area viewport
+      const scrollViewport = container.querySelector('[data-slot="booking-editor-body"]');
+      expect(scrollViewport).toBeTruthy();
+      expect(scrollViewport!.contains(footer)).toBe(false);
+    });
+  });
+
+  // ── Menu select field label alignment (Issue 3) ──────────────────
+  describe("menu select field layout", () => {
+    it("wraps 'Seleccionar menú' label and select in a flex-row container for centering", async () => {
+      const api = { menus: { grupos: { list: async () => ({ success: true, menus: [{ id: 1, menu_title: "Menú", price: 35 }] }), get: async () => ({ success: false }) } } } as any;
+      render(<BookingEditor api={api} initial={initial} busy={false} submitLabel="Guardar" onSubmit={async () => {}} />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      const field = screen.getByText("Seleccionar menú").closest('[data-slot="booking-editor-menu-select-field"]');
+      expect(field).toBeTruthy();
+      // The field should have the class that enables centering on mobile
+      expect(field!.className).toContain("bo-bookingMenuSelectField");
+    });
+  });
+
+  // ── Arroz selector row alignment (Issue 4) ───────────────────────
+  describe("arroz selector row layout", () => {
+    it("keeps arroz select and trash icon vertically centered", async () => {
+      const api = {
+        menus: { grupos: { list: async () => ({ success: true, menus: [] }), get: async () => ({ success: false }) } },
+        arrozTypes: { list: async () => ["Arroz bomba"] },
+      } as any;
+      const riceInitial: BookingEditorDraft = {
+        ...initial,
+        special_menu: false,
+        menu_de_grupo_id: null,
+        principales: [],
+        arroz_enabled: true,
+        arroz: [{ type: "", servings: 2 }],
+      };
+      render(<BookingEditor api={api} initial={riceInitial} busy={false} submitLabel="Guardar" onSubmit={async () => {}} />);
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      const selectorRow = document.querySelector('[data-slot="booking-editor-rice-selector-row"]');
+      expect(selectorRow).toBeTruthy();
+      expect(selectorRow!.className).toContain("bo-bookingChoiceSelectorRow");
+      // The trash button should be present in the same row
+      const trashBtn = screen.getByRole("button", { name: "Quitar arroz" });
+      expect(selectorRow!.contains(trashBtn)).toBe(true);
+    });
+  });
 });
