@@ -2952,40 +2952,44 @@ export default function TableManagerPage() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [bookingForAssignment, cancelAssignmentMode]);
 
+  // Position the ellipsis-menu popover: centered under its trigger, then
+  // clamped to the viewport (8px margin) on both axes so it is never clipped by
+  // overflow. The tooltip width is already capped by CSS (min(320px, 100vw-24px)),
+  // so a clamped left always keeps it on-screen. Vertically, if it would overflow
+  // the bottom it flips above the trigger (or clamps up) instead of being cut.
+  const placeMenuTooltip = useCallback(() => {
+    const tooltipEl = document.querySelector('[data-ui="map-menu-tooltip"]') as HTMLElement | null;
+    const btn = menuButtonRef.current;
+    if (!tooltipEl || !btn) return;
+    const tt = tooltipEl.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const M = 8;
+    const centerX = br.left + br.width / 2;
+    const left = Math.max(M, Math.min(centerX - tt.width / 2, vw - tt.width - M));
+    const belowTop = br.bottom + 8;
+    const top = belowTop + tt.height + M > vh
+      ? Math.max(M, Math.min(br.top - 8 - tt.height, vh - tt.height - M))
+      : belowTop;
+    setMenuTooltipStyle({
+      position: "fixed" as const,
+      left: `${left}px`,
+      top: `${top}px`,
+    });
+  }, []);
+
   useEffect(() => {
     if (!menuVisible) return;
-    const tooltipEl = document.querySelector('[data-ui="map-menu-tooltip"]') as HTMLElement | null;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const tooltipWidth = tooltipEl?.getBoundingClientRect().width ?? 240;
-        const btnRect = menuButtonRef.current?.getBoundingClientRect();
-        if (!btnRect) return;
-        const centerX = btnRect.left + btnRect.width / 2;
-        const top = btnRect.bottom + 8;
-        setMenuTooltipStyle({
-          position: "fixed" as const,
-          left: `${centerX - tooltipWidth / 2}px`,
-          top: `${top}px`,
-        });
-      });
-    });
-    const onResize = () => {
-      const tooltipWidth = tooltipEl?.getBoundingClientRect().width ?? 240;
-      const btnRect = menuButtonRef.current?.getBoundingClientRect();
-      if (!btnRect) return;
-      const centerX = btnRect.left + btnRect.width / 2;
-      const top = btnRect.bottom + 8;
-      setMenuTooltipStyle({
-        position: "fixed" as const,
-        left: `${centerX - tooltipWidth / 2}px`,
-        top: `${top}px`,
-      });
-    };
-    window.addEventListener("resize", onResize);
+    // Double-rAF so the popover is laid out (and measurable) before placing it.
+    requestAnimationFrame(() => requestAnimationFrame(placeMenuTooltip));
+    window.addEventListener("resize", placeMenuTooltip);
+    window.addEventListener("scroll", placeMenuTooltip, true);
     return () => {
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", placeMenuTooltip);
+      window.removeEventListener("scroll", placeMenuTooltip, true);
     };
-  }, [menuVisible, rightSheetOpen]);
+  }, [menuVisible, rightSheetOpen, placeMenuTooltip]);
 
   const onToggleMenu = useCallback(() => {
     setMenuVisible((prev) => {
