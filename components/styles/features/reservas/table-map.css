@@ -2465,7 +2465,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 .bo-tableEditorGrid {
-  flex: 1 1 0;
+  /* flex-basis auto (not 0): the modal is auto-height (maxHeight only), and
+     basis 0 collapses the column to 0 height, clipping the form. */
+  flex: 1 1 auto;
   min-height: 0;
   margin-top: var(--bo-space-3);
   display: flex;
@@ -2473,7 +2475,7 @@ body.is-dragging .bo-tableMapFlowWrap {
 }
 
 .bo-tableEditorGridScroll {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
   width: 100%;
 }
