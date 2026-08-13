@@ -2425,9 +2425,9 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 }
 
+/* Size (height/maxHeight) is applied per-instance via the Modal `style` prop
+   so it only affects this modal. Only the structural layout lives here. */
 .bo-modal.bo-tableEditorModal {
-  max-height: 88vh;
-  height: min(88vh, 860px);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2466,7 +2466,7 @@ body.is-dragging .bo-tableMapFlowWrap {
 .bo-tableEditorPreviewWrap {
   border: 0;
   background: transparent;
-  min-height: 340px;
+  min-height: clamp(200px, 30vh, 340px);
   margin-top: 1rem;
   display: grid;
   place-items: center;
@@ -2671,11 +2671,7 @@ body.is-dragging .bo-tableMapFlowWrap {
   box-shadow: none;
 }
 
-.bo-modal.bo-tableEditorModal .bo-scrollAreaViewport {
-  display: flex;
-  flex-direction: row;
-  align-content: center;
-}
+
 
 .bo-tableEditorActionsWrap .bo-modalActions .bo-btn--primary {
   margin: 0;
@@ -2704,9 +2700,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 /* Tablets / phones: stack preview and config vertically, centered */
 @media (max-width: 920px) {
+  /* Modal size (height/maxHeight) comes from the Modal `style` prop; only
+     structural tweaks live here. */
   .bo-modal.bo-tableEditorModal {
-    max-height: 94vh;
-    height: 94vh;
     min-height: 0;
     padding: var(--bo-space-3);
     overflow: hidden;
@@ -2725,7 +2721,9 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 
   .bo-tableEditorPreviewWrap {
-    min-height: 340px;
+    /* Responsive: was a fixed 340px that forced excessive scrolling on phones
+       and fought the 480px max-height below. 240 is enough for the preview. */
+    min-height: 240px;
     margin-top: 1rem;
     display: grid;
     place-items: center;
@@ -2790,8 +2788,6 @@ body.is-dragging .bo-tableMapFlowWrap {
 /* Small phones: further compact */
 @media (max-width: 480px) {
   .bo-modal.bo-tableEditorModal {
-    max-height: 96vh;
-    height: 96vh;
     padding: var(--bo-space-2);
   }
 
@@ -2801,6 +2797,9 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 
   .bo-tableEditorPreviewWrap {
+    /* Reset min-height from the 920 rule so the small preview actually shrinks
+       (min 160 / max 190); otherwise the 240px min-height won over this cap. */
+    min-height: 160px;
     max-height: 190px;
     gap: var(--bo-space-3);
   }
