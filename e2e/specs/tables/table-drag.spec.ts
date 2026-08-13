@@ -97,10 +97,56 @@ test.describe.skip("Tables Map - Mobile Touch Drag", () => {
 });
 
 test.describe("Tables Map - Desktop Drag (Regression)", () => {
-  test.beforeEach(async ({ adminPage }) => {
+  test.beforeEach(async ({ adminPage, api }) => {
+    // Deterministic seed: distinct table positions + a wide closed limit
+    // polygon (no template -> day scope), so drags always grab the right
+    // node and the move constraint allows real movement.
+    await api.delete(`/api/admin/tables/template/0`).catch(() => undefined);
+    const list = (await api.get(`/api/admin/tables?date=${TEST_DATE}&floor_number=0`)) as {
+      tables?: Array<{ id: number }>;
+    };
+    const tables = (list.tables || []).filter((t) => Number(t.id) > 0);
+    const positions: Record<string, unknown> = {};
+    tables.forEach((t, i) => {
+      positions[String(t.id)] = { x_pos: i * 220, y_pos: 0 };
+    });
+    const maxX = (tables.length - 1) * 220;
+    await api
+      .put("/api/admin/tables", {
+        entity: "layout",
+        date: TEST_DATE,
+        floor_number: 0,
+        metadata: {
+          _template_scope: null,
+          _table_positions_override: null,
+          _limit_area_template_points_override: null,
+          _draw_elements_template_override: null,
+          elements: null,
+          booking_states: null,
+          table_positions: positions,
+          limit_points: [
+            { x: -2000, y: -2000 },
+            { x: maxX + 2000, y: -2000 },
+            { x: maxX + 2000, y: 2000 },
+            { x: -2000, y: 2000 },
+          ],
+        },
+      })
+      .catch(() => undefined);
+
     await adminPage.goto(`/app/reservas/tables?date=${TEST_DATE}`);
     await adminPage.waitForLoadState("networkidle");
     await adminPage.waitForSelector('[data-ui="flow-wrapper"]', { timeout: 15000 });
+    // Tables may only be grabbed/dragged in edit mode.
+    const toggle = adminPage.locator('[data-ui="edit-mode-toggle"]');
+    if ((await toggle.count()) > 0 && (await toggle.first().getAttribute("aria-checked")) !== "true") {
+      await toggle.first().click({ force: true });
+    }
+    // Select tool: panning must not interfere with node drags.
+    const selectTool = adminPage.locator('[aria-label="Seleccionar (cursor)"]');
+    if ((await selectTool.count()) > 0) {
+      await selectTool.first().click();
+    }
   });
 
   test("table drag saves position via onNodeDragStop", async ({ adminPage }) => {
@@ -113,7 +159,7 @@ test.describe("Tables Map - Desktop Drag (Regression)", () => {
     // Perform drag
     await tableNode.hover();
     await adminPage.mouse.down();
-    await adminPage.mouse.move(box!.x + 80, box!.y + 80, { steps: 10 });
+    await adminPage.mouse.move(box!.x + 80, box!.y + 80, { steps: 12, delay: 25 } as Parameters<typeof adminPage.mouse.move>[2]);
     await adminPage.mouse.up();
 
     // Wait for save
@@ -134,7 +180,7 @@ test.describe("Tables Map - Desktop Drag (Regression)", () => {
     // Drag to new position
     await tableNode.hover();
     await adminPage.mouse.down();
-    await adminPage.mouse.move(initialX + 120, initialY + 120, { steps: 12 });
+    await adminPage.mouse.move(initialX + 120, initialY + 120, { steps: 16, delay: 25 } as Parameters<typeof adminPage.mouse.move>[2]);
     await adminPage.mouse.up();
 
     // Wait for save
@@ -166,7 +212,7 @@ test.describe("Tables Map - Desktop Drag (Regression)", () => {
     for (let i = 0; i < 3; i++) {
       await tableNode.hover();
       await adminPage.mouse.down();
-      await adminPage.mouse.move(box!.x + (i + 1) * 40, box!.y + (i + 1) * 40, { steps: 5 });
+      await adminPage.mouse.move(box!.x + (i + 1) * 40, box!.y + (i + 1) * 40, { steps: 8, delay: 25 } as Parameters<typeof adminPage.mouse.move>[2]);
       await adminPage.mouse.up();
       await adminPage.waitForTimeout(200);
     }

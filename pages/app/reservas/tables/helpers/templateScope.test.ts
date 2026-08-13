@@ -59,6 +59,7 @@ describe("table map template helpers", () => {
         limit_area_template_points: [{ x: 0, y: 0 }],
         draw_elements_template: [{ id: "wall-1" }],
         template_updated_at: "2026-04-05T00:00:00Z",
+        _table_positions_override: { "5": { x_pos: 100, y_pos: 200 } },
       });
       expect(next).toEqual({ booking_states: { "1": { seated: true } } });
     });
@@ -71,17 +72,19 @@ describe("table map template helpers", () => {
   });
 
   describe("stripDayFieldsForTemplate", () => {
-    it("removes per-day-only keys from a layout so the rest is safe as a template", () => {
+    it("removes per-day-only keys but keeps table_positions (template owns them)", () => {
       const next = stripDayFieldsForTemplate({
         booking_states: { "1": { seated: true } },
         table_positions: { "5": { x_pos: 100, y_pos: 200 } },
         _template_scope: "day",
         _limit_area_template_points_override: [{ x: 0, y: 0 }],
         _draw_elements_template_override: [{ id: "wall-1" }],
+        _table_positions_override: { "5": { x_pos: 100, y_pos: 200 } },
         limit_area_template_points: [{ x: 0, y: 0 }],
         draw_elements_template: [{ id: "wall-1" }],
       });
       expect(next).toEqual({
+        table_positions: { "5": { x_pos: 100, y_pos: 200 } },
         limit_area_template_points: [{ x: 0, y: 0 }],
         draw_elements_template: [{ id: "wall-1" }],
       });
@@ -122,6 +125,15 @@ describe("table map template helpers", () => {
       expect(next._draw_elements_template_override).toEqual([{ id: "wall-1" }]);
       expect(next.booking_states).toEqual({ "1": { seated: true } });
     });
+
+    it("freezes the resolved table positions into the day layout when provided", () => {
+      const tpl = { limit_area_template_points: [{ x: 0, y: 0 }] };
+      const positions = { "1": { x_pos: 10, y_pos: 20 } };
+      const next = buildDayOverrideLayout(tpl, { booking_states: {} }, positions);
+      expect(next.table_positions).toEqual(positions);
+      expect(next._table_positions_override).toEqual(positions);
+      expect(next._template_scope).toBe("day");
+    });
   });
 
   describe("buildGlobalTemplateLayout", () => {
@@ -131,6 +143,7 @@ describe("table map template helpers", () => {
         _template_scope: "day",
         _limit_area_template_points_override: [{ x: 0, y: 0 }],
         _draw_elements_template_override: [{ id: "wall-1" }],
+        _table_positions_override: { "1": { x_pos: 10, y_pos: 20 } },
       });
       expect(next).toEqual({ booking_states: { "1": { seated: true } } });
     });
