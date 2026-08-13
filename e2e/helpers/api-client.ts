@@ -67,6 +67,17 @@ export class TestApiClient {
   }
 
   /**
+   * Make a PUT request via the page's fetch.
+   */
+  async put<T = ApiResponse>(
+    path: string,
+    body: Record<string, unknown>
+  ): Promise<T> {
+    const res = await this.page.request.put(this.abs(path), { data: body });
+    return res.json() as Promise<T>;
+  }
+
+  /**
    * Make a PATCH request via the page's fetch.
    */
   async patch<T = ApiResponse>(
