@@ -289,6 +289,19 @@ body.is-dragging .bo-tableMapFlowWrap {
   box-shadow: var(--bo-shadow-soft);
 }
 
+/* Built-in React Flow control icons (zoom, fit-view, interactivity) ship
+   with `fill: black` from the library stylesheet. In dark theme they are
+   invisible against the dark button background. Force them to inherit the
+   button's text colour (white in dark theme) via currentColor + fill. */
+.bo-tableMapFlow .react-flow__controls-button svg {
+  fill: currentColor;
+  color: inherit;
+}
+
+.bo-tableMapFlow .react-flow__controls-button svg path {
+  fill: currentColor;
+}
+
 .bo-tableMapFlow .react-flow__controls-button {
   background: transparent;
   border-bottom: 1px solid var(--bo-border);
@@ -354,6 +367,11 @@ body.is-dragging .bo-tableMapFlowWrap {
   min-height: 104px;
   border-radius: 999px;
   border: 2px solid var(--bo-table-outline, var(--bo-border-2));
+  /* Explicit 1:1 ratio guarantees a perfect circle even if width/height
+     inline styles drift apart after a freehand resize. Without this, a
+     few px of difference makes border-radius:999px render as an ellipse
+     with visibly flat top/bottom arcs. */
+  aspect-ratio: 1;
   background:
     var(--bo-table-texture, none) center/cover no-repeat,
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.22)),
@@ -366,6 +384,13 @@ body.is-dragging .bo-tableMapFlowWrap {
   box-shadow: var(--bo-shadow-soft);
 }
 
+/* Round tables: slightly thicker border so the curvature stays smooth
+   when the viewport zoom shrinks the node (sub-pixel flattening at
+   cardinal points with a 2px border scaled to <1px). */
+.bo-tableMapNode.is-round {
+  border-width: 3px;
+}
+
 .bo-tableMapChair {
   position: absolute;
   left: 50%;
@@ -376,7 +401,10 @@ body.is-dragging .bo-tableMapFlowWrap {
   margin-top: -5px;
   border-radius: 999px;
   border: 1px solid var(--bo-border-2);
-  background: color-mix(in srgb, var(--bo-accent-3) 44%, var(--bo-surface-2));
+  /* Dark fill for contrast against the light map background.
+     Was: color-mix(in srgb, var(--bo-accent-3) 44%, var(--bo-surface-2))
+     which was too light to read on the bright React Flow canvas. */
+  background: color-mix(in srgb, var(--bo-text) 52%, var(--bo-surface-3));
 }
 
 .bo-tableMapNode.is-square {
