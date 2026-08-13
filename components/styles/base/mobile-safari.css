@@ -50,8 +50,12 @@
     height: 44px;
   }
 
-  /* Calendar day cells: tappable squares, not 30px pinpricks. */
-  :is(.bo-app, #bo-portal) .bo-mcalCell,
+  /* Generic date-picker day cells: tappable squares, not 30px pinpricks.
+     (.bo-mcalCell is intentionally excluded: it lives in a 7-column grid and
+     is kept square by aspect-ratio + the track width. Forcing a 46px min-height
+     there made the cells wider than their track on narrow containers — the
+     table-map popover and right-sheet panel — so they overlapped and touched
+     on iPhone. .bo-mcalCell sizes to its grid track instead.) */
   .bo-calDay {
     min-height: 46px;
   }
