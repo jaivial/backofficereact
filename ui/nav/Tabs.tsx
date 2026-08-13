@@ -44,15 +44,13 @@ export function Tabs({
     >
       {tabs.map((t) => {
         const active = t.id === activeId;
+        // Deterministic href: server and client must render identical markup.
+        // Reading `window` here diverges SSR vs hydration (e.g. appending ?date=),
+        // which triggers React hydration mismatches on anchor href attributes.
+        // Callers that need query params already bake them into `t.href`.
         const href = (() => {
           if (isButtonMode || !t.href || t.href === "#") return "#";
-          if (t.href.includes("?")) return t.href;
-          if (typeof window === "undefined") return t.href;
-          const isMenusTab = t.id === "menus" || t.href.startsWith("/app/menus");
-          if (isMenusTab) return t.href;
-          const sp = new URLSearchParams(window.location.search || "");
-          const date = sp.get("date");
-          return date ? `${t.href}?date=${encodeURIComponent(date)}` : t.href;
+          return t.href;
         })();
 
         if (isButtonMode) {
