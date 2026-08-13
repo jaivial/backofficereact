@@ -1000,6 +1000,31 @@ async function start() {
   // Optional JSON body parsing for non-proxied routes (we keep SSR handler GET-only).
   app.use(express.json({ limit: "256kb" }));
 
+  // Dev: stale @fs path remap.
+  // When the app runs in a Docker container the project root is /app, so Vite
+  // generates module URLs like /@fs/app/node_modules/... . However, if a browser
+  // has cached module URLs from a previous run where the root was the host path
+  // (/var/www/...), it will request /@fs/var/www/newvillacarmen/backoffice/... .
+  // Vite doesn't recognise that path (root is /app), so the request falls through
+  // to the SSR catch-all, which returns an HTML error page with Content-Type:
+  // text/html — causing browser MIME errors on .js modules. Rewrite any such
+  // stale host-root @fs URLs to the container root before Vite handles them.
+  app.use((req, _res, next) => {
+    const staleFsPrefix = "/@fs/var/www/";
+    if (req.url.startsWith(staleFsPrefix)) {
+      // Map /@fs/var/www/.../newvillacarmen/backoffice/... -> /@fs/app/...
+      // Preserve any query string (e.g. ?v=abc123) that follows the path.
+      const [pathPart, queryPart] = req.url.split("?", 2);
+      const markerIndex = pathPart.indexOf("/newvillacarmen/backoffice/");
+      if (markerIndex !== -1) {
+        const rest = pathPart.slice(markerIndex + "/newvillacarmen/backoffice/".length);
+        req.url = `/@fs/app/${rest}${queryPart ? `?${queryPart}` : ""}`;
+        req.originalUrl = req.url;
+      }
+    }
+    next();
+  });
+
   // Dev: attach Vite dev server middlewares for HMR.
   let vite: Awaited<ReturnType<typeof createViteServer>> | null = null;
   let devServer: https.Server | null = null;
