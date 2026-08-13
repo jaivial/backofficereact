@@ -35,10 +35,11 @@ test.describe("Tables Map - visual styling", () => {
   test("controls panel SVG icons are visible in dark theme", async ({ adminPage }) => {
     await loadMap(adminPage);
 
-    // Ensure dark theme (default)
+    // Verify dark theme is active (default)
     const theme = await adminPage.evaluate(() =>
       document.documentElement.getAttribute("data-theme") || "dark",
     );
+    expect(theme, "dark theme must be active for this test").toBe("dark");
 
     // Every built-in controls button SVG must have a fill that is NOT pure
     // black (the library default). It should inherit from the button's color

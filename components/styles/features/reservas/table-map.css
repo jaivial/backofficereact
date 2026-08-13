@@ -289,15 +289,13 @@ body.is-dragging .bo-tableMapFlowWrap {
   box-shadow: var(--bo-shadow-soft);
 }
 
-/* Built-in React Flow control icons (zoom, fit-view, interactivity) ship
-   with `fill: black` from the library stylesheet. In dark theme they are
-   invisible against the dark button background. Force them to inherit the
-   button's text colour (white in dark theme) via currentColor + fill. */
 .bo-tableMapFlow .react-flow__controls-button svg {
   fill: currentColor;
   color: inherit;
 }
 
+/* The svg rule above cascades fill to child paths, but keep this explicit
+   rule for robustness against future library SVG structure changes. */
 .bo-tableMapFlow .react-flow__controls-button svg path {
   fill: currentColor;
 }
