@@ -266,4 +266,55 @@ test.describe("table-map calendar responsive layout", () => {
       }
     });
   }
+
+// iPhone / touch (pointer: coarse) — mobile-safari.css forces min-height on
+// tappable controls; that must not make calendar cells overflow their grid
+// track and overlap. Emulates a real iPhone so the `pointer: coarse` media
+// feature matches.
+const MOBILE_OPTS = {
+  isMobile: true,
+  hasTouch: true,
+  userAgent:
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+};
+
+for (const w of [393, 390]) {
+  test(`mobile (iPhone, pointer:coarse) popover cells never overlap @ ${w}px`, async ({ browser }) => {
+    const ctx = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: w, height: 844 }, deviceScaleFactor: 3, ...MOBILE_OPTS });
+    const page = await ctx.newPage();
+    try {
+      await login(page, { baseURL: e2eEnv.baseURL, email: e2eEnv.adminEmail, password: e2eEnv.adminPassword });
+      await openTablesAt(page, w, 844);
+      await openPopover(page);
+      const g = await measurePopover(page);
+      // cells must not overlap (minHGap > 0) and keep visible separation
+      expect(g.minHGap, `mobile popover min horizontal gap >0 at ${w}`).toBeGreaterThan(0);
+      expect(g.minHGap, `mobile popover min horizontal gap ≥3px at ${w}`).toBeGreaterThanOrEqual(3);
+      expect(g.minVGap, `mobile popover min vertical gap ≥3px at ${w}`).toBeGreaterThanOrEqual(3);
+    } finally {
+      await ctx.close();
+    }
+  });
+
+  test(`mobile (iPhone, pointer:coarse) inline cells never overlap @ ${w}px`, async ({ browser }) => {
+    const ctx = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: w, height: 844 }, deviceScaleFactor: 3, ...MOBILE_OPTS });
+    const page = await ctx.newPage();
+    try {
+      await login(page, { baseURL: e2eEnv.baseURL, email: e2eEnv.adminEmail, password: e2eEnv.adminPassword });
+      await openTablesAt(page, w, 844);
+      const openDate = await findOpenDate(page);
+      await openPopover(page);
+      await pickOpenDate(page, openDate);
+      await page.waitForTimeout(800);
+      await revealInlineCalendar(page);
+      const g = await measureInline(page);
+      expect(g.minHGap, `mobile inline min horizontal gap >0 at ${w} (no overlap)`).toBeGreaterThan(0);
+      expect(g.minHGap, `mobile inline min horizontal gap ≥3px at ${w}`).toBeGreaterThanOrEqual(3);
+      expect(g.clipped, `mobile inline no clipped cells at ${w}`).toBe(0);
+    } finally {
+      await ctx.close();
+    }
+  });
+}
+
 });
