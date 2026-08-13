@@ -28,6 +28,7 @@ export function Modal({
   widthPx,
   size,
   className,
+  style,
   hideClose = false,
 }: {
   open: boolean;
@@ -37,6 +38,9 @@ export function Modal({
   widthPx?: number;
   size?: "sm" | "md" | "lg";
   className?: string;
+  /** Per-instance inline styles for the dialog box (e.g. height/maxHeight).
+   *  Applied only to this modal, so size/scroll tweaks don't leak to others. */
+  style?: React.CSSProperties;
   /** Hide Modal's built-in close button (use when a ModalHeader inside renders its own). */
   hideClose?: boolean;
 }) {
@@ -82,11 +86,10 @@ export function Modal({
             className={cn("bo-modal", "bo-modal--glass", className)}
             role="dialog"
             aria-label={title}
-            style={
-              resolvedWidth
-                ? ({ ["--bo-modal-w" as any]: `${resolvedWidth}px` } as React.CSSProperties)
-                : undefined
-            }
+            style={{
+              ...(resolvedWidth ? ({ ["--bo-modal-w" as any]: `${resolvedWidth}px` } as React.CSSProperties) : null),
+              ...style,
+            }}
             initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}

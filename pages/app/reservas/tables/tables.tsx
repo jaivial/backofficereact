@@ -4642,7 +4642,7 @@ export default function TableManagerPage() {
                 </div>
               </aside>
 
-              <Modal open={editorOpen} title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} widthPx={980} className="bo-tableEditorModal" hideClose>
+              <Modal open={editorOpen} title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} widthPx={980} className="bo-tableEditorModal" hideClose style={{ height: "min(88vh, 860px)", maxHeight: "88vh" }}>
                 <ModalHeader data-slot="modal-head" data-ui="modal-title" title={editingTableId ? "Editar mesa" : "Nueva mesa"} onClose={() => setEditorOpen(false)} />
 
                 <div data-ui="editor-grid" className="bo-tableEditorGrid">
