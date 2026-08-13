@@ -3372,14 +3372,24 @@ export default function TableManagerPage() {
         return;
       }
       // Switching to "template": the template already wins, so clear any
-      // per-day override markers (persisted so the backend scope flag flips)
-      // and re-fetch.
-      const cleared = buildGlobalTemplateLayout({
+      // per-day override markers AND the per-day shadow keys (elements,
+      // limit_points, table_positions) — persisted BEFORE the re-fetch so
+      // the backend scope flag flips and the template fields render again.
+      // The backend patch only overwrites keys present in the payload, so
+      // deleted keys must be sent as explicit nulls.
+      const metadata = {
         booking_states: bookingStatesRef.current,
-      });
+        _template_scope: null,
+        _limit_area_template_points_override: null,
+        _draw_elements_template_override: null,
+        _table_positions_override: null,
+        elements: null,
+        limit_points: null,
+        table_positions: null,
+      };
       setTemplateScope("template");
-      void api.tables
-        .saveLayout({ date: selectedDate, floor_number: selectedFloor, metadata: cleared })
+      await api.tables
+        .saveLayout({ date: selectedDate, floor_number: selectedFloor, metadata })
         .catch(() => undefined);
       void loadData();
       pushToast({

@@ -370,6 +370,41 @@ test.describe("Tables Map - Scope Persistence (edit mode gating + template/day)"
     expect(Math.abs(after.y - pos.y)).toBeLessThan(1);
   });
 
+  test("switching back to template scope restores template positions and clears day shadow keys", async ({ adminPage, api }) => {
+    const { firstTableId } = await seedTemplate(adminPage, api, { tablePositions: true });
+    await reloadMap(adminPage);
+    await useSelectTool(adminPage);
+    await ensureEditMode(adminPage);
+
+    // Move the table while in day scope: only the day layout changes.
+    await adminPage.locator(SCOPE_DAY_BTN).first().click();
+    await expect(adminPage.locator(SCOPE_DAY_BTN)).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
+    await dragNode(adminPage, String(firstTableId), 80, 80);
+    await adminPage.waitForTimeout(1500);
+
+    // Back to template scope: the template position must render again and
+    // the per-day shadow keys (elements/limit_points/table_positions) must
+    // be gone so they can never shadow the template.
+    await adminPage.locator(SCOPE_TEMPLATE_BTN).first().click();
+    await expect(adminPage.locator(SCOPE_TEMPLATE_BTN)).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
+
+    const tpl = await getTemplate(api);
+    const tplPos = templatePos(tpl, firstTableId);
+    // The GET returns the merged view: per-day-only shadow keys must be gone
+    // (elements/limit_points/_template_scope) and table_positions now comes
+    // from the template (the per-day copy was cleared).
+    const layout = await getDayLayout(api, DATE1);
+    expect(layout.elements).toBeFalsy();
+    expect(layout.limit_points).toBeFalsy();
+    expect(layout._template_scope).toBeFalsy();
+
+    const node = adminPage.locator(`[data-id="${firstTableId}"]`);
+    await expect(node).toBeVisible();
+    const after = await nodeFlowPosition(adminPage, String(firstTableId));
+    expect(Math.abs(after.x - tplPos.x)).toBeLessThan(1);
+    expect(Math.abs(after.y - tplPos.y)).toBeLessThan(1);
+  });
+
   test("template scope: draw element drag updates draw_elements_template", async ({ adminPage, api }) => {
     await seedTemplate(adminPage, api, { tablePositions: true, drawElements: true });
     await reloadMap(adminPage);
