@@ -54,20 +54,24 @@ export function stripTemplateFieldsForDay(layout: Record<string, unknown>): Reco
   delete next.limit_area_template_points;
   delete next.draw_elements_template;
   delete next.template_updated_at;
+  delete next._table_positions_override;
   return next;
 }
 
 /**
- * Strips per-day-only fields (booking states + table positions) from a
- * layout payload so the result is safe to persist as a template.
+ * Strips per-day-only fields (booking states + scope markers) from a layout
+ * payload so the result is safe to persist as a template. table_positions
+ * are KEPT: since template-scope table moves are cross-day, the template now
+ * owns a table_positions map (per-day layouts win per id only when they
+ * opted into day scope).
  */
 export function stripDayFieldsForTemplate(layout: Record<string, unknown>): Record<string, unknown> {
   const next: Record<string, unknown> = { ...layout };
   delete next.booking_states;
-  delete next.table_positions;
   delete next._template_scope;
   delete next._limit_area_template_points_override;
   delete next._draw_elements_template_override;
+  delete next._table_positions_override;
   return next;
 }
 
@@ -99,6 +103,7 @@ export function buildTemplatePayload(args: {
 export function buildDayOverrideLayout(
   template: TableMapLayoutTemplate,
   currentLayout: Record<string, unknown>,
+  tablePositions?: Record<string, unknown>,
 ): Record<string, unknown> {
   const next: Record<string, unknown> = { ...currentLayout };
   next._template_scope = "day";
@@ -107,6 +112,13 @@ export function buildDayOverrideLayout(
   }
   if (template.draw_elements_template) {
     next._draw_elements_template_override = template.draw_elements_template;
+  }
+  if (tablePositions) {
+    // Freeze the resolved positions into the day so day-scope edits never
+    // touch the template, and mark the override so the backend merge lets
+    // the per-day map win for the tables it owns.
+    next.table_positions = tablePositions;
+    next._table_positions_override = tablePositions;
   }
   return next;
 }
@@ -123,5 +135,6 @@ export function buildGlobalTemplateLayout(
   delete next._template_scope;
   delete next._limit_area_template_points_override;
   delete next._draw_elements_template_override;
+  delete next._table_positions_override;
   return next;
 }

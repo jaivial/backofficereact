@@ -67,8 +67,34 @@ async function ensureEditMode(page: import("@playwright/test").Page) {
   }
 }
 
+const DAY_LAYOUT_RESET = {
+  _template_scope: null,
+  _table_positions_override: null,
+  _limit_area_template_points_override: null,
+  _draw_elements_template_override: null,
+  table_positions: null,
+  elements: null,
+  limit_points: null,
+  booking_states: null,
+};
+
 test.describe("Tables Map - Layout Template (draw panel)", () => {
   test.describe.configure({ mode: "serial", retries: 2 });
+
+  test.beforeEach(async ({ api }) => {
+    // Deterministic start: no template and a clean per-day layout for the
+    // fixture date (markers/positions/limits from previous runs otherwise
+    // leak into the draw + save flow).
+    await api.delete(`/api/admin/tables/template/0`).catch(() => undefined);
+    await api
+      .put("/api/admin/tables", {
+        entity: "layout",
+        date: TEST_DATE,
+        floor_number: 0,
+        metadata: DAY_LAYOUT_RESET,
+      })
+      .catch(() => undefined);
+  });
 
   test("draw panel shows the template status pill (Sin plantilla by default)", async ({ adminPage }) => {
     await loadMap(adminPage, TEST_DATE);
@@ -121,10 +147,11 @@ test.describe("Tables Map - Layout Template (draw panel)", () => {
       await closeBtn.first().click();
     }
     // Save the template (template scope is the default once it exists).
+    // The button lives inside the ScrollArea and can be mid-animation, so
+    // click by force and let the template_updated broadcast settle.
     const saveBtn = adminPage.locator(SAVE_TEMPLATE_BTN);
     if ((await saveBtn.count()) > 0) {
-      await saveBtn.first().click();
-      // Wait for either the success toast or the toggle to appear.
+      await saveBtn.first().click({ force: true }).catch(() => undefined);
       await adminPage.waitForTimeout(1500);
     }
     // Reload to make sure the template is persisted (template_updated is
