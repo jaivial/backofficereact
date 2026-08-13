@@ -2478,7 +2478,8 @@ body.is-dragging .bo-tableMapFlowWrap {
   display: flex;
   gap: var(--bo-space-3);
   margin-bottom: var(--bo-space-3);
-  transform: translateY(-10px);
+  /* No translateY(-10px): it lifted the controls above the preview area, so
+     they overlapped the section above and were clipped at the top on phones. */
 }
 
 .bo-tableEditorRotateBtn {
@@ -2727,7 +2728,10 @@ body.is-dragging .bo-tableMapFlowWrap {
     margin-top: 1rem;
     display: grid;
     place-items: center;
-    align-content: center;
+    /* align-content: start (+padding-top) so the rotate controls sit at the top
+       and never center-overflow upward (they were clipped at the scroll top). */
+    align-content: start;
+    padding-top: var(--bo-space-2);
     gap: var(--bo-space-5);
   }
 
@@ -2797,10 +2801,10 @@ body.is-dragging .bo-tableMapFlowWrap {
   }
 
   .bo-tableEditorPreviewWrap {
-    /* Reset min-height from the 920 rule so the small preview actually shrinks
-       (min 160 / max 190); otherwise the 240px min-height won over this cap. */
+    /* Reset min-height from the 920 rule so the small preview actually shrinks.
+       No max-height: it squeezed the rotate+table content and made it overflow
+       upward (clipping the rotate controls). Let it size to content. */
     min-height: 160px;
-    max-height: 190px;
     gap: var(--bo-space-3);
   }
 

@@ -72,7 +72,10 @@ async function openAddTableModal(page: Page) {
 type Geom = {
   modal: { l: number; t: number; r: number; b: number; w: number; h: number };
   vw: number; vh: number;
+  modalVHRatio: number;
   previewH: number;
+  previewTop: number;
+  rotateTop: number | null;
   viewportOverflowY: string;
   viewportFlexDirection: string;
   viewportDisplay: string;
@@ -87,11 +90,15 @@ async function measure(page: Page): Promise<Geom> {
     const vp = document.querySelector(".bo-tableEditorGridScroll .bo-scrollAreaViewport") as HTMLElement | null;
     const save = document.querySelector('[data-ui="save-editor-btn"]') as HTMLElement | null;
     const vps = vp ? getComputedStyle(vp) : null;
+    const rotate = document.querySelector(".bo-tableEditorRotate") as HTMLElement | null;
     return {
       modal: { l: mr.left, t: mr.top, r: mr.right, b: mr.bottom, w: mr.width, h: mr.height },
       vw: window.innerWidth,
       vh: window.innerHeight,
+      modalVHRatio: mr.height / window.innerHeight,
       previewH: preview ? Math.round(preview.getBoundingClientRect().height) : 0,
+      previewTop: preview ? Math.round(preview.getBoundingClientRect().top) : 0,
+      rotateTop: rotate ? Math.round(rotate.getBoundingClientRect().top) : null,
       viewportOverflowY: vps ? vps.overflowY : "",
       viewportFlexDirection: vps ? vps.flexDirection : "",
       viewportDisplay: vps ? vps.display : "",
@@ -129,6 +136,15 @@ for (const w of [1280, 390, 360, 320]) {
       if (mobile) {
         expect(g.previewH, `mobile preview height ≤${MOBILE_PREVIEW_MAX}px at ${w}`).toBeLessThanOrEqual(MOBILE_PREVIEW_MAX);
       }
+
+      // (2b) on mobile the modal must not be an excessive fraction of the viewport
+      if (mobile) {
+        expect(g.modalVHRatio, `mobile modal ≤86vh of viewport at ${w}`).toBeLessThanOrEqual(0.86);
+      }
+
+      // (2c) rotate controls must not float above the preview area (was clipped at top)
+      expect(g.rotateTop, `rotate controls present at ${w}`).not.toBeNull();
+      expect(g.rotateTop!, `rotate controls not above preview top at ${w}`).toBeGreaterThanOrEqual(g.previewTop - 1);
 
       // (3) inner scroll area scrolls vertically and is not a horizontal flex row.
       // (block elements report flex-direction:"row" as the initial value, so we
