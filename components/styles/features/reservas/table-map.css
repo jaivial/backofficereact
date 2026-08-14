@@ -2986,6 +2986,26 @@ body.is-dragging .bo-tableMapFlowWrap {
   cursor: move;
 }
 
+/* Touch devices: the 10px corner handles shrink to ~4-5px on screen at typical
+   map zoom (0.1-0.45), which a finger cannot land on reliably — a missed grab
+   starts a node drag / pane pan instead of a resize. Keep the visual size but
+   add a fat transparent hit ring via ::after, lift handles above node
+   decorations, and pin touch-action so the browser never claims the gesture
+   (pointercancel). Desktop pointers are unaffected. */
+@media (pointer: coarse) {
+  .bo-tableMapFlow .react-flow__resize-control.handle {
+    touch-action: none;
+    z-index: 6;
+  }
+
+  .bo-tableMapFlow .react-flow__resize-control.handle::after {
+    content: "";
+    position: absolute;
+    inset: -15px;
+    border-radius: var(--bo-radius-full);
+  }
+}
+
 .bo-tableMapNodeSeatedNames {
   position: absolute;
   left: 50%;
