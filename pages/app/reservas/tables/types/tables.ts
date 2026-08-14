@@ -42,6 +42,10 @@ export type TableNodeData = {
   onResize?: (width: number, height: number) => void;
   /** Fired by NodeResizer when a resize gesture ends (final pixel size). */
   onResizeEnd?: (width: number, height: number) => void;
+  /** Open the table editor for this table (edit-mode action overlay). */
+  onEditClick?: () => void;
+  /** Open the delete confirmation for this table (edit-mode action overlay). */
+  onDeleteClick?: () => void;
   /** Names of seated guests at this table (derived from booking assignments). */
   seatedNames?: string[];
   /** True when table is in multi-table draft selection */
