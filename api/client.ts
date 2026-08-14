@@ -952,6 +952,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      async delete(id: number): Promise<APISuccess<{ id: number; entity: string }> | APIError> {
+        return json(`/api/admin/tables/${id}`, { method: "DELETE" });
+      },
       async saveLayout(input: { date: string; floor_number: number; metadata: Record<string, unknown> }): Promise<APISuccess<{ entity: "layout"; layout: Record<string, unknown> }> | APIError> {
         return json("/api/admin/tables", {
           method: "PUT",
