@@ -30,85 +30,8 @@
   transform: translateY(0);
 }
 
-.bo-statTop {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
-.bo-statIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.02);
-  display: grid;
-  place-items: center;
-  color: rgba(238, 240, 246, 0.86);
-}
-
-.bo-statLabel {
-  font-size: 12px;
-  color: var(--bo-muted);
-}
-
-.bo-statValue {
-  margin-top: 10px;
-  font-size: 22px;
-  font-weight: 720;
-  letter-spacing: 0.2px;
-}
-
-.bo-cardOb {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.14)),
-    var(--bo-accent-3);
-  border-color: rgba(0, 0, 0, 0.08);
-  color: rgba(20, 21, 26, 0.95);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-}
-
-.bo-cardOb .bo-statLabel {
-  color: rgba(20, 21, 26, 0.70);
-}
-
-.bo-cardObHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.bo-cardObIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: rgba(255, 255, 255, 0.36);
-  color: rgba(20, 21, 26, 0.70);
-  display: grid;
-  place-items: center;
-}
-
-.bo-cardObTitle {
-  margin-top: 8px;
-  font-size: 13px;
-  font-weight: 760;
-  letter-spacing: 0.1px;
-}
-
-.bo-cardObBody {
-  margin-top: 6px;
-  font-size: 12px;
-  color: rgba(20, 21, 26, 0.66);
-  line-height: 1.35;
-}
-
-.bo-cardObBody strong {
-  color: rgba(20, 21, 26, 0.92);
-  font-weight: 780;
-}
-
+/* ── Card family: header/body/footer, image, icon, hoverable, selectable, badge, text, meta ── */
 /* ============================================
    Enhanced Card Components
    ============================================ */
@@ -408,409 +331,55 @@
   background: var(--bo-surface-3);
 }
 
-.bo-pager {
+
+/* Mini card (bo-miniCard) — extracted from toast.css */
+.bo-miniCard {
+  margin-top: 14px;
+  border-radius: var(--bo-radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.10)),
+    rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 1rem;
-  margin-top: 0;
-  border-top: 1px solid var(--bo-border);
-  color: var(--bo-muted);
-  font-size: 13px;
 }
 
-.bo-pager.is-solo {
-  justify-content: center;
-  text-align: center;
-}
-
-.bo-pagerText {
-  color: var(--bo-muted);
-  font-size: var(--bo-text-sm);
-}
-
-.bo-pagerBtns {
-  display: flex;
-  gap: 8px;
-}
-
-.bo-pagination {
+.bo-miniLeft {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--bo-space-3);
-  border-top: 1px solid var(--bo-border);
-  margin-top: var(--bo-space-4);
-  padding-top: var(--bo-space-4);
-}
-
-.bo-paginationInfo {
-  color: var(--bo-muted);
-  font-size: var(--bo-text-sm);
-}
-
-.bo-paginationControls {
-  display: flex;
-  align-items: center;
-  gap: var(--bo-space-2);
-}
-
-.bo-tableContainer {
-  border-radius: var(--bo-radius-lg);
-  border: 1px solid var(--bo-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.14)),
-    var(--bo-surface);
-  box-shadow: var(--bo-shadow-soft);
-  overflow: hidden;
-}
-
-.bo-hourCards {
-  display: flex;
-  flex-wrap: wrap;
   gap: 10px;
-}
-
-.bo-hourCards--slots {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
-  gap: 8px;
-}
-
-.bo-hourCard {
-  min-height: 38px;
-  border-radius: 14px;
-  border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--bo-muted);
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  cursor: pointer;
-}
-
-.bo-hourCard.is-on {
-  border-color: rgba(185, 168, 255, 0.32);
-  background: rgba(185, 168, 255, 0.16);
-  color: var(--bo-text);
-}
-
-.bo-hourCard:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.bo-hourCards--floors .bo-hourCard {
-  min-width: 132px;
-}
-
-.bo-hourCardsContainer {
-  display: grid;
-  gap: 10px;
-}
-
-.bo-configWeekdayGrid {
-  display: grid;
-  gap: var(--bo-space-2);
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-}
-
-.bo-configDayCard {
-  width: 100%;
-  min-height: calc(var(--bo-space-4) * 4);
-  border-radius: var(--bo-radius-md);
-  padding-inline: var(--bo-space-2);
-  text-align: center;
-}
-
-.bo-configDayCardLabel {
-  font-size: var(--bo-text-sm);
-  font-weight: var(--bo-weight-semibold);
-}
-
-.bo-configDayCardLabelFull {
-  display: inline;
-}
-
-.bo-configDayCardLabelShort {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .bo-configDayCardLabelFull {
-    display: none;
-  }
-
-  .bo-configDayCardLabelShort {
-    display: inline;
-  }
-}
-
-.bo-configLimitGrid {
-  display: grid;
-  gap: var(--bo-space-3);
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.bo-configLimitCounterCard {
-  border-radius: var(--bo-radius-md);
-  padding: var(--bo-space-3);
-  border: 1px solid color-mix(in srgb, var(--bo-border) 80%, var(--bo-accent));
-  background:
-    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 56%),
-    color-mix(in srgb, var(--bo-surface-2) 82%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.bo-hourCard--slot {
-  width: 100%;
-  min-height: 34px;
-  border-radius: 11px;
-  padding: 7px 8px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.bo-configFloorsPanel {
-  display: grid;
-  gap: var(--bo-space-3);
-}
-
-.bo-configFloorTabs {
-  width: fit-content;
-}
-
-.bo-configFloorsPanelContent {
-  display: grid;
-  gap: var(--bo-space-3);
-}
-
-.bo-configFloorCounter {
-  margin-inline: auto;
-  width: min(300px, 100%);
-}
-
-.bo-floorCards {
-  display: grid;
-  gap: var(--bo-space-2);
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-
-.bo-floorCard {
-  width: 100%;
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--bo-space-1);
-  justify-content: center;
-  border-radius: var(--bo-radius-lg);
-  padding: var(--bo-space-3);
-  text-align: left;
-  border: 1px solid color-mix(in srgb, var(--bo-border) 86%, var(--bo-accent));
-  background: linear-gradient(155deg, color-mix(in srgb, var(--bo-surface-2) 78%, transparent), color-mix(in srgb, var(--bo-surface-3) 74%, transparent));
-  transition:
-    transform var(--bo-transition-base) var(--bo-ease),
-    border-color var(--bo-transition-base) var(--bo-ease),
-    box-shadow var(--bo-transition-base) var(--bo-ease);
-}
-
-.bo-floorCard:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
-  box-shadow: 0 12px 32px rgba(185, 168, 255, 0.13);
-}
-
-.bo-floorCard.is-on {
-  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
-  background:
-    linear-gradient(155deg, color-mix(in srgb, var(--bo-accent) 14%, transparent), color-mix(in srgb, var(--bo-surface-3) 86%, transparent));
-}
-
-.bo-floorCard.is-ground {
-  border-style: solid;
-  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
-  background:
-    linear-gradient(160deg, color-mix(in srgb, var(--bo-accent-3) 22%, transparent), color-mix(in srgb, var(--bo-surface-2) 88%, transparent));
-}
-
-.bo-floorCardName {
-  font-size: var(--bo-text-sm);
-  line-height: var(--bo-leading-tight);
-  font-weight: var(--bo-weight-semibold);
-}
-
-.bo-floorCardHint {
-  color: var(--bo-muted);
-  font-size: var(--bo-text-sm);
-}
-
-.bo-floorSalonCard {
-  border: 1px solid color-mix(in srgb, var(--bo-border) 84%, var(--bo-accent));
-  border-radius: var(--bo-radius-md);
-  background: linear-gradient(155deg, color-mix(in srgb, var(--bo-surface-2) 82%, transparent), color-mix(in srgb, var(--bo-surface-3) 86%, transparent));
-  padding: var(--bo-space-3);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--bo-space-3);
-  transition:
-    transform var(--bo-transition-base) var(--bo-ease),
-    border-color var(--bo-transition-base) var(--bo-ease),
-    box-shadow var(--bo-transition-base) var(--bo-ease);
-}
-
-.bo-floorSalonCard:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
-  box-shadow: 0 12px 28px rgba(185, 168, 255, 0.12);
-}
-
-.bo-floorSalonCardState {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--bo-space-2);
-}
-
-.bo-floorSalonCardStatus {
-  font-size: var(--bo-text-sm);
-  color: var(--bo-muted);
-  font-weight: var(--bo-weight-semibold);
-}
-
-.bo-configSalonCards {
-  display: grid;
-  gap: var(--bo-space-2);
-}
-
-.bo-configDayLimitRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px 18px;
-  align-items: start;
-}
-
-.bo-configDayLimitRow--single {
-  grid-template-columns: 1fr;
-}
-
-.bo-configDayState,
-.bo-configDayDailyLimit {
-  display: grid;
-  gap: 8px;
-  align-content: start;
-}
-
-.bo-configLimitCounter {
-  gap: 10px;
-}
-
-.bo-configLimitInput {
-  width: 92px;
-  text-align: center;
-}
-
-.bo-configTableLimitsRow {
-  flex-direction: column;
-  align-items: center;
-}
-
-.bo-configTableLimitField {
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
   min-width: 0;
 }
 
-.bo-floorRows {
+.bo-miniIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
   display: grid;
-  gap: 8px;
+  place-items: center;
+  color: rgba(238, 240, 246, 0.82);
 }
 
-.bo-floorRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--bo-border);
-  background: rgba(255, 255, 255, 0.03);
-  padding: 8px 10px;
-}
-
-.bo-floorRowName {
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.bo-floorRowHint {
-  color: var(--bo-muted);
+.bo-miniTitle {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 720;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.bo-floorRowState {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+.bo-miniSub {
+  font-size: 11px;
+  color: rgba(238, 240, 246, 0.46);
 }
 
-.bo-floorRowStateText {
+.bo-miniTime {
   font-size: 12px;
-  color: var(--bo-muted);
-  font-weight: 700;
-}
-
-.bo-floorRow.is-ground .bo-floorRowStateText {
-  color: var(--bo-text);
-}
-
-.bo-configStatus {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 760;
-}
-
-@media (max-width: 630px) {
-  .bo-configDayLimitRow:not(.bo-dayStatePanel .bo-configDayLimitRow) {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
-  .bo-configDayState,
-  .bo-configDayDailyLimit {
-    justify-items: center;
-    text-align: center;
-  }
-
-  .bo-floorRow {
-    flex-wrap: wrap;
-  }
-
-  .bo-floorRowState {
-    width: 100%;
-    justify-content: space-between;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-
-  .bo-tab,
-  .bo-floorCard,
-  .bo-floorSalonCard,
-  .bo-configLimitCounterCard,
-  .bo-mcalCell {
-    transition: none;
-  }
-
-  .bo-mcalCell:hover {
-    transform: none;
-  }
+  color: rgba(238, 240, 246, 0.52);
 }
 

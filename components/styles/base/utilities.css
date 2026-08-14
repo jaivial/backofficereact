@@ -1,0 +1,73 @@
+/* ── Base utilities: a11y helpers, generic text/animations ── */
+
+/* Muted text (bo-mutedText) — extracted from table.css */
+/* Muted text */
+.bo-mutedText {
+  color: var(--bo-text-muted, #9ca3af);
+  font-size: 0.8125rem;
+}
+
+
+/* Right title (bo-rightTitle) — extracted from table.css */
+.bo-rightTitle {
+  margin: 2px 0 10px;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+
+/* A11y & animation helpers (bo-srOnly, bo-liveRegion, bo-fadeIn) — extracted from spinner.css */
+/* Accessible Loading State */
+[aria-busy="true"] {
+  position: relative;
+}
+
+[aria-busy="true"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  z-index: 1;
+}
+
+/* Screen Reader Only */
+.bo-srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Live Region for Screen Readers */
+.bo-liveRegion {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Fade Animation for Loading */
+.bo-fadeIn {
+  animation: bo-fadeIn 300ms ease-out;
+}
+
+@keyframes bo-fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+

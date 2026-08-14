@@ -15,19 +15,7 @@
   color: var(--bo-text-danger, #dc2626);
 }
 
-.bo-shiftModalSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
-.bo-shiftModalLabel {
-  font-size: 11px;
-  font-weight: 650;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--bo-muted);
-}
 
 .bo-shiftModalTimeRow {
   display: flex;
@@ -56,14 +44,7 @@
   color: var(--bo-muted);
 }
 
-.bo-shiftModalActions {
-  display: flex;
-  gap: 10px;
-}
 
-.bo-shiftModalActions .bo-btn {
-  flex: 1;
-}
 
 .bo-shiftModalActiveBadge {
   display: flex;
@@ -72,10 +53,6 @@
   justify-content: center;
 }
 
-.bo-shiftModalActiveTime {
-  font-size: 14px;
-  color: var(--bo-muted);
-}
 
 .bo-shiftModalAssignForm {
   display: flex;
@@ -134,5 +111,78 @@
   margin-top: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--bo-border);
+}
+
+
+/* Shift modal blocks (bo-shiftModal*) — extracted from spinner.css */
+.bo-shiftModalSection {
+  display: grid;
+  gap: 12px;
+}
+
+.bo-shiftModalLabel {
+  font-size: 11px;
+  font-weight: 780;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-shiftModalTimes {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-shiftModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-shiftModalActions .bo-btn {
+  flex: 1 1 0;
+}
+
+.bo-shiftModalActive {
+  border-radius: var(--bo-radius-md);
+  border: 1px solid rgba(147, 239, 231, 0.28);
+  background: rgba(147, 239, 231, 0.08);
+  padding: 12px;
+}
+
+.bo-shiftModalActiveInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-shiftModalActiveTime {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-shiftModalAssign {
+  border-top: 1px solid var(--bo-border);
+  padding-top: 16px;
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.bo-shiftModalWheels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-shiftModalWheel {
+  height: 190px;
+}
+
+.bo-shiftModalAddBtn {
+  margin-top: 8px;
 }
 
