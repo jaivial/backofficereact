@@ -1,0 +1,349 @@
+/* ── Reservas config: hour cards, floors, limits (bo-hourCard, bo-config*, bo-floor*) — extracted from card.css ── */
+.bo-hourCards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bo-hourCards--slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 8px;
+}
+
+.bo-hourCard {
+  min-height: 38px;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-muted);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.bo-hourCard.is-on {
+  border-color: rgba(185, 168, 255, 0.32);
+  background: rgba(185, 168, 255, 0.16);
+  color: var(--bo-text);
+}
+
+.bo-hourCard:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.bo-hourCards--floors .bo-hourCard {
+  min-width: 132px;
+}
+
+.bo-hourCardsContainer {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-configWeekdayGrid {
+  display: grid;
+  gap: var(--bo-space-2);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.bo-configDayCard {
+  width: 100%;
+  min-height: calc(var(--bo-space-4) * 4);
+  border-radius: var(--bo-radius-md);
+  padding-inline: var(--bo-space-2);
+  text-align: center;
+}
+
+.bo-configDayCardLabel {
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-configDayCardLabelFull {
+  display: inline;
+}
+
+.bo-configDayCardLabelShort {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bo-configDayCardLabelFull {
+    display: none;
+  }
+
+  .bo-configDayCardLabelShort {
+    display: inline;
+  }
+}
+
+.bo-configLimitGrid {
+  display: grid;
+  gap: var(--bo-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.bo-configLimitCounterCard {
+  border-radius: var(--bo-radius-md);
+  padding: var(--bo-space-3);
+  border: 1px solid color-mix(in srgb, var(--bo-border) 80%, var(--bo-accent));
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 56%),
+    color-mix(in srgb, var(--bo-surface-2) 82%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.bo-hourCard--slot {
+  width: 100%;
+  min-height: 34px;
+  border-radius: 11px;
+  padding: 7px 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.bo-configFloorsPanel {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-configFloorTabs {
+  width: fit-content;
+}
+
+.bo-configFloorsPanelContent {
+  display: grid;
+  gap: var(--bo-space-3);
+}
+
+.bo-configFloorCounter {
+  margin-inline: auto;
+  width: min(300px, 100%);
+}
+
+.bo-floorCards {
+  display: grid;
+  gap: var(--bo-space-2);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.bo-floorCard {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--bo-space-1);
+  justify-content: center;
+  border-radius: var(--bo-radius-lg);
+  padding: var(--bo-space-3);
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--bo-border) 86%, var(--bo-accent));
+  background: linear-gradient(155deg, color-mix(in srgb, var(--bo-surface-2) 78%, transparent), color-mix(in srgb, var(--bo-surface-3) 74%, transparent));
+  transition:
+    transform var(--bo-transition-base) var(--bo-ease),
+    border-color var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-floorCard:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
+  box-shadow: 0 12px 32px rgba(185, 168, 255, 0.13);
+}
+
+.bo-floorCard.is-on {
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--bo-accent) 14%, transparent), color-mix(in srgb, var(--bo-surface-3) 86%, transparent));
+}
+
+.bo-floorCard.is-ground {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--bo-accent) 52%, var(--bo-border));
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--bo-accent-3) 22%, transparent), color-mix(in srgb, var(--bo-surface-2) 88%, transparent));
+}
+
+.bo-floorCardName {
+  font-size: var(--bo-text-sm);
+  line-height: var(--bo-leading-tight);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-floorCardHint {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-floorSalonCard {
+  border: 1px solid color-mix(in srgb, var(--bo-border) 84%, var(--bo-accent));
+  border-radius: var(--bo-radius-md);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--bo-surface-2) 82%, transparent), color-mix(in srgb, var(--bo-surface-3) 86%, transparent));
+  padding: var(--bo-space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-3);
+  transition:
+    transform var(--bo-transition-base) var(--bo-ease),
+    border-color var(--bo-transition-base) var(--bo-ease),
+    box-shadow var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-floorSalonCard:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
+  box-shadow: 0 12px 28px rgba(185, 168, 255, 0.12);
+}
+
+.bo-floorSalonCardState {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+
+.bo-floorSalonCardStatus {
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-configSalonCards {
+  display: grid;
+  gap: var(--bo-space-2);
+}
+
+.bo-configDayLimitRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 18px;
+  align-items: start;
+}
+
+.bo-configDayLimitRow--single {
+  grid-template-columns: 1fr;
+}
+
+.bo-configDayState,
+.bo-configDayDailyLimit {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.bo-configLimitCounter {
+  gap: 10px;
+}
+
+.bo-configLimitInput {
+  width: 92px;
+  text-align: center;
+}
+
+.bo-configTableLimitsRow {
+  flex-direction: column;
+  align-items: center;
+}
+
+.bo-configTableLimitField {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+}
+
+.bo-floorRows {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-floorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 10px;
+}
+
+.bo-floorRowName {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bo-floorRowHint {
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.bo-floorRowState {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-floorRowStateText {
+  font-size: 12px;
+  color: var(--bo-muted);
+  font-weight: 700;
+}
+
+.bo-floorRow.is-ground .bo-floorRowStateText {
+  color: var(--bo-text);
+}
+
+.bo-configStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+@media (max-width: 630px) {
+  .bo-configDayLimitRow:not(.bo-dayStatePanel .bo-configDayLimitRow) {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .bo-configDayState,
+  .bo-configDayDailyLimit {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .bo-floorRow {
+    flex-wrap: wrap;
+  }
+
+  .bo-floorRowState {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .bo-tab,
+  .bo-floorCard,
+  .bo-floorSalonCard,
+  .bo-configLimitCounterCard,
+  .bo-mcalCell {
+    transition: none;
+  }
+
+  .bo-mcalCell:hover {
+    transform: none;
+  }
+}
+

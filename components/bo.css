@@ -1,17 +1,42 @@
-/* bo.css — aggregator; all styles are split into ./styles/ */
+/*
+ * bo.css — aggregator; all styles are split into ./styles/.
+ *
+ * Import rules:
+ *  - Sections: base → layout/components (keep current order) → features → base/mobile-safari.css (last).
+ *  - Order is LOAD-BEARING: later imports override earlier ones with the same specificity.
+ *    When adding a new file, put it next to the family it belongs to and re-run a visual check.
+ *  - New generic reusable component styles → new file in ./styles/components/<name>.css + @import in its block.
+ *  - Page/feature-specific styles → ./styles/features/<area>/<name>.css.
+ *  - Tokens (colors, radii, spacing, typography) → ./styles/base/variables.css (single source of truth).
+ *
+ * Override mechanics (do not change):
+ *  - This file must be imported BEFORE ui/styles/shadcn.css (Tailwind utilities) so that, at equal
+ *    specificity, a Tailwind utility in a component's `className` prop wins over the `bo-` base class.
+ *    (Vite strips CSS @layer wrappers at build time, so the override relies on source order.)
+ */
 
 /* ── Base ─────────────────────────────────────────────── */
 @import "./styles/base/variables.css";
 @import "./styles/base/reset.css";
+@import "./styles/base/utilities.css";
 
 /* ── Layout ───────────────────────────────────────────── */
 @import "./styles/layout/shell.css";
 @import "./styles/layout/breadcrumb.css";
 @import "./styles/components/avatar.css";
 @import "./styles/components/card.css";
+@import "./styles/components/card-stat.css";
+@import "./styles/components/pagination.css";
 @import "./styles/layout/panel.css";
 @import "./styles/components/table.css";
+@import "./styles/components/date-range.css";
 @import "./styles/components/checkbox.css";
+
+/* ── Features extracted from components (kept before the rest of features so
+      later feature files can still override them) ─────────────── */
+@import "./styles/features/reservas/reservas-page.css";
+@import "./styles/features/reservas/config-floors.css";
+@import "./styles/features/facturas/payment.css";
 @import "./styles/features/public/auth.css";
 @import "./styles/components/form.css";
 @import "./styles/components/button.css";
@@ -31,6 +56,7 @@
 /* ── Components (continued) ───────────────────────────── */
 @import "./styles/components/alert.css";
 @import "./styles/components/toast.css";
+@import "./styles/components/donut.css";
 @import "./styles/components/scroll-area.css";
 @import "./styles/components/tabs.css";
 
@@ -40,8 +66,9 @@
 /* ── Features: Facturas ───────────────────────────────── */
 @import "./styles/features/facturas/facturas-page.css";
 
-/* ── Components: Stepper ──────────────────────────────── */
+/* ── Components: Stepper & Month Calendar ────────────── */
 @import "./styles/components/stepper.css";
+@import "./styles/components/month-calendar.css";
 
 /* ── Features: Reservas — Calendar ────────────────────── */
 @import "./styles/features/reservas/calendar.css";
@@ -64,8 +91,10 @@
 /* ── Features: Members & Fichaje ──────────────────────── */
 @import "./styles/features/members/members-fichaje.css";
 
-/* ── Components: Spinner & Loading ────────────────────── */
+/* ── Components: Spinner, Skeleton & Pulse ───────────── */
 @import "./styles/components/spinner.css";
+@import "./styles/components/skeleton.css";
+@import "./styles/components/pulse.css";
 
 /* ── Features: Facturas — Forms & Tables ──────────────── */
 @import "./styles/features/facturas/invoice-form.css";

@@ -39,11 +39,41 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // `--bo-*` tokens from components/styles/base/variables.css, exposed as
+        // Tailwind utilities (bg-bo-surface, text-bo-muted, border-bo-border, ...).
+        // Use these instead of bg-[var(--bo-*)] arbitrary values.
+        bo: {
+          bg: "var(--bo-bg)",
+          shell: "var(--bo-shell)",
+          surface: "var(--bo-surface)",
+          "surface-2": "var(--bo-surface-2)",
+          "surface-3": "var(--bo-surface-3)",
+          sidebar: "var(--bo-sidebar)",
+          border: "var(--bo-border)",
+          "border-2": "var(--bo-border-2)",
+          text: "var(--bo-text)",
+          muted: "var(--bo-muted)",
+          faint: "var(--bo-faint)",
+          accent: "var(--bo-accent)",
+          "accent-2": "var(--bo-accent-2)",
+          "accent-3": "var(--bo-accent-3)",
+          "text-success": "var(--bo-text-success)",
+          "text-warning": "var(--bo-text-warning)",
+          "text-danger": "var(--bo-text-danger)",
+          "text-info": "var(--bo-color-info)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        // --bo-radius-* tokens as rounded-bo-* utilities.
+        bo: {
+          sm: "var(--bo-radius-sm)",
+          md: "var(--bo-radius-md)",
+          lg: "var(--bo-radius-lg)",
+          full: "var(--bo-radius-full)",
+        },
       },
       keyframes: {
         boFadeIn: {

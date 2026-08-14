@@ -27,8 +27,8 @@ function registerServiceWorker() {
   });
 }
 
-import "../ui/styles/shadcn.css";
 import "../components/bo.css";
+import "../ui/styles/shadcn.css";
 import type { BOSession } from "../api/types";
 import { ToastStack } from "../ui/feedback/ToastStack";
 import { FichajeRealtimeBridge } from "../ui/fichaje/FichajeRealtimeBridge";

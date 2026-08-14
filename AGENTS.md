@@ -636,6 +636,44 @@ Los colores de estado deben mantener contraste WCAG AA en ambos temas:
 - Usar `--bo-text-*` para texto sobre fondos claros
 - En light theme: considerar versiones más oscuras de los colores
 
+## Estilos y overrides (Tailwind sobre `bo-`)
+
+### Cómo funcionan los overrides
+- `components/bo.css` se importa ANTES que `ui/styles/shadcn.css` (Tailwind) en `pages/+Layout.tsx`.
+  A igual especificidad, el que aparece después en el bundle gana → una utility Tailwind pasada por
+  `className` gana a la clase base `bo-`. Vite elimina los `@layer` de CSS en build, así que el
+  mecanismo es orden de aparición: no envolver `bo.css` en `@layer` ni reordenar los imports sin
+  reverificar visualmente.
+- Todo componente reusable que haga `cn(base, className)` acepta overrides Tailwind vía prop
+  `className`. Para overrides que deben ganar SÍ o SÍ (aunque la base `bo-` tenga más especificidad),
+  usar la variante `!` de Tailwind (ej. `!bg-bo-accent`).
+- Preferir utilities mapeadas de los tokens (ver abajo) antes que valores arbitrarios
+  `bg-[var(--bo-*)]`.
+
+### Tokens disponibles como utilities Tailwind
+Mapeados en `tailwind.config.ts` desde `components/styles/base/variables.css`:
+- Colores: `bg-bo-bg`, `bg-bo-shell`, `bg-bo-surface`, `bg-bo-surface-2`, `bg-bo-surface-3`,
+  `bg-bo-sidebar`, `border-bo-border`, `border-bo-border-2`, `text-bo-text`, `text-bo-muted`,
+  `text-bo-faint`, `text-bo-accent`, `text-bo-accent-2`, `text-bo-accent-3`,
+  `text-bo-text-success`, `text-bo-text-warning`, `text-bo-text-danger`, `text-bo-text-info`.
+- Radios: `rounded-bo-sm`, `rounded-bo-md`, `rounded-bo-lg`, `rounded-bo-full`.
+
+### Dónde añadir estilos (árbol de decisión)
+1. Token nuevo (color, radio, spacing, tipografía) → `components/styles/base/variables.css` (fuente única).
+2. Clase genérica de componente reusable → `components/styles/components/<nombre>.css`;
+   si el componente no tiene fichero, crear `components/styles/components/<nombre>.css` y
+   añadir su `@import` en `components/bo.css` junto a la familia (orden de imports ES load-bearing:
+   los posteriores ganan; re-verificar visualmente al añadir).
+3. Clase específica de página/feature → `components/styles/features/<área>/<nombre>.css`.
+4. Utilidades base (a11y, texto genérico, animaciones) → `components/styles/base/utilities.css`.
+5. `base/mobile-safari.css` SIEMPRE último en `bo.css`.
+
+### Reglas
+- Desviación puntual de diseño de un componente reusable: pasar utilities Tailwind por `className`
+  en el uso. NUNCA editar el CSS base `bo-` para un caso puntual.
+- No mezclar clases `bo-` y utilities Tailwind en el mismo componente NUEVO (usar Tailwind);
+  para componentes existentes con `bo-`, los overrides van por `className` de consumo.
+
 ## Guía de uso de componentes
 
 ### Crear nuevo componente
