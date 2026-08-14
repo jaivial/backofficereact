@@ -1,0 +1,189 @@
+/* ── Month Calendar widget (bo-mcal) — extracted from stepper.css ── */
+.bo-mcal {
+  border-radius: var(--bo-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
+    var(--bo-surface-2);
+  border: 1px solid var(--bo-border);
+  box-shadow: var(--bo-shadow-soft);
+  padding: 14px;
+  min-width: 0;
+  /* No overflow:hidden: combined with the large border-radius it cut the
+     corner date cells. The glass background is rounded by border-radius alone;
+     cell hover/selected shadows are meant to be visible. */
+  container-type: inline-size;
+  container-name: mcal;
+}
+
+.bo-mcalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.bo-mcalTitle {
+  font-weight: 760;
+  letter-spacing: 0.02em;
+}
+
+.bo-mcalMeta {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--bo-muted);
+  font-weight: 650;
+}
+
+.bo-mcalNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-mcalDows {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: clamp(3px, 1.8vw, 8px);
+  padding: 4px 2px;
+  font-size: 11px;
+  color: var(--bo-faint);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.bo-mcalGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(3px, 1.8vw, 8px);
+}
+
+.bo-mcalCell {
+  aspect-ratio: 1 / 1;
+  min-height: clamp(34px, 8.2vw, 56px);
+  container-type: inline-size;
+  border-radius: clamp(10px, 2.2vw, 16px);
+  border: 1px solid var(--bo-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--bo-text);
+  padding: clamp(4px, 1.4vw, 10px) clamp(4px, 1.4vw, 10px) clamp(3px, 1.2vw, 8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 120ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+/* When a calendar cell gets too short to hold both the day number and the
+   occupancy sub-row without clipping, hide the sub-row and center the number.
+   Uses the cell's own size (it is a size container) so this is independent of
+   viewport width. */
+@container (max-width: 30px) {
+  .bo-mcal--glass .bo-mcalCell .bo-mcalSub {
+    display: none;
+  }
+
+  .bo-mcal--glass .bo-mcalCell {
+    justify-content: center;
+  }
+}
+
+.bo-mcalCell:hover {
+  transform: translateY(-1px);
+  border-color: var(--bo-border-2);
+}
+
+.bo-mcalCell.is-empty {
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: default;
+}
+
+.bo-mcalCell.is-empty:hover {
+  transform: none;
+}
+
+.bo-mcalCell.is-selected {
+  border-color: rgba(185, 168, 255, 0.35);
+  box-shadow: 0 18px 46px rgba(185, 168, 255, 0.10);
+}
+
+.bo-mcal--glass .bo-mcalCell.is-selected.is-open {
+  background: rgb(99 163 121 / 49%);
+  color: var(--bo-accent);
+}
+
+.bo-mcal--glass .bo-mcalCell.is-selected.is-open .bo-mcalNum {
+  color: var(--bo-text);
+}
+
+:root[data-theme="light"] .bo-mcal--glass .bo-mcalCell.is-selected.is-open {
+  background: rgb(40 197 105 / 69%);
+  color: var(--bo-accent);
+}
+
+:root[data-theme="light"] .bo-mcal--glass .bo-mcalCell.is-selected.is-open .bo-mcalNum {
+  color: var(--bo-text);
+}
+
+.bo-mcalCell.is-today {
+  outline: 2px solid rgba(147, 239, 231, 0.28);
+  outline-offset: 2px;
+}
+
+.bo-mcalNum {
+  font-size: clamp(11px, 3.4vw, 16px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.bo-mcalSub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--bo-muted);
+  font-weight: 720;
+  font-size: clamp(9px, 2.4vw, 12px);
+  width: 100%;
+}
+
+.bo-mcalSub .bo-ico {
+  width: 13px;
+  height: 13px;
+}
+
+.bo-mcalRatio {
+  font-variant-numeric: tabular-nums;
+}
+
+.bo-mcalCell.is-closed {
+  background: rgb(77 68 110 / 63%);
+  border-style: dashed;
+  border-color: #6b6f80;
+  color: #f2f3f7;
+}
+
+.bo-mcalCell.is-closed .bo-mcalNum {
+  color: #ffffff;
+}
+
+.bo-mcalCell.is-closed .bo-mcalSub {
+  color: #d5d7e0;
+}
+
+:root[data-theme="light"] .bo-mcalCell.is-closed {
+  background: #c2c5cf;
+  border-color: #9a9ead;
+  color: #23252d;
+}
+
+:root[data-theme="light"] .bo-mcalCell.is-closed .bo-mcalNum {
+  color: rgba(20, 21, 26, 0.9);
+}
+
+:root[data-theme="light"] .bo-mcalCell.is-closed .bo-mcalSub {
+  color: rgba(20, 21, 26, 0.68);
+}

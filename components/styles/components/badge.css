@@ -324,3 +324,22 @@
   background: rgba(142, 122, 214, 0.20);
 }
 
+
+/* Pill (bo-pill) — extracted from table.css */
+
+.bo-pill {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  display: inline-block;
+}
+
+
+/* Success badge (bo-badge--success) — extracted from spinner.css */
+.bo-badge--success {
+  border-color: rgba(147, 239, 231, 0.30);
+  background: rgba(147, 239, 231, 0.14);
+  color: rgba(147, 239, 231, 0.95);
+}

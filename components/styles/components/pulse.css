@@ -1,0 +1,116 @@
+/* ── Pulse indicators (bo-pulse, bo-statusPulse) — extracted from spinner.css ── */
+/* Pulsing Dot */
+.bo-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bo-accent);
+  animation: bo-pulse 1.4s ease-in-out infinite;
+}
+
+.bo-pulse--lila {
+  background: var(--bo-accent);
+}
+
+.bo-pulse--cyan {
+  background: var(--bo-accent-2);
+}
+
+.bo-pulse--white {
+  background: var(--bo-text);
+}
+
+.bo-pulse--success {
+  background: var(--bo-color-success, #16a34a);
+}
+
+.bo-pulse--warning {
+  background: var(--bo-color-warning, #d97706);
+}
+
+.bo-pulse--danger {
+  background: var(--bo-color-danger, #dc2626);
+}
+
+@keyframes bo-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+/* Pulsing Dots Group */
+.bo-pulseGroup {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.bo-pulseGroup .bo-pulse {
+  width: 8px;
+  height: 8px;
+}
+
+.bo-pulseGroup .bo-pulse:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.bo-pulseGroup .bo-pulse:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.bo-pulseGroup .bo-pulse:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Status Indicator with Pulse */
+.bo-statusPulse {
+  position: relative;
+  display: inline-flex;
+}
+
+.bo-statusPulse::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: inherit;
+  animation: bo-statusPulse 1.4s ease-in-out infinite;
+}
+
+.bo-statusPulse--online::after {
+  background: #28a745;
+}
+
+.bo-statusPulse--away::after {
+  background: #ffc107;
+}
+
+.bo-statusPulse--offline::after {
+  background: #dc3545;
+}
+
+@keyframes bo-statusPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+  }
+}
+

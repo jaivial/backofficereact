@@ -26,3 +26,37 @@
   gap: 6px;
 }
 
+
+/* Stage tabs (bo-stage .bo-tabs) — extracted from toast.css */
+.bo-stage .bo-tabs {
+  display: flex;
+  gap: 16px;
+  padding: 0 18px 8px;
+}
+
+.bo-stage .bo-tab {
+  border: 0;
+  background: transparent;
+  color: rgba(238, 240, 246, 0.42);
+  font-size: 12px;
+  font-weight: 720;
+  padding: 6px 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.bo-stage .bo-tab.is-active {
+  color: rgba(238, 240, 246, 0.92);
+}
+
+.bo-stage .bo-tab.is-active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(185, 168, 255, 0.92), rgba(147, 239, 231, 0));
+}
+

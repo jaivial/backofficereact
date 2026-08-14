@@ -1,0 +1,105 @@
+/* ── Date range calendar (bo-calDows, bo-calGrid, bo-calDay, bo-dateRange*, bo-closeRange*) — extracted from table.css ── */
+.bo-calDows {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: clamp(10px, 2.5vw, 11px);
+  color: var(--bo-faint);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.bo-calDows > * {
+  min-width: 0;
+}
+
+.bo-calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  font-size: clamp(11px, 3vw, 12px);
+  color: var(--bo-text);
+  text-align: center;
+}
+
+.bo-calDay {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: 999px;
+  transition: background 160ms ease;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.bo-calDay:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bo-calDay.is-selected {
+  background: rgba(185, 168, 255, 0.28);
+  border: 1px solid rgba(185, 168, 255, 0.32);
+  box-shadow: 0 10px 24px rgba(185, 168, 255, 0.18);
+  color: var(--bo-text);
+}
+
+.bo-calDay.is-inRange {
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bo-accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 26%, transparent);
+  box-shadow: none;
+}
+
+.bo-calDay.is-rangeStart,
+.bo-calDay.is-rangeEnd {
+  background: color-mix(in srgb, var(--bo-accent) 36%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-accent) 48%, var(--bo-border));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--bo-accent) 22%, transparent);
+  color: var(--bo-text);
+}
+
+.bo-dateRangeActions {
+  margin-top: var(--bo-space-3);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--bo-space-2);
+}
+
+/* Range calendar rendered inside a modal (in normal flow, not a popover). */
+.bo-closeRangeCal {
+  width: 280px;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.bo-closeRangeCal .bo-calDay {
+  margin: 0;
+}
+
+.bo-closeRangeModalBody {
+  display: flex;
+  justify-content: center;
+}
+
+.bo-closeRangeModal .bo-modalActions {
+  display: flex;
+  justify-content: flex-end;
+  padding-inline: 0;
+}
+
+.bo-closeRangeModal .bo-modalActions .bo-btn {
+  margin: 0 !important;
+}
+
+.bo-calDay--empty {
+  cursor: default;
+}
+
+.bo-calDay--empty:hover {
+  background: transparent;
+}
+

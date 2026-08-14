@@ -1,0 +1,215 @@
+/* ── Facturas payment: summary, history, form, progress (extracted from table.css) ── */
+/* Payment date display */
+.bo-paymentDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bo-text-success, #16a34a);
+  font-size: 0.8125rem;
+}
+
+.bo-paymentDate svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Days overdue indicator */
+.bo-daysOverdue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bo-text-danger, #dc2626);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.bo-daysOverdue svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Payment method display */
+.bo-paymentMethod {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bo-text-secondary, #6b7280);
+  font-size: 0.8125rem;
+}
+
+.bo-paymentMethod svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Payment Progress in Table */
+.bo-paymentProgressCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.bo-paymentProgressText {
+  font-size: 0.75rem;
+  color: var(--bo-text-secondary, #6b7280);
+}
+
+.bo-paymentProgressText.is-paid {
+  color: var(--bo-color-success, #10b981);
+  font-weight: 600;
+}
+
+.bo-paymentProgressBar {
+  width: 100%;
+  height: 4px;
+  background-color: var(--bo-border-color, #e5e7eb);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bo-paymentProgressFill {
+  height: 100%;
+  background-color: var(--bo-color-warning, #f59e0b);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.bo-paymentProgressFill.is-complete {
+  background-color: var(--bo-color-success, #10b981);
+}
+
+/* Payment Modal */
+.bo-paymentSummary {
+  background-color: var(--bo-bg-muted, #f9fafb);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.bo-paymentSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.875rem;
+}
+
+.bo-paymentSummaryRow--remaining {
+  border-top: 1px solid var(--bo-border-color, #e5e7eb);
+  margin-top: 4px;
+  padding-top: 10px;
+  font-weight: 600;
+}
+
+.bo-text--success {
+  color: var(--bo-color-success, #10b981);
+}
+
+.bo-text--warning {
+  color: var(--bo-color-warning, #f59e0b);
+}
+
+.bo-paymentProgress {
+  margin-top: 12px;
+}
+
+.bo-paymentProgressBar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--bo-border-color, #e5e7eb);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bo-paymentProgressLabel {
+  display: block;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--bo-text-secondary, #6b7280);
+  margin-top: 6px;
+}
+
+/* Payment History */
+.bo-paymentHistory {
+  margin-bottom: 20px;
+}
+
+.bo-paymentHistoryTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--bo-text-primary, #111827);
+}
+
+.bo-paymentHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.bo-paymentHistoryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--bo-bg-muted, #f9fafb);
+  border-radius: 6px;
+}
+
+.bo-paymentHistoryItemInfo {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.bo-paymentHistoryItemAmount {
+  font-weight: 600;
+  color: var(--bo-color-success, #10b981);
+}
+
+.bo-paymentHistoryItemMethod {
+  color: var(--bo-text-secondary, #6b7280);
+}
+
+.bo-paymentHistoryItemDate {
+  color: var(--bo-text-muted, #9ca3af);
+  font-size: 0.75rem;
+}
+
+/* Payment Form */
+.bo-paymentForm {
+  border-top: 1px solid var(--bo-border-color, #e5e7eb);
+  padding-top: 20px;
+}
+
+.bo-paymentFormTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--bo-text-primary, #111827);
+}
+
+.bo-paymentFormRow {
+  margin-bottom: 12px;
+}
+
+.bo-paymentComplete {
+  text-align: center;
+  padding: 20px;
+  color: var(--bo-color-success, #10b981);
+  font-weight: 600;
+}
+
+/* Table column for payment progress */
+.col-payment_progress {
+  min-width: 120px;
+}
+
+.bo-table th.col-payment_progress,
+.bo-table td.col-payment_progress {
+  padding: 8px 12px;
+}
+

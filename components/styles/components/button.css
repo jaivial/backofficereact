@@ -43,10 +43,6 @@
   font-size: 12px;
 }
 
-.bo-btn--danger {
-  border-color: rgba(220, 53, 69, 0.35);
-  background: rgba(220, 53, 69, 0.14);
-}
 
 .bo-btn--warning {
   border-color: color-mix(in srgb, var(--bo-color-warning) 38%, transparent);
@@ -95,5 +91,91 @@
 .bo-spin--sm {
   width: 14px;
   height: 14px;
+}
+
+
+/* Action button (bo-actionBtn) — extracted from stepper.css */
+.bo-actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--bo-radius-md);
+  color: var(--bo-accent-2);
+  transition: background var(--bo-transition-base) var(--bo-ease),
+              color var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-actionBtn:hover {
+  background: var(--bo-surface-2);
+  color: var(--bo-accent);
+}
+
+.bo-actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Button loading states (bo-btn--loading) — extracted from spinner.css */
+/* Loading Button States */
+.bo-btn .bo-spinner {
+  position: absolute;
+}
+
+.bo-btn--loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.bo-btn--loading .bo-btnText {
+  visibility: hidden;
+}
+
+/* Dark theme */
+:root:not([data-theme="light"]) .bo-btn--loading .bo-spinner {
+  border-color: rgba(255, 255, 255, 0.15);
+  border-top-color: var(--bo-accent);
+}
+
+/* Light theme */
+:root[data-theme="light"] .bo-btn--loading .bo-spinner {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: var(--bo-accent);
+}
+
+/* Spinner Button Sizes */
+.bo-btn .bo-spinner--sm {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+.bo-btn .bo-spinner--md {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+.bo-btn .bo-spinner--lg {
+  width: 22px;
+  height: 22px;
+  border-width: 2px;
+}
+
+
+/* Danger button (bo-btn--danger) — extracted from spinner.css */
+
+.bo-btn--danger {
+  border-color: rgba(255, 166, 166, 0.28);
+  background: rgba(255, 166, 166, 0.10);
+  color: rgba(255, 166, 166, 0.95);
+}
+
+.bo-btn--danger:hover:not(:disabled) {
+  border-color: rgba(255, 166, 166, 0.45);
+  background: rgba(255, 166, 166, 0.18);
 }
 
