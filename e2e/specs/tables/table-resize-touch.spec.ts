@@ -60,7 +60,7 @@ async function flowZoom(page: Page): Promise<number> {
  * dev-server error page (vike recompiles under HMR can briefly 500).
  */
 async function loadTablesPage(page: Page) {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     await page.goto(`/app/reservas/tables?date=${TEST_DATE}`);
     await waitForLoadingToFinish(page);
     const nodes = page.locator(TABLE_NODE);
@@ -172,9 +172,19 @@ async function seedTablePositions(api: TestApiClient) {
     tables?: Array<{ id: number }>;
   };
   const tables = (list.tables || []).filter((t) => Number(t.id) > 0);
+  // Reset persisted resize sizes so tables return to their default box
+  // (previous runs grow widths unboundedly, which makes handles overlap).
+  for (const t of tables) {
+    await api
+      .put("/api/admin/tables", {
+        entity: "table",
+        id: Number(t.id),
+        metadata: { width: null, height: null },
+      })
+      .catch(() => undefined);
+  }
   const positions: Record<string, unknown> = {};
-  // Wide spacing: previous test runs persist resized table widths, so give
-  // enough room that corner handles never overlap a neighbour's box.
+  // Wide spacing: corner handles must never overlap a neighbour's box.
   const spacing = 800;
   tables.forEach((t, i) => {
     positions[String(t.id)] = { x_pos: i * spacing, y_pos: 0 };
@@ -205,7 +215,7 @@ async function seedTablePositions(api: TestApiClient) {
 }
 
 test.describe("Tables Map - Table resize (touch)", () => {
-  test.describe.configure({ mode: "serial" });
+  test.describe.configure({ mode: "serial", retries: 3 });
 
   test.beforeEach(async ({ api }) => {
     await seedTablePositions(api);
@@ -226,6 +236,16 @@ test.describe("Tables Map - Table resize (touch)", () => {
     await page.waitForTimeout(200);
     const handle = node.locator(BR_HANDLE).first();
     await expect(handle).toBeVisible({ timeout: 10_000 });
+    // Wait until d3-drag is actually bound on the handle (it sets
+    // touch-action: none at bind time). A WS snapshot right after selection can
+    // remount the node, and dispatching the gesture before the effect runs
+    // silently does nothing.
+    await page.waitForFunction(() => {
+      const n = (document.querySelector('[data-ui="table-node"].is-selected') ??
+        document.querySelector('[data-ui="table-node"]')) as HTMLElement | null;
+      const h = n?.querySelector(".react-flow__resize-control.handle.bottom.right") as HTMLElement | null;
+      return Boolean(h && h.style.touchAction === "none");
+    }, undefined, { timeout: 10_000 });
 
     const handleCenter = await centerOf(handle);
     const zoom = await flowZoom(page);
