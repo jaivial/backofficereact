@@ -3771,7 +3771,10 @@ export default function TableManagerPage() {
                         // Resize/selection mode: hide the draw panel so it stops
                         // covering the canvas (it blocks taps to other tables on
                         // phones) and leave the map free for resize gestures.
-                        setDrawPanelDismissed(true);
+                        // Touch-only: on desktop the panel stays open.
+                        if (window.matchMedia?.("(pointer: coarse)").matches) {
+                          setDrawPanelDismissed(true);
+                        }
                         setSelectedTableId(prev => (prev === tableData.id ? null : tableData.id));
                       } else {
                         // View mode: if table is occupied, open booking modal
