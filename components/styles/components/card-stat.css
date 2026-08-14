@@ -1,0 +1,80 @@
+/* ── Stat & obligation cards (bo-stat*, bo-cardOb) — extracted from card.css ── */
+.bo-statTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-statIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  place-items: center;
+  color: rgba(238, 240, 246, 0.86);
+}
+
+.bo-statLabel {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-statValue {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 720;
+  letter-spacing: 0.2px;
+}
+
+.bo-cardOb {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.14)),
+    var(--bo-accent-3);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: rgba(20, 21, 26, 0.95);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.bo-cardOb .bo-statLabel {
+  color: rgba(20, 21, 26, 0.70);
+}
+
+.bo-cardObHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-cardObIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.36);
+  color: rgba(20, 21, 26, 0.70);
+  display: grid;
+  place-items: center;
+}
+
+.bo-cardObTitle {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 760;
+  letter-spacing: 0.1px;
+}
+
+.bo-cardObBody {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(20, 21, 26, 0.66);
+  line-height: 1.35;
+}
+
+.bo-cardObBody strong {
+  color: rgba(20, 21, 26, 0.92);
+  font-weight: 780;
+}
+

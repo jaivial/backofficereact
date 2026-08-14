@@ -1,0 +1,151 @@
+/* ── Skeleton loaders (bo-skeleton*) — extracted from spinner.css ── */
+/* Loading Skeleton - Shimmer Effect */
+.bo-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bo-surface-2);
+  border-radius: var(--bo-radius-sm);
+}
+
+.bo-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent);
+  animation: bo-shimmer 1.5s ease-in-out infinite;
+}
+
+:root[data-theme="light"] .bo-skeleton::after {
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(0, 0, 0, 0.04),
+      transparent);
+}
+
+@keyframes bo-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Skeleton Sizes */
+.bo-skeleton--sm {
+  height: 12px;
+  width: 60px;
+}
+
+.bo-skeleton--md {
+  height: 18px;
+  width: 100px;
+}
+
+.bo-skeleton--lg {
+  height: 28px;
+  width: 160px;
+}
+
+.bo-skeleton--xl {
+  height: 40px;
+  width: 200px;
+}
+
+/* Skeleton Text Lines */
+.bo-skeletonLine {
+  height: 12px;
+  background: var(--bo-surface-2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bo-skeletonLine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent);
+  animation: bo-shimmer 1.5s ease-in-out infinite;
+}
+
+:root[data-theme="light"] .bo-skeletonLine::after {
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(0, 0, 0, 0.04),
+      transparent);
+}
+
+.bo-skeletonLine:last-child {
+  margin-bottom: 0;
+}
+
+.bo-skeletonLine--sm {
+  width: 40%;
+}
+
+.bo-skeletonLine--md {
+  width: 70%;
+}
+
+.bo-skeletonLine--lg {
+  width: 100%;
+}
+
+/* Skeleton Avatar */
+.bo-skeletonAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bo-surface-2);
+  position: relative;
+  overflow: hidden;
+}
+
+.bo-skeletonAvatar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent);
+  animation: bo-shimmer 1.5s ease-in-out infinite;
+}
+
+:root[data-theme="light"] .bo-skeletonAvatar::after {
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(0, 0, 0, 0.04),
+      transparent);
+}
+
+/* Skeleton Card */
+.bo-skeletonCard {
+  padding: 16px;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+}
+
+.bo-skeletonCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.bo-skeletonCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+

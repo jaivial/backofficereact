@@ -1,0 +1,49 @@
+/* ── Pagination & pager (bo-pager, bo-pagination) — extracted from card.css ── */
+.bo-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 1rem;
+  margin-top: 0;
+  border-top: 1px solid var(--bo-border);
+  color: var(--bo-muted);
+  font-size: 13px;
+}
+
+.bo-pager.is-solo {
+  justify-content: center;
+  text-align: center;
+}
+
+.bo-pagerText {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-pagerBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.bo-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-3);
+  border-top: 1px solid var(--bo-border);
+  margin-top: var(--bo-space-4);
+  padding-top: var(--bo-space-4);
+}
+
+.bo-paginationInfo {
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.bo-paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+}
+

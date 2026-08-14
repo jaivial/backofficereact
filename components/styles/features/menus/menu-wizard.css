@@ -2453,3 +2453,49 @@
   font-size: 11px;
 }
 @keyframes bo-slider-skeleton { to { background-position-x: -220%; } }
+
+/* Menu image upload (bo-specialImage*) — extracted from table.css */
+/* Special menu image upload */
+.bo-specialImageUpload {
+  border: 2px dashed var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  padding: 32px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bo-specialImageDropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--bo-muted);
+  cursor: pointer;
+  position: relative;
+}
+
+.bo-specialImageDropzone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bo-specialImageDropzone:hover {
+  border-color: rgba(185, 168, 255, 0.42);
+}
+
+.bo-specialImagePreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.bo-specialImagePreview img {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: var(--bo-radius-md);
+  object-fit: contain;
+}
+
