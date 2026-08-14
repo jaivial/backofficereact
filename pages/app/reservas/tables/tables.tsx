@@ -1273,14 +1273,17 @@ export default function TableManagerPage() {
         if (!history.last) setMapHistoryBaseline(loadedElements, activeLimitPoints);
 
         // The backend snapshot ships the resolved template + scope: keep the
-        // toggle in sync so a day-scope marker survives a reload.
-        const snapshotTemplate = isNonEmptyTemplate(mapLayout.template)
-          ? (mapLayout.template as TableMapLayoutTemplate)
-          : null;
-        if (snapshotTemplate !== null) {
+        // toggle in sync so a day-scope marker survives a reload. Only
+        // overwrite when the snapshot actually carries the `template` key —
+        // otherwise leave whatever the dedicated template fetch resolved
+        // (the snapshot merge can skip it, e.g. legacy rows).
+        if (mapLayout.template !== undefined) {
+          const snapshotTemplate = isNonEmptyTemplate(mapLayout.template)
+            ? (mapLayout.template as TableMapLayoutTemplate)
+            : null;
           setFloorTemplate(snapshotTemplate);
+          setTemplateScope(defaultScope(snapshotTemplate !== null, mapLayout.scope as TableMapTemplateScope | undefined));
         }
-        setTemplateScope(defaultScope(snapshotTemplate !== null, mapLayout.scope as TableMapTemplateScope | undefined));
 
         const loadedBookingStates: Record<string, BookingState> = {};
         const rawBookingStates = mapLayout.booking_states as Record<string, unknown> | undefined;
@@ -1730,16 +1733,21 @@ export default function TableManagerPage() {
           setAreas(payload.areas.map((a: any) => normalizeTableArea(a)));
           // The server also ships the resolved template + scope in the
           // snapshot; pick them up so the toggle stays in sync with any
-          // other open tab or the backend itself.
-          const snapshotTemplate = isNonEmptyTemplate(payload.layout?.template)
-            ? (payload.layout.template as TableMapLayoutTemplate)
-            : null;
-          if (snapshotTemplate !== null) {
-            setFloorTemplate(snapshotTemplate);
-            setTemplateScope(defaultScope(true, payload.layout?.scope));
-          } else {
-            setFloorTemplate(null);
-            setTemplateScope(defaultScope(false, payload.layout?.scope));
+          // other open tab or the backend itself. Only sync when the
+          // snapshot actually carries template info (the `template` key):
+          // legacy snapshots omit it and an absent key must not wipe the
+          // template loaded by the REST fetch.
+          if (payload.layout && "template" in payload.layout) {
+            const snapshotTemplate = isNonEmptyTemplate(payload.layout.template)
+              ? (payload.layout.template as TableMapLayoutTemplate)
+              : null;
+            if (snapshotTemplate !== null) {
+              setFloorTemplate(snapshotTemplate);
+              setTemplateScope(defaultScope(true, payload.layout?.scope));
+            } else {
+              setFloorTemplate(null);
+              setTemplateScope(defaultScope(false, payload.layout?.scope));
+            }
           }
           return;
         }
