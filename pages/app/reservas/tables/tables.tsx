@@ -6,7 +6,6 @@ import ReactFlow, {
   Controls,
   type Node,
   type NodeChange,
-  NodeResizer,
   Panel,
   ReactFlowProvider,
   applyNodeChanges,
@@ -37,6 +36,7 @@ import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDat
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { formatHHMM } from "../../../../ui/lib/format";
+import { StableNodeResizer } from "./functionalComponents/StableNodeResizer/StableNodeResizer";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import { Modal } from "../../../../ui/overlays/Modal";
@@ -340,19 +340,12 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
       style={style}
     >
       {data.editable ? (
-        <NodeResizer
+        <StableNodeResizer
           isVisible={data.editable && Boolean(data.isSelected)}
           minWidth={TABLE_SIZE_MIN}
           minHeight={TABLE_SIZE_MIN}
-          lineStyle={{ borderColor: "var(--bo-accent)" }}
-          handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
-          onResizeEnd={(_event, params) => {
-            const width = Number(params?.width);
-            const height = Number(params?.height);
-            if (Number.isFinite(width) && Number.isFinite(height)) {
-              data.onResizeEnd?.(Math.round(width), Math.round(height));
-            }
-          }}
+          onResize={data.onResize}
+          onResizeEnd={data.onResizeEnd}
         />
       ) : null}
       {geom.chairs.map((chair, idx) => (
@@ -415,19 +408,12 @@ const DrawElementNode = ({ data }: { data: DrawNodeData }) => {
   const cls = data.kind === "wall" ? "is-wall" : data.kind === "image" ? "is-image" : "is-obstacle";
   return (
     <div data-ui="draw-element" className={`bo-drawElementNode ${cls}${data.isSelected ? " is-selected" : ""}${assetImageUrl && showAsset ? " has-asset" : ""}${showText ? " has-text" : " no-text"}`} style={style}>
-      <NodeResizer
+      <StableNodeResizer
         isVisible={data.editable}
         minWidth={24}
         minHeight={24}
-        lineStyle={{ borderColor: "var(--bo-accent)" }}
-        handleStyle={{ width: 10, height: 10, border: "1px solid var(--bo-accent)", background: "var(--bo-surface)" }}
-        onResizeEnd={(_event, params) => {
-          const width = Number(params?.width);
-          const height = Number(params?.height);
-          if (Number.isFinite(width) && Number.isFinite(height)) {
-            data.onResizeEnd?.(Math.round(width), Math.round(height));
-          }
-        }}
+        onResize={data.onResize}
+        onResizeEnd={data.onResizeEnd}
       />
       {data.editable && data.isSelected && data.onDelete ? (
         <button
@@ -1561,6 +1547,36 @@ export default function TableManagerPage() {
     setSelectedTableCardId(null);
   }, [setTableSheetView, setSelectedTableCardId]);
 
+  /**
+   * Live visual resize (no persistence): updates the node data so the table
+   * follows the finger DURING the gesture. NodeResizer only fires onResizeEnd
+   * for persistence; without a live update the visual stays at the old size
+   * until the gesture ends and jumps. Clamped to TABLE_SIZE_MIN, no fit
+   * validation here — that runs on persist (saveTableSize).
+   */
+  const updateLiveTableSize = useCallback((id: string, width: number, height: number) => {
+    const nextWidth = Math.max(TABLE_SIZE_MIN, Math.round(width));
+    const nextHeight = Math.max(TABLE_SIZE_MIN, Math.round(height));
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id !== id || n.type !== "restaurantTable") return n;
+        const d = n.data as TableNodeData;
+        if (d.width === nextWidth && d.height === nextHeight) return n;
+        return { ...n, data: { ...d, width: nextWidth, height: nextHeight } };
+      }),
+    );
+  }, [setNodes]);
+
+  const updateLiveDrawElementSize = useCallback((id: string, width: number, height: number) => {
+    setDrawElements((prev) =>
+      prev.map((el) =>
+        el.id === id
+          ? { ...el, width: Math.max(24, Math.round(width)), height: Math.max(24, Math.round(height)) }
+          : el,
+      ),
+    );
+  }, []);
+
   useEffect(() => {
     setNodes(
       [
@@ -1599,6 +1615,7 @@ export default function TableManagerPage() {
               editable: editMode,
               width: Number.isFinite(explicitWidth) && explicitWidth > 0 ? Math.round(explicitWidth) : undefined,
               height: Number.isFinite(explicitHeight) && explicitHeight > 0 ? Math.round(explicitHeight) : undefined,
+              onResize: (width, height) => updateLiveTableSize(String(table.id), width, height),
               onResizeEnd: (width, height) => saveTableSizeRef.current(String(table.id), width, height),
               seatedNames: seatedNamesByTable.get(tableKey) || [],
               isMultiSelected,
@@ -1625,12 +1642,13 @@ export default function TableManagerPage() {
             rotationDeg: item.rotationDeg,
             editable: editMode,
             onDelete: () => deleteSelectedDrawElementRef.current(),
+            onResize: (width, height) => updateLiveDrawElementSize(item.id, width, height),
             onResizeEnd: (width, height) => saveDrawElementSizeRef.current(item.id, width, height),
           } as DrawNodeData,
         })),
       ],
     );
-  }, [assignMode, drawElements, editMode, multiTableDraft, multiTableMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, visibleTables]);
+  }, [assignMode, drawElements, editMode, multiTableDraft, multiTableMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, updateLiveDrawElementSize, updateLiveTableSize, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -3750,6 +3768,13 @@ export default function TableManagerPage() {
                       } else if (bookingForAssignment) {
                         assignBookingToTable(bookingForAssignment, tableData.name, node.id);
                       } else if (editMode) {
+                        // Resize/selection mode: hide the draw panel so it stops
+                        // covering the canvas (it blocks taps to other tables on
+                        // phones) and leave the map free for resize gestures.
+                        // Touch-only: on desktop the panel stays open.
+                        if (window.matchMedia?.("(pointer: coarse)").matches) {
+                          setDrawPanelDismissed(true);
+                        }
                         setSelectedTableId(prev => (prev === tableData.id ? null : tableData.id));
                       } else {
                         // View mode: if table is occupied, open booking modal
@@ -3772,6 +3797,17 @@ export default function TableManagerPage() {
                   }}
                   onPaneClick={(event) => {
                     setSelectedDrawElementId(null);
+                    // Tapping the canvas in edit mode dismisses the draw panel so
+                    // it stops covering the map on small screens. Touch-only:
+                    // on desktop the panel stays open unless a table is selected.
+                    if (
+                      editMode &&
+                      !lineDrawing.isDrawing &&
+                      typeof window !== "undefined" &&
+                      window.matchMedia?.("(pointer: coarse)").matches
+                    ) {
+                      setDrawPanelDismissed(true);
+                    }
                     if (lineDrawing.isDrawing && reactFlowInstance && !isEditingLimitArea) {
                       const position = reactFlowInstance.screenToFlowPosition({
                         x: event.clientX,
