@@ -3795,8 +3795,14 @@ export default function TableManagerPage() {
                   onPaneClick={(event) => {
                     setSelectedDrawElementId(null);
                     // Tapping the canvas in edit mode dismisses the draw panel so
-                    // it stops covering the map on small screens.
-                    if (editMode && !lineDrawing.isDrawing) {
+                    // it stops covering the map on small screens. Touch-only:
+                    // on desktop the panel stays open unless a table is selected.
+                    if (
+                      editMode &&
+                      !lineDrawing.isDrawing &&
+                      typeof window !== "undefined" &&
+                      window.matchMedia?.("(pointer: coarse)").matches
+                    ) {
                       setDrawPanelDismissed(true);
                     }
                     if (lineDrawing.isDrawing && reactFlowInstance && !isEditingLimitArea) {
