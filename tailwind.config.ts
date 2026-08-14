@@ -60,7 +60,7 @@ export default {
           "text-success": "var(--bo-text-success)",
           "text-warning": "var(--bo-text-warning)",
           "text-danger": "var(--bo-text-danger)",
-          "text-info": "var(--bo-color-info)",
+          "text-info": "var(--bo-text-info)",
         },
       },
       borderRadius: {
