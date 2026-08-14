@@ -3360,11 +3360,14 @@ body.is-dragging .bo-tableMapFlowWrap {
 /* Multi-select overlay buttons - positioned outside table on top-right */
 .bo-tableMultiSelectOverlay {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -40px;
+  right: -40px;
   display: flex;
-  gap: 2px;
+  gap: 4px;
   z-index: 10;
+  /* Counter-rotate against the node so the row stays upright. Anchored
+     OUTSIDE the node (top-right, -40px) so the buttons never cover the table
+     body and taps on the table itself are not intercepted. */
   transform: rotate(calc(-1 * var(--bo-table-rotation, 0deg)));
 }
 
@@ -3372,8 +3375,8 @@ body.is-dragging .bo-tableMapFlowWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
   border-radius: var(--bo-radius-sm);

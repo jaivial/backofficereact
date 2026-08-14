@@ -360,6 +360,37 @@ function tableFromRFNode(data: TableNodeData): React.JSX.Element {
       {seatedNames.length > 0 ? (
         <div data-ui="node-seated-names" className="bo-tableMapNodeSeatedNames">{seatedNames.join(", ")}</div>
       ) : null}
+      {/* Edit-mode action overlay for the selected table (single selection) */}
+      {data.editable && data.isSelected && !data.assignMode && !data.isMultiSelected && (
+        <div data-ui="table-action-overlay" className="bo-tableMultiSelectOverlay">
+          <button
+            data-ui="table-edit-btn"
+            type="button"
+            className="bo-tableMultiSelectBtn"
+            title="Editar mesa"
+            aria-label="Editar mesa"
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onEditClick?.();
+            }}
+          >
+            <Pencil size={12} strokeWidth={2} />
+          </button>
+          <button
+            data-ui="table-delete-btn"
+            type="button"
+            className="bo-tableMultiSelectBtn bo-tableMultiSelectBtn--remove"
+            title="Eliminar mesa"
+            aria-label="Eliminar mesa"
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onDeleteClick?.();
+            }}
+          >
+            <Trash2 size={12} strokeWidth={2} />
+          </button>
+        </div>
+      )}
       {/* Multi-table selection overlay - buttons outside container on top-right */}
       {data.isMultiSelected && (
         <div data-ui="multi-select-overlay" className="bo-tableMultiSelectOverlay">
@@ -943,6 +974,9 @@ export default function TableManagerPage() {
   const [editingTableId, setEditingTableId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<TableDraft>(() => defaultDraft(1));
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteConfirmTableId, setDeleteConfirmTableId] = useState<number | null>(null);
+  const [deletingTable, setDeletingTable] = useState(false);
   const [draftTextureFile, setDraftTextureFile] = useState<File | null>(null);
   const [shortSideHover, setShortSideHover] = useState<RectShortSide | null>(null);
   const nodeTypes = NODE_TYPES;
@@ -1547,6 +1581,28 @@ export default function TableManagerPage() {
     setSelectedTableCardId(null);
   }, [setTableSheetView, setSelectedTableCardId]);
 
+  const openEditModal = useCallback((table: TableMapItem) => {
+    const capacity = clampCapacity(table.capacity || 4);
+    const metadata = (table.metadata || {}) as Record<string, unknown>;
+    setEditingTableId(table.id);
+    setDraft({
+      name: table.name || "",
+      numeroMesa: table.numero_mesa || "",
+      capacity,
+      shape: (table.shape || "round") as TableShape,
+      fillColor: table.fill_color || COLOR_PRESETS[0].fill,
+      outlineColor: table.outline_color || COLOR_PRESETS[0].outline,
+      stylePreset: table.style_preset || "",
+      textureImageUrl: table.texture_image_url || "",
+      texturePreview: table.texture_image_url || "",
+      rotationDeg: Number(metadata.rotation_deg || 0),
+      rectShortSides: shortSidesFromMetadata(metadata.short_side_seats, capacity),
+    });
+    setDraftTextureFile(null);
+    setShortSideHover(null);
+    setEditorOpen(true);
+  }, []);
+
   /**
    * Live visual resize (no persistence): updates the node data so the table
    * follows the finger DURING the gesture. NodeResizer only fires onResizeEnd
@@ -1617,6 +1673,14 @@ export default function TableManagerPage() {
               height: Number.isFinite(explicitHeight) && explicitHeight > 0 ? Math.round(explicitHeight) : undefined,
               onResize: (width, height) => updateLiveTableSize(String(table.id), width, height),
               onResizeEnd: (width, height) => saveTableSizeRef.current(String(table.id), width, height),
+              onEditClick: editMode && !assignMode ? () => openEditModal(table) : undefined,
+              onDeleteClick:
+                editMode && !assignMode
+                  ? () => {
+                      setDeleteConfirmTableId(table.id);
+                      setDeleteConfirmOpen(true);
+                    }
+                  : undefined,
               seatedNames: seatedNamesByTable.get(tableKey) || [],
               isMultiSelected,
               multiTableDraftIdx: multiDraftIdx,
@@ -1648,7 +1712,7 @@ export default function TableManagerPage() {
         })),
       ],
     );
-  }, [assignMode, drawElements, editMode, multiTableDraft, multiTableMode, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, updateLiveDrawElementSize, updateLiveTableSize, visibleTables]);
+  }, [assignMode, drawElements, editMode, multiTableDraft, multiTableMode, openEditModal, selectedDrawElementId, selectedTableId, seatedNamesByTable, setNodes, tableOccupancyMap, updateLiveDrawElementSize, updateLiveTableSize, visibleTables]);
 
   useEffect(() => {
     const secure = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -1776,6 +1840,19 @@ export default function TableManagerPage() {
             // leave it untouched instead of dropping it.
             return next;
           });
+          return;
+        }
+        if (payload.type === "table_deleted") {
+          const tableId = Number(payload.id);
+          if (!Number.isFinite(tableId) || tableId <= 0) return;
+          setAreas((prev) =>
+            prev.map((area) => ({
+              ...area,
+              tables: (area.tables || []).filter((t) => t.id !== tableId),
+            })),
+          );
+          setSelectedTableId((prev) => (prev === tableId ? null : prev));
+          return;
         }
       } catch {
         // ignore malformed payloads
@@ -2435,27 +2512,35 @@ export default function TableManagerPage() {
     setMenuVisible(false);
   }, [nextTableNumber, nextTableNumero]);
 
-  const openEditModal = useCallback((table: TableMapItem) => {
-    const capacity = clampCapacity(table.capacity || 4);
-    const metadata = (table.metadata || {}) as Record<string, unknown>;
-    setEditingTableId(table.id);
-    setDraft({
-      name: table.name || "",
-      numeroMesa: table.numero_mesa || "",
-      capacity,
-      shape: (table.shape || "round") as TableShape,
-      fillColor: table.fill_color || COLOR_PRESETS[0].fill,
-      outlineColor: table.outline_color || COLOR_PRESETS[0].outline,
-      stylePreset: table.style_preset || "",
-      textureImageUrl: table.texture_image_url || "",
-      texturePreview: table.texture_image_url || "",
-      rotationDeg: Number(metadata.rotation_deg || 0),
-      rectShortSides: shortSidesFromMetadata(metadata.short_side_seats, capacity),
-    });
-    setDraftTextureFile(null);
-    setShortSideHover(null);
-    setEditorOpen(true);
-  }, []);
+  const deleteTable = useCallback(async () => {
+    if (!deleteConfirmTableId) return;
+    setDeletingTable(true);
+    try {
+      const res = await api.tables.delete(deleteConfirmTableId);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: (res as any).message || "No se pudo eliminar la mesa" });
+        return;
+      }
+      setAreas((prev) =>
+        prev.map((area) => ({
+          ...area,
+          tables: (area.tables || []).filter((t) => t.id !== deleteConfirmTableId),
+        })),
+      );
+      setSelectedTableId((prev) => (prev === deleteConfirmTableId ? null : prev));
+      setDeleteConfirmOpen(false);
+      setDeleteConfirmTableId(null);
+      pushToast({ kind: "success", title: "Mesa eliminada", message: "La mesa se ha eliminado" });
+    } catch (err) {
+      pushToast({
+        kind: "error",
+        title: "Error",
+        message: err instanceof Error ? err.message : "No se pudo eliminar la mesa",
+      });
+    } finally {
+      setDeletingTable(false);
+    }
+  }, [api.tables, deleteConfirmTableId, pushToast]);
 
   const ensureAreaForFloor = useCallback(async (): Promise<number | null> => {
     const existing = (floorAreas.get(selectedFloor) || [])[0];
@@ -3775,7 +3860,9 @@ export default function TableManagerPage() {
                         if (window.matchMedia?.("(pointer: coarse)").matches) {
                           setDrawPanelDismissed(true);
                         }
-                        setSelectedTableId(prev => (prev === tableData.id ? null : tableData.id));
+                        // Always select with a single tap (no toggle-off here;
+                        // deselection happens by tapping the canvas).
+                        setSelectedTableId(tableData.id);
                       } else {
                         // View mode: if table is occupied, open booking modal
                         const tableKey = normalizeTableKey(tableData.name);
@@ -3797,6 +3884,10 @@ export default function TableManagerPage() {
                   }}
                   onPaneClick={(event) => {
                     setSelectedDrawElementId(null);
+                    // Clicking empty canvas in edit mode deselects the table.
+                    if (editMode && !lineDrawing.isDrawing && !isEditingLimitArea) {
+                      setSelectedTableId(null);
+                    }
                     // Tapping the canvas in edit mode dismisses the draw panel so
                     // it stops covering the map on small screens. Touch-only:
                     // on desktop the panel stays open unless a table is selected.
@@ -3826,6 +3917,14 @@ export default function TableManagerPage() {
                   panOnDrag={interactionMode === "pan" && !isEditingLimitArea}
                   selectionOnDrag={interactionMode === "select"}
                   selectNodesOnDrag={false}
+                  onNodeDragStart={(_event, node) => {
+                    // A touch drag with even slight finger movement is consumed
+                    // as a node drag and the click (selection) never fires; select
+                    // on drag start too so a single touch always selects.
+                    if (node.type === "restaurantTable" && editMode && !assignMode && !multiTableMode) {
+                      setSelectedTableId(Number(node.id));
+                    }
+                  }}
                   onNodeDragStop={(_event, node) => {
                     if (node.type === "restaurantTable" && node.position) {
                       void savePosition(node.id, node.position.x, node.position.y);
@@ -5065,7 +5164,24 @@ export default function TableManagerPage() {
                 ) : null}
               </Modal>
 
-              <Modal open={removeAreaConfirmOpen} title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} widthPx={480} className="bo-tableRemoveAreaModal" hideClose>
+              <Modal open={deleteConfirmOpen} title="Eliminar mesa" onClose={() => setDeleteConfirmOpen(false)} widthPx={480} className="bo-tableRemoveAreaModal" hideClose>
+        <ModalHeader data-slot="modal-head" data-ui="modal-title" title="Eliminar mesa" onClose={() => setDeleteConfirmOpen(false)} />
+        <div data-ui="delete-table-confirm" className="bo-tableRemoveAreaConfirm">
+          <p data-ui="delete-table-message" className="bo-tableRemoveAreaText">
+            Se eliminara la mesa <strong>{visibleTables.find((t) => t.id === deleteConfirmTableId)?.name || `#${deleteConfirmTableId ?? ""}`}</strong>. Esta accion no se puede deshacer.
+          </p>
+          <div data-ui="delete-table-actions" className="bo-modalActions">
+            <button data-ui="cancel-delete-table-btn" className="bo-btn bo-btn--ghost" type="button" onClick={() => setDeleteConfirmOpen(false)} disabled={deletingTable}>
+              Cancelar
+            </button>
+            <button data-ui="confirm-delete-table-btn" className="bo-btn bo-btn--danger" type="button" onClick={() => void deleteTable()} disabled={deletingTable}>
+              {deletingTable ? "Eliminando…" : "Eliminar mesa"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={removeAreaConfirmOpen} title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} widthPx={480} className="bo-tableRemoveAreaModal" hideClose>
                 <ModalHeader data-slot="modal-head" data-ui="modal-title" title="Eliminar area" onClose={() => setRemoveAreaConfirmOpen(false)} />
                 <div data-ui="remove-area-confirm" className="bo-tableRemoveAreaConfirm">
                   <p data-ui="remove-area-message" className="bo-tableRemoveAreaText">
