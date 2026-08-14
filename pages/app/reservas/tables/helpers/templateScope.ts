@@ -31,6 +31,17 @@ export function isNonEmptyTemplate(tpl: unknown): boolean {
   if (Array.isArray(obj.draw_elements_template) && obj.draw_elements_template.length > 0) {
     return true;
   }
+  // Positions-only templates (created by template-scope table moves) are
+  // real cross-day content: the backend counts them too, and both sides
+  // must agree on when the scope toggle renders.
+  if (
+    obj.table_positions &&
+    typeof obj.table_positions === "object" &&
+    !Array.isArray(obj.table_positions) &&
+    Object.keys(obj.table_positions).length > 0
+  ) {
+    return true;
+  }
   return false;
 }
 
