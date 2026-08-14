@@ -35,7 +35,8 @@ import type { TestApiClient } from "../../helpers/api-client";
  */
 
 const TEST_DATE = "2026-04-05";
-const EDIT_SWITCH = '[data-ui="edit-mode-toggle"] button';const CLOSE_PANEL_BTN = '[data-ui="close-draw-panel-btn"]';
+const EDIT_SWITCH = '[data-ui="edit-mode-toggle"] button';
+const CLOSE_PANEL_BTN = '[data-ui="close-draw-panel-btn"]';
 const TABLE_NODE = '[data-ui="table-node"]';
 const BR_HANDLE = ".react-flow__resize-control.handle.bottom.right";
 
