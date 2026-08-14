@@ -38,6 +38,8 @@ export type TableNodeData = {
   height?: number;
   /** True while the map is in edit mode (enables resize handles). */
   editable?: boolean;
+  /** Fired by NodeResizer on every resize step (live visual size, no persist). */
+  onResize?: (width: number, height: number) => void;
   /** Fired by NodeResizer when a resize gesture ends (final pixel size). */
   onResizeEnd?: (width: number, height: number) => void;
   /** Names of seated guests at this table (derived from booking assignments). */
@@ -96,6 +98,8 @@ export type DrawNodeData = {
   rotationDeg: number;
   editable: boolean;
   onDelete?: () => void;
+  /** Fired by NodeResizer on every resize step (live visual size, no persist). */
+  onResize?: (width: number, height: number) => void;
   onResizeEnd?: (width: number, height: number) => void;
 };
 
