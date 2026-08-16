@@ -63,8 +63,13 @@ export function MenuSliderPanel({
   }, [api, menuId]);
 
   useEffect(() => {
+    // The SSR `+data.ts` already fetches the slider and passes it as
+    // `initialSlider`. Re-fetching on mount is a redundant round-trip for
+    // every page load; a fresh copy is only needed after AI/upload/delete
+    // actions, which call `load()` directly.
+    if (initialSlider) return;
     void load();
-  }, [load]);
+  }, [initialSlider, load]);
 
   const preview = useMemo(() => deriveSliderPreview(slider), [slider]);
   const allImages = slider?.images ?? EMPTY_IMAGES;
