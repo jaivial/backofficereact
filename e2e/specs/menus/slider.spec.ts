@@ -22,8 +22,11 @@ async function openEditorStep3(page: any, tab: "configuracion" | "platos" = "con
   await waitForLoadingToFinish(page);
   // Existing menus open at the final editor step (step 3) directly. The slider
   // panel lives on the Configuracion tab and the preview on the Platos tab.
-  const tabBtn = page.locator(`[data-testid="tab-${tab}"]`);
-  await tabBtn.click();
+  // Platos is the default active tab and the Tabs component renders it disabled,
+  // so only click when the target tab is not the already-active platos tab.
+  if (tab !== "platos") {
+    await page.locator(`[data-testid="tab-${tab}"]`).click();
+  }
   if (tab === "configuracion") {
     await page.waitForSelector('[data-slot="sliderPanel-field"]', { timeout: 15_000 });
   } else {
