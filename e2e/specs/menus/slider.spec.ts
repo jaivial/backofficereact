@@ -16,12 +16,22 @@ async function fetchPublicMenu(request: any, id: number) {
   return res.json();
 }
 
-async function openEditorStep3(page: any) {
+async function openEditorStep3(page: any, tab: "configuracion" | "platos" = "configuracion") {
   await page.goto(`/app/menus/crear?menuId=${MENU_ID}`);
   await page.waitForLoadState("networkidle");
   await waitForLoadingToFinish(page);
-  // Existing menus open at the final editor step (step 3) directly.
-  await page.waitForSelector('[data-slot="sliderPanel-field"]', { timeout: 15_000 });
+  // Existing menus open at the final editor step (step 3) directly. The slider
+  // panel lives on the Configuracion tab and the preview on the Platos tab.
+  // Platos is the default active tab and the Tabs component renders it disabled,
+  // so only click when the target tab is not the already-active platos tab.
+  if (tab !== "platos") {
+    await page.locator(`[data-testid="tab-${tab}"]`).click();
+  }
+  if (tab === "configuracion") {
+    await page.waitForSelector('[data-slot="sliderPanel-field"]', { timeout: 15_000 });
+  } else {
+    await page.waitForSelector('[data-testid="menu-preview-iframe"]', { timeout: 15_000 });
+  }
 }
 
 // page.request shares the adminPage auth cookie (bo_session) — hit the admin API
@@ -64,6 +74,8 @@ test.describe("Menu slider customization", () => {
     await adminPage.goto(`/app/menus/crear?menuId=${MENU_ID}`);
     await adminPage.waitForLoadState("networkidle");
     await waitForLoadingToFinish(adminPage);
+    // Slider rows come from Vike SSR page data; the Configuracion tab holds the panel.
+    await adminPage.locator('[data-testid="tab-configuracion"]').click();
     await expect(adminPage.locator('[data-slot="sliderPanel-grid"] img.bo-sliderThumb')).toHaveCount(5);
     // Browser GET is aborted; these rows can only be from Vike SSR page data.
   });
@@ -86,7 +98,7 @@ test.describe("Menu slider customization", () => {
 
   test("preview slider mounts each supplied image once", async ({ adminPage }) => {
     await setMode(adminPage, "default");
-    await openEditorStep3(adminPage);
+    await openEditorStep3(adminPage, "platos");
     const frame = adminPage.locator('[data-testid="menu-preview-iframe"]').contentFrame();
     const srcs = await frame.locator('.menuHeroSlider img').evaluateAll((imgs) => imgs.map((img) => (img as HTMLImageElement).src));
     expect(srcs.length).toBeGreaterThan(0);
@@ -95,7 +107,7 @@ test.describe("Menu slider customization", () => {
 
   test("fade cleanup removes previous image without recreating active image", async ({ adminPage }) => {
     await setMode(adminPage, "default");
-    await openEditorStep3(adminPage);
+    await openEditorStep3(adminPage, "platos");
     const frame = adminPage.locator('[data-testid="menu-preview-iframe"]').contentFrame();
     const active = frame.locator('.menuHeroShot.is-active');
     await active.waitFor();
@@ -115,13 +127,19 @@ test.describe("Menu slider customization", () => {
 
   test("changing to hidden removes slider from live website preview", async ({ adminPage }) => {
     await setMode(adminPage, "default");
-    await openEditorStep3(adminPage);
+    await openEditorStep3(adminPage, "platos");
     const iframe = adminPage.locator('[data-testid="menu-preview-iframe"]');
     await expect(iframe).toBeVisible();
     await expect(iframe.contentFrame().locator(".menuHeroSlider")).toHaveCount(1);
 
+    // Switch to Configuracion, set the mode to hidden, then return to Platos and
+    // verify the live preview drops the slider.
+    await adminPage.locator('[data-testid="tab-configuracion"]').click();
     await adminPage.locator('[data-testid="slider-mode-select"]').click();
     await adminPage.getByRole("option", { name: "Ocultar slider" }).click();
+
+    await adminPage.locator('[data-testid="tab-platos"]').click();
+    await expect(iframe).toBeVisible();
     await expect(iframe.contentFrame().locator(".menuHeroSlider")).toHaveCount(0);
   });
 

@@ -513,6 +513,39 @@
   align-items: start;
 }
 
+/* The Configuracion/Platos tab switcher sits above the two-pane grid. */
+.bo-menuWizardFinal .bo-menuEditorTabs {
+  grid-column: 1 / -1;
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* The shared Tabs component hides labels below 896px (icons-only). The menu
+   editor's two tabs are essential navigation and have no icons, so keep their
+   labels visible at every breakpoint to avoid anonymous pills on mobile. */
+.bo-menuWizardFinal .bo-menuEditorTabs .bo-tabLabel {
+  display: inline;
+}
+
+/* Configuracion tab shows only the editor+settings panels in the editor
+   column (keeps the form at its previous width; mobile stays single-column). */
+.bo-menuWizardFinal .bo-editorPane--config {
+  grid-column: 1;
+}
+
+/* Both editor panes and the preview pane stay mounted; the inactive tab's
+   content is hidden via CSS so the preview iframe is not destroyed/reloaded
+   (and its WebSocket/state) when switching between Platos and Configuracion. */
+.bo-menuWizardFinal.is-platosActive .bo-editorPane--config {
+  display: none;
+}
+
+.bo-menuWizardFinal.is-configActive .bo-editorPane--platos,
+.bo-menuWizardFinal.is-configActive .bo-previewPane,
+.bo-menuWizardFinal.is-configActive .bo-previewDesktopSwitch {
+  display: none;
+}
+
 .bo-editorPane {
   min-width: 0;
   display: grid;
