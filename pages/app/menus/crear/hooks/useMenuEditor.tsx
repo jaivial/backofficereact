@@ -984,6 +984,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       const mapped = mapApiMenu(loaded.menu);
       const mappedIsALaCarte = mapped.menuType === "a_la_carte" || mapped.menuType === "a_la_carte_group";
       setMenuId(created.menu_id);
+      setIsDraft(true);
       setTitle(mapped.title);
       setPrice(mapped.price || "0");
       setActive(mapped.active);

@@ -478,6 +478,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         <div
           className={[
             "bo-menuWizardFinal",
+            editorTab === "configuracion" ? "is-configActive" : "is-platosActive",
             desktopPreviewOpen ? "is-previewOpen" : "is-previewHidden",
             desktopPreviewDocked ? "" : "is-previewUndocked",
           ].filter(Boolean).join(" ")}
@@ -496,14 +497,12 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
             />
           </div>
 
-          {editorTab === "platos" ? (
-            <>
-              <div className="bo-previewDesktopSwitch" data-testid="menu-crear-preview-toggle">
-                <span className="bo-previewDesktopSwitchLabel" data-slot="crear-previewDesktopSwitchLabel"><Eye size={14} aria-hidden="true" /> Preview web</span>
-                <Switch checked={desktopPreviewOpen} onCheckedChange={setDesktopPreviewOpen} aria-label={desktopPreviewOpen ? "Ocultar preview web" : "Mostrar preview web"} data-testid="menu-crear-preview-switch" />
-              </div>
+          <div className="bo-previewDesktopSwitch" data-testid="menu-crear-preview-toggle">
+            <span className="bo-previewDesktopSwitchLabel" data-slot="crear-previewDesktopSwitchLabel"><Eye size={14} aria-hidden="true" /> Preview web</span>
+            <Switch checked={desktopPreviewOpen} onCheckedChange={setDesktopPreviewOpen} aria-label={desktopPreviewOpen ? "Ocultar preview web" : "Mostrar preview web"} data-testid="menu-crear-preview-switch" />
+          </div>
 
-              <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane ${mobileTab === "editor" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane">
+          <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane bo-editorPane--platos ${mobileTab === "editor" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane">
             {isSpecial ? (
               <Panel className="bo-accordionSection bo-sectionsEditor" data-slot="crear-sectionsEditor" title="Contenido del menu especial">
                 {renderSpecialMenuImageUploadArea()}
@@ -563,21 +562,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
             ) : null}
           </motion.div>
 
-          <MenuPreview
-            previewThemeLoading={previewThemeLoading}
-            previewNeedsUpgrade={previewNeedsUpgrade}
-            previewThemeLabel={previewThemeLabel}
-            previewThemeId={previewThemeId}
-            menuType={menuType}
-            previewMenuPayload={sliderPreviewMenuPayload}
-            previewUrl={previewUrl}
-            mobileTab={mobileTab}
-            onMobileTabChange={setMobileTab}
-            previewFrameRef={previewFrameRef}
-          />
-            </>
-          ) : (
-            <motion.div layout transition={paneLayoutTransition} className="bo-editorPane bo-editorPane--config is-mobileActive" data-testid="menu-crear-editor-pane-config">
+          <motion.div layout transition={paneLayoutTransition} className="bo-editorPane bo-editorPane--config is-mobileActive" data-testid="menu-crear-editor-pane-config">
               <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead" data-testid="menu-crear-editor-panel">
                 <div className="bo-panelHead" data-slot="crear-panelHead">
                   <div data-slot="crear-div">
@@ -709,7 +694,19 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                 </motion.div>
               ) : null}
             </motion.div>
-          )}
+
+          <MenuPreview
+            previewThemeLoading={previewThemeLoading}
+            previewNeedsUpgrade={previewNeedsUpgrade}
+            previewThemeLabel={previewThemeLabel}
+            previewThemeId={previewThemeId}
+            menuType={menuType}
+            previewMenuPayload={sliderPreviewMenuPayload}
+            previewUrl={previewUrl}
+            mobileTab={mobileTab}
+            onMobileTabChange={setMobileTab}
+            previewFrameRef={previewFrameRef}
+          />
         </div>
       ) : null}
 
