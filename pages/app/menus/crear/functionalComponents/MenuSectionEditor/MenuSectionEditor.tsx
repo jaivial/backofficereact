@@ -33,7 +33,7 @@ export type MenuSectionEditorProps = {
   updateSection: (clientId: string, patch: Partial<EditorSection>) => void;
   reorderDishes: (sectionClientId: string, orderedClientIds: string[]) => void;
   setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
-  removeDish: (sectionClientId: string, dishClientId: string) => void;
+  requestDishDelete: (sectionClientId: string, dishClientId: string, dishLabel: string) => void;
   updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorSection["dishes"][number]>) => void;
   updateSectionAnnotation: (sectionClientId: string, annotationIdx: number, value: string) => void;
   addSectionAnnotation: (sectionClientId: string) => void;
@@ -83,7 +83,7 @@ export function MenuSectionEditor({
   sec, secIdx, sectionsCount, isALaCarte, showDishImages,
   reorderTransition, reorderWhileDrag, chevronHover, chevronTapUp, chevronTapDown,
   moveSection, handleSectionToggle, updateSection, reorderDishes,
-  setAllergenModal, removeDish, updateDish,
+  setAllergenModal, requestDishDelete, updateDish,
   updateSectionAnnotation, addSectionAnnotation, removeSectionAnnotation,
   pickDishImage, addDish, handleSearch, searchTerm, searchItems,
   sectionLoadingState, onReorderSectionStartDrag, toggleSameDayBooking,
@@ -197,7 +197,7 @@ export function MenuSectionEditor({
             />
           </span>
           <span className="bo-accordionHeadRight" data-slot="menuSectionEditor-accordionHeadRight">
-            <span className="bo-accordionBadge" data-slot="menuSectionEditor-accordionBadge">{sec.dishes.length} platos</span>
+            <span className="bo-accordionBadge" data-slot="menuSectionEditor-accordionBadge">{sec.dishes.length}</span>
             <ChevronDown size={14} />
           </span>
         </button>
@@ -316,7 +316,7 @@ export function MenuSectionEditor({
                     startDishDrag={() => {}}
                     pickDishImage={pickDishImage}
                     setAllergenModal={setAllergenModal}
-                    removeDish={removeDish}
+                    requestDishDelete={requestDishDelete}
                     updateDish={updateDish}
                     toggleSameDayBooking={toggleSameDayBooking}
                     reorderTransition={reorderTransition}

@@ -73,7 +73,7 @@ const defaultProps = {
   startDishDrag: vi.fn(),
   pickDishImage: vi.fn(),
   setAllergenModal: vi.fn(),
-  removeDish: vi.fn(),
+  requestDishDelete: vi.fn(),
   updateDish: vi.fn(),
   toggleSameDayBooking: vi.fn(),
 };
@@ -126,5 +126,12 @@ describe("MenuItemEditor", () => {
     render(React.createElement(MenuItemEditor, props));
     const sw = screen.getByTestId("menu-item-editor-same-day-booking-switch-dish-1");
     expect(sw).toHaveAttribute("disabled");
+  });
+
+  it("requests a delete confirmation instead of deleting straight away when trash is clicked", () => {
+    const requestDishDelete = vi.fn();
+    render(React.createElement(MenuItemEditor, { ...defaultProps, requestDishDelete }));
+    fireEvent.click(screen.getByTestId("menu-item-editor-delete-btn-dish-1"));
+    expect(requestDishDelete).toHaveBeenCalledWith("section-1", "dish-1", "Paella valenciana");
   });
 });

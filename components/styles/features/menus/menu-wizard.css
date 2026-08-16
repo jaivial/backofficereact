@@ -513,6 +513,19 @@
   align-items: start;
 }
 
+/* The Configuracion/Platos tab switcher sits above the two-pane grid. */
+.bo-menuWizardFinal .bo-menuEditorTabs {
+  grid-column: 1 / -1;
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* Configuracion tab shows only the editor+settings panels, so keep it in the
+   editor column (mobile: single column, always visible). */
+.bo-menuWizardFinal .bo-editorPane--config {
+  grid-column: 1 / -1;
+}
+
 .bo-editorPane {
   min-width: 0;
   display: grid;
