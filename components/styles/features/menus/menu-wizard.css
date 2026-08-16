@@ -520,10 +520,10 @@
   max-width: 100%;
 }
 
-/* Configuracion tab shows only the editor+settings panels, so keep it in the
-   editor column (mobile: single column, always visible). */
+/* Configuracion tab shows only the editor+settings panels in the editor
+   column (keeps the form at its previous width; mobile stays single-column). */
 .bo-menuWizardFinal .bo-editorPane--config {
-  grid-column: 1 / -1;
+  grid-column: 1;
 }
 
 .bo-editorPane {
