@@ -526,6 +526,19 @@
   grid-column: 1;
 }
 
+/* Both editor panes and the preview pane stay mounted; the inactive tab's
+   content is hidden via CSS so the preview iframe is not destroyed/reloaded
+   (and its WebSocket/state) when switching between Platos and Configuracion. */
+.bo-menuWizardFinal.is-platosActive .bo-editorPane--config {
+  display: none;
+}
+
+.bo-menuWizardFinal.is-configActive .bo-editorPane--platos,
+.bo-menuWizardFinal.is-configActive .bo-previewPane,
+.bo-menuWizardFinal.is-configActive .bo-previewDesktopSwitch {
+  display: none;
+}
+
 .bo-editorPane {
   min-width: 0;
   display: grid;
