@@ -18,7 +18,7 @@ export type MenuItemEditorProps = {
   startDishDrag: (event: React.PointerEvent<Element>) => void;
   pickDishImage: (sectionClientId: string, dishClientId: string) => void;
   setAllergenModal: React.Dispatch<React.SetStateAction<{ open: boolean; sectionClientId: string; dishClientId: string } | null>>;
-  removeDish: (sectionClientId: string, dishClientId: string) => void;
+  requestDishDelete: (sectionClientId: string, dishClientId: string, dishLabel: string) => void;
   updateDish: (sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => void;
   toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => void;
   reorderTransition?: any;
@@ -58,7 +58,7 @@ function ReorderItemContainer({ as = "div", value, className, transition, whileD
 
 export function MenuItemEditor({
   sectionClientId, dish, dishIdx, isALaCarte, showDishImages, mediaLoading,
-  startDishDrag, pickDishImage, setAllergenModal, removeDish, updateDish, toggleSameDayBooking,
+  startDishDrag, pickDishImage, setAllergenModal, requestDishDelete, updateDish, toggleSameDayBooking,
   reorderTransition, reorderWhileDrag,
 }: MenuItemEditorProps) {
   const dishLabel = dish.title || `Plato ${dishIdx + 1}`;
@@ -114,7 +114,7 @@ export function MenuItemEditor({
                 className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
                 type="button"
                 aria-label={`Eliminar plato ${dishLabel}`}
-                onClick={() => removeDish(sectionClientId, dish.clientId)}
+                onClick={() => requestDishDelete(sectionClientId, dish.clientId, dishLabel)}
                 data-testid={`menu-item-editor-delete-btn-${dish.clientId}`}
               >
                 <Trash2 size={14} />
