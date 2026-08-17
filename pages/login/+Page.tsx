@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { Loader2 } from "lucide-react";
 
@@ -13,7 +13,11 @@ export default function Page() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
   useErrorToast(error);
 
   const onSubmit = createLoginHandler({
@@ -77,7 +81,7 @@ export default function Page() {
               placeholder="tu@email.com"
               data-testid="login-identifier-input"
               data-ui="login-input-identifier"
-              disabled={busy}
+              disabled={busy || !hydrated}
             />
           </div>
 
@@ -100,14 +104,14 @@ export default function Page() {
               placeholder="********"
               data-testid="login-password-input"
               data-ui="login-input-password"
-              disabled={busy}
+              disabled={busy || !hydrated}
             />
           </div>
 
           <button
             className="bo-btn bo-btn--primary mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60"
             type="submit"
-            disabled={busy}
+            disabled={busy || !hydrated}
             data-testid="login-submit-btn"
             data-ui="login-submit"
           >
