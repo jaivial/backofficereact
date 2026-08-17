@@ -86,6 +86,8 @@ import type {
   AnalyticsOverviewParams,
   AnalyticsRefreshRequest,
   AnalyticsRefreshResponse,
+  BunnyCDNConfig,
+  BunnyCDNConfigInput,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 import { emitSessionExpired, emitSessionExpirationUpdate } from "../lib/session-expiration";
@@ -1990,6 +1992,16 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       },
       async setRestaurantInfo(input: Partial<import("./types").RestaurantInfo>): Promise<APISuccess<{ restaurantInfo: import("./types").RestaurantInfo }> | APIError> {
         return json("/api/admin/config/restaurant-info", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async getBunnyCDNConfig(): Promise<APISuccess<{ config: BunnyCDNConfig }> | APIError> {
+        return json("/api/admin/config/bunnycdn", { method: "GET" });
+      },
+      async setBunnyCDNConfig(input: BunnyCDNConfigInput): Promise<APISuccess<{ config: BunnyCDNConfig }> | APIError> {
+        return json("/api/admin/config/bunnycdn", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),

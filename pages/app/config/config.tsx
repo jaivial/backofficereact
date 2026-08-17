@@ -21,6 +21,7 @@ import { BookingManager } from "./booking/BookingManager";
 import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/ConfigLegalPages";
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
+import { ConfigBunnyCDN } from "./functionalComponents/ConfigBunnyCDN/ConfigBunnyCDN";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -29,7 +30,7 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "almacenamiento" | "ia";
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -182,6 +183,12 @@ export default function Page() {
         label: "Paginas legales",
         href: "#legal-pages",
         icon: <Scale className="bo-ico" />,
+      },
+      {
+        id: "almacenamiento",
+        label: "Almacenamiento",
+        href: "#almacenamiento",
+        icon: <Building2 className="bo-ico" />,
       },
       ...(isRoot
         ? [{
@@ -347,7 +354,7 @@ export default function Page() {
           ) : contentTab === "legal-pages" ? (
             <ConfigLegalPages />
           ) : (
-            <BookingManager />
+            contentTab === "almacenamiento" ? <ConfigBunnyCDN api={api} pushToast={pushToast} /> : <BookingManager />
           )}
         </motion.div>
       </AnimatePresence>
