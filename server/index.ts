@@ -37,6 +37,7 @@ import {
 } from "../lib/http/cookies";
 import { readSetCookies } from "../lib/http/readSetCookies";
 import { firstAllowedPath, isPathAllowed } from "../lib/rbac";
+import { requestScheme } from "../lib/http/request-scheme";
 
 type BOUser = {
   id: number;
@@ -254,6 +255,7 @@ async function fetchSession(
   backendOrigin: string,
   cookieHeader: string | undefined,
   pagePath: string | undefined,
+  publicScheme: "http" | "https",
 ): Promise<FetchSessionResult> {
   const sessionToken = sessionTokenFromCookie(cookieHeader);
   if (!sessionToken) {
@@ -281,7 +283,10 @@ async function fetchSession(
     // Cache miss or expired - fetch fresh from backend
     try {
     const url = new URL("/api/admin/me", backendOrigin);
-    const headers: Record<string, string> = { cookie: `bo_session=${sessionToken}` };
+    const headers: Record<string, string> = {
+      cookie: `bo_session=${sessionToken}`,
+      "x-forwarded-proto": publicScheme,
+    };
     if (typeof pagePath === "string" && pagePath.trim() !== "") {
       headers["x-bo-page-path"] = pagePath.trim();
     }
@@ -700,6 +705,7 @@ async function start() {
 
       // Let fetch set `Host` to upstream automatically.
       headers.delete("host");
+      headers.set("x-forwarded-proto", requestScheme(req));
       const sessionCookie = filterBOSessionCookie(headers.get("cookie") ?? undefined);
       if (sessionCookie) headers.set("cookie", sessionCookie);
       else headers.delete("cookie");
@@ -1108,6 +1114,7 @@ async function start() {
       const theme = cookies.bo_theme === "light" ? "light" : "dark";
       const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
       const isMobile = isMobileUA(userAgent);
+      const publicScheme = requestScheme(req);
       const cookieHeader = typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
       const backendCookieHeader = filterBOSessionCookie(cookieHeader) ?? "";
       const isPublicBookingPage =
@@ -1122,7 +1129,7 @@ async function start() {
       const sessionStartedAt = performance.now();
       const sessionFetch = skipSessionLookup
         ? { status: "unauthenticated" as const, session: null, movingExpirationDate: null, setCookies: [] }
-        : await fetchSession(backendOrigin, backendCookieHeader, req.path);
+        : await fetchSession(backendOrigin, backendCookieHeader, req.path, publicScheme);
       const sessionDuration = performance.now() - sessionStartedAt;
       const session = sessionFetch.session;
       const movingExpirationDate = sessionFetch.movingExpirationDate;
