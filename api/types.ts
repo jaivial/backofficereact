@@ -2165,6 +2165,34 @@ export type AIImageConfigInput = {
   isActive?: boolean;
 };
 
+export type BunnyCDNConfig = {
+  publicPullBaseUrl: string;
+  publicStorageZone: string;
+  hasPublicStorageAccessKey: boolean;
+  publicStorageAccessKeyMask?: string;
+  memberPullBaseUrl: string;
+  memberStorageZone: string;
+  hasMemberStorageAccessKey: boolean;
+  memberStorageAccessKeyMask?: string;
+  privateStorageZone: string;
+  hasPrivateStorageAccessKey: boolean;
+  privateStorageAccessKeyMask?: string;
+  publicConfigured: boolean;
+  membersConfigured: boolean;
+  privateConfigured: boolean;
+};
+
+export type BunnyCDNConfigInput = {
+  publicPullBaseUrl?: string;
+  publicStorageZone?: string;
+  publicStorageAccessKey?: string;
+  memberPullBaseUrl?: string;
+  memberStorageZone?: string;
+  memberStorageAccessKey?: string;
+  privateStorageZone?: string;
+  privateStorageAccessKey?: string;
+};
+
 export type EmailProviderConfig = {
   id: number;
   provider: "smtp" | "gmail";
