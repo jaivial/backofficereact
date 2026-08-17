@@ -62,6 +62,23 @@ test.describe("Authentication", () => {
       await context.close();
     });
 
+    test("fresh contexts complete the first login without a login bounce", async ({ browser }) => {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const context = await browser.newContext({ ignoreHTTPSErrors: true });
+        const page = await context.newPage();
+
+        await page.goto("/login", { waitUntil: "networkidle" });
+        await page.fill('input[type="text"]', ADMIN_EMAIL);
+        await page.fill('input[type="password"]', ADMIN_PASSWORD);
+        await page.click('button[type="submit"]');
+        await page.waitForURL("**/app/**", { timeout: 15_000 });
+        expect(page.url()).not.toContain("/login");
+        expect((await context.cookies()).some((cookie) => cookie.name === "bo_session")).toBe(true);
+
+        await context.close();
+      }
+    });
+
     test("login with invalid credentials shows error", async ({ browser }) => {
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       const page = await context.newPage();
