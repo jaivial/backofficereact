@@ -1,5 +1,6 @@
 import type { BOSession } from "../../../api/types";
 import { createAuthClient } from "../../../api/auth-client";
+import { confirmLoginSession } from "./session-confirmation";
 
 export function createLoginHandler({
   api,
@@ -26,6 +27,11 @@ export function createLoginHandler({
         setError(res.message || "Login failed");
         return;
       }
+      await confirmLoginSession(async () => {
+        const sessionCheck = await fetch("/api/admin/me", { credentials: "include" });
+        if (!sessionCheck.ok) throw new Error(`Session confirmation failed (HTTP ${sessionCheck.status})`);
+        return (await sessionCheck.json()) as { success?: boolean; session?: { user?: unknown } };
+      });
       setSession(res.session);
       if (res.session.user.mustChangePassword) {
         window.location.href = "/change-password";
