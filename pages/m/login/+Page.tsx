@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 
 import { createClient } from "../../../api/client";
@@ -14,7 +14,11 @@ export default function MobileLoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
   useErrorToast(error);
 
   const onSubmit = createLoginHandler({
@@ -76,7 +80,7 @@ export default function MobileLoginPage() {
             required
             placeholder="tu@email.com"
             data-ui="mobile-login-input-identifier"
-            disabled={busy}
+            disabled={busy || !hydrated}
           />
         </div>
 
@@ -98,14 +102,14 @@ export default function MobileLoginPage() {
             required
             placeholder="********"
             data-ui="mobile-login-input-password"
-            disabled={busy}
+            disabled={busy || !hydrated}
           />
         </div>
 
         <button
           className="bo-btn bo-btn--primary w-full py-3.5 rounded-xl font-semibold text-base flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
           type="submit"
-          disabled={busy}
+          disabled={busy || !hydrated}
           data-ui="mobile-login-submit"
         >
           {busy ? (
