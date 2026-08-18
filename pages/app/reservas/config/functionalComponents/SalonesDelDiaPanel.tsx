@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { Building2, LayoutGrid } from "lucide-react";
 
 import type { ConfigFloor, ConfigSalon } from "../../../../../api/types";
 import { Tabs, type TabItem } from "../../../../../ui/nav/Tabs";
@@ -32,8 +33,8 @@ export function SalonesDelDiaPanel({ date, floors, api, busy, setBusy, setError,
 
   const tabs = useMemo<TabItem[]>(
     () => [
-      { id: "salones", label: "Salones", href: "#salones-del-dia" },
-      { id: "plantas", label: "Plantas", href: "#plantas-del-dia" },
+      { id: "salones", label: "Salones", href: "#salones-del-dia", icon: <LayoutGrid className="bo-ico" /> },
+      { id: "plantas", label: "Plantas", href: "#plantas-del-dia", icon: <Building2 className="bo-ico" /> },
     ],
     [],
   );
