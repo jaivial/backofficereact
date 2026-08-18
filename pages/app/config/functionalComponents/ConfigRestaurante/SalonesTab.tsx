@@ -15,12 +15,15 @@ export type SalonEditorMode = { kind: "create" } | { kind: "edit"; salon: Config
 
 interface SalonesTabProps {
   floors: ConfigFloor[];
+  /** When set, salones shown/created belong to this date only (reservas config). */
+  date?: string;
   api: {
     config: {
       listSalons: (date?: string) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
-      createSalon: (input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
-      updateSalon: (salonId: number, input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+      createSalon: (input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+      updateSalon: (salonId: number, input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
       deleteSalon: (salonId: number) => Promise<{ success: boolean; message?: string }>;
+      setSalonDayStatus?: (input: { date: string; salonId: number; active: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
     };
   };
   busy: boolean;
@@ -47,7 +50,7 @@ function draftToInput(draft: SalonDraft, floor: ConfigFloor) {
   };
 }
 
-export function SalonesTab({ floors, api, busy, setBusy, setError, pushToast }: SalonesTabProps) {
+export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToast }: SalonesTabProps) {
   const [salons, setSalons] = useState<ConfigSalon[]>([]);
   const [editor, setEditor] = useState<SalonEditorMode | null>(null);
   const [draft, setDraft] = useState<SalonDraft>(() => newSalonDraft(floors[0]?.floorNumber ?? 0));
@@ -59,14 +62,14 @@ export function SalonesTab({ floors, api, busy, setBusy, setError, pushToast }: 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const res = await api.config.listSalons();
+      const res = await api.config.listSalons(date);
       if (!cancelled && res.success && res.salons) setSalons(res.salons);
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [date]);
 
   const openCreate = () => {
     setDraft(newSalonDraft(floors[0]?.floorNumber ?? 0));
@@ -82,7 +85,7 @@ export function SalonesTab({ floors, api, busy, setBusy, setError, pushToast }: 
 
   const save = async () => {
     if (!floorForDraft || !editor) return;
-    const input = draftToInput(draft, floorForDraft);
+    const input = { ...draftToInput(draft, floorForDraft), ...(date ? { date } : {}) };
     if (!input.name) {
       setError("El nombre del salón es obligatorio");
       return;
