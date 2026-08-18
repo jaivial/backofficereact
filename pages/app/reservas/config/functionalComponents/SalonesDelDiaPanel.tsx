@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import type { ConfigFloor, ConfigSalon } from "../../../../../api/types";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { readAPIMessage } from "../../../config/helpers/configHelpers";
-import { groupSalonsByFloor } from "../../../config/helpers/salonsHelpers";
+import { groupSalonsByFloor, salonCapacityText } from "../../../config/helpers/salonsHelpers";
 import { mergeSalonOverrides, salonDayLabel, type SalonDayOverrides } from "../helpers/salonDayHelpers";
 
 interface SalonesDelDiaPanelProps {
@@ -22,9 +22,9 @@ interface SalonesDelDiaPanelProps {
 }
 
 /**
- * Per-day salones status for the selected date. The backend returns each
- * salon's effective state (day override applied over the global default);
- * we keep the override map client-side so toggles are optimistic.
+ * Same salones section as /app/config (floor container cards + salon rows),
+ * but scoped to the selected date: it loads each salon's global default and
+ * applies that date's overrides; edits (open/close) are saved for that date only.
  */
 export function SalonesDelDiaPanel({ date, floors, api, busy, setBusy, setError, pushToast }: SalonesDelDiaPanelProps) {
   const [salons, setSalons] = useState<ConfigSalon[]>([]);
@@ -46,8 +46,6 @@ export function SalonesDelDiaPanel({ date, floors, api, busy, setBusy, setError,
 
   const effective = useMemo(() => mergeSalonOverrides(salons, overrides), [salons, overrides]);
   const groups = useMemo(() => groupSalonsByFloor(floors, effective), [floors, effective]);
-
-  if (salons.length === 0 && groups.every((g) => g.salons.length === 0)) return null;
 
   const toggle = async (salon: ConfigSalon, next: boolean) => {
     const previous = overrides;
@@ -71,29 +69,49 @@ export function SalonesDelDiaPanel({ date, floors, api, busy, setBusy, setError,
   };
 
   return (
-    <div data-ui="salones-day-panel" className="bo-salonesDayPanel">
-      {groups
-        .filter((g) => g.salons.length > 0)
-        .map(({ floor, salons: floorSalons }) => (
-          <div key={`salon-day-${floor.floorNumber}`} className="bo-salonesDayGroup" data-ui="salones-day-group">
-            <div className="bo-salonesDayGroupTitle">{floor.name}</div>
-            {floorSalons.map((salon) => (
-              <div key={salon.id} data-ui="salon-day-row" className="bo-salonesDayRow">
-                <div data-slot="salon-name" className="bo-salonesDayName">{salon.name}</div>
-                <div data-slot="salon-state" className="bo-floorRowState">
-                  <span data-ui="salon-day-state-label" className="bo-floorRowStateText">{salonDayLabel(salon, salon.isActive)}</span>
-                  <Switch
-                    checked={salon.isActive}
-                    disabled={busy}
-                    onCheckedChange={(checked) => void toggle(salon, checked)}
-                    aria-label={`Abrir o cerrar ${salon.name} el ${date}`}
-                    data-ui="salon-day-switch"
-                  />
-                </div>
+    <div className="bo-configSalonCards" aria-label="Salones del día por planta" data-ui="salones-day-cards-container">
+      {groups.map(({ floor, salons: floorSalons }) => (
+        <div key={`salon-day-${floor.floorNumber}`} className="bo-configSalonFloorCard" data-slot="salon-floor-card">
+          <div className="bo-floorSalonCard" data-ui="salon-floor-card-info">
+            <div data-ui="floor-card-info">
+              <div className="bo-floorCardName" data-slot="configRestaurante-floorCardName">{floor.name}</div>
+              <div className="bo-floorCardHint" data-slot="configRestaurante-floorCardHint">
+                {floorSalons.length === 0
+                  ? "Sin salones en esta planta"
+                  : `${floorSalons.length} ${floorSalons.length === 1 ? "salón" : "salones"}`}
               </div>
-            ))}
+            </div>
+            <div className="bo-floorSalonCardState" data-ui="salon-floor-card-state">
+              <span className="bo-floorSalonCardStatus" data-slot="configRestaurante-floorSalonCardStatus">
+                {floor.active ? "Abierto" : "Cerrado"}
+              </span>
+            </div>
           </div>
-        ))}
+
+          {floorSalons.length > 0 && (
+            <ul className="bo-configSalonList" data-slot="salon-list">
+              {floorSalons.map((salon) => (
+                <li key={salon.id} className="bo-configSalonRow" data-ui="salon-day-row" data-salon-id={salon.id}>
+                  <div className="bo-configSalonInfo">
+                    <span className="bo-configSalonName" data-slot="salon-name">{salon.name}</span>
+                    <span className="bo-configSalonMeta" data-slot="salon-meta">{salonCapacityText(salon)}</span>
+                  </div>
+                  <div className="bo-floorSalonCardState" data-ui="salon-day-state">
+                    <span data-ui="salon-day-state-label" className="bo-floorSalonCardStatus">{salonDayLabel(salon, salon.isActive)}</span>
+                    <Switch
+                      checked={salon.isActive}
+                      disabled={busy}
+                      onCheckedChange={(checked) => void toggle(salon, checked)}
+                      aria-label={`Abrir o cerrar ${salon.name} el ${date}`}
+                      data-ui="salon-day-switch"
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
