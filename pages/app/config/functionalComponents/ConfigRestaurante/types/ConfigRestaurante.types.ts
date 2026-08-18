@@ -1,4 +1,4 @@
-import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../../../../../../api/types";
+import type { ConfigDefaults, ConfigFloor, ConfigSalon, OpeningMode, WeekdayOpen } from "../../../../../../api/types";
 import type { FloorTab } from "../../../../config/helpers/configHelpers";
 
 export type RestauranteContentProps = {
@@ -7,8 +7,19 @@ export type RestauranteContentProps = {
   busy: boolean;
   setBusy: (v: boolean) => void;
   setError: (v: string | null) => void;
-  api: { config: { setDefaults: (patch: Partial<ConfigDefaults>) => Promise<{ success: boolean; message?: string }>; setDefaultFloors: (patch: { count?: number; floorNumber?: number; active?: boolean }) => Promise<{ success: boolean; message?: string }> } };
-  pushToast: (t: { kind: "success" | "error"; title: string; message?: string }) => void;
+  api: { config: {
+    setDefaults: (patch: Partial<ConfigDefaults>) => Promise<{ success: boolean; message?: string }>;
+    setDefaultFloors: (patch: { count?: number; floorNumber?: number; active?: boolean }) => Promise<{ success: boolean; message?: string; floors?: ConfigFloor[] }>;
+    listSalons: (date?: string) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+    createSalon: (input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+    updateSalon: (salonId: number, input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+    deleteSalon: (salonId: number) => Promise<{ success: boolean; message?: string }>;
+  } };
+  pushToast: (t: { kind: "success" | "error" | "info"; title: string; message?: string }) => void;
+  /** Optimistic notification: parent should replace its floors state with this array. */
+  onFloorsChanged?: (floors: ConfigFloor[]) => void;
+  /** Optimistic notification: parent should merge this patch into its defaults state. */
+  onDefaultsChanged?: (patch: Partial<ConfigDefaults>) => void;
 };
 
 export type FloorCard = {
