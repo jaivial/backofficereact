@@ -334,6 +334,8 @@ export default function Page() {
               setError={setError}
               api={api}
               pushToast={pushToast}
+              onFloorsChanged={setFloors}
+              onDefaultsChanged={(patch) => setDefaults((prev) => (prev ? { ...prev, ...patch } : prev))}
             />
           ) : contentTab === "contacto" ? (
             <ConfigContacto

@@ -9,6 +9,25 @@ export type HourSlot = {
 
 export type FloorTab = "plantas" | "salones";
 
+type FloorLike = { id: number; floorNumber: number; name: string; isGround: boolean; active: boolean };
+
+/** Build the optimistic floors array for a target floor count (0 = ground). */
+export function buildFloorsWithCount(floors: FloorLike[], count: number): FloorLike[] {
+  const sorted = [...floors].sort((a, b) => a.floorNumber - b.floorNumber);
+  if (count <= sorted.length) return sorted.slice(0, count);
+  const out = [...sorted];
+  for (let n = sorted.length; n < count; n += 1) {
+    out.push({
+      id: -Date.now() - n,
+      floorNumber: n,
+      name: `Planta ${n}`,
+      isGround: false,
+      active: true,
+    });
+  }
+  return out;
+}
+
 export type WeekdayCard = {
   key: keyof WeekdayOpen;
   label: string;
@@ -126,13 +145,13 @@ export function normalizeWeekdayOpenMap(input: unknown): WeekdayOpen {
   return out;
 }
 
-export const tableLimitValues = [...Array.from({ length: 41 }, (_, i) => String(i)), "999"];
+export const tableLimitValues = [...Array.from({ length: 100 }, (_, i) => String(i)), "999"];
 
 export function normalizeTableLimit(value: string | null | undefined): string {
   if (value === "999") return "999";
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return "999";
-  const clamped = Math.max(0, Math.min(40, Math.trunc(parsed)));
+  const clamped = Math.max(0, Math.min(99, Math.trunc(parsed)));
   return String(clamped);
 }
 

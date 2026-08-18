@@ -625,6 +625,26 @@ export type ConfigFloor = {
   active: boolean;
 };
 
+export type ConfigSalon = {
+  id: number;
+  floorId: number;
+  floorNumber: number;
+  floorName: string;
+  name: string;
+  hasCapacityLimit: boolean;
+  capacityLimit: number;
+  isActive: boolean;
+  displayOrder: number;
+};
+
+export type ConfigSalonInput = {
+  floorId: number;
+  name: string;
+  hasCapacityLimit: boolean;
+  capacityLimit: number;
+  isActive?: boolean;
+};
+
 export type RestaurantInfo = {
   direccion: string;
   telefono: string;
