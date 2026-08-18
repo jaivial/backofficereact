@@ -177,10 +177,15 @@ test.describe("Menu slider customization", () => {
       ),
     });
     await expect(adminPage.locator('[role="dialog"][aria-label="Asesor IA de imagen"]')).toBeVisible();
-    // "Continuar sin mejorar" always present; AI button only when subscribed.
+    // "Continuar sin mejorar" always present; AI button only when subscribed and
+    // an image model is configured, otherwise an explanatory notice takes its place.
     await expect(
       adminPage.locator('[data-testid="slider-advisor-continue-without-ai"]'),
     ).toBeVisible();
+    const aiButton = adminPage.locator('[data-testid="slider-advisor-improve-with-ai"]');
+    const notice = adminPage.locator('[data-testid="slider-advisor-ai-unavailable"]');
+    // Exactly one of the two: the AI button, or the "configure a model" notice.
+    expect((await aiButton.count()) + (await notice.count())).toBe(1);
   });
 
   test("public API: default mode serves seeded defaults", async ({ adminPage, request }) => {

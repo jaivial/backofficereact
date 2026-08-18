@@ -119,17 +119,14 @@
 
 @media (min-width: 621px) {
   .bo-menuV2Grid {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   }
 }
 
 .bo-menuV2Card {
   padding: 24px;
+  min-width: 340px;
   min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px;
-  align-items: start;
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 160ms ease;
 }
@@ -165,12 +162,20 @@
   overflow-wrap: anywhere;
 }
 
-.bo-menuV2Row--meta {
+.bo-menuV2Row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.bo-menuV2Row--status {
+  align-items: center;
+}
+
+.bo-menuV2Row--footer {
+  align-items: center;
 }
 
 .bo-menuV2Meta {
@@ -208,13 +213,6 @@
   border-color: rgba(147, 239, 231, 0.32);
   background: rgba(147, 239, 231, 0.12);
   color: rgba(194, 252, 246, 0.95);
-}
-
-.bo-menuV2Aside {
-  display: grid;
-  gap: 16px;
-  justify-items: end;
-  align-content: start;
 }
 
 .bo-menuV2StatusCtrl {
