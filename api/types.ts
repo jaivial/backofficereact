@@ -490,6 +490,7 @@ export type MenuSlider = {
   show_slider: boolean;
   mode: SliderMode;
   ai_enabled: boolean;
+  ai_generating?: number;
   images: MenuSliderImage[];
 };
 
