@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
 import type { ConfigFloor, ConfigSalon } from "../../../../../api/types";
@@ -50,21 +50,24 @@ function draftToInput(draft: SalonDraft, floor: ConfigFloor) {
 
 export function SalonesTab({ floors, api, busy, setBusy, setError, pushToast }: SalonesTabProps) {
   const [salons, setSalons] = useState<ConfigSalon[]>([]);
-  const [loaded, setLoaded] = useState(false);
   const [editor, setEditor] = useState<SalonEditorMode | null>(null);
   const [draft, setDraft] = useState<SalonDraft>(() => newSalonDraft(floors[0]?.floorNumber ?? 0));
   const [deleteTarget, setDeleteTarget] = useState<ConfigSalon | null>(null);
 
   const groups = useMemo(() => groupSalonsByFloor(floors, salons), [floors, salons]);
 
-  // Lazily fetch salons the first time the tab content mounts.
-  if (!loaded) {
-    setLoaded(true);
+  // Fetch salons when the tab mounts.
+  useEffect(() => {
+    let cancelled = false;
     void (async () => {
       const res = await api.config.listSalons();
-      if (res.success && res.salons) setSalons(res.salons);
+      if (!cancelled && res.success && res.salons) setSalons(res.salons);
     })();
-  }
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openCreate = () => {
     setDraft(newSalonDraft(floors[0]?.floorNumber ?? 0));
