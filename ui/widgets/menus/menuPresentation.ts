@@ -18,6 +18,31 @@ export const MENU_TYPE_PANELS: readonly MenuTypePanelDef[] = [
 
 export const MENU_TYPE_ORDER: string[] = MENU_TYPE_PANELS.map((panel) => panel.value);
 
+const MENU_TYPE_QUERY_SLUGS: Record<string, string> = {
+  closed_conventional: "menucerradoconvencional",
+  closed_group: "menucerradogrupo",
+  a_la_carte: "alacarteconvencional",
+  a_la_carte_group: "alacartegrupo",
+  special: "menuespecial",
+};
+
+const MENU_TYPE_BY_QUERY_SLUG = Object.fromEntries(
+  Object.entries(MENU_TYPE_QUERY_SLUGS).map(([type, slug]) => [slug, type]),
+) as Record<string, string>;
+
+export function menuTypeQuerySlug(kind: string): string {
+  return MENU_TYPE_QUERY_SLUGS[kind] ?? MENU_TYPE_QUERY_SLUGS.closed_conventional;
+}
+
+export function menuTypeFromQuerySlug(slug: unknown): string | null {
+  if (typeof slug !== "string" || !slug) return null;
+  return MENU_TYPE_BY_QUERY_SLUG[slug] ?? (MENU_TYPE_ORDER.includes(slug) ? slug : null);
+}
+
+export function menuTypeFullLabel(kind: string): string {
+  return MENU_TYPE_PANELS.find((panel) => panel.value === kind)?.label ?? MENU_TYPE_PANELS[0].label;
+}
+
 export function formatMenuPrice(price: string): string {
   const n = Number(price);
   if (!Number.isFinite(n)) return price;

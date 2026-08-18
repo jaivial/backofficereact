@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -20,6 +20,7 @@ import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/
 import { BookingManager } from "./booking/BookingManager";
 import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/ConfigLegalPages";
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
+import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 
 type PageData = {
@@ -29,7 +30,7 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn";
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -189,6 +190,12 @@ export default function Page() {
             label: "IA",
             href: "#ia",
             icon: <Sparkles className="bo-ico" />,
+          } as TabItem,
+          {
+            id: "cdn",
+            label: "CDN",
+            href: "#cdn",
+            icon: <Cloud className="bo-ico" />,
           } as TabItem]
         : []),
     ],
@@ -314,6 +321,8 @@ export default function Page() {
                 />
               </>
             ) : null
+          ) : contentTab === "cdn" ? (
+            isRoot ? <ConfigBunnyStorage /> : null
           ) : contentTab === "restaurante" ? (
             <ConfigRestaurante
               defaults={defaults}
