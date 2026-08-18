@@ -11,8 +11,8 @@ export type RestauranteContentProps = {
     setDefaults: (patch: Partial<ConfigDefaults>) => Promise<{ success: boolean; message?: string }>;
     setDefaultFloors: (patch: { count?: number; floorNumber?: number; active?: boolean }) => Promise<{ success: boolean; message?: string; floors?: ConfigFloor[] }>;
     listSalons: (date?: string) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
-    createSalon: (input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
-    updateSalon: (salonId: number, input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+    createSalon: (input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+    updateSalon: (salonId: number, input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
     deleteSalon: (salonId: number) => Promise<{ success: boolean; message?: string }>;
   } };
   pushToast: (t: { kind: "success" | "error" | "info"; title: string; message?: string }) => void;

@@ -635,6 +635,7 @@ export type ConfigSalon = {
   capacityLimit: number;
   isActive: boolean;
   displayOrder: number;
+  dateScoped?: string;
 };
 
 export type ConfigSalonInput = {
@@ -643,6 +644,7 @@ export type ConfigSalonInput = {
   hasCapacityLimit: boolean;
   capacityLimit: number;
   isActive?: boolean;
+  date?: string;
 };
 
 export type RestaurantInfo = {
