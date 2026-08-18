@@ -35,6 +35,7 @@ import {
   resolveMenuPreviewState,
   toNumOrNull,
   trackerFromWSPayload,
+  trackerMenuPreviewFromWSPayload,
   uid,
   updateMenuAITrackerDish,
   withDishPositions,
@@ -783,6 +784,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
     const applyMessageTracker = (payload: unknown) => {
       const rows = trackerFromWSPayload(payload);
       if (rows.length > 0) applyAITrackerSnapshot(rows);
+      const previewPatch = trackerMenuPreviewFromWSPayload(payload);
+      if (previewPatch) applyMenuPreviewAIState(previewPatch);
     };
 
     const scheduleReconnect = () => {
@@ -815,12 +818,14 @@ export function useMenuEditor(): UseMenuEditorReturn {
         if (menuAIWSRetryRef.current) window.clearTimeout(menuAIWSRetryRef.current);
       });
 
-      socket.addEventListener("message", (event) => {
+      socket.addEventListener("message", (event: MessageEvent) => {
         if (disposed) return;
         let payload: Record<string, unknown> | null = null;
         try { payload = JSON.parse(String(event.data ?? "")) as Record<string, unknown>; } catch { return; }
         const type = String(payload.type ?? "").trim().toLowerCase();
-        if (type === "sync" || type === "ai_update" || type === "tracker_update") {
+        if (type === "sync" || type === "ai_update" || type === "tracker_update"
+          || type === "hello" || type === "snapshot"
+          || type === "preview_image_completed" || type === "preview_image_failed") {
           applyMessageTracker(payload);
         }
       });
@@ -845,7 +850,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       socket?.close();
       if (menuAIWSRetryRef.current) window.clearTimeout(menuAIWSRetryRef.current);
     };
-  }, [menuId, applyAITrackerSnapshot]);
+  }, [menuId, applyAITrackerSnapshot, applyMenuPreviewAIState]);
 
   // --- Preview Theme ---
   const normalizePreviewThemeId = useCallback((rawThemeId?: string | null): string => {
