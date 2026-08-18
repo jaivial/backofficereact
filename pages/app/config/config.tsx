@@ -20,6 +20,7 @@ import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/
 import { BookingManager } from "./booking/BookingManager";
 import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/ConfigLegalPages";
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
+import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMax";
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 
@@ -315,6 +316,7 @@ export default function Page() {
             isRoot ? (
               <>
                 <ConfigAIImage />
+                <ConfigMiniMax />
 				<ConfigWhatsAppBot
                   restaurants={pageContext.bo?.session?.restaurants ?? []}
                   activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
