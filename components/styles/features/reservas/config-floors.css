@@ -444,3 +444,39 @@
   gap: 1rem;
   padding: 0.5rem 0;
 }
+
+/* Salones per-day override panel (/app/reservas/config) */
+.bo-salonesDayPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bo-salonesDayGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bo-salonesDayGroupTitle {
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding-bottom: 0.25rem;
+}
+
+.bo-salonesDayRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.bo-salonesDayRow:hover {
+  background: var(--bo-subtle-bg, rgba(0, 0, 0, 0.03));
+}
+
+.bo-salonesDayName {
+  font-weight: 500;
+}
