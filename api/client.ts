@@ -1948,6 +1948,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         const q = date ? `?${new URLSearchParams({ date })}` : "";
         return json(`/api/admin/config/salons${q}`, { method: "GET" });
       },
+      async setSalonDayStatus(input: { date: string; salonId: number; active: boolean }): Promise<APISuccess<{ date: string; salons: import("./types").ConfigSalon[] }> | APIError> {
+        return json("/api/admin/config/salons/day-status", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
       async createSalon(input: import("./types").ConfigSalonInput): Promise<APISuccess<{ salon: import("./types").ConfigSalon; salons: import("./types").ConfigSalon[] }> | APIError> {
         return json("/api/admin/config/salons", {
           method: "POST",
