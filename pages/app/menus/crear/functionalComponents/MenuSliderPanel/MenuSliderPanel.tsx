@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Sparkles, Trash2 } from "lucide-react";
+import { usePageContext } from "vike-react/usePageContext";
+import { Info, Plus, Sparkles, Trash2 } from "lucide-react";
 import { createClient } from "../../../../../../api/client";
 import type { MenuSlider, MenuSliderImage, SliderMode } from "../../../../../../api/types";
 import { Modal } from "../../../../../../ui/overlays/Modal";
@@ -47,6 +48,8 @@ export function MenuSliderPanel({
 }) {
   const api = useRef(createClient({ baseUrl: "" })).current;
   const { pushToast } = useToasts();
+  const pageContext = usePageContext();
+  const isRoot = (pageContext.bo?.session?.user?.role ?? "") === "root";
   const [slider, setSlider] = useState<MenuSlider | null>(initialSlider);
   const [pendingGeneration, setPendingGeneration] = useState<string | null>(null);
   const [recentImageID, setRecentImageID] = useState<number | null>(null);
@@ -312,6 +315,19 @@ export function MenuSliderPanel({
               <img className="bo-dishAIAdvisorPreview" src={advisor.previewUrl} alt="Previsualizacion" />
             </div>
           ) : null}
+          {aiEnabled ? null : (
+            <p className="bo-dishAIAdvisorNotice" data-testid="slider-advisor-ai-unavailable">
+              <Info size={15} aria-hidden />
+              <span>
+                La mejora con IA no esta disponible: falta configurar un modelo de imagen.{" "}
+                {isRoot ? (
+                  <a href="/app/config?content=ia">Configuralo en Ajustes &gt; IA</a>
+                ) : (
+                  "Pide a un administrador que lo configure en Ajustes > IA."
+                )}
+              </span>
+            </p>
+          )}
         </div>
         <div className="bo-modalActions bo-dishAIAdvisorActions">
           <button

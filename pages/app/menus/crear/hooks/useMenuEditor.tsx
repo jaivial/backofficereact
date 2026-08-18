@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Trash2, Upload } from "lucide-react";
+import { Sparkles, Trash2, Upload } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 import { useReducedMotion } from "motion/react";
 
@@ -1738,38 +1738,48 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const renderMenuPreviewUploadArea = () => {
     if (!showMenuPreviewImage) return null;
     const statusMessage = menuPreviewAIGenerating ? "Generando imagen con IA..." : menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy ? "Procesando imagen..." : "JPG, PNG, WEBP o GIF. Se optimiza a WebP de hasta 150KB.";
-    const actionLabel = menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy ? "Procesando..." : "Cambiar imagen";
     const uploadLabel = menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy ? "Procesando..." : "Subir imagen";
     const menuPreviewUploadDisabled = !menuId || menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy || menuPreviewAIGenerating;
 
+    // Compact single-cell picker matching the "Slider de imagenes" section, so
+    // both image controls in this panel look and behave the same way.
     return (
       <div className="bo-field bo-field--full" data-slot="useMenuEditor-field--full">
         <div className="bo-label" data-slot="useMenuEditor-label">Foto preview del menu</div>
-        <div className="bo-menuPreviewUploadBlock" data-slot="useMenuEditor-menuPreviewUploadBlock">
+        <div className="bo-sliderGrid bo-sliderGrid--preview" data-slot="useMenuEditor-menuPreviewGrid">
           {menuPreviewAIGenerating ? (
-            <div className="bo-menuPreviewSkeletonCard" role="status" aria-live="polite" data-slot="useMenuEditor-menuPreviewSkeletonCard">
-              <div className="bo-menuPreviewSkeletonMedia bo-skeleton" data-slot="useMenuEditor-skeleton" />
+            <div className="bo-sliderCell bo-sliderPendingCell" role="status" aria-live="polite" data-testid="menu-preview-ai-skeleton">
+              <Sparkles size={16} aria-hidden="true" />
+              <span>Generando...</span>
             </div>
           ) : menuPreviewImageUrl ? (
-            <div className="bo-menuPreviewImageCard" data-slot="useMenuEditor-menuPreviewImageCard">
-              <img className="bo-menuPreviewImage" src={menuPreviewImageUrl} alt="Preview image" />
-              <div className="bo-menuPreviewActions" data-slot="useMenuEditor-menuPreviewActions">
-                <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={menuPreviewUploadDisabled} onClick={openMenuPreviewImagePicker} data-testid="menu-editor-change-image-btn">
-                  <Upload size={14} /> {actionLabel}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="bo-menuPreviewDropzone" data-slot="useMenuEditor-menuPreviewDropzone">
-              <Upload size={18} aria-hidden="true" />
-              <div className="bo-mutedText" data-slot="useMenuEditor-mutedText">Sube una imagen para mostrarla en la cabecera del menu.</div>
-              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={menuPreviewUploadDisabled} onClick={openMenuPreviewImagePicker} data-testid="menu-editor-upload-preview-image-btn">
-                <Upload size={14} /> {uploadLabel}
+            <div className="bo-sliderCell" data-slot="useMenuEditor-menuPreviewCell">
+              <img className="bo-sliderThumb" src={menuPreviewImageUrl} alt="Foto preview del menu" />
+              <button
+                className="bo-sliderDelete"
+                type="button"
+                disabled={menuPreviewUploadDisabled}
+                onClick={() => setMenuPreviewImageUrl("")}
+                aria-label="Eliminar foto preview"
+                data-testid="menu-editor-delete-preview-image-btn"
+              >
+                <Trash2 size={14} />
               </button>
             </div>
+          ) : (
+            <button
+              className="bo-sliderCell bo-sliderAddCell"
+              type="button"
+              disabled={menuPreviewUploadDisabled}
+              onClick={openMenuPreviewImagePicker}
+              aria-label={uploadLabel}
+              data-testid="menu-editor-upload-preview-image-btn"
+            >
+              <Upload size={18} aria-hidden="true" />
+            </button>
           )}
-          <div className="bo-menuPreviewStatus bo-mutedText" data-slot="useMenuEditor-mutedText">{statusMessage}</div>
         </div>
+        <div className="bo-menuPreviewStatus bo-mutedText" data-slot="useMenuEditor-mutedText">{statusMessage}</div>
       </div>
     );
   };

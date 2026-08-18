@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft,
   Check,
   ChevronDown,
   ChevronUp,
@@ -25,6 +24,7 @@ import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { Panel } from "../../../../ui/shell/Panel";
 import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 import { Tabs } from "../../../../ui/nav/Tabs";
+import { Breadcrumbs } from "../../../../ui/nav/Breadcrumbs";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 
 import { useMenuEditor } from "./hooks/useMenuEditor";
@@ -36,6 +36,7 @@ import { MenuPricing } from "./functionalComponents/MenuPricing/MenuPricing";
 import { MenuSectionEditor } from "./functionalComponents/MenuSectionEditor/MenuSectionEditor";
 import { DishImageAdvisorModalComponent } from "./functionalComponents/DishImageAdvisorModal/DishImageAdvisorModal";
 import { ALLERGENS, beverageTypeOptions, dishVisibilityOptions, menuPreviewVisibilityOptions, menuTypeOptions, MENU_TYPES } from "./constants/menuEditor.constants";
+import { menuTypeFullLabel, menuTypeQuerySlug } from "../../../../ui/widgets/menus/menuPresentation";
 import type { DishImageCropConfirm } from "./types/menuEditor.types";
 
 function DishImageCropModalComponent({
@@ -291,10 +292,15 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
 
   return (
     <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
+      <Breadcrumbs
+        items={[
+          { label: "Menus", href: `/app/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+          { label: menuTypeFullLabel(menuType), href: `/app/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+          { label: title.trim() || "Nuevo menu" },
+        ]}
+        className="bo-menuWizardBreadcrumbs"
+      />
       <div className="bo-menuWizardTop" data-slot="crear-menuWizardTop">
-        <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose ?? (() => (window.location.href = "/app/menus"))} data-testid="menu-crear-back-to-menus">
-          <ArrowLeft size={16} /> Volver a menus
-        </button>
         <div className={`bo-saveTag is-${saveState}`} data-slot="crear-div">
           {saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}
         </div>
@@ -401,6 +407,8 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
               </div>
             </div>
 
+            {renderMenuPreviewUploadArea()}
+
             <div className="bo-menuBasicsSwitchRow" data-slot="crear-menuBasicsSwitchRow">
               <label className="bo-menuBasicsActiveToggle" data-slot="menu-crear-activo-label">
                 <span className="bo-label" data-slot="crear-label">Activo</span>
@@ -408,8 +416,6 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                 <span className="bo-mutedText" data-slot="crear-mutedText">{active ? "Activo" : "No activo"}</span>
               </label>
             </div>
-
-            {renderMenuPreviewUploadArea()}
           </div>
 
           <div className="bo-menuWizardActions bo-menuWizardActions--centered" data-slot="crear-menuWizardActions">
@@ -612,6 +618,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     <div className="bo-label" data-slot="crear-label">Añadir foto preview</div>
                     <Select className="bo-menuSettingSelect" value={showMenuPreviewImage ? "with_preview" : "without_preview"} onChange={(value) => setShowMenuPreviewImage(value === "with_preview")} options={menuPreviewVisibilityOptions} size="sm" ariaLabel="Visibilidad de foto preview en editor final" />
                   </div>
+                  {renderMenuPreviewUploadArea()}
                   {!isSpecial ? (
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
@@ -625,7 +632,6 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                       <span className="bo-mutedText" data-slot="crear-mutedText">{active ? "Activo" : "No activo"}</span>
                     </label>
                   </div>
-                  {renderMenuPreviewUploadArea()}
                 </div>
               </motion.div>
 

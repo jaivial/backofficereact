@@ -2026,6 +2026,17 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // BunnyCDN storage credentials per restaurant (root-only).
+      async getBunnyStorageConfig(): Promise<APISuccess<{ config: import("./types").BunnyStorageConfig }> | APIError> {
+        return json("/api/admin/config/bunny-storage", { method: "GET" });
+      },
+      async setBunnyStorageConfig(input: import("./types").BunnyStorageConfigInput): Promise<APISuccess<{ config: import("./types").BunnyStorageConfig }> | APIError> {
+        return json("/api/admin/config/bunny-storage", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
       // WhatsApp bot settings per restaurant (root-only, IA tab).
       async getBotSettings(restaurantId: number): Promise<APISuccess<import("./types").BotSettingsResponse> | APIError> {
         return json(`/api/admin/bot/settings/${restaurantId}`, { method: "GET" });

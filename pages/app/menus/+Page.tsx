@@ -15,7 +15,7 @@ import { cn } from "../../../ui/shadcn/utils";
 import { MenuSummaryCard } from "../../../ui/widgets/menus/MenuSummaryCard";
 import { MenuTypeChangeModal } from "../../../ui/widgets/menus/MenuTypeChangeModal";
 import { MenuTypePanelGrid } from "../../../ui/widgets/menus/MenuTypePanelGrid";
-import { MENU_TYPE_ORDER, menuTypeLabel } from "../../../ui/widgets/menus/menuPresentation";
+import { MENU_TYPE_ORDER, menuTypeFromQuerySlug, menuTypeLabel, menuTypeQuerySlug } from "../../../ui/widgets/menus/menuPresentation";
 import { CrearPage } from "./crear/crear";
 
 type PageData = {
@@ -210,9 +210,10 @@ export default function Page() {
     nextType: "closed_conventional",
   });
   const [searchText, setSearchText] = useState("");
-  const [showTypeSelector, setShowTypeSelector] = useState(true);
+  const selectedMenuTypeFromUrl = menuTypeFromQuerySlug(pageContext.urlParsed?.search?.menutype);
+  const [showTypeSelector, setShowTypeSelector] = useState(() => !selectedMenuTypeFromUrl);
   const [statusFilter, setStatusFilter] = useState<MenuStatusFilter>("all");
-  const [menuTypeFilter, setMenuTypeFilter] = useState("all");
+  const [menuTypeFilter, setMenuTypeFilter] = useState(() => selectedMenuTypeFromUrl ?? "all");
   const [sortBy, setSortBy] = useState<MenuSortOption>("created_desc");
   useErrorToast(error);
 
@@ -400,11 +401,14 @@ export default function Page() {
   const handleTypePanelClick = useCallback((type: string) => {
     setShowTypeSelector(false);
     setMenuTypeFilter(type);
+    const query = new URLSearchParams({ menutype: menuTypeQuerySlug(type) });
+    window.history.pushState({}, "", `/app/menus?${query.toString()}`);
   }, []);
 
   const handleBackToPanels = useCallback(() => {
     setShowTypeSelector(true);
     resetFilters();
+    window.history.pushState({}, "", "/app/menus");
   }, [resetFilters]);
 
   return (

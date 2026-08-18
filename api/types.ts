@@ -2107,6 +2107,15 @@ export type AIImageConfig = {
   isActive: boolean;
 };
 
+export type BunnyStorageConfig = {
+  storageZone?: string;
+  hasStorageKey: boolean;
+  storageKeyMask?: string;
+  pullBaseUrl?: string;
+  isActive: boolean;
+  usingEnvFallback: boolean;
+};
+
 export type BotTenantConfig = {
   model: string;
   language_default: string;
@@ -2162,6 +2171,13 @@ export type AIImageConfigInput = {
   apiKey?: string;
   t2iModelSlug?: string;
   i2iModelSlug?: string;
+  isActive?: boolean;
+};
+
+export type BunnyStorageConfigInput = {
+  storageZone?: string;
+  storageKey?: string;
+  pullBaseUrl?: string;
   isActive?: boolean;
 };
 

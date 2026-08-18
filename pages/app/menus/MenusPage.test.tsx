@@ -20,8 +20,9 @@ vi.mock("motion/react", () => ({
   motion: { div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => React.createElement("div", props, children) },
   useReducedMotion: () => true,
 }));
+const mockMenuSearch = vi.hoisted(() => ({ menutype: undefined as string | undefined }));
 vi.mock("vike-react/usePageContext", () => ({
-  usePageContext: () => ({ data: { menus: [], error: null } }),
+  usePageContext: () => ({ data: { menus: [], error: null }, urlParsed: { search: mockMenuSearch } }),
 }));
 vi.mock("../../../api/client", () => ({
   createClient: () => ({ menus: { gruposV2: {} } }),
@@ -37,14 +38,43 @@ vi.mock("../../../ui/overlays/Modal", () => ({
 }));
 vi.mock("../../../ui/overlays/ConfirmDialog", () => ({ ConfirmDialog: () => null }));
 vi.mock("../../../ui/widgets/menus/MenuTypeChangeModal", () => ({ MenuTypeChangeModal: () => null }));
-vi.mock("../../../ui/widgets/menus/MenuTypePanelGrid", () => ({ MenuTypePanelGrid: () => React.createElement("div", { "data-testid": "type-grid" }) }));
+vi.mock("../../../ui/widgets/menus/MenuTypePanelGrid", () => ({
+  MenuTypePanelGrid: ({ onSelect }: { onSelect: (type: string) => void }) => React.createElement(
+    "button",
+    { "data-testid": "type-grid", onClick: () => onSelect("closed_conventional") },
+    "Menu cerrado convencional",
+  ),
+}));
 vi.mock("../../../ui/widgets/menus/MenuSummaryCard", () => ({ MenuSummaryCard: () => null }));
 vi.mock("./crear/crear", () => ({ CrearPage: ({ onClose }: { onClose?: () => void }) => React.createElement("button", { onClick: onClose, "data-testid": "mock-menu-editor-close" }, "Editor") }));
 
 import Page from "./+Page";
 
 describe("MenusPage create flow", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockMenuSearch.menutype = undefined;
+    window.history.replaceState({}, "", "/app/menus");
+  });
+
+  it("opens the selected menu type when loaded from its query URL", () => {
+    mockMenuSearch.menutype = "menucerradoconvencional";
+
+    render(React.createElement(Page));
+
+    expect(screen.getByTestId("menus-page-back-button")).toBeInTheDocument();
+    expect(screen.queryByTestId("type-grid")).not.toBeInTheDocument();
+  });
+
+  it("writes the selected menu type to the query URL", () => {
+    render(React.createElement(Page));
+
+    fireEvent.click(screen.getByTestId("type-grid"));
+
+    expect(window.location.pathname).toBe("/app/menus");
+    expect(window.location.search).toBe("?menutype=menucerradoconvencional");
+    expect(screen.getByTestId("menus-page-back-button")).toBeInTheDocument();
+  });
 
   it("opens menu creator modal from floating plus button", () => {
     render(React.createElement(Page));

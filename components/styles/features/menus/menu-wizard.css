@@ -518,6 +518,7 @@
   grid-column: 1 / -1;
   width: fit-content;
   max-width: 100%;
+  margin-inline: auto;
 }
 
 /* The shared Tabs component hides labels below 896px (icons-only). The menu
@@ -530,7 +531,10 @@
 /* Configuracion tab shows only the editor+settings panels in the editor
    column (keeps the form at its previous width; mobile stays single-column). */
 .bo-menuWizardFinal .bo-editorPane--config {
-  grid-column: 1;
+  grid-column: 1 / -1;
+  width: min(100%, 769px);
+  max-width: 769px;
+  margin-inline: auto;
 }
 
 /* Both editor panes and the preview pane stay mounted; the inactive tab's
@@ -666,6 +670,11 @@
 
 .bo-menuEditorHead {
   margin-bottom: 0;
+  padding: 1rem;
+}
+
+.bo-menuWizardFinal [data-slot="crear-panelHead"] {
+  padding-left: 5px;
 }
 
 /* Editor de menu: center the "Añadir subtitulo" button. */
@@ -1445,6 +1454,7 @@
 
 .bo-settingsPanel {
   margin-top: 4px;
+  padding: 1rem;
 }
 
 .bo-menuWizardActions--final {
@@ -2267,8 +2277,6 @@
   }
 
   .bo-menuV2Card {
-    grid-template-columns: 1fr;
-    gap: 18px;
     padding: 20px;
   }
 
@@ -2276,14 +2284,9 @@
     padding: 14px;
   }
 
-  .bo-menuV2Aside {
-    width: 100%;
-    justify-items: stretch;
-  }
-
   .bo-menuV2StatusCtrl {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-end;
   }
 
   .bo-menuV2Actions {
@@ -2475,10 +2478,14 @@
 }
 .bo-sliderDelete:hover { background: rgba(200, 40, 40, 0.85); }
 .bo-sliderGrid--all { grid-template-columns: repeat(4, 1fr); }
+.bo-sliderGrid--preview { grid-template-columns: minmax(0, 260px); justify-content: center; }
 .bo-sliderPendingCell {
-  display: grid;
-  place-content: center;
-  gap: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-inline: 6px;
   color: rgba(255,255,255,.72);
   background: linear-gradient(110deg, rgba(185,168,255,.12) 8%, rgba(255,255,255,.2) 18%, rgba(185,168,255,.12) 33%);
   background-size: 220% 100%;
@@ -2486,6 +2493,14 @@
   font-size: 11px;
 }
 @keyframes bo-slider-skeleton { to { background-position-x: -220%; } }
+/* Keep the sparkles icon at full size and the label on one line: at 4 columns
+   the cell gets narrow enough that flex would otherwise squash the icon. */
+.bo-sliderPendingCell > svg { flex: none; }
+.bo-sliderPendingCell > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* Menu image upload (bo-specialImage*) — extracted from table.css */
 /* Special menu image upload */
