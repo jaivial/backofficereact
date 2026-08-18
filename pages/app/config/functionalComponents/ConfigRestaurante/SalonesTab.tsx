@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
 import type { ConfigFloor, ConfigSalon } from "../../../../../api/types";
-import { Accordion } from "../../../../../ui/overlays/Accordion";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { Modal } from "../../../../../ui/overlays/Modal";
 import { Select } from "../../../../../ui/inputs/Select";
@@ -145,61 +144,72 @@ export function SalonesTab({ floors, api, busy, setBusy, setError, pushToast }: 
   };
 
   return (
-    <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalons" data-ui="config-salons-tabpanel">
+    <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configFloorsPanelContent" data-ui="config-salons-tabpanel">
       <div className="bo-configSalonsToolbar">
         <Button variant="primary" size="sm" onClick={openCreate} disabled={busy || floors.length === 0} data-ui="salon-add">
           <Plus className="bo-ico" aria-hidden /> Añadir salón
         </Button>
       </div>
 
-      {groups.map(({ floor, salons: floorSalons }) => (
-        <Accordion
-          key={`salon-floor-${floor.floorNumber}`}
-          title={`${floor.name} · ${floorSalons.length} ${floorSalons.length === 1 ? "salón" : "salones"}`}
-          defaultOpen
-          className="bo-configSalonAccordion"
-        >
-          {floorSalons.length === 0 ? (
-            <p className="bo-configSalonEmpty" data-slot="salon-empty">Sin salones en esta planta.</p>
-          ) : (
-            <ul className="bo-configSalonList" data-slot="salon-list">
-              {floorSalons.map((salon) => (
-                <li key={salon.id} className="bo-configSalonRow" data-ui="salon-row" data-salon-id={salon.id}>
-                  <div className="bo-configSalonInfo">
-                    <span className="bo-configSalonName" data-slot="salon-name">{salon.name}</span>
-                    <span className="bo-configSalonMeta" data-slot="salon-meta">
-                      {salonCapacityText(salon)}
-                      {!salon.isActive ? " · Inactivo" : ""}
-                    </span>
-                  </div>
-                  <div className="bo-configSalonActions">
-                    <button
-                      type="button"
-                      className="bo-iconButton"
-                      onClick={() => openEdit(salon)}
-                      disabled={busy}
-                      aria-label={`Editar ${salon.name}`}
-                      data-ui="salon-edit"
-                    >
-                      <Pencil className="bo-ico" aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      className="bo-iconButton bo-iconButton--danger"
-                      onClick={() => setDeleteTarget(salon)}
-                      disabled={busy}
-                      aria-label={`Eliminar ${salon.name}`}
-                      data-ui="salon-delete"
-                    >
-                      <Trash2 className="bo-ico" aria-hidden />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Accordion>
-      ))}
+      <div className="bo-configSalonCards" aria-label="Salones por planta" data-ui="config-salones-cards-container">
+        {groups.map(({ floor, salons: floorSalons }) => (
+          <div key={`salon-floor-${floor.floorNumber}`} className="bo-configSalonFloorCard" data-slot="salon-floor-card">
+            <div className="bo-floorSalonCard" data-ui="salon-floor-card-info">
+              <div data-ui="floor-card-info">
+                <div className="bo-floorCardName" data-slot="configRestaurante-floorCardName">{floor.name}</div>
+                <div className="bo-floorCardHint" data-slot="configRestaurante-floorCardHint">
+                  {floor.active
+                    ? `${floorSalons.length} ${floorSalons.length === 1 ? "salón" : "salones"} · Abierto por defecto`
+                    : `${floorSalons.length} ${floorSalons.length === 1 ? "salón" : "salones"} · Cerrado por defecto`}
+                </div>
+              </div>
+              <div className="bo-floorSalonCardState" data-ui="salon-floor-card-state">
+                <span className="bo-floorSalonCardStatus" data-slot="configRestaurante-floorSalonCardStatus">{floor.active ? "Abierto" : "Cerrado"}</span>
+              </div>
+            </div>
+
+            {floorSalons.length === 0 ? (
+              <p className="bo-configSalonEmpty" data-slot="salon-empty">Sin salones en esta planta.</p>
+            ) : (
+              <ul className="bo-configSalonList" data-slot="salon-list">
+                {floorSalons.map((salon) => (
+                  <li key={salon.id} className="bo-configSalonRow" data-ui="salon-row" data-salon-id={salon.id}>
+                    <div className="bo-configSalonInfo">
+                      <span className="bo-configSalonName" data-slot="salon-name">{salon.name}</span>
+                      <span className="bo-configSalonMeta" data-slot="salon-meta">
+                        {salonCapacityText(salon)}
+                        {!salon.isActive ? " · Inactivo" : ""}
+                      </span>
+                    </div>
+                    <div className="bo-configSalonActions">
+                      <button
+                        type="button"
+                        className="bo-iconButton"
+                        onClick={() => openEdit(salon)}
+                        disabled={busy}
+                        aria-label={`Editar ${salon.name}`}
+                        data-ui="salon-edit"
+                      >
+                        <Pencil className="bo-ico" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        className="bo-iconButton bo-iconButton--danger"
+                        onClick={() => setDeleteTarget(salon)}
+                        disabled={busy}
+                        aria-label={`Eliminar ${salon.name}`}
+                        data-ui="salon-delete"
+                      >
+                        <Trash2 className="bo-ico" aria-hidden />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
 
       <Modal
         open={editor !== null}
