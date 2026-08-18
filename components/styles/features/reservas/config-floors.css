@@ -480,3 +480,23 @@
 .bo-salonesDayName {
   font-weight: 500;
 }
+
+/* Floor container card shared by salones sections in /app/config and /app/reservas/config */
+.bo-configSalonFloorCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--bo-border, rgba(0, 0, 0, 0.08));
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  gap: 0.5rem;
+}
+
+.bo-configSalonCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.bo-configSalonsToolbar {
+  margin-bottom: 0.75rem;
+}
