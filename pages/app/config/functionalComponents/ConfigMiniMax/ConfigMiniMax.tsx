@@ -3,7 +3,7 @@ import { Bot, Save } from "lucide-react";
 
 import { SearchableSelect } from "../../../../../ui/inputs/SearchableSelect";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
-import { useMiniMaxConfig } from "./hooks/useMiniMaxConfig";
+import { useMiniMaxConfig, DEFAULT_MODEL } from "./hooks/useMiniMaxConfig";
 
 const MINIMAX_MODELS = [
   { value: "MiniMax-M3", label: "MiniMax-M3" },
@@ -65,8 +65,8 @@ export function ConfigMiniMax() {
             <label id="minimax-model-label">Modelo</label>
           </span>
           <SearchableSelect
-            value={config.model || MINIMAX_MODELS[0].value}
-            onChange={(v) => setModel(v || MINIMAX_MODELS[0].value)}
+            value={config.model || DEFAULT_MODEL}
+            onChange={(v) => setModel(v || DEFAULT_MODEL)}
             options={MINIMAX_MODELS}
             ariaLabel="Modelo de MiniMax"
             searchPlaceholder="Buscar modelo..."
