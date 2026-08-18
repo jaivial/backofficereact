@@ -31,6 +31,7 @@ import { buildHalfHourSlots, todayISO } from "./helpers/configHelpers";
 import { openingModeOptions } from "./constants/config.constants";
 import type { PageData } from "./types/config.types";
 import { useConfigDay } from "./hooks/useConfigDay";
+import { SalonesDelDiaPanel } from "./functionalComponents/SalonesDelDiaPanel";
 import { MandatoryMenuConfig as MandatoryMenuConfigPanel } from "./functionalComponents/MandatoryMenuConfig/MandatoryMenuConfig";
 
 export default function Page() {
@@ -475,6 +476,18 @@ export default function Page() {
                       </div>
                     ))}
                   </div>
+              </Panel>
+
+              <Panel data-ui="salones-day-panel-wrapper" title="Salones del día" meta={date}>
+                  <SalonesDelDiaPanel
+                    date={date}
+                    floors={floors}
+                    api={api}
+                    busy={busy}
+                    setBusy={setBusy}
+                    setError={setError}
+                    pushToast={pushToast}
+                  />
               </Panel>
             </motion.div>
           ) : null}
