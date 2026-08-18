@@ -2182,6 +2182,16 @@ export type BunnyStorageConfigInput = {
   isActive?: boolean;
 };
 
+export type MiniMaxConfig = {
+  hasApiKey: boolean;
+  model: string;
+};
+
+export type MiniMaxConfigInput = {
+  apiKey?: string;
+  model: string;
+};
+
 export type EmailProviderConfig = {
   id: number;
   provider: "smtp" | "gmail";
