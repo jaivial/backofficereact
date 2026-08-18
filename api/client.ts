@@ -2037,6 +2037,17 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // MiniMax AI (forky chat + translations + stock) config per restaurant (root-only).
+      async getMiniMaxConfig(): Promise<APISuccess<{ config: import("./types").MiniMaxConfig }> | APIError> {
+        return json("/api/admin/config/minimax", { method: "GET" });
+      },
+      async setMiniMaxConfig(input: import("./types").MiniMaxConfigInput): Promise<APISuccess<{ config: import("./types").MiniMaxConfig }> | APIError> {
+        return json("/api/admin/config/minimax", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
       // WhatsApp bot settings per restaurant (root-only, IA tab).
       async getBotSettings(restaurantId: number): Promise<APISuccess<import("./types").BotSettingsResponse> | APIError> {
         return json(`/api/admin/bot/settings/${restaurantId}`, { method: "GET" });
