@@ -5,7 +5,7 @@ import { Building2, LayoutGrid } from "lucide-react";
 
 import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../../../../../api/types";
 import type { FloorTab, HourSlot } from "../../../config/helpers/configHelpers";
-import { buildHalfHourSlots, clampDailyLimit, formatTableLimit, normalizeTableLimit, normalizeWeekdayOpenMap, readAPIMessage, stepTableLimit, tableLimitValues, toggleHour } from "../../../config/helpers/configHelpers";
+import { buildHalfHourSlots, buildFloorsWithCount, clampDailyLimit, formatTableLimit, normalizeTableLimit, normalizeWeekdayOpenMap, readAPIMessage, stepTableLimit, tableLimitValues, toggleHour } from "../../../config/helpers/configHelpers";
 import { openingModeOptions, weekdayCards, type WeekdayCard } from "../../../config/constants/config.constants";
 import type { RestauranteContentProps, FloorCard } from "./types/ConfigRestaurante.types";
 import { Select } from "../../../../../ui/inputs/Select";
@@ -15,8 +15,9 @@ import { Tabs, type TabItem } from "../../../../../ui/nav/Tabs";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { HourSplitConfig as HourSplitConfigWidget } from "../../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
 import { equalSplit, normalizePercentages, type Percentages } from "../../../../../ui/widgets/HourSplitConfig/lib/rebalance";
+import { SalonesTab } from "./SalonesTab";
 
-export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast }: RestauranteContentProps) {
+export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast, onFloorsChanged, onDefaultsChanged }: RestauranteContentProps) {
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
   const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
   const pageContext = usePageContext();
@@ -46,11 +47,21 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
       }>,
       successMessage?: string,
     ) => {
+      const rollbackPatch = (): Partial<ConfigDefaults> => {
+        const source = defaults as unknown as Record<string, unknown>;
+        const out: Record<string, unknown> = {};
+        for (const key of Object.keys(patch as Record<string, unknown>)) {
+          out[key] = source[key];
+        }
+        return out as Partial<ConfigDefaults>;
+      };
       setBusy(true);
       setError(null);
+      onDefaultsChanged?.(patch);
       try {
         const res = await api.config.setDefaults(patch);
         if (!res.success) {
+          onDefaultsChanged?.(rollbackPatch());
           setError(readAPIMessage(res, "No se pudo guardar"));
           return;
         }
@@ -58,51 +69,64 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
           pushToast({ kind: "success", title: "Actualizado", message: successMessage });
         }
       } catch (e) {
+        onDefaultsChanged?.(rollbackPatch());
         setError(e instanceof Error ? e.message : "No se pudo guardar");
       } finally {
         setBusy(false);
       }
     },
-    [api.config, setBusy, setError, pushToast],
+    [api.config, setBusy, setError, pushToast, defaults, onDefaultsChanged],
   );
 
   const saveFloorsCount = useCallback(
     async (count: number) => {
+      const previousFloors = floors;
+      const nextFloors = buildFloorsWithCount(floors, count);
       setBusy(true);
       setError(null);
+      onFloorsChanged?.(nextFloors);
       try {
         const res = await api.config.setDefaultFloors({ count });
         if (!res.success) {
+          onFloorsChanged?.(previousFloors);
           setError(readAPIMessage(res, "No se pudo actualizar plantas"));
           return;
         }
+        if (res.floors) onFloorsChanged?.(res.floors);
       } catch (e) {
+        onFloorsChanged?.(previousFloors);
         setError(e instanceof Error ? e.message : "No se pudo actualizar plantas");
       } finally {
         setBusy(false);
       }
     },
-    [api.config, setBusy, setError],
+    [api.config, setBusy, setError, floors, onFloorsChanged],
   );
 
   const toggleFloorDefault = useCallback(
     async (floor: ConfigFloor, explicitValue?: boolean) => {
       const nextActive = typeof explicitValue === "boolean" ? explicitValue : !floor.active;
+      const previousFloors = floors;
+      const nextFloors = floors.map((f) => (f.floorNumber === floor.floorNumber ? { ...f, active: nextActive } : f));
       setBusy(true);
       setError(null);
+      onFloorsChanged?.(nextFloors);
       try {
         const res = await api.config.setDefaultFloors({ floorNumber: floor.floorNumber, active: nextActive });
         if (!res.success) {
+          onFloorsChanged?.(previousFloors);
           setError(readAPIMessage(res, "No se pudo actualizar la planta"));
           return;
         }
+        if (res.floors) onFloorsChanged?.(res.floors);
       } catch (e) {
+        onFloorsChanged?.(previousFloors);
         setError(e instanceof Error ? e.message : "No se pudo actualizar la planta");
       } finally {
         setBusy(false);
       }
     },
-    [api.config, setBusy, setError],
+    [api.config, setBusy, setError, floors, onFloorsChanged],
   );
 
   const weekdayOpen = useMemo(() => normalizeWeekdayOpenMap(defaults.weekdayOpen), [defaults.weekdayOpen]);
@@ -381,7 +405,7 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             canDecrease={canMesasDeDosDecrease}
             canIncrease={canMesasDeDosIncrease}
             disabled={busy}
-            helperText="0-40 o Sin límite"
+            helperText="0-99 o Sin límite"
             decrementAriaLabel="Reducir mesas de 2"
             incrementAriaLabel="Aumentar mesas de 2"
           />
@@ -395,7 +419,7 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             canDecrease={canMesasDeTresDecrease}
             canIncrease={canMesasDeTresIncrease}
             disabled={busy}
-            helperText="0-40 o Sin límite"
+            helperText="0-99 o Sin límite"
             decrementAriaLabel="Reducir mesas de 3"
             incrementAriaLabel="Aumentar mesas de 3"
           />
@@ -460,28 +484,14 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
                   </div>
                 </div>
               ) : (
-                <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configSalonCards" data-ui="config-salons-tabpanel">
-                  {floorCards.map((floor) => (
-                    <div key={`salon-${floor.keyPrefix}`} className="bo-floorSalonCard" data-slot="salon-card">
-                      <div data-ui="salon-card-info">
-                        <div className="bo-floorCardName" data-slot="configRestaurante-floorCardName">{floor.salonLabel}</div>
-                        <div className="bo-floorCardHint" data-slot="configRestaurante-floorCardHint">{floor.defaultLabel}</div>
-                      </div>
-
-                      <div className="bo-floorSalonCardState" data-ui="salon-card-state">
-                        <span className="bo-floorSalonCardStatus" data-slot="configRestaurante-floorSalonCardStatus">{floor.statusLabel}</span>
-                        <Switch
-                          checked={floor.floor.active}
-                          disabled={busy}
-                          onCheckedChange={(checked) => {
-                            void toggleFloorDefault(floor.floor, checked);
-                          }}
-                          aria-label={`Estado por defecto de ${floor.salonLabel}`}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <SalonesTab
+                  floors={floors}
+                  api={api}
+                  busy={busy}
+                  setBusy={setBusy}
+                  setError={setError}
+                  pushToast={pushToast}
+                />
               )}
             </motion.div>
           </AnimatePresence>

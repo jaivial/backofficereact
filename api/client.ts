@@ -1944,6 +1944,27 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      async listSalons(date?: string): Promise<APISuccess<{ salons: import("./types").ConfigSalon[] }> | APIError> {
+        const q = date ? `?${new URLSearchParams({ date })}` : "";
+        return json(`/api/admin/config/salons${q}`, { method: "GET" });
+      },
+      async createSalon(input: import("./types").ConfigSalonInput): Promise<APISuccess<{ salon: import("./types").ConfigSalon; salons: import("./types").ConfigSalon[] }> | APIError> {
+        return json("/api/admin/config/salons", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async updateSalon(salonId: number, input: import("./types").ConfigSalonInput): Promise<APISuccess<{ salon: import("./types").ConfigSalon; salons: import("./types").ConfigSalon[] }> | APIError> {
+        return json(`/api/admin/config/salons/${salonId}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async deleteSalon(salonId: number): Promise<APISuccess<{ ok: boolean }> | APIError> {
+        return json(`/api/admin/config/salons/${salonId}`, { method: "DELETE" });
+      },
       async getFloors(date: string): Promise<APISuccess<{ date: string; floors: ConfigFloor[] }> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/floors?${q.toString()}`, { method: "GET" });
