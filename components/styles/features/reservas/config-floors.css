@@ -347,3 +347,100 @@
   }
 }
 
+
+/* Salones tab (nested in floors accordions) */
+.bo-configSalonsToolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.bo-configSalonAccordion {
+  margin-bottom: 0.75rem;
+}
+
+.bo-configSalonEmpty {
+  margin: 0;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--bo-muted-fg, #6b7280);
+}
+
+.bo-configSalonList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bo-configSalonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.bo-configSalonRow:hover {
+  background: var(--bo-subtle-bg, rgba(0, 0, 0, 0.03));
+}
+
+.bo-configSalonInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.bo-configSalonName {
+  font-weight: 600;
+}
+
+.bo-configSalonMeta {
+  font-size: 0.8rem;
+  color: var(--bo-muted-fg, #6b7280);
+}
+
+.bo-configSalonActions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Borderless icon buttons: subtle gray bg only on hover */
+.bo-iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  color: inherit;
+  cursor: pointer;
+}
+
+.bo-iconButton:hover:not(:disabled) {
+  background: var(--bo-hover-bg, rgba(0, 0, 0, 0.06));
+}
+
+.bo-iconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bo-iconButton--danger:hover:not(:disabled) {
+  background: var(--bo-danger-hover-bg, rgba(220, 38, 38, 0.1));
+  color: var(--bo-danger, #dc2626);
+}
+
+.bo-configSalonToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
