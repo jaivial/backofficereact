@@ -105,9 +105,29 @@ export function MenuSliderPanel({
       socket.addEventListener("message", (event) => {
         let payload: Record<string, unknown>;
         try { payload = JSON.parse(String(event.data ?? "")) as Record<string, unknown>; } catch { return; }
-        const generationID = String(payload.generation_id ?? "");
-        if (!generationID || generationID !== pendingGenerationRef.current) return;
         const type = String(payload.type ?? "").toLowerCase();
+        // hello/snapshot hydration: reflect in-flight generations persisted
+        // server-side (menus.slider_ai_generating) so skeletons survive reloads.
+        if (type === "hello" || type === "snapshot") {
+          const tracker = payload.menu_slider as Record<string, unknown> | undefined;
+          const generating = Number(tracker?.slider_ai_generating ?? tracker?.ai_generating ?? 0);
+          if (Number.isFinite(generating)) {
+            setSlider((current) => current ? { ...current, ai_generating: generating } : current);
+          }
+          return;
+        }
+        if (type === "slider_image_started") {
+          setSlider((current) => current ? { ...current, ai_generating: (current.ai_generating ?? 0) + 1 } : current);
+          return;
+        }
+        const generationID = String(payload.generation_id ?? "");
+        if (type === "slider_image_completed" || type === "slider_image_failed") {
+          setSlider((current) => current ? { ...current, ai_generating: Math.max((current.ai_generating ?? 1) - 1, 0) } : current);
+        }
+        if (generationID && generationID !== pendingGenerationRef.current) {
+          if (type === "slider_image_completed") void load();
+          return;
+        }
         if (type === "slider_image_completed") {
           const completed = payload.image as Partial<MenuSliderImage> | undefined;
           if (completed?.id && completed.image_url) {
@@ -176,10 +196,12 @@ export function MenuSliderPanel({
     setBusy(true);
     const generationID = crypto.randomUUID();
     setPendingGeneration(generationID);
+    setSlider((current) => current ? { ...current, ai_generating: (current.ai_generating ?? 0) + 1 } : current);
     const res = await api.menus.gruposV2.generateSliderAIImage(menuId, advisor.file, generationID);
     setBusy(false);
     if (!res.success) {
       setPendingGeneration(null);
+      setSlider((current) => current ? { ...current, ai_generating: Math.max((current.ai_generating ?? 1) - 1, 0) } : current);
       pushToast({ kind: "error", title: "IA", message: res.message || "No se pudo iniciar la mejora con IA" });
       return;
     }
@@ -259,7 +281,7 @@ export function MenuSliderPanel({
         <>
           <div className="bo-sliderGrid" data-slot="sliderPanel-grid">
             {gridCells.map(renderCell)}
-            {pendingGeneration ? pendingCell : addCell("add")}
+            {pendingGeneration || (slider?.ai_generating ?? 0) > 0 ? pendingCell : addCell("add")}
           </div>
           {hasMore ? (
             <button
