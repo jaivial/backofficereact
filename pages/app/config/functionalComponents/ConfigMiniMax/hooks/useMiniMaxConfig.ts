@@ -2,8 +2,10 @@ import { useCallback, useMemo, useState } from "react";
 import { createClient } from "../../../../../../api/client";
 import type { MiniMaxConfig } from "../../../../../../api/types";
 
+export const DEFAULT_MODEL = "MiniMax-M3";
+
 function defaultConfig(): MiniMaxConfig {
-  return { hasApiKey: false, model: "" };
+  return { hasApiKey: false, model: DEFAULT_MODEL };
 }
 
 export type UseMiniMaxConfigReturn = {
