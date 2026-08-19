@@ -34,3 +34,16 @@
   border-top: 1px solid var(--bo-border, rgba(148, 163, 184, 0.18));
   padding-top: 10px;
 }
+
+/* Panel sits flat in the page: no card shadow, no horizontal padding. */
+.bo-panel[data-ui="location-booking-toggles"] {
+  box-shadow: none;
+}
+
+.bo-panel[data-ui="location-booking-toggles"] .bo-panelHead {
+  padding-inline: 0;
+}
+
+.bo-panel[data-ui="location-booking-toggles"] .bo-panelBody {
+  padding-inline: 0;
+}
