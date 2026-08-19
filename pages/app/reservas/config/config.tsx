@@ -522,18 +522,18 @@ export default function Page() {
                   </div>
               </Panel>
 
-              {locationBooking ? (
-                <LocationBookingToggles
-                  variant="day"
-                  allowFloorReservation={locationBooking.effective.allowFloorReservation}
-                  allowSalonReservation={locationBooking.effective.allowSalonReservation}
-                  global={locationBooking.global}
-                  busy={busy}
-                  onSetOverride={(patch) => void setLocationBookingOverride(patch)}
-                />
-              ) : null}
-
               <Panel data-ui="salones-day-panel-wrapper" title="Salones del día" meta={date} data-testid="reservas-config-salones-panel">
+                  {locationBooking ? (
+                    <LocationBookingToggles
+                      variant="day"
+                      allowFloorReservation={locationBooking.effective.allowFloorReservation}
+                      allowSalonReservation={locationBooking.effective.allowSalonReservation}
+                      global={locationBooking.global}
+                      busy={busy}
+                      onSetOverride={(patch) => void setLocationBookingOverride(patch)}
+                    />
+                  ) : null}
+
                   <SalonesDelDiaPanel
                     date={date}
                     floors={floors}
