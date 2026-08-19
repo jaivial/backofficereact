@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 import { Building2, LayoutGrid } from "lucide-react";
@@ -7,7 +7,7 @@ import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../.
 import type { FloorTab, HourSlot } from "../../../config/helpers/configHelpers";
 import { buildHalfHourSlots, buildFloorsWithCount, clampDailyLimit, formatTableLimit, normalizeTableLimit, normalizeWeekdayOpenMap, readAPIMessage, stepTableLimit, tableLimitValues, toggleHour } from "../../../config/helpers/configHelpers";
 import { openingModeOptions, weekdayCards, type WeekdayCard } from "../../../config/constants/config.constants";
-import type { RestauranteContentProps, FloorCard } from "./types/ConfigRestaurante.types";
+import type { RestauranteContentProps } from "./types/ConfigRestaurante.types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
@@ -15,6 +15,9 @@ import { Tabs, type TabItem } from "../../../../../ui/nav/Tabs";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { HourSplitConfig as HourSplitConfigWidget } from "../../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
 import { LocationBookingToggles } from "../../../../../ui/widgets/LocationBookingToggles/LocationBookingToggles";
+import { SalonFloorAccordion } from "../../../../../ui/widgets/SalonFloorAccordion/SalonFloorAccordion";
+import type { ConfigSalon } from "../../../../../api/types";
+import { groupSalonsByFloor } from "../../../config/helpers/salonsHelpers";
 import { equalSplit, normalizePercentages, type Percentages } from "../../../../../ui/widgets/HourSplitConfig/lib/rebalance";
 import { SalonesTab } from "./SalonesTab";
 
@@ -24,6 +27,19 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
   const pageContext = usePageContext();
   const floorTabFromQuery = pageContext.urlParsed.search.floortab;
   const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery === "salones" ? "salones" : "plantas");
+  // Read-only salones for the Plantas tab accordions.
+  const [salons, setSalons] = useState<ConfigSalon[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const res = await api.config.listSalons();
+      if (!cancelled && res.success && res.salons) setSalons(res.salons);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [api.config]);
 
   const floorTabs = useMemo<TabItem[]>(
     () => [
@@ -199,19 +215,6 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
     (): Array<WeekdayCard & { isOpen: boolean }> =>
       weekdayCards.map((weekday) => ({ ...weekday, isOpen: Boolean(weekdayOpen[weekday.key]) })),
     [weekdayOpen],
-  );
-
-  const floorCards = useMemo<FloorCard[]>(
-    () =>
-      floors.map((floor) => ({
-        floor,
-        plantaLabel: floor.name,
-        salonLabel: floor.isGround ? "Salón principal" : `Salón ${floor.floorNumber}`,
-        statusLabel: floor.active ? "Abierto" : "Cerrado",
-        defaultLabel: `${floor.active ? "Abierto por defecto" : "Cerrado por defecto"}`,
-        keyPrefix: `${floor.id}`,
-      })),
-    [floors],
   );
 
   const handleMorningHour = useCallback(
@@ -486,25 +489,16 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
                   />
 
                   <div className="bo-configSalonCards" aria-label="Plantas del restaurante" data-ui="config-floors-cards-container">
-                    {floorCards.map((floor) => (
-                      <div key={`planta-${floor.keyPrefix}`} className="bo-floorSalonCard" data-slot="floor-card">
-                        <div data-ui="floor-card-info">
-                          <div className="bo-floorCardName" data-slot="configRestaurante-floorCardName">{floor.plantaLabel}</div>
-                          <div className="bo-floorCardHint" data-slot="configRestaurante-floorCardHint">{floor.defaultLabel}</div>
-                        </div>
-
-                        <div className="bo-floorSalonCardState" data-ui="floor-card-state">
-                          <span className="bo-floorSalonCardStatus" data-slot="configRestaurante-floorSalonCardStatus">{floor.statusLabel}</span>
-                          <Switch
-                            checked={floor.floor.active}
-                            disabled={busy}
-                            onCheckedChange={(checked) => {
-                              void toggleFloorDefault(floor.floor, checked);
-                            }}
-                            aria-label={`Estado por defecto de ${floor.plantaLabel}`}
-                          />
-                        </div>
-                      </div>
+                    {groupSalonsByFloor(floors, salons).map(({ floor, salons: floorSalons }) => (
+                      <SalonFloorAccordion
+                        key={`planta-${floor.id}`}
+                        floor={floor}
+                        salons={floorSalons}
+                        variant="status"
+                        busy={busy}
+                        onFloorToggle={(next) => void toggleFloorDefault(floor, next)}
+                        testIdPrefix="config-floors"
+                      />
                     ))}
                   </div>
                 </div>
