@@ -96,7 +96,10 @@ export function MonthCalendarDatePicker({
     const popH = popW; // square popover
     const spaceBelow = vh - r.bottom - 8;
     const top = spaceBelow < popH ? Math.max(8, r.top - 8 - popH) : r.bottom + 8;
-    const left = clamp(r.left + popoverOffsetX, 8, vw - popW - 8);
+    // Center the popover's horizontal axis on the trigger button (r.left + r.width/2
+    // is the button's center, popW/2 is the popover's). popoverOffsetX remains a
+    // fine-adjust on top of centering. Clamp keeps it on-screen on narrow viewports.
+    const left = clamp(r.left + r.width / 2 - popW / 2 + popoverOffsetX, 8, vw - popW - 8);
     setPos({ top, left });
   }, [open, popoverOffsetX]);
 
