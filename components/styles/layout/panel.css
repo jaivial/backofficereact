@@ -11,6 +11,11 @@
   gap: 18px;
 }
 
+/* Reservas config page stack: extra breathing room at the bottom. */
+.bo-stack[data-testid="reservas-config-panels-stack"] {
+  margin-bottom: 10rem;
+}
+
 .bo-panel {
   border-radius: var(--bo-radius-lg);
   background: var(--bo-surface);
