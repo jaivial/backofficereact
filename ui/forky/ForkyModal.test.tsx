@@ -29,6 +29,20 @@ vi.mock("./Forky3DViewer", () => ({
   preloadForkyModel,
 }));
 
+vi.mock("./bui", () => ({
+  BuiIsland: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="forky-bui-island">{children}</div>
+  ),
+  LoadingState: ({ label }: { label?: string }) => (
+    <div data-testid="forky-assistant-loading-stub">{label}</div>
+  ),
+  // Stub of the literal beautifului.dev PromptBar; keeps the composer
+  // testids the rest of the suite asserts against.
+  PromptBar: ({ placeholder }: { placeholder?: string }) => (
+    <textarea data-testid="forky-composer-input" placeholder={placeholder ?? "Escribe un mensaje…"} />
+  ),
+}));
+
 vi.mock("@assistant-ui/react", () => ({
   ActionBarPrimitive: {
     Reload: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => (
@@ -49,14 +63,9 @@ vi.mock("@assistant-ui/react", () => ({
     ),
     If: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   },
-  ComposerPrimitive: {
-    Root: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-    Input: () => (
-      <textarea data-testid="forky-composer-input" placeholder="Escribe un mensaje…" />
-    ),
-    Send: ({ children, asChild }: { children?: React.ReactNode; asChild?: boolean }) =>
-      asChild ? children : <button type="button">{children}</button>,
-  },
+  useAui: () => ({
+    composer: { setText: vi.fn(), send: vi.fn() },
+  }),
   MessagePrimitive: {
     Root: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
     Parts: () => <div />,

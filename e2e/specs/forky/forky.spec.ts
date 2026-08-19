@@ -52,7 +52,7 @@ test.describe("Forky AI assistant", () => {
     await expect(modal).toBeVisible();
     await expect(modal).toHaveAttribute("role", "dialog");
     await expect(adminPage.getByTestId("forky-chat-panel")).toBeVisible();
-    await expect(adminPage.getByTestId("forky-composer-input")).toBeVisible();
+    await expect(adminPage.getByLabel("Prompt", { exact: true })).toBeVisible();
   });
 
   test.fixme(
@@ -79,7 +79,7 @@ test.describe("Forky AI assistant", () => {
       await waitForLoadingToFinish(adminPage);
 
       await openForky(adminPage);
-      const composer = adminPage.getByTestId("forky-composer-input");
+      const composer = adminPage.getByLabel("Prompt", { exact: true });
       await expect(composer).toBeVisible();
       await composer.fill("Hola Forky, ¿cómo estás?");
       await expect(composer).toHaveValue("Hola Forky, ¿cómo estás?");
@@ -105,7 +105,7 @@ test.describe("Forky AI assistant", () => {
     await waitForLoadingToFinish(adminPage);
     await openForky(adminPage);
 
-    const composer = adminPage.getByTestId("forky-composer-input");
+    const composer = adminPage.getByLabel("Prompt", { exact: true });
     await expect(composer).toBeVisible();
 
     const prompts = [
@@ -117,7 +117,7 @@ test.describe("Forky AI assistant", () => {
     ];
     for (const prompt of prompts) {
       await composer.fill(prompt);
-      await adminPage.getByTestId("forky-composer-send").click();
+      await adminPage.getByLabel("Send", { exact: true }).click();
       await expect(composer).toHaveValue("");
       await expect(adminPage.getByTestId("forky-assistant-message").last()).toBeVisible({ timeout: 60_000 });
     }
