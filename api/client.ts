@@ -2003,7 +2003,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       },
       async setLocationBooking(
         date: string,
-        payload: { allowFloorReservation?: boolean | null; allowSalonReservation?: boolean | null },
+        payload: { allowFloorReservation?: boolean; allowSalonReservation?: boolean },
       ): Promise<APISuccess<import("./types").LocationBookingConfig> | APIError> {
         return json("/api/admin/config/location-booking", {
           method: "POST",

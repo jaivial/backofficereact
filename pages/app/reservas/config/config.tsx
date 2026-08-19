@@ -214,15 +214,13 @@ export default function Page() {
   );
 
   const setLocationBookingOverride = useCallback(
-    async (patch: { allowFloorReservation?: boolean | null; allowSalonReservation?: boolean | null }) => {
+    async (patch: { allowFloorReservation?: boolean; allowSalonReservation?: boolean }) => {
       if (!locationBooking) return;
       const previous = locationBooking;
-      // Optimistic: apply override locally, effective follows override ?? global.
+      // Optimistic: apply the toggled value locally. When it matches the global
+      // default the backend clears the override (the date inherits it again).
       const nextOverride = { ...previous.override, ...patch };
-      const nextEffective = {
-        allowFloorReservation: nextOverride.allowFloorReservation ?? previous.global.allowFloorReservation,
-        allowSalonReservation: nextOverride.allowSalonReservation ?? previous.global.allowSalonReservation,
-      };
+      const nextEffective = { ...previous.effective, ...patch };
       setLocationBooking({ ...previous, override: nextOverride, effective: nextEffective });
       setBusy(true);
       try {
@@ -497,7 +495,6 @@ export default function Page() {
                   variant="day"
                   allowFloorReservation={locationBooking.effective.allowFloorReservation}
                   allowSalonReservation={locationBooking.effective.allowSalonReservation}
-                  override={locationBooking.override}
                   global={locationBooking.global}
                   busy={busy}
                   onSetOverride={(patch) => void setLocationBookingOverride(patch)}
