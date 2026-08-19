@@ -134,7 +134,7 @@ export function SalonesDelDiaPanel({ date, floors, onFloorsChanged, api, busy, s
           <PlusMinusCounter
             label="Plantas activas del día"
             value={String(activeFloors.length)}
-            className="bo-configLimitCounterCard bo-configFloorCounter"
+            className="bo-configLimitCounterCard bo-configFloorCounter bo-plantasDiaCounter"
             onDecrease={decreaseFloors}
             onIncrease={increaseFloors}
             canDecrease={canDecreaseFloors}

@@ -129,6 +129,16 @@
   width: min(300px, 100%);
 }
 
+/* Per-date floor counter: flat look (no card box) + spacing below. */
+.bo-plantasDiaCounter {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  margin-bottom: 1rem;
+}
+
 .bo-floorCards {
   display: grid;
   gap: var(--bo-space-2);
