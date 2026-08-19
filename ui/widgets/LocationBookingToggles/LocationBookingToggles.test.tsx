@@ -5,13 +5,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { LocationBookingToggles } from "./LocationBookingToggles";
 
-const baseConfig = {
-  date: "2099-02-10",
-  global: { allowFloorReservation: true, allowSalonReservation: false },
-  override: { allowFloorReservation: null, allowSalonReservation: null },
-  effective: { allowFloorReservation: true, allowSalonReservation: false },
-};
-
 describe("LocationBookingToggles (default variant)", () => {
   it("renders both switches and fires global patch", async () => {
     const user = userEvent.setup();
@@ -46,23 +39,7 @@ describe("LocationBookingToggles (default variant)", () => {
 });
 
 describe("LocationBookingToggles (day variant)", () => {
-  it("renders tri-state options with the inherited global value", () => {
-    render(
-      <LocationBookingToggles
-        variant="day"
-        allowFloorReservation={true}
-        allowSalonReservation={false}
-        override={baseConfig.override}
-        global={baseConfig.global}
-      />,
-    );
-
-    // Inherit buttons expose the global value as a hint.
-    expect(screen.getByText("Heredar (sí)")).toBeTruthy();
-    expect(screen.getByText("Heredar (no)")).toBeTruthy();
-  });
-
-  it("fires inherit / on / off overrides", async () => {
+  it("uses plain switches showing the global default when inheriting", async () => {
     const user = userEvent.setup();
     const onSetOverride = vi.fn();
     render(
@@ -70,19 +47,17 @@ describe("LocationBookingToggles (day variant)", () => {
         variant="day"
         allowFloorReservation={true}
         allowSalonReservation={false}
-        override={baseConfig.override}
-        global={baseConfig.global}
+        global={{ allowFloorReservation: true, allowSalonReservation: false }}
         onSetOverride={onSetOverride}
       />,
     );
 
-    await user.click(screen.getAllByText(/^Heredar/)[0].closest("button")!);
-    expect(onSetOverride).toHaveBeenCalledWith({ allowFloorReservation: null });
+    // Hints expose the inherited global values, no third "inherit" control.
+    expect(screen.getByText("Valor global: activado")).toBeTruthy();
+    expect(screen.getByText("Valor global: desactivado")).toBeTruthy();
+    expect(screen.queryByRole("group")).toBeNull();
 
-    await user.click(screen.getAllByText("Sí")[1].closest("button")!);
+    await user.click(screen.getByRole("switch", { name: "Permitir reserva de salón" }));
     expect(onSetOverride).toHaveBeenCalledWith({ allowSalonReservation: true });
-
-    await user.click(screen.getAllByText("No")[0].closest("button")!);
-    expect(onSetOverride).toHaveBeenCalledWith({ allowFloorReservation: false });
   });
 });
