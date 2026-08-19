@@ -21,6 +21,10 @@ interface SalonesDelDiaPanelProps {
         floorNumber: number,
         active: boolean,
       ) => Promise<{ success: boolean; message?: string; floors?: ConfigFloor[] }>;
+      setFloorsForDate: (
+        date: string,
+        count: number,
+      ) => Promise<{ success: boolean; message?: string; floors?: ConfigFloor[] }>;
     };
   };
   busy: boolean;
@@ -92,21 +96,41 @@ export function SalonesDelDiaPanel({ date, floors, onFloorsChanged, api, busy, s
     }
   };
 
-  // Per-date floor counter: activating/deactivating floors only for this date.
+  // Per-date floor counter: the count of floors this date sees. Increasing
+  // beyond the global floors creates date-scoped floors (server-side);
+  // decreasing deactivates globals for the date and removes date-scoped ones.
   const activeFloors = useMemo(() => floors.filter((f) => f.active), [floors]);
   const canDecreaseFloors = activeFloors.length > 1;
-  const canIncreaseFloors = activeFloors.length < floors.length;
+  const canIncreaseFloors = activeFloors.length < 8;
+
+  const setFloorsCountForDate = async (count: number) => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api.config.setFloorsForDate(date, count);
+      if (!res.success) {
+        setError(readAPIMessage(res, "No se pudo actualizar el número de plantas"));
+        return;
+      }
+      if (res.floors) onFloorsChanged?.(res.floors);
+      pushToast({
+        kind: "success",
+        title: "Plantas actualizadas",
+        message: `${count} plantas · ${date} (solo este día)`,
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo actualizar el número de plantas");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const decreaseFloors = () => {
-    const target = [...activeFloors].sort((a, b) => b.floorNumber - a.floorNumber)[0];
-    if (target) void setFloorActiveForDate(target, false);
+    if (activeFloors.length > 1) void setFloorsCountForDate(activeFloors.length - 1);
   };
 
   const increaseFloors = () => {
-    const target = [...floors]
-      .filter((f) => !f.active)
-      .sort((a, b) => a.floorNumber - b.floorNumber)[0];
-    if (target) void setFloorActiveForDate(target, true);
+    if (activeFloors.length < 8) void setFloorsCountForDate(activeFloors.length + 1);
   };
 
   return (
