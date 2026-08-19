@@ -69,15 +69,63 @@
   gap: var(--bo-space-2);
 }
 
-/* Range calendar rendered inside a modal (in normal flow, not a popover). */
+/* Range calendar rendered inside a modal (in normal flow, not a popover).
+   1:1 square widget (header + weekday row + grid), matching the square
+   month-calendar popover used elsewhere: the calendar renders as a square and
+   day cells are square-ish and sized to fit inside it. */
 .bo-closeRangeCal {
   width: 280px;
   max-width: 100%;
   margin-inline: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.bo-closeRangeCal .bo-calGrid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
 }
 
 .bo-closeRangeCal .bo-calDay {
-  margin: 0;
+  margin-inline: auto;
+  min-height: 0; /* keep cells square-ish even under the mobile 46px floor */
+}
+
+.bo-closeRangeCal .bo-calDay:not(.bo-calDay--empty) {
+  width: 32px;
+  height: 32px;
+}
+
+/* Drag-select host: the grid becomes the positioning context for the
+   connecting-line overlay, and text selection / touch scrolling is disabled so
+   the whole drag gesture belongs to date selection. */
+.bo-rangeDrag {
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  cursor: grab;
+}
+
+.bo-rangeDrag:active {
+  cursor: grabbing;
+}
+
+/* Connecting line drawn through the selected range's cells. Overlaid on the
+   grid; must never intercept the pointer or it would block day clicks. */
+.bo-rangeLine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.bo-rangeLine polyline {
+  stroke: var(--bo-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--bo-accent) 55%, transparent));
 }
 
 .bo-closeRangeModalBody {
