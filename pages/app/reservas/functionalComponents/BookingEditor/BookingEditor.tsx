@@ -6,7 +6,8 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { createClient } from "../../../../../api/client";
 import type { ConfigFloor, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
-import { DatePicker } from "../../../../../ui/inputs/DatePicker";
+import { MonthCalendarDatePicker } from "../../../../../ui/widgets/MonthCalendarDatePicker";
+import { useMonthCalendar } from "../../../../../ui/hooks/useMonthCalendar";
 import { TimePicker } from "../../../../../ui/inputs/TimePicker";
 import { Select } from "../../../../../ui/inputs/Select";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
@@ -121,6 +122,10 @@ export function BookingEditor({
   const [menuDetail, setMenuDetail] = useState<GroupMenu | null>(null);
   const [riceTypes, setRiceTypes] = useState<string[]>([]);
   const [riceTypesLoaded, setRiceTypesLoaded] = useState(false);
+  // Same calendar hook used by /app/reservas/config — picks first day of the
+  // month the selected date belongs to, refetches on month nav, and exposes
+  // occupancy per day (lock icons, "0/45 pax" badges, etc.).
+  const calendar = useMonthCalendar(api, draft.reservation_date);
 
   const principalesItems = useMemo(() => principalesItemsFromMenu(menuDetail), [menuDetail]);
   const menuOptions = useMemo(
@@ -413,7 +418,17 @@ export function BookingEditor({
           <div className="bo-row bo-bookingRow bo-bookingRow--schedule" style={{ width: "100%", justifyContent: "center" }} data-slot="booking-editor-schedule">
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--date" data-slot="booking-editor-date">
               <div className="bo-label" style={{ textAlign: "left" }} data-slot="bookingEditor-label">Fecha</div>
-              <DatePicker value={draft.reservation_date} onChange={(v) => setField("reservation_date", v)} />
+              <MonthCalendarDatePicker
+                value={draft.reservation_date}
+                onChange={(v) => setField("reservation_date", v)}
+                year={calendar.year}
+                month={calendar.month}
+                days={calendar.days}
+                onPrevMonth={calendar.onPrevMonth}
+                onNextMonth={calendar.onNextMonth}
+                loading={calendar.loading}
+                data-testid="anadir-date-picker"
+              />
             </div>
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time" data-slot="booking-editor-time">
               <div className="bo-label" style={{ textAlign: "left" }} data-slot="bookingEditor-label">Hora</div>

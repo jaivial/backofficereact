@@ -8,6 +8,7 @@ vi.mock("lucide-react", () => ({
   Minus: () => <span data-slot="booking-editor-test-minus" />,
   Plus: () => <span data-slot="booking-editor-test-plus" />,
   Trash2: () => <span data-slot="booking-editor-test-trash" />,
+  CalendarDays: () => <span data-slot="booking-editor-test-calendar-days" />,
 }));
 
 vi.mock("react-country-flag", () => ({
@@ -22,8 +23,21 @@ vi.mock("motion/react", () => ({
   useReducedMotion: () => true,
 }));
 
-vi.mock("../../../../../ui/inputs/DatePicker", () => ({
-  DatePicker: () => <div data-slot="booking-editor-test-date-picker" />,
+vi.mock("../../../../../ui/widgets/MonthCalendarDatePicker", () => ({
+  MonthCalendarDatePicker: (props: { "data-testid"?: string }) => (
+    <div data-slot="booking-editor-test-month-calendar" data-testid={props["data-testid"]} />
+  ),
+}));
+
+vi.mock("../../../../../ui/hooks/useMonthCalendar", () => ({
+  useMonthCalendar: () => ({
+    year: 2026,
+    month: 7,
+    days: [],
+    onPrevMonth: () => {},
+    onNextMonth: () => {},
+    loading: false,
+  }),
 }));
 
 vi.mock("../../../../../ui/inputs/TimePicker", () => ({
