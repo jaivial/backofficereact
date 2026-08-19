@@ -275,6 +275,7 @@ export default function Page() {
   return (
     <section data-ui="reservas-config" data-testid="reservas-config-section" aria-label="Configuración diaria reservas">
       <PageToolbar
+        className="bo-toolbar--centered"
         left={
           <MonthCalendarDatePicker
             value={date}
@@ -289,11 +290,7 @@ export default function Page() {
             data-ui="date-picker"
           />
         }
-        right={
-          <button data-action="reload" className="bo-btn" type="button" onClick={() => { void loadAll(date); void loadLocationBooking(date); }} disabled={busy} data-ui="reload-btn" data-testid="reservas-config-reload-btn">
-            Recargar
-          </button>
-        }
+        data-testid="reservas-config-toolbar"
       />
 
       <div data-slot="panels-stack" className="bo-stack" data-testid="reservas-config-panels-stack">
