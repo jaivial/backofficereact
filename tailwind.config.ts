@@ -39,6 +39,24 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // beautifului.dev tokens for the Forky chat (components/styles/features/forky/forky-bui.css).
+        fui: {
+          canvas: "var(--fui-canvas)",
+          surface: "var(--fui-surface)",
+          inset: "var(--fui-inset)",
+          hover: "var(--fui-hover)",
+          "hover-2": "var(--fui-hover-2)",
+          ink: "var(--fui-ink)",
+          "ink-2": "var(--fui-ink-2)",
+          "ink-3": "var(--fui-ink-3)",
+          line: "var(--fui-line)",
+          "line-strong": "var(--fui-line-strong)",
+          field: "var(--fui-field)",
+          green: "var(--fui-green)",
+          "green-tint": "var(--fui-green-tint)",
+          red: "var(--fui-red)",
+          "red-tint": "var(--fui-red-tint)",
+        },
         // `--bo-*` tokens from components/styles/base/variables.css, exposed as
         // Tailwind utilities (bg-bo-surface, text-bo-muted, border-bo-border, ...).
         // Use these instead of bg-[var(--bo-*)] arbitrary values.

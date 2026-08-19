@@ -1,0 +1,83 @@
+/* Forky chat — beautifului.dev design tokens (extracted from the site's
+   stylesheet). Follows the bo.css convention: :root carries the dark palette
+   (backoffice default) and :root[data-theme="light"] flips to light. */
+
+:root {
+  --fui-canvas: oklch(23.1% 0.004 264.487);
+  --fui-surface: oklch(26% 0.006 271.191);
+  --fui-inset: oklch(24.3% 0.004 264.492);
+  --fui-hover: oklch(28.9% 0.006 271.22);
+  --fui-hover-2: oklch(31.8% 0.007 274.747);
+  --fui-ink: oklch(96.4% 0.002 247.839);
+  --fui-ink-2: oklch(73.1% 0.008 260.731);
+  --fui-ink-3: oklch(54.1% 0.01 264.484);
+  --fui-line: oklch(30.8% 0.006 258.354);
+  --fui-line-strong: oklch(35.6% 0.007 264.474);
+  --fui-field: oklch(29.3% 0.006 271.223);
+  --fui-green: oklch(70.5% 0.154 153.814);
+  --fui-green-tint: oklch(70.5% 0.154 153.814 / 0.14);
+  --fui-red: oklch(66.6% 0.18 21.433);
+  --fui-red-tint: oklch(66.6% 0.18 21.433 / 0.14);
+  --fui-shadow-card: 0 0 0 1px oklch(100% 0 0 / 0.11), 0 1px 2px oklch(0% 0 0 / 0.2),
+    0 2px 6px oklch(0% 0 0 / 0.2);
+  --fui-shadow-btn: 0 0 0 1px oklch(100% 0 0 / 0.1), 0 1px 2px oklch(0% 0 0 / 0.3);
+}
+
+:root[data-theme="light"] {
+  --fui-canvas: oklch(96.1% 0.002 247.84);
+  --fui-surface: oklch(100% 0 0);
+  --fui-inset: oklch(97% 0.002 247.839);
+  --fui-hover: oklch(97% 0.002 247.839);
+  --fui-hover-2: oklch(93.3% 0.003 247.86);
+  --fui-ink: oklch(24.7% 0.006 258.361);
+  --fui-ink-2: oklch(50.6% 0.01 264.477);
+  --fui-ink-3: oklch(69.5% 0.009 264.505);
+  --fui-line: oklch(94.6% 0.003 264.542);
+  --fui-line-strong: oklch(91.2% 0.005 258.326);
+  --fui-field: oklch(96.1% 0.001 286.375);
+  --fui-green: oklch(64% 0.15 153.5);
+  --fui-green-tint: oklch(64% 0.15 153.5 / 0.12);
+  --fui-red: oklch(58% 0.19 25);
+  --fui-red-tint: oklch(58% 0.19 25 / 0.1);
+  --fui-shadow-card: 0 0 0 1px var(--fui-line), 0 1px 2px oklch(0% 0 0 / 0.04),
+    0 2px 6px oklch(0% 0 0 / 0.04);
+  --fui-shadow-btn: 0 0 0 1px var(--fui-line-strong), 0 1px 2px oklch(0% 0 0 / 0.05);
+}
+
+/* beautifului.dev keyframes (pixel-grid loader, shimmer label, entrances). */
+@keyframes fui-pixel-on {
+  0%, to { opacity: 0.15; }
+  18%, 42% { opacity: 1; }
+  62% { opacity: 0.15; }
+}
+
+@keyframes fui-shimmer-text {
+  0% { background-position: 150%; }
+  to { background-position: -50%; }
+}
+
+@keyframes fui-fade-up {
+  0% { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fui-fade-in {
+  0% { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fui-caret-blink {
+  0%, to { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fui-pop-in {
+  0% { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="forky-modal"] * {
+    animation: none !important;
+  }
+}
