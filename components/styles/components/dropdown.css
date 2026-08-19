@@ -181,6 +181,34 @@
   gap: 10px;
 }
 
+/* Pre-hydration state: the button is rendered by SSR but the onClick handler
+   isn't attached until React wires up the client. Without a visual hint, a
+   fast click in the first ~2s on the dev server silently does nothing. */
+.bo-dateBtn.is-loading {
+  cursor: progress;
+  opacity: 0.65;
+}
+
+.bo-dateBtnSpinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: bo-dateBtnSpin 0.7s linear infinite;
+  flex: none;
+}
+
+@keyframes bo-dateBtnSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-dateBtnSpinner {
+    animation-duration: 1.5s;
+  }
+}
+
 .bo-dateRangeBtn {
   min-width: 188px;
   justify-content: flex-start;
