@@ -251,6 +251,7 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
           {draft.hasCapacityLimit && (
             <PlusMinusCounter
               label="Aforo máximo"
+              className="bo-salonAforoCounter"
               value={draft.capacityLimit}
               onDecrease={() => setDraft((d) => ({ ...d, capacityLimit: Math.max(1, d.capacityLimit - 1) }))}
               onIncrease={() => setDraft((d) => ({ ...d, capacityLimit: Math.min(2000, d.capacityLimit + 1) }))}
