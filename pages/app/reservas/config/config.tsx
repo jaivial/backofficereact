@@ -3,18 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
-import type {
-  ConfigDayStatus,
-  ConfigDailyLimit,
-  ConfigFloor,
-  ConfigMesasDeDos,
-  ConfigMesasDeTres,
-  ConfigOpeningHours,
-  HourSplitConfig,
-  MandatoryMenuConfig,
-  MenuSelectorItem,
-  OpeningMode,
-} from "../../../../api/types";
+import type { ConfigDayStatus, ConfigDailyLimit, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, HourSplitConfig, LocationBookingConfig, MandatoryMenuConfig, MenuSelectorItem, OpeningMode } from "../../../../api/types";
 import { DateDropdown } from "../../../../ui/inputs/DateDropdown";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
@@ -24,6 +13,7 @@ import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
 import { CloseDateRangeModal } from "../../../../ui/widgets/CloseDateRangeModal";
 import { HourSplitConfig as HourSplitConfigWidget } from "../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
+import { LocationBookingToggles } from "../../../../ui/widgets/LocationBookingToggles/LocationBookingToggles";
 import { Panel } from "../../../../ui/shell/Panel";
 import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 
@@ -66,6 +56,9 @@ export default function Page() {
 
   // By-hour client split state
   const [hourSplit, setHourSplit] = useState<HourSplitConfig | null>(data.hourSplit ?? null);
+
+  // Location booking toggles state (per-date tri-state)
+  const [locationBooking, setLocationBooking] = useState<LocationBookingConfig | null>(data.locationBooking ?? null);
 
   // Mandatory menu config state
   const [mandatoryMenuStatus, setMandatoryMenuStatus] = useState(false);
@@ -208,13 +201,56 @@ export default function Page() {
     [api],
   );
 
+  const loadLocationBooking = useCallback(
+    async (d: string) => {
+      try {
+        const res = await api.config.getLocationBooking(d);
+        if (res.success) setLocationBooking(res);
+      } catch {
+        // keep previous state; non-critical panel
+      }
+    },
+    [api],
+  );
+
+  const setLocationBookingOverride = useCallback(
+    async (patch: { allowFloorReservation?: boolean | null; allowSalonReservation?: boolean | null }) => {
+      if (!locationBooking) return;
+      const previous = locationBooking;
+      // Optimistic: apply override locally, effective follows override ?? global.
+      const nextOverride = { ...previous.override, ...patch };
+      const nextEffective = {
+        allowFloorReservation: nextOverride.allowFloorReservation ?? previous.global.allowFloorReservation,
+        allowSalonReservation: nextOverride.allowSalonReservation ?? previous.global.allowSalonReservation,
+      };
+      setLocationBooking({ ...previous, override: nextOverride, effective: nextEffective });
+      setBusy(true);
+      try {
+        const res = await api.config.setLocationBooking(date, patch);
+        if (!res.success) {
+          setLocationBooking(previous);
+          setError(res.message || "No se pudo guardar la configuración de ubicación");
+          return;
+        }
+        setLocationBooking(res);
+      } catch (e) {
+        setLocationBooking(previous);
+        setError(e instanceof Error ? e.message : "No se pudo guardar la configuración de ubicación");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api, date, locationBooking, setError],
+  );
+
   const onDateChange = useCallback(
     (d: string) => {
       setDate(d);
       void loadAll(d);
       void loadMandatoryMenuConfigFromApi(d);
+      void loadLocationBooking(d);
     },
-    [loadAll, loadMandatoryMenuConfigFromApi],
+    [loadAll, loadMandatoryMenuConfigFromApi, loadLocationBooking],
   );
 
   const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
@@ -232,7 +268,7 @@ export default function Page() {
           <DateDropdown value={date} onChange={onDateChange} data-ui="date-dropdown" />
         }
         right={
-          <button data-action="reload" className="bo-btn" type="button" onClick={() => void loadAll(date)} disabled={busy} data-ui="reload-btn">
+          <button data-action="reload" className="bo-btn" type="button" onClick={() => { void loadAll(date); void loadLocationBooking(date); }} disabled={busy} data-ui="reload-btn">
             Recargar
           </button>
         }
@@ -455,6 +491,18 @@ export default function Page() {
                     />
                   </div>
               </Panel>
+
+              {locationBooking ? (
+                <LocationBookingToggles
+                  variant="day"
+                  allowFloorReservation={locationBooking.effective.allowFloorReservation}
+                  allowSalonReservation={locationBooking.effective.allowSalonReservation}
+                  override={locationBooking.override}
+                  global={locationBooking.global}
+                  busy={busy}
+                  onSetOverride={(patch) => void setLocationBookingOverride(patch)}
+                />
+              ) : null}
 
               <Panel data-ui="floors-panel" title="Plantas activas del día" meta={`${floors.length} plantas`}>
                   <div data-ui="floor-rows" className="bo-floorRows">
