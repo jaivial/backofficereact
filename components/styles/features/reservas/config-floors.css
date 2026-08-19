@@ -500,3 +500,51 @@
 .bo-configSalonsToolbar {
   margin-bottom: 0.75rem;
 }
+
+/* SalonFloorAccordion: floor card whose header doubles as the accordion
+   trigger (chevron) and whose body lists the salones of that floor. */
+.bo-floorAccordionTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-3);
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bo-floorAccordionTrigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.bo-floorAccordionTriggerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bo-floorAccordionChevron {
+  flex: 0 0 auto;
+  transition: transform var(--bo-transition-base) var(--bo-ease);
+}
+
+.bo-configSalonFloorCard.is-open .bo-floorAccordionChevron {
+  transform: rotate(180deg);
+}
+
+.bo-configSalonFloorCard.is-open .bo-floorSalonCard {
+  border-color: color-mix(in srgb, var(--bo-accent) 44%, var(--bo-border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-floorAccordionChevron {
+    transition: none;
+  }
+}
