@@ -44,7 +44,7 @@ export function CloseDateRangeModal({
   }, [busy, draft.from, draft.to, hasRange, onConfirm]);
 
   return (
-    <Modal open={open} title={title} onClose={onClose} widthPx={360} className="bo-closeRangeModal">
+    <Modal open={open} title={title} onClose={onClose} widthPx={360} className="bo-closeRangeModal" hideClose>
       <ModalHeader title={title} onClose={onClose} />
       <div data-slot="modal-body" className="bo-modalBody bo-closeRangeModalBody" data-ui="close-date-range-body">
         <div className="bo-closeRangeCal" data-ui="close-date-range-popover" role="group" aria-label="Seleccionar rango de fechas">
@@ -56,6 +56,7 @@ export function CloseDateRangeModal({
             onNextMonth={nextMonth}
             onSelectDay={selectDay}
             uiPrefix="close-date-range"
+            dragSelect
           />
         </div>
       </div>
