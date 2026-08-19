@@ -4,7 +4,9 @@ import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
 import type { ConfigDayStatus, ConfigDailyLimit, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, HourSplitConfig, LocationBookingConfig, MandatoryMenuConfig, MenuSelectorItem, OpeningMode } from "../../../../api/types";
-import { DateDropdown } from "../../../../ui/inputs/DateDropdown";
+import { useMonthCalendar } from "../../../../ui/hooks/useMonthCalendar";
+import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
+import { withDateParam } from "../tables/helpers/tables";
 import { Select } from "../../../../ui/inputs/Select";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
@@ -42,6 +44,7 @@ export default function Page() {
   const reduceMotion = useReducedMotion();
 
   const [date, setDate] = useState(data.date || todayISO());
+  const calendar = useMonthCalendar(api, date);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(data.error);
   useErrorToast(error);
@@ -247,6 +250,9 @@ export default function Page() {
       void loadAll(d);
       void loadMandatoryMenuConfigFromApi(d);
       void loadLocationBooking(d);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", withDateParam(window.location.href, d));
+      }
     },
     [loadAll, loadMandatoryMenuConfigFromApi, loadLocationBooking],
   );
@@ -263,7 +269,18 @@ export default function Page() {
     <section data-ui="reservas-config" aria-label="Configuración diaria reservas">
       <PageToolbar
         left={
-          <DateDropdown value={date} onChange={onDateChange} data-ui="date-dropdown" />
+          <MonthCalendarDatePicker
+            value={date}
+            onChange={onDateChange}
+            year={calendar.year}
+            month={calendar.month}
+            days={calendar.days}
+            onPrevMonth={calendar.onPrevMonth}
+            onNextMonth={calendar.onNextMonth}
+            loading={calendar.loading}
+            data-testid="reservas-config-date-picker"
+            data-ui="date-picker"
+          />
         }
         right={
           <button data-action="reload" className="bo-btn" type="button" onClick={() => { void loadAll(date); void loadLocationBooking(date); }} disabled={busy} data-ui="reload-btn">
