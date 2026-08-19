@@ -84,6 +84,9 @@
   --bo-radius-sm: 12px;
   --bo-radius-full: 9999px;
 
+  /* Width of the app shell left rail; set to 0 when it collapses into the bottom nav. */
+  --bo-sidebar-w: 78px;
+
   /* Shadows */
   --bo-shadow: 0 18px 52px rgba(0, 0, 0, 0.55);
   --bo-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.36);
