@@ -273,7 +273,7 @@ export default function Page() {
   }
 
   return (
-    <section data-ui="reservas-config" aria-label="Configuración diaria reservas">
+    <section data-ui="reservas-config" data-testid="reservas-config-section" aria-label="Configuración diaria reservas">
       <PageToolbar
         left={
           <MonthCalendarDatePicker
@@ -290,13 +290,13 @@ export default function Page() {
           />
         }
         right={
-          <button data-action="reload" className="bo-btn" type="button" onClick={() => { void loadAll(date); void loadLocationBooking(date); }} disabled={busy} data-ui="reload-btn">
+          <button data-action="reload" className="bo-btn" type="button" onClick={() => { void loadAll(date); void loadLocationBooking(date); }} disabled={busy} data-ui="reload-btn" data-testid="reservas-config-reload-btn">
             Recargar
           </button>
         }
       />
 
-      <div data-slot="panels-stack" className="bo-stack">
+      <div data-slot="panels-stack" className="bo-stack" data-testid="reservas-config-panels-stack">
         <ReservationDayPanel
           title={day.isOpen ? "Estado del día" : null}
           meta={day.isOpen ? `${dailyLimit.totalPeople}/${dailyLimit.limit} pax` : "Día cerrado"}
@@ -306,6 +306,7 @@ export default function Page() {
           onRangeAction={() => setRangeModalOpen(true)}
           bodyClassName={day.isOpen ? undefined : "bo-configDayLimitRow--single"}
           data-ui="day-panel"
+          data-testid="reservas-config-day-panel"
         />
         <CloseDateRangeModal
           open={rangeModalOpen}
@@ -323,6 +324,7 @@ export default function Page() {
           {day.isOpen ? (
             <motion.div
               data-ui="config-daily-limit-panel"
+              data-testid="reservas-config-daily-limit-panel"
               key="config-daily-limit-panel"
               className="bo-dailyLimitPanel bo-dayFitPanel p-4 px-14 bo-panel bo-dayStatePanel mx-auto"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -330,11 +332,11 @@ export default function Page() {
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               transition={dayVisibilityTransition}
             >
-              <div data-slot="panel-head" className="bo-panelHead !pt-0 !w-fit !mx-auto">
-                <div data-role="title" className="bo-panelTitle !text-center" data-ui="daily-limit-title">Límite diario</div>
+              <div data-slot="panel-head" className="bo-panelHead !pt-0 !w-fit !mx-auto" data-testid="reservas-config-daily-limit-head">
+                <div data-role="title" className="bo-panelTitle !text-center" data-ui="daily-limit-title" data-testid="reservas-config-daily-limit-title">Límite diario</div>
               </div>
-              <div data-slot="daily-limit-body" className="bo-dailyLimitBody">
-                <div data-ui="limit-counter" className="bo-dailyLimitCounter justify-center items-center flex !flex-row !gap-4">
+              <div data-slot="daily-limit-body" className="bo-dailyLimitBody" data-testid="reservas-config-daily-limit-body">
+                <div data-ui="limit-counter" className="bo-dailyLimitCounter justify-center items-center flex !flex-row !gap-4" data-testid="reservas-config-limit-counter">
                   <button
                     data-action="decrement"
                     className="bo-counterBtn"
@@ -343,6 +345,7 @@ export default function Page() {
                     disabled={busy || Number(draftLimit || 0) <= 0}
                     aria-label="Reducir límite diario"
                     data-ui="decrement-btn"
+                    data-testid="reservas-config-limit-decrement-btn"
                   >
                     <svg data-ui="decrement-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /></svg>
                   </button>
@@ -359,6 +362,7 @@ export default function Page() {
                       }
                     }}
                     data-ui="limit-input"
+                    data-testid="reservas-config-limit-input"
                   />
                   <button
                     data-action="increment"
@@ -368,11 +372,12 @@ export default function Page() {
                     disabled={busy || Number(draftLimit || 0) >= 500}
                     aria-label="Aumentar límite diario"
                     data-ui="increment-btn"
+                    data-testid="reservas-config-limit-increment-btn"
                   >
                     <svg data-ui="increment-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                   </button>
                 </div>
-                <div data-ui="free-seats" className="bo-mutedText pt-4 !w-fit !mx-auto">Libres: {dailyLimit.freeBookingSeats}</div>
+                <div data-ui="free-seats" className="bo-mutedText pt-4 !w-fit !mx-auto" data-testid="reservas-config-free-seats">Libres: {dailyLimit.freeBookingSeats}</div>
               </div>
             </motion.div>
           ) : null}
@@ -405,6 +410,7 @@ export default function Page() {
           {day.isOpen ? (
             <motion.div
               data-ui="open-sections"
+              data-testid="reservas-config-open-sections"
               key="config-open-sections"
               className="bo-stack w-full max-w-[768px] mx-auto"
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -412,12 +418,12 @@ export default function Page() {
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               transition={dayVisibilityTransition}
             >
-              <div data-ui="hours-panel" className="bo-panel">
-                <div data-slot="panel-head" className="bo-panelHead">
-                  <div data-role="title" className="bo-panelTitle">Horario del día</div>
+              <div data-ui="hours-panel" className="bo-panel" data-testid="reservas-config-hours-panel">
+                <div data-slot="panel-head" className="bo-panelHead" data-testid="reservas-config-hours-head">
+                  <div data-role="title" className="bo-panelTitle" data-testid="reservas-config-hours-title">Horario del día</div>
                 </div>
-                <div data-slot="panel-body" className="bo-panelBody" style={{ display: "grid", gap: 14 }}>
-                  <div data-slot="opening-mode" className="bo-row">
+                <div data-slot="panel-body" className="bo-panelBody" style={{ display: "grid", gap: 14 }} data-testid="reservas-config-hours-body">
+                  <div data-slot="opening-mode" className="bo-row" data-testid="reservas-config-opening-mode-row">
                     <Select
                       value={openingModeDraft}
                       onChange={handleOpeningModeChange}
@@ -425,13 +431,14 @@ export default function Page() {
                       size="sm"
                       ariaLabel="Modo de apertura"
                       data-ui="opening-mode-select"
+                      data-testid="reservas-config-opening-mode-select"
                     />
                   </div>
 
                   {showMorningHours ? (
-                    <div data-slot="morning-hours" className="bo-field">
-                      <div data-role="label" className="bo-label">Mañana (08:00 - 17:00)</div>
-                      <div data-ui="morning-slots" className="bo-hourCards bo-hourCards--slots">
+                    <div data-slot="morning-hours" className="bo-field" data-testid="reservas-config-morning-hours-field">
+                      <div data-role="label" className="bo-label" data-testid="reservas-config-morning-hours-label">Mañana (08:00 - 17:00)</div>
+                      <div data-ui="morning-slots" className="bo-hourCards bo-hourCards--slots" data-testid="reservas-config-morning-slots">
                         {morningHourCards.map((slot) => (
                           <button
                             key={slot.id}
@@ -440,6 +447,7 @@ export default function Page() {
                             onClick={() => handleMorningHour(slot.value)}
                             disabled={busy}
                             data-ui="morning-slot-btn"
+                            data-testid={`reservas-config-morning-slot-${slot.value}`}
                             data-slot-value={slot.value}
                           >
                             {slot.label}
@@ -450,9 +458,9 @@ export default function Page() {
                   ) : null}
 
                   {showNightHours ? (
-                    <div data-slot="night-hours" className="bo-field">
-                      <div data-role="label" className="bo-label">Noche (17:30 - 01:00)</div>
-                      <div data-ui="night-slots" className="bo-hourCards bo-hourCards--slots">
+                    <div data-slot="night-hours" className="bo-field" data-testid="reservas-config-night-hours-field">
+                      <div data-role="label" className="bo-label" data-testid="reservas-config-night-hours-label">Noche (17:30 - 01:00)</div>
+                      <div data-ui="night-slots" className="bo-hourCards bo-hourCards--slots" data-testid="reservas-config-night-slots">
                         {nightHourCards.map((slot) => (
                           <button
                             key={slot.id}
@@ -461,6 +469,7 @@ export default function Page() {
                             onClick={() => handleNightHour(slot.value)}
                             disabled={busy}
                             data-ui="night-slot-btn"
+                            data-testid={`reservas-config-night-slot-${slot.value}`}
                             data-slot-value={slot.value}
                           >
                             {slot.label}
@@ -491,9 +500,9 @@ export default function Page() {
                 />
               ) : null}
 
-              <Panel data-ui="tables-panel" title="Mesas" bodyClassName="bo-row bo-configTableLimitsRow">
-                  <div data-slot="mesas-dos" className="bo-field bo-field--inline bo-configTableLimitField">
-                    <div data-role="label" className="bo-label">Mesas de 2</div>
+              <Panel data-ui="tables-panel" title="Mesas" bodyClassName="bo-row bo-configTableLimitsRow" data-testid="reservas-config-tables-panel">
+                  <div data-slot="mesas-dos" className="bo-field bo-field--inline bo-configTableLimitField" data-testid="reservas-config-mesas-dos-field">
+                    <div data-role="label" className="bo-label" data-testid="reservas-config-mesas-dos-label">Mesas de 2</div>
                     <Select
                       value={mesasDeDos.limit || "999"}
                       onChange={(v) => void setMesasDos(v)}
@@ -501,10 +510,11 @@ export default function Page() {
                       size="sm"
                       ariaLabel="Mesas de 2"
                       data-ui="mesas-dos-select"
+                      data-testid="reservas-config-mesas-dos-select"
                     />
                   </div>
-                  <div data-slot="mesas-tres" className="bo-field bo-field--inline bo-configTableLimitField">
-                    <div data-role="label" className="bo-label">Mesas de 3</div>
+                  <div data-slot="mesas-tres" className="bo-field bo-field--inline bo-configTableLimitField" data-testid="reservas-config-mesas-tres-field">
+                    <div data-role="label" className="bo-label" data-testid="reservas-config-mesas-tres-label">Mesas de 3</div>
                     <Select
                       value={mesasDeTres.limit || "999"}
                       onChange={(v) => void setMesasTres(v)}
@@ -512,6 +522,7 @@ export default function Page() {
                       size="sm"
                       ariaLabel="Mesas de 3"
                       data-ui="mesas-tres-select"
+                      data-testid="reservas-config-mesas-tres-select"
                     />
                   </div>
               </Panel>
@@ -527,21 +538,22 @@ export default function Page() {
                 />
               ) : null}
 
-              <Panel data-ui="floors-panel" title="Plantas activas del día" meta={`${floors.length} plantas`}>
-                  <div data-ui="floor-rows" className="bo-floorRows">
+              <Panel data-ui="floors-panel" title="Plantas activas del día" meta={`${floors.length} plantas`} data-testid="reservas-config-floors-panel">
+                  <div data-ui="floor-rows" className="bo-floorRows" data-testid="reservas-config-floor-rows">
                     {floors.map((floor) => (
-                      <div key={floor.id} data-ui="floor-row" className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`}>
-                        <div data-slot="floor-name" className="bo-floorRowName" data-role="floor-name">
+                      <div key={floor.id} data-ui="floor-row" className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`} data-testid={`reservas-config-floor-row-${floor.id}`}>
+                        <div data-slot="floor-name" className="bo-floorRowName" data-role="floor-name" data-testid={`reservas-config-floor-name-${floor.id}`}>
                           {floor.name}
                         </div>
-                        <div data-slot="floor-state" className="bo-floorRowState">
-                          <span data-ui="floor-state-label" className="bo-floorRowStateText">{floor.active ? "Activa" : "Inactiva"}</span>
+                        <div data-slot="floor-state" className="bo-floorRowState" data-testid={`reservas-config-floor-state-${floor.id}`}>
+                          <span data-ui="floor-state-label" className="bo-floorRowStateText" data-testid={`reservas-config-floor-state-label-${floor.id}`}>{floor.active ? "Activa" : "Inactiva"}</span>
                           <Switch
                             checked={floor.active}
                             disabled={busy}
                             onCheckedChange={(checked) => void setFloorActive(floor, checked)}
                             aria-label={`Activar o desactivar ${floor.name}`}
                             data-ui="floor-switch"
+                            data-testid={`reservas-config-floor-switch-${floor.id}`}
                           />
                         </div>
                       </div>
@@ -549,7 +561,7 @@ export default function Page() {
                   </div>
               </Panel>
 
-              <Panel data-ui="salones-day-panel-wrapper" title="Salones del día" meta={date}>
+              <Panel data-ui="salones-day-panel-wrapper" title="Salones del día" meta={date} data-testid="reservas-config-salones-panel">
                   <SalonesDelDiaPanel
                     date={date}
                     floors={floors}
