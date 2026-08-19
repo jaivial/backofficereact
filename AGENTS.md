@@ -304,9 +304,16 @@ select:focus-visible,
 }
 ```
 
-## Reglas de Test-Driven Development (TDD) — Obligatorio
+## Reglas de Test-Driven Development (TDD) — DESACTIVADO
 
-### Principio general
+> **Regla vigente (overrides lo que sigue abajo): sin TDD ni tests.**
+> Implementar directamente sin escribir tests ni suites nuevas y sin ejecutar
+> vitest/playwright para validar tareas, salvo peticion expresa del usuario.
+> La validacion es `bun run typecheck` + `bun run build` + QA manual.
+> Las secciones siguientes se conservan como referencia de infraestructura
+> por si se reactiva el modo con tests.
+
+### Principio general (histórico, desactivado)
 Todo código nuevo en `backoffice/` debe seguir TDD estricto. Los tests NO son opcionales: son parte del definition of done.
 
 ### Configuración de testing
@@ -714,12 +721,16 @@ Mapeados en `tailwind.config.ts` desde `components/styles/base/variables.css`:
 
 Toda tarea nueva sigue este flujo completo, sin omitir pasos:
 
+> **Regla vigente: sin TDD ni tests.** No escribir tests ni suites nuevas y no
+> ejecutar vitest/playwright para validar tareas, salvo peticion expresa del
+> usuario. La validacion es `bun run typecheck` + `bun run build` + QA manual.
+
 1. **Plan en worktree nuevo**:
    ```bash
    git worktree add /home/jaime/wt/backoffice-<tarea> -b <tipo>/<tarea> main
    cd /home/jaime/wt/backoffice-<tarea>
    ```
-2. **Editar + test**: implementar cambios, correr build/typecheck del repo (`bun run build`, `bun run typecheck` o equivalentes).
+2. **Editar + verificar**: implementar cambios y validar con build/typecheck del repo (`bun run build`, `bun run typecheck` o equivalentes). Sin tests salvo peticion expresa.
 3. **Commit + push** de todos los cambios al branch nuevo:
    ```bash
    git add -A && git commit -m "<conventional commit msg>"
