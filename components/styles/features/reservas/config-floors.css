@@ -545,3 +545,13 @@
     transition: none;
   }
 }
+
+/* Salon capacity counter inside the create/edit salon modal: flat look,
+   no glass box (border/background/shadow/blur removed). */
+.bo-salonAforoCounter.bo-timeAdjustCounter--glass {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
