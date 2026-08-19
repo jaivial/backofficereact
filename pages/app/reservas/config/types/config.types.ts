@@ -21,6 +21,7 @@ export type PageData = {
   mesasDeTres: ConfigMesasDeTres | null;
   floors: ConfigFloor[];
   hourSplit: HourSplitConfig | null;
+  hourSplitDetailsOpen: boolean;
   locationBooking: LocationBookingConfig | null;
   error: string | null;
 };

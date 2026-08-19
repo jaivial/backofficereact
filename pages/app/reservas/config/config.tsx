@@ -12,6 +12,7 @@ import { Switch } from "../../../../ui/shadcn/Switch";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
+import { useBooleanPreference } from "../../../../ui/hooks/useBooleanPreference";
 import { ReservationDayPanel } from "../../../../ui/widgets/ReservationDayPanel";
 import { CloseDateRangeModal } from "../../../../ui/widgets/CloseDateRangeModal";
 import { HourSplitConfig as HourSplitConfigWidget } from "../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
@@ -37,6 +38,7 @@ export default function Page() {
     mesasDeTres: null,
     floors: [],
     hourSplit: null,
+    hourSplitDetailsOpen: true,
     error: null,
   }) as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
@@ -59,6 +61,11 @@ export default function Page() {
 
   // By-hour client split state
   const [hourSplit, setHourSplit] = useState<HourSplitConfig | null>(data.hourSplit ?? null);
+  const [hourSplitDetailsOpen, setHourSplitDetailsOpen] = useBooleanPreference(
+    api,
+    "hourSplitDetailsOpenDay",
+    data.hourSplitDetailsOpen,
+  );
 
   // Location booking toggles state (per-date tri-state)
   const [locationBooking, setLocationBooking] = useState<LocationBookingConfig | null>(data.locationBooking ?? null);
@@ -475,6 +482,8 @@ export default function Page() {
                   bookingsByHour={hourSplit.bookingsByHour}
                   source={hourSplit.source}
                   variant="day"
+                  open={hourSplitDetailsOpen}
+                  onOpenChange={setHourSplitDetailsOpen}
                   busy={busy}
                   onToggleEnabled={toggleHourSplit}
                   onCommitPercentages={commitHourSplitPercentages}

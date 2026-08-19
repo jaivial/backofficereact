@@ -126,10 +126,18 @@ body:has(.bo-app--page) {
 @media (max-width: 720px),
 (max-aspect-ratio: 9 / 16) {
   .bo-app--page {
+    /* The left rail becomes the bottom nav here, so nothing is offset by it. */
+    --bo-sidebar-w: 0px;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr auto;
     overflow: hidden;
     overscroll-behavior: none;
+  }
+
+  .bo-app--page .bo-menuFab {
+    left: calc(var(--bo-space-4) + env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   .bo-app--page .bo-main {

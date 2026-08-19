@@ -25,7 +25,7 @@
 .bo-app {
   height: 100%;
   display: grid;
-  grid-template-columns: 78px 1fr;
+  grid-template-columns: var(--bo-sidebar-w) 1fr;
   min-width: 0;
   min-height: 0;
 }

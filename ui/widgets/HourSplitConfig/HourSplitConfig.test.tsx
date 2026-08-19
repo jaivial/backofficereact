@@ -86,6 +86,30 @@ describe("HourSplitConfig", () => {
     expect(screen.getByTestId("hour-split-card-13:00")).toBeInTheDocument();
   });
 
+  it("starts collapsed when defaultOpen is false", () => {
+    render(<HourSplitConfig {...baseProps} defaultOpen={false} />);
+    expect(screen.getByTestId("hour-split-cards")).toHaveAttribute("hidden");
+    expect(screen.getByTestId("hour-split-config-trigger")).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("honours the controlled open prop and reports changes via onOpenChange", () => {
+    const onOpenChange = vi.fn();
+    const { rerender } = render(<HourSplitConfig {...baseProps} open={false} onOpenChange={onOpenChange} />);
+    const trigger = screen.getByTestId("hour-split-config-trigger");
+    expect(screen.getByTestId("hour-split-cards")).toHaveAttribute("hidden");
+
+    fireEvent.click(trigger);
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+    // Controlled: stays collapsed until the parent pushes the new value back down.
+    expect(screen.getByTestId("hour-split-cards")).toHaveAttribute("hidden");
+
+    rerender(<HourSplitConfig {...baseProps} open onOpenChange={onOpenChange} />);
+    expect(screen.getByTestId("hour-split-cards")).not.toHaveAttribute("hidden");
+
+    fireEvent.click(trigger);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
   it("fires onToggleEnabled when switch flips", () => {
     render(<HourSplitConfig {...baseProps} />);
     fireEvent.click(screen.getByTestId("hour-split-toggle"));

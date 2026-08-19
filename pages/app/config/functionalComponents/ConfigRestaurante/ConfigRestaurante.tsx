@@ -18,7 +18,7 @@ import { LocationBookingToggles } from "../../../../../ui/widgets/LocationBookin
 import { equalSplit, normalizePercentages, type Percentages } from "../../../../../ui/widgets/HourSplitConfig/lib/rebalance";
 import { SalonesTab } from "./SalonesTab";
 
-export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast, onFloorsChanged, onDefaultsChanged }: RestauranteContentProps) {
+export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setError, api, pushToast, onFloorsChanged, onDefaultsChanged, hourSplitDetailsOpen, onHourSplitDetailsOpenChange }: RestauranteContentProps) {
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
   const nightSlots = useMemo(() => buildHalfHourSlots(17 * 60 + 30, 1 * 60, "n"), []);
   const pageContext = usePageContext();
@@ -369,6 +369,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
         percentages={defaultPercentages}
         variant="default"
         busy={busy}
+        open={hourSplitDetailsOpen}
+        onOpenChange={onHourSplitDetailsOpenChange}
         onToggleEnabled={toggleHourSplitDefault}
         onCommitPercentages={commitDefaultPercentages}
         pushToast={pushToast}

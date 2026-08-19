@@ -400,6 +400,7 @@
 .bo-bookingEditorBody--inline {
   display: grid;
   gap: 14px;
+  padding: 1.5rem;
 }
 
 .bo-bookingRow--schedule,
@@ -555,11 +556,11 @@
 }
 
 .bo-bookingPanel--customer {
-  box-shadow: none;
+  box-shadow: var(--bo-shadow-soft);
 }
 
 :root[data-theme="light"] .bo-bookingPanel--customer {
-  box-shadow: none;
+  box-shadow: var(--bo-shadow-soft);
 }
 
 @media (max-width: 550px) {

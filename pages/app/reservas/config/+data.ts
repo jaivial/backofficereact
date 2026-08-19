@@ -81,5 +81,9 @@ export async function data(pageContext: PageContextServer) {
     error = e instanceof Error ? e.message : "Error cargando configuración";
   }
 
-  return { date, day, dailyLimit, openingHours, mesasDeDos, mesasDeTres, floors, hourSplit, locationBooking, error };
+  // Accordion state for "Reparto por hora" rides the session preferences so the
+  // first paint already matches the stored value (default: expanded).
+  const hourSplitDetailsOpen = pageContext.bo?.session?.preferences?.hourSplitDetailsOpenDay !== "0";
+
+  return { date, day, dailyLimit, openingHours, mesasDeDos, mesasDeTres, floors, hourSplit, hourSplitDetailsOpen, locationBooking, error };
 }

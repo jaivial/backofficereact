@@ -10,6 +10,7 @@ import { sessionAtom } from "../../../state/atoms";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { useBooleanPreference } from "../../../ui/hooks/useBooleanPreference";
 import { Select } from "../../../ui/inputs/Select";
 import { Switch } from "../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../ui/widgets/PlusMinusCounter";
@@ -28,6 +29,7 @@ type PageData = {
   defaults: ConfigDefaults | null;
   floors: ConfigFloor[];
   restaurantInfo: RestaurantInfo | null;
+  hourSplitDetailsOpen: boolean;
   error: string | null;
 };
 
@@ -141,6 +143,11 @@ export default function Page() {
   const [error, setError] = useState<string | null>(data.error);
   const [defaults, setDefaults] = useState<ConfigDefaults | null>(data.defaults);
   const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
+  const [hourSplitDetailsOpen, setHourSplitDetailsOpen] = useBooleanPreference(
+    api,
+    "hourSplitDetailsOpenDefault",
+    data.hourSplitDetailsOpen,
+  );
   const [restaurantInfo, setRestaurantInfo] = useState<RestaurantInfo | null>(
     data.restaurantInfo ?? {
       direccion: "",
@@ -336,6 +343,8 @@ export default function Page() {
               pushToast={pushToast}
               onFloorsChanged={setFloors}
               onDefaultsChanged={(patch) => setDefaults((prev) => (prev ? { ...prev, ...patch } : prev))}
+              hourSplitDetailsOpen={hourSplitDetailsOpen}
+              onHourSplitDetailsOpenChange={setHourSplitDetailsOpen}
             />
           ) : contentTab === "contacto" ? (
             <ConfigContacto

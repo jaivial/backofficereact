@@ -51,6 +51,8 @@ function renderContent(overrides: Partial<Parameters<typeof ConfigRestauranteCon
       pushToast={vi.fn()}
       onFloorsChanged={onFloorsChanged}
       onDefaultsChanged={onDefaultsChanged}
+      hourSplitDetailsOpen
+      onHourSplitDetailsOpenChange={vi.fn()}
       {...overrides}
     />,
   );
