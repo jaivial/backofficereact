@@ -633,6 +633,10 @@ export type ConfigFloor = {
   name: string;
   isGround: boolean;
   active: boolean;
+  /** Max occupancy (aforo) for this floor; 0 = unbounded. */
+  maxAforo?: number;
+  /** Sum of the capacity of this floor's salons with a capacity limit. */
+  totalSalonAforo?: number;
   /** Set on date-scoped floors: the date this floor exists for. */
   dateScoped?: string;
 };

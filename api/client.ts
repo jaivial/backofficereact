@@ -1939,7 +1939,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async getDefaultFloors(): Promise<APISuccess<{ floors: ConfigFloor[] }> | APIError> {
         return json("/api/admin/config/floors/defaults", { method: "GET" });
       },
-      async setDefaultFloors(input: { count?: number; floorNumber?: number; active?: boolean }): Promise<APISuccess<{ floors: ConfigFloor[] }> | APIError> {
+      async setDefaultFloors(input: { count?: number; floorNumber?: number; active?: boolean; maxAforo?: number }): Promise<APISuccess<{ floors: ConfigFloor[] }> | APIError> {
         return json("/api/admin/config/floors/defaults", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -1978,11 +1978,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/floors?${q.toString()}`, { method: "GET" });
       },
-      async setFloor(date: string, floorNumber: number, active: boolean): Promise<APISuccess<{ date: string; floors: ConfigFloor[] }> | APIError> {
+      async setFloor(date: string, floorNumber: number, active: boolean, maxAforo?: number): Promise<APISuccess<{ date: string; floors: ConfigFloor[] }> | APIError> {
         return json("/api/admin/config/floors", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ date, floorNumber, active }),
+          body: JSON.stringify({ date, floorNumber, active, ...(maxAforo !== undefined ? { maxAforo } : {}) }),
         });
       },
       async setFloorsForDate(date: string, count: number): Promise<APISuccess<{ date: string; floors: ConfigFloor[] }> | APIError> {
