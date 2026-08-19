@@ -44,6 +44,37 @@ test.describe("Reservas - Config", () => {
     expect(await canvasOrMap.count()).toBeGreaterThanOrEqual(0);
   });
 
+  test("date picker opens the occupancy month calendar, same as the table map", async ({ adminPage }) => {
+    await adminPage.goto("/app/reservas/config?date=2026-08-19");
+    await adminPage.waitForLoadState("networkidle");
+    await waitForLoadingToFinish(adminPage);
+
+    const trigger = adminPage.getByTestId("reservas-config-date-picker");
+    await expect(trigger).toHaveText(/19 ago 2026/);
+
+    await trigger.click();
+    const calendar = adminPage.getByTestId("month-calendar");
+    await expect(calendar).toBeVisible();
+    await expect(adminPage.getByTestId("month-calendar-header")).toContainText(/agosto/i);
+    // Booking info per day is what distinguishes this picker from a plain date input.
+    await expect(calendar.locator('[data-slot="month-calendar-day-sub"]').first()).toBeVisible();
+
+    await adminPage.getByTestId("month-calendar-prev").click();
+    await expect(adminPage.getByTestId("month-calendar-header")).toContainText(/julio/i);
+  });
+
+  test("picking a date updates the url and reloads the day", async ({ adminPage }) => {
+    await adminPage.goto("/app/reservas/config?date=2026-08-19");
+    await adminPage.waitForLoadState("networkidle");
+    await waitForLoadingToFinish(adminPage);
+
+    await adminPage.getByTestId("reservas-config-date-picker").click();
+    await adminPage.getByTestId("month-calendar-day-24").click();
+
+    await expect(adminPage.getByTestId("reservas-config-date-picker")).toHaveText(/24 ago 2026/);
+    expect(adminPage.url()).toContain("date=2026-08-24");
+  });
+
   test.describe("API contracts", () => {
     test("GET /api/admin/config/defaults returns valid shape", async ({
       adminPage,
