@@ -6,6 +6,7 @@ import type {
   ConfigMesasDeTres,
   ConfigOpeningHours,
   HourSplitConfig,
+  LocationBookingConfig,
   MandatoryMenuConfig,
   MenuSelectorItem,
   OpeningMode,
@@ -20,7 +21,8 @@ export type PageData = {
   mesasDeTres: ConfigMesasDeTres | null;
   floors: ConfigFloor[];
   hourSplit: HourSplitConfig | null;
+  locationBooking: LocationBookingConfig | null;
   error: string | null;
 };
 
-export type { ConfigDailyLimit, ConfigDayStatus, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, HourSplitConfig, MandatoryMenuConfig, MenuSelectorItem, OpeningMode };
+export type { ConfigDailyLimit, ConfigDayStatus, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, HourSplitConfig, LocationBookingConfig, MandatoryMenuConfig, MenuSelectorItem, OpeningMode };

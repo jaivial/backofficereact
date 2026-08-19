@@ -14,6 +14,7 @@ import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
 import { Tabs, type TabItem } from "../../../../../ui/nav/Tabs";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { HourSplitConfig as HourSplitConfigWidget } from "../../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
+import { LocationBookingToggles } from "../../../../../ui/widgets/LocationBookingToggles/LocationBookingToggles";
 import { equalSplit, normalizePercentages, type Percentages } from "../../../../../ui/widgets/HourSplitConfig/lib/rebalance";
 import { SalonesTab } from "./SalonesTab";
 
@@ -44,6 +45,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
         weekdayOpen: WeekdayOpen;
         hourSplitEnabled: boolean;
         defaultHourPercentages: Record<string, number>;
+        allowFloorReservation: boolean;
+        allowSalonReservation: boolean;
       }>,
       successMessage?: string,
     ) => {
@@ -149,6 +152,18 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
   const toggleHourSplitDefault = useCallback(
     (enabled: boolean) => {
       void saveDefaults({ hourSplitEnabled: enabled }, enabled ? "Reparto por hora activado" : "Reparto por hora desactivado");
+    },
+    [saveDefaults],
+  );
+
+  const toggleLocationBookingDefault = useCallback(
+    (patch: { allowFloorReservation?: boolean; allowSalonReservation?: boolean }) => {
+      const labels = {
+        allowFloorReservation: "Reserva de planta",
+        allowSalonReservation: "Reserva de salón",
+      } as const;
+      const [key, value] = Object.entries(patch)[0] as [keyof typeof labels, boolean];
+      void saveDefaults(patch, `${labels[key]} ${value ? "activada" : "desactivada"}`);
     },
     [saveDefaults],
   );
@@ -446,6 +461,14 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             >
               {floorTab === "plantas" ? (
                 <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent" data-ui="config-floors-tabpanel">
+                  <LocationBookingToggles
+                    variant="default"
+                    allowFloorReservation={defaults.allowFloorReservation ?? false}
+                    allowSalonReservation={defaults.allowSalonReservation ?? false}
+                    busy={busy}
+                    onSetGlobal={toggleLocationBookingDefault}
+                  />
+
                   <PlusMinusCounter
                     label="Total de plantas"
                     value={String(floorCount)}

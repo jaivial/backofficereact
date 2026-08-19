@@ -1854,6 +1854,8 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         dailyLimit: number;
         mesasDeDosLimit: string;
         mesasDeTresLimit: string;
+        allowFloorReservation?: boolean;
+        allowSalonReservation?: boolean;
       }>): Promise<APISuccess<ConfigDefaults> | APIError> {
         return json("/api/admin/config/defaults", {
           method: "POST",
@@ -1995,6 +1997,20 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
       },
       // By-hour client split configuration.
+      async getLocationBooking(date: string): Promise<APISuccess<import("./types").LocationBookingConfig> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/location-booking?${q.toString()}`, { method: "GET" });
+      },
+      async setLocationBooking(
+        date: string,
+        payload: { allowFloorReservation?: boolean | null; allowSalonReservation?: boolean | null },
+      ): Promise<APISuccess<import("./types").LocationBookingConfig> | APIError> {
+        return json("/api/admin/config/location-booking", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date, ...payload }),
+        });
+      },
       async getHourSplit(date: string): Promise<APISuccess<import("./types").HourSplitConfig> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/hour-split?${q.toString()}`, { method: "GET" });
