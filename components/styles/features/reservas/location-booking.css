@@ -1,0 +1,76 @@
+/* Location booking toggles (ui/widgets/LocationBookingToggles).
+   Tokens only (no hardcoded colors/sizes). Light/dark via bo-* variables. */
+
+.bo-locationToggles {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-locationToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 44px;
+}
+
+.bo-locationToggleInfo {
+  min-width: 0;
+}
+
+.bo-locationToggleLabel {
+  font-weight: 680;
+}
+
+.bo-locationToggleHint {
+  color: var(--bo-muted, #9ca3af);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.bo-locationToggleNote {
+  color: var(--bo-muted, #9ca3af);
+  font-size: 12px;
+  border-top: 1px solid var(--bo-border, rgba(148, 163, 184, 0.18));
+  padding-top: 10px;
+}
+
+/* Tri-state selector (per-date variant): Heredar / Sí / No. */
+.bo-locationTriState {
+  display: inline-flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.bo-locationTriBtn {
+  border: 1px solid var(--bo-border, rgba(148, 163, 184, 0.28));
+  border-radius: 10px;
+  background: transparent;
+  color: var(--bo-text, inherit);
+  cursor: pointer;
+  font-size: 12px;
+  min-height: 32px;
+  padding: 4px 10px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.bo-locationTriBtn:hover:not(:disabled) {
+  border-color: var(--bo-accent, #8b7cf6);
+}
+
+.bo-locationTriBtn.is-active {
+  background: color-mix(in srgb, var(--bo-accent, #8b7cf6) 18%, transparent);
+  border-color: var(--bo-accent, #8b7cf6);
+  font-weight: 680;
+}
+
+.bo-locationTriBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-locationTriBtn {
+    transition: none;
+  }
+}
