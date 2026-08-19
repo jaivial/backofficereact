@@ -476,8 +476,8 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
 
                   <PlusMinusCounter
                     label="Total de plantas"
+                    className="bo-configLimitCounterCard bo-configFloorCounter bo-configFloorCounter--flat"
                     value={String(floorCount)}
-                    className="bo-configLimitCounterCard bo-configFloorCounter"
                     onDecrease={handleFloorsDecrease}
                     onIncrease={handleFloorsIncrease}
                     canDecrease={canShrink}
