@@ -10,7 +10,6 @@ import type {
   ConfigMesasDeTres,
   ConfigOpeningHours,
   HourSplitConfig,
-  HourSplitConfig as HourSplitConfigType,
   LocationBookingConfig,
 } from "../../../../api/types";
 
