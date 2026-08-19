@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 /**
  * Forky E2E helpers for the real app (backoffice-dev.menustudioai.com).
@@ -16,6 +16,17 @@ export const FORKY_PROMPT_TIMEOUT = 90_000;
  * implicitly in CI (slow, costs LLM tokens, per-IP rate limits).
  */
 export const forkyToolsEnabled = process.env.FORKY_REAL_TOOLS_E2E === "1";
+
+/** The Forky composer is the literal beautifului.dev PromptBar; its textarea
+ * and send button are addressed by aria-label (no data-testids inside the
+ * verbatim component). */
+export function forkyComposer(page: Page): Locator {
+  return page.getByLabel("Prompt", { exact: true });
+}
+
+export function forkySendButton(page: Page): Locator {
+  return page.getByLabel("Send", { exact: true });
+}
 
 const E2E_ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@villacarmen.com";
 const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123";
@@ -74,7 +85,7 @@ export async function openForkyModal(page: Page) {
     document.querySelector<HTMLElement>('[data-testid="forky-button"]')?.click();
   });
   await expect(page.getByTestId("forky-modal")).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByTestId("forky-composer-input")).toBeVisible({ timeout: 15_000 });
+  await expect(forkyComposer(page)).toBeVisible({ timeout: 15_000 });
 }
 
 /** Close the Forky modal if open. */
@@ -93,7 +104,7 @@ export async function openChat(page: Page) {
 /** Type the prompt through the keyboard so the assistant-ui store always
  * registers it (native setter/fill are flaky against the React controlled
  * textarea). Clears first via the native setter. */
-async function typeComposer(page: Page, composer: ReturnType<Page["getByTestId"]>, prompt: string) {
+async function typeComposer(page: Page, composer: Locator, prompt: string) {
   await composer.click();
   await composer.evaluate((el) => {
     const proto = window.HTMLTextAreaElement?.prototype ?? window.HTMLInputElement.prototype;
@@ -108,8 +119,8 @@ async function typeComposer(page: Page, composer: ReturnType<Page["getByTestId"]
 /** Send one prompt and wait for the assistant reply to finish streaming.
  * Returns the full transcript text (all messages). */
 export async function sendPrompt(page: Page, prompt: string): Promise<string> {
-  const composer = page.getByTestId("forky-composer-input");
-  const send = page.getByTestId("forky-composer-send");
+  const composer = forkyComposer(page);
+  const send = forkySendButton(page);
   // Typing can race the store binding right after the modal opens; retry, and
   // as a last resort reload for a fresh composer (session cookie persists).
   for (let attempt = 0; attempt < 3; attempt++) {

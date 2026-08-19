@@ -2,10 +2,10 @@ import { useEffect, useLayoutEffect, useRef, useCallback, useState } from "react
 import { gsap } from "gsap";
 import {
   ActionBarPrimitive,
-  ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
+  useAui,
 } from "@assistant-ui/react";
 import { useAtom } from "jotai";
 
@@ -13,8 +13,8 @@ import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
 import { ThinkingOrb } from "thinking-orbs";
+import { BuiIsland, LoadingState, PromptBar } from "./bui";
 import {
-  ArrowUpIcon,
   CopyIcon,
   RefreshCwIcon,
   ArrowDownIcon,
@@ -28,57 +28,28 @@ import { ForkyRuntimeProvider } from "./forkyRuntime";
 // beautifului.dev design language (tokens in
 // components/styles/features/forky/forky-bui.css, exposed as Tailwind
 // utilities: bg-fui-surface, text-fui-ink, ...). The ThinkingOrb is kept as
-// the assistant identity across every state.
+// the assistant identity across every state. The literal beautifului.dev
+// components (ui/forky/bui/) always render inside <BuiIsland>, which scopes
+// their own stylesheet (forky-bui-island.css) so neither side leaks.
 // ---------------------------------------------------------------------------
 
-const shimmerLabel =
-  "fui-anim-shimmer bg-clip-text bg-[linear-gradient(90deg,var(--fui-ink-3)_35%,var(--fui-ink)_50%,var(--fui-ink-3)_65%)] bg-[length:200%_100%] text-[13px] font-medium text-transparent whitespace-nowrap";
 const actionBtn =
   "flex size-6 items-center justify-center rounded-[6px] text-fui-ink-3 transition-colors duration-100 hover:bg-fui-hover-2 hover:text-fui-ink-2";
 
 // ---------------------------------------------------------------------------
-// Pixel-grid loader (beautifului "Loading State"): 3x3 dots with staggered
-// pixel-on animation + shimmer label + mono elapsed timer.
-// ---------------------------------------------------------------------------
-const PIXEL_DELAYS = ["90ms", "180ms", "270ms", "0ms", "90ms", "180ms", "90ms", "180ms", "270ms"];
-
-function PixelLoader({ className }: { className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={`grid shrink-0 grid-cols-[repeat(3,4px)] gap-[1.5px] ${className ?? ""}`}
-    >
-      {PIXEL_DELAYS.map((delay) => (
-        <span
-          key={delay}
-          className="size-[4px] rounded-[1px] bg-fui-ink"
-          style={{ opacity: 0.15, animation: `fui-pixel-on 650ms ease-in-out ${delay} infinite` }}
-        />
-      ))}
-    </span>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Loading state while assistant is generating (shimmer label + elapsed).
+// Loading state while assistant is generating — the literal beautifului.dev
+// LoadingState (pixel-grid loader + shimmer label + mono elapsed timer).
 // ---------------------------------------------------------------------------
 function AssistantLoading() {
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => setElapsed((e) => e + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div
       data-testid="forky-assistant-loading"
-      className="fui-anim flex w-fit items-center gap-2.5 py-2"
+      className="fui-anim flex w-fit py-2"
       style={{ animation: "fui-fade-in 300ms ease-out both" }}
     >
-      <PixelLoader />
-      <span className={shimmerLabel}>Pensando</span>
-      <span className="font-mono text-[12px] text-fui-ink-3 tabular-nums">{elapsed}s</span>
+      <BuiIsland>
+        <LoadingState label="Pensando" variant="Drive" />
+      </BuiIsland>
     </div>
   );
 }
@@ -268,73 +239,32 @@ function EmptyState() {
 }
 
 // ---------------------------------------------------------------------------
-// Composer — beautifului prompt bar: field box with hairline border that
-// strengthens on focus, single-line-height textarea, compact send button.
+// Composer — the literal beautifului.dev PromptBar inside a BuiIsland. Sends
+// through the assistant-ui composer runtime (setText + send), which queues
+// the message when a run is already in flight.
 // ---------------------------------------------------------------------------
 function ChatComposer() {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const handleInput = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-  }, []);
-
-  // Handle Enter to send, Shift+Enter for new line
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      // Find and click the send button
-      const form = e.currentTarget.closest("form");
-      const sendButton = form?.querySelector<HTMLButtonElement>('[data-testid="forky-composer-send"]');
-      if (sendButton && !sendButton.disabled) {
-        sendButton.click();
-      }
-    }
-  }, []);
+  const aui = useAui();
 
   return (
-    <ComposerPrimitive.Root
-      data-testid="forky-composer-root"
-      className="shrink-0 p-1.5"
-      onSubmit={(e) => e.preventDefault()}
-    >
-      <div
-        data-testid="forky-composer-row"
-        className="flex cursor-text flex-col gap-2 rounded-[14px] border border-fui-line bg-fui-field p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.035)] transition-[border-color,box-shadow] duration-150 focus-within:border-fui-line-strong focus-within:shadow-[0_1px_2px_rgba(0,0,0,0.025)]"
-      >
-        <ComposerPrimitive.Input
-          ref={textareaRef}
-          data-testid="forky-composer-input"
-          rows={1}
+    <div data-testid="forky-composer-root" className="shrink-0 p-1.5">
+      <BuiIsland>
+        <PromptBar
+          demo={false}
           placeholder="Pregunta lo que quieras"
-          onInput={handleInput}
-          onKeyDown={handleKeyDown}
-          className="min-h-7 w-full resize-none bg-transparent px-1 py-[5px] text-[13px] leading-[18px] text-fui-ink caret-fui-ink placeholder:text-fui-ink-3 focus:outline-none"
-          style={{ border: "none", outline: "none", boxShadow: "none", overflowWrap: "anywhere" }}
+          onSend={(text) => {
+            aui.composer.setText(text);
+            aui.composer.send();
+          }}
         />
-        <div className="flex items-center justify-end">
-          <ComposerPrimitive.Send asChild>
-            <button
-              type="button"
-              data-testid="forky-composer-send"
-              aria-label="Enviar mensaje"
-              className="flex size-7 items-center justify-center rounded-[8px] transition-[background-color,color,transform] duration-200 enabled:hover:bg-fui-hover enabled:active:scale-[0.96] disabled:cursor-default bg-fui-ink text-fui-surface disabled:bg-fui-line-strong disabled:text-fui-ink-2"
-              style={{ border: "none" }}
-            >
-              <ArrowUpIcon className="size-4" strokeWidth={2.4} />
-            </button>
-          </ComposerPrimitive.Send>
-        </div>
-      </div>
+      </BuiIsland>
       <p
         data-testid="forky-composer-disclaimer"
         className="mt-2 text-center text-[11px] text-fui-ink-3"
       >
         Forky puede cometer errores. Verifica información importante.
       </p>
-    </ComposerPrimitive.Root>
+    </div>
   );
 }
 
@@ -516,7 +446,7 @@ export function ForkyModal() {
     const overlay = overlayRef.current;
     // Focus the composer on open so the user can start typing immediately.
     if (overlay) {
-      const composer = overlay.querySelector<HTMLElement>('[data-testid="forky-composer-input"]');
+      const composer = overlay.querySelector<HTMLElement>("textarea");
       (composer ?? overlay.querySelector<HTMLElement>("button"))?.focus();
     }
     const onKeyDown = (event: KeyboardEvent) => {
