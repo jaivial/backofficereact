@@ -2370,7 +2370,21 @@ export default function TableManagerPage() {
 								}))
 								.filter((item) => item.id) as DrawElement[])
 						: drawElementsRef.current;
-					const points = normalizeLimitPoints(layout.limit_points);
+					// Limit points follow the same precedence as loadData: the
+					// per-day polygon wins, then the day-scope override copy
+					// (written when switching "Cambios en la plantilla" ->
+					// "Cambios solo este dia", whose broadcast carries no
+					// `limit_points`), and otherwise the current resolved
+					// points (already merged from the template) stay.
+					const dayPoints = normalizeLimitPoints(layout.limit_points);
+					const overridePoints = normalizeLimitPoints(
+						layout._limit_area_template_points_override,
+					);
+					const points = hasClosedLimitArea(dayPoints)
+						? dayPoints
+						: hasClosedLimitArea(overridePoints)
+							? overridePoints
+							: lineDrawingPointsRef.current;
 					drawElementsRef.current = elements;
 					lineDrawingPointsRef.current = points;
 					setDrawElements(elements);
