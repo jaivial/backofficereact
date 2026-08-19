@@ -1834,7 +1834,6 @@ body.is-dragging .bo-tableMapFlowWrap {
 	justify-content: center;
 	gap: var(--bo-space-2);
 	padding-bottom: var(--bo-space-2);
-	margin-bottom: var(--bo-space-3);
 	border-bottom: 1px solid color-mix(in srgb, var(--bo-border) 54%, transparent);
 }
 
