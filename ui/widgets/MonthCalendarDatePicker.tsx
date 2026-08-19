@@ -65,11 +65,22 @@ export function MonthCalendarDatePicker({
 }: MonthCalendarDatePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
   const reduceMotion = useReducedMotion();
   const root = useMemo(() => (typeof document !== "undefined" ? portalEl() : null), []);
   const selected = useMemo(() => parseISODate(value) ?? new Date(), [value]);
+
+  // The button is rendered by SSR with the calendar icon, but the
+  // `onClick` handler is only attached after React has hydrated on the
+  // client. Without a hint, a fast click in the first ~2s on the dev
+  // server (or any slow connection in prod) silently does nothing. Track
+  // hydration explicitly so we can show a loading state and disable the
+  // button until it's actually wired up.
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -170,19 +181,23 @@ export function MonthCalendarDatePicker({
       <button
         id={id}
         ref={btnRef}
-        className={cn("bo-dateBtn bo-dateBtn--glass", className)}
+        className={cn("bo-dateBtn bo-dateBtn--glass", className, !hydrated && "is-loading")}
         type="button"
         onClick={toggle}
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label="Select date"
-        aria-disabled={disabled}
-        disabled={disabled}
+        aria-disabled={disabled || !hydrated}
+        disabled={disabled || !hydrated}
         data-ui="date-picker-btn"
+        data-hydrated={hydrated ? "true" : "false"}
         data-testid={dataTestId}
       >
         <CalendarDays size={18} strokeWidth={1.8} />
         <span className="bo-dateBtnLabel" data-slot="datePicker-dateBtnLabel">{formatDateLabel(value)}</span>
+        {hydrated ? null : (
+          <span className="bo-dateBtnSpinner" aria-hidden="true" data-slot="date-picker-spinner" />
+        )}
       </button>
       {pop}
     </>
