@@ -5392,6 +5392,46 @@ export default function TableManagerPage() {
 										dataSlot="draw-panel-body"
 										className="bo-tableMapDrawScrollArea"
 									>
+										{(!lineDrawing.isDrawing &&
+											hasClosedLimitArea(lineDrawing.points)) ||
+										floorTemplate ? (
+											<div
+												data-ui="template-actions-top"
+												className="bo-tableMapTemplateTopActions"
+											>
+												{!lineDrawing.isDrawing &&
+													hasClosedLimitArea(lineDrawing.points) && (
+														<button
+															data-ui="save-template-btn"
+															data-testid="tables-draw-save-template-btn"
+															className="bo-tableMapTemplateTopBtn"
+															type="button"
+															onClick={() => void saveLimitAreaTemplate()}
+															disabled={savingLimitTemplate}
+														>
+															<MapPin size={14} />
+															{savingLimitTemplate
+																? "Guardando..."
+																: templateScope === "day"
+																	? "Guardar solo este dia"
+																	: "Guardar plantilla salon"}
+														</button>
+													)}
+												{floorTemplate ? (
+													<button
+														data-ui="delete-template-btn"
+														data-testid="tables-draw-delete-template-btn"
+														className="bo-tableMapTemplateTopBtn"
+														type="button"
+														onClick={() => void clearFloorTemplate()}
+														disabled={savingLimitTemplate}
+													>
+														<Trash2 size={14} />
+														Eliminar plantilla
+													</button>
+												) : null}
+											</div>
+										) : null}
 										{floorTemplate ? (
 											<div
 												data-ui="scope-section"
@@ -5449,61 +5489,6 @@ export default function TableManagerPage() {
 												)}
 											</div>
 										) : null}
-										{(!lineDrawing.isDrawing &&
-											hasClosedLimitArea(lineDrawing.points)) ||
-										floorTemplate ? (
-											<div
-												data-ui="template-section"
-												className="bo-tableMapDrawSection bo-tableMapTemplateSection"
-											>
-												<div
-													data-ui="template-head"
-													className="bo-tableMapDrawSectionHead"
-												>
-													<div
-														data-ui="template-title"
-														className="bo-tableMapDrawSectionTitle"
-													>
-														Plantilla del salon
-													</div>
-												</div>
-												<div
-													data-ui="line-draw-template-actions"
-													className="bo-tableMapLineDrawActionGroup bo-tableMapLineDrawActionGroup--template"
-												>
-													{!lineDrawing.isDrawing &&
-														hasClosedLimitArea(lineDrawing.points) && (
-															<button
-																data-ui="save-template-btn"
-																className="bo-btn bo-btn--ghost bo-btn--sm bo-tableMapLineDrawSaveBtn"
-																type="button"
-																onClick={() => void saveLimitAreaTemplate()}
-																disabled={savingLimitTemplate}
-															>
-																<MapPin size={14} />
-																{savingLimitTemplate
-																	? "Guardando..."
-																	: templateScope === "day"
-																		? "Guardar solo este dia"
-																		: "Guardar plantilla salon"}
-															</button>
-														)}
-													{floorTemplate ? (
-														<button
-															data-ui="delete-template-btn"
-															className="bo-btn bo-btn--ghost bo-btn--danger bo-btn--sm"
-															type="button"
-															onClick={() => void clearFloorTemplate()}
-															disabled={savingLimitTemplate}
-														>
-															<Trash2 size={14} />
-															Eliminar plantilla
-														</button>
-													) : null}
-												</div>
-											</div>
-										) : null}
-
 										<div data-ui="draw-hint" className="bo-tableMapDrawHint">
 											En modo dibujo puedes crear y editar muros/obstaculos. Las
 											mesas quedan bloqueadas por estos limites.
