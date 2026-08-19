@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import type { ConfigFloor, ConfigSalon } from "../../../../../api/types";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
@@ -7,6 +7,7 @@ import { Modal } from "../../../../../ui/overlays/Modal";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
+import { SalonFloorAccordion } from "../../../../../ui/widgets/SalonFloorAccordion/SalonFloorAccordion";
 import { Button } from "../../../../../ui/actions/Button";
 import { readAPIMessage } from "../../../config/helpers/configHelpers";
 import { applySalonPatch, DEFAULT_SALON_CAPACITY, groupSalonsByFloor, newSalonDraft, salonCapacityText, type SalonDraft } from "../../../config/helpers/salonsHelpers";
@@ -146,6 +147,44 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
     }
   };
 
+  const toggleSalon = async (salon: ConfigSalon, next: boolean) => {
+    const previous = salons;
+    setSalons(applySalonPatch(salons, { ...salon, isActive: next })); // optimistic
+    setBusy(true);
+    setError(null);
+    try {
+      if (date && api.config.setSalonDayStatus) {
+        const res = await api.config.setSalonDayStatus({ date, salonId: salon.id, active: next });
+        if (!res.success) {
+          setSalons(previous);
+          setError(readAPIMessage(res, "No se pudo actualizar el salón"));
+          return;
+        }
+        if (res.salons) setSalons(res.salons);
+      } else {
+        const res = await api.config.updateSalon(salon.id, {
+          floorId: salon.floorId,
+          name: salon.name,
+          hasCapacityLimit: salon.hasCapacityLimit,
+          capacityLimit: salon.capacityLimit,
+          isActive: next,
+        });
+        if (!res.success) {
+          setSalons(previous);
+          setError(readAPIMessage(res, "No se pudo actualizar el salón"));
+          return;
+        }
+        if (res.salons) setSalons(res.salons);
+      }
+      pushToast({ kind: "success", title: next ? "Salón abierto" : "Salón cerrado", message: salon.name });
+    } catch (e) {
+      setSalons(previous);
+      setError(e instanceof Error ? e.message : "No se pudo actualizar el salón");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configFloorsPanelContent" data-ui="config-salons-tabpanel">
       <div className="bo-configSalonsToolbar">
@@ -156,61 +195,17 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
 
       <div className="bo-configSalonCards" aria-label="Salones por planta" data-ui="config-salones-cards-container">
         {groups.map(({ floor, salons: floorSalons }) => (
-          <div key={`salon-floor-${floor.floorNumber}`} className="bo-configSalonFloorCard" data-slot="salon-floor-card">
-            <div className="bo-floorSalonCard" data-ui="salon-floor-card-info">
-              <div data-ui="floor-card-info">
-                <div className="bo-floorCardName" data-slot="configRestaurante-floorCardName">{floor.name}</div>
-                <div className="bo-floorCardHint" data-slot="configRestaurante-floorCardHint">
-                  {floor.active
-                    ? `${floorSalons.length} ${floorSalons.length === 1 ? "salón" : "salones"} · Abierto por defecto`
-                    : `${floorSalons.length} ${floorSalons.length === 1 ? "salón" : "salones"} · Cerrado por defecto`}
-                </div>
-              </div>
-              <div className="bo-floorSalonCardState" data-ui="salon-floor-card-state">
-                <span className="bo-floorSalonCardStatus" data-slot="configRestaurante-floorSalonCardStatus">{floor.active ? "Abierto" : "Cerrado"}</span>
-              </div>
-            </div>
-
-            {floorSalons.length === 0 ? (
-              <p className="bo-configSalonEmpty" data-slot="salon-empty">Sin salones en esta planta.</p>
-            ) : (
-              <ul className="bo-configSalonList" data-slot="salon-list">
-                {floorSalons.map((salon) => (
-                  <li key={salon.id} className="bo-configSalonRow" data-ui="salon-row" data-salon-id={salon.id}>
-                    <div className="bo-configSalonInfo">
-                      <span className="bo-configSalonName" data-slot="salon-name">{salon.name}</span>
-                      <span className="bo-configSalonMeta" data-slot="salon-meta">
-                        {salonCapacityText(salon)}
-                        {!salon.isActive ? " · Inactivo" : ""}
-                      </span>
-                    </div>
-                    <div className="bo-configSalonActions">
-                      <button
-                        type="button"
-                        className="bo-iconButton"
-                        onClick={() => openEdit(salon)}
-                        disabled={busy}
-                        aria-label={`Editar ${salon.name}`}
-                        data-ui="salon-edit"
-                      >
-                        <Pencil className="bo-ico" aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        className="bo-iconButton bo-iconButton--danger"
-                        onClick={() => setDeleteTarget(salon)}
-                        disabled={busy}
-                        aria-label={`Eliminar ${salon.name}`}
-                        data-ui="salon-delete"
-                      >
-                        <Trash2 className="bo-ico" aria-hidden />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <SalonFloorAccordion
+            key={`salon-floor-${floor.floorNumber}`}
+            floor={floor}
+            salons={floorSalons}
+            variant="manage"
+            busy={busy}
+            onSalonToggle={(salon, next) => void toggleSalon(salon, next)}
+            onEdit={openEdit}
+            onDelete={setDeleteTarget}
+            testIdPrefix={date ? "reservas-config-salones" : "config-salones"}
+          />
         ))}
       </div>
 
@@ -237,6 +232,7 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
             type="text"
             value={draft.name}
             maxLength={120}
+            data-testid="salones-tab-salon-name-input"
             placeholder="Ej. Terraza, Salón Privado…"
             disabled={busy}
             onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}

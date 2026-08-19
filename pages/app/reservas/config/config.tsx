@@ -8,7 +8,6 @@ import { useMonthCalendar } from "../../../../ui/hooks/useMonthCalendar";
 import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
 import { withDateParam } from "../tables/helpers/tables";
 import { Select } from "../../../../ui/inputs/Select";
-import { Switch } from "../../../../ui/shadcn/Switch";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
@@ -97,7 +96,6 @@ export default function Page() {
     saveOpeningHours,
     setMesasDos,
     setMesasTres,
-    setFloorActive,
     handleOpeningModeChange,
     handleMorningHour,
     handleNightHour,
@@ -535,33 +533,11 @@ export default function Page() {
                 />
               ) : null}
 
-              <Panel data-ui="floors-panel" title="Plantas activas del día" meta={`${floors.length} plantas`} data-testid="reservas-config-floors-panel">
-                  <div data-ui="floor-rows" className="bo-floorRows" data-testid="reservas-config-floor-rows">
-                    {floors.map((floor) => (
-                      <div key={floor.id} data-ui="floor-row" className={`bo-floorRow${floor.isGround ? " is-ground" : ""}`} data-testid={`reservas-config-floor-row-${floor.id}`}>
-                        <div data-slot="floor-name" className="bo-floorRowName" data-role="floor-name" data-testid={`reservas-config-floor-name-${floor.id}`}>
-                          {floor.name}
-                        </div>
-                        <div data-slot="floor-state" className="bo-floorRowState" data-testid={`reservas-config-floor-state-${floor.id}`}>
-                          <span data-ui="floor-state-label" className="bo-floorRowStateText" data-testid={`reservas-config-floor-state-label-${floor.id}`}>{floor.active ? "Activa" : "Inactiva"}</span>
-                          <Switch
-                            checked={floor.active}
-                            disabled={busy}
-                            onCheckedChange={(checked) => void setFloorActive(floor, checked)}
-                            aria-label={`Activar o desactivar ${floor.name}`}
-                            data-ui="floor-switch"
-                            data-testid={`reservas-config-floor-switch-${floor.id}`}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-              </Panel>
-
               <Panel data-ui="salones-day-panel-wrapper" title="Salones del día" meta={date} data-testid="reservas-config-salones-panel">
                   <SalonesDelDiaPanel
                     date={date}
                     floors={floors}
+                    onFloorsChanged={setFloors}
                     api={api}
                     busy={busy}
                     setBusy={setBusy}
