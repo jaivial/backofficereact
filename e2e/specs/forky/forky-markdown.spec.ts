@@ -22,11 +22,11 @@ test.describe("Forky markdown table rendering", () => {
     // Open Forky modal.
     await adminPage.getByTestId("forky-button").click();
     await expect(adminPage.getByTestId("forky-modal")).toBeVisible({ timeout: 15_000 });
-    await expect(adminPage.getByTestId("forky-composer-input")).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByLabel("Prompt", { exact: true })).toBeVisible({ timeout: 15_000 });
 
     // Send a prompt that should produce a table.
-    await adminPage.getByTestId("forky-composer-input").fill("¿Qué reservas hay hoy?");
-    await adminPage.getByTestId("forky-composer-send").click();
+    await adminPage.getByLabel("Prompt", { exact: true }).fill("¿Qué reservas hay hoy?");
+    await adminPage.getByLabel("Send", { exact: true }).click();
 
     // Wait for the assistant reply to appear.
     const reply = adminPage.getByTestId("forky-assistant-message").last();
@@ -53,11 +53,11 @@ test.describe("Forky markdown table rendering", () => {
     await waitForHydration(adminPage);
 
     await adminPage.getByTestId("forky-button").click();
-    await expect(adminPage.getByTestId("forky-composer-input")).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByLabel("Prompt", { exact: true })).toBeVisible({ timeout: 15_000 });
 
     // A prompt likely to trigger analytics → forky-chart block.
-    await adminPage.getByTestId("forky-composer-input").fill("Muéstrame la analítica de reservas de esta semana");
-    await adminPage.getByTestId("forky-composer-send").click();
+    await adminPage.getByLabel("Prompt", { exact: true }).fill("Muéstrame la analítica de reservas de esta semana");
+    await adminPage.getByLabel("Send", { exact: true }).click();
 
     const reply = adminPage.getByTestId("forky-assistant-message").last();
     await expect(reply).toBeVisible({ timeout: 60_000 });
@@ -75,10 +75,10 @@ test.describe("Forky markdown table rendering", () => {
     await waitForHydration(adminPage);
 
     await adminPage.getByTestId("forky-button").click();
-    await expect(adminPage.getByTestId("forky-composer-input")).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByLabel("Prompt", { exact: true })).toBeVisible({ timeout: 15_000 });
 
-    await adminPage.getByTestId("forky-composer-input").fill("Escribe un ejemplo de código JavaScript");
-    await adminPage.getByTestId("forky-composer-send").click();
+    await adminPage.getByLabel("Prompt", { exact: true }).fill("Escribe un ejemplo de código JavaScript");
+    await adminPage.getByLabel("Send", { exact: true }).click();
 
     const reply = adminPage.getByTestId("forky-assistant-message").last();
     await expect(reply).toBeVisible({ timeout: 60_000 });
