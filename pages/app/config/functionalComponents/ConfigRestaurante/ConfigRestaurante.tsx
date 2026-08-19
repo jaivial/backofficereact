@@ -16,6 +16,8 @@ import { Panel } from "../../../../../ui/shell/Panel";
 import { HourSplitConfig as HourSplitConfigWidget } from "../../../../../ui/widgets/HourSplitConfig/HourSplitConfig";
 import { LocationBookingToggles } from "../../../../../ui/widgets/LocationBookingToggles/LocationBookingToggles";
 import { SalonFloorAccordion } from "../../../../../ui/widgets/SalonFloorAccordion/SalonFloorAccordion";
+import { Modal } from "../../../../../ui/overlays/Modal";
+import { Button } from "../../../../../ui/actions/Button";
 import type { ConfigSalon } from "../../../../../api/types";
 import { groupSalonsByFloor } from "../../../config/helpers/salonsHelpers";
 import { equalSplit, normalizePercentages, type Percentages } from "../../../../../ui/widgets/HourSplitConfig/lib/rebalance";
@@ -29,6 +31,10 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
   const [floorTab, setFloorTab] = useState<FloorTab>(floorTabFromQuery === "salones" ? "salones" : "plantas");
   // Read-only salones for the Plantas tab accordions.
   const [salons, setSalons] = useState<ConfigSalon[]>([]);
+  // Floor aforo editor: pending floor (null = closed) + counter value.
+  const [aforoFloor, setAforoFloor] = useState<ConfigFloor | null>(null);
+  const [aforoValue, setAforoValue] = useState(0);
+  const [aforoCapped, setAforoCapped] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -121,6 +127,45 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
     },
     [api.config, setBusy, setError, floors, onFloorsChanged],
   );
+
+  const openAforoEditor = useCallback((floor: ConfigFloor) => {
+    setAforoCapped(Boolean(floor.maxAforo));
+    setAforoValue(floor.maxAforo || 0);
+    setAforoFloor(floor);
+  }, []);
+
+  const saveAforo = useCallback(async () => {
+    const floor = aforoFloor;
+    if (!floor) return;
+    const maxAforo = aforoCapped ? aforoValue : 0;
+    const previousFloors = floors;
+    const nextFloors = floors.map((f) =>
+      f.floorNumber === floor.floorNumber ? { ...f, maxAforo } : f,
+    );
+    setBusy(true);
+    setError(null);
+    onFloorsChanged?.(nextFloors);
+    try {
+      const res = await api.config.setDefaultFloors({ floorNumber: floor.floorNumber, maxAforo });
+      if (!res.success) {
+        onFloorsChanged?.(previousFloors);
+        setError(readAPIMessage(res, "No se pudo guardar el aforo de la planta"));
+        // Surface the aforo cap error with the remaining aforo when present.
+        if (res.aforoCapped && typeof res.remainingAforo === "number") {
+          setError(`${readAPIMessage(res, "Aforo de planta insuficiente")} (restante: ${res.remainingAforo})`);
+        }
+        return;
+      }
+      if (res.floors) onFloorsChanged?.(res.floors);
+      pushToast({ kind: "success", title: "Aforo de planta actualizado", message: `${floor.name}: ${maxAforo || "Sin límite"}` });
+      setAforoFloor(null);
+    } catch (e) {
+      onFloorsChanged?.(previousFloors);
+      setError(e instanceof Error ? e.message : "No se pudo guardar el aforo de la planta");
+    } finally {
+      setBusy(false);
+    }
+  }, [aforoFloor, aforoCapped, aforoValue, floors, api.config, setBusy, setError, pushToast, onFloorsChanged]);
 
   const toggleFloorDefault = useCallback(
     async (floor: ConfigFloor, explicitValue?: boolean) => {
@@ -248,7 +293,11 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
   const handleFloorsIncrease = useCallback(() => {
     if (!canGrow) return;
     void saveFloorsCount(floorCount + 1);
-  }, [canGrow, floorCount, saveFloorsCount]);
+    // The newly added plant always sits at the top: floorNumber = old count
+    // (floor numbers are 0..count-1). Open the aforo editor for it right away.
+    const newFloorNumber = floorCount;
+    openAforoEditor({ id: -1, floorNumber: newFloorNumber, name: `Planta ${newFloorNumber}`, isGround: false, active: true });
+  }, [canGrow, floorCount, saveFloorsCount, openAforoEditor]);
 
   const dailyLimit = useMemo(() => defaults.dailyLimit ?? 0, [defaults.dailyLimit]);
   const openingModeLabel = useMemo(
@@ -497,6 +546,7 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
                         variant="status"
                         busy={busy}
                         onFloorToggle={(next) => void toggleFloorDefault(floor, next)}
+                        onEditAforo={openAforoEditor}
                         testIdPrefix="config-floors"
                       />
                     ))}
@@ -515,6 +565,53 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             </motion.div>
           </AnimatePresence>
       </Panel>
+
+      <Modal
+        open={aforoFloor !== null}
+        title={aforoFloor ? `Aforo máximo · ${aforoFloor.name}` : "Aforo máximo"}
+        onClose={() => setAforoFloor(null)}
+        size="sm"
+      >
+        <div className="bo-form">
+          <p className="bo-mutedText" style={{ marginBottom: 12 }}>
+            Define el aforo máximo de esta planta. La suma de los aforos de sus salones no podrá superar este valor.
+          </p>
+
+          <div className="bo-configSalonToggle">
+            <span className="bo-label">Planta con aforo limitado</span>
+            <Switch
+              checked={aforoCapped}
+              disabled={busy}
+              onCheckedChange={setAforoCapped}
+              aria-label="Limitar aforo de la planta"
+              data-testid="floor-aforo-capped-switch"
+            />
+          </div>
+
+          {aforoCapped && (
+            <PlusMinusCounter
+              label="Aforo máximo de la planta"
+              className="bo-salonAforoCounter"
+              value={aforoValue}
+              onDecrease={() => setAforoValue((v) => Math.max(1, v - 1))}
+              onIncrease={() => setAforoValue((v) => Math.min(2000, v + 1))}
+              canDecrease={aforoValue > 1}
+              canIncrease={aforoValue < 2000}
+              disabled={busy}
+              helperText="Personas"
+              decrementAriaLabel="Reducir aforo de la planta"
+              incrementAriaLabel="Aumentar aforo de la planta"
+            />
+          )}
+
+          <div className="bo-modalActions">
+            <Button variant="ghost" onClick={() => setAforoFloor(null)} disabled={busy}>Cancelar</Button>
+            <Button variant="primary" onClick={() => void saveAforo()} disabled={busy} data-ui="floor-aforo-save" data-testid="floor-aforo-save">
+              Guardar
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }
