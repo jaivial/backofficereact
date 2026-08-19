@@ -1,0 +1,12 @@
+import { chromium } from "@playwright/test";
+const B="https://127.0.0.1:3010";
+const b=await chromium.launch();
+const c=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:1440,height:900}});
+const p=await c.newPage();
+await p.goto(B+"/login",{waitUntil:"load"});
+await p.evaluate(async()=>{await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({identifier:"admin@villacarmen.com",password:"admin123"}),credentials:"include"});});
+await p.goto(B+"/app/facturas",{waitUntil:"networkidle"}); await p.waitForTimeout(3000);
+const btns=await p.locator("button, a[role=button]").allInnerTexts();
+console.log("buttons:",btns.filter(t=>t.trim()).slice(0,40).join(" | "));
+console.log("testids:", (await p.locator("[data-testid]").evaluateAll(els=>els.map(e=>e.getAttribute("data-testid")).slice(0,40))).join(" "));
+await b.close();

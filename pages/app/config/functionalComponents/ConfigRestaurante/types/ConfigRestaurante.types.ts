@@ -20,6 +20,9 @@ export type RestauranteContentProps = {
   onFloorsChanged?: (floors: ConfigFloor[]) => void;
   /** Optimistic notification: parent should merge this patch into its defaults state. */
   onDefaultsChanged?: (patch: Partial<ConfigDefaults>) => void;
+  /** Persisted collapsed/expanded state of the "Reparto por hora" details accordion. */
+  hourSplitDetailsOpen: boolean;
+  onHourSplitDetailsOpenChange: (next: boolean) => void;
 };
 
 export type FloorCard = {

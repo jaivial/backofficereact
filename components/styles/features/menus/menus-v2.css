@@ -362,7 +362,7 @@
 
 .bo-menuFab {
   position: fixed;
-  left: calc(78px + 18px);
+  left: calc(var(--bo-sidebar-w) + 18px + env(safe-area-inset-left, 0px));
   right: auto;
   bottom: 20px;
   width: 58px;

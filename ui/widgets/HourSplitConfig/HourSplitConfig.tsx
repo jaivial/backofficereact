@@ -26,6 +26,11 @@ export type HourSplitConfigProps = {
   variant?: "day" | "default";
   busy?: boolean;
   className?: string;
+  /** Controlled state of the details accordion. Omit for uncontrolled. */
+  open?: boolean;
+  /** Initial accordion state when uncontrolled. */
+  defaultOpen?: boolean;
+  onOpenChange?: (next: boolean) => void;
   onToggleEnabled: (next: boolean) => void;
   /** Persist percentages. Return false to signal error (toast). */
   onCommitPercentages: (percentages: Percentages) => Promise<boolean> | boolean;
@@ -44,14 +49,24 @@ export function HourSplitConfig({
   variant = "day",
   busy,
   className,
+  open: openProp,
+  defaultOpen = true,
+  onOpenChange,
   onToggleEnabled,
   onCommitPercentages,
   pushToast,
 }: HourSplitConfigProps) {
   const [local, setLocal] = React.useState<Percentages>(percentages);
   const [mode, setMode] = React.useState<HourSplitEditMode>("percentage");
-  const [open, setOpen] = React.useState(true);
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
+  const open = openProp ?? uncontrolledOpen;
   const commitTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const toggleOpen = React.useCallback(() => {
+    const next = !open;
+    if (openProp === undefined) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  }, [open, openProp, onOpenChange]);
 
   // Re-sync local state when the source-of-truth percentages change (e.g. reload, date change).
   React.useEffect(() => {
@@ -162,7 +177,7 @@ export function HourSplitConfig({
             <button
               type="button"
               className="bo-hsplitConfigTrigger"
-              onClick={() => setOpen((v) => !v)}
+              onClick={toggleOpen}
               aria-expanded={open}
               aria-controls="bo-hsplit-cards"
               data-testid="hour-split-config-trigger"
