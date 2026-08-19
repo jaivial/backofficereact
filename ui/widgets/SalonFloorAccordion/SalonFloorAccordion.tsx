@@ -5,6 +5,11 @@ import type { ConfigFloor, ConfigSalon } from "../../../api/types";
 import { Switch } from "../../shadcn/Switch";
 import { salonCapacityText } from "../../../pages/app/config/helpers/salonsHelpers";
 
+/** "Aforo 120" when capped, "Sin aforo máximo" when unbounded. */
+export function floorAforoText(floor: Pick<ConfigFloor, "maxAforo">): string {
+  return floor.maxAforo ? `Aforo máximo ${floor.maxAforo}` : "Sin aforo máximo";
+}
+
 /**
  * Floor card with accordion body listing its salones.
  *
@@ -22,6 +27,8 @@ export type SalonFloorAccordionProps = {
   busy?: boolean;
   /** variant="status": persist the floor activation. */
   onFloorToggle?: (next: boolean) => void;
+  /** variant="status": open the floor aforo editor modal. */
+  onEditAforo?: (floor: ConfigFloor) => void;
   /** variant="manage": persist a salón activation change. */
   onSalonToggle?: (salon: ConfigSalon, next: boolean) => void;
   onEdit?: (salon: ConfigSalon) => void;
@@ -36,6 +43,7 @@ export function SalonFloorAccordion({
   variant,
   busy,
   onFloorToggle,
+  onEditAforo,
   onSalonToggle,
   onEdit,
   onDelete,
@@ -67,6 +75,8 @@ export function SalonFloorAccordion({
             </span>
             <span className="bo-floorCardHint" data-testid={`${testIdPrefix}-floor-hint-${floor.floorNumber}`}>
               {salons.length} {salons.length === 1 ? "salón" : "salones"}
+              {floor.maxAforo ? ` · Aforo máx ${floor.maxAforo}` : ""}
+              {floor.totalSalonAforo ? ` · ${floor.totalSalonAforo}/${floor.maxAforo || "∞"} ocupado por salones` : ""}
             </span>
           </span>
           <ChevronDown className="bo-floorAccordionChevron" aria-hidden />
@@ -77,6 +87,19 @@ export function SalonFloorAccordion({
             <span className="bo-floorSalonCardStatus" data-testid={`${testIdPrefix}-floor-status-${floor.floorNumber}`}>
               {floor.active ? "Activa" : "Inactiva"}
             </span>
+            {onEditAforo ? (
+              <button
+                type="button"
+                className="bo-iconButton"
+                onClick={() => onEditAforo(floor)}
+                disabled={busy}
+                aria-label={`Editar aforo de ${floor.name}`}
+                title={`${floorAforoText(floor)} · Editar`}
+                data-testid={`${testIdPrefix}-floor-aforo-edit-${floor.floorNumber}`}
+              >
+                <Pencil className="bo-ico" aria-hidden />
+              </button>
+            ) : null}
             <Switch
               checked={floor.active}
               disabled={busy}

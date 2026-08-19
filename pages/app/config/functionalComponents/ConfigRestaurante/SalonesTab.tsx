@@ -21,8 +21,8 @@ interface SalonesTabProps {
   api: {
     config: {
       listSalons: (date?: string) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
-      createSalon: (input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
-      updateSalon: (salonId: number, input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
+      createSalon: (input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[]; aforoCapped?: boolean; remainingAforo?: number }>;
+      updateSalon: (salonId: number, input: { floorId: number; name: string; hasCapacityLimit: boolean; capacityLimit: number; isActive?: boolean; date?: string }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[]; aforoCapped?: boolean; remainingAforo?: number }>;
       deleteSalon: (salonId: number) => Promise<{ success: boolean; message?: string }>;
       setSalonDayStatus?: (input: { date: string; salonId: number; active: boolean }) => Promise<{ success: boolean; message?: string; salons?: ConfigSalon[] }>;
     };
@@ -83,10 +83,19 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
   };
 
   const floorForDraft = floors.find((f) => f.floorNumber === draft.floorNumber) ?? floors[0];
+  /** True when the selected floor has a max aforo: every salon must then carry a
+   *  capacity limit so their sum can be checked against the floor cap. */
+  const floorCapped = (floorForDraft?.maxAforo ?? 0) > 0;
+  const effectiveHasLimit = draft.hasCapacityLimit || floorCapped;
 
   const save = async () => {
     if (!floorForDraft || !editor) return;
-    const input = { ...draftToInput(draft, floorForDraft), ...(date ? { date } : {}) };
+    const input = {
+      ...draftToInput(draft, floorForDraft),
+      hasCapacityLimit: effectiveHasLimit,
+      capacityLimit: effectiveHasLimit ? Math.max(1, draft.capacityLimit) : DEFAULT_SALON_CAPACITY,
+      ...(date ? { date } : {}),
+    };
     if (!input.name) {
       setError("El nombre del salón es obligatorio");
       return;
@@ -111,7 +120,15 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
         : await api.config.createSalon(input);
       if (!res.success) {
         setSalons(previous);
-        setError(readAPIMessage(res, "No se pudo guardar el salón"));
+        if (res.aforoCapped) {
+          setError(
+            `${readAPIMessage(res, "El aforo del salón excede el aforo restante de la planta")}${
+              typeof res.remainingAforo === "number" ? ` (restante en la planta: ${res.remainingAforo})` : ""
+            }`,
+          );
+        } else {
+          setError(readAPIMessage(res, "No se pudo guardar el salón"));
+        }
         return;
       }
       if (res.salons) setSalons(res.salons);
@@ -241,14 +258,20 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
           <div className="bo-configSalonToggle">
             <span className="bo-label">Capacidad limitada</span>
             <Switch
-              checked={draft.hasCapacityLimit}
-              disabled={busy}
+              checked={effectiveHasLimit}
+              disabled={busy || floorCapped}
               onCheckedChange={(checked) => setDraft((d) => ({ ...d, hasCapacityLimit: checked }))}
               aria-label="Limitar capacidad del salón"
             />
           </div>
 
-          {draft.hasCapacityLimit && (
+          {floorCapped && (
+            <p className="bo-mutedText" style={{ marginBottom: 8, fontSize: 12 }}>
+              Esta planta tiene un aforo máximo ({floorForDraft?.maxAforo} personas), por lo que el salón debe tener límite de aforo.
+            </p>
+          )}
+
+          {effectiveHasLimit && (
             <PlusMinusCounter
               label="Aforo máximo"
               className="bo-salonAforoCounter"
