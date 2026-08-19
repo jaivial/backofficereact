@@ -633,6 +633,8 @@ export type ConfigFloor = {
   name: string;
   isGround: boolean;
   active: boolean;
+  /** Set on date-scoped floors: the date this floor exists for. */
+  dateScoped?: string;
 };
 
 export type ConfigSalon = {

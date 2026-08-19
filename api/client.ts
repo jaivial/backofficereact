@@ -1985,6 +1985,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify({ date, floorNumber, active }),
         });
       },
+      async setFloorsForDate(date: string, count: number): Promise<APISuccess<{ date: string; floors: ConfigFloor[] }> | APIError> {
+        return json("/api/admin/config/floors/date", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date, count }),
+        });
+      },
       async getDailyLimit(date: string): Promise<APISuccess<ConfigDailyLimit> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/daily-limit?${q.toString()}`, { method: "GET" });
