@@ -7,6 +7,10 @@
   margin-bottom: 12px;
 }
 
+.bo-toolbar--centered {
+  justify-content: center;
+}
+
 .bo-toolbarLeft {
   display: flex;
   align-items: center;
