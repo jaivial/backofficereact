@@ -451,6 +451,10 @@ export function ForkyModal() {
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        // The first Escape only closes an open @ // or model menu inside the
+        // PromptBar (its menus render with shadow-raised); the modal closes on
+        // the next one.
+        if (overlayRef.current?.querySelector(".bui-scope .shadow-raised")) return;
         event.stopPropagation();
         setOpen(false);
         return;
