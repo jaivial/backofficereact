@@ -129,8 +129,9 @@
   width: min(300px, 100%);
 }
 
-/* Flat look for the floor counters (no card box), global and per-date. */
-.bo-configFloorCounter--flat {
+/* Flat look for the floor counters (no card box), global and per-date.
+   Double-class selectors beat the --glass rules (imported later in bo.css). */
+.bo-configFloorCounter--flat.bo-timeAdjustCounter--glass {
   border: none;
   background: transparent;
   box-shadow: none;
@@ -138,8 +139,9 @@
   -webkit-backdrop-filter: none;
 }
 
-/* Per-date floor counter: flat look (no card box) + spacing below. */
-.bo-plantasDiaCounter {
+/* Per-date floor counter: flat look (no card box) + spacing below.
+   Double-class selector beats the --glass rules (imported later in bo.css). */
+.bo-plantasDiaCounter.bo-timeAdjustCounter--glass {
   border: none;
   background: transparent;
   box-shadow: none;
