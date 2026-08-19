@@ -596,6 +596,8 @@ export type ConfigDefaults = {
   mesasDeTresLimit: string;
   hourSplitEnabled: boolean;
   defaultHourPercentages: Record<string, number>;
+  allowFloorReservation: boolean;
+  allowSalonReservation: boolean;
 };
 
 /** By-hour client split configuration for a date (effective flag + per-hour split). */
@@ -616,6 +618,14 @@ export type HourSplitPercentagesPayload =
   | { date: string; percentages: Record<string, number> }
   | { date: string; hour: string; percentage: number }
   | { date: string; hour: string; people: number };
+
+/** Location booking toggles for a date (global default, per-date override, effective). */
+export type LocationBookingConfig = {
+  date: string;
+  global: { allowFloorReservation: boolean; allowSalonReservation: boolean };
+  override: { allowFloorReservation: boolean | null; allowSalonReservation: boolean | null };
+  effective: { allowFloorReservation: boolean; allowSalonReservation: boolean };
+};
 
 export type ConfigFloor = {
   id: number;
