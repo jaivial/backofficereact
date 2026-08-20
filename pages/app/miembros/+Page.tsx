@@ -231,9 +231,9 @@ export default function Page() {
               <ShieldUser size={16} strokeWidth={1.8} />
               {members.length + localMembers.length} miembros
             </div>
-            <Button variant="default" size="sm" data-testid="add-member-button" onClick={() => setCreateModalOpen(true)}>
+            <button type="button" className="pos-rail__btn" style={{ padding: "0.5rem 1rem", aspectRatio: "auto" }} data-testid="add-member-button" onClick={() => setCreateModalOpen(true)}>
               + Añadir miembro
-            </Button>
+            </button>
           </div>
         </div>
       </div>
