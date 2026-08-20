@@ -649,6 +649,15 @@
 /* Source badge sits at the start of the actions row; icon buttons pushed to the end */
 .bo-stockItemSourceBadge {
   margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 /* Danger variant for the inline icon button (delete) */
