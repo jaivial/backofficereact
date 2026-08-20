@@ -515,14 +515,6 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             >
               {floorTab === "plantas" ? (
                 <div id="config-floors-panel" role="tabpanel" aria-label="Plantas" className="bo-configFloorsPanelContent" data-ui="config-floors-tabpanel">
-                  <LocationBookingToggles
-                    variant="default"
-                    allowFloorReservation={defaults.allowFloorReservation ?? false}
-                    allowSalonReservation={defaults.allowSalonReservation ?? false}
-                    busy={busy}
-                    onSetGlobal={toggleLocationBookingDefault}
-                  />
-
                   <PlusMinusCounter
                     label="Total de plantas"
                     className="bo-configLimitCounterCard bo-configFloorCounter bo-configFloorCounter--flat"
@@ -551,6 +543,14 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
                       />
                     ))}
                   </div>
+
+                  <LocationBookingToggles
+                    variant="default"
+                    allowFloorReservation={defaults.allowFloorReservation ?? false}
+                    allowSalonReservation={defaults.allowSalonReservation ?? false}
+                    busy={busy}
+                    onSetGlobal={toggleLocationBookingDefault}
+                  />
                 </div>
               ) : (
                 <SalonesTab
