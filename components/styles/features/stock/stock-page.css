@@ -675,3 +675,8 @@
   .bo-stockItemCard--link:hover { transform: none; }
   .bo-stockItemCard--link:active { transform: none; }
 }
+
+/* Summary stat labels — remove vertical margins inside summary cards */
+[data-ui="stock-summary"] .bo-statLabel {
+  margin-block: 0;
+}
