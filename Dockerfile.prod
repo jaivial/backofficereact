@@ -1,0 +1,19 @@
+# Backoffice production image (React SSR / vike + Express, Bun runtime).
+# TLS is terminated by nginx; the container speaks plain HTTP on PORT (3011).
+# Env (BACKEND_ORIGIN, etc.) is injected at runtime via docker-compose
+# env_file (backoffice/.env.prod) — nothing is baked into the image.
+FROM oven/bun:1.3.14
+WORKDIR /app
+
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+
+COPY . .
+# package.json build script: NODE_ENV=production vike build -> dist/
+RUN bun run build
+
+ENV NODE_ENV=production
+ENV PORT=3011
+EXPOSE 3011
+
+CMD ["bun", "server/index.ts"]
