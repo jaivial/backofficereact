@@ -661,7 +661,7 @@
   white-space: nowrap;
 }
 
-/* Danger variant for the inline icon button (delete) */
+
 .bo-stockIconBtn--danger {
   color: var(--bo-danger);
 }
@@ -680,3 +680,82 @@
 [data-ui="stock-summary"] .bo-statLabel {
   margin-block: 0;
 }
+
+/* ── Fichas tecnicas filters bar ─────────────── */
+.bo-fichasFiltersBar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.bo-fichasFilterSelect {
+  width: 190px;
+  min-width: 0;
+}
+
+.bo-fichasStatusSeg {
+  display: inline-flex;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  overflow: hidden;
+}
+
+.bo-fichasSegBtn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease;
+}
+
+.bo-fichasSegBtn + .bo-fichasSegBtn {
+  border-left: 1px solid var(--bo-border);
+}
+
+.bo-fichasSegBtn:hover {
+  color: var(--bo-text);
+}
+
+.bo-fichasSegBtn.is-active {
+  background: color-mix(in srgb, var(--bo-accent) 14%, transparent);
+  color: var(--bo-accent);
+}
+
+.bo-fichasSearchWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.bo-fichasSearchIco {
+  color: var(--bo-muted);
+  flex-shrink: 0;
+}
+
+.bo-fichasSearchInput {
+  width: 100%;
+  border-color: var(--bo-border);
+}
+
+/* Ficha card arrow overlay */
+[data-ui="ficha-card"] { position: relative; }
+
+.bo-fichaArrow {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+[data-ui="ficha-card"]:hover .bo-fichaArrow { opacity: 0.9; }
+
+/* Danger variant for the inline icon button (delete) */
