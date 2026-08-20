@@ -3020,7 +3020,7 @@ body.is-dragging .bo-tableMapFlowWrap {
 		margin: 0;
 		/* Extra breathing room between the table preview above and the form, so
 		   the fields don't sit flush against the preview on the stacked layout. */
-		margin-top: var(--bo-space-4);
+		margin-top: var(--bo-space-6);
 		padding: var(--bo-space-3);
 		border-radius: var(--bo-radius-md);
 	}
