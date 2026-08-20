@@ -320,7 +320,6 @@ export default function Page() {
                           <div data-ui="stock-card-heading">
                             <h2 className="bo-stockItemName" data-ui="stock-card-name">{item.name}</h2>
                           </div>
-                          <StatusBadge variant="neutral" size="sm" data-ui="stock-card-source">{sourceLabel(item.deductionSource)}</StatusBadge>
                         </div>
 
                         <div className="bo-stockItemQuantityRow" data-ui="stock-card-quantity-row">
@@ -344,6 +343,7 @@ export default function Page() {
                         </div>
 
                         <div className="bo-stockItemActions" data-ui="stock-card-actions">
+                          <StatusBadge variant="neutral" size="sm" className="bo-stockItemSourceBadge" data-ui="stock-card-source">{sourceLabel(item.deductionSource)}</StatusBadge>
                           <button type="button" className="bo-stockIconBtn" aria-label={`Editar ${item.name}`} data-testid={`stock-edit-${item.id}`} onClick={(event) => { event.stopPropagation(); navigate(`/app/stock/item?id=${item.id}`); }}>
                             <Pencil size={16} aria-hidden="true" data-ui="stock-edit-icon" />
                           </button>
