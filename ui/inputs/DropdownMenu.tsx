@@ -117,6 +117,8 @@ export function DropdownMenu({
   className,
   menuClassName,
   wrapperClassName,
+  menuStyle,
+  itemStyle,
 }: {
   label: string;
   items: MenuItem[];
@@ -127,6 +129,8 @@ export function DropdownMenu({
   className?: string;
   menuClassName?: string;
   wrapperClassName?: string;
+  menuStyle?: React.CSSProperties;
+  itemStyle?: React.CSSProperties;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -242,6 +246,7 @@ export function DropdownMenu({
             maxHeight: pos.maxHeight,
             transformOrigin: pos.direction === "up" ? "bottom left" : "top left",
             visibility: pos.ready ? "visible" : "hidden",
+            ...menuStyle,
           }}
           data-ui="dropdown-menu"
         >
@@ -253,6 +258,7 @@ export function DropdownMenu({
                 type="button"
                 className={cn("bo-menuItem", it.tone === "danger" && "is-danger")}
                 role="menuitem"
+                style={itemStyle}
                 onClick={() => {
                   close();
                   it.onSelect();

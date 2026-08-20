@@ -162,6 +162,8 @@ export function Topbar({
           triggerContent={<div className="bo-avatar" aria-label="Profile">{initials}</div>}
           items={userMenuItems}
           menuMinWidthPx={250}
+          menuStyle={{ padding: 0 }}
+          itemStyle={{ marginBlock: "0.5rem", marginInline: "auto", width: "95%" }}
         />
 
         {fichaje.activeEntry ? (
