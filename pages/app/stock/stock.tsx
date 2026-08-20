@@ -338,7 +338,6 @@ export default function Page() {
                           </Button>
                           <label className="sr-only" htmlFor={`stock-quantity-${item.id}`} data-ui="stock-quantity-label">Cantidad de {item.name}</label>
                           <input id={`stock-quantity-${item.id}`} className="bo-input bo-stockAdjustInput" inputMode="decimal" value={quantities[item.id] || "1"} onChange={(event) => setQuantities((current) => ({ ...current, [item.id]: event.target.value }))} data-testid={`stock-quantity-${item.id}`} />
-                          <span className="bo-stockAdjustUnit" data-ui="stock-adjustment-unit">{item.displayUnit.label}</span>
                           <Button variant="primary" className="bo-stockAdjustBtn" aria-label={`Sumar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "add"); }} data-testid={`stock-add-${item.id}`}>
                             <Plus size={16} aria-hidden="true" data-ui="stock-plus-icon" />
                           </Button>
