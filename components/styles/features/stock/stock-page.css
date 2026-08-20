@@ -178,6 +178,11 @@
   font-size: 15px;
   font-weight: 700;
   color: var(--bo-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bo-stockItemMeta {
@@ -242,11 +247,6 @@
   flex: 1 1 auto;
   min-width: 0;
   text-align: center;
-}
-
-.bo-stockAdjustUnit {
-  font-size: 13px;
-  color: var(--bo-muted);
 }
 
 .bo-stockItemActions {
@@ -644,6 +644,11 @@
 
 .bo-stockItemActions {
   justify-content: flex-end;
+}
+
+/* Source badge sits at the start of the actions row; icon buttons pushed to the end */
+.bo-stockItemSourceBadge {
+  margin-right: auto;
 }
 
 /* Danger variant for the inline icon button (delete) */
