@@ -300,7 +300,12 @@
     filter var(--bo-transition-base) var(--bo-ease);
 }
 
+/* Re-declare background/border on hover: .bo-btn:not(:disabled):hover in
+   button.css (specificity 0,3,0, imported later) would otherwise replace the
+   gradient with its translucent-white overlay. */
 .bo-inviteWindow .bo-inviteCta:hover:not(:disabled) {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--bo-accent), var(--bo-accent-2));
   transform: translateY(-1px);
   filter: brightness(1.05);
 }

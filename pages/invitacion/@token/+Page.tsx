@@ -25,10 +25,12 @@ const ONBOARDING_STEPS = [
   { icon: KeyRound, label: "Tu contraseña" },
 ] as const;
 
-function initialsOf(firstName: string, lastName: string): string {
+function initialsOf(firstName: string, lastName: string, email: string): string {
   const a = firstName.trim()[0] ?? "";
   const b = lastName.trim()[0] ?? "";
-  return (a + b).toUpperCase() || "MM";
+  const pair = (a + b).toUpperCase();
+  if (pair) return pair;
+  return (email.trim()[0] ?? "?").toUpperCase();
 }
 
 function formatExpiry(iso: string): string {
@@ -147,7 +149,7 @@ export default function Page() {
                   {invitation?.photoUrl ? (
                     <AvatarImage src={invitation.photoUrl} alt={invitation.firstName ? `Foto de ${invitation.firstName}` : "Foto"} />
                   ) : null}
-                  <AvatarFallback>{initialsOf(invitation?.firstName ?? "", invitation?.lastName ?? "")}</AvatarFallback>
+                  <AvatarFallback>{initialsOf(invitation?.firstName ?? "", invitation?.lastName ?? "", invitation?.email ?? "")}</AvatarFallback>
                 </Avatar>
               </div>
             </motion.div>
