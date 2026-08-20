@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { navigate } from "vike/client/router";
-import { Boxes, Minus, Pencil, Plus, Search, Trash2, Warehouse as WarehouseIcon, X } from "lucide-react";
+import { Boxes, ChevronRight, Minus, Pencil, Plus, Search, Trash2, Warehouse as WarehouseIcon, X } from "lucide-react";
 
 import { Breadcrumbs } from "../../../ui/nav/Breadcrumbs";
 import { SimpleTabs } from "../../../ui/nav/SimpleTabs";
@@ -56,6 +56,24 @@ function sourceLabel(deductionSource: string): string {
   return "Manual";
 }
 
+
+function useUrlTabQuery(): [Section, (id: Section) => void] {
+  const pageContext = usePageContext();
+  const initial = (pageContext.urlParsed?.search?.tab || "") as string;
+  const validTabs: Section[] = ["inventory", "sheets", "settings"];
+  const fallback: Section = validTabs.includes(initial as Section) ? (initial as Section) : "inventory";
+  const [section, setSection] = useState<Section>(fallback);
+
+  const update = useCallback((id: Section) => {
+    setSection(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", id);
+    window.history.replaceState({}, "", url.pathname + url.search);
+  }, []);
+
+  return [section, update];
+}
+
 export default function Page() {
   const pageContext = usePageContext();
   const [items, setItems] = useState<StockItem[]>([]);
@@ -76,7 +94,7 @@ export default function Page() {
   const [transferFromId, setTransferFromId] = useState(0);
   const [transferToId, setTransferToId] = useState(0);
   const [transferQuantity, setTransferQuantity] = useState("1");
-  const [section, setSection] = useState<Section>("inventory");
+  const [section, setSection] = useUrlTabQuery();
 
   const selectedWarehouseId = useMemo(() => warehouseId || warehouses.find((warehouse) => warehouse.isDefault)?.id || 0, [warehouseId, warehouses]);
 

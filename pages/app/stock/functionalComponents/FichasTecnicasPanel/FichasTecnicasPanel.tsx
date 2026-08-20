@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChefHat, ClipboardList } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChefHat, ClipboardList, LayoutList, Search as SearchIcon } from "lucide-react";
 
 import { usePageContext } from "vike-react/usePageContext";
 import { Button } from "../../../../../ui/actions/Button";
@@ -98,6 +98,113 @@ export function FichasTecnicasPanel() {
     );
   }
 
+  // Filters state
+  const [categoryFilters, setCategoryFilters] = useState<{id: number; name: string}[]>([]);
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<"" | "DRAFT" | "PUBLISHED">("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filtering, setFiltering] = useState(false);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/stock/categories", { credentials: "include" })
+      .then((r) => r.json())
+      .then((body) => {
+        if (!cancelled && Array.isArray(body.categories)) {
+          setCategoryFilters(body.categories.filter((c: any) => c.isActive !== false));
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  // Debounced filter search via API
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    setFiltering(true);
+    timer = setTimeout(async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const params: Record<string, string> = {};
+        if (statusFilter) params.status = statusFilter;
+        if (categoryId && categoryId !== "") params.categoryId = categoryId;
+        if (searchQuery.trim()) params.q = searchQuery.trim();
+        const data = await sheetsApi.list(params);
+        setSheets(data.sheets || []);
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "No se pudieron cargar las fichas tecnicas");
+      } finally {
+        setFiltering(false);
+        setLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [categoryId, statusFilter, searchQuery]);
+
+  // Clear selectedId when filters change
+  useEffect(() => { setSelectedId(null); }, [categoryId, statusFilter, searchQuery]);
+
+  // Filter bar component
+  const renderFiltersBar = () => {
+    const categoryOptions = categoryFilters.map((cat) => ({ value: String(cat.id), label: cat.name }));
+    return (
+      <div className="bo-fichasFiltersBar" data-ui="fichas-filters">
+        <select
+          className="bo-input bo-fichasFilterSelect"
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+          data-ui="fichas-filter-category"
+          aria-label="Categoria"
+        >
+          <option value="">Todas las categorias</option>
+          {categoryOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        </select>
+
+        {/* Status segmented control */}
+        <div className="bo-fichasStatusSeg" data-ui="fichas-filters-status">
+          <button
+            type="button"
+            className={`bo-fichasSegBtn ${statusFilter === "" || statusFilter === undefined ? "is-active" : ""}`}
+            data-ui="fichas-status-all"
+            onClick={() => setStatusFilter("")}
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            className={`bo-fichasSegBtn ${statusFilter === "DRAFT" ? "is-active" : ""}`}
+            data-ui="fichas-status-draft"
+            onClick={() => setStatusFilter("DRAFT")}
+          >
+            Borrador
+          </button>
+          <button
+            type="button"
+            className={`bo-fichasSegBtn ${statusFilter === "PUBLISHED" ? "is-active" : ""}`}
+            data-ui="fichas-status-published"
+            onClick={() => setStatusFilter("PUBLISHED")}
+          >
+            Publicada
+          </button>
+        </div>
+
+        <div className="bo-fichasSearchWrap" data-ui="fichas-filters-search">
+          <SearchIcon size={16} className="bo-fichasSearchIco" aria-hidden="true" />
+          <input
+            className="bo-input bo-fichasSearchInput"
+            placeholder="Buscar por nombre..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            data-ui="fichas-search-input"
+            aria-label="Buscar ficha"
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className="bo-panel" aria-label="Fichas tecnicas" data-ui="fichas-tecnicas">
       <div className="bo-panelHead" data-ui="fichas-header">
@@ -105,8 +212,10 @@ export function FichasTecnicasPanel() {
         <span className="bo-stockMuted" data-ui="fichas-count">{sheets.length} fichas</span>
       </div>
       <div className="bo-panelBody" data-ui="fichas-body">
+        {renderFiltersBar()}
+
         {error ? <InlineAlert kind="error" title={error} /> : null}
-        {loading ? (
+        {(loading || filtering) ? (
           <LoadingSpinner centered size="sm" label="Cargando fichas tecnicas…" />
         ) : sheets.length === 0 ? (
           <EmptyState
@@ -146,6 +255,7 @@ export function FichasTecnicasPanel() {
                   {sheet.componentCount} ingredientes · {sheet.stepCount} pasos
                   {sheet.allergens?.length ? ` · ${sheet.allergens.length} alergenos` : ""}
                 </div>
+                <ChevronRight size={18} className="bo-fichaArrow" aria-hidden="true" data-ui="ficha-card-arrow" />
               </article>
             ))}
           </div>
