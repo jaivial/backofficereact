@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Boxes, Minus, Plus, Search, Warehouse as WarehouseIcon, X } from "lucide-react";
+import { navigate } from "vike/client/router";
+import { Boxes, Minus, Pencil, Plus, Search, Trash2, Warehouse as WarehouseIcon, X } from "lucide-react";
 
 import { Breadcrumbs } from "../../../ui/nav/Breadcrumbs";
 import { SimpleTabs } from "../../../ui/nav/SimpleTabs";
@@ -10,9 +11,7 @@ import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { LoadingSpinner } from "../../../ui/feedback/LoadingSpinner";
 import { StatusBadge } from "../../../ui/feedback/StatusBadge";
 import { FormField } from "../../../ui/inputs/FormField";
-import { StockCountPanel } from "./functionalComponents/StockCountPanel/StockCountPanel";
 import { FichasTecnicasPanel } from "./functionalComponents/FichasTecnicasPanel/FichasTecnicasPanel";
-import { StockImportPanel } from "./functionalComponents/StockImportPanel/StockImportPanel";
 import { StockSettingsPanel } from "./functionalComponents/StockSettingsPanel/StockSettingsPanel";
 import { StockItemModal } from "./functionalComponents/StockItemModal/StockItemModal";
 
@@ -21,7 +20,6 @@ type Unit = { id: number; code: string; label: string; factorToBase: number };
 type StockItem = { id: number; name: string; sku?: string; categoryName?: string; kind: string; baseDimension: string; baseUnit: string; isTracked: boolean; deductionSource: string; quantityBase: number; parLevelBase: number; reorderPointBase: number; displayUnit: Unit };
 type StockItemOption = Pick<StockItem, "id" | "name" | "kind" | "isTracked" | "displayUnit">;
 type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number };
-type Movement = { id: number; quantityBase: number; type: string; wasteReason?: string; enteredQuantity: number; enteredUnit: string; warehouseName: string; note?: string; actorName: string; occurredAt: string };
 type Section = "inventory" | "sheets" | "settings";
 
 const EMPTY_SUMMARY: Summary = { itemsTracked: 0, belowPar: 0, belowReorder: 0, outOfStock: 0, negative: 0, coveragePct: 0 };
@@ -78,8 +76,6 @@ export default function Page() {
   const [transferFromId, setTransferFromId] = useState(0);
   const [transferToId, setTransferToId] = useState(0);
   const [transferQuantity, setTransferQuantity] = useState("1");
-  const [historyItem, setHistoryItem] = useState<StockItem | null>(null);
-  const [movements, setMovements] = useState<Movement[]>([]);
   const [section, setSection] = useState<Section>("inventory");
 
   const selectedWarehouseId = useMemo(() => warehouseId || warehouses.find((warehouse) => warehouse.isDefault)?.id || 0, [warehouseId, warehouses]);
@@ -157,60 +153,11 @@ export default function Page() {
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo eliminar el almacén"); }
   }, [load]);
 
-  const editItem = useCallback(async (item: StockItem) => {
-    const name = window.prompt("Nombre del artículo", item.name)?.trim();
-    if (!name) return;
-    try {
-      await request(`/items/${item.id}`, { method: "PATCH", body: JSON.stringify({ name, sku: item.sku || "", kind: item.kind, isTracked: item.isTracked, deductionSource: item.deductionSource }) });
-      await load();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo editar el artículo"); }
-  }, [load]);
-
-  const toggleTracked = useCallback(async (item: StockItem) => {
-    try {
-      await request(`/items/${item.id}`, { method: "PATCH", body: JSON.stringify({ name: item.name, sku: item.sku || "", kind: item.kind, isTracked: !item.isTracked, deductionSource: item.deductionSource }) });
-      await load();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cambiar el seguimiento"); }
-  }, [load]);
-
   const deleteItem = useCallback(async (item: StockItem) => {
     if (!window.confirm(`Eliminar ${item.name}?`)) return;
     try { await request(`/items/${item.id}`, { method: "DELETE" }); await load(); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo eliminar el artículo"); }
   }, [load]);
-
-  const setPurchasePrice = useCallback(async (item: StockItem) => {
-    const pricePerDisplayUnit = Number(window.prompt(`Coste de compra por ${item.displayUnit.label} (€)`, ""));
-    if (!Number.isFinite(pricePerDisplayUnit) || pricePerDisplayUnit < 0) return;
-    const supplierName = window.prompt("Proveedor (opcional)", "") || "";
-    try { await request(`/items/${item.id}/prices`, { method: "POST", body: JSON.stringify({ unitCostBase: pricePerDisplayUnit / item.displayUnit.factorToBase, supplierName }) }); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar el coste"); }
-  }, []);
-
-  const setTargets = useCallback(async (item: StockItem) => {
-    if (!selectedWarehouseId) return;
-    const par = Number(window.prompt(`Objetivo de ${item.name} (${item.displayUnit.label})`, String(item.parLevelBase / item.displayUnit.factorToBase || 0)));
-    if (!Number.isFinite(par) || par < 0) return;
-    const reorder = Number(window.prompt(`Mínimo de reposición (${item.displayUnit.label})`, String(item.reorderPointBase / item.displayUnit.factorToBase || 0)));
-    if (!Number.isFinite(reorder) || reorder < 0 || reorder > par) { setError("El mínimo debe estar entre 0 y el objetivo"); return; }
-    try { await request(`/items/${item.id}/targets`, { method: "PATCH", body: JSON.stringify({ warehouseId: selectedWarehouseId, unitId: item.displayUnit.id, parLevel: par, reorderPoint: reorder }) }); await load(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron guardar objetivos"); }
-  }, [load, selectedWarehouseId]);
-
-  const recordWaste = useCallback(async (item: StockItem) => {
-    const quantity = Number(window.prompt(`Merma de ${item.name} (${item.displayUnit.label})`, "1"));
-    if (!Number.isFinite(quantity) || quantity <= 0 || !selectedWarehouseId) return;
-    try {
-      await request(`/items/${item.id}/movements`, { method: "POST", body: JSON.stringify({ warehouseId: selectedWarehouseId, quantity, unitId: item.displayUnit.id, type: "WASTE", wasteReason: "OTHER", idempotencyKey: crypto.randomUUID() }) });
-      await load();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo registrar la merma"); }
-  }, [load, selectedWarehouseId]);
-
-  const openHistory = useCallback(async (item: StockItem) => {
-    setHistoryItem(item);
-    try { const data = await request<{ movements: Movement[] }>(`/items/${item.id}/movements?pageSize=50`); setMovements(data.movements); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar el historial"); }
-  }, []);
 
   const summaryCards = useMemo<[string, number][]>(() => [
     ["Artículos", summary.itemsTracked], ["Bajo objetivo", summary.belowPar], ["Bajo mínimo", summary.belowReorder], ["Agotados", summary.outOfStock],
@@ -247,9 +194,6 @@ export default function Page() {
         <div className="bo-stockStack" data-ui="stock-sections-content">
           {section === "inventory" ? (
             <>
-              <StockImportPanel onImported={load} />
-              <StockCountPanel warehouses={warehouses} onClosed={load} />
-
               <section className="bo-stockSummary" aria-label="Resumen de stock" data-ui="stock-summary">
                 {summaryCards.map(([label, value]) => (
                   <article className="bo-card bo-stockSummaryCard" key={label} data-ui={`stock-summary-${label.toLowerCase().replaceAll(" ", "-")}`}>
@@ -357,11 +301,24 @@ export default function Page() {
                   {items.map((item) => {
                     const percent = item.parLevelBase > 0 ? Math.max(0, Math.min(100, item.quantityBase / item.parLevelBase * 100)) : 0;
                     return (
-                      <article className="bo-card bo-stockItemCard" key={item.id} data-ui="stock-card">
+                      <article
+                        className="bo-card bo-stockItemCard bo-stockItemCard--link"
+                        key={item.id}
+                        data-ui="stock-card"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Ver detalle de ${item.name}`}
+                        onClick={() => navigate(`/app/stock/item?id=${item.id}`)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            navigate(`/app/stock/item?id=${item.id}`);
+                          }
+                        }}
+                      >
                         <div className="bo-stockItemHead" data-ui="stock-card-header">
                           <div data-ui="stock-card-heading">
                             <h2 className="bo-stockItemName" data-ui="stock-card-name">{item.name}</h2>
-                            <p className="bo-stockItemMeta" data-ui="stock-card-meta">{item.categoryName || item.kind}{item.sku ? ` · ${item.sku}` : ""}</p>
                           </div>
                           <StatusBadge variant="neutral" size="sm" data-ui="stock-card-source">{sourceLabel(item.deductionSource)}</StatusBadge>
                         </div>
@@ -375,26 +332,25 @@ export default function Page() {
                           <div className={progressClass(item)} style={{ width: `${percent}%` }} data-ui="stock-progress-fill" />
                         </div>
 
-                        <div className="bo-stockAdjust" data-ui="stock-adjustment">
-                          <Button variant="secondary" className="bo-stockAdjustBtn" aria-label={`Restar ${item.name}`} onClick={() => void adjust(item, "subtract")} data-testid={`stock-subtract-${item.id}`}>
+                        <div className="bo-stockAdjust" data-ui="stock-adjustment" onClick={(event) => event.stopPropagation()}>
+                          <Button variant="secondary" className="bo-stockAdjustBtn" aria-label={`Restar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "subtract"); }} data-testid={`stock-subtract-${item.id}`}>
                             <Minus size={16} aria-hidden="true" data-ui="stock-minus-icon" />
                           </Button>
                           <label className="sr-only" htmlFor={`stock-quantity-${item.id}`} data-ui="stock-quantity-label">Cantidad de {item.name}</label>
                           <input id={`stock-quantity-${item.id}`} className="bo-input bo-stockAdjustInput" inputMode="decimal" value={quantities[item.id] || "1"} onChange={(event) => setQuantities((current) => ({ ...current, [item.id]: event.target.value }))} data-testid={`stock-quantity-${item.id}`} />
                           <span className="bo-stockAdjustUnit" data-ui="stock-adjustment-unit">{item.displayUnit.label}</span>
-                          <Button variant="primary" className="bo-stockAdjustBtn" aria-label={`Sumar ${item.name}`} onClick={() => void adjust(item, "add")} data-testid={`stock-add-${item.id}`}>
+                          <Button variant="primary" className="bo-stockAdjustBtn" aria-label={`Sumar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "add"); }} data-testid={`stock-add-${item.id}`}>
                             <Plus size={16} aria-hidden="true" data-ui="stock-plus-icon" />
                           </Button>
                         </div>
 
                         <div className="bo-stockItemActions" data-ui="stock-card-actions">
-                          <Button variant="ghost" size="sm" onClick={() => void openHistory(item)} data-ui="stock-history-action">Historial</Button>
-                          <Button variant="ghost" size="sm" className="bo-btn--warning" onClick={() => void recordWaste(item)} data-ui="stock-waste-action">Merma</Button>
-                          <Button variant="ghost" size="sm" onClick={() => void setTargets(item)} data-ui="stock-targets-action">Objetivos</Button>
-                          <Button variant="ghost" size="sm" onClick={() => void setPurchasePrice(item)} data-ui="stock-price-action">Coste</Button>
-                          <Button variant="ghost" size="sm" onClick={() => void editItem(item)} data-ui="stock-edit-action">Editar</Button>
-                          <Button variant="ghost" size="sm" onClick={() => void toggleTracked(item)} data-ui="stock-tracking-action">{item.isTracked ? "No seguir" : "Seguir"}</Button>
-                          <Button variant="danger" size="sm" onClick={() => void deleteItem(item)} data-ui="stock-delete-action">Eliminar</Button>
+                          <button type="button" className="bo-stockIconBtn" aria-label={`Editar ${item.name}`} data-testid={`stock-edit-${item.id}`} onClick={(event) => { event.stopPropagation(); navigate(`/app/stock/item?id=${item.id}`); }}>
+                            <Pencil size={16} aria-hidden="true" data-ui="stock-edit-icon" />
+                          </button>
+                          <button type="button" className="bo-stockIconBtn bo-stockIconBtn--danger" aria-label={`Eliminar ${item.name}`} data-testid={`stock-delete-${item.id}`} onClick={(event) => { event.stopPropagation(); void deleteItem(item); }}>
+                            <Trash2 size={16} aria-hidden="true" data-ui="stock-delete-icon" />
+                          </button>
                         </div>
                       </article>
                     );
@@ -426,31 +382,6 @@ export default function Page() {
         onCreated={load}
       />
 
-      {historyItem ? (
-        <aside className="bo-stockDrawer" aria-label={`Historial de ${historyItem.name}`} data-ui="stock-history-drawer">
-          <div className="bo-stockDrawerHead" data-ui="stock-history-header">
-            <div data-ui="stock-history-heading">
-              <h2 className="bo-panelTitle" data-ui="stock-history-title">{historyItem.name}</h2>
-              <p className="bo-stockNote" data-ui="stock-history-subtitle">Historial de movimientos</p>
-            </div>
-            <button className="bo-stockIconBtn" type="button" aria-label="Cerrar historial" onClick={() => setHistoryItem(null)} data-ui="stock-history-close">
-              <X size={18} aria-hidden="true" data-ui="stock-history-close-icon" />
-            </button>
-          </div>
-          <div className="bo-stockDrawerList" data-ui="stock-history-list">
-            {movements.length ? movements.map((movement) => (
-              <article className="bo-stockMovement" key={movement.id} data-ui="stock-history-entry">
-                <div className="bo-stockMovementTop" data-ui="stock-history-entry-main">
-                  <strong data-ui="stock-history-type">{movement.type}</strong>
-                  <span className={movement.quantityBase >= 0 ? "bo-stockTextSuccess" : "bo-stockTextDanger"} data-ui="stock-history-quantity">{movement.quantityBase >= 0 ? "+" : ""}{movement.enteredQuantity} {movement.enteredUnit}</span>
-                </div>
-                <p className="bo-stockRowMeta" data-ui="stock-history-meta">{movement.warehouseName} · {movement.actorName} · {new Date(movement.occurredAt).toLocaleString("es-ES")}</p>
-                {movement.note ? <p className="bo-stockNote" data-ui="stock-history-note">{movement.note}</p> : null}
-              </article>
-            )) : <p className="bo-stockNote" data-ui="stock-history-empty">Sin movimientos.</p>}
-          </div>
-        </aside>
-      ) : null}
     </main>
   );
 }
