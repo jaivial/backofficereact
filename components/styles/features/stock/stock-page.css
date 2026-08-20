@@ -627,3 +627,36 @@
   .bo-stockChoiceCard { transition: none; }
   .bo-stockChoiceCard:hover { transform: none; }
 }
+
+/* ── Clickable stock card (opens item detail) ───────────────── */
+.bo-stockItemCard--link {
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.bo-stockItemCard--link:hover {
+  border-color: var(--bo-accent);
+}
+
+.bo-stockItemCard--link:active {
+  transform: translateY(1px);
+}
+
+.bo-stockItemActions {
+  justify-content: flex-end;
+}
+
+/* Danger variant for the inline icon button (delete) */
+.bo-stockIconBtn--danger {
+  color: var(--bo-danger);
+}
+
+.bo-stockIconBtn--danger:hover {
+  background: color-mix(in srgb, var(--bo-danger) 12%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-stockItemCard--link { transition: none; }
+  .bo-stockItemCard--link:hover { transform: none; }
+  .bo-stockItemCard--link:active { transform: none; }
+}
