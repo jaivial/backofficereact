@@ -523,17 +523,6 @@ export default function Page() {
               </Panel>
 
               <Panel data-ui="salones-day-panel-wrapper" title="Salones del día" meta={date} data-testid="reservas-config-salones-panel">
-                  {locationBooking ? (
-                    <LocationBookingToggles
-                      variant="day"
-                      allowFloorReservation={locationBooking.effective.allowFloorReservation}
-                      allowSalonReservation={locationBooking.effective.allowSalonReservation}
-                      global={locationBooking.global}
-                      busy={busy}
-                      onSetOverride={(patch) => void setLocationBookingOverride(patch)}
-                    />
-                  ) : null}
-
                   <SalonesDelDiaPanel
                     date={date}
                     floors={floors}
@@ -544,6 +533,17 @@ export default function Page() {
                     setError={setError}
                     pushToast={pushToast}
                   />
+
+                  {locationBooking ? (
+                    <LocationBookingToggles
+                      variant="day"
+                      allowFloorReservation={locationBooking.effective.allowFloorReservation}
+                      allowSalonReservation={locationBooking.effective.allowSalonReservation}
+                      global={locationBooking.global}
+                      busy={busy}
+                      onSetOverride={(patch) => void setLocationBookingOverride(patch)}
+                    />
+                  ) : null}
               </Panel>
             </motion.div>
           ) : null}
