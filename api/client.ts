@@ -1141,6 +1141,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(patch),
         });
       },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/members/${id}`, { method: "DELETE" });
+      },
       async listCompensations(id: number): Promise<APISuccess<{ items: MemberCompensation[] }> | APIError> {
         return json(`/api/admin/members/${id}/compensations`, { method: "GET" });
       },

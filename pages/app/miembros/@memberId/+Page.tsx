@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { Loader2, Mail, Pencil, RefreshCcw, Upload } from "lucide-react";
+import { Loader2, Mail, Pencil, RefreshCcw, Trash2, Upload } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
@@ -60,6 +60,8 @@ export default function Page() {
   const [resetBusy, setResetBusy] = useState(false);
   const [confirmResendOpen, setConfirmResendOpen] = useState(false);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   useErrorToast(error);
 
   const [firstName, setFirstName] = useState(data.member?.firstName ?? "");
@@ -204,6 +206,27 @@ export default function Page() {
     }
   }, [api.members, member, pushToast]);
 
+  const onDeleteMember = useCallback(async () => {
+    if (!member) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      const res = await api.members.delete(member.id);
+      if (!res.success) {
+        setError(res.message || "No se pudo eliminar el miembro");
+        setConfirmDeleteOpen(false);
+        return;
+      }
+      pushToast({ kind: "success", title: "Miembro eliminado" });
+      window.location.href = "/app/miembros";
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo eliminar el miembro");
+      setConfirmDeleteOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  }, [api.members, member, pushToast]);
+
   const memberName = member ? `${member.firstName} ${member.lastName}`.trim() : "";
   const currentEmail = normalizeEmail(session?.user?.email);
   const isSelfMember = !!member && (member.isCurrentUser || (currentEmail !== "" && normalizeEmail(member.email) === currentEmail));
@@ -211,6 +234,10 @@ export default function Page() {
   const actorImportance = session?.user?.roleImportance ?? 0;
   const memberRoleIconKey = memberRole ? data.roles.find((r) => r.slug === memberRole.slug)?.iconKey ?? null : null;
   const canChangeRole = !!member && member.boUserId != null && !isSelfMember && !!memberRole && actorImportance > memberRole.importance;
+  // Misma regla ACL que el backend: solo roles estrictamente inferiores y no
+  // el propio miembro. Sin rol resuelto (invitado pendiente sin aceptar) el
+  // backend valida contra el rol de su invitacion.
+  const canDeleteMember = !!member && !isSelfMember && (!memberRole || actorImportance > memberRole.importance);
   const roleOptions = useMemo(
     () =>
       data.roles
@@ -238,7 +265,7 @@ export default function Page() {
                   type="button"
                   data-testid="miembro-detail-resend-invitation-button"
                   onClick={() => setConfirmResendOpen(true)}
-                  disabled={saving || avatarBusy || resendBusy || resetBusy}
+                  disabled={saving || avatarBusy || resendBusy || resetBusy || deleting}
                 >
                   <RefreshCcw size={14} strokeWidth={1.8} />
                   Reenviar invitación
@@ -248,11 +275,23 @@ export default function Page() {
                   type="button"
                   data-testid="miembro-detail-reset-password-button"
                   onClick={() => setConfirmResetOpen(true)}
-                  disabled={saving || avatarBusy || resendBusy || resetBusy}
+                  disabled={saving || avatarBusy || resendBusy || resetBusy || deleting}
                 >
                   <Mail size={14} strokeWidth={1.8} />
                   Recuperar contraseña
                 </button>
+                {canDeleteMember ? (
+                  <button
+                    className="bo-btn bo-btn--danger"
+                    type="button"
+                    data-testid="miembro-detail-delete-button"
+                    onClick={() => setConfirmDeleteOpen(true)}
+                    disabled={saving || avatarBusy || resendBusy || resetBusy || deleting}
+                  >
+                    <Trash2 size={14} strokeWidth={1.8} />
+                    Eliminar miembro
+                  </button>
+                ) : null}
               </>
             ) : null}
             <button className="bo-btn bo-btn--ghost" type="button" data-testid="miembro-detail-edit-button" onClick={() => setEditing((v) => !v)} disabled={saving || avatarBusy}>
@@ -406,6 +445,17 @@ export default function Page() {
         onClose={() => setConfirmResetOpen(false)}
         onConfirm={onSendPasswordReset}
         busy={resetBusy}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Eliminar miembro"
+        message={`Se eliminará a ${memberName || `el miembro #${member?.id ?? ""}`} del equipo: perderá su acceso al panel y sus invitaciones pendientes quedarán invalidadas. Los historiales (fichaje, compensaciones) se conservan.`}
+        confirmText="Eliminar"
+        danger
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={onDeleteMember}
+        busy={deleting}
       />
     </section>
   );
