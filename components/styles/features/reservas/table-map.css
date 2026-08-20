@@ -2953,6 +2953,22 @@ body.is-dragging .bo-tableMapFlowWrap {
 		margin-top: var(--bo-space-2);
 	}
 
+	/* The ScrollArea's viewport uses `height:100%`, which resolves against the
+	   flex-constrained ScrollArea as indefinite here, so on the stacked mobile
+	   layout the viewport grew to the full content height (734px+) instead of the
+	   ScrollArea's bounded height — the modal's overflow:hidden then clipped the
+	   form and nothing scrolled. Make the viewport flex-fill the ScrollArea
+	   instead so it actually scrolls. */
+	.bo-tableEditorGridScroll.bo-scrollArea {
+		flex-direction: column;
+	}
+
+	.bo-tableEditorGridScroll .bo-scrollAreaViewport {
+		height: auto;
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+
 	.bo-tableEditorColumns {
 		grid-template-columns: 1fr;
 		gap: var(--bo-space-3);
@@ -3002,6 +3018,9 @@ body.is-dragging .bo-tableMapFlowWrap {
 
 	.bo-tableEditorConfig {
 		margin: 0;
+		/* Extra breathing room between the table preview above and the form, so
+		   the fields don't sit flush against the preview on the stacked layout. */
+		margin-top: var(--bo-space-4);
 		padding: var(--bo-space-3);
 		border-radius: var(--bo-radius-md);
 	}
