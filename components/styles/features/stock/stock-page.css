@@ -103,6 +103,7 @@
 
 /* ── Toolbar / filters ─────────────────────── */
 .bo-stockToolbar {
+  padding: 18px 16px;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
