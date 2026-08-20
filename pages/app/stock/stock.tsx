@@ -11,11 +11,8 @@ import { LoadingSpinner } from "../../../ui/feedback/LoadingSpinner";
 import { StatusBadge } from "../../../ui/feedback/StatusBadge";
 import { FormField } from "../../../ui/inputs/FormField";
 import { StockCountPanel } from "./functionalComponents/StockCountPanel/StockCountPanel";
-import { StockDocumentsPanel } from "./functionalComponents/StockDocumentsPanel/StockDocumentsPanel";
+import { FichasTecnicasPanel } from "./functionalComponents/FichasTecnicasPanel/FichasTecnicasPanel";
 import { StockImportPanel } from "./functionalComponents/StockImportPanel/StockImportPanel";
-import { StockOperationsPanel } from "./functionalComponents/StockOperationsPanel/StockOperationsPanel";
-import { ProductionLabourPanel } from "./functionalComponents/ProductionLabourPanel/ProductionLabourPanel";
-import { PortionWastePanel } from "./functionalComponents/PortionWastePanel/PortionWastePanel";
 import { StockSettingsPanel } from "./functionalComponents/StockSettingsPanel/StockSettingsPanel";
 import { StockItemModal } from "./functionalComponents/StockItemModal/StockItemModal";
 
@@ -25,14 +22,13 @@ type StockItem = { id: number; name: string; sku?: string; categoryName?: string
 type StockItemOption = Pick<StockItem, "id" | "name" | "kind" | "isTracked" | "displayUnit">;
 type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number };
 type Movement = { id: number; quantityBase: number; type: string; wasteReason?: string; enteredQuantity: number; enteredUnit: string; warehouseName: string; note?: string; actorName: string; occurredAt: string };
-type Section = "inventory" | "operations" | "ocr" | "settings";
+type Section = "inventory" | "sheets" | "settings";
 
 const EMPTY_SUMMARY: Summary = { itemsTracked: 0, belowPar: 0, belowReorder: 0, outOfStock: 0, negative: 0, coveragePct: 0 };
 
 const SECTION_TABS: { id: Section; label: string }[] = [
   { id: "inventory", label: "Existencias" },
-  { id: "operations", label: "Recetas y previsión" },
-  { id: "ocr", label: "OCR documentos" },
+  { id: "sheets", label: "Fichas tecnicas" },
   { id: "settings", label: "Configuración" },
 ];
 
@@ -64,7 +60,6 @@ function sourceLabel(deductionSource: string): string {
 
 export default function Page() {
   const pageContext = usePageContext();
-  const canManageActualLabour = Number(pageContext.bo?.session?.user?.roleImportance ?? 0) >= 90;
   const [items, setItems] = useState<StockItem[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [itemOptions, setItemOptions] = useState<StockItemOption[]>([]);
@@ -417,15 +412,10 @@ export default function Page() {
             </>
           ) : null}
 
-          {section === "operations" ? (
-            <>
-              <StockOperationsPanel items={itemOptions} warehouses={warehouses} onChanged={load} />
-              <PortionWastePanel />
-              {canManageActualLabour ? <ProductionLabourPanel /> : null}
-            </>
+          {section === "sheets" ? (
+            <FichasTecnicasPanel />
           ) : null}
 
-          {section === "ocr" ? <StockDocumentsPanel items={itemOptions} warehouses={warehouses} /> : null}
           {section === "settings" ? <StockSettingsPanel /> : null}
         </div>
       </div>
