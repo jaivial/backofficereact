@@ -332,7 +332,7 @@ export default function Page() {
                           <div className={progressClass(item)} style={{ width: `${percent}%` }} data-ui="stock-progress-fill" />
                         </div>
 
-                        <div className="bo-stockAdjust" data-ui="stock-adjustment">
+                        <div className="bo-stockAdjust" data-ui="stock-adjustment" onClick={(event) => event.stopPropagation()}>
                           <Button variant="secondary" className="bo-stockAdjustBtn" aria-label={`Restar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "subtract"); }} data-testid={`stock-subtract-${item.id}`}>
                             <Minus size={16} aria-hidden="true" data-ui="stock-minus-icon" />
                           </Button>
