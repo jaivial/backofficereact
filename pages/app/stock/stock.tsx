@@ -274,8 +274,7 @@ export default function Page() {
                     <input className="bo-stockSearchInput" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Buscar por nombre o SKU" aria-label="Buscar artículos" data-testid="stock-search" />
                   </span>
                   <div className="bo-stockFilterField" data-ui="stock-warehouse-filter-field">
-                    <label className="bo-label" htmlFor="stock-warehouse-filter" data-ui="stock-warehouse-filter-label">Almacén</label>
-                    <select id="stock-warehouse-filter" className="bo-input" value={warehouseId} onChange={(event) => { setWarehouseId(Number(event.target.value)); setPage(1); }} data-testid="stock-warehouse-filter">
+                    <select id="stock-warehouse-filter" className="bo-input" value={warehouseId} onChange={(event) => { setWarehouseId(Number(event.target.value)); setPage(1); }} aria-label="Almacén" data-testid="stock-warehouse-filter">
                       <option value={0} data-ui="stock-all-warehouses-option">Todos los almacenes</option>
                       {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id} data-ui="stock-warehouse-option">{warehouse.name}</option>)}
                     </select>
@@ -343,7 +342,7 @@ export default function Page() {
                         </div>
 
                         <div className="bo-stockItemActions" data-ui="stock-card-actions">
-                          <StatusBadge variant="neutral" size="sm" className="bo-stockItemSourceBadge" data-ui="stock-card-source">{sourceLabel(item.deductionSource)}</StatusBadge>
+                          <StatusBadge variant="neutral" className="bo-stockItemSourceBadge" data-ui="stock-card-source">{sourceLabel(item.deductionSource)}</StatusBadge>
                           <button type="button" className="bo-stockIconBtn" aria-label={`Editar ${item.name}`} data-testid={`stock-edit-${item.id}`} onClick={(event) => { event.stopPropagation(); navigate(`/app/stock/item?id=${item.id}`); }}>
                             <Pencil size={16} aria-hidden="true" data-ui="stock-edit-icon" />
                           </button>
