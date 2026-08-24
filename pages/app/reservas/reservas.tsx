@@ -28,6 +28,7 @@ import { BookingDetailsPanel } from "./functionalComponents/BookingDetailsPanel"
 import { SearchResultsTable } from "./functionalComponents/SearchResultsTable";
 import { BookingsViewTabs, type ViewTabId } from "./functionalComponents/BookingsViewTabs/BookingsViewTabs";
 import { BookingCardGrid } from "./functionalComponents/BookingCardGrid/BookingCardGrid";
+import { bookingFloorDisplay, bookingSalonDisplay } from "./bookingLocation";
 
 type DisplayMode = "tabla" | "grid";
 
@@ -177,6 +178,8 @@ const BookingRow = React.memo(function BookingRow({
       <td className="col-time" data-slot="reservas-col-time">{formatHHMM(booking.reservation_time)}</td>
       <td className="col-client" data-slot="reservas-col-client">{booking.customer_name}</td>
       <td className="col-status" data-slot="reservas-col-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td data-slot="reservas-col-floor">{bookingFloorDisplay(booking) || "—"}</td>
+      <td data-slot="reservas-col-salon">{bookingSalonDisplay(booking) || "—"}</td>
       <td className="num" data-slot="reservas-num">{booking.party_size}</td>
       <td className="col-children num" data-slot="reservas-num">{booking.children ?? 0}</td>
       <td className="col-phone" data-slot="reservas-col-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
@@ -681,6 +684,8 @@ export default function Page() {
                                   <th className="col-time" data-slot="reservas-col-time">Hora</th>
                                   <th className="col-client" data-slot="reservas-col-client">Cliente</th>
                                   <th className="col-status" data-slot="reservas-col-status">Estado</th>
+                                  <th data-slot="reservas-col-floor">Planta</th>
+                                  <th data-slot="reservas-col-salon">Salón</th>
                                   <th className="num" data-slot="reservas-num">Pax</th>
                                   <th className="col-children num" data-slot="reservas-num">Niños</th>
                                   <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
@@ -694,7 +699,7 @@ export default function Page() {
                                   <BookingRow key={b.id} booking={b} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
                                 ))}
                                 {!rows.length ? (
-                                  <tr data-slot="reservas-tro"><td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
+                                  <tr data-slot="reservas-tro"><td colSpan={13} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
                                 ) : null}
                               </tbody>
                             </table>
