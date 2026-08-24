@@ -632,10 +632,7 @@
 }
 
 @media (max-width: 980px) {
-  /* ponytail: at <=980px the desktop Preview switch replaces the existing
-     Editor/Preview mobile-tab picker. When enabled it swaps the platos
-     accordion editor for the preview pane; when disabled it hides the preview
-     pane and falls back to the existing is-mobileActive flow. */
+  /* ponytail: surface Preview switch at <=980px and swap platos editor for preview pane. */
   .bo-previewDesktopSwitch {
     display: inline-flex;
     align-items: center;
@@ -649,8 +646,8 @@
     margin: 8px 0;
   }
 
-  .bo-menuWizardFinal.is-previewOpen .bo-editorPane--platos,
-  .bo-menuWizardFinal.is-previewOpen .bo-editorPane--config {
+  .bo-menuWizardFinal.is-platosActive.is-previewOpen .bo-editorPane--platos,
+  .bo-menuWizardFinal.is-platosActive.is-previewOpen .bo-editorPane--config {
     display: none;
   }
 
