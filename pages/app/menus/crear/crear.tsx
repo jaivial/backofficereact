@@ -578,7 +578,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
             ) : null}
           </motion.div>
 
-          <motion.div layout transition={paneLayoutTransition} className="bo-editorPane bo-editorPane--config is-mobileActive" data-testid="menu-crear-editor-pane-config">
+          <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane bo-editorPane--config ${editorTab === "configuracion" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane-config">
               <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead" data-testid="menu-crear-editor-panel">
                 <div className="bo-panelHead" data-slot="crear-panelHead">
                   <div data-slot="crear-div">
