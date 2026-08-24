@@ -54,6 +54,8 @@ export type Booking = {
   highChairs: number | null;
   table_number: string | null;
   preferred_floor_number: number | null;
+  preferred_salon_id: number | null;
+  preferred_salon_name?: string | null;
   added_date: string | null;
   special_menu: boolean;
   menu_de_grupo_id: number | null;

@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { formatArrozShort, formatHHMM, formatPhone } from "../../../../../ui/lib/format";
 import type { Booking, ConfigFloor } from "../../../../../api/types";
 import { Panel } from "../../../../../ui/shell/Panel";
+import { bookingFloorDisplay, bookingSalonDisplay } from "../../bookingLocation";
 
 function normalizeTableNumber(v: string): string {
   const raw = String(v || "").trim();
@@ -37,11 +38,8 @@ export function BookingDetailsPanel({ booking, floors }: BookingDetailsPanelProp
   const time = formatHHMM(booking.reservation_time);
   const phone = formatPhone(booking.contact_phone_country_code, booking.contact_phone);
   const status = statusLabel(booking.status);
-  const preferredFloorLabel = useMemo(() => {
-    if (typeof booking.preferred_floor_number !== "number") return "Sin preferencia";
-    const match = floors.find((floor) => floor.floorNumber === booking.preferred_floor_number);
-    return match ? match.name : `Salón ${booking.preferred_floor_number}`;
-  }, [booking.preferred_floor_number, floors]);
+  const preferredFloorLabel = useMemo(() => bookingFloorDisplay(booking, floors) || "—", [booking, floors]);
+  const preferredSalonLabel = bookingSalonDisplay(booking) || "—";
   const badgeCls =
     booking.status === "confirmed"
       ? "bo-badge bo-badge--ok"
@@ -88,8 +86,12 @@ export function BookingDetailsPanel({ booking, floors }: BookingDetailsPanelProp
               <div className="bo-kvValue" data-ui="kv-value">{phone || "—"}</div>
             </div>
             <div className="bo-kv" data-ui="kv-floor">
-              <div className="bo-kvLabel" data-ui="kv-label">Salón</div>
+              <div className="bo-kvLabel" data-ui="kv-label">Planta</div>
               <div className="bo-kvValue" data-ui="kv-value">{preferredFloorLabel}</div>
+            </div>
+            <div className="bo-kv" data-ui="kv-salon">
+              <div className="bo-kvLabel" data-ui="kv-label">Salón</div>
+              <div className="bo-kvValue" data-ui="kv-value">{preferredSalonLabel}</div>
             </div>
             <div className="bo-kv" data-ui="kv-children">
               <div className="bo-kvLabel" data-ui="kv-label">Niños</div>
