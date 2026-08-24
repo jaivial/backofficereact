@@ -1821,7 +1821,7 @@
 
   /* ponytail: hide pill picker at <=980px — desktop Preview switch drives the swap. */
   .bo-previewSwitchGlass {
-    display: none !important;
+    display: none;
   }
 
   .bo-editorPane,
