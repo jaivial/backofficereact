@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Eye, Pencil, Trash2, ReceiptText, Clock, Users } from "lucide-react";
 import type { Booking } from "../../../../../api/types";
 import { formatArrozShort, formatHHMM, formatPhone } from "../../../../../ui/lib/format";
+import { bookingFloorDisplay, bookingSalonDisplay } from "../../bookingLocation";
 
 // ponytail: "delete" maps to reserva cancel (soft-delete); reservas have no hard-delete endpoint.
 type Props = {
@@ -124,6 +125,14 @@ export const BookingCard = React.memo(function BookingCard({
           </div>
           <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
             <dt>Niños</dt><dd>{booking.children ?? 0}</dd>
+          </div>
+        </div>
+        <div className="bo-bookingCardRow" data-slot="reservas-booking-card-row">
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Planta</dt><dd>{bookingFloorDisplay(booking) || "—"}</dd>
+          </div>
+          <div className="bo-bookingCardField" data-slot="reservas-booking-card-field">
+            <dt>Salón</dt><dd>{bookingSalonDisplay(booking) || "—"}</dd>
           </div>
         </div>
         <div className="bo-bookingCardRow" data-slot="reservas-booking-card-row">

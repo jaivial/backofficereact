@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { ExternalLink } from "lucide-react";
 import { formatArrozShort, formatHHMM, formatPhone } from "../../../../../ui/lib/format";
 import type { Booking } from "../../../../../api/types";
+import { bookingFloorDisplay, bookingSalonDisplay } from "../../bookingLocation";
 
 function formatAddedDate(ts: string | null | undefined): string {
   if (!ts) return "";
@@ -43,6 +44,8 @@ const SearchResultRow = React.memo(function SearchResultRow({
       <td className="col-time" data-ui="cell-time">{formatHHMM(booking.reservation_time)}</td>
       <td className="col-client" data-ui="cell-client">{booking.customer_name}</td>
       <td className="col-status" data-ui="cell-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td data-ui="cell-floor">{bookingFloorDisplay(booking) || "—"}</td>
+      <td data-ui="cell-salon">{bookingSalonDisplay(booking) || "—"}</td>
       <td className="num" data-ui="cell-pax">{booking.party_size}</td>
       <td className="col-phone" data-ui="cell-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
       <td className="col-rice" data-ui="cell-rice">{arroz}</td>
@@ -84,6 +87,8 @@ export function SearchResultsTable({
               <th className="col-time" data-ui="th-time">Hora</th>
               <th className="col-client" data-ui="th-client">Cliente</th>
               <th className="col-status" data-ui="th-status">Estado</th>
+              <th data-ui="th-floor">Planta</th>
+              <th data-ui="th-salon">Salón</th>
               <th className="num" data-ui="th-pax">Pax</th>
               <th className="col-phone" data-ui="th-phone">Teléfono</th>
               <th className="col-rice" data-ui="th-rice">Arroz</th>
@@ -97,7 +102,7 @@ export function SearchResultsTable({
             ))}
             {!searchResults.length ? (
               <tr data-ui="empty-row">
-                <td colSpan={10} style={{ padding: 16, color: "var(--bo-muted)" }} data-ui="empty-cell">
+                <td colSpan={12} style={{ padding: 16, color: "var(--bo-muted)" }} data-ui="empty-cell">
                   {searchBusy ? "Buscando..." : "Sin resultados."}
                 </td>
               </tr>

@@ -3,6 +3,7 @@ import { FileText, Pencil, XCircle } from "lucide-react";
 import { DropdownMenu } from "../../../../../ui/inputs/DropdownMenu";
 import { formatArrozShort, formatHHMM, formatPhone } from "../../../../../ui/lib/format";
 import type { Booking } from "../../../../../api/types";
+import { bookingFloorDisplay, bookingSalonDisplay } from "../../bookingLocation";
 
 function normalizeTableNumber(v: string): string {
   const raw = String(v || "").trim();
@@ -105,6 +106,8 @@ const BookingRow = React.memo(function BookingRow({
       <td className="col-time" data-ui="cell-time">{formatHHMM(booking.reservation_time)}</td>
       <td className="col-client" data-ui="cell-client">{booking.customer_name}</td>
       <td className="col-status" data-ui="cell-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
+      <td data-ui="cell-floor">{bookingFloorDisplay(booking) || "—"}</td>
+      <td data-ui="cell-salon">{bookingSalonDisplay(booking) || "—"}</td>
       <td className="num" data-ui="cell-pax">{booking.party_size}</td>
       <td className="col-children num" data-ui="cell-children">{booking.children ?? 0}</td>
       <td className="col-phone" data-ui="cell-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
@@ -149,6 +152,8 @@ export function ReservationTable({
               <th className="col-time" data-ui="th-time">Hora</th>
               <th className="col-client" data-ui="th-client">Cliente</th>
               <th className="col-status" data-ui="th-status">Estado</th>
+              <th data-ui="th-floor">Planta</th>
+              <th data-ui="th-salon">Salón</th>
               <th className="num" data-ui="th-pax">Pax</th>
               <th className="col-children num" data-ui="th-children">Niños</th>
               <th className="col-phone" data-ui="th-phone">Teléfono</th>
@@ -171,7 +176,7 @@ export function ReservationTable({
             ))}
             {!rows.length ? (
               <tr data-ui="empty-row">
-                <td colSpan={11} style={{ padding: 16, color: "var(--bo-muted)" }} data-ui="empty-cell">
+                <td colSpan={13} style={{ padding: 16, color: "var(--bo-muted)" }} data-ui="empty-cell">
                   {busy ? "Cargando..." : "No hay reservas para este filtro."}
                 </td>
               </tr>
