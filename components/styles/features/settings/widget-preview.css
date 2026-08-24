@@ -251,6 +251,21 @@
   padding-bottom: 0;
 }
 
+/* The details modal is a column with a max-height. Override ScrollArea's h-full
+   so it can shrink between the fixed header and footer and own the scroll. */
+.bo-reservasModal--details .bo-scrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.bo-reservasModal--details .bo-scrollAreaViewport {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 768px) {
   .bo-reservasModal--details,
   .bo-reservasModal--edit {
