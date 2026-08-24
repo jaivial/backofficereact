@@ -13,6 +13,7 @@ import {
 import { motion } from "motion/react";
 import { Reorder } from "motion/react";
 import { useDragControls } from "motion/react";
+import { usePageContext } from "vike-react/usePageContext";
 
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
@@ -239,7 +240,10 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   } = H;
 
   const { pushToast } = useToasts();
-  const [editorTab, setEditorTab] = useState<"platos" | "configuracion">("platos");
+  const pageContext = usePageContext();
+  const initialEditorTab: "platos" | "configuracion" =
+    pageContext.urlParsed?.search?.tab === "configuracion" ? "configuracion" : "platos";
+  const [editorTab, setEditorTab] = useState<"platos" | "configuracion">(initialEditorTab);
   const [pendingDishDelete, setPendingDishDelete] = useState<{ sectionClientId: string; dishClientId: string; dishLabel: string } | null>(null);
 
   const requestDishDelete = useCallback((sectionClientId: string, dishClientId: string, dishLabel: string) => {
@@ -499,7 +503,13 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
               activeId={editorTab}
               ariaLabel="Secciones del editor"
               mode="button"
-              onNavigate={(_href, id) => setEditorTab(id === "configuracion" ? "configuracion" : "platos")}
+              onNavigate={(_href, id) => {
+                const next: "platos" | "configuracion" = id === "configuracion" ? "configuracion" : "platos";
+                setEditorTab(next);
+                const url = new URL(window.location.href);
+                url.searchParams.set("tab", next);
+                window.history.replaceState({}, "", url.pathname + url.search);
+              }}
             />
           </div>
 
