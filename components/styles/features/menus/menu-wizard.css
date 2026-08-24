@@ -651,6 +651,10 @@
     display: none;
   }
 
+  .bo-menuWizardFinal.is-platosActive.is-previewOpen .bo-previewPane {
+    display: grid;
+  }
+
   .bo-menuWizardFinal.is-previewHidden .bo-previewPane {
     display: none;
   }
