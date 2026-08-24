@@ -633,11 +633,6 @@
 
 @media (max-width: 980px) {
   /* ponytail: surface Preview switch at <=980px and swap platos editor for preview pane. */
-  /* ponytail: pill picker is redundant once the desktop switch is shown. */
-  .bo-previewSwitchGlass {
-    display: none;
-  }
-
   .bo-previewDesktopSwitch {
     display: inline-flex;
     align-items: center;
@@ -1822,6 +1817,11 @@
     position: sticky;
     top: 0;
     z-index: 8;
+  }
+
+  /* ponytail: hide pill picker at <=980px — desktop Preview switch drives the swap. */
+  .bo-previewSwitchGlass {
+    display: none !important;
   }
 
   .bo-editorPane,
