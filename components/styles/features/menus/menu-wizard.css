@@ -590,7 +590,7 @@
   position: sticky;
   top: -15px;
   align-self: start;
-  overflow: hidden;
+  overflow: visible;
   opacity: 1;
   visibility: visible;
   transition: opacity 600ms ease, visibility 0s linear 0s;
@@ -632,7 +632,7 @@
 }
 
 @media (max-width: 980px) {
-  /* ponytail: surface Preview switch at <=980px and swap platos editor for preview pane. */
+  /* ponytail: surface Preview switch at <=980px; it toggles the preview pane inside the Platos tab. */
   .bo-previewDesktopSwitch {
     display: inline-flex;
     align-items: center;
@@ -646,22 +646,12 @@
     margin: 8px 0;
   }
 
-  .bo-menuWizardFinal.is-platosActive.is-previewOpen .bo-editorPane--platos,
-  .bo-menuWizardFinal.is-platosActive.is-previewOpen .bo-editorPane--config {
-    display: none;
-  }
-
   .bo-menuWizardFinal.is-platosActive.is-previewOpen .bo-previewPane {
     display: grid;
   }
 
   .bo-menuWizardFinal.is-previewHidden .bo-previewPane {
     display: none;
-  }
-
-  .bo-menuWizardFinal.is-previewHidden .bo-editorPane--platos.is-mobileActive,
-  .bo-menuWizardFinal.is-previewHidden .bo-editorPane--config.is-mobileActive {
-    display: grid;
   }
 }
 
