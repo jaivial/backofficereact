@@ -141,6 +141,9 @@
 /* ── Features: Config — Contacto branding logo ───────── */
 @import "./styles/features/contacto/branding-logo.css";
 
+/* ── Features: Anuncios editor (backoffice tab) ─── */
+@import "./styles/features/anuncios/anuncios-editor.css";
+
 /* ── Features: Platform (superadmin) ──────────────────── */
 @import "./styles/features/plataforma/plataforma.css";
 
