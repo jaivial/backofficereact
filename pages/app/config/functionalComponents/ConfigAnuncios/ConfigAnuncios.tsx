@@ -7,6 +7,9 @@ import { Select } from "../../../../../ui/inputs/Select";
 import { Modal } from "../../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
 import { Switch } from "../../../../../ui/shadcn/Switch";
+import { Card } from "../../../../../ui/shell/Card";
+import { Panel } from "../../../../../ui/shell/Panel";
+import { PageToolbar } from "../../../../../ui/shell/PageToolbar";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { addContentItem, buildCTAURL, createCTA, createDraftAd, removeContentItem, WEBSITE_ROUTE_OPTIONS } from "./lib/adEditor";
 import { compressAdImage } from "./lib/image";
@@ -28,8 +31,13 @@ function apiMessage(result: unknown, fallback: string): string {
 function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
   const visibleContent = ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim()));
   return (
-    <div className="sticky top-4 overflow-hidden rounded-bo-lg border border-bo-border bg-bo-surface shadow-xl" data-testid="ad-preview">
-      <div className="flex min-h-[420px] flex-col p-7" data-slot="ad-preview-body">
+    <Panel
+      data-testid="ad-preview"
+      className="bo-anunciosPreview"
+      title="Preview en vivo"
+      meta="Renderizado en orden de visualización"
+    >
+      <div className="flex min-h-[420px] flex-col" data-slot="ad-preview-body">
         <div className="flex flex-1 flex-col gap-3" data-slot="ad-preview-content">
           {visibleContent.map((item) => item.type === "image" ? (
             <img key={item.id} src={item.value} alt="Imagen del anuncio" className="my-2 max-h-72 w-full rounded-bo-lg object-cover" data-slot={`ad-preview-${item.id}`} />
@@ -40,7 +48,7 @@ function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
           ) : (
             <p key={item.id} className="whitespace-pre-wrap text-sm leading-relaxed text-bo-text" data-slot={`ad-preview-${item.id}`}>{item.value}</p>
           ))}
-          {!visibleContent.length ? <p className="text-sm text-bo-muted" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p> : null}
+          {!visibleContent.length ? <p className="bo-mutedText" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p> : null}
         </div>
         <div className="mt-auto flex flex-wrap gap-2 pt-5" data-slot="ad-preview-ctas">
           {ad.ctas.map((cta) => (
@@ -48,7 +56,7 @@ function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
           ))}
         </div>
       </div>
-    </div>
+    </Panel>
   );
 }
 
@@ -200,29 +208,111 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
 
   const textCounts = useMemo(() => ad ? ad.content.reduce<Record<string, number>>((out, item) => ({ ...out, [item.type]: (out[item.type] || 0) + 1 }), {}) : {}, [ad]);
 
-  if (loading) return <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-6 text-sm text-bo-muted" data-slot="ads-loading">Cargando anuncios...</div>;
+  if (loading) {
+    return (
+      <Panel data-slot="ads-loading" meta="Cargando anuncios...">
+        <p className="bo-mutedText">Recuperando la lista de anuncios del restaurante.</p>
+      </Panel>
+    );
+  }
 
   return (
     <section className="grid gap-5" aria-label="Anuncios" data-testid="config-anuncios">
-      <div className="flex flex-wrap items-center justify-between gap-3" data-slot="ads-toolbar">
-        <div className="flex flex-wrap gap-2" data-slot="ads-selector-list">
-          {ads.map((item) => <button key={item.id} type="button" onClick={() => setAd(item)} className={`rounded-bo-sm border px-3 py-2 text-sm ${ad?.id === item.id ? "border-bo-accent text-bo-accent" : "border-bo-border text-bo-muted"}`} data-slot={`ad-select-${item.id}`}>{item.name}</button>)}
-        </div>
-        <button type="button" onClick={() => void createAd()} disabled={busy} className="flex items-center gap-2 rounded-bo-sm bg-bo-accent px-4 py-2 text-sm font-semibold text-bo-bg disabled:opacity-50" aria-label="Crear anuncio" data-testid="ad-create"><Plus size={16} aria-hidden="true" />Crear anuncio</button>
-      </div>
+      <PageToolbar
+        data-slot="ads-toolbar"
+        left={
+          <div className="bo-chips" role="tablist" data-slot="ads-selector-list" aria-label="Anuncios">
+            {ads.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={ad?.id === item.id}
+                onClick={() => setAd(item)}
+                className={`bo-chip ${ad?.id === item.id ? "is-on" : ""}`}
+                data-slot={`ad-select-${item.id}`}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+        }
+        right={
+          <button
+            type="button"
+            onClick={() => void createAd()}
+            disabled={busy}
+            className="bo-actionBtn"
+            style={{ width: "auto", paddingInline: 14 }}
+            aria-label="Crear anuncio"
+            data-testid="ad-create"
+          >
+            <Plus size={16} aria-hidden="true" />
+            <span>Crear anuncio</span>
+          </button>
+        }
+      />
 
-      {!ad ? <div className="rounded-bo-lg border border-dashed border-bo-border p-10 text-center text-sm text-bo-muted" data-slot="ads-empty">Crea tu primer anuncio para empezar.</div> : (
+      {!ad ? (
+        <Panel data-slot="ads-empty" className="bo-panel--empty" meta="Sin anuncios todavía" title="Empieza creando tu primer anuncio">
+          <p className="bo-mutedText" style={{ textAlign: "center", paddingBlock: 16 }}>
+            Crea tu primer anuncio para empezar.
+          </p>
+        </Panel>
+      ) : (
         <div className={`grid gap-5 ${previewOpen ? "xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "grid-cols-1"}`} data-slot="ads-editor-layout">
           <div className="grid gap-4" data-slot="ads-editor">
-            <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-5" data-slot="ads-main-panel">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3" data-slot="ads-main-head">
-                <div className="flex min-w-[220px] flex-1 items-center gap-3" data-slot="ads-name-wrap"><Megaphone size={18} aria-hidden="true" /><input value={ad.name} onChange={(event) => setAd({ ...ad, name: event.target.value })} className="w-full rounded-bo-sm border border-bo-border bg-bo-surface-2 px-3 py-2 text-bo-text" aria-label="Nombre del anuncio" data-testid="ad-name" /></div>
-                <label className="flex items-center gap-2 text-sm text-bo-muted" data-slot="ads-active-label"><Switch checked={ad.active} onCheckedChange={(active) => setAd({ ...ad, active })} data-testid="ad-active" /><span data-slot="ads-active-text">{ad.active ? "Activo" : "Inactivo"}</span></label>
-              </div>
-
-              <div className="mb-3 flex flex-wrap gap-2" data-slot="ads-add-controls">
-                {(["title", "subtitle", "text"] as RestaurantAdContentType[]).map((type) => <button key={type} type="button" onClick={() => addContent(type)} disabled={(textCounts[type] || 0) >= 5} className="rounded-bo-sm border border-bo-border px-3 py-2 text-sm text-bo-text disabled:opacity-40" aria-label={`Añadir ${TYPE_LABEL[type].toLowerCase()}`} data-slot={`ad-add-${type}`}><Plus size={14} aria-hidden="true" /> {`Añadir ${TYPE_LABEL[type].toLowerCase()}`}</button>)}
-                <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} disabled={(textCounts.image || 0) >= 1} className="rounded-bo-sm border border-bo-border px-3 py-2 text-sm text-bo-text disabled:opacity-40" aria-label="Añadir imagen" data-slot="ad-add-image"><ImagePlus size={14} aria-hidden="true" /> Añadir imagen</button>
+            <Panel
+              data-slot="ads-main-panel"
+              title={
+                <div className="flex min-w-[220px] flex-1 items-center gap-3" data-slot="ads-name-wrap">
+                  <Megaphone size={18} aria-hidden="true" />
+                  <input
+                    value={ad.name}
+                    onChange={(event) => setAd({ ...ad, name: event.target.value })}
+                    className="bo-input"
+                    style={{ flex: 1 }}
+                    aria-label="Nombre del anuncio"
+                    data-testid="ad-name"
+                  />
+                </div>
+              }
+              meta={`${ad.content.length} elemento${ad.content.length === 1 ? "" : "s"}`}
+              actions={
+                <label className="bo-field--inline" data-slot="ads-active-label">
+                  <Switch
+                    checked={ad.active}
+                    onCheckedChange={(active) => setAd({ ...ad, active })}
+                    data-testid="ad-active"
+                  />
+                  <span data-slot="ads-active-text">{ad.active ? "Activo" : "Inactivo"}</span>
+                </label>
+              }
+            >
+              <div className="bo-row" data-slot="ads-add-controls" style={{ marginBottom: 12 }}>
+                {(["title", "subtitle", "text"] as RestaurantAdContentType[]).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => addContent(type)}
+                    disabled={(textCounts[type] || 0) >= 5}
+                    className="bo-chip"
+                    aria-label={`Añadir ${TYPE_LABEL[type].toLowerCase()}`}
+                    data-slot={`ad-add-${type}`}
+                  >
+                    <Plus size={14} aria-hidden="true" /> {`Añadir ${TYPE_LABEL[type].toLowerCase()}`}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => { setImageOpen(true); setImageStep("choose"); }}
+                  disabled={(textCounts.image || 0) >= 1}
+                  className="bo-chip"
+                  aria-label="Añadir imagen"
+                  data-slot="ad-add-image"
+                >
+                  <ImagePlus size={14} aria-hidden="true" /> Añadir imagen
+                </button>
               </div>
 
               <Reorder.Group axis="y" values={ad.content} onReorder={(content) => setAd({ ...ad, content })} className="grid gap-2" data-slot="ad-content-reorder">
@@ -231,14 +321,80 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
                   return <ContentRow key={item.id} item={item} ordinal={ordinal} onChange={updateContentValue} onDelete={() => setAd(removeContentItem(ad, item.id))} onImage={() => { setImageOpen(true); setImageStep("choose"); }} />;
                 })}
               </Reorder.Group>
-            </div>
+            </Panel>
 
-            <div className="rounded-bo-lg border border-bo-border bg-bo-surface p-5" data-slot="ads-cta-panel">
-              <div className="mb-4 flex items-center justify-between gap-3" data-slot="ads-cta-head"><div data-slot="ads-cta-title-wrap"><h3 className="font-semibold text-bo-text" data-slot="ads-cta-title">Llamadas a la acción</h3><p className="text-xs text-bo-muted" data-slot="ads-cta-hint">Siempre se muestran al final del anuncio.</p></div><button type="button" onClick={() => setAd({ ...ad, ctas: [...ad.ctas, createCTA()] })} className="rounded-bo-sm border border-bo-border px-3 py-2 text-sm text-bo-text" aria-label="Añadir CTA" data-slot="ad-add-cta"><Plus size={14} aria-hidden="true" /> Añadir CTA</button></div>
-              <div className="grid gap-3" data-slot="ads-cta-list">{ad.ctas.map((cta, index) => <CTARow key={cta.id} index={index} cta={cta} website={website} onChange={(patch) => setAd({ ...ad, ctas: ad.ctas.map((item) => item.id === cta.id ? { ...item, ...patch } : item) })} onDelete={() => setAd({ ...ad, ctas: ad.ctas.filter((item) => item.id !== cta.id) })} />)}</div>
-            </div>
+            <Panel
+              data-slot="ads-cta-panel"
+              title="Llamadas a la acción"
+              meta="Siempre se muestran al final del anuncio"
+              actions={
+                <button
+                  type="button"
+                  onClick={() => setAd({ ...ad, ctas: [...ad.ctas, createCTA()] })}
+                  className="bo-chip"
+                  aria-label="Añadir CTA"
+                  data-slot="ad-add-cta"
+                >
+                  <Plus size={14} aria-hidden="true" /> Añadir CTA
+                </button>
+              }
+            >
+              <div className="grid gap-3" data-slot="ads-cta-list">
+                {ad.ctas.map((cta, index) => (
+                  <CTARow
+                    key={cta.id}
+                    index={index}
+                    cta={cta}
+                    website={website}
+                    onChange={(patch) => setAd({ ...ad, ctas: ad.ctas.map((item) => item.id === cta.id ? { ...item, ...patch } : item) })}
+                    onDelete={() => setAd({ ...ad, ctas: ad.ctas.filter((item) => item.id !== cta.id) })}
+                  />
+                ))}
+              </div>
+            </Panel>
 
-            <div className="flex flex-wrap items-center justify-between gap-3" data-slot="ads-actions"><button type="button" onClick={() => void removeAd()} disabled={busy} className="flex items-center gap-2 rounded-bo-sm border border-bo-border px-4 py-2 text-sm text-bo-text disabled:opacity-50" data-slot="ad-delete"><Trash2 size={15} aria-hidden="true" />Eliminar anuncio</button><div className="flex items-center gap-3" data-slot="ads-actions-right"><label className="flex items-center gap-2 text-sm text-bo-muted" data-slot="ads-preview-toggle"><Eye size={15} aria-hidden="true" /><span data-slot="ads-preview-label">Preview web</span><Switch checked={previewOpen} onCheckedChange={setPreviewOpen} data-testid="ad-preview-switch" /></label><button type="button" onClick={() => void save()} disabled={busy} className="flex items-center gap-2 rounded-bo-sm bg-bo-accent px-5 py-2 text-sm font-semibold text-bo-bg disabled:opacity-50" data-slot="ad-save"><Save size={15} aria-hidden="true" />{busy ? "Guardando..." : "Guardar"}</button></div></div>
+            <Card
+              data-slot="ads-actions"
+              padding={false}
+              footer={
+                <>
+                  <div className="bo-cardFooter-left">
+                    <button
+                      type="button"
+                      onClick={() => void removeAd()}
+                      disabled={busy}
+                      className="bo-chip"
+                      style={{ borderColor: "var(--bo-text-danger)", color: "var(--bo-text-danger)" }}
+                      data-slot="ad-delete"
+                    >
+                      <Trash2 size={15} aria-hidden="true" /> Eliminar anuncio
+                    </button>
+                  </div>
+                  <div className="bo-cardFooter-right" data-slot="ads-actions-right">
+                    <label className="bo-field--inline" data-slot="ads-preview-toggle">
+                      <Eye size={15} aria-hidden="true" />
+                      <span data-slot="ads-preview-label">Preview web</span>
+                      <Switch
+                        checked={previewOpen}
+                        onCheckedChange={setPreviewOpen}
+                        data-testid="ad-preview-switch"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => void save()}
+                      disabled={busy}
+                      className="bo-actionBtn"
+                      style={{ width: "auto", paddingInline: 18, background: "var(--bo-accent)", color: "var(--bo-bg)", borderColor: "var(--bo-accent)" }}
+                      data-slot="ad-save"
+                    >
+                      <Save size={15} aria-hidden="true" />
+                      <span>{busy ? "Guardando..." : "Guardar"}</span>
+                    </button>
+                  </div>
+                </>
+              }
+            />
           </div>
           {previewOpen ? <Preview ad={ad} website={website} /> : null}
         </div>
@@ -253,20 +409,58 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
 function ContentRow({ item, ordinal, onChange, onDelete, onImage }: { item: RestaurantAdContentElement; ordinal: number; onChange: (id: string, value: string) => void; onDelete: () => void; onImage: () => void }) {
   const label = `${TYPE_LABEL[item.type]} ${ordinal}`;
   return (
-    <Reorder.Item value={item} className="flex items-start gap-2 rounded-bo-md border border-bo-border bg-bo-surface-2 p-2" data-slot={`ad-content-${item.id}`}>
-      <button type="button" className="mt-2 cursor-grab text-bo-muted" aria-label={`Mover ${label}`} data-slot="ad-content-grip"><GripVertical size={17} aria-hidden="true" /></button>
-      <div className="min-w-0 flex-1" data-slot="ad-content-field">{item.type === "image" ? <button type="button" onClick={onImage} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border p-3 text-left text-sm text-bo-muted" data-slot="ad-image-change">{item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot="ad-image-thumb" /> : <ImagePlus size={22} aria-hidden="true" />}<span data-slot="ad-image-change-text">{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span></button> : item.type === "text" ? <textarea value={item.value} onChange={(event) => onChange(item.id, event.target.value)} rows={3} className="w-full resize-y rounded-bo-sm border border-bo-border bg-bo-surface px-3 py-2 text-sm text-bo-text" aria-label={label} data-slot="ad-content-textarea" /> : <input value={item.value} onChange={(event) => onChange(item.id, event.target.value)} className="w-full rounded-bo-sm border border-bo-border bg-bo-surface px-3 py-2 text-sm text-bo-text" aria-label={label} data-slot="ad-content-input" />}</div>
-      <button type="button" onClick={onDelete} className="mt-1 rounded-bo-sm p-2 text-bo-text-danger" aria-label={`Eliminar ${label}`} data-slot="ad-content-delete"><Trash2 size={15} aria-hidden="true" /></button>
+    <Reorder.Item value={item} data-slot={`ad-content-${item.id}`}>
+      <Card className="flex items-start gap-2" padding={false}>
+        <button type="button" className="mt-2 cursor-grab text-bo-muted" aria-label={`Mover ${label}`} data-slot="ad-content-grip"><GripVertical size={17} aria-hidden="true" /></button>
+        <div className="min-w-0 flex-1" data-slot="ad-content-field">
+          {item.type === "image" ? (
+            <button type="button" onClick={onImage} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border p-3 text-left text-sm text-bo-muted" data-slot="ad-image-change">
+              {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot="ad-image-thumb" /> : <ImagePlus size={22} aria-hidden="true" />}
+              <span data-slot="ad-image-change-text">{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
+            </button>
+          ) : item.type === "text" ? (
+            <textarea value={item.value} onChange={(event) => onChange(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={label} data-slot="ad-content-textarea" />
+          ) : (
+            <input value={item.value} onChange={(event) => onChange(item.id, event.target.value)} className="bo-input" aria-label={label} data-slot="ad-content-input" />
+          )}
+        </div>
+        <button type="button" onClick={onDelete} className="mt-1 rounded-bo-sm p-2 text-bo-text-danger" aria-label={`Eliminar ${label}`} data-slot="ad-content-delete"><Trash2 size={15} aria-hidden="true" /></button>
+      </Card>
     </Reorder.Item>
   );
 }
 
 function CTARow({ cta, index, website, onChange, onDelete }: { cta: RestaurantAd["ctas"][number]; index: number; website: string; onChange: (patch: Partial<RestaurantAd["ctas"][number]>) => void; onDelete: () => void }) {
   return (
-    <div className="grid gap-3 rounded-bo-md border border-bo-border bg-bo-surface-2 p-3 md:grid-cols-[1fr_auto]" data-slot={`ad-cta-${cta.id}`}>
-      <div className="grid gap-3 md:grid-cols-2" data-slot="ad-cta-fields"><label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-text-label"><span data-slot="ad-cta-text-caption">Texto botón {index + 1}</span><input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="rounded-bo-sm border border-bo-border bg-bo-surface px-3 py-2 text-sm text-bo-text" data-slot="ad-cta-text" /></label><label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-color-label"><span data-slot="ad-cta-color-caption">Color</span><input type="color" value={cta.color || "#436754"} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-slot="ad-cta-color" /></label><label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-mode-label"><span data-slot="ad-cta-mode-caption">Navegación</span><Select value={cta.navigation_mode} onChange={(value) => onChange({ navigation_mode: value === "custom" ? "custom" : "route" })} options={[{ value: "route", label: "Ruta de la web" }, { value: "custom", label: "URL personalizada" }]} ariaLabel={`Navegación CTA ${index + 1}`} /></label>{cta.navigation_mode === "route" ? <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-route-label"><span data-slot="ad-cta-route-caption">Ruta</span><Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} ariaLabel={`Ruta CTA ${index + 1}`} /></label> : <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-custom-label"><span data-slot="ad-cta-custom-caption">URL personalizada</span><input type="url" value={cta.custom_url} onChange={(event) => onChange({ custom_url: event.target.value })} className="rounded-bo-sm border border-bo-border bg-bo-surface px-3 py-2 text-sm text-bo-text" placeholder="https://..." data-slot="ad-cta-custom-url" /></label>}<p className="text-xs text-bo-muted md:col-span-2" data-slot="ad-cta-resolved">Destino: {buildCTAURL(website, cta) || "Sin configurar"}</p></div>
-      <button type="button" onClick={onDelete} className="self-start rounded-bo-sm p-2 text-bo-text-danger" aria-label={`Eliminar CTA ${index + 1}`} data-slot="ad-cta-delete"><Trash2 size={15} aria-hidden="true" /></button>
-    </div>
+    <Card data-slot={`ad-cta-${cta.id}`} padding={false} className="grid gap-3 md:grid-cols-[1fr_auto]">
+      <div className="grid gap-3 md:grid-cols-2" data-slot="ad-cta-fields">
+        <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-text-label">
+          <span data-slot="ad-cta-text-caption">Texto botón {index + 1}</span>
+          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-slot="ad-cta-text" />
+        </label>
+        <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-color-label">
+          <span data-slot="ad-cta-color-caption">Color</span>
+          <input type="color" value={cta.color || "#436754"} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-slot="ad-cta-color" />
+        </label>
+        <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-mode-label">
+          <span data-slot="ad-cta-mode-caption">Navegación</span>
+          <Select value={cta.navigation_mode} onChange={(value) => onChange({ navigation_mode: value === "custom" ? "custom" : "route" })} options={[{ value: "route", label: "Ruta de la web" }, { value: "custom", label: "URL personalizada" }]} ariaLabel={`Navegación CTA {index + 1}`} />
+        </label>
+        {cta.navigation_mode === "route" ? (
+          <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-route-label">
+            <span data-slot="ad-cta-route-caption">Ruta</span>
+            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} ariaLabel={`Ruta CTA {index + 1}`} />
+          </label>
+        ) : (
+          <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-custom-label">
+            <span data-slot="ad-cta-custom-caption">URL personalizada</span>
+            <input type="url" value={cta.custom_url} onChange={(event) => onChange({ custom_url: event.target.value })} className="bo-input" placeholder="https://..." data-slot="ad-cta-custom-url" />
+          </label>
+        )}
+        <p className="bo-mutedText md:col-span-2" data-slot="ad-cta-resolved">Destino: {buildCTAURL(website, cta) || "Sin configurar"}</p>
+      </div>
+      <button type="button" onClick={onDelete} className="self-start rounded-bo-sm p-2 text-bo-text-danger" aria-label={`Eliminar CTA {index + 1}`} data-slot="ad-cta-delete"><Trash2 size={15} aria-hidden="true" /></button>
+    </Card>
   );
 }
 
@@ -275,7 +469,18 @@ function ImageFlowModal({ open, step, previewURL, file, onClose, onGenerate, onP
   return (
     <Modal open={open} title={step === "advisor" ? "Asesor IA de imagen" : "Imagen del anuncio"} onClose={locked ? () => undefined : onClose} widthPx={620} hideClose>
       <ModalHeader title={step === "advisor" ? "Asesor IA de imagen" : "Imagen del anuncio"} onClose={locked ? () => undefined : onClose} />
-      <div className="p-5" data-slot="ad-image-modal-body"><AnimatePresence mode="wait"><motion.div key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} data-slot={`ad-image-step-${step}`}>{step === "choose" ? <div className="grid gap-3 sm:grid-cols-2" data-slot="ad-image-choices"><button type="button" onClick={onGenerate} className="grid min-h-36 place-items-center gap-2 rounded-bo-lg border border-bo-border bg-bo-surface-2 p-5 text-center text-bo-text" data-slot="ad-image-generate"><Sparkles size={24} aria-hidden="true" /><span className="font-semibold" data-slot="ad-image-generate-title">Generar desde el texto</span><span className="text-xs text-bo-muted" data-slot="ad-image-generate-hint">Usa el contenido escrito con WaveSpeed z-image/turbo.</span></button><button type="button" onClick={onPick} className="grid min-h-36 place-items-center gap-2 rounded-bo-lg border border-bo-border bg-bo-surface-2 p-5 text-center text-bo-text" data-slot="ad-image-upload"><Upload size={24} aria-hidden="true" /><span className="font-semibold" data-slot="ad-image-upload-title">Subir una imagen</span><span className="text-xs text-bo-muted" data-slot="ad-image-upload-hint">Se convierte a WebP y se comprime a máximo 100 KB.</span></button></div> : step === "advisor" ? <div className="grid gap-4" data-slot="ad-image-advisor"><div className="grid gap-1" data-slot="ad-image-advisor-copy"><p className="text-sm text-bo-text" data-slot="ad-image-advisor-lead">La imagen ya está preparada en WebP. Puedes usarla tal cual o mejorarla con IA antes de subirla a BunnyCDN.</p><p className="text-xs text-bo-muted" data-slot="ad-image-advisor-size">Tamaño optimizado: {Math.max(1, Math.round((file?.size || 0) / 1024))} KB.</p></div>{previewURL ? <img src={previewURL} alt="Previsualización de imagen optimizada" className="max-h-72 w-full rounded-bo-lg object-contain" data-slot="ad-image-advisor-preview" /> : null}<div className="flex flex-wrap justify-end gap-2" data-slot="ad-image-advisor-actions"><button type="button" onClick={onRaw} className="rounded-bo-sm border border-bo-border px-4 py-2 text-sm text-bo-text" data-testid="ad-image-use-raw">Continuar sin mejorar</button><button type="button" onClick={onEnhance} className="flex items-center gap-2 rounded-bo-sm bg-bo-accent px-4 py-2 text-sm font-semibold text-bo-bg" data-testid="ad-image-enhance"><Sparkles size={15} aria-hidden="true" />Mejorar con IA</button></div></div> : <div className="grid min-h-48 place-items-center gap-3 text-center" data-slot="ad-image-busy"><Sparkles size={28} className="animate-pulse text-bo-accent" aria-hidden="true" /><p className="text-sm text-bo-muted" data-slot="ad-image-busy-text">{step === "preparing" ? "Convirtiendo y comprimiendo a WebP..." : "Procesando imagen..."}</p></div>}</motion.div></AnimatePresence></div>
+      <div className="p-5" data-slot="ad-image-modal-body"><AnimatePresence mode="wait"><motion.div key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} data-slot={`ad-image-step-${step}`}>{step === "choose" ? <div className="grid gap-3 sm:grid-cols-2" data-slot="ad-image-choices">
+  <button type="button" onClick={onGenerate} className="bo-card bo-card--clickable" style={{ display: "grid", placeItems: "center", gap: 8, minHeight: 144, textAlign: "center" }} data-slot="ad-image-generate">
+    <Sparkles size={24} aria-hidden="true" />
+    <span className="bo-cardIconTitle" data-slot="ad-image-generate-title">Generar desde el texto</span>
+    <span className="bo-mutedText" data-slot="ad-image-generate-hint">Usa el contenido escrito con WaveSpeed z-image/turbo.</span>
+  </button>
+  <button type="button" onClick={onPick} className="bo-card bo-card--clickable" style={{ display: "grid", placeItems: "center", gap: 8, minHeight: 144, textAlign: "center" }} data-slot="ad-image-upload">
+    <Upload size={24} aria-hidden="true" />
+    <span className="bo-cardIconTitle" data-slot="ad-image-upload-title">Subir una imagen</span>
+    <span className="bo-mutedText" data-slot="ad-image-upload-hint">Se convierte a WebP y se comprime a máximo 100 KB.</span>
+  </button>
+</div> : step === "advisor" ? <div className="grid gap-4" data-slot="ad-image-advisor"><div className="grid gap-1" data-slot="ad-image-advisor-copy"><p className="text-sm text-bo-text" data-slot="ad-image-advisor-lead">La imagen ya está preparada en WebP. Puedes usarla tal cual o mejorarla con IA antes de subirla a BunnyCDN.</p><p className="text-xs text-bo-muted" data-slot="ad-image-advisor-size">Tamaño optimizado: {Math.max(1, Math.round((file?.size || 0) / 1024))} KB.</p></div>{previewURL ? <img src={previewURL} alt="Previsualización de imagen optimizada" className="max-h-72 w-full rounded-bo-lg object-contain" data-slot="ad-image-advisor-preview" /> : null}<div className="flex flex-wrap justify-end gap-2" data-slot="ad-image-advisor-actions"><button type="button" onClick={onRaw} className="rounded-bo-sm border border-bo-border px-4 py-2 text-sm text-bo-text" data-testid="ad-image-use-raw">Continuar sin mejorar</button><button type="button" onClick={onEnhance} className="flex items-center gap-2 rounded-bo-sm bg-bo-accent px-4 py-2 text-sm font-semibold text-bo-bg" data-testid="ad-image-enhance"><Sparkles size={15} aria-hidden="true" />Mejorar con IA</button></div></div> : <div className="grid min-h-48 place-items-center gap-3 text-center" data-slot="ad-image-busy"><Sparkles size={28} className="animate-pulse text-bo-accent" aria-hidden="true" /><p className="text-sm text-bo-muted" data-slot="ad-image-busy-text">{step === "preparing" ? "Convirtiendo y comprimiendo a WebP..." : "Procesando imagen..."}</p></div>}</motion.div></AnimatePresence></div>
     </Modal>
   );
 }
