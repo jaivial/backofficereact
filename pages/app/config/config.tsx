@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, Megaphone } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -24,6 +24,7 @@ import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImag
 import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMax";
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
+import { ConfigAnuncios } from "./functionalComponents/ConfigAnuncios/ConfigAnuncios";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -33,7 +34,7 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "anuncios" | "ia" | "cdn";
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -192,6 +193,12 @@ export default function Page() {
         href: "#legal-pages",
         icon: <Scale className="bo-ico" />,
       },
+      {
+        id: "anuncios",
+        label: "Anuncios",
+        href: "#anuncios",
+        icon: <Megaphone className="bo-ico" />,
+      },
       ...(isRoot
         ? [{
             id: "ia",
@@ -268,7 +275,7 @@ export default function Page() {
   // unreachable Recargar button.
   if (!defaults) {
     return (
-      <section aria-label="Configuración" className="w-full max-w-3xl mx-auto max-sm:mx-0 max-sm:px-0" data-testid="config-section">
+      <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 ${contentTab === "anuncios" ? "max-w-7xl" : "max-w-3xl"}`} data-testid="config-section">
         {error ? (
           <>
             <InlineAlert kind="error" title="No se pudo cargar la configuración" message={error} />
@@ -288,7 +295,7 @@ export default function Page() {
   return (
     <>
       <style>{`@media (max-width: 640px) { .bo-main:has([data-testid="config-section"]) { padding: 0 1rem 2rem !important } .bo-install-code, .bo-install-code code { white-space: pre-wrap !important; word-break: break-all !important; overflow-x: auto !important; max-width: 100% !important } }`}</style>
-    <section aria-label="Configuración" className="w-full max-w-3xl mx-auto max-sm:mx-0 max-sm:px-0" data-testid="config-section">
+    <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 ${contentTab === "anuncios" ? "max-w-7xl" : "max-w-3xl"}`} data-testid="config-section">
       <Tabs
         tabs={contentTabs}
         activeId={contentTab}
@@ -368,6 +375,8 @@ export default function Page() {
             />
           ) : contentTab === "legal-pages" ? (
             <ConfigLegalPages />
+          ) : contentTab === "anuncios" ? (
+            <ConfigAnuncios website={restaurantInfo?.website ?? ""} />
           ) : (
             <BookingManager />
           )}
