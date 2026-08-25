@@ -56,7 +56,7 @@ describe("Popover", () => {
   it("closes when the pointer goes down outside", () => {
     const onClose = vi.fn();
     render(<Harness onClose={onClose} />);
-    fireEvent.mouseDown(document.body);
+    fireEvent.pointerDown(document.body);
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -64,7 +64,7 @@ describe("Popover", () => {
   it("does not close when the pointer goes down inside", () => {
     const onClose = vi.fn();
     render(<Harness onClose={onClose} />);
-    fireEvent.mouseDown(screen.getByRole("button", { name: "Interno" }));
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Interno" }));
     expect(onClose).not.toHaveBeenCalled();
   });
 

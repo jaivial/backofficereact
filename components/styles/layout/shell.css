@@ -237,6 +237,10 @@
   display: grid;
   place-items: center;
   cursor: pointer;
+  /* Disable the iOS double-tap-to-zoom delay so taps register as clicks on the
+     first touch on Safari/mobile. Combined with the DropdownMenu pointerdown
+     outside-click handler, this makes the avatar dropdown open reliably. */
+  touch-action: manipulation;
   transition: transform 120ms ease, background 160ms ease;
 }
 
