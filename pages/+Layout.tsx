@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from "react";
-import { Provider as JotaiProvider, createStore } from "jotai";
+import { Provider as JotaiProvider, createStore, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 
 function registerServiceWorker() {
@@ -37,16 +37,31 @@ import { ThemeSync } from "../ui/theme/ThemeSync";
 import { sessionAtom, sessionMovingExpirationAtom, themeAtom, forkyHiddenAtom, type ThemeMode } from "../state/atoms";
 import { readForkyHiddenFromStorage } from "../ui/forky/ForkyButton";
 
-function initStore(theme: ThemeMode, session: BOSession | null, movingExpirationDate: string | null) {
+export function initStore(theme: ThemeMode, session: BOSession | null, movingExpirationDate: string | null) {
   const store = createStore();
   store.set(themeAtom, theme);
   store.set(sessionAtom, session);
   store.set(sessionMovingExpirationAtom, movingExpirationDate);
-  // Initialize Forky hidden state from localStorage
-  if (typeof window !== "undefined") {
-    store.set(forkyHiddenAtom, readForkyHiddenFromStorage());
-  }
+  // forkyHiddenAtom is left at its default (false) so SSR and the first
+  // client render produce identical markup. A dedicated ForkyVisibilitySync
+  // component reads localStorage in a useEffect and updates the atom after
+  // mount.
   return store;
+}
+
+/**
+ * Reads the persisted Forky visibility from localStorage and updates the
+ * forkyHiddenAtom AFTER the first render commits. This avoids a hydration
+ * mismatch when the user previously hid Forky (localStorage === "1"): the
+ * server renders the button, the first client render matches, and then this
+ * effect hides it without triggering a hydration error.
+ */
+function ForkyVisibilitySync() {
+  const setHidden = useSetAtom(forkyHiddenAtom);
+  useEffect(() => {
+    setHidden(readForkyHiddenFromStorage());
+  }, [setHidden]);
+  return null;
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -68,6 +83,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       <style>{`input.bo-input, textarea.bo-input { font-size: 16px !important; }`}</style>
       <JotaiProvider store={store}>
+      <ForkyVisibilitySync />
       <ThemeSync />
       <SessionExpiryGuard />
       <FichajeRealtimeBridge />
