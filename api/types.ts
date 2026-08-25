@@ -2377,3 +2377,28 @@ export type POSCashDayCurrent = {
   cashDay: POSCashDay | null;
   unclosedPrevious: POSCashDay[];
 };
+
+export type RestaurantAdContentType = "title" | "subtitle" | "text" | "image";
+export type RestaurantAdContentElement = {
+  id: string;
+  type: RestaurantAdContentType;
+  value: string;
+};
+export type RestaurantAdCTA = {
+  id: string;
+  text: string;
+  color: string;
+  navigation_mode: "route" | "custom";
+  route: string;
+  custom_url: string;
+};
+export type RestaurantAd = {
+  id: number;
+  name: string;
+  active: boolean;
+  content: RestaurantAdContentElement[];
+  ctas: RestaurantAdCTA[];
+  created_at?: string;
+  updated_at?: string;
+};
+export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas">;
