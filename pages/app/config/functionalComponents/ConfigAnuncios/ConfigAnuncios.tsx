@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, Reorder } from "motion/react";
-import { Eye, GripVertical, ImagePlus, Megaphone, Plus, Save, Sparkles, Trash2, Upload } from "lucide-react";
+import { AnimatePresence, motion, Reorder, useDragControls } from "motion/react";
+import { Eye, GripVertical, ImagePlus, Megaphone, MoreHorizontal, Plus, Save, Settings2, Sparkles, Trash2, Type, Upload, Wand2 } from "lucide-react";
 import { createClient } from "../../../../../api/client";
 import type { RestaurantAd, RestaurantAdContentElement, RestaurantAdContentType, RestaurantAdInput } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Modal } from "../../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
+import { Popover } from "../../../../../ui/overlays/Popover";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { Card } from "../../../../../ui/shell/Card";
 import { Panel } from "../../../../../ui/shell/Panel";
@@ -19,7 +20,18 @@ type Notify = (kind: "success" | "error" | "info", title: string, message: strin
 type ImageStep = "choose" | "preparing" | "advisor" | "working";
 const NOOP_NOTIFY: Notify = () => undefined;
 
-const TYPE_LABEL: Record<RestaurantAdContentType, string> = { title: "Título", subtitle: "Subtítulo", text: "Texto", image: "Imagen" };
+const TYPE_LABEL: Record<RestaurantAdContentType, string> = {
+  title: "Título",
+  subtitle: "Subtítulo",
+  text: "Texto",
+  image: "Imagen",
+};
+const TYPE_HINT: Record<RestaurantAdContentType, string> = {
+  title: "Hasta 5",
+  subtitle: "Hasta 5",
+  text: "Hasta 5",
+  image: "Una sola",
+};
 
 function apiMessage(result: unknown, fallback: string): string {
   if (result && typeof result === "object" && "message" in result && typeof (result as { message?: unknown }).message === "string") {
@@ -35,7 +47,7 @@ function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
       data-testid="ad-preview"
       className="bo-anunciosPreview"
       title="Preview en vivo"
-      meta="Renderizado en orden de visualización"
+      meta={"Renderizado en orden de visualización"}
     >
       <div className="flex min-h-[420px] flex-col" data-slot="ad-preview-body">
         <div className="flex flex-1 flex-col gap-3" data-slot="ad-preview-content">
@@ -60,6 +72,134 @@ function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
   );
 }
 
+function DraggableCardRow({
+  item,
+  startDrag,
+  children,
+  onDelete,
+  dataSlot,
+}: {
+  item: RestaurantAdContentElement & { ordinal?: number };
+  startDrag: (event: React.PointerEvent<Element>) => void;
+  children: React.ReactNode;
+  onDelete?: () => void;
+  dataSlot: string;
+}) {
+  const label = `${TYPE_LABEL[item.type]} ${item.ordinal}`;
+  return (
+    <Reorder.Item
+      value={item}
+      data-slot={dataSlot}
+      dragListener={false}
+      dragMomentum={false}
+      dragElastic={0.04}
+      whileDrag={{ zIndex: 2 }}
+      className="bo-anunciosRowCard"
+    >
+      <button
+        type="button"
+        className="bo-anunciosDragHandle"
+        aria-label={`Mover ${label}`}
+        data-slot={`${dataSlot}-grip`}
+        onPointerDown={startDrag}
+      >
+        <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
+      </button>
+      <div className="min-w-0 flex-1" data-slot={`${dataSlot}-field`}>
+        {children}
+      </div>
+      {onDelete ? (
+        <button
+          type="button"
+          onClick={onDelete}
+          className="bo-anunciosIconBtn"
+          data-tone="danger"
+          aria-label={`Eliminar ${label}`}
+          data-slot={`${dataSlot}-delete`}
+        >
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
+      ) : null}
+    </Reorder.Item>
+  );
+}
+
+function CTARowCard({
+  cta,
+  index,
+  startDrag,
+  website,
+  onChange,
+  onDelete,
+}: {
+  cta: RestaurantAd["ctas"][number];
+  index: number;
+  startDrag: (event: React.PointerEvent<Element>) => void;
+  website: string;
+  onChange: (patch: Partial<RestaurantAd["ctas"][number]>) => void;
+  onDelete: () => void;
+}) {
+  const label = `CTA ${index + 1}`;
+  return (
+    <Reorder.Item
+      value={cta}
+      data-slot={`ad-cta-${cta.id}`}
+      dragListener={false}
+      dragMomentum={false}
+      dragElastic={0.04}
+      whileDrag={{ zIndex: 2 }}
+      className="bo-anunciosRowCard"
+    >
+      <button
+        type="button"
+        className="bo-anunciosDragHandle"
+        aria-label={`Mover ${label}`}
+        data-slot={`ad-cta-${cta.id}-grip`}
+        onPointerDown={startDrag}
+      >
+        <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
+      </button>
+      <div className="grid gap-3 md:grid-cols-2" data-slot={`ad-cta-${cta.id}-fields`}>
+        <label className="grid gap-1 text-xs text-bo-muted">
+          <span>Texto botón {index + 1}</span>
+          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-slot={`ad-cta-${cta.id}-text`} />
+        </label>
+        <label className="grid gap-1 text-xs text-bo-muted">
+          <span>Color</span>
+          <input type="color" value={cta.color || "#436754"} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-slot={`ad-cta-${cta.id}-color`} />
+        </label>
+        <label className="grid gap-1 text-xs text-bo-muted">
+          <span>Navegación</span>
+          <Select value={cta.navigation_mode} onChange={(value) => onChange({ navigation_mode: value === "custom" ? "custom" : "route" })} options={[{ value: "route", label: "Ruta de la web" }, { value: "custom", label: "URL personalizada" }]} ariaLabel={`Navegación CTA ${index + 1}`} />
+        </label>
+        {cta.navigation_mode === "route" ? (
+          <label className="grid gap-1 text-xs text-bo-muted">
+            <span>Ruta</span>
+            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} ariaLabel={`Ruta CTA ${index + 1}`} />
+          </label>
+        ) : (
+          <label className="grid gap-1 text-xs text-bo-muted">
+            <span>URL personalizada</span>
+            <input type="url" value={cta.custom_url} onChange={(event) => onChange({ custom_url: event.target.value })} className="bo-input" placeholder="https://..." data-slot={`ad-cta-${cta.id}-custom-url`} />
+          </label>
+        )}
+        <p className="bo-mutedText md:col-span-2" data-slot={`ad-cta-${cta.id}-resolved`}>Destino: {buildCTAURL(website, cta) || "Sin configurar"}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="bo-anunciosIconBtn"
+        data-tone="danger"
+        aria-label={`Eliminar CTA ${index + 1}`}
+        data-slot={`ad-cta-${cta.id}-delete`}
+      >
+        <Trash2 size={15} aria-hidden="true" />
+      </button>
+    </Reorder.Item>
+  );
+}
+
+
 export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { api: AdsAPI; website: string; notify?: Notify }) {
   const [ads, setAds] = useState<RestaurantAd[]>([]);
   const [ad, setAd] = useState<RestaurantAd | null>(null);
@@ -70,7 +210,25 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
   const [imageStep, setImageStep] = useState<ImageStep>("choose");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewURL, setImagePreviewURL] = useState("");
+  const [addContentOpen, setAddContentOpen] = useState(false);
+  const [addCtaOpen, setAddCtaOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const addContentBtnRef = useRef<HTMLButtonElement | null>(null);
+  const addCtaBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  // motion/react drag controls — each row's handle triggers drag via
+  // dragControls.start(event). dragListener={false} on Reorder.Item
+  // ensures the drag surface is the handle, not the inputs.
+  const contentDragControls = useDragControls();
+  const ctaDragControls = useDragControls();
+  const startContentDrag = useCallback(
+    (event: React.PointerEvent<Element>) => contentDragControls.start(event),
+    [contentDragControls],
+  );
+  const startCtaDrag = useCallback(
+    (event: React.PointerEvent<Element>) => ctaDragControls.start(event),
+    [ctaDragControls],
+  );
 
   const replaceAd = useCallback((next: RestaurantAd) => {
     setAd(next);
@@ -147,11 +305,25 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
     }
   }, [ad, ads, api.config, notify]);
 
-  const updateContentValue = useCallback((id: string, value: string) => setAd((current) => current ? { ...current, content: current.content.map((item) => item.id === id ? { ...item, value } : item) } : current), []);
+  const updateContentValue = useCallback((id: string, value: string) =>
+    setAd((current) => current ? { ...current, content: current.content.map((item) => item.id === id ? { ...item, value } : item) } : current),
+  []);
+
   const addContent = useCallback((type: RestaurantAdContentType) => {
     if (!ad) return;
-    try { setAd(addContentItem(ad, type)); } catch (error) { notify("info", "Límite", error instanceof Error ? error.message : "No se puede añadir otro elemento"); }
+    try {
+      setAd(addContentItem(ad, type));
+      setAddContentOpen(false);
+    } catch (error) {
+      notify("info", "Límite", error instanceof Error ? error.message : "No se puede añadir otro elemento");
+    }
   }, [ad, notify]);
+
+  const addCta = useCallback(() => {
+    if (!ad) return;
+    setAd({ ...ad, ctas: [...ad.ctas, createCTA()] });
+    setAddCtaOpen(false);
+  }, [ad]);
 
   const setImageURL = useCallback(async (url: string) => {
     if (!ad) return;
@@ -208,6 +380,15 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
 
   const textCounts = useMemo(() => ad ? ad.content.reduce<Record<string, number>>((out, item) => ({ ...out, [item.type]: (out[item.type] || 0) + 1 }), {}) : {}, [ad]);
 
+  // Decorate content rows with their per-type ordinal (1..5) so the
+  // accessibility label is meaningful when the user drags a row.
+  const decoratedContent = useMemo(() => ad
+    ? ad.content.map((item, index) => ({
+        ...item,
+        ordinal: ad.content.slice(0, index + 1).filter((entry) => entry.type === item.type).length,
+      }))
+    : [], [ad]);
+
   if (loading) {
     return (
       <Panel data-slot="ads-loading" meta="Cargando anuncios...">
@@ -216,8 +397,30 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
     );
   }
 
+  if (!ad) {
+    return (
+      <Panel data-slot="ads-empty" className="bo-panel--empty" meta="Sin anuncios todavía" title="Empieza creando tu primer anuncio">
+        <p className="bo-mutedText" style={{ textAlign: "center", paddingBlock: 16 }}>
+          Crea tu primer anuncio para empezar.
+        </p>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
+          <button type="button" onClick={() => void createAd()} disabled={busy} className="bo-anunciosIconBtn" data-tone="primary" aria-label="Crear anuncio" data-testid="ad-create">
+            <Plus size={16} aria-hidden="true" />
+          </button>
+        </div>
+      </Panel>
+    );
+  }
+
+  const addContentItems: Array<{ type: RestaurantAdContentType; icon: React.ReactNode; label: string; meta: string; disabled?: boolean }> = [
+    { type: "title", icon: <Type size={16} aria-hidden="true" />, label: "Título", meta: TYPE_HINT.title, disabled: (textCounts.title || 0) >= 5 },
+    { type: "subtitle", icon: <Wand2 size={16} aria-hidden="true" />, label: "Subtítulo", meta: TYPE_HINT.subtitle, disabled: (textCounts.subtitle || 0) >= 5 },
+    { type: "text", icon: <Sparkles size={16} aria-hidden="true" />, label: "Texto", meta: TYPE_HINT.text, disabled: (textCounts.text || 0) >= 5 },
+    { type: "image", icon: <ImagePlus size={16} aria-hidden="true" />, label: "Imagen", meta: TYPE_HINT.image, disabled: (textCounts.image || 0) >= 1 },
+  ];
+
   return (
-    <section className="grid gap-5" aria-label="Anuncios" data-testid="config-anuncios">
+    <section className="grid gap-4" aria-label="Anuncios" data-testid="config-anuncios">
       <PageToolbar
         data-slot="ads-toolbar"
         left={
@@ -242,163 +445,229 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
             type="button"
             onClick={() => void createAd()}
             disabled={busy}
-            className="bo-actionBtn"
-            style={{ width: "auto", paddingInline: 14 }}
+            className="bo-anunciosIconBtn"
+            data-tone="primary"
             aria-label="Crear anuncio"
             data-testid="ad-create"
           >
             <Plus size={16} aria-hidden="true" />
-            <span>Crear anuncio</span>
           </button>
         }
       />
 
-      {!ad ? (
-        <Panel data-slot="ads-empty" className="bo-panel--empty" meta="Sin anuncios todavía" title="Empieza creando tu primer anuncio">
-          <p className="bo-mutedText" style={{ textAlign: "center", paddingBlock: 16 }}>
-            Crea tu primer anuncio para empezar.
-          </p>
-        </Panel>
-      ) : (
-        <div className={`grid gap-5 ${previewOpen ? "xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "grid-cols-1"}`} data-slot="ads-editor-layout">
-          <div className="grid gap-4" data-slot="ads-editor">
-            <Panel
-              data-slot="ads-main-panel"
-              title={
-                <div className="flex min-w-[220px] flex-1 items-center gap-3" data-slot="ads-name-wrap">
-                  <Megaphone size={18} aria-hidden="true" />
-                  <input
-                    value={ad.name}
-                    onChange={(event) => setAd({ ...ad, name: event.target.value })}
-                    className="bo-input"
-                    style={{ flex: 1 }}
-                    aria-label="Nombre del anuncio"
-                    data-testid="ad-name"
-                  />
-                </div>
-              }
-              meta={`${ad.content.length} elemento${ad.content.length === 1 ? "" : "s"}`}
-              actions={
-                <label className="bo-field--inline" data-slot="ads-active-label">
-                  <Switch
-                    checked={ad.active}
-                    onCheckedChange={(active) => setAd({ ...ad, active })}
-                    data-testid="ad-active"
-                  />
-                  <span data-slot="ads-active-text">{ad.active ? "Activo" : "Inactivo"}</span>
-                </label>
-              }
-            >
-              <div className="bo-row" data-slot="ads-add-controls" style={{ marginBottom: 12 }}>
-                {(["title", "subtitle", "text"] as RestaurantAdContentType[]).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => addContent(type)}
-                    disabled={(textCounts[type] || 0) >= 5}
-                    className="bo-chip"
-                    aria-label={`Añadir ${TYPE_LABEL[type].toLowerCase()}`}
-                    data-slot={`ad-add-${type}`}
-                  >
-                    <Plus size={14} aria-hidden="true" /> {`Añadir ${TYPE_LABEL[type].toLowerCase()}`}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => { setImageOpen(true); setImageStep("choose"); }}
-                  disabled={(textCounts.image || 0) >= 1}
-                  className="bo-chip"
-                  aria-label="Añadir imagen"
-                  data-slot="ad-add-image"
-                >
-                  <ImagePlus size={14} aria-hidden="true" /> Añadir imagen
-                </button>
-              </div>
-
-              <Reorder.Group axis="y" values={ad.content} onReorder={(content) => setAd({ ...ad, content })} className="grid gap-2" data-slot="ad-content-reorder">
-                {ad.content.map((item, index) => {
-                  const ordinal = ad.content.slice(0, index + 1).filter((entry) => entry.type === item.type).length;
-                  return <ContentRow key={item.id} item={item} ordinal={ordinal} onChange={updateContentValue} onDelete={() => setAd(removeContentItem(ad, item.id))} onImage={() => { setImageOpen(true); setImageStep("choose"); }} />;
-                })}
-              </Reorder.Group>
-            </Panel>
-
-            <Panel
-              data-slot="ads-cta-panel"
-              title="Llamadas a la acción"
-              meta="Siempre se muestran al final del anuncio"
-              actions={
-                <button
-                  type="button"
-                  onClick={() => setAd({ ...ad, ctas: [...ad.ctas, createCTA()] })}
-                  className="bo-chip"
-                  aria-label="Añadir CTA"
-                  data-slot="ad-add-cta"
-                >
-                  <Plus size={14} aria-hidden="true" /> Añadir CTA
-                </button>
-              }
-            >
-              <div className="grid gap-3" data-slot="ads-cta-list">
-                {ad.ctas.map((cta, index) => (
-                  <CTARow
-                    key={cta.id}
-                    index={index}
-                    cta={cta}
-                    website={website}
-                    onChange={(patch) => setAd({ ...ad, ctas: ad.ctas.map((item) => item.id === cta.id ? { ...item, ...patch } : item) })}
-                    onDelete={() => setAd({ ...ad, ctas: ad.ctas.filter((item) => item.id !== cta.id) })}
-                  />
-                ))}
-              </div>
-            </Panel>
-
-            <Card
-              data-slot="ads-actions"
-              padding={false}
-              footer={
-                <>
-                  <div className="bo-cardFooter-left">
-                    <button
-                      type="button"
-                      onClick={() => void removeAd()}
-                      disabled={busy}
-                      className="bo-chip"
-                      style={{ borderColor: "var(--bo-text-danger)", color: "var(--bo-text-danger)" }}
-                      data-slot="ad-delete"
-                    >
-                      <Trash2 size={15} aria-hidden="true" /> Eliminar anuncio
-                    </button>
-                  </div>
-                  <div className="bo-cardFooter-right" data-slot="ads-actions-right">
-                    <label className="bo-field--inline" data-slot="ads-preview-toggle">
-                      <Eye size={15} aria-hidden="true" />
-                      <span data-slot="ads-preview-label">Preview web</span>
-                      <Switch
-                        checked={previewOpen}
-                        onCheckedChange={setPreviewOpen}
-                        data-testid="ad-preview-switch"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => void save()}
-                      disabled={busy}
-                      className="bo-actionBtn"
-                      style={{ width: "auto", paddingInline: 18, background: "var(--bo-accent)", color: "var(--bo-bg)", borderColor: "var(--bo-accent)" }}
-                      data-slot="ad-save"
-                    >
-                      <Save size={15} aria-hidden="true" />
-                      <span>{busy ? "Guardando..." : "Guardar"}</span>
-                    </button>
-                  </div>
-                </>
-              }
-            />
-          </div>
-          {previewOpen ? <Preview ad={ad} website={website} /> : null}
+      {/* Top action bar: save / delete / preview switch */}
+      <div className="bo-anunciosEditorBar" data-slot="ads-editor-bar">
+        <div className="bo-anunciosEditorBar-left" data-slot="ads-editor-bar-left">
+          <button
+            type="button"
+            onClick={() => void removeAd()}
+            disabled={busy}
+            className="bo-anunciosIconBtn"
+            data-tone="danger"
+            aria-label="Eliminar anuncio"
+            data-slot="ad-delete"
+          >
+            <Trash2 size={16} aria-hidden="true" />
+          </button>
         </div>
-      )}
+        <div className="bo-anunciosEditorBar-right" data-slot="ads-editor-bar-right">
+          <div
+            className="bo-anunciosPreviewSwitch"
+            role="group"
+            aria-label="Modo de visualización"
+            data-slot="ads-preview-switch"
+          >
+            <button
+              type="button"
+              className={`bo-anunciosPreviewSwitchBtn ${previewOpen ? "" : "is-active"}`}
+              onClick={() => setPreviewOpen(false)}
+              aria-pressed={!previewOpen}
+              data-testid="ad-mode-editor"
+            >
+              <Settings2 size={14} aria-hidden="true" />
+              <span className="bo-anunciosPreviewSwitchLabel">Editor</span>
+            </button>
+            <button
+              type="button"
+              className={`bo-anunciosPreviewSwitchBtn ${previewOpen ? "is-active" : ""}`}
+              onClick={() => setPreviewOpen(true)}
+              aria-pressed={previewOpen}
+              data-testid="ad-mode-preview"
+            >
+              <Eye size={14} aria-hidden="true" />
+              <span className="bo-anunciosPreviewSwitchLabel">Preview</span>
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={busy}
+            className="bo-anunciosIconBtn"
+            data-tone="primary"
+            aria-label="Guardar anuncio"
+            data-slot="ad-save"
+          >
+            <Save size={16} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
+      <div className={`grid gap-4 ${previewOpen ? "xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "grid-cols-1"}`} data-slot="ads-editor-layout">
+        <Panel
+          data-slot="ads-main-panel"
+          title={
+            <div className="flex min-w-[220px] flex-1 items-center gap-3" data-slot="ads-name-wrap">
+              <Megaphone size={18} aria-hidden="true" />
+              <input
+                value={ad.name}
+                onChange={(event) => setAd({ ...ad, name: event.target.value })}
+                className="bo-input"
+                style={{ flex: 1 }}
+                aria-label="Nombre del anuncio"
+                data-testid="ad-name"
+              />
+            </div>
+          }
+          meta={`${ad.content.length} elemento${ad.content.length === 1 ? "" : "s"} · ${ad.ctas.length} CTA${ad.ctas.length === 1 ? "" : "s"}`}
+          actions={
+            <button
+              ref={addContentBtnRef}
+              type="button"
+              onClick={() => setAddContentOpen((v) => !v)}
+              className={`bo-anunciosMoreTrigger ${addContentOpen ? "is-open" : ""}`}
+              aria-haspopup="menu"
+              aria-expanded={addContentOpen}
+              aria-label="Añadir contenido"
+              data-testid="ad-add-content-trigger"
+            >
+              <MoreHorizontal size={16} aria-hidden="true" />
+            </button>
+          }
+        >
+          <Reorder.Group
+            axis="y"
+            values={decoratedContent as unknown as RestaurantAdContentElement[]}
+            onReorder={(content) => setAd({ ...ad, content: content as RestaurantAdContentElement[] })}
+            className="grid gap-2"
+            data-slot="ad-content-reorder"
+          >
+            {decoratedContent.map((item) => (
+              <DraggableCardRow
+                key={item.id}
+                item={item as RestaurantAdContentElement & { ordinal: number }}
+                startDrag={startContentDrag}
+                onDelete={() => setAd(removeContentItem(ad, item.id))}
+                dataSlot={`ad-content-${item.id}`}
+              >
+                {item.type === "image" ? (
+                  <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
+                    {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot={`ad-content-${item.id}-thumb`} /> : <ImagePlus size={22} aria-hidden="true" />}
+                    <span data-slot={`ad-content-${item.id}-change-text`}>{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
+                  </button>
+                ) : item.type === "text" ? (
+                  <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
+                ) : (
+                  <input value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} className="bo-input" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-input`} />
+                )}
+              </DraggableCardRow>
+            ))}
+          </Reorder.Group>
+
+          {/* Merged CTAs section */}
+          <div className="bo-anunciosCtasSection" data-slot="ads-cta-section">
+            <div className="bo-anunciosCtasHead">
+              <div>
+                <div className="bo-anunciosCtasTitle">Llamadas a la acción</div>
+                <div className="bo-anunciosCtasHint">Siempre se muestran al final del anuncio.</div>
+              </div>
+              <button
+                ref={addCtaBtnRef}
+                type="button"
+                onClick={() => setAddCtaOpen((v) => !v)}
+                className={`bo-anunciosIconBtn ${addCtaOpen ? "is-open" : ""}`}
+                aria-haspopup="menu"
+                aria-expanded={addCtaOpen}
+                aria-label="Añadir CTA"
+                data-testid="ad-add-cta-trigger"
+              >
+                <Plus size={16} aria-hidden="true" />
+              </button>
+            </div>
+            <Reorder.Group
+              axis="y"
+              values={ad.ctas}
+              onReorder={(ctas) => setAd({ ...ad, ctas })}
+              className="bo-anunciosCtasList"
+              data-slot="ad-cta-list"
+            >
+              {ad.ctas.map((cta, index) => (
+                <CTARowCard
+                  key={cta.id}
+                  cta={cta}
+                  index={index}
+                  startDrag={startCtaDrag}
+                  website={website}
+                  onChange={(patch) => setAd({ ...ad, ctas: ad.ctas.map((item) => item.id === cta.id ? { ...item, ...patch } : item) })}
+                  onDelete={() => setAd({ ...ad, ctas: ad.ctas.filter((item) => item.id !== cta.id) })}
+                />
+              ))}
+            </Reorder.Group>
+          </div>
+        </Panel>
+
+        {previewOpen ? <Preview ad={ad} website={website} /> : null}
+      </div>
+
+      <Popover
+        open={addContentOpen}
+        anchorRef={addContentBtnRef}
+        onClose={() => setAddContentOpen(false)}
+        ariaLabel="Añadir contenido al anuncio"
+        data-testid="ad-add-content-popover"
+        minWidthPx={240}
+      >
+        <div className="bo-anunciosAddList" role="menu" data-slot="ad-add-content-list">
+          {addContentItems.map((item) => (
+            <button
+              key={item.type}
+              type="button"
+              role="menuitem"
+              onClick={() => addContent(item.type)}
+              disabled={item.disabled}
+              className="bo-anunciosAddItem"
+              data-slot={`ad-add-${item.type}`}
+              data-testid={`ad-add-${item.type}-popover`}
+            >
+              <span className="bo-anunciosAddItemIcon">{item.icon}</span>
+              <span>{item.label}</span>
+              <span className="bo-anunciosAddItemMeta">{item.meta}</span>
+            </button>
+          ))}
+        </div>
+      </Popover>
+
+      <Popover
+        open={addCtaOpen}
+        anchorRef={addCtaBtnRef}
+        onClose={() => setAddCtaOpen(false)}
+        ariaLabel="Opciones de CTA"
+        data-testid="ad-add-cta-popover"
+        minWidthPx={220}
+      >
+        <div className="bo-anunciosAddList" role="menu" data-slot="ad-add-cta-list">
+          <button
+            type="button"
+            role="menuitem"
+            onClick={addCta}
+            className="bo-anunciosAddItem"
+            data-slot="ad-cta-add-confirm"
+          >
+            <span className="bo-anunciosAddItemIcon"><Plus size={16} aria-hidden="true" /></span>
+            <span>Añadir nuevo CTA</span>
+            <span className="bo-anunciosAddItemMeta">Botón</span>
+          </button>
+        </div>
+      </Popover>
 
       <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void chooseImage(file); }} data-testid="ad-image-file" />
       <ImageFlowModal open={imageOpen} step={imageStep} previewURL={imagePreviewURL} file={imageFile} onClose={closeImage} onGenerate={() => void generateImage()} onPick={() => fileRef.current?.click()} onRaw={() => void handleUploadedImage(false)} onEnhance={() => void handleUploadedImage(true)} />
@@ -406,81 +675,49 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
   );
 }
 
-function ContentRow({ item, ordinal, onChange, onDelete, onImage }: { item: RestaurantAdContentElement; ordinal: number; onChange: (id: string, value: string) => void; onDelete: () => void; onImage: () => void }) {
-  const label = `${TYPE_LABEL[item.type]} ${ordinal}`;
-  return (
-    <Reorder.Item value={item} data-slot={`ad-content-${item.id}`}>
-      <Card className="flex items-start gap-2" padding={false}>
-        <button type="button" className="mt-2 cursor-grab text-bo-muted" aria-label={`Mover ${label}`} data-slot="ad-content-grip"><GripVertical size={17} aria-hidden="true" /></button>
-        <div className="min-w-0 flex-1" data-slot="ad-content-field">
-          {item.type === "image" ? (
-            <button type="button" onClick={onImage} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border p-3 text-left text-sm text-bo-muted" data-slot="ad-image-change">
-              {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot="ad-image-thumb" /> : <ImagePlus size={22} aria-hidden="true" />}
-              <span data-slot="ad-image-change-text">{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
-            </button>
-          ) : item.type === "text" ? (
-            <textarea value={item.value} onChange={(event) => onChange(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={label} data-slot="ad-content-textarea" />
-          ) : (
-            <input value={item.value} onChange={(event) => onChange(item.id, event.target.value)} className="bo-input" aria-label={label} data-slot="ad-content-input" />
-          )}
-        </div>
-        <button type="button" onClick={onDelete} className="mt-1 rounded-bo-sm p-2 text-bo-text-danger" aria-label={`Eliminar ${label}`} data-slot="ad-content-delete"><Trash2 size={15} aria-hidden="true" /></button>
-      </Card>
-    </Reorder.Item>
-  );
-}
-
-function CTARow({ cta, index, website, onChange, onDelete }: { cta: RestaurantAd["ctas"][number]; index: number; website: string; onChange: (patch: Partial<RestaurantAd["ctas"][number]>) => void; onDelete: () => void }) {
-  return (
-    <Card data-slot={`ad-cta-${cta.id}`} padding={false} className="grid gap-3 md:grid-cols-[1fr_auto]">
-      <div className="grid gap-3 md:grid-cols-2" data-slot="ad-cta-fields">
-        <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-text-label">
-          <span data-slot="ad-cta-text-caption">Texto botón {index + 1}</span>
-          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-slot="ad-cta-text" />
-        </label>
-        <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-color-label">
-          <span data-slot="ad-cta-color-caption">Color</span>
-          <input type="color" value={cta.color || "#436754"} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-slot="ad-cta-color" />
-        </label>
-        <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-mode-label">
-          <span data-slot="ad-cta-mode-caption">Navegación</span>
-          <Select value={cta.navigation_mode} onChange={(value) => onChange({ navigation_mode: value === "custom" ? "custom" : "route" })} options={[{ value: "route", label: "Ruta de la web" }, { value: "custom", label: "URL personalizada" }]} ariaLabel={`Navegación CTA {index + 1}`} />
-        </label>
-        {cta.navigation_mode === "route" ? (
-          <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-route-label">
-            <span data-slot="ad-cta-route-caption">Ruta</span>
-            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} ariaLabel={`Ruta CTA {index + 1}`} />
-          </label>
-        ) : (
-          <label className="grid gap-1 text-xs text-bo-muted" data-slot="ad-cta-custom-label">
-            <span data-slot="ad-cta-custom-caption">URL personalizada</span>
-            <input type="url" value={cta.custom_url} onChange={(event) => onChange({ custom_url: event.target.value })} className="bo-input" placeholder="https://..." data-slot="ad-cta-custom-url" />
-          </label>
-        )}
-        <p className="bo-mutedText md:col-span-2" data-slot="ad-cta-resolved">Destino: {buildCTAURL(website, cta) || "Sin configurar"}</p>
-      </div>
-      <button type="button" onClick={onDelete} className="self-start rounded-bo-sm p-2 text-bo-text-danger" aria-label={`Eliminar CTA {index + 1}`} data-slot="ad-cta-delete"><Trash2 size={15} aria-hidden="true" /></button>
-    </Card>
-  );
-}
 
 function ImageFlowModal({ open, step, previewURL, file, onClose, onGenerate, onPick, onRaw, onEnhance }: { open: boolean; step: ImageStep; previewURL: string; file: File | null; onClose: () => void; onGenerate: () => void; onPick: () => void; onRaw: () => void; onEnhance: () => void }) {
   const locked = step === "preparing" || step === "working";
   return (
     <Modal open={open} title={step === "advisor" ? "Asesor IA de imagen" : "Imagen del anuncio"} onClose={locked ? () => undefined : onClose} widthPx={620} hideClose>
       <ModalHeader title={step === "advisor" ? "Asesor IA de imagen" : "Imagen del anuncio"} onClose={locked ? () => undefined : onClose} />
-      <div className="p-5" data-slot="ad-image-modal-body"><AnimatePresence mode="wait"><motion.div key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} data-slot={`ad-image-step-${step}`}>{step === "choose" ? <div className="grid gap-3 sm:grid-cols-2" data-slot="ad-image-choices">
-  <button type="button" onClick={onGenerate} className="bo-card bo-card--clickable" style={{ display: "grid", placeItems: "center", gap: 8, minHeight: 144, textAlign: "center" }} data-slot="ad-image-generate">
-    <Sparkles size={24} aria-hidden="true" />
-    <span className="bo-cardIconTitle" data-slot="ad-image-generate-title">Generar desde el texto</span>
-    <span className="bo-mutedText" data-slot="ad-image-generate-hint">Usa el contenido escrito con WaveSpeed z-image/turbo.</span>
-  </button>
-  <button type="button" onClick={onPick} className="bo-card bo-card--clickable" style={{ display: "grid", placeItems: "center", gap: 8, minHeight: 144, textAlign: "center" }} data-slot="ad-image-upload">
-    <Upload size={24} aria-hidden="true" />
-    <span className="bo-cardIconTitle" data-slot="ad-image-upload-title">Subir una imagen</span>
-    <span className="bo-mutedText" data-slot="ad-image-upload-hint">Se convierte a WebP y se comprime a máximo 100 KB.</span>
-  </button>
-</div> : step === "advisor" ? <div className="grid gap-4" data-slot="ad-image-advisor"><div className="grid gap-1" data-slot="ad-image-advisor-copy"><p className="text-sm text-bo-text" data-slot="ad-image-advisor-lead">La imagen ya está preparada en WebP. Puedes usarla tal cual o mejorarla con IA antes de subirla a BunnyCDN.</p><p className="text-xs text-bo-muted" data-slot="ad-image-advisor-size">Tamaño optimizado: {Math.max(1, Math.round((file?.size || 0) / 1024))} KB.</p></div>{previewURL ? <img src={previewURL} alt="Previsualización de imagen optimizada" className="max-h-72 w-full rounded-bo-lg object-contain" data-slot="ad-image-advisor-preview" /> : null}<div className="flex flex-wrap justify-end gap-2" data-slot="ad-image-advisor-actions"><button type="button" onClick={onRaw} className="rounded-bo-sm border border-bo-border px-4 py-2 text-sm text-bo-text" data-testid="ad-image-use-raw">Continuar sin mejorar</button><button type="button" onClick={onEnhance} className="flex items-center gap-2 rounded-bo-sm bg-bo-accent px-4 py-2 text-sm font-semibold text-bo-bg" data-testid="ad-image-enhance"><Sparkles size={15} aria-hidden="true" />Mejorar con IA</button></div></div> : <div className="grid min-h-48 place-items-center gap-3 text-center" data-slot="ad-image-busy"><Sparkles size={28} className="animate-pulse text-bo-accent" aria-hidden="true" /><p className="text-sm text-bo-muted" data-slot="ad-image-busy-text">{step === "preparing" ? "Convirtiendo y comprimiendo a WebP..." : "Procesando imagen..."}</p></div>}</motion.div></AnimatePresence></div>
+      <div className="p-5" data-slot="ad-image-modal-body">
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} data-slot={`ad-image-step-${step}`}>
+            {step === "choose" ? (
+              <div className="grid gap-3 sm:grid-cols-2" data-slot="ad-image-choices">
+                <button type="button" onClick={onGenerate} className="bo-card bo-card--clickable" style={{ display: "grid", placeItems: "center", gap: 8, minHeight: 144, textAlign: "center" }} data-slot="ad-image-generate">
+                  <Sparkles size={24} aria-hidden="true" />
+                  <span className="bo-cardIconTitle" data-slot="ad-image-generate-title">Generar desde el texto</span>
+                  <span className="bo-mutedText" data-slot="ad-image-generate-hint">Usa el contenido escrito con WaveSpeed z-image/turbo.</span>
+                </button>
+                <button type="button" onClick={onPick} className="bo-card bo-card--clickable" style={{ display: "grid", placeItems: "center", gap: 8, minHeight: 144, textAlign: "center" }} data-slot="ad-image-upload">
+                  <Upload size={24} aria-hidden="true" />
+                  <span className="bo-cardIconTitle" data-slot="ad-image-upload-title">Subir una imagen</span>
+                  <span className="bo-mutedText" data-slot="ad-image-upload-hint">Se convierte a WebP y se comprime a máximo 100 KB.</span>
+                </button>
+              </div>
+            ) : step === "advisor" ? (
+              <div className="grid gap-4" data-slot="ad-image-advisor">
+                <div className="grid gap-1" data-slot="ad-image-advisor-copy">
+                  <p className="text-sm text-bo-text" data-slot="ad-image-advisor-lead">La imagen ya está preparada en WebP. Puedes usarla tal cual o mejorarla con IA antes de subirla a BunnyCDN.</p>
+                  <p className="text-xs text-bo-muted" data-slot="ad-image-advisor-size">Tamaño optimizado: {Math.max(1, Math.round((file?.size || 0) / 1024))} KB.</p>
+                </div>
+                {previewURL ? <img src={previewURL} alt="Previsualización de imagen optimizada" className="max-h-72 w-full rounded-bo-lg object-contain" data-slot="ad-image-advisor-preview" /> : null}
+                <div className="flex flex-wrap justify-end gap-2" data-slot="ad-image-advisor-actions">
+                  <button type="button" onClick={onRaw} className="rounded-bo-sm border border-bo-border px-4 py-2 text-sm text-bo-text" data-testid="ad-image-use-raw">Continuar sin mejorar</button>
+                  <button type="button" onClick={onEnhance} className="flex items-center gap-2 rounded-bo-sm bg-bo-accent px-4 py-2 text-sm font-semibold text-bo-bg" data-testid="ad-image-enhance"><Sparkles size={15} aria-hidden="true" />Mejorar con IA</button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid min-h-48 place-items-center gap-3 text-center" data-slot="ad-image-busy">
+                <Sparkles size={28} className="animate-pulse text-bo-accent" aria-hidden="true" />
+                <p className="text-sm text-bo-muted" data-slot="ad-image-busy-text">{step === "preparing" ? "Convirtiendo y comprimiendo a WebP..." : "Procesando imagen..."}</p>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </Modal>
   );
 }
