@@ -2049,6 +2049,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      async listAds(): Promise<APISuccess<{ ads: import("./types").RestaurantAd[] }> | APIError> {
+        return json("/api/admin/config/ads", { method: "GET" });
+      },
+      async createAd(input: import("./types").RestaurantAdInput): Promise<APISuccess<{ ad: import("./types").RestaurantAd }> | APIError> {
+        return json("/api/admin/config/ads", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async updateAd(id: number, input: import("./types").RestaurantAdInput): Promise<APISuccess<{ ad: import("./types").RestaurantAd }> | APIError> {
+        return json(`/api/admin/config/ads/${id}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async deleteAd(id: number): Promise<APISuccess | APIError> { return json(`/api/admin/config/ads/${id}`, { method: "DELETE" }); },
+      async uploadAdImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> { const form = new FormData(); form.append("image", file, file.name || "ad.webp"); return json(`/api/admin/config/ads/${id}/image/upload`, { method: "POST", body: form }); },
+      async enhanceAdImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> { const form = new FormData(); form.append("image", file, file.name || "ad.webp"); return json(`/api/admin/config/ads/${id}/image/enhance`, { method: "POST", body: form }); },
+      async generateAdImage(id: number): Promise<APISuccess<{ url: string }> | APIError> { return json(`/api/admin/config/ads/${id}/image/generate`, { method: "POST" }); },
       async checkRestaurantWebsite(website: string): Promise<APISuccess<{ website: string }> | APIError> {
         return json("/api/admin/config/check-website", {
           method: "POST",

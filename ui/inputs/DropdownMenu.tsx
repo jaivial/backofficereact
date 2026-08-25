@@ -182,7 +182,12 @@ export function DropdownMenu({
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (ev: MouseEvent) => {
+    // Use pointerdown (with touchstart fallback for older iOS Safari that does
+    // not always dispatch synthetic pointer events). pointerdown fires in
+    // lock-step with the user's tap, BEFORE the synthetic `click` event, so
+    // the dropdown opens reliably on Safari/mobile without being immediately
+    // closed by the same tap being interpreted as an outside click.
+    const onDown = (ev: Event) => {
       const t = ev.target as Node | null;
       if (!t) return;
       if (triggerRef.current?.contains(t)) return;
@@ -192,10 +197,10 @@ export function DropdownMenu({
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") close();
     };
-    window.addEventListener("mousedown", onDown);
+    window.addEventListener("pointerdown", onDown, true);
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("pointerdown", onDown, true);
       window.removeEventListener("keydown", onKey);
     };
   }, [close, open]);

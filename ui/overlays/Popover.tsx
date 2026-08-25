@@ -75,7 +75,10 @@ export function Popover({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
-    const onPointerDown = (event: MouseEvent) => {
+    // Use pointerdown so the outside-click detection is in lock-step with
+    // the user's tap on Safari/mobile. Matches the established pattern in
+    // Select/SearchableSelect/DatePicker.
+    const onPointerDown = (event: Event) => {
       const target = event.target as Node | null;
       if (!target) return;
       // A click on the anchor is the anchor's business (usually a toggle), so
@@ -84,13 +87,13 @@ export function Popover({
       onClose();
     };
     document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("pointerdown", onPointerDown, true);
     window.addEventListener("resize", reposition);
     // Capture phase: a scroll inside any ancestor still moves the anchor.
     window.addEventListener("scroll", reposition, true);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", reposition, true);
     };
