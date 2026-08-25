@@ -1,0 +1,30 @@
+/* ────────────────────────────────────────────────────────────────
+ * Anuncios editor — uses the generic Card / Panel / PageToolbar /
+ * bo-chip / bo-row primitives. This file only adds feature-specific
+ * modifiers that the generic components don't (yet) provide.
+ * ──────────────────────────────────────────────────────────────── */
+
+.bo-anunciosPreview {
+  /* The preview sits on the right column at xl and sticks while the
+     editor scrolls. We rebuild the sticky/elevated shadow here so we
+     don't have to thread new props through <Panel>. */
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  align-self: start;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28), 0 4px 8px rgba(0, 0, 0, 0.16);
+}
+
+:root[data-theme="light"] .bo-anunciosPreview {
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.bo-anunciosPreview .bo-panelBody {
+  padding: 18px 20px 20px;
+}
+
+/* Highlight the active ad chip in the selector list with the same accent
+   used elsewhere; bo-chip.is-on already covers this, we just make the
+   selector a bit louder when used inside the Anuncios tab. */
+.bo-anunciosPreview .bo-panelTitle {
+  font-size: 13px;
+}
