@@ -14,8 +14,10 @@ import { fileURLToPath } from "node:url";
 // vike reads VIKE_CRAWL at config-resolution time, so set it before any
 // renderPage/dev-middleware runs. Only set when absent: an explicit VIKE_CRAWL
 // (docker-compose, CI) is respected as-is.
+import { defaultVikeCrawl } from "./vikeCrawl";
+
 if (!process.env.VIKE_CRAWL) {
-  process.env.VIKE_CRAWL = JSON.stringify({ ignore: ["**/*.test.*", "**/*.spec.*"] });
+  process.env.VIKE_CRAWL = JSON.stringify(defaultVikeCrawl());
 }
 
 const MOBILE_UA_REGEX = /(android|iphone|ipad|ipod|mobile|webos|blackberry|windows phone)/i;
