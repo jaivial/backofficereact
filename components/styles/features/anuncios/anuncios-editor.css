@@ -1,13 +1,9 @@
 /* ────────────────────────────────────────────────────────────────
- * Anuncios editor — uses the generic Card / Panel / PageToolbar /
- * bo-chip / bo-row primitives. This file only adds feature-specific
- * modifiers that the generic components don't (yet) provide.
+ * Anuncios editor — only feature-specific modifiers live here.
+ * Generic Card / Panel / PageToolbar / bo-chip styles are reused.
  * ──────────────────────────────────────────────────────────────── */
 
 .bo-anunciosPreview {
-  /* The preview sits on the right column at xl and sticks while the
-     editor scrolls. We rebuild the sticky/elevated shadow here so we
-     don't have to thread new props through <Panel>. */
   position: sticky;
   top: calc(env(safe-area-inset-top, 0px) + 16px);
   align-self: start;
@@ -22,9 +18,354 @@
   padding: 18px 20px 20px;
 }
 
-/* Highlight the active ad chip in the selector list with the same accent
-   used elsewhere; bo-chip.is-on already covers this, we just make the
-   selector a bit louder when used inside the Anuncios tab. */
 .bo-anunciosPreview .bo-panelTitle {
   font-size: 13px;
+}
+
+/* ── Top action bar (above the editor panel) ─────────────────── */
+.bo-anunciosEditorBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.bo-anunciosEditorBar-left,
+.bo-anunciosEditorBar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Content / CTA rows: drag handle is a dark square button in dark theme ── */
+.bo-anunciosRowCard {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 10px;
+  min-width: 0; /* prevent children from stretching the column out of the grid */
+}
+
+.bo-anunciosRowCard.is-dragging {
+  z-index: 2;
+}
+
+.bo-anunciosRowCard .bo-cardBody {
+  padding: 0;
+}
+
+.bo-anunciosDragHandle {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bo-bg);
+  color: var(--bo-text);
+  border: 1px solid var(--bo-border);
+  cursor: grab;
+  touch-action: none; /* prevent iOS scroll-cancel while dragging */
+  transition: background 160ms ease, transform 120ms ease;
+}
+
+.bo-anunciosDragHandle:hover {
+  background: color-mix(in srgb, var(--bo-bg) 88%, var(--bo-accent) 12%);
+  transform: translateY(-1px);
+}
+
+.bo-anunciosDragHandle:active,
+.bo-anunciosDragHandle.is-active {
+  cursor: grabbing;
+  background: var(--bo-surface-2);
+}
+
+.bo-anunciosDragHandle:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-anunciosDragHandleIcon {
+  color: var(--bo-text);
+  pointer-events: none;
+}
+
+:root[data-theme="light"] .bo-anunciosDragHandle {
+  background: rgba(20, 22, 32, 0.92);
+  color: #fff;
+  border-color: rgba(20, 22, 32, 0.92);
+}
+
+:root[data-theme="light"] .bo-anunciosDragHandle .bo-anunciosDragHandleIcon {
+  color: #fff;
+}
+
+/* ── Row action buttons (delete etc.) — dark theme style, icon-only ── */
+.bo-anunciosIconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bo-bg);
+  color: var(--bo-text);
+  border: 1px solid var(--bo-border);
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, transform 120ms ease;
+}
+
+.bo-anunciosIconBtn:hover {
+  background: color-mix(in srgb, var(--bo-bg) 88%, var(--bo-accent) 12%);
+  transform: translateY(-1px);
+}
+
+.bo-anunciosIconBtn:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-anunciosIconBtn[data-tone="danger"] {
+  color: var(--bo-text-danger);
+}
+
+.bo-anunciosIconBtn[data-tone="danger"]:hover {
+  background: color-mix(in srgb, var(--bo-bg) 80%, var(--bo-text-danger) 20%);
+}
+
+.bo-anunciosIconBtn[data-tone="primary"] {
+  background: var(--bo-accent);
+  color: var(--bo-bg);
+  border-color: var(--bo-accent);
+}
+
+.bo-anunciosIconBtn[data-tone="primary"]:hover {
+  filter: brightness(1.08);
+}
+
+.bo-anunciosIconBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bo-anunciosIconBtn:disabled:hover {
+  transform: none;
+  background: var(--bo-bg);
+}
+
+:root[data-theme="light"] .bo-anunciosIconBtn {
+  background: rgba(20, 22, 32, 0.92);
+  color: #fff;
+  border-color: rgba(20, 22, 32, 0.92);
+}
+
+:root[data-theme="light"] .bo-anunciosIconBtn:hover {
+  background: rgba(20, 22, 32, 1);
+}
+
+:root[data-theme="light"] .bo-anunciosIconBtn[data-tone="danger"] {
+  background: rgba(220, 38, 38, 0.94);
+  border-color: rgba(220, 38, 38, 0.94);
+  color: #fff;
+}
+
+:root[data-theme="light"] .bo-anunciosIconBtn[data-tone="danger"]:hover {
+  background: rgba(185, 28, 28, 1);
+}
+
+:root[data-theme="light"] .bo-anunciosIconBtn[data-tone="primary"] {
+  background: var(--bo-accent);
+  color: #1a1b22;
+  border-color: var(--bo-accent);
+}
+
+:root[data-theme="light"] .bo-anunciosIconBtn:disabled {
+  opacity: 0.55;
+}
+
+/* ── Top-right "more options" trigger for content add ─────────── */
+.bo-anunciosMoreTrigger {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--bo-border);
+  color: var(--bo-text);
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.bo-anunciosMoreTrigger:hover,
+.bo-anunciosMoreTrigger.is-open {
+  background: var(--bo-surface-2);
+}
+
+.bo-anunciosMoreTrigger:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-anunciosAddList {
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  min-width: 220px;
+}
+
+.bo-anunciosAddItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.bo-anunciosAddItem:hover:not(:disabled) {
+  background: var(--bo-surface-2);
+}
+
+.bo-anunciosAddItem:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bo-anunciosAddItemIcon {
+  color: var(--bo-accent);
+  display: inline-flex;
+}
+
+.bo-anunciosAddItemMeta {
+  margin-left: auto;
+  color: var(--bo-faint);
+  font-weight: 500;
+  font-size: 11px;
+}
+
+/* ── Preview switch (matches menu-creator pattern) ────────────── */
+.bo-anunciosPreviewSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  box-shadow: var(--bo-shadow-soft);
+}
+
+.bo-anunciosPreviewSwitchBtn {
+  border: 0;
+  background: transparent;
+  color: var(--bo-muted);
+  height: 32px;
+  min-width: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 650;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.bo-anunciosPreviewSwitchBtn.is-active {
+  background: rgba(185, 168, 255, 0.24);
+  color: var(--bo-text);
+}
+
+.bo-anunciosPreviewSwitchBtn:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+/* On <769px the label is hidden and only the icon shows, mirroring the
+   mobile swap pattern in /app/menus/crear. The switch still shows both
+   buttons but only the active one is visible (the consumer hides the
+   content pane via CSS when preview is closed). */
+@media (max-width: 768px) {
+  .bo-anunciosPreviewSwitchBtn .bo-anunciosPreviewSwitchLabel {
+    display: none;
+  }
+  .bo-anunciosPreviewSwitchBtn {
+    min-width: 32px;
+    padding: 0;
+    width: 32px;
+  }
+  .bo-anunciosPreviewSwitchBtn:not(.is-active) {
+    display: none;
+  }
+}
+
+/* ── CTAs sub-section inside the merged main panel ────────────── */
+.bo-anunciosCtasSection {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--bo-border);
+}
+
+.bo-anunciosCtasHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.bo-anunciosCtasTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+
+.bo-anunciosCtasHint {
+  font-size: 11px;
+  color: var(--bo-faint);
+}
+
+.bo-anunciosCtasList {
+  display: grid;
+  gap: 8px;
+}
+
+/* ── Responsive: stack the preview under the editor below xl ─── */
+@media (max-width: 1279px) {
+  .bo-anunciosPreview {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .bo-anunciosEditorBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bo-anunciosEditorBar-right {
+    justify-content: flex-end;
+  }
+  .bo-anunciosRowCard {
+    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+  }
+  .bo-anunciosRowCard .bo-anunciosRowAction {
+    grid-column: 2;
+    justify-self: end;
+  }
 }

@@ -15,7 +15,6 @@ import { Select } from "../../../ui/inputs/Select";
 import { Switch } from "../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../ui/widgets/PlusMinusCounter";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
-import { PageToolbar } from "../../../ui/shell/PageToolbar";
 import { ConfigRestauranteContent as ConfigRestaurante } from "./functionalComponents/ConfigRestaurante/ConfigRestaurante";
 import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/ConfigContacto/ConfigContacto";
 import { BookingManager } from "./booking/BookingManager";
@@ -303,18 +302,6 @@ export default function Page() {
         className="bo-tabs--reservas mx-auto mb-6"
         onNavigate={onNavigateContentTab}
         layoutId="boContentTabIndicator"
-      />
-
-      <PageToolbar
-        left={
-          <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy} data-testid="config-reload-button">
-            Recargar
-          </button>
-        }
-        right={
-          <div className="bo-mutedText" data-slot="config-mutedText">{busy ? "Actualizando..." : "Valores por defecto"}</div>
-        }
-        data-slot="config-toolbar"
       />
 
       <AnimatePresence mode="wait">
