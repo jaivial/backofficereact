@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "../../../../../api/client";
@@ -25,7 +25,17 @@ export default function AnuncioNewPage() {
   const { pushToast } = useToasts();
   const notify = useCallback<Notify>((kind, title, message) => pushToast({ kind, title, message }), [pushToast]);
 
-  const website = (pageContext as { bo?: { restaurantInfo?: { website?: string } } }).bo?.restaurantInfo?.website ?? "";
+  const [website, setWebsite] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    createClient({ baseUrl: "" }).config.getRestaurantInfo()
+      .then((res) => {
+        if (cancelled) return;
+        if ("restaurantInfo" in res && res.restaurantInfo?.website) setWebsite(res.restaurantInfo.website);
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
 
   const onSaved = useCallback((ad: { id: number }) => {
     if (typeof window !== "undefined" && ad.id > 0) {

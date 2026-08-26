@@ -43,5 +43,5 @@ export function ConfigAnuncios({ website }: { website: string }) {
   const api = useMemo(() => buildAPI(), []);
   const { pushToast } = useToasts();
   const notify = useCallback<Notify>((kind, title, message) => pushToast({ kind, title, message }), [pushToast]);
-  return <AnunciosList api={api} website={website} notify={notify} />;
+  return <AnunciosList api={api} notify={notify} />;
 }
