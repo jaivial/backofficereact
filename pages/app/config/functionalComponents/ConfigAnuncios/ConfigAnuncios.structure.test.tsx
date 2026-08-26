@@ -82,6 +82,28 @@ describe("ConfigAnunciosContent — structure", () => {
     expect(screen.getByTestId("ad-add-image-popover")).toBeTruthy();
   });
 
+  it("wraps each row in .bo-anunciosRowField and the action in .bo-anunciosRowAction", async () => {
+    api.config.listAds = vi.fn().mockResolvedValue({
+      success: true,
+      ads: [{
+        id: 1,
+        name: "Anuncio 1",
+        active: false,
+        content: [{ id: "t1", type: "title", value: "Titulo" }],
+        ctas: [{ id: "cta1", text: "Reservar", color: "#436754", navigation_mode: "route", route: "/reservas", custom_url: "" }],
+      }],
+    });
+    await act(async () => {
+      render(<ConfigAnunciosContent api={api as never} website="https://villa.test" />);
+    });
+    const fields = document.querySelectorAll(".bo-anunciosRowField");
+    const actions = document.querySelectorAll(".bo-anunciosRowAction");
+    expect(fields.length).toBeGreaterThanOrEqual(2);
+    expect(actions.length).toBeGreaterThanOrEqual(2);
+    const ctaFields = document.querySelector('[data-slot$="-fields"]');
+    expect(ctaFields?.classList.contains("bo-anunciosRowField-2col")).toBe(true);
+  });
+
   it("opens the add-CTA popover and adds a CTA on click", async () => {
     api.config.listAds = vi.fn().mockResolvedValue({
       success: true,
