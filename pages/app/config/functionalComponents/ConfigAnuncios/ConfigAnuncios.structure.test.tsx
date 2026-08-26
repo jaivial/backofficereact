@@ -96,21 +96,24 @@ describe("AnuncioEditor — structure", () => {
     expect(ctaFields?.classList.contains("bo-anunciosRowField-2col")).toBe(true);
   });
 
-  it("opens the add-CTA popover and closes it after adding a CTA", async () => {
+  it("adds a CTA from the unified add menu and closes it", async () => {
     const api = baseApi();
     await act(async () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" initialAd={sampleAd} />);
     });
-    const trigger = await screen.findByTestId("ad-add-cta-trigger");
+    const trigger = await screen.findByTestId("ad-add-content-trigger");
     await act(async () => {
       fireEvent.click(trigger);
     });
-    expect(await screen.findByTestId("ad-add-cta-popover")).toBeTruthy();
+    const popover = screen.getByTestId("ad-add-content-popover");
+    expect(popover).toBeTruthy();
+    expect(screen.queryByTestId("ad-add-cta-trigger")).toBeNull();
     await act(async () => {
       fireEvent.click(screen.getByText(/Añadir nuevo CTA/));
     });
     await waitFor(() => {
-      expect(screen.queryByTestId("ad-add-cta-popover")).toBeNull();
+      expect(screen.queryByTestId("ad-add-content-popover")).toBeNull();
     });
+    expect(document.querySelector('[data-slot^="ad-cta-"]')).toBeTruthy();
   });
 });
