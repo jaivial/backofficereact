@@ -1,23 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import { navigate } from "vike/client/router";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "../../../../../api/client";
-import { useToasts } from "../../../../../ui/feedback/useToasts";
-import { AnuncioEditor, type AdsAPI, type Notify } from "../../functionalComponents/ConfigAnuncios/AnuncioEditor";
+import { AnuncioEditor } from "../../functionalComponents/ConfigAnuncios/AnuncioEditor";
+import { useAdsController } from "../../functionalComponents/ConfigAnuncios/hooks/useAdsController";
+import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 
-function buildAPI(): AdsAPI {
-  const client = createClient({ baseUrl: "" });
-  const config = client.config;
-  return {
-    listAds: config.listAds.bind(config),
-    createAd: config.createAd.bind(config),
-    updateAd: config.updateAd.bind(config),
-    deleteAd: config.deleteAd.bind(config),
-    uploadAdImage: config.uploadAdImage.bind(config),
-    enhanceAdImage: config.enhanceAdImage.bind(config),
-    generateAdImage: config.generateAdImage.bind(config),
-  };
-}
+const LIST_HREF = "/app/config?content=anuncios";
 
 export default function AnuncioEditPage() {
   const pageContext = usePageContext();
@@ -25,41 +14,27 @@ export default function AnuncioEditPage() {
   const adId = Number(rawId);
   const valid = Number.isFinite(adId) && adId > 0;
 
-  const api = useMemo(() => buildAPI(), []);
-  const { pushToast } = useToasts();
-  const notify = useCallback<Notify>((kind, title, message) => pushToast({ kind, title, message }), [pushToast]);
-
-  const [website, setWebsite] = useState("");
-  useEffect(() => {
-    let cancelled = false;
-    createClient({ baseUrl: "" }).config.getRestaurantInfo()
-      .then((res) => {
-        if (cancelled) return;
-        if ("restaurantInfo" in res && res.restaurantInfo?.website) setWebsite(res.restaurantInfo.website);
-      })
-      .catch(() => undefined);
-    return () => { cancelled = true; };
-  }, [api]);
+  const { api, website, notify } = useAdsController();
 
   const onDeleted = useCallback(() => {
-    if (typeof window !== "undefined") window.location.href = "/app/config?content=anuncios";
+    void navigate(LIST_HREF);
   }, []);
 
   if (!valid) {
     return (
-      <section aria-label="Anuncio" className="max-w-3xl mx-auto" data-testid="anuncio-edit-invalid">
-        <a href="/app/config?content=anuncios" className="bo-anunciosBackLink" data-slot="anuncio-back-link">
+      <section aria-label="Anuncio" className="max-w-3xl mx-auto grid gap-3" data-testid="anuncio-edit-invalid">
+        <a href={LIST_HREF} className="bo-anunciosBackLink" data-slot="anuncio-back-link">
           <ArrowLeft size={16} aria-hidden="true" />
           Volver a la lista de anuncios
         </a>
-        <p className="bo-mutedText" style={{ marginTop: 12 }}>Identificador de anuncio no válido.</p>
+        <InlineAlert kind="error" title="Anuncio no válido" message="El identificador de anuncio no es válido." />
       </section>
     );
   }
 
   return (
     <section aria-label="Anuncio" className="grid gap-4" data-testid="anuncio-edit-page">
-      <a href="/app/config?content=anuncios" className="bo-anunciosBackLink" data-slot="anuncio-back-link">
+      <a href={LIST_HREF} className="bo-anunciosBackLink" data-slot="anuncio-back-link">
         <ArrowLeft size={16} aria-hidden="true" />
         Volver a la lista de anuncios
       </a>
