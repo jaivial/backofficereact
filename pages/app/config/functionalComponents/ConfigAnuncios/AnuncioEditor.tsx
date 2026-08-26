@@ -564,33 +564,35 @@ function DraggableCardRow({
       whileDrag={{ zIndex: 2 }}
       className="bo-anunciosRowCard"
     >
-      <button
-        type="button"
-        className="bo-anunciosDragHandle"
-        aria-label={`Mover ${label}`}
-        data-slot={`${dataSlot}-grip`}
-        onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
-      >
-        <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
-      </button>
-      <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
-        <span className="bo-anunciosRowTypeLabel" data-slot={`${dataSlot}-type-label`}>{TYPE_LABEL[item.type]}</span>
-        {children}
-      </div>
-      {onDelete ? (
-        <div className="bo-anunciosRowAction" data-slot={`${dataSlot}-action`}>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="bo-anunciosIconBtn"
-            data-tone="danger"
-            aria-label={`Eliminar ${label}`}
-            data-slot={`${dataSlot}-delete`}
-          >
-            <Trash2 size={15} aria-hidden="true" />
-          </button>
+      <span className="bo-anunciosRowTypeLabel" data-slot={`${dataSlot}-type-label`}>{TYPE_LABEL[item.type]}</span>
+      <div className="bo-anunciosRowBand" data-slot={`${dataSlot}-band`}>
+        <button
+          type="button"
+          className="bo-anunciosDragHandle"
+          aria-label={`Mover ${label}`}
+          data-slot={`${dataSlot}-grip`}
+          onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
+        >
+          <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
+        </button>
+        <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
+          {children}
         </div>
-      ) : null}
+        {onDelete ? (
+          <div className="bo-anunciosRowAction" data-slot={`${dataSlot}-action`}>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="bo-anunciosIconBtn"
+              data-tone="danger"
+              aria-label={`Eliminar ${label}`}
+              data-slot={`${dataSlot}-delete`}
+            >
+              <Trash2 size={15} aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
+      </div>
     </Reorder.Item>
   );
 }
