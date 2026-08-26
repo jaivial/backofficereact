@@ -68,6 +68,12 @@
   z-index: 2;
 }
 
+/* Small type indicator above each field (Título / Subtítulo / Texto / Imagen). */
+.bo-anunciosRowTypeLabel {
+  font-size: 11px;
+  color: var(--bo-muted);
+}
+
 /* Inner field wrapper inside a row. Adds the padding the panel / card
    would have provided so labels and inputs sit inside the card. */
 .bo-anunciosRowField {
