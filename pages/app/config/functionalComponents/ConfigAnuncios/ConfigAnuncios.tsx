@@ -105,20 +105,22 @@ function DraggableCardRow({
       >
         <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
       </button>
-      <div className="min-w-0 flex-1" data-slot={`${dataSlot}-field`}>
+      <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
         {children}
       </div>
       {onDelete ? (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="bo-anunciosIconBtn"
-          data-tone="danger"
-          aria-label={`Eliminar ${label}`}
-          data-slot={`${dataSlot}-delete`}
-        >
-          <Trash2 size={15} aria-hidden="true" />
-        </button>
+        <div className="bo-anunciosRowAction" data-slot={`${dataSlot}-action`}>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="bo-anunciosIconBtn"
+            data-tone="danger"
+            aria-label={`Eliminar ${label}`}
+            data-slot={`${dataSlot}-delete`}
+          >
+            <Trash2 size={15} aria-hidden="true" />
+          </button>
+        </div>
       ) : null}
     </Reorder.Item>
   );
@@ -159,7 +161,7 @@ function CTARowCard({
       >
         <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
       </button>
-      <div className="grid gap-3 md:grid-cols-2" data-slot={`ad-cta-${cta.id}-fields`}>
+      <div className="bo-anunciosRowField bo-anunciosRowField-2col" data-slot={`ad-cta-${cta.id}-fields`}>
         <label className="grid gap-1 text-xs text-bo-muted">
           <span>Texto botón {index + 1}</span>
           <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-slot={`ad-cta-${cta.id}-text`} />
@@ -185,16 +187,18 @@ function CTARowCard({
         )}
         <p className="bo-mutedText md:col-span-2" data-slot={`ad-cta-${cta.id}-resolved`}>Destino: {buildCTAURL(website, cta) || "Sin configurar"}</p>
       </div>
-      <button
-        type="button"
-        onClick={onDelete}
-        className="bo-anunciosIconBtn"
-        data-tone="danger"
-        aria-label={`Eliminar CTA ${index + 1}`}
-        data-slot={`ad-cta-${cta.id}-delete`}
-      >
-        <Trash2 size={15} aria-hidden="true" />
-      </button>
+      <div className="bo-anunciosRowAction" data-slot={`ad-cta-${cta.id}-action`}>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="bo-anunciosIconBtn"
+          data-tone="danger"
+          aria-label={`Eliminar CTA ${index + 1}`}
+          data-slot={`ad-cta-${cta.id}-delete`}
+        >
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
+      </div>
     </Reorder.Item>
   );
 }
@@ -516,13 +520,13 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
         <Panel
           data-slot="ads-main-panel"
           title={
-            <div className="flex min-w-[220px] flex-1 items-center gap-3" data-slot="ads-name-wrap">
-              <Megaphone size={18} aria-hidden="true" />
+            <div className="flex min-w-[180px] flex-1 items-center gap-3" data-slot="ads-name-wrap">
+              <Megaphone size={18} aria-hidden="true" className="shrink-0" />
               <input
                 value={ad.name}
                 onChange={(event) => setAd({ ...ad, name: event.target.value })}
                 className="bo-input"
-                style={{ flex: 1 }}
+                style={{ flex: 1, minWidth: 0 }}
                 aria-label="Nombre del anuncio"
                 data-testid="ad-name"
               />
@@ -567,7 +571,7 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
                 ) : item.type === "text" ? (
                   <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
                 ) : (
-                  <input value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} className="bo-input" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-input`} />
+                  <input value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} className="bo-input" style={{ width: "100%" }} aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-input`} />
                 )}
               </DraggableCardRow>
             ))}
