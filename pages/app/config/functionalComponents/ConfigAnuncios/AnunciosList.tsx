@@ -10,7 +10,7 @@ const NOOP_NOTIFY: Notify = () => undefined;
 
 type AnunciosListProps = {
   api: AdsAPI;
-  website: string;
+  
   notify?: Notify;
 };
 
