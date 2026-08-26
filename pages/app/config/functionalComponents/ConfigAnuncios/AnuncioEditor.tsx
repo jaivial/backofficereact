@@ -243,13 +243,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   const textCounts = useMemo(() => ad ? ad.content.reduce<Record<string, number>>((out, item) => ({ ...out, [item.type]: (out[item.type] || 0) + 1 }), {}) : {}, [ad]);
 
-  const decoratedContent = useMemo(() => ad
-    ? ad.content.map((item, index) => ({
-        ...item,
-        ordinal: ad.content.slice(0, index + 1).filter((entry) => entry.type === item.type).length,
-      }))
-    : [], [ad]);
-
   if (loading) {
     return (
       <Panel data-slot="ads-loading" meta="Cargando anuncio...">
@@ -381,15 +374,16 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
         >
           <Reorder.Group
             axis="y"
-            values={decoratedContent as unknown as RestaurantAdContentElement[]}
-            onReorder={(content) => setAd({ ...ad, content: content as RestaurantAdContentElement[] })}
+            values={ad.content}
+            onReorder={(content) => setAd({ ...ad, content })}
             className="grid gap-2"
             data-slot="ad-content-reorder"
           >
-            {decoratedContent.map((item) => (
+            {ad.content.map((item, index) => (
               <DraggableCardRow
                 key={item.id}
-                item={item as RestaurantAdContentElement & { ordinal: number }}
+                item={item}
+                ordinal={ad.content.slice(0, index + 1).filter((entry) => entry.type === item.type).length}
                 onDelete={() => setAd(removeContentItem(ad, item.id))}
                 dataSlot={`ad-content-${item.id}`}
               >
@@ -540,16 +534,18 @@ function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
 
 function DraggableCardRow({
   item,
+  ordinal,
   children,
   onDelete,
   dataSlot,
 }: {
-  item: RestaurantAdContentElement & { ordinal?: number };
+  item: RestaurantAdContentElement;
+  ordinal: number;
   children: React.ReactNode;
   onDelete?: () => void;
   dataSlot: string;
 }) {
-  const label = `${TYPE_LABEL[item.type]} ${item.ordinal}`;
+  const label = `${TYPE_LABEL[item.type]} ${ordinal}`;
   const dragControls = useDragControls();
   const startDrag = useCallback(
     (event: React.PointerEvent<Element>) => dragControls.start(event),
