@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { navigate } from "vike/client/router";
 import { Megaphone, Plus, Sparkles } from "lucide-react";
 import type { RestaurantAd } from "../../../../../api/types";
 import { FloatingActionButton } from "../../../../../ui/actions/FloatingActionButton";
@@ -10,18 +11,14 @@ const NOOP_NOTIFY: Notify = () => undefined;
 
 type AnunciosListProps = {
   api: AdsAPI;
-  
   notify?: Notify;
 };
 
 function firstImage(ad: RestaurantAd): string {
-  const item = ad.content.find((entry) => entry.type === "image");
-  return item?.value || "";
+  return ad.content.find((entry) => entry.type === "image")?.value ?? "";
 }
 
-function goTo(href: string) {
-  if (typeof window !== "undefined") window.location.href = href;
-}
+const NEW_HREF = "/app/config/anuncios/nuevo";
 
 export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
   const [ads, setAds] = useState<RestaurantAd[]>([]);
@@ -51,18 +48,22 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
     [ads],
   );
 
+  const fab = (
+    <FloatingActionButton
+      icon={<Plus size={24} aria-hidden="true" />}
+      aria-label="Crear anuncio"
+      onClick={() => { void navigate(NEW_HREF); }}
+      data-testid="ad-create"
+      data-role="ad-list-create-btn"
+      className="bo-anunciosFab"
+    />
+  );
+
   if (loading) {
     return (
       <section aria-label="Anuncios" data-testid="config-anuncios">
         <InlineAlert kind="info" title="Cargando" message="Recuperando la lista de anuncios del restaurante." />
-        <FloatingActionButton
-          icon={<Plus size={24} aria-hidden="true" />}
-          aria-label="Crear anuncio"
-          onClick={() => goTo("/app/config/anuncios/nuevo")}
-          data-testid="ad-create"
-          data-role="ad-list-create-btn"
-          className="bo-anunciosFab"
-        />
+        {fab}
       </section>
     );
   }
@@ -79,14 +80,7 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
             Crea tu primer anuncio con el botón <Plus size={14} aria-hidden="true" className="inline align-middle" /> para empezar a publicar promociones, eventos o menús en la web del restaurante.
           </p>
         </div>
-        <FloatingActionButton
-          icon={<Plus size={24} aria-hidden="true" />}
-          aria-label="Crear anuncio"
-          onClick={() => goTo("/app/config/anuncios/nuevo")}
-          data-testid="ad-create"
-          data-role="ad-list-create-btn"
-          className="bo-anunciosFab"
-        />
+        {fab}
       </section>
     );
   }
@@ -106,21 +100,14 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
             title={ad.name}
             imageUrl={firstImage(ad) || null}
             inactive={!ad.active}
-            onOpen={() => goTo(`/app/config/anuncios/${ad.id}`)}
+            onOpen={() => { void navigate(`/app/config/anuncios/${ad.id}`); }}
             openAriaLabel={`Abrir detalle de ${ad.name}`}
             testId={`ad-card-${ad.id}`}
           />
         ))}
       </div>
 
-      <FloatingActionButton
-        icon={<Plus size={24} aria-hidden="true" />}
-        aria-label="Crear anuncio"
-        onClick={() => goTo("/app/config/anuncios/nuevo")}
-        data-testid="ad-create"
-        data-role="ad-list-create-btn"
-        className="bo-anunciosFab"
-      />
+      {fab}
     </section>
   );
 }

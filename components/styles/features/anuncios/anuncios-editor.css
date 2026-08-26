@@ -466,3 +466,110 @@ button.bg-bo-accent { color: var(--bo-bg); }
 /* Panel body padding (Tailwind p-4 = 16px). The Panel component renders
    <div className="bo-panelBody"> and uses padding={false} -> p-4. */
 .bo-panelBody { padding: 16px; }
+
+/* Anuncios list + dedicated edit/new pages (refactor: card-grid) */
+
+.bo-anunciosListHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bo-anunciosListTitle {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--bo-text);
+  margin: 0;
+}
+.bo-anunciosListCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bo-anunciosFab {
+  bottom: 32px;
+  right: 32px;
+}
+@media (max-width: 640px) {
+  .bo-anunciosFab {
+    bottom: 20px;
+    right: 20px;
+  }
+}
+
+.bo-anunciosEmpty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  border: 1px dashed var(--bo-border);
+  border-radius: var(--bo-radius-lg, 12px);
+  background: var(--bo-surface);
+  gap: 8px;
+}
+.bo-anunciosEmptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  color: var(--bo-accent);
+  margin-bottom: 4px;
+}
+.bo-anunciosEmptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--bo-text);
+}
+.bo-anunciosEmptyHint {
+  color: var(--bo-muted);
+  font-size: 14px;
+  max-width: 44ch;
+}
+
+.bo-anunciosBackLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bo-muted);
+  font-size: 13px;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: var(--bo-radius-sm, 8px);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  align-self: start;
+}
+.bo-anunciosBackLink:hover {
+  color: var(--bo-text);
+  background: var(--bo-surface-2);
+}
+
+.bo-anunciosEditorCrumb {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--bo-muted);
+}
+.bo-anunciosEditorStatus {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  color: var(--bo-muted);
+}
