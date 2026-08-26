@@ -5,7 +5,6 @@ import {
   GripVertical,
   ImagePlus,
   Megaphone,
-  MoreHorizontal,
   Plus,
   Save,
   Settings2,
@@ -95,21 +94,8 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewURL, setImagePreviewURL] = useState("");
   const [addContentOpen, setAddContentOpen] = useState(false);
-  const [addCtaOpen, setAddCtaOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const addContentBtnRef = useRef<HTMLButtonElement | null>(null);
-  const addCtaBtnRef = useRef<HTMLButtonElement | null>(null);
-
-  const contentDragControls = useDragControls();
-  const ctaDragControls = useDragControls();
-  const startContentDrag = useCallback(
-    (event: React.PointerEvent<Element>) => contentDragControls.start(event),
-    [contentDragControls],
-  );
-  const startCtaDrag = useCallback(
-    (event: React.PointerEvent<Element>) => ctaDragControls.start(event),
-    [ctaDragControls],
-  );
 
   useEffect(() => {
     if (mode !== "edit" || initialAd || !adId) return;
@@ -199,7 +185,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const addCta = useCallback(() => {
     if (!ad) return;
     setAd({ ...ad, ctas: [...ad.ctas, createCTA()] });
-    setAddCtaOpen(false);
+    setAddContentOpen(false);
   }, [ad]);
 
   const setImageURL = useCallback(async (url: string) => {
@@ -358,7 +344,10 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
         </div>
       </div>
 
-      <div className={`grid gap-4 ${previewOpen ? "xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "grid-cols-1"}`} data-slot="ads-editor-layout">
+      <div
+        className={`bo-anunciosEditorLayout grid gap-4 ${previewOpen ? "xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "grid-cols-1"} ${previewOpen ? "is-preview-active" : "is-editor-active"}`}
+        data-slot="ads-editor-layout"
+      >
         <Panel
           data-slot="ads-main-panel"
           title={
@@ -383,10 +372,10 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               className={`bo-anunciosMoreTrigger ${addContentOpen ? "is-open" : ""}`}
               aria-haspopup="menu"
               aria-expanded={addContentOpen}
-              aria-label="Añadir contenido"
+              aria-label="Añadir contenido o CTA"
               data-testid="ad-add-content-trigger"
             >
-              <MoreHorizontal size={16} aria-hidden="true" />
+              <Plus size={16} aria-hidden="true" />
             </button>
           }
         >
@@ -401,7 +390,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               <DraggableCardRow
                 key={item.id}
                 item={item as RestaurantAdContentElement & { ordinal: number }}
-                startDrag={startContentDrag}
                 onDelete={() => setAd(removeContentItem(ad, item.id))}
                 dataSlot={`ad-content-${item.id}`}
               >
@@ -425,18 +413,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                 <div className="bo-anunciosCtasTitle">Llamadas a la acción</div>
                 <div className="bo-anunciosCtasHint">Siempre se muestran al final del anuncio.</div>
               </div>
-              <button
-                ref={addCtaBtnRef}
-                type="button"
-                onClick={() => setAddCtaOpen((v) => !v)}
-                className={`bo-anunciosIconBtn ${addCtaOpen ? "is-open" : ""}`}
-                aria-haspopup="menu"
-                aria-expanded={addCtaOpen}
-                aria-label="Añadir CTA"
-                data-testid="ad-add-cta-trigger"
-              >
-                <Plus size={16} aria-hidden="true" />
-              </button>
             </div>
             <Reorder.Group
               axis="y"
@@ -450,7 +426,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                   key={cta.id}
                   cta={cta}
                   index={index}
-                  startDrag={startCtaDrag}
                   website={website}
                   onChange={(patch) => setAd({ ...ad, ctas: ad.ctas.map((item) => item.id === cta.id ? { ...item, ...patch } : item) })}
                   onDelete={() => setAd({ ...ad, ctas: ad.ctas.filter((item) => item.id !== cta.id) })}
@@ -488,18 +463,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               <span className="bo-anunciosAddItemMeta">{item.meta}</span>
             </button>
           ))}
-        </div>
-      </Popover>
-
-      <Popover
-        open={addCtaOpen}
-        anchorRef={addCtaBtnRef}
-        onClose={() => setAddCtaOpen(false)}
-        ariaLabel="Opciones de CTA"
-        data-testid="ad-add-cta-popover"
-        minWidthPx={220}
-      >
-        <div className="bo-anunciosAddList" role="menu" data-slot="ad-add-cta-list">
+          <div className="bo-anunciosAddDivider" role="separator" data-slot="ad-add-content-divider" />
           <button
             type="button"
             role="menuitem"
@@ -522,55 +486,83 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
 function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
   const visibleContent = ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim()));
+  const image = visibleContent.find((item) => item.type === "image");
+  const primaryColor = ad.ctas.find((cta) => cta.color)?.color?.trim() || "#436754";
+
   return (
-    <Panel
+    <div
+      className="bo-anunciosPreview bo-adModalPreview"
       data-testid="ad-preview"
-      className="bo-anunciosPreview"
-      title="Preview en vivo"
-      meta={"Renderizado en orden de visualización"}
+      data-slot="ad-preview"
+      style={{ "--ad-primary": primaryColor } as React.CSSProperties}
     >
-      <div className="flex min-h-[420px] flex-col" data-slot="ad-preview-body">
-        <div className="flex flex-1 flex-col gap-3" data-slot="ad-preview-content">
-          {visibleContent.map((item) => item.type === "image" ? (
-            <img key={item.id} src={item.value} alt="Imagen del anuncio" className="my-2 max-h-72 w-full rounded-bo-lg object-cover" data-slot={`ad-preview-${item.id}`} />
-          ) : item.type === "title" ? (
-            <h3 key={item.id} className="text-3xl font-semibold leading-tight text-bo-accent" data-slot={`ad-preview-${item.id}`}>{item.value}</h3>
-          ) : item.type === "subtitle" ? (
-            <p key={item.id} className="text-xs font-semibold uppercase tracking-[0.18em] text-bo-accent-2" data-slot={`ad-preview-${item.id}`}>{item.value}</p>
-          ) : (
-            <p key={item.id} className="whitespace-pre-wrap text-sm leading-relaxed text-bo-text" data-slot={`ad-preview-${item.id}`}>{item.value}</p>
-          ))}
-          {!visibleContent.length ? <p className="bo-mutedText" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p> : null}
-        </div>
-        <div className="mt-auto flex flex-wrap gap-2 pt-5" data-slot="ad-preview-ctas">
-          {ad.ctas.map((cta) => (
-            <a key={cta.id} href={buildCTAURL(website, cta)} className="rounded-bo-full px-5 py-3 text-sm font-semibold text-white no-underline" style={{ backgroundColor: cta.color }} data-slot={`ad-preview-cta-${cta.id}`}>{cta.text || "Más información"}</a>
-          ))}
+      <div className="bo-adModalBody" data-slot="ad-preview-body">
+        {image ? (
+          <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
+            <img src={image.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${image.id}`} />
+          </div>
+        ) : null}
+
+        <div className="bo-adModalTextCol" data-slot="ad-preview-content">
+          {visibleContent.filter((item) => item.type !== "image").map((item) => {
+            if (item.type === "subtitle") {
+              return <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+            }
+            if (item.type === "title") {
+              return <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
+            }
+            return <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+          })}
+
+          {!visibleContent.length ? (
+            <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
+          ) : null}
+
+          <div className="bo-adModalActions" data-slot="ad-preview-ctas">
+            {ad.ctas.map((cta) => (
+              <a
+                key={cta.id}
+                href={buildCTAURL(website, cta)}
+                className="bo-adModalCta"
+                style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
+                rel="noopener noreferrer"
+                data-slot={`ad-preview-cta-${cta.id}`}
+              >
+                {cta.text || "Más información"}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
-    </Panel>
+    </div>
   );
 }
 
 function DraggableCardRow({
   item,
-  startDrag,
   children,
   onDelete,
   dataSlot,
 }: {
   item: RestaurantAdContentElement & { ordinal?: number };
-  startDrag: (event: React.PointerEvent<Element>) => void;
   children: React.ReactNode;
   onDelete?: () => void;
   dataSlot: string;
 }) {
   const label = `${TYPE_LABEL[item.type]} ${item.ordinal}`;
+  const dragControls = useDragControls();
+  const startDrag = useCallback(
+    (event: React.PointerEvent<Element>) => dragControls.start(event),
+    [dragControls],
+  );
   return (
     <Reorder.Item
       value={item}
+      as="div"
+      layout="position"
       data-slot={dataSlot}
       dragListener={false}
+      dragControls={dragControls}
       dragMomentum={false}
       dragElastic={0.04}
       whileDrag={{ zIndex: 2 }}
@@ -581,7 +573,7 @@ function DraggableCardRow({
         className="bo-anunciosDragHandle"
         aria-label={`Mover ${label}`}
         data-slot={`${dataSlot}-grip`}
-        onPointerDown={startDrag}
+        onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
       >
         <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
       </button>
@@ -609,24 +601,30 @@ function DraggableCardRow({
 function CTARowCard({
   cta,
   index,
-  startDrag,
   website,
   onChange,
   onDelete,
 }: {
   cta: RestaurantAd["ctas"][number];
   index: number;
-  startDrag: (event: React.PointerEvent<Element>) => void;
   website: string;
   onChange: (patch: Partial<RestaurantAd["ctas"][number]>) => void;
   onDelete: () => void;
 }) {
   const label = `CTA ${index + 1}`;
+  const dragControls = useDragControls();
+  const startDrag = useCallback(
+    (event: React.PointerEvent<Element>) => dragControls.start(event),
+    [dragControls],
+  );
   return (
     <Reorder.Item
       value={cta}
+      as="div"
+      layout="position"
       data-slot={`ad-cta-${cta.id}`}
       dragListener={false}
+      dragControls={dragControls}
       dragMomentum={false}
       dragElastic={0.04}
       whileDrag={{ zIndex: 2 }}
@@ -637,7 +635,7 @@ function CTARowCard({
         className="bo-anunciosDragHandle"
         aria-label={`Mover ${label}`}
         data-slot={`ad-cta-${cta.id}-grip`}
-        onPointerDown={startDrag}
+        onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
       >
         <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
       </button>
