@@ -1,7 +1,7 @@
 // Villa Carmen Backoffice - Service Worker
 // Caches static assets for offline use and provides network-first API strategy.
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `vc-static-${CACHE_VERSION}`;
 const API_CACHE = `vc-api-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
@@ -47,6 +47,10 @@ self.addEventListener("fetch", (event) => {
   // Only handle GET requests from our origin
   if (request.method !== "GET") return;
   if (url.origin !== self.location.origin) return;
+
+  // SSR pages are session-dependent and may redirect (/ -> /login).
+  // Let the browser follow them without service-worker interception.
+  if (request.mode === "navigate") return;
 
   // API responses: network-first, fallback to cache
   if (url.pathname.startsWith("/api/admin")) {
