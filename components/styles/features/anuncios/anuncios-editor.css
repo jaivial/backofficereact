@@ -14,9 +14,6 @@
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-.bo-anunciosPreview .bo-panelBody {
-  padding: 18px 20px 20px;
-}
 
 /* Field labels inside a row need the same muted color as the form baseline */
 .bo-anunciosRowField .bo-mutedText {
@@ -105,18 +102,6 @@
   align-items: flex-start;
   justify-content: center;
   padding: 2px 0;
-}
-
-@media (max-width: 768px) {
-  .bo-anunciosRowCard {
-    grid-template-columns: 40px minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    row-gap: 6px;
-  }
-  .bo-anunciosRowAction {
-    grid-column: 2;
-    justify-self: end;
-  }
 }
 
 .bo-anunciosDragHandle {
@@ -357,22 +342,205 @@
   outline-offset: 2px;
 }
 
-/* On <769px the label is hidden and only the icon shows, mirroring the
-   mobile swap pattern in /app/menus/crear. The switch still shows both
-   buttons but only the active one is visible (the consumer hides the
-   content pane via CSS when preview is closed). */
+
+/* Mobile (<769px) shows either the editor or preview, never both. */
+[data-slot="ads-editor-layout"].is-preview-active > [data-slot="ads-main-panel"] {
+  display: none;
+}
+
+[data-slot="ads-editor-layout"].is-editor-active > [data-testid="ad-preview"] {
+  display: none;
+}
+
+[data-slot="ad-content-reorder"] {
+  margin: 0;
+  padding-left: 0;
+}
+
+.bo-anunciosAddDivider {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--bo-border);
+}
+
+/* ── Live ad preview: reusable legacy ad_modal presentation ───── */
+.bo-adModalPreview,
+.bo-adModalPreview * {
+  box-sizing: border-box;
+}
+
+.bo-adModalPreview {
+  width: 100%;
+  max-width: 800px;
+  margin-inline: auto;
+  overflow: hidden;
+  background: #ffffff;
+  color: #333333;
+}
+
+.bo-anunciosPreview.bo-adModalPreview {
+  border-radius: 16px;
+}
+
+.bo-adModalBody {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 400px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bo-adModalImageCol {
+  width: 45%;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.bo-adModalImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bo-adModalTextCol {
+  width: 55%;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.bo-adModalPreview:not(:has(.bo-adModalImageCol)) .bo-adModalTextCol {
+  width: 100%;
+}
+
+.bo-adModalSupertitle {
+  font-size: 13px;
+  color: color-mix(in srgb, var(--ad-primary, #436754) 68%, #333333 32%);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.bo-adModalTitle {
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--ad-primary, #436754);
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+  font-family: 'Georgia', serif;
+  line-height: 1.2;
+}
+
+.bo-adModalDesc {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #333333;
+  margin-bottom: 28px;
+  font-weight: 300;
+  opacity: 0.85;
+  white-space: pre-wrap;
+}
+
+.bo-adModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.bo-adModalCta {
+  display: inline-block;
+  padding: 16px 40px;
+  background: linear-gradient(
+    135deg,
+    var(--ad-primary, #436754),
+    color-mix(in srgb, var(--ad-primary, #436754) 70%, white 30%)
+  );
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: 0.5px;
+  align-self: flex-start;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.bo-adModalCta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Legacy ad modal breakpoints preserved in the live preview. */
 @media (max-width: 768px) {
-  .bo-anunciosPreviewSwitchBtn .bo-anunciosPreviewSwitchLabel {
-    display: none;
+  .bo-adModalBody { min-height: 360px; }
+  .bo-adModalTextCol { padding: 36px 32px; }
+  .bo-adModalTitle { font-size: 30px; }
+}
+
+@media (max-width: 640px) {
+  .bo-adModalBody {
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
   }
-  .bo-anunciosPreviewSwitchBtn {
-    min-width: 32px;
-    padding: 0;
-    width: 32px;
+
+  .bo-adModalImageCol {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    max-height: 42dvh;
+    max-height: 42vh;
   }
-  .bo-anunciosPreviewSwitchBtn:not(.is-active) {
-    display: none;
+
+  .bo-adModalTextCol {
+    width: 100%;
+    padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
+
+  .bo-adModalSupertitle {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .bo-adModalTitle {
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+
+  .bo-adModalDesc {
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+
+  .bo-adModalCta {
+    width: 100%;
+    align-self: stretch;
+    padding: 16px 24px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .bo-adModalImageCol { max-height: 34dvh; max-height: 34vh; }
+  .bo-adModalTextCol { padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); }
+  .bo-adModalTitle { font-size: 23px; }
+  .bo-adModalDesc { font-size: 14px; margin-bottom: 18px; }
+  .bo-adModalCta { padding: 14px 20px; }
 }
 
 /* ── CTAs sub-section inside the merged main panel ────────────── */
