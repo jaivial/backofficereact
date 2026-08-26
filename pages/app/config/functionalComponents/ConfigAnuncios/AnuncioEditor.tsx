@@ -574,6 +574,7 @@ function DraggableCardRow({
         <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
       </button>
       <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
+        <span className="bo-anunciosRowTypeLabel" data-slot={`${dataSlot}-type-label`}>{TYPE_LABEL[item.type]}</span>
         {children}
       </div>
       {onDelete ? (

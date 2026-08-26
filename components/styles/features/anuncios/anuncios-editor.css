@@ -58,7 +58,7 @@
 .bo-anunciosRowCard {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: stretch;
   gap: 8px;
   padding: 8px;
   min-width: 0; /* prevent children from stretching the column out of the grid */
@@ -66,6 +66,12 @@
 
 .bo-anunciosRowCard.is-dragging {
   z-index: 2;
+}
+
+/* Small type indicator above each field (Título / Subtítulo / Texto / Imagen). */
+.bo-anunciosRowTypeLabel {
+  font-size: 11px;
+  color: var(--bo-muted);
 }
 
 /* Inner field wrapper inside a row. Adds the padding the panel / card
@@ -99,12 +105,13 @@
    doesn't have to fight the grip + the trash on one horizontal line. */
 .bo-anunciosRowAction {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 2px 0;
 }
 
 .bo-anunciosDragHandle {
+  align-self: center;
   width: 40px;
   height: 40px;
   border-radius: 12px;
