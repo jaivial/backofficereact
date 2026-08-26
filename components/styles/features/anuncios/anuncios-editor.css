@@ -18,6 +18,24 @@
   padding: 18px 20px 20px;
 }
 
+/* Field labels inside a row need the same muted color as the form baseline */
+.bo-anunciosRowField .bo-mutedText {
+  font-size: 12px;
+}
+
+/* Two-column field grid inside a CTA row. Stacks below sm. */
+.bo-anunciosRowField-2col {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .bo-anunciosRowField-2col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .bo-anunciosPreview .bo-panelTitle {
   font-size: 13px;
 }
@@ -53,8 +71,34 @@
   z-index: 2;
 }
 
-.bo-anunciosRowCard .bo-cardBody {
-  padding: 0;
+/* Inner field wrapper inside a row. Adds the padding the panel / card
+   would have provided so labels and inputs sit inside the card. */
+.bo-anunciosRowField {
+  min-width: 0; /* allow the field column to shrink inside minmax(0, 1fr) */
+  display: grid;
+  gap: 8px;
+  padding: 4px 4px 4px 6px;
+}
+
+/* Stack the action button BELOW the content on narrow viewports so the row
+   doesn't have to fight the grip + the trash on one horizontal line. */
+.bo-anunciosRowAction {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2px 0;
+}
+
+@media (max-width: 768px) {
+  .bo-anunciosRowCard {
+    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    row-gap: 6px;
+  }
+  .bo-anunciosRowAction {
+    grid-column: 2;
+    justify-self: end;
+  }
 }
 
 .bo-anunciosDragHandle {
@@ -354,18 +398,16 @@
 
 @media (max-width: 768px) {
   .bo-anunciosEditorBar {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .bo-anunciosEditorBar-left,
+  .bo-anunciosEditorBar-right {
+    gap: 6px;
   }
   .bo-anunciosEditorBar-right {
-    justify-content: flex-end;
-  }
-  .bo-anunciosRowCard {
-    grid-template-columns: 36px minmax(0, 1fr);
-    grid-template-rows: auto auto;
-  }
-  .bo-anunciosRowCard .bo-anunciosRowAction {
-    grid-column: 2;
-    justify-self: end;
+    flex-wrap: nowrap;
   }
 }
