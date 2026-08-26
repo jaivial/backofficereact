@@ -15,17 +15,6 @@ vi.mock("motion/react", () => ({
   useReducedMotion: () => true,
 }));
 
-vi.mock("../../../../api/client", () => ({
-  createClient: () => ({
-    config: {
-      listAds: vi.fn().mockResolvedValue({ success: true, ads: [] }),
-      createAd: vi.fn(),
-      updateAd: vi.fn(),
-      deleteAd: vi.fn(),
-    },
-  }),
-}));
-
 vi.mock("../../../../ui/overlays/Popover", () => ({
   Popover: ({ children, open, "data-testid": testId }: { children: React.ReactNode; open: boolean; "data-testid"?: string }) =>
     open ? <div data-testid={testId}>{children}</div> : null,
@@ -34,15 +23,25 @@ vi.mock("../../../../ui/overlays/Popover", () => ({
 vi.mock("../../../../ui/shell/Panel", () => ({ Panel: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock("../../../../ui/shell/PageToolbar", () => ({ PageToolbar: ({ left, right }: { left?: React.ReactNode; right?: React.ReactNode }) => <div><div data-slot="toolbar-left">{left}</div><div data-slot="toolbar-right">{right}</div></div> }));
 
-import { ConfigAnunciosContent } from "./ConfigAnuncios";
+import { AnuncioEditor } from "./AnuncioEditor";
+import type { RestaurantAd } from "../../../../../api/types";
 
-const api = {
-  config: {
-    listAds: vi.fn().mockResolvedValue({ success: true, ads: [] }),
-    createAd: vi.fn(),
-    updateAd: vi.fn(),
-    deleteAd: vi.fn(),
-  },
+const baseApi = () => ({
+  listAds: vi.fn().mockResolvedValue({ success: true, ads: [] }),
+  createAd: vi.fn(),
+  updateAd: vi.fn(),
+  deleteAd: vi.fn(),
+  uploadAdImage: vi.fn(),
+  enhanceAdImage: vi.fn(),
+  generateAdImage: vi.fn(),
+});
+
+const sampleAd: RestaurantAd = {
+  id: 1,
+  name: "Anuncio 1",
+  active: false,
+  content: [],
+  ctas: [],
 };
 
 beforeEach(() => {
@@ -51,30 +50,25 @@ beforeEach(() => {
   };
 });
 
-describe("ConfigAnunciosContent — structure", () => {
-  it("shows the empty CTA copy and the create-annuncio trigger when there are no ads", async () => {
-    let captured: ReturnType<typeof render> | undefined;
+describe("AnuncioEditor — structure", () => {
+  it("renders the create-annuncio shell (mode=create) with a save trigger", async () => {
+    const api = baseApi();
     await act(async () => {
-      captured = render(<ConfigAnunciosContent api={api as never} website="https://villa.test" />);
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="create" initialAd={sampleAd} />);
     });
-    expect(captured).toBeTruthy();
-    expect(await screen.findByText(/Empieza creando tu primer anuncio/)).toBeTruthy();
-    expect(screen.getByTestId("ad-create")).toBeTruthy();
+    expect(await screen.findByTestId("ad-save")).toBeTruthy();
+    expect(screen.getByTestId("ad-add-content-trigger")).toBeTruthy();
   });
 
-  it("opens the add-content popover and calls addContent for the chosen type", async () => {
-    api.config.listAds = vi.fn().mockResolvedValue({
-      success: true,
-      ads: [{ id: 1, name: "Anuncio 1", active: false, content: [], ctas: [] }],
-    });
+  it("opens the add-content popover and exposes the four content types", async () => {
+    const api = baseApi();
     await act(async () => {
-      render(<ConfigAnunciosContent api={api as never} website="https://villa.test" />);
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" initialAd={sampleAd} />);
     });
     const trigger = await screen.findByTestId("ad-add-content-trigger");
     await act(async () => {
       fireEvent.click(trigger);
     });
-    // Popover is rendered (mock returns content when open=true).
     expect(await screen.findByTestId("ad-add-content-popover")).toBeTruthy();
     expect(screen.getByTestId("ad-add-title-popover")).toBeTruthy();
     expect(screen.getByTestId("ad-add-subtitle-popover")).toBeTruthy();
@@ -83,18 +77,16 @@ describe("ConfigAnunciosContent — structure", () => {
   });
 
   it("wraps each row in .bo-anunciosRowField and the action in .bo-anunciosRowAction", async () => {
-    api.config.listAds = vi.fn().mockResolvedValue({
-      success: true,
-      ads: [{
-        id: 1,
-        name: "Anuncio 1",
-        active: false,
-        content: [{ id: "t1", type: "title", value: "Titulo" }],
-        ctas: [{ id: "cta1", text: "Reservar", color: "#436754", navigation_mode: "route", route: "/reservas", custom_url: "" }],
-      }],
-    });
+    const api = baseApi();
+    const ad: RestaurantAd = {
+      id: 1,
+      name: "Anuncio 1",
+      active: false,
+      content: [{ id: "t1", type: "title", value: "Titulo" }],
+      ctas: [{ id: "cta1", text: "Reservar", color: "#436754", navigation_mode: "route", route: "/reservas", custom_url: "" }],
+    };
     await act(async () => {
-      render(<ConfigAnunciosContent api={api as never} website="https://villa.test" />);
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" initialAd={ad} />);
     });
     const fields = document.querySelectorAll(".bo-anunciosRowField");
     const actions = document.querySelectorAll(".bo-anunciosRowAction");
@@ -104,13 +96,10 @@ describe("ConfigAnunciosContent — structure", () => {
     expect(ctaFields?.classList.contains("bo-anunciosRowField-2col")).toBe(true);
   });
 
-  it("opens the add-CTA popover and adds a CTA on click", async () => {
-    api.config.listAds = vi.fn().mockResolvedValue({
-      success: true,
-      ads: [{ id: 1, name: "Anuncio 1", active: false, content: [], ctas: [] }],
-    });
+  it("opens the add-CTA popover and closes it after adding a CTA", async () => {
+    const api = baseApi();
     await act(async () => {
-      render(<ConfigAnunciosContent api={api as never} website="https://villa.test" />);
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" initialAd={sampleAd} />);
     });
     const trigger = await screen.findByTestId("ad-add-cta-trigger");
     await act(async () => {
@@ -120,8 +109,6 @@ describe("ConfigAnunciosContent — structure", () => {
     await act(async () => {
       fireEvent.click(screen.getByText(/Añadir nuevo CTA/));
     });
-    // After clicking add-cta, the popover is closed and a new row should appear.
-    // We assert by re-querying the trigger visibility.
     await waitFor(() => {
       expect(screen.queryByTestId("ad-add-cta-popover")).toBeNull();
     });
