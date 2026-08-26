@@ -62,8 +62,8 @@
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: start;
-  gap: 10px;
-  padding: 10px;
+  gap: 8px;
+  padding: 8px;
   min-width: 0; /* prevent children from stretching the column out of the grid */
 }
 
@@ -75,9 +75,27 @@
    would have provided so labels and inputs sit inside the card. */
 .bo-anunciosRowField {
   min-width: 0; /* allow the field column to shrink inside minmax(0, 1fr) */
-  display: grid;
-  gap: 8px;
-  padding: 4px 4px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  gap: 4px;
+  padding: 2px 2px 2px 4px;
+}
+
+/* Make form inputs fill the available field column on mobile and desktop.
+   text-overflow: ellipsis shows "..." when the value overflows on focus blur;
+   on mobile we allow horizontal scrolling for partial text. */
+.bo-anunciosRowField > input.bo-input,
+.bo-anunciosRowField > textarea.bo-textarea {
+  width: 100% !important;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+@media (max-width: 768px) {
+  .bo-anunciosRowField > input.bo-input {
+    overflow-x: auto;
+    text-overflow: ellipsis;
+  }
 }
 
 /* Stack the action button BELOW the content on narrow viewports so the row
@@ -411,3 +429,40 @@
     flex-wrap: nowrap;
   }
 }
+
+
+/* ────────────────────────────────────────────────────────────────
+ * Fallbacks for Tailwind `bo-*` utility classes that the JIT
+ * compiler does not generate from the current tailwind.config.ts.
+ * Keep these in sync with the tokens defined in variables.css.
+ * ──────────────────────────────────────────────────────────────── */
+.rounded-bo-sm   { border-radius: var(--bo-radius-sm) !important; }
+.rounded-bo-md   { border-radius: var(--bo-radius-md) !important; }
+.rounded-bo-lg   { border-radius: var(--bo-radius-lg) !important; }
+.rounded-bo-full { border-radius: var(--bo-radius-full) !important; }
+
+.border-bo-border { border-color: var(--bo-border) !important; }
+.border-bo-border-2 { border-color: var(--bo-border-2) !important; }
+/* Buttons have a default browser background-color (ButtonFace). Use
+   higher-specificity selectors so the bg-* utilities win. */
+button.bg-bo-bg,
+.bg-bo-bg       { background-color: var(--bo-bg) !important; }
+button.bg-bo-surface,
+.bg-bo-surface  { background-color: var(--bo-surface) !important; }
+button.bg-bo-surface-2,
+.bg-bo-surface-2 { background-color: var(--bo-surface-2) !important; }
+button.bg-bo-surface-3,
+.bg-bo-surface-3 { background-color: var(--bo-surface-3) !important; }
+button.bg-bo-accent,
+.bg-bo-accent   { background-color: var(--bo-accent) !important; }
+button.bg-bo-accent { color: var(--bo-bg); }
+.text-bo-text   { color: var(--bo-text) !important; }
+.text-bo-muted  { color: var(--bo-muted) !important; }
+.text-bo-faint  { color: var(--bo-faint) !important; }
+.text-bo-accent { color: var(--bo-accent) !important; }
+.text-bo-text-danger { color: var(--bo-text-danger) !important; }
+.text-bo-bg     { color: var(--bo-bg) !important; }
+
+/* Panel body padding (Tailwind p-4 = 16px). The Panel component renders
+   <div className="bo-panelBody"> and uses padding={false} -> p-4. */
+.bo-panelBody { padding: 16px; }
