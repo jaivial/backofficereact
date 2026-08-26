@@ -564,7 +564,7 @@ export function ConfigAnunciosContent({ api, website, notify = NOOP_NOTIFY }: { 
                 dataSlot={`ad-content-${item.id}`}
               >
                 {item.type === "image" ? (
-                  <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
+                  <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
                     {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot={`ad-content-${item.id}-thumb`} /> : <ImagePlus size={22} aria-hidden="true" />}
                     <span data-slot={`ad-content-${item.id}-change-text`}>{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
                   </button>
@@ -709,7 +709,7 @@ function ImageFlowModal({ open, step, previewURL, file, onClose, onGenerate, onP
                 </div>
                 {previewURL ? <img src={previewURL} alt="Previsualización de imagen optimizada" className="max-h-72 w-full rounded-bo-lg object-contain" data-slot="ad-image-advisor-preview" /> : null}
                 <div className="flex flex-wrap justify-end gap-2" data-slot="ad-image-advisor-actions">
-                  <button type="button" onClick={onRaw} className="rounded-bo-sm border border-bo-border px-4 py-2 text-sm text-bo-text" data-testid="ad-image-use-raw">Continuar sin mejorar</button>
+                  <button type="button" onClick={onRaw} className="rounded-bo-sm border border-bo-border bg-bo-surface px-4 py-2 text-sm text-bo-text" data-testid="ad-image-use-raw">Continuar sin mejorar</button>
                   <button type="button" onClick={onEnhance} className="flex items-center gap-2 rounded-bo-sm bg-bo-accent px-4 py-2 text-sm font-semibold text-bo-bg" data-testid="ad-image-enhance"><Sparkles size={15} aria-hidden="true" />Mejorar con IA</button>
                 </div>
               </div>
