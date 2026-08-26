@@ -57,11 +57,20 @@
 /* ── Content / CTA rows: drag handle is a dark square button in dark theme ── */
 .bo-anunciosRowCard {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  align-items: stretch;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
   padding: 8px;
   min-width: 0; /* prevent children from stretching the column out of the grid */
+}
+
+/* Type label sits on its own row above the control band so grip, input and
+   trash share one horizontal level and stay aligned regardless of label size. */
+.bo-anunciosRowBand {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .bo-anunciosRowCard.is-dragging {
@@ -111,7 +120,6 @@
 }
 
 .bo-anunciosDragHandle {
-  align-self: center;
   width: 40px;
   height: 40px;
   border-radius: 12px;
