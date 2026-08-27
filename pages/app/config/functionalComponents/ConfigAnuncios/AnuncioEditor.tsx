@@ -1,17 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, Reorder, useDragControls } from "motion/react";
 import {
-  AlertTriangle,
-  Check,
   Eye,
   GripVertical,
   ImagePlus,
-  Loader2,
   Megaphone,
-  Monitor,
   Plus,
+  Save,
   Settings2,
-  Smartphone,
   Sparkles,
   Trash2,
   Type,
@@ -23,7 +19,6 @@ import type {
   RestaurantAdContentElement,
   RestaurantAdContentType,
   RestaurantAdInput,
-  RestaurantAdImageGenerationStatus,
 } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Modal } from "../../../../../ui/overlays/Modal";
@@ -40,7 +35,6 @@ import {
   WEBSITE_ROUTE_OPTIONS,
 } from "./lib/adEditor";
 import { compressAdImage } from "./lib/image";
-import { useIsNarrowViewport } from "./hooks/useIsNarrowViewport";
 
 export type AdsAPI = {
   listAds: () => Promise<{ success: boolean; ads?: RestaurantAd[]; message?: string }>;
@@ -79,25 +73,6 @@ export function apiMessage(result: unknown, fallback: string): string {
   return fallback;
 }
 
-export type AdSaveRequest = { type: "ad_save"; reqId: string; adId: number; payload: unknown };
-export type AdEventListener = (event: { type: string; reqId?: string; adId?: number; code?: string; message?: string; ad?: unknown }) => void;
-
-/** Timeout waiting for the ad_saved WS ack — retryable, outbox keeps the payload. */
-class WSSaveTimeoutError extends Error {
-  constructor() {
-    super("No se pudo guardar el anuncio (sin conexión con el servidor)");
-    this.name = "WSSaveTimeoutError";
-  }
-}
-
-type PendingSave = {
-  resolve: (ad: RestaurantAd | null) => void;
-  reject: (error: Error) => void;
-  timer: ReturnType<typeof setTimeout>;
-  adId: number;
-  timedOut: boolean;
-};
-
 type AnuncioEditorProps = {
   api: AdsAPI;
   website: string;
@@ -107,33 +82,18 @@ type AnuncioEditorProps = {
   initialAd?: RestaurantAd | null;
   onSaved?: (ad: RestaurantAd) => void;
   onDeleted?: () => void;
-  /** Shared WS-failure timestamps (adId -> epoch ms) from useAdsController. */
-  wsFailureAtRef?: React.MutableRefObject<Map<number, number>>;
-  /** Live WS readiness from useAdsController ("open" | "connecting" | "closed"). */
-  wsStatusRef?: React.MutableRefObject<"open" | "connecting" | "closed">;
-  /** Sends an ad_save message over the shared restaurant WebSocket. */
-  sendAdSave?: (message: AdSaveRequest) => void;
-  /** Subscribes to ad_* WS events (ad_saved / ad_save_failed / …). */
-  subscribeAdEvents?: (listener: AdEventListener) => () => void;
-  /** Autosave debounce; production default 1000ms, tests use a small value. */
-  autosaveDelayMs?: number;
 };
 
-export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsFailureAtRef, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs }: AnuncioEditorProps) {
+export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [previewOpen, setPreviewOpen] = useState(true);
-  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
-  // On natural phones (<=640px, no switcher) the preview always uses the
-  // mobile DOM so content order — image included — is respected.
-  const isNarrowViewport = useIsNarrowViewport();
-  const effectiveDevice: "mobile" | "desktop" = isNarrowViewport ? "mobile" : previewDevice;
   const [imageOpen, setImageOpen] = useState(false);
   const [imageStep, setImageStep] = useState<ImageStep>("choose");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewURL, setImagePreviewURL] = useState("");
+  const [imageEnhancing, setImageEnhancing] = useState(false);
   const [addContentOpen, setAddContentOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const addContentBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -168,127 +128,32 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   useEffect(() => () => { if (imagePreviewURL) URL.revokeObjectURL(imagePreviewURL); }, [imagePreviewURL]);
 
-  const onSavedRef = useRef(onSaved);
-  useEffect(() => { onSavedRef.current = onSaved; }, [onSaved]);
-
-  const baselineRef = useRef<string | null>(null);
-  const pendingSavesRef = useRef(new Map<string, PendingSave>());
-  const reqCounter = useRef(0);
-  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const adPayload = useCallback((source: RestaurantAd) => ({ name: source.name, active: source.active, content: source.content, ctas: source.ctas }), []);
-
-  /** Sends one ad_save over WS and resolves with the server's saved row. */
-  const persistViaWS = useCallback((source: RestaurantAd): Promise<RestaurantAd | null> => {
-    if (!sendAdSave) return Promise.resolve(null);
-    const reqId = `ad-save-${Date.now()}-${++reqCounter.current}`;
-    return new Promise<RestaurantAd | null>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        // Keep the entry: a late ad_saved (outbox flush after reconnect) must
-        // still resolve and correct the status pill from error back to saved.
-        const pending = pendingSavesRef.current.get(reqId);
-        if (pending) pending.timedOut = true;
-        reject(new WSSaveTimeoutError());
-      }, 8000);
-      pendingSavesRef.current.set(reqId, { resolve, reject, timer, adId: source.id, timedOut: false });
-      sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: adPayload(source) });
-    });
-  }, [adPayload, sendAdSave]);
-
   const persistAd = useCallback(async (source: RestaurantAd): Promise<RestaurantAd | null> => {
     try {
-      const saved = await persistViaWS(source);
-      if (!saved) {
-        notify("error", "Anuncios", "No se pudo guardar el anuncio (sin conexión con el servidor)");
-        return null;
-      }
-      if (source.id <= 0 && saved.id > 0) onSavedRef.current?.(saved);
-      return saved;
+      const payload: RestaurantAdInput = { name: source.name, active: source.active, content: source.content, ctas: source.ctas };
+      const result = source.id > 0
+        ? await api.updateAd(source.id, payload)
+        : await api.createAd(payload);
+      if (!result.success) { notify("error", "Anuncios", apiMessage(result, "No se pudo guardar el anuncio")); return null; }
+      if (result.ad) setAd(result.ad);
+      if (result.ad && onSaved) onSaved(result.ad);
+      return result.ad ?? null;
     } catch (error) {
-      // Timeout while the WS is reconnecting: the message stays in the outbox
-      // and lands on reconnect, so stay quiet here — the status pill already
-      // shows the error and self-corrects when the late ack arrives.
-      if (error instanceof WSSaveTimeoutError && wsStatusRef?.current !== "open") return null;
       notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio");
       return null;
     }
-  }, [notify, persistViaWS, wsStatusRef]);
+  }, [api, notify, onSaved]);
 
-  // WS save outcomes: correlate by reqId, adopt the server row, drive the
-  // autosave baseline + status pill. Non-matching reqIds (other tabs) are
-  // ignored so concurrent editors don't clobber each other's drafts.
-  useEffect(() => {
-    if (!subscribeAdEvents) return;
-    return subscribeAdEvents((event) => {
-      if (event.type === "ad_saved") {
-        const pending = event.reqId ? pendingSavesRef.current.get(event.reqId) : undefined;
-        if (event.reqId && pending) {
-          clearTimeout(pending.timer);
-          pendingSavesRef.current.delete(event.reqId);
-        }
-        const savedAd = event.ad as RestaurantAd | undefined;
-        if (!savedAd || typeof savedAd.id !== "number") return;
-        // Late ack for an already-timed-out save: purge stale siblings and
-        // correct the status pill (error → saved) even without a waiter.
-        if (!pending) {
-          for (const [id, entry] of pendingSavesRef.current) {
-            if (!entry.timedOut) continue;
-            clearTimeout(entry.timer);
-            pendingSavesRef.current.delete(id);
-          }
-          setSaveState((current) => (current === "error" ? "saved" : current));
-          window.setTimeout(() => setSaveState((current) => (current === "saved" ? "idle" : current)), 2000);
-          return;
-        }
-        pending.resolve(savedAd);
-        baselineRef.current = JSON.stringify({ name: savedAd.name, active: savedAd.active, content: savedAd.content, ctas: savedAd.ctas });
-        setAd(savedAd);
-        setSaveState("saved");
-        window.setTimeout(() => setSaveState((current) => (current === "saved" ? "idle" : current)), 2000);
-        return;
-      }
-      if (event.type === "ad_save_failed") {
-        const pending = event.reqId ? pendingSavesRef.current.get(event.reqId) : undefined;
-        if (event.reqId && pending) {
-          clearTimeout(pending.timer);
-          pendingSavesRef.current.delete(event.reqId);
-          pending.reject(new Error(event.message || "No se pudo guardar el anuncio"));
-        }
-        setSaveState("error");
-      }
-    });
-  }, [notify, subscribeAdEvents]);
-
-  // Autosave: 1s (autosaveDelayMs) after the ad payload diverges from the last
-  // saved REST/WS baseline. The effect cleanup doubles as the debounce — any
-  // keystroke reschedules.
-  useEffect(() => {
-    if (!ad || !sendAdSave) return;
-    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas });
-    if (baselineRef.current === null) {
-      baselineRef.current = json;
-      return;
+  const save = useCallback(async () => {
+    if (!ad) return;
+    setBusy(true);
+    try {
+      const saved = await persistAd(ad);
+      if (saved) notify("success", "Anuncios", "Anuncio guardado");
+    } finally {
+      setBusy(false);
     }
-    if (json === baselineRef.current) return;
-    const delay = autosaveDelayMs ?? 1000;
-    autosaveTimerRef.current = setTimeout(() => {
-      autosaveTimerRef.current = null;
-      setSaveState("saving");
-      void persistAd(ad);
-    }, delay);
-    return () => {
-      if (autosaveTimerRef.current) {
-        clearTimeout(autosaveTimerRef.current);
-        autosaveTimerRef.current = null;
-      }
-    };
-  }, [ad, autosaveDelayMs, persistAd, sendAdSave]);
-
-  const retrySave = useCallback(() => {
-    if (!ad || saveState === "saving") return;
-    setSaveState("saving");
-    void persistAd(ad);
-  }, [ad, persistAd, saveState]);
+  }, [ad, notify, persistAd]);
 
   const removeAd = useCallback(async () => {
     if (!ad?.id) return;
@@ -333,10 +198,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     await persistAd(withURL);
   }, [ad, persistAd]);
 
-  const setImageGenerationStatus = useCallback((status: RestaurantAdImageGenerationStatus) => {
-    setAd((current) => current ? { ...current, image_generation_status: status, image_generation_started_at: status === "pending" ? new Date().toISOString() : current.image_generation_started_at } : current);
-  }, []);
-
   const closeImage = useCallback(() => { setImageOpen(false); setImageStep("choose"); setImageFile(null); setImagePreviewURL(""); }, []);
   const chooseImage = useCallback(async (file: File) => {
     setImageStep("preparing");
@@ -351,42 +212,23 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     }
   }, [notify]);
 
-  /**
-   * Surfaces an AI-image failure toast. When the HTTP error body was replaced
-   * in transit (message collapses to "HTTP <status>") and the WebSocket
-   * already delivered the actionable `ad_image_failed` event for this ad
-   * (e.g. insufficient credits), skip the duplicate useless toast.
-   */
-  const notifyImageFailure = useCallback((adId: number, error: unknown) => {
-    const message = error instanceof Error ? error.message : "No se pudo procesar la imagen";
-    const mangled = /^HTTP \d+$/.test(message);
-    const seenAt = wsFailureAtRef?.current.get(adId) ?? 0;
-    const wsAlreadySurfaced = Date.now() - seenAt < 15000;
-    if (mangled && wsAlreadySurfaced) return;
-    notify("error", "Imagen", message);
-  }, [notify, wsFailureAtRef]);
-
   const handleUploadedImage = useCallback(async (enhance: boolean) => {
     if (!ad?.id || !imageFile) return;
     if (enhance) {
-      // AI enhance is slow — close the modal immediately and let the row
-      // render a skeleton. The server persists the in-flight status so
-      // a page reload mid-flight keeps the skeleton visible.
-      const adIdForFailure = ad.id;
+      const fileToEnhance = imageFile;
+      setImageEnhancing(true);
       closeImage();
-      setImageGenerationStatus("pending");
       try {
-        const result = await api.enhanceAdImage(ad.id, imageFile);
-        if (!result.success || !result.url) {
-          setImageGenerationStatus("failed");
+        const result = await api.enhanceAdImage(ad.id, fileToEnhance);
+        if (!result.success) {
           notify("error", "Imagen", apiMessage(result, "No se pudo procesar la imagen"));
           return;
         }
-        await setImageURL(result.url);
-        setImageGenerationStatus("ready");
+        await setImageURL(result.url ?? "");
       } catch (error) {
-        setImageGenerationStatus("failed");
-        notifyImageFailure(adIdForFailure, error);
+        notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo procesar la imagen");
+      } finally {
+        setImageEnhancing(false);
       }
       return;
     }
@@ -395,35 +237,28 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
       const result = await api.uploadAdImage(ad.id, imageFile);
       if (!result.success) { notify("error", "Imagen", apiMessage(result, "No se pudo procesar la imagen")); setImageStep("advisor"); return; }
       await setImageURL(result.url ?? "");
-      setImageGenerationStatus("ready");
       closeImage();
     } catch (error) {
       notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo procesar la imagen");
       setImageStep("advisor");
     }
-  }, [ad?.id, api, closeImage, imageFile, notify, notifyImageFailure, setImageGenerationStatus, setImageURL]);
+  }, [ad?.id, api, closeImage, imageFile, notify, setImageURL]);
 
   const generateImage = useCallback(async () => {
     if (!ad) return;
     setImageStep("working");
     const saved = await persistAd(ad);
     if (!saved) { setImageStep("choose"); return; }
-    closeImage();
-    setImageGenerationStatus("pending");
     try {
       const result = await api.generateAdImage(saved.id);
-      if (!result.success || !result.url) {
-        setImageGenerationStatus("failed");
-        notify("error", "Imagen", apiMessage(result, "No se pudo generar la imagen"));
-        return;
-      }
-      await setImageURL(result.url);
-      setImageGenerationStatus("ready");
+      if (!result.success) { notify("error", "Imagen", apiMessage(result, "No se pudo generar la imagen")); setImageStep("choose"); return; }
+      await setImageURL(result.url ?? "");
+      closeImage();
     } catch (error) {
-      setImageGenerationStatus("failed");
-      notifyImageFailure(saved.id, error);
+      notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo generar la imagen");
+      setImageStep("choose");
     }
-  }, [ad, api, closeImage, notifyImageFailure, persistAd, setImageGenerationStatus, setImageURL]);
+  }, [ad, api, closeImage, notify, persistAd, setImageURL]);
 
   const textCounts = useMemo(() => ad ? ad.content.reduce<Record<string, number>>((out, item) => ({ ...out, [item.type]: (out[item.type] || 0) + 1 }), {}) : {}, [ad]);
 
@@ -508,37 +343,15 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           </div>
           <button
             type="button"
-            onClick={retrySave}
-            disabled={saveState !== "error"}
-            className="bo-anunciosSaveStatus flex items-center gap-1.5 rounded-bo-sm px-3 text-xs font-semibold"
-            data-state={saveState}
-            aria-label={saveState === "error" ? "Error al guardar, reintentar" : saveState === "saving" ? "Guardando cambios" : saveState === "saved" ? "Cambios guardados" : "Autoguardado activo"}
-            role={saveState === "error" ? "button" : "status"}
-            aria-live="polite"
-            data-slot="ad-save-status"
-            data-testid="ad-save-status"
+            onClick={() => void save()}
+            disabled={busy}
+            className="bo-anunciosIconBtn"
+            data-tone="primary"
+            aria-label="Guardar anuncio"
+            data-slot="ad-save"
+            data-testid="ad-save"
           >
-            {saveState === "saving" ? (
-              <>
-                <Loader2 size={13} className="animate-spin" aria-hidden="true" />
-                <span className="bo-anunciosPreviewSwitchLabel">Guardando…</span>
-              </>
-            ) : saveState === "saved" ? (
-              <>
-                <Check size={13} aria-hidden="true" />
-                <span className="bo-anunciosPreviewSwitchLabel">Guardado</span>
-              </>
-            ) : saveState === "error" ? (
-              <>
-                <AlertTriangle size={13} aria-hidden="true" />
-                <span className="bo-anunciosPreviewSwitchLabel">Error — reintentar</span>
-              </>
-            ) : (
-              <>
-                <Check size={13} aria-hidden="true" className="opacity-50" />
-                <span className="bo-anunciosPreviewSwitchLabel opacity-70">Autoguardado</span>
-              </>
-            )}
+            <Save size={16} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -594,27 +407,25 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                 dataSlot={`ad-content-${item.id}`}
               >
                 {item.type === "image" ? (
-                  ad.image_generation_status === "pending" ? (
-                    <div role="status" aria-live="polite" className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
-                      <div className="bo-skeleton h-16 w-24 rounded-bo-sm" aria-hidden="true" data-slot={`ad-content-${item.id}-skeleton`} />
-                      <span className="bo-skeletonLine bo-skeletonLine--md" style={{ width: "60%" }} aria-hidden="true" />
-                      <Sparkles size={14} aria-hidden="true" className="animate-pulse text-bo-accent" />
-                      <span data-slot={`ad-content-${item.id}-change-text`}>Mejorando con IA...</span>
-                    </div>
-                  ) : (
-                    <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`} data-failed={ad.image_generation_status === "failed" ? "true" : undefined}>
-                      {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot={`ad-content-${item.id}-thumb`} /> : <ImagePlus size={22} aria-hidden="true" />}
-                      <span className="min-w-0 flex-1" data-slot={`ad-content-${item.id}-change-copy`}>
-                        <span className="block" data-slot={`ad-content-${item.id}-change-text`}>{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
-                        {ad.image_generation_status === "failed" ? (
-                          <span className="mt-0.5 flex items-center gap-1 text-xs text-bo-text-warning" data-slot={`ad-content-${item.id}-failed-chip`}>
-                            <AlertTriangle size={12} aria-hidden="true" />
-                            La mejora con IA falló. Reintenta o continúa sin mejorar.
-                          </span>
-                        ) : null}
+                  <button
+                    type="button"
+                    onClick={() => { setImageOpen(true); setImageStep("choose"); }}
+                    disabled={imageEnhancing}
+                    aria-busy={imageEnhancing}
+                    className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted disabled:cursor-not-allowed disabled:opacity-70"
+                    data-slot={`ad-content-${item.id}-change`}
+                  >
+                    {imageEnhancing ? (
+                      <span className="flex h-16 w-24 items-center justify-center rounded-bo-sm bg-bo-surface-2" data-slot={`ad-content-${item.id}-enhancing`}>
+                        <Sparkles size={20} className="animate-pulse text-bo-accent" aria-hidden="true" />
                       </span>
-                    </button>
-                  )
+                    ) : item.value ? (
+                      <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot={`ad-content-${item.id}-thumb`} />
+                    ) : (
+                      <ImagePlus size={22} aria-hidden="true" />
+                    )}
+                    <span data-slot={`ad-content-${item.id}-change-text`}>{imageEnhancing ? "Mejorando con IA..." : item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
+                  </button>
                 ) : item.type === "text" ? (
                   <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
                 ) : (
@@ -652,39 +463,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           </div>
         </Panel>
 
-        {previewOpen ? (
-          <div className="bo-anunciosPreviewCol" data-slot="ads-preview-column">
-            <div className="bo-anunciosDeviceSwitch" role="group" aria-label="Vista del dispositivo" data-slot="ad-preview-device-switch">
-              <div className="bo-anunciosPreviewSwitch">
-                <button
-                  type="button"
-                  className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "mobile" ? "is-active" : ""}`}
-                  onClick={() => setPreviewDevice("mobile")}
-                  aria-pressed={previewDevice === "mobile"}
-                  aria-label="Ver versión móvil"
-                  data-slot="ad-preview-device-mobile"
-                  data-testid="ad-preview-device-mobile"
-                >
-                  <Smartphone size={14} aria-hidden="true" />
-                  <span className="bo-anunciosPreviewSwitchLabel">Móvil</span>
-                </button>
-                <button
-                  type="button"
-                  className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "desktop" ? "is-active" : ""}`}
-                  onClick={() => setPreviewDevice("desktop")}
-                  aria-pressed={previewDevice === "desktop"}
-                  aria-label="Ver versión ordenador"
-                  data-slot="ad-preview-device-desktop"
-                  data-testid="ad-preview-device-desktop"
-                >
-                  <Monitor size={14} aria-hidden="true" />
-                  <span className="bo-anunciosPreviewSwitchLabel">Ordenador</span>
-                </button>
-              </div>
-            </div>
-            <Preview ad={ad} website={website} device={effectiveDevice} />
-          </div>
-        ) : null}
+        {previewOpen ? <Preview ad={ad} website={website} /> : null}
       </div>
 
       <Popover
@@ -733,79 +512,55 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   );
 }
 
-function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; device: "mobile" | "desktop" }) {
-  const visibleContent = useMemo(
-    () => ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim())),
-    [ad.content],
-  );
+function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
+  const visibleContent = ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim()));
   const image = visibleContent.find((item) => item.type === "image");
-  const textItems = useMemo(() => visibleContent.filter((item) => item.type !== "image"), [visibleContent]);
   const primaryColor = ad.ctas.find((cta) => cta.color)?.color?.trim() || "#436754";
-
-  const renderImage = (item: RestaurantAdContentElement) => (
-    <div className="bo-adModalImageCol" key={item.id} data-slot="ad-preview-image-col">
-      <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
-    </div>
-  );
-
-  const renderTextItem = (item: RestaurantAdContentElement) => {
-    if (item.type === "subtitle") {
-      return <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
-    }
-    if (item.type === "title") {
-      return <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
-    }
-    return <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
-  };
-
-  const renderCtas = () => (
-    <div className="bo-adModalActions" data-slot="ad-preview-ctas">
-      {ad.ctas.map((cta) => (
-        <a
-          key={cta.id}
-          href={buildCTAURL(website, cta)}
-          className="bo-adModalCta"
-          style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
-          rel="noopener noreferrer"
-          data-slot={`ad-preview-cta-${cta.id}`}
-        >
-          {cta.text || "Más información"}
-        </a>
-      ))}
-    </div>
-  );
-
-  const renderEmpty = () => (!visibleContent.length ? (
-    <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
-  ) : null);
 
   return (
     <div
       className="bo-anunciosPreview bo-adModalPreview"
       data-testid="ad-preview"
       data-slot="ad-preview"
-      data-preview-device={device}
       style={{ "--ad-primary": primaryColor } as React.CSSProperties}
     >
       <div className="bo-adModalBody" data-slot="ad-preview-body">
-        {device === "mobile" ? (
-          // Mobile folds content in the EXACT order chosen in the editor: the
-          // image is interleaved at its position instead of always leading.
-          <>
-            {visibleContent.map((item) => (item.type === "image" ? renderImage(item) : renderTextItem(item)))}
-            {renderEmpty()}
-            {renderCtas()}
-          </>
-        ) : (
-          <>
-            {image ? renderImage(image) : null}
-            <div className="bo-adModalTextCol" data-slot="ad-preview-content">
-              {textItems.map(renderTextItem)}
-              {renderEmpty()}
-              {renderCtas()}
-            </div>
-          </>
-        )}
+        {image ? (
+          <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
+            <img src={image.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${image.id}`} />
+          </div>
+        ) : null}
+
+        <div className="bo-adModalTextCol" data-slot="ad-preview-content">
+          {visibleContent.filter((item) => item.type !== "image").map((item) => {
+            if (item.type === "subtitle") {
+              return <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+            }
+            if (item.type === "title") {
+              return <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
+            }
+            return <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+          })}
+
+          {!visibleContent.length ? (
+            <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
+          ) : null}
+
+          <div className="bo-adModalActions" data-slot="ad-preview-ctas">
+            {ad.ctas.map((cta) => (
+              <a
+                key={cta.id}
+                href={buildCTAURL(website, cta)}
+                className="bo-adModalCta"
+                style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
+                rel="noopener noreferrer"
+                data-slot={`ad-preview-cta-${cta.id}`}
+              >
+                {cta.text || "Más información"}
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -843,35 +598,33 @@ function DraggableCardRow({
       whileDrag={{ zIndex: 2 }}
       className="bo-anunciosRowCard"
     >
-      <span className="bo-anunciosRowTypeLabel" data-slot={`${dataSlot}-type-label`}>{TYPE_LABEL[item.type]}</span>
-      <div className="bo-anunciosRowBand" data-slot={`${dataSlot}-band`}>
-        <button
-          type="button"
-          className="bo-anunciosDragHandle"
-          aria-label={`Mover ${label}`}
-          data-slot={`${dataSlot}-grip`}
-          onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
-        >
-          <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
-        </button>
-        <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
-          {children}
-        </div>
-        {onDelete ? (
-          <div className="bo-anunciosRowAction" data-slot={`${dataSlot}-action`}>
-            <button
-              type="button"
-              onClick={onDelete}
-              className="bo-anunciosIconBtn"
-              data-tone="danger"
-              aria-label={`Eliminar ${label}`}
-              data-slot={`${dataSlot}-delete`}
-            >
-              <Trash2 size={15} aria-hidden="true" />
-            </button>
-          </div>
-        ) : null}
+      <button
+        type="button"
+        className="bo-anunciosDragHandle"
+        aria-label={`Mover ${label}`}
+        data-slot={`${dataSlot}-grip`}
+        onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
+      >
+        <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
+      </button>
+      <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
+        <span className="bo-anunciosRowTypeLabel" data-slot={`${dataSlot}-type-label`}>{TYPE_LABEL[item.type]}</span>
+        {children}
       </div>
+      {onDelete ? (
+        <div className="bo-anunciosRowAction" data-slot={`${dataSlot}-action`}>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="bo-anunciosIconBtn"
+            data-tone="danger"
+            aria-label={`Eliminar ${label}`}
+            data-slot={`${dataSlot}-delete`}
+          >
+            <Trash2 size={15} aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
     </Reorder.Item>
   );
 }
