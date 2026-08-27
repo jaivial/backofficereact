@@ -84,9 +84,11 @@ type AnuncioEditorProps = {
   initialAd?: RestaurantAd | null;
   onSaved?: (ad: RestaurantAd) => void;
   onDeleted?: () => void;
+  /** Shared WS-failure timestamps (adId -> epoch ms) from useAdsController. */
+  wsFailureAtRef?: React.MutableRefObject<Map<number, number>>;
 };
 
-export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted }: AnuncioEditorProps) {
+export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsFailureAtRef }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
@@ -217,12 +219,28 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     }
   }, [notify]);
 
+  /**
+   * Surfaces an AI-image failure toast. When the HTTP error body was replaced
+   * in transit (message collapses to "HTTP <status>") and the WebSocket
+   * already delivered the actionable `ad_image_failed` event for this ad
+   * (e.g. insufficient credits), skip the duplicate useless toast.
+   */
+  const notifyImageFailure = useCallback((adId: number, error: unknown) => {
+    const message = error instanceof Error ? error.message : "No se pudo procesar la imagen";
+    const mangled = /^HTTP \d+$/.test(message);
+    const seenAt = wsFailureAtRef?.current.get(adId) ?? 0;
+    const wsAlreadySurfaced = Date.now() - seenAt < 15000;
+    if (mangled && wsAlreadySurfaced) return;
+    notify("error", "Imagen", message);
+  }, [notify, wsFailureAtRef]);
+
   const handleUploadedImage = useCallback(async (enhance: boolean) => {
     if (!ad?.id || !imageFile) return;
     if (enhance) {
       // AI enhance is slow — close the modal immediately and let the row
       // render a skeleton. The server persists the in-flight status so
       // a page reload mid-flight keeps the skeleton visible.
+      const adIdForFailure = ad.id;
       closeImage();
       setImageGenerationStatus("pending");
       try {
@@ -236,7 +254,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
         setImageGenerationStatus("ready");
       } catch (error) {
         setImageGenerationStatus("failed");
-        notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo procesar la imagen");
+        notifyImageFailure(adIdForFailure, error);
       }
       return;
     }
@@ -251,7 +269,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
       notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo procesar la imagen");
       setImageStep("advisor");
     }
-  }, [ad?.id, api, closeImage, imageFile, notify, setImageGenerationStatus, setImageURL]);
+  }, [ad?.id, api, closeImage, imageFile, notify, notifyImageFailure, setImageGenerationStatus, setImageURL]);
 
   const generateImage = useCallback(async () => {
     if (!ad) return;
@@ -271,9 +289,9 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
       setImageGenerationStatus("ready");
     } catch (error) {
       setImageGenerationStatus("failed");
-      notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo generar la imagen");
+      notifyImageFailure(saved.id, error);
     }
-  }, [ad, api, closeImage, notify, persistAd, setImageGenerationStatus, setImageURL]);
+  }, [ad, api, closeImage, notifyImageFailure, persistAd, setImageGenerationStatus, setImageURL]);
 
   const textCounts = useMemo(() => ad ? ad.content.reduce<Record<string, number>>((out, item) => ({ ...out, [item.type]: (out[item.type] || 0) + 1 }), {}) : {}, [ad]);
 
