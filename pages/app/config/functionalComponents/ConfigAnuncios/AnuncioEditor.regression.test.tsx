@@ -429,4 +429,46 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
     expect(slots.indexOf("ad-preview-image-col")).toBeLessThan(slots.indexOf("ad-preview-x1"));
     expect(document.querySelector('[data-testid="ad-preview"]')?.getAttribute("data-preview-device")).toBe("mobile");
   });
+
+  // Real phones never see the device switcher, but they must still get the
+  // mobile DOM: useIsNarrowViewport flips the effective device after
+  // hydration when matchMedia reports a <=640px viewport.
+  it("natural narrow viewport renders the mobile DOM with editor order (matchMedia)", async () => {
+    const api = baseApi();
+    const reordered: RestaurantAd = {
+      id: 8,
+      name: "Ad reordenado",
+      active: false,
+      content: [
+        { id: "t1", type: "title", value: "Titulo primero" },
+        { id: imageItemId, type: "image", value: "https://cdn.example/mid.webp" },
+        { id: "x1", type: "text", value: "Texto al final" },
+      ],
+      ctas: [],
+    };
+
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }) as unknown as typeof window.matchMedia;
+
+    try {
+      await act(async () => {
+        render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={reordered} />);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      const preview = document.querySelector('[data-testid="ad-preview"]');
+      expect(preview?.getAttribute("data-preview-device")).toBe("mobile");
+      const slots = Array.from(document.querySelector('[data-slot="ad-preview-body"]')!.children).map((child) => child.getAttribute("data-slot"));
+      expect(slots.indexOf("ad-preview-image-col")).toBeGreaterThan(slots.indexOf("ad-preview-t1"));
+      expect(slots.indexOf("ad-preview-image-col")).toBeLessThan(slots.indexOf("ad-preview-x1"));
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
 });
