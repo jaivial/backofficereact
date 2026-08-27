@@ -29,6 +29,7 @@ vi.mock("../../../../ui/shell/Panel", () => ({
 vi.mock("../../../../ui/shell/PageToolbar", () => ({ PageToolbar: ({ left, right }: { left?: React.ReactNode; right?: React.ReactNode }) => <div><div data-slot="toolbar-left">{left}</div><div data-slot="toolbar-right">{right}</div></div> }));
 
 import { AnuncioEditor } from "./AnuncioEditor";
+import type { AdEventListener, AdSaveRequest } from "./AnuncioEditor";
 import type { RestaurantAd, RestaurantAdImageGenerationStatus } from "../../../../../api/types";
 
 const baseApi = () => ({
@@ -115,10 +116,12 @@ describe("AnuncioEditor — rehydrate from SSR initialAd", () => {
 });
 
 describe("AnuncioEditor — save flow", () => {
-  it("calls updateAd with the parsed payload and surfaces a toast on failure", async () => {
-    const user = userEvent.setup();
+  it("autosaves via WS 1× delay after an edit; payload has no generation fields; server row is adopted", async () => {
     const api = baseApi();
-    api.updateAd.mockResolvedValue({ success: false, message: "Ad not found" });
+    const sent: AdSaveRequest[] = [];
+    let emit: AdEventListener = () => undefined;
+    const subscribeAdEvents = (listener: AdEventListener) => { emit = listener; return () => { emit = () => undefined; }; };
+    const sendAdSave = (message: AdSaveRequest) => { sent.push(message); };
     const notify = vi.fn();
 
     await act(async () => {
@@ -130,58 +133,55 @@ describe("AnuncioEditor — save flow", () => {
           mode="edit"
           adId={8}
           initialAd={pendingAd}
+          sendAdSave={sendAdSave}
+          subscribeAdEvents={subscribeAdEvents}
+          autosaveDelayMs={10}
         />,
       );
     });
 
-    const save = await screen.findByTestId("ad-save");
-    await user.click(save);
+    // No save button anymore; status pill starts idle and nothing is sent on mount.
+    expect(screen.queryByTestId("ad-save")).toBeNull();
+    expect(document.querySelector('[data-testid="ad-save-status"]')?.getAttribute("data-state")).toBe("idle");
+    expect(sent).toHaveLength(0);
+
+    const nameInput = screen.getByTestId("ad-name") as HTMLInputElement;
+    await act(async () => {
+      fireEvent.change(nameInput, { target: { value: "Nombre editado" } });
+    });
 
     await act(async () => {
-      await Promise.resolve();
+      await new Promise((r) => setTimeout(r, 40));
+    });
+
+    expect(sent).toHaveLength(1);
+    expect(sent[0].type).toBe("ad_save");
+    expect(sent[0].adId).toBe(8);
+    expect(sent[0].payload).toMatchObject({ name: "Nombre editado", active: false });
+    expect(sent[0].payload).not.toHaveProperty("image_generation_status");
+    expect(sent[0].payload).not.toHaveProperty("image_generation_started_at");
+    expect(document.querySelector('[data-testid="ad-save-status"]')?.getAttribute("data-state")).toBe("saving");
+
+    await act(async () => {
+      emit({ type: "ad_saved", reqId: sent[0].reqId, adId: 8, ad: { ...pendingAd, name: "Nombre editado" } });
       await Promise.resolve();
     });
 
-    expect(api.updateAd).toHaveBeenCalledTimes(1);
-    expect(api.updateAd).toHaveBeenCalledWith(
-      8,
-      expect.objectContaining({
-        name: "Nuevo anuncio",
-        active: false,
-        content: expect.arrayContaining([expect.objectContaining({ id: imageItemId, type: "image", value: "" })]),
-        ctas: [],
-      }),
-    );
-    expect(notify).toHaveBeenCalledWith("error", "Anuncios", "Ad not found");
+    expect(document.querySelector('[data-testid="ad-save-status"]')?.getAttribute("data-state")).toBe("saved");
+    expect((screen.getByTestId("ad-name") as HTMLInputElement).value).toBe("Nombre editado");
+    // Baseline adopted: the resolved payload equals the saved one → no further saves.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30));
+    });
+    expect(sent).toHaveLength(1);
   });
 
-  it("does not PUT the image_generation_status field — the backend rejects it", async () => {
-    const user = userEvent.setup();
+  it("ad_save_failed surfaces an error toast and flips the status pill to error", async () => {
     const api = baseApi();
-    api.updateAd.mockResolvedValue({ success: true, ad: pendingAd });
-
-    await act(async () => {
-      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={pendingAd} />);
-    });
-
-    const save = await screen.findByTestId("ad-save");
-    await user.click(save);
-
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-
-    expect(api.updateAd).toHaveBeenCalledTimes(1);
-    const sentPayload = api.updateAd.mock.calls[0][1];
-    expect(sentPayload).not.toHaveProperty("image_generation_status");
-    expect(sentPayload).not.toHaveProperty("image_generation_started_at");
-  });
-
-  it("surfaces the backend's 404 'Ad not found' as an error toast and preserves the skeleton", async () => {
-    const user = userEvent.setup();
-    const api = baseApi();
-    api.updateAd.mockResolvedValue({ success: false, message: "Ad not found" });
+    const sent: AdSaveRequest[] = [];
+    let emit: AdEventListener = () => undefined;
+    const subscribeAdEvents = (listener: AdEventListener) => { emit = listener; return () => { emit = () => undefined; }; };
+    const sendAdSave = (message: AdSaveRequest) => { sent.push(message); };
     const notify = vi.fn();
 
     await act(async () => {
@@ -193,21 +193,28 @@ describe("AnuncioEditor — save flow", () => {
           mode="edit"
           adId={8}
           initialAd={pendingAd}
+          sendAdSave={sendAdSave}
+          subscribeAdEvents={subscribeAdEvents}
+          autosaveDelayMs={10}
         />,
       );
     });
 
-    const save = await screen.findByTestId("ad-save");
-    await user.click(save);
+    await act(async () => {
+      fireEvent.change(screen.getByTestId("ad-name"), { target: { value: "otro nombre" } });
+      await new Promise((r) => setTimeout(r, 40));
+    });
+    expect(sent).toHaveLength(1);
 
     await act(async () => {
-      await Promise.resolve();
+      emit({ type: "ad_save_failed", reqId: sent[0].reqId, adId: 8, code: "not_found", message: "Ad not found" });
       await Promise.resolve();
     });
 
     expect(notify).toHaveBeenCalledWith("error", "Anuncios", "Ad not found");
+    expect(document.querySelector('[data-testid="ad-save-status"]')?.getAttribute("data-state")).toBe("error");
+    // Skeleton state untouched by a failed save.
     expect(document.querySelector(`[data-slot="ad-content-${imageItemId}-skeleton"]`)).toBeTruthy();
-    expect(document.querySelector(`[data-slot="ad-content-${imageItemId}-change-text"]`)?.textContent).toBe("Mejorando con IA...");
   });
 });
 
