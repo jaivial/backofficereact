@@ -40,6 +40,7 @@ import {
   WEBSITE_ROUTE_OPTIONS,
 } from "./lib/adEditor";
 import { compressAdImage } from "./lib/image";
+import { useIsNarrowViewport } from "./hooks/useIsNarrowViewport";
 
 export type AdsAPI = {
   listAds: () => Promise<{ success: boolean; ads?: RestaurantAd[]; message?: string }>;
@@ -125,6 +126,10 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [previewOpen, setPreviewOpen] = useState(true);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
+  // On natural phones (<=640px, no switcher) the preview always uses the
+  // mobile DOM so content order — image included — is respected.
+  const isNarrowViewport = useIsNarrowViewport();
+  const effectiveDevice: "mobile" | "desktop" = isNarrowViewport ? "mobile" : previewDevice;
   const [imageOpen, setImageOpen] = useState(false);
   const [imageStep, setImageStep] = useState<ImageStep>("choose");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -677,7 +682,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                 </button>
               </div>
             </div>
-            <Preview ad={ad} website={website} device={previewDevice} />
+            <Preview ad={ad} website={website} device={effectiveDevice} />
           </div>
         ) : null}
       </div>

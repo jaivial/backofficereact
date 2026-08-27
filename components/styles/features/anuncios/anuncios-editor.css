@@ -727,16 +727,20 @@
 }
 
 /* Natural mobile (<=640px — no device switcher rendered here): the preview
-   uses the desktop DOM (image col leads) folded to a column, and the image
-   gets the same requested treatment capped at 95% of the card. Higher
-   specificity than the generic 640px block above so it always wins. */
+   uses the MOBILE DOM (flat, editor content order — image interleaved), so
+   the body carries the text padding and the image gets the requested
+   treatment at width 95%. Higher specificity than the generic 640px block
+   above so it always wins. */
 @media (max-width: 640px) {
+  .bo-adModalPreview .bo-adModalBody {
+    flex-direction: column;
+    padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+  }
   .bo-adModalPreview .bo-adModalImageCol {
     margin-inline: auto;
     border-radius: 1rem;
     margin-block: 1rem;
-    width: fit-content;
-    max-width: 95%;
+    width: 95%;
     height: -webkit-fill-available;
     max-height: none;
     aspect-ratio: auto;
