@@ -295,4 +295,35 @@ describe("AnuncioEditor — replace existing image (user-reported reload bug)", 
     const thumb = document.querySelector(`[data-slot="ad-content-${imageItemId}-thumb"]`) as HTMLImageElement | null;
     expect(thumb?.getAttribute("src")).toBe("https://cdn.example/old-logo.webp");
   });
+
+  // A failed enhance used to look EXACTLY like idle: the row silently reverted
+  // to the old image with only a short-lived toast, which is why the user
+  // believed the skeleton "didn't keep". The failed state must render a
+  // persistent warning chip alongside the old image.
+  it("failed status renders the old image plus a persistent failure chip", async () => {
+    const failedAd: RestaurantAd = {
+      id: 8,
+      name: "Ad con imagen previa",
+      active: false,
+      content: [{ id: imageItemId, type: "image", value: "https://cdn.example/old-logo.webp" }],
+      ctas: [],
+      image_generation_status: "failed",
+    };
+    const api = baseApi();
+
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={failedAd} />);
+    });
+
+    expect(document.querySelector(`[data-slot="ad-content-${imageItemId}-skeleton"]`)).toBeNull();
+    const thumb = document.querySelector(`[data-slot="ad-content-${imageItemId}-thumb"]`) as HTMLImageElement | null;
+    expect(thumb?.getAttribute("src")).toBe("https://cdn.example/old-logo.webp");
+
+    const chip = document.querySelector(`[data-slot="ad-content-${imageItemId}-failed-chip"]`);
+    expect(chip).toBeTruthy();
+    expect(chip?.textContent).toContain("La mejora con IA falló");
+
+    const change = document.querySelector(`[data-slot="ad-content-${imageItemId}-change"]`) as HTMLElement | null;
+    expect(change?.getAttribute("data-failed")).toBe("true");
+  });
 });
