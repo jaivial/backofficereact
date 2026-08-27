@@ -692,9 +692,50 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 }
 
 function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; device: "mobile" | "desktop" }) {
-  const visibleContent = ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim()));
+  const visibleContent = useMemo(
+    () => ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim())),
+    [ad.content],
+  );
   const image = visibleContent.find((item) => item.type === "image");
+  const textItems = useMemo(() => visibleContent.filter((item) => item.type !== "image"), [visibleContent]);
   const primaryColor = ad.ctas.find((cta) => cta.color)?.color?.trim() || "#436754";
+
+  const renderImage = (item: RestaurantAdContentElement) => (
+    <div className="bo-adModalImageCol" key={item.id} data-slot="ad-preview-image-col">
+      <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
+    </div>
+  );
+
+  const renderTextItem = (item: RestaurantAdContentElement) => {
+    if (item.type === "subtitle") {
+      return <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+    }
+    if (item.type === "title") {
+      return <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
+    }
+    return <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+  };
+
+  const renderCtas = () => (
+    <div className="bo-adModalActions" data-slot="ad-preview-ctas">
+      {ad.ctas.map((cta) => (
+        <a
+          key={cta.id}
+          href={buildCTAURL(website, cta)}
+          className="bo-adModalCta"
+          style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
+          rel="noopener noreferrer"
+          data-slot={`ad-preview-cta-${cta.id}`}
+        >
+          {cta.text || "Más información"}
+        </a>
+      ))}
+    </div>
+  );
+
+  const renderEmpty = () => (!visibleContent.length ? (
+    <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
+  ) : null);
 
   return (
     <div
@@ -705,42 +746,24 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
       style={{ "--ad-primary": primaryColor } as React.CSSProperties}
     >
       <div className="bo-adModalBody" data-slot="ad-preview-body">
-        {image ? (
-          <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
-            <img src={image.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${image.id}`} />
-          </div>
-        ) : null}
-
-        <div className="bo-adModalTextCol" data-slot="ad-preview-content">
-          {visibleContent.filter((item) => item.type !== "image").map((item) => {
-            if (item.type === "subtitle") {
-              return <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
-            }
-            if (item.type === "title") {
-              return <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
-            }
-            return <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
-          })}
-
-          {!visibleContent.length ? (
-            <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
-          ) : null}
-
-          <div className="bo-adModalActions" data-slot="ad-preview-ctas">
-            {ad.ctas.map((cta) => (
-              <a
-                key={cta.id}
-                href={buildCTAURL(website, cta)}
-                className="bo-adModalCta"
-                style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
-                rel="noopener noreferrer"
-                data-slot={`ad-preview-cta-${cta.id}`}
-              >
-                {cta.text || "Más información"}
-              </a>
-            ))}
-          </div>
-        </div>
+        {device === "mobile" ? (
+          // Mobile folds content in the EXACT order chosen in the editor: the
+          // image is interleaved at its position instead of always leading.
+          <>
+            {visibleContent.map((item) => (item.type === "image" ? renderImage(item) : renderTextItem(item)))}
+            {renderEmpty()}
+            {renderCtas()}
+          </>
+        ) : (
+          <>
+            {image ? renderImage(image) : null}
+            <div className="bo-adModalTextCol" data-slot="ad-preview-content">
+              {textItems.map(renderTextItem)}
+              {renderEmpty()}
+              {renderCtas()}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
