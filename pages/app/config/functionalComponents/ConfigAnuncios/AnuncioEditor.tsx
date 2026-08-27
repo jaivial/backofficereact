@@ -6,9 +6,11 @@ import {
   GripVertical,
   ImagePlus,
   Megaphone,
+  Monitor,
   Plus,
   Save,
   Settings2,
+  Smartphone,
   Sparkles,
   Trash2,
   Type,
@@ -93,6 +95,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
   const [imageOpen, setImageOpen] = useState(false);
   const [imageStep, setImageStep] = useState<ImageStep>("choose");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -498,7 +501,39 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           </div>
         </Panel>
 
-        {previewOpen ? <Preview ad={ad} website={website} /> : null}
+        {previewOpen ? (
+          <div className="bo-anunciosPreviewCol" data-slot="ads-preview-column">
+            <div className="bo-anunciosDeviceSwitch" role="group" aria-label="Vista del dispositivo" data-slot="ad-preview-device-switch">
+              <div className="bo-anunciosPreviewSwitch">
+                <button
+                  type="button"
+                  className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "mobile" ? "is-active" : ""}`}
+                  onClick={() => setPreviewDevice("mobile")}
+                  aria-pressed={previewDevice === "mobile"}
+                  aria-label="Ver versión móvil"
+                  data-slot="ad-preview-device-mobile"
+                  data-testid="ad-preview-device-mobile"
+                >
+                  <Smartphone size={14} aria-hidden="true" />
+                  <span className="bo-anunciosPreviewSwitchLabel">Móvil</span>
+                </button>
+                <button
+                  type="button"
+                  className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "desktop" ? "is-active" : ""}`}
+                  onClick={() => setPreviewDevice("desktop")}
+                  aria-pressed={previewDevice === "desktop"}
+                  aria-label="Ver versión ordenador"
+                  data-slot="ad-preview-device-desktop"
+                  data-testid="ad-preview-device-desktop"
+                >
+                  <Monitor size={14} aria-hidden="true" />
+                  <span className="bo-anunciosPreviewSwitchLabel">Ordenador</span>
+                </button>
+              </div>
+            </div>
+            <Preview ad={ad} website={website} device={previewDevice} />
+          </div>
+        ) : null}
       </div>
 
       <Popover
@@ -547,7 +582,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   );
 }
 
-function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
+function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; device: "mobile" | "desktop" }) {
   const visibleContent = ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim()));
   const image = visibleContent.find((item) => item.type === "image");
   const primaryColor = ad.ctas.find((cta) => cta.color)?.color?.trim() || "#436754";
@@ -557,6 +592,7 @@ function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
       className="bo-anunciosPreview bo-adModalPreview"
       data-testid="ad-preview"
       data-slot="ad-preview"
+      data-preview-device={device}
       style={{ "--ad-primary": primaryColor } as React.CSSProperties}
     >
       <div className="bo-adModalBody" data-slot="ad-preview-body">
