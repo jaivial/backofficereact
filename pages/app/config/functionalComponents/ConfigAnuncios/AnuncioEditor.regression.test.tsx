@@ -1,5 +1,5 @@
 import React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -325,5 +325,64 @@ describe("AnuncioEditor — replace existing image (user-reported reload bug)", 
 
     const change = document.querySelector(`[data-slot="ad-content-${imageItemId}-change"]`) as HTMLElement | null;
     expect(change?.getAttribute("data-failed")).toBe("true");
+  });
+});
+
+describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
+  const adWithImage: RestaurantAd = {
+    id: 8,
+    name: "Ad con imagen previa",
+    active: false,
+    content: [{ id: imageItemId, type: "image", value: "https://cdn.example/old-logo.webp" }],
+    ctas: [{ id: "cta1", text: "Reservar", color: "#436754", navigation_mode: "route", route: "/reservas", custom_url: "" }],
+  };
+
+  it("renders the device switcher and defaults to desktop layout", async () => {
+    const api = baseApi();
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={adWithImage} />);
+    });
+
+    expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeTruthy();
+    expect(document.querySelector('[data-testid="ad-preview-device-mobile"]')).toBeTruthy();
+    expect(document.querySelector('[data-testid="ad-preview-device-desktop"]')).toBeTruthy();
+
+    const preview = document.querySelector('[data-testid="ad-preview"]');
+    expect(preview?.getAttribute("data-preview-device")).toBe("desktop");
+    expect(document.querySelector('[data-testid="ad-preview-device-desktop"]')?.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("toggling Móvil switches the preview layout to the <=640px variant", async () => {
+    const user = userEvent.setup();
+    const api = baseApi();
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={adWithImage} />);
+    });
+
+    await act(async () => {
+      await user.click(screen.getByTestId("ad-preview-device-mobile"));
+    });
+
+    const preview = document.querySelector('[data-testid="ad-preview"]');
+    expect(preview?.getAttribute("data-preview-device")).toBe("mobile");
+    expect(document.querySelector('[data-testid="ad-preview-device-mobile"]')?.getAttribute("aria-pressed")).toBe("true");
+    expect(document.querySelector('[data-testid="ad-preview-device-desktop"]')?.getAttribute("aria-pressed")).toBe("false");
+
+    await act(async () => {
+      await user.click(screen.getByTestId("ad-preview-device-desktop"));
+    });
+    expect(document.querySelector('[data-testid="ad-preview"]')?.getAttribute("data-preview-device")).toBe("desktop");
+  });
+
+  it("hides the switcher when the preview tab is off (previewOpen=false path unaffected)", async () => {
+    const api = baseApi();
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={adWithImage} />);
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-mode-editor"));
+    });
+    expect(document.querySelector('[data-testid="ad-preview"]')).toBeNull();
+    expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeNull();
   });
 });
