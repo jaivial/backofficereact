@@ -2392,12 +2392,15 @@ export type RestaurantAdCTA = {
   route: string;
   custom_url: string;
 };
+export type RestaurantAdImageGenerationStatus = "idle" | "pending" | "ready" | "failed";
 export type RestaurantAd = {
   id: number;
   name: string;
   active: boolean;
   content: RestaurantAdContentElement[];
   ctas: RestaurantAdCTA[];
+  image_generation_status?: RestaurantAdImageGenerationStatus;
+  image_generation_started_at?: string;
   created_at?: string;
   updated_at?: string;
 };
