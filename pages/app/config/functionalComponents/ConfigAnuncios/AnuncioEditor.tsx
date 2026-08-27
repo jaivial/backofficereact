@@ -81,6 +81,22 @@ export function apiMessage(result: unknown, fallback: string): string {
 export type AdSaveRequest = { type: "ad_save"; reqId: string; adId: number; payload: unknown };
 export type AdEventListener = (event: { type: string; reqId?: string; adId?: number; code?: string; message?: string; ad?: unknown }) => void;
 
+/** Timeout waiting for the ad_saved WS ack — retryable, outbox keeps the payload. */
+class WSSaveTimeoutError extends Error {
+  constructor() {
+    super("No se pudo guardar el anuncio (sin conexión con el servidor)");
+    this.name = "WSSaveTimeoutError";
+  }
+}
+
+type PendingSave = {
+  resolve: (ad: RestaurantAd | null) => void;
+  reject: (error: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+  adId: number;
+  timedOut: boolean;
+};
+
 type AnuncioEditorProps = {
   api: AdsAPI;
   website: string;
@@ -92,6 +108,8 @@ type AnuncioEditorProps = {
   onDeleted?: () => void;
   /** Shared WS-failure timestamps (adId -> epoch ms) from useAdsController. */
   wsFailureAtRef?: React.MutableRefObject<Map<number, number>>;
+  /** Live WS readiness from useAdsController ("open" | "connecting" | "closed"). */
+  wsStatusRef?: React.MutableRefObject<"open" | "connecting" | "closed">;
   /** Sends an ad_save message over the shared restaurant WebSocket. */
   sendAdSave?: (message: AdSaveRequest) => void;
   /** Subscribes to ad_* WS events (ad_saved / ad_save_failed / …). */
@@ -100,7 +118,7 @@ type AnuncioEditorProps = {
   autosaveDelayMs?: number;
 };
 
-export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsFailureAtRef, sendAdSave, subscribeAdEvents, autosaveDelayMs }: AnuncioEditorProps) {
+export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsFailureAtRef, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
@@ -149,7 +167,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   useEffect(() => { onSavedRef.current = onSaved; }, [onSaved]);
 
   const baselineRef = useRef<string | null>(null);
-  const pendingSavesRef = useRef(new Map<string, { resolve: (ad: RestaurantAd | null) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout>; adId: number }>());
+  const pendingSavesRef = useRef(new Map<string, PendingSave>());
   const reqCounter = useRef(0);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -161,10 +179,13 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     const reqId = `ad-save-${Date.now()}-${++reqCounter.current}`;
     return new Promise<RestaurantAd | null>((resolve, reject) => {
       const timer = setTimeout(() => {
-        pendingSavesRef.current.delete(reqId);
-        reject(new Error("No se pudo guardar el anuncio (sin conexión con el servidor)"));
+        // Keep the entry: a late ad_saved (outbox flush after reconnect) must
+        // still resolve and correct the status pill from error back to saved.
+        const pending = pendingSavesRef.current.get(reqId);
+        if (pending) pending.timedOut = true;
+        reject(new WSSaveTimeoutError());
       }, 8000);
-      pendingSavesRef.current.set(reqId, { resolve, reject, timer, adId: source.id });
+      pendingSavesRef.current.set(reqId, { resolve, reject, timer, adId: source.id, timedOut: false });
       sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: adPayload(source) });
     });
   }, [adPayload, sendAdSave]);
@@ -179,10 +200,14 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
       if (source.id <= 0 && saved.id > 0) onSavedRef.current?.(saved);
       return saved;
     } catch (error) {
+      // Timeout while the WS is reconnecting: the message stays in the outbox
+      // and lands on reconnect, so stay quiet here — the status pill already
+      // shows the error and self-corrects when the late ack arrives.
+      if (error instanceof WSSaveTimeoutError && wsStatusRef?.current !== "open") return null;
       notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio");
       return null;
     }
-  }, [notify, persistViaWS]);
+  }, [notify, persistViaWS, wsStatusRef]);
 
   // WS save outcomes: correlate by reqId, adopt the server row, drive the
   // autosave baseline + status pill. Non-matching reqIds (other tabs) are
@@ -197,7 +222,19 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           pendingSavesRef.current.delete(event.reqId);
         }
         const savedAd = event.ad as RestaurantAd | undefined;
-        if (!pending || !savedAd || typeof savedAd.id !== "number") return;
+        if (!savedAd || typeof savedAd.id !== "number") return;
+        // Late ack for an already-timed-out save: purge stale siblings and
+        // correct the status pill (error → saved) even without a waiter.
+        if (!pending) {
+          for (const [id, entry] of pendingSavesRef.current) {
+            if (!entry.timedOut) continue;
+            clearTimeout(entry.timer);
+            pendingSavesRef.current.delete(id);
+          }
+          setSaveState((current) => (current === "error" ? "saved" : current));
+          window.setTimeout(() => setSaveState((current) => (current === "saved" ? "idle" : current)), 2000);
+          return;
+        }
         pending.resolve(savedAd);
         baselineRef.current = JSON.stringify({ name: savedAd.name, active: savedAd.active, content: savedAd.content, ctas: savedAd.ctas });
         setAd(savedAd);

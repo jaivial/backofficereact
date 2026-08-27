@@ -48,6 +48,8 @@ export type AdsController = {
   notify: Notify;
   /** Newest ad_image_failed event seen over WS for any ad (adId -> timestamp ms). */
   wsFailureAtRef: React.MutableRefObject<Map<number, number>>;
+  /** Live WS readiness: "open" | "connecting" | "closed". */
+  wsStatusRef: React.MutableRefObject<"open" | "connecting" | "closed">;
   /** Sends an ad_save message over the shared WS; queued while reconnecting. */
   sendAdSave: (message: AdSaveMessage) => void;
   /** Subscribes to ad_* WS events; returns an unsubscribe fn. */
@@ -66,6 +68,7 @@ export function useAdsController(): AdsController {
   const notify = useCallback<Notify>((kind, title, message) => pushToast({ kind, title, message }), [pushToast]);
   const [website, setWebsite] = useState("");
   const wsFailureAtRef = useRef<Map<number, number>>(new Map());
+  const wsStatusRef = useRef<"open" | "connecting" | "closed">("connecting");
   const wsRef = useRef<WebSocket | null>(null);
   const outboxRef = useRef<AdSaveMessage[]>([]);
   const listenersRef = useRef(new Set<(event: AdWSMessage) => void>());
@@ -121,6 +124,7 @@ export function useAdsController(): AdsController {
       ws = new WebSocket(adImageWSURL());
       wsRef.current = ws;
       ws.onopen = () => {
+        wsStatusRef.current = "open";
         retryDelay = 2000;
         flushOutbox();
       };
@@ -144,6 +148,7 @@ export function useAdsController(): AdsController {
       };
       ws.onclose = () => {
         wsRef.current = null;
+        wsStatusRef.current = "closed";
         if (closed) return;
         retryTimer = setTimeout(() => {
           retryDelay = Math.min(retryDelay * 2, 30000);
@@ -157,9 +162,10 @@ export function useAdsController(): AdsController {
       closed = true;
       if (retryTimer) clearTimeout(retryTimer);
       wsRef.current = null;
+      wsStatusRef.current = "closed";
       ws?.close();
     };
   }, [dispatch, flushOutbox, notify]);
 
-  return { api, website, notify, wsFailureAtRef, sendAdSave, subscribeAdEvents };
+  return { api, website, notify, wsFailureAtRef, wsStatusRef, sendAdSave, subscribeAdEvents };
 }
