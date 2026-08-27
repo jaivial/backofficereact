@@ -10,6 +10,31 @@
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28), 0 4px 8px rgba(0, 0, 0, 0.16);
 }
 
+/* Column wrapping the device switcher + live preview so both behave as one
+   grid child (sticky on xl while the editor column scrolls). */
+.bo-anunciosPreviewCol {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  align-self: start;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Mobile/desktop preview switcher — only meaningful on viewports wider than
+   the ad's own mobile breakpoint (<=640px), where the preview is already the
+   mobile layout. */
+.bo-anunciosDeviceSwitch {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  .bo-anunciosDeviceSwitch {
+    display: none;
+  }
+}
+
 :root[data-theme="light"] .bo-anunciosPreview {
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
@@ -591,9 +616,53 @@
 
 /* ── Responsive: stack the preview under the editor below xl ─── */
 @media (max-width: 1279px) {
-  .bo-anunciosPreview {
+  .bo-anunciosPreview,
+  .bo-anunciosPreviewCol {
     position: static;
     top: auto;
+  }
+}
+
+/* Force the ad's mobile (<=640px) layout on wide viewports so the editor can
+   preview how the ad folds on small screens. Rules mirror the max-width:640px
+   block; scoped behind data-preview-device="mobile" and min-width 641px so
+   natural mobile rendering is untouched. */
+@media (min-width: 641px) {
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalBody {
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImageCol {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    max-height: 42dvh;
+    max-height: 42vh;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalTextCol {
+    width: 100%;
+    padding: 24px 22px;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalSupertitle {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalTitle {
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalDesc {
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalCta {
+    width: 100%;
+    align-self: stretch;
+    padding: 16px 24px;
+    font-size: 16px;
   }
 }
 
