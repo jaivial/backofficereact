@@ -696,6 +696,33 @@
   }
 }
 
+/* Forced mobile preview: body children are flat (content-order), so give the
+   body the text column's padding and apply the requested image treatment:
+   centred, rounded, breathing room, shrink-to-content width and fill
+   available height. Overrides the 100%/aspect-ratio col rules above. */
+@media (min-width: 641px) {
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalBody {
+    padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImageCol {
+    margin-inline: auto;
+    border-radius: 1rem;
+    margin-block: 1rem;
+    width: fit-content;
+    height: -webkit-fill-available;
+    max-height: none;
+    aspect-ratio: auto;
+    overflow: hidden;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImage {
+    display: block;
+    width: 100%;
+    height: -webkit-fill-available;
+    object-fit: cover;
+    border-radius: 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .bo-anunciosEditorBar {
     flex-direction: row;

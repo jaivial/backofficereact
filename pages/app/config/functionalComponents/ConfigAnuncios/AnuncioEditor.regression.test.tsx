@@ -392,4 +392,41 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
     expect(document.querySelector('[data-testid="ad-preview"]')).toBeNull();
     expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeNull();
   });
+
+  // Moving the image row in the editor must change where it renders in the
+  // mobile preview: content order is respected (image interleaved), while the
+  // desktop layout keeps its image-column-first structure.
+  it("mobile preview renders the image in the editor order, desktop keeps image first", async () => {
+    const api = baseApi();
+    const reordered: RestaurantAd = {
+      id: 8,
+      name: "Ad reordenado",
+      active: false,
+      content: [
+        { id: "t1", type: "title", value: "Titulo primero" },
+        { id: imageItemId, type: "image", value: "https://cdn.example/mid.webp" },
+        { id: "x1", type: "text", value: "Texto al final" },
+      ],
+      ctas: [],
+    };
+
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={reordered} />);
+    });
+
+    // Desktop: image column leads the body.
+    const bodyChildrenDesktop = Array.from(document.querySelector('[data-slot="ad-preview-body"]')!.children);
+    expect(bodyChildrenDesktop[0]?.getAttribute("data-slot")).toBe("ad-preview-image-col");
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-preview-device-mobile"));
+    });
+
+    // Mobile: flat body children follow the editor order title → image → text.
+    const body = document.querySelector('[data-slot="ad-preview-body"]')!;
+    const slots = Array.from(body.children).map((child) => child.getAttribute("data-slot"));
+    expect(slots.indexOf("ad-preview-image-col")).toBeGreaterThan(slots.indexOf("ad-preview-t1"));
+    expect(slots.indexOf("ad-preview-image-col")).toBeLessThan(slots.indexOf("ad-preview-x1"));
+    expect(document.querySelector('[data-testid="ad-preview"]')?.getAttribute("data-preview-device")).toBe("mobile");
+  });
 });
