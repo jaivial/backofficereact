@@ -16,7 +16,7 @@ export default function AnuncioEditPage() {
   const adId = Number(rawId);
   const valid = Number.isFinite(adId) && adId > 0;
 
-  const { api, website, notify, wsFailureAtRef } = useAdsController();
+  const { api, website, notify, wsFailureAtRef, sendAdSave, subscribeAdEvents } = useAdsController();
   const data = (pageContext.data ?? { adId: null, initialAd: null }) as Data;
   const initialAd: RestaurantAd | null = data.initialAd ?? null;
 
@@ -50,6 +50,8 @@ export default function AnuncioEditPage() {
         adId={adId}
         initialAd={initialAd}
         wsFailureAtRef={wsFailureAtRef}
+        sendAdSave={sendAdSave}
+        subscribeAdEvents={subscribeAdEvents}
         onDeleted={onDeleted}
       />
     </section>
