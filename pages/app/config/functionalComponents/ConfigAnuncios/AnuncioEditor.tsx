@@ -19,6 +19,7 @@ import type {
   RestaurantAdContentElement,
   RestaurantAdContentType,
   RestaurantAdInput,
+  RestaurantAdImageGenerationStatus,
 } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Modal } from "../../../../../ui/overlays/Modal";
@@ -197,6 +198,10 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     await persistAd(withURL);
   }, [ad, persistAd]);
 
+  const setImageGenerationStatus = useCallback((status: RestaurantAdImageGenerationStatus) => {
+    setAd((current) => current ? { ...current, image_generation_status: status, image_generation_started_at: status === "pending" ? new Date().toISOString() : current.image_generation_started_at } : current);
+  }, []);
+
   const closeImage = useCallback(() => { setImageOpen(false); setImageStep("choose"); setImageFile(null); setImagePreviewURL(""); }, []);
   const chooseImage = useCallback(async (file: File) => {
     setImageStep("preparing");
@@ -213,33 +218,61 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   const handleUploadedImage = useCallback(async (enhance: boolean) => {
     if (!ad?.id || !imageFile) return;
+    if (enhance) {
+      // AI enhance is slow — close the modal immediately and let the row
+      // render a skeleton. The server persists the in-flight status so
+      // a page reload mid-flight keeps the skeleton visible.
+      closeImage();
+      setImageGenerationStatus("pending");
+      try {
+        const result = await api.enhanceAdImage(ad.id, imageFile);
+        if (!result.success || !result.url) {
+          setImageGenerationStatus("failed");
+          notify("error", "Imagen", apiMessage(result, "No se pudo procesar la imagen"));
+          return;
+        }
+        await setImageURL(result.url);
+        setImageGenerationStatus("ready");
+      } catch (error) {
+        setImageGenerationStatus("failed");
+        notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo procesar la imagen");
+      }
+      return;
+    }
     setImageStep("working");
     try {
-      const result = enhance ? await api.enhanceAdImage(ad.id, imageFile) : await api.uploadAdImage(ad.id, imageFile);
+      const result = await api.uploadAdImage(ad.id, imageFile);
       if (!result.success) { notify("error", "Imagen", apiMessage(result, "No se pudo procesar la imagen")); setImageStep("advisor"); return; }
       await setImageURL(result.url ?? "");
+      setImageGenerationStatus("ready");
       closeImage();
     } catch (error) {
       notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo procesar la imagen");
       setImageStep("advisor");
     }
-  }, [ad?.id, api, closeImage, imageFile, notify, setImageURL]);
+  }, [ad?.id, api, closeImage, imageFile, notify, setImageGenerationStatus, setImageURL]);
 
   const generateImage = useCallback(async () => {
     if (!ad) return;
     setImageStep("working");
     const saved = await persistAd(ad);
     if (!saved) { setImageStep("choose"); return; }
+    closeImage();
+    setImageGenerationStatus("pending");
     try {
       const result = await api.generateAdImage(saved.id);
-      if (!result.success) { notify("error", "Imagen", apiMessage(result, "No se pudo generar la imagen")); setImageStep("choose"); return; }
-      await setImageURL(result.url ?? "");
-      closeImage();
+      if (!result.success || !result.url) {
+        setImageGenerationStatus("failed");
+        notify("error", "Imagen", apiMessage(result, "No se pudo generar la imagen"));
+        return;
+      }
+      await setImageURL(result.url);
+      setImageGenerationStatus("ready");
     } catch (error) {
+      setImageGenerationStatus("failed");
       notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo generar la imagen");
-      setImageStep("choose");
     }
-  }, [ad, api, closeImage, notify, persistAd, setImageURL]);
+  }, [ad, api, closeImage, notify, persistAd, setImageGenerationStatus, setImageURL]);
 
   const textCounts = useMemo(() => ad ? ad.content.reduce<Record<string, number>>((out, item) => ({ ...out, [item.type]: (out[item.type] || 0) + 1 }), {}) : {}, [ad]);
 
@@ -388,10 +421,19 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                 dataSlot={`ad-content-${item.id}`}
               >
                 {item.type === "image" ? (
-                  <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
-                    {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot={`ad-content-${item.id}-thumb`} /> : <ImagePlus size={22} aria-hidden="true" />}
-                    <span data-slot={`ad-content-${item.id}-change-text`}>{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
-                  </button>
+                  ad.image_generation_status === "pending" ? (
+                    <div role="status" aria-live="polite" className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
+                      <div className="bo-skeleton h-16 w-24 rounded-bo-sm" aria-hidden="true" data-slot={`ad-content-${item.id}-skeleton`} />
+                      <span className="bo-skeletonLine bo-skeletonLine--md" style={{ width: "60%" }} aria-hidden="true" />
+                      <Sparkles size={14} aria-hidden="true" className="animate-pulse text-bo-accent" />
+                      <span data-slot={`ad-content-${item.id}-change-text`}>Mejorando con IA...</span>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
+                      {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot={`ad-content-${item.id}-thumb`} /> : <ImagePlus size={22} aria-hidden="true" />}
+                      <span data-slot={`ad-content-${item.id}-change-text`}>{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
+                    </button>
+                  )
                 ) : item.type === "text" ? (
                   <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
                 ) : (
