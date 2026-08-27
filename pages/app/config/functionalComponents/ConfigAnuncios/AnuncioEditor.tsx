@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, Reorder, useDragControls } from "motion/react";
 import {
   AlertTriangle,
+  Check,
   Eye,
   GripVertical,
   ImagePlus,
+  Loader2,
   Megaphone,
   Monitor,
   Plus,
-  Save,
   Settings2,
   Smartphone,
   Sparkles,
@@ -77,6 +78,9 @@ export function apiMessage(result: unknown, fallback: string): string {
   return fallback;
 }
 
+export type AdSaveRequest = { type: "ad_save"; reqId: string; adId: number; payload: unknown };
+export type AdEventListener = (event: { type: string; reqId?: string; adId?: number; code?: string; message?: string; ad?: unknown }) => void;
+
 type AnuncioEditorProps = {
   api: AdsAPI;
   website: string;
@@ -88,12 +92,19 @@ type AnuncioEditorProps = {
   onDeleted?: () => void;
   /** Shared WS-failure timestamps (adId -> epoch ms) from useAdsController. */
   wsFailureAtRef?: React.MutableRefObject<Map<number, number>>;
+  /** Sends an ad_save message over the shared restaurant WebSocket. */
+  sendAdSave?: (message: AdSaveRequest) => void;
+  /** Subscribes to ad_* WS events (ad_saved / ad_save_failed / …). */
+  subscribeAdEvents?: (listener: AdEventListener) => () => void;
+  /** Autosave debounce; production default 1000ms, tests use a small value. */
+  autosaveDelayMs?: number;
 };
 
-export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsFailureAtRef }: AnuncioEditorProps) {
+export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsFailureAtRef, sendAdSave, subscribeAdEvents, autosaveDelayMs }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [previewOpen, setPreviewOpen] = useState(true);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
   const [imageOpen, setImageOpen] = useState(false);
@@ -134,32 +145,108 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   useEffect(() => () => { if (imagePreviewURL) URL.revokeObjectURL(imagePreviewURL); }, [imagePreviewURL]);
 
+  const onSavedRef = useRef(onSaved);
+  useEffect(() => { onSavedRef.current = onSaved; }, [onSaved]);
+
+  const baselineRef = useRef<string | null>(null);
+  const pendingSavesRef = useRef(new Map<string, { resolve: (ad: RestaurantAd | null) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout>; adId: number }>());
+  const reqCounter = useRef(0);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const adPayload = useCallback((source: RestaurantAd) => ({ name: source.name, active: source.active, content: source.content, ctas: source.ctas }), []);
+
+  /** Sends one ad_save over WS and resolves with the server's saved row. */
+  const persistViaWS = useCallback((source: RestaurantAd): Promise<RestaurantAd | null> => {
+    if (!sendAdSave) return Promise.resolve(null);
+    const reqId = `ad-save-${Date.now()}-${++reqCounter.current}`;
+    return new Promise<RestaurantAd | null>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        pendingSavesRef.current.delete(reqId);
+        reject(new Error("No se pudo guardar el anuncio (sin conexión con el servidor)"));
+      }, 8000);
+      pendingSavesRef.current.set(reqId, { resolve, reject, timer, adId: source.id });
+      sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: adPayload(source) });
+    });
+  }, [adPayload, sendAdSave]);
+
   const persistAd = useCallback(async (source: RestaurantAd): Promise<RestaurantAd | null> => {
     try {
-      const payload: RestaurantAdInput = { name: source.name, active: source.active, content: source.content, ctas: source.ctas };
-      const result = source.id > 0
-        ? await api.updateAd(source.id, payload)
-        : await api.createAd(payload);
-      if (!result.success) { notify("error", "Anuncios", apiMessage(result, "No se pudo guardar el anuncio")); return null; }
-      if (result.ad) setAd(result.ad);
-      if (result.ad && onSaved) onSaved(result.ad);
-      return result.ad ?? null;
+      const saved = await persistViaWS(source);
+      if (!saved) {
+        notify("error", "Anuncios", "No se pudo guardar el anuncio (sin conexión con el servidor)");
+        return null;
+      }
+      if (source.id <= 0 && saved.id > 0) onSavedRef.current?.(saved);
+      return saved;
     } catch (error) {
       notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio");
       return null;
     }
-  }, [api, notify, onSaved]);
+  }, [notify, persistViaWS]);
 
-  const save = useCallback(async () => {
-    if (!ad) return;
-    setBusy(true);
-    try {
-      const saved = await persistAd(ad);
-      if (saved) notify("success", "Anuncios", "Anuncio guardado");
-    } finally {
-      setBusy(false);
+  // WS save outcomes: correlate by reqId, adopt the server row, drive the
+  // autosave baseline + status pill. Non-matching reqIds (other tabs) are
+  // ignored so concurrent editors don't clobber each other's drafts.
+  useEffect(() => {
+    if (!subscribeAdEvents) return;
+    return subscribeAdEvents((event) => {
+      if (event.type === "ad_saved") {
+        const pending = event.reqId ? pendingSavesRef.current.get(event.reqId) : undefined;
+        if (event.reqId && pending) {
+          clearTimeout(pending.timer);
+          pendingSavesRef.current.delete(event.reqId);
+        }
+        const savedAd = event.ad as RestaurantAd | undefined;
+        if (!pending || !savedAd || typeof savedAd.id !== "number") return;
+        pending.resolve(savedAd);
+        baselineRef.current = JSON.stringify({ name: savedAd.name, active: savedAd.active, content: savedAd.content, ctas: savedAd.ctas });
+        setAd(savedAd);
+        setSaveState("saved");
+        window.setTimeout(() => setSaveState((current) => (current === "saved" ? "idle" : current)), 2000);
+        return;
+      }
+      if (event.type === "ad_save_failed") {
+        const pending = event.reqId ? pendingSavesRef.current.get(event.reqId) : undefined;
+        if (event.reqId && pending) {
+          clearTimeout(pending.timer);
+          pendingSavesRef.current.delete(event.reqId);
+          pending.reject(new Error(event.message || "No se pudo guardar el anuncio"));
+        }
+        setSaveState("error");
+      }
+    });
+  }, [notify, subscribeAdEvents]);
+
+  // Autosave: 1s (autosaveDelayMs) after the ad payload diverges from the last
+  // saved REST/WS baseline. The effect cleanup doubles as the debounce — any
+  // keystroke reschedules.
+  useEffect(() => {
+    if (!ad || !sendAdSave) return;
+    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas });
+    if (baselineRef.current === null) {
+      baselineRef.current = json;
+      return;
     }
-  }, [ad, notify, persistAd]);
+    if (json === baselineRef.current) return;
+    const delay = autosaveDelayMs ?? 1000;
+    autosaveTimerRef.current = setTimeout(() => {
+      autosaveTimerRef.current = null;
+      setSaveState("saving");
+      void persistAd(ad);
+    }, delay);
+    return () => {
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
+    };
+  }, [ad, autosaveDelayMs, persistAd, sendAdSave]);
+
+  const retrySave = useCallback(() => {
+    if (!ad || saveState === "saving") return;
+    setSaveState("saving");
+    void persistAd(ad);
+  }, [ad, persistAd, saveState]);
 
   const removeAd = useCallback(async () => {
     if (!ad?.id) return;
@@ -379,15 +466,37 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           </div>
           <button
             type="button"
-            onClick={() => void save()}
-            disabled={busy}
-            className="bo-anunciosIconBtn"
-            data-tone="primary"
-            aria-label="Guardar anuncio"
-            data-slot="ad-save"
-            data-testid="ad-save"
+            onClick={retrySave}
+            disabled={saveState !== "error"}
+            className="bo-anunciosSaveStatus flex items-center gap-1.5 rounded-bo-sm px-3 text-xs font-semibold"
+            data-state={saveState}
+            aria-label={saveState === "error" ? "Error al guardar, reintentar" : saveState === "saving" ? "Guardando cambios" : saveState === "saved" ? "Cambios guardados" : "Autoguardado activo"}
+            role={saveState === "error" ? "button" : "status"}
+            aria-live="polite"
+            data-slot="ad-save-status"
+            data-testid="ad-save-status"
           >
-            <Save size={16} aria-hidden="true" />
+            {saveState === "saving" ? (
+              <>
+                <Loader2 size={13} className="animate-spin" aria-hidden="true" />
+                <span className="bo-anunciosPreviewSwitchLabel">Guardando…</span>
+              </>
+            ) : saveState === "saved" ? (
+              <>
+                <Check size={13} aria-hidden="true" />
+                <span className="bo-anunciosPreviewSwitchLabel">Guardado</span>
+              </>
+            ) : saveState === "error" ? (
+              <>
+                <AlertTriangle size={13} aria-hidden="true" />
+                <span className="bo-anunciosPreviewSwitchLabel">Error — reintentar</span>
+              </>
+            ) : (
+              <>
+                <Check size={13} aria-hidden="true" className="opacity-50" />
+                <span className="bo-anunciosPreviewSwitchLabel opacity-70">Autoguardado</span>
+              </>
+            )}
           </button>
         </div>
       </div>
