@@ -56,7 +56,7 @@ describe("AnuncioEditor — structure", () => {
     await act(async () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="create" initialAd={sampleAd} />);
     });
-    expect(await screen.findByTestId("ad-save")).toBeTruthy();
+    expect(await screen.findByTestId("ad-save-status")).toBeTruthy();
     expect(screen.getByTestId("ad-add-content-trigger")).toBeTruthy();
   });
 

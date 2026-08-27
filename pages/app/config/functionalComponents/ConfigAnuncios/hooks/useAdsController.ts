@@ -9,6 +9,17 @@ type AdsAPIWithRestaurant = AdsAPI & {
   getRestaurantInfo: () => Promise<{ restaurantInfo?: RestaurantInfoLike } | { message?: string }>;
 };
 
+export type AdWSMessage = {
+  type: string;
+  reqId?: string;
+  adId?: number;
+  code?: string;
+  message?: string;
+  ad?: unknown;
+};
+
+export type AdSaveMessage = { type: "ad_save"; reqId: string; adId: number; payload: unknown };
+
 export const AD_IMAGE_INSUFFICIENT_CREDITS_MESSAGE =
   "Crédito insuficiente: contacta con el administrador para añadir fondos a WaveSpeed.";
 
@@ -37,18 +48,17 @@ export type AdsController = {
   notify: Notify;
   /** Newest ad_image_failed event seen over WS for any ad (adId -> timestamp ms). */
   wsFailureAtRef: React.MutableRefObject<Map<number, number>>;
+  /** Sends an ad_save message over the shared WS; queued while reconnecting. */
+  sendAdSave: (message: AdSaveMessage) => void;
+  /** Subscribes to ad_* WS events; returns an unsubscribe fn. */
+  subscribeAdEvents: (listener: (event: AdWSMessage) => void) => () => void;
 };
 
 /**
  * Centralises the duplicated "build AdsAPI + wire toasts + load website" that
- * each anuncios page used to repeat. Returns a stable API client, the
- * restaurant website (for CTA preview URLs) and a toast-bound notify fn.
- *
- * Also keeps one shared WebSocket (the restaurant-scoped fichaje channel)
- * open while an anuncios page is mounted and listens for `ad_image_failed`
- * events so AI-image failures surface with an actionable toast even when an
- * intermediary (Cloudflare) replaces the HTTP error body of the original
- * POST.
+ * each anuncios page used to repeat, plus the shared restaurant WebSocket
+ * (fichaje channel) used for realtime: ad_image_failed toasts and — since
+ * saves no longer go through the REST endpoint — ad_save / ad_saved traffic.
  */
 export function useAdsController(): AdsController {
   const api = useMemo(() => buildAdsAPI(), []);
@@ -56,6 +66,36 @@ export function useAdsController(): AdsController {
   const notify = useCallback<Notify>((kind, title, message) => pushToast({ kind, title, message }), [pushToast]);
   const [website, setWebsite] = useState("");
   const wsFailureAtRef = useRef<Map<number, number>>(new Map());
+  const wsRef = useRef<WebSocket | null>(null);
+  const outboxRef = useRef<AdSaveMessage[]>([]);
+  const listenersRef = useRef(new Set<(event: AdWSMessage) => void>());
+
+  const dispatch = useCallback((event: AdWSMessage) => {
+    for (const listener of listenersRef.current) listener(event);
+  }, []);
+
+  const flushOutbox = useCallback(() => {
+    const ws = wsRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    const pending = outboxRef.current;
+    outboxRef.current = [];
+    for (const message of pending) ws.send(JSON.stringify(message));
+  }, []);
+
+  const sendAdSave = useCallback((message: AdSaveMessage) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(message));
+      return;
+    }
+    // Not connected (reconnecting): queue and flush when the socket opens.
+    outboxRef.current.push(message);
+  }, []);
+
+  const subscribeAdEvents = useCallback((listener: (event: AdWSMessage) => void) => {
+    listenersRef.current.add(listener);
+    return () => { listenersRef.current.delete(listener); };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,20 +119,31 @@ export function useAdsController(): AdsController {
     const connect = () => {
       if (closed) return;
       ws = new WebSocket(adImageWSURL());
+      wsRef.current = ws;
+      ws.onopen = () => {
+        retryDelay = 2000;
+        flushOutbox();
+      };
       ws.onmessage = (event) => {
         let data: unknown;
         try { data = JSON.parse(typeof event.data === "string" ? event.data : ""); } catch { return; }
-        const msg = data as { type?: string; adId?: number; code?: string; message?: string };
-        if (msg?.type !== "ad_image_failed") return;
-        const adId = Number(msg.adId);
-        if (Number.isFinite(adId) && adId > 0) {
-          wsFailureAtRef.current.set(adId, Date.now());
+        const msg = data as AdWSMessage;
+        if (!msg || typeof msg.type !== "string") return;
+        if (msg.type === "ad_image_failed") {
+          const adId = Number(msg.adId);
+          if (Number.isFinite(adId) && adId > 0) {
+            wsFailureAtRef.current.set(adId, Date.now());
+          }
+          if (msg.code === "insufficient_credits") {
+            notify("error", "Imagen", AD_IMAGE_INSUFFICIENT_CREDITS_MESSAGE);
+          }
         }
-        if (msg.code === "insufficient_credits") {
-          notify("error", "Imagen", AD_IMAGE_INSUFFICIENT_CREDITS_MESSAGE);
+        if (msg.type === "ad_saved" || msg.type === "ad_save_failed" || msg.type === "ad_image_failed") {
+          dispatch(msg);
         }
       };
       ws.onclose = () => {
+        wsRef.current = null;
         if (closed) return;
         retryTimer = setTimeout(() => {
           retryDelay = Math.min(retryDelay * 2, 30000);
@@ -105,9 +156,10 @@ export function useAdsController(): AdsController {
     return () => {
       closed = true;
       if (retryTimer) clearTimeout(retryTimer);
+      wsRef.current = null;
       ws?.close();
     };
-  }, [notify]);
+  }, [dispatch, flushOutbox, notify]);
 
-  return { api, website, notify, wsFailureAtRef };
+  return { api, website, notify, wsFailureAtRef, sendAdSave, subscribeAdEvents };
 }

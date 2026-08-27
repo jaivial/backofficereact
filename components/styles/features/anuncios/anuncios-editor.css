@@ -190,6 +190,36 @@
   color: #fff;
 }
 
+/* ── Autosave status pill (replaces the old save button) ───────── */
+.bo-anunciosSaveStatus {
+  height: 32px;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  color: var(--bo-muted);
+  cursor: default;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+.bo-anunciosSaveStatus[data-state="saving"] {
+  color: var(--bo-accent-2);
+  border-color: color-mix(in srgb, var(--bo-accent-2) 45%, var(--bo-border));
+}
+.bo-anunciosSaveStatus[data-state="saved"] {
+  color: var(--bo-text-success);
+  border-color: color-mix(in srgb, var(--bo-text-success) 35%, var(--bo-border));
+}
+.bo-anunciosSaveStatus[data-state="error"] {
+  color: var(--bo-text-danger);
+  border-color: color-mix(in srgb, var(--bo-text-danger) 45%, var(--bo-border));
+  cursor: pointer;
+}
+.bo-anunciosSaveStatus[data-state="error"]:hover {
+  background: color-mix(in srgb, var(--bo-text-danger) 12%, var(--bo-surface-2));
+}
+.bo-anunciosSaveStatus:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
 /* ── Row action buttons (delete etc.) — dark theme style, icon-only ── */
 .bo-anunciosIconBtn {
   width: 36px;
