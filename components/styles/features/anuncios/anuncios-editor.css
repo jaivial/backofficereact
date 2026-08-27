@@ -709,6 +709,9 @@
     border-radius: 1rem;
     margin-block: 1rem;
     width: fit-content;
+    /* Cap at a phone-like width so fit-content keeps the centring, radius and
+       block margins visible even with large source images. */
+    max-width: min(100%, 420px);
     height: -webkit-fill-available;
     max-height: none;
     aspect-ratio: auto;
