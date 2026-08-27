@@ -215,10 +215,11 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const handleUploadedImage = useCallback(async (enhance: boolean) => {
     if (!ad?.id || !imageFile) return;
     if (enhance) {
+      const fileToEnhance = imageFile;
       setImageEnhancing(true);
       closeImage();
       try {
-        const result = await api.enhanceAdImage(ad.id, imageFile);
+        const result = await api.enhanceAdImage(ad.id, fileToEnhance);
         if (!result.success) {
           notify("error", "Imagen", apiMessage(result, "No se pudo procesar la imagen"));
           return;
