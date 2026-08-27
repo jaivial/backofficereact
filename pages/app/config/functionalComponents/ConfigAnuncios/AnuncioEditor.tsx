@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, Reorder, useDragControls } from "motion/react";
 import {
+  AlertTriangle,
   Eye,
   GripVertical,
   ImagePlus,
@@ -429,9 +430,17 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                       <span data-slot={`ad-content-${item.id}-change-text`}>Mejorando con IA...</span>
                     </div>
                   ) : (
-                    <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`}>
+                    <button type="button" onClick={() => { setImageOpen(true); setImageStep("choose"); }} className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted" data-slot={`ad-content-${item.id}-change`} data-failed={ad.image_generation_status === "failed" ? "true" : undefined}>
                       {item.value ? <img src={item.value} alt="Imagen actual" className="h-16 w-24 rounded-bo-sm object-cover" data-slot={`ad-content-${item.id}-thumb`} /> : <ImagePlus size={22} aria-hidden="true" />}
-                      <span data-slot={`ad-content-${item.id}-change-text`}>{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
+                      <span className="min-w-0 flex-1" data-slot={`ad-content-${item.id}-change-copy`}>
+                        <span className="block" data-slot={`ad-content-${item.id}-change-text`}>{item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
+                        {ad.image_generation_status === "failed" ? (
+                          <span className="mt-0.5 flex items-center gap-1 text-xs text-bo-text-warning" data-slot={`ad-content-${item.id}-failed-chip`}>
+                            <AlertTriangle size={12} aria-hidden="true" />
+                            La mejora con IA falló. Reintenta o continúa sin mejorar.
+                          </span>
+                        ) : null}
+                      </span>
                     </button>
                   )
                 ) : item.type === "text" ? (
