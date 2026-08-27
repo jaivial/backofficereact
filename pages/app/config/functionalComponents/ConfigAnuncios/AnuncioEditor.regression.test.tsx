@@ -210,3 +210,89 @@ describe("AnuncioEditor — save flow", () => {
     expect(document.querySelector(`[data-slot="ad-content-${imageItemId}-change-text"]`)?.textContent).toBe("Mejorando con IA...");
   });
 });
+
+describe("AnuncioEditor — replace existing image (user-reported reload bug)", () => {
+  // Exact user scenario: ad 8 already had an image (old logo). User uploads a
+  // new file, clicks 'Mejorar con IA' and then reloads the page. The DB state
+  // mid-flight is status='pending' + content still holding the OLD url, so
+  // the editor must render the skeleton (not the old image, not a blank slot).
+  it("mid-flight reload (pending + old url) renders the skeleton, never the old image", async () => {
+    const oldImageAd: RestaurantAd = {
+      id: 8,
+      name: "Ad con imagen previa",
+      active: false,
+      content: [{ id: imageItemId, type: "image", value: "https://cdn.example/old-logo.webp" }],
+      ctas: [],
+      image_generation_status: "pending",
+      image_generation_started_at: "2026-08-27T15:00:00Z",
+    };
+    const api = baseApi();
+
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={oldImageAd} />);
+    });
+
+    const skeleton = document.querySelector(`[data-slot="ad-content-${imageItemId}-skeleton"]`);
+    expect(skeleton).toBeTruthy();
+
+    const oldThumb = document.querySelector(`[data-slot="ad-content-${imageItemId}-thumb"]`);
+    expect(oldThumb).toBeNull();
+
+    expect(document.querySelector(`[data-slot="ad-content-${imageItemId}-change-text"]`)?.textContent).toBe("Mejorando con IA...");
+    expect(api.listAds).not.toHaveBeenCalled();
+  });
+
+  // After the AI finishes the DB must hold status='ready' + the NEW url, so a
+  // reload swaps the skeleton for the new image. If the server-side status
+  // write silently failed (the swapped-args bug fixed on the backend), the
+  // ad would come back as idle + old url and the editor would re-render the
+  // previous image — the exact symptom the user reported.
+  it("post-flight reload (ready + new url) renders the new image, not the old one", async () => {
+    const newImageAd: RestaurantAd = {
+      id: 8,
+      name: "Ad con imagen previa",
+      active: false,
+      content: [{ id: imageItemId, type: "image", value: "https://cdn.example/new-enhanced.webp" }],
+      ctas: [],
+      image_generation_status: "ready",
+      image_generation_started_at: "2026-08-27T15:00:00Z",
+    };
+    const api = baseApi();
+
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={newImageAd} />);
+    });
+
+    expect(document.querySelector(`[data-slot="ad-content-${imageItemId}-skeleton"]`)).toBeNull();
+
+    const thumb = document.querySelector(`[data-slot="ad-content-${imageItemId}-thumb"]`) as HTMLImageElement | null;
+    expect(thumb).toBeTruthy();
+    expect(thumb?.getAttribute("src")).toBe("https://cdn.example/new-enhanced.webp");
+    expect(thumb?.getAttribute("src")).not.toContain("old-logo");
+  });
+
+  // The failure mode the swapped-args bug produced server-side: the enhance
+  // finished (files uploaded) but the status never persisted, so the reload
+  // came back as idle + old url. The editor cannot fix stale server data on
+  // its own — this test pins down the symptom so a future regression is
+  // immediately visible in CI.
+  it("regression guard: idle + old url renders the old image (documents the broken server state the user saw)", async () => {
+    const staleAd: RestaurantAd = {
+      id: 8,
+      name: "Ad con imagen previa",
+      active: false,
+      content: [{ id: imageItemId, type: "image", value: "https://cdn.example/old-logo.webp" }],
+      ctas: [],
+      image_generation_status: "idle",
+    };
+    const api = baseApi();
+
+    await act(async () => {
+      render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={staleAd} />);
+    });
+
+    expect(document.querySelector(`[data-slot="ad-content-${imageItemId}-skeleton"]`)).toBeNull();
+    const thumb = document.querySelector(`[data-slot="ad-content-${imageItemId}-thumb"]`) as HTMLImageElement | null;
+    expect(thumb?.getAttribute("src")).toBe("https://cdn.example/old-logo.webp");
+  });
+});
