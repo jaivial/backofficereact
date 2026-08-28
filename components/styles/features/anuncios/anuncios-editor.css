@@ -701,6 +701,11 @@
    centred, rounded, breathing room, shrink-to-content width and fill
    available height. Overrides the 100%/aspect-ratio col rules above. */
 @media (min-width: 641px) {
+  /* Mobile preview on desktop: same 90vh cap as real phones. */
+  .bo-adModalPreview[data-preview-device="mobile"] {
+    max-height: 90dvh;
+    max-height: 90vh;
+  }
   .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalBody {
     padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
@@ -713,7 +718,9 @@
        block margins visible even with large source images. */
     max-width: min(100%, 420px);
     height: -webkit-fill-available;
-    max-height: none;
+    /* Image ~100px shorter than the 90vh preview cap (mirrors phones). */
+    max-height: calc(90dvh - 100px);
+    max-height: calc(90vh - 100px);
     aspect-ratio: auto;
     overflow: hidden;
   }
@@ -732,6 +739,11 @@
    treatment at width 95%. Higher specificity than the generic 640px block
    above so it always wins. */
 @media (max-width: 640px) {
+  /* Preview must never exceed 90% of the viewport height on phones. */
+  .bo-adModalPreview {
+    max-height: 90dvh;
+    max-height: 90vh;
+  }
   .bo-adModalPreview .bo-adModalBody {
     flex-direction: column;
     padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
@@ -742,7 +754,10 @@
     margin-block: 1rem;
     width: 95%;
     height: -webkit-fill-available;
-    max-height: none;
+    /* Image stays ~100px shorter than the 90vh preview cap so the text
+       block keeps room inside the fold. */
+    max-height: calc(90dvh - 100px);
+    max-height: calc(90vh - 100px);
     aspect-ratio: auto;
     overflow: hidden;
   }
