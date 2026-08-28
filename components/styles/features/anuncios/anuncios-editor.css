@@ -713,12 +713,11 @@
     margin-inline: auto;
     border-radius: 1rem;
     margin-block: 1rem;
-    width: fit-content;
-    /* Cap at a phone-like width so fit-content keeps the centring, radius and
-       block margins visible even with large source images. */
-    max-width: min(100%, 420px);
+    /* Match the natural <=640px mobile preview exactly. */
+    width: 95%;
+    max-width: none;
     height: -webkit-fill-available;
-    /* Image ~100px shorter than the 90vh preview cap (mirrors phones). */
+    /* Match the natural <=640px image height treatment exactly. */
     max-height: calc(90dvh - 100px);
     max-height: calc(90vh - 100px);
     aspect-ratio: auto;

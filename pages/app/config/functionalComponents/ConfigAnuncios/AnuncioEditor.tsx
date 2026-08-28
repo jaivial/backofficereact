@@ -50,6 +50,9 @@ export type AdsAPI = {
 
 export type Notify = (kind: "success" | "error" | "info", title: string, message: string) => void;
 
+export type AdSaveRequest = { type: "ad_save"; reqId: string; adId: number; payload: unknown };
+export type AdEventListener = (event: { type: string; reqId?: string; adId?: number; code?: string; message?: string; ad?: unknown }) => void;
+
 type ImageStep = "choose" | "preparing" | "advisor" | "working";
 
 const NOOP_NOTIFY: Notify = () => undefined;
@@ -84,14 +87,20 @@ type AnuncioEditorProps = {
   initialAd?: RestaurantAd | null;
   onSaved?: (ad: RestaurantAd) => void;
   onDeleted?: () => void;
+  wsFailureAtRef?: React.MutableRefObject<Map<number, number>>;
+  wsStatusRef?: React.MutableRefObject<"open" | "connecting" | "closed">;
+  sendAdSave?: (message: AdSaveRequest) => void;
+  subscribeAdEvents?: (listener: AdEventListener) => () => void;
+  autosaveDelayMs?: number;
 };
 
-export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted }: AnuncioEditorProps) {
+export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, sendAdSave, subscribeAdEvents, autosaveDelayMs }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [imageOpen, setImageOpen] = useState(false);
   const [imageStep, setImageStep] = useState<ImageStep>("choose");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -100,6 +109,9 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const [addContentOpen, setAddContentOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const addContentBtnRef = useRef<HTMLButtonElement | null>(null);
+  const baselineRef = useRef<string | null>(null);
+  const pendingSavesRef = useRef(new Map<string, { resolve: (ad: RestaurantAd | null) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>());
+  const reqCounter = useRef(0);
 
   useEffect(() => {
     if (mode !== "edit" || initialAd || !adId) return;
@@ -147,16 +159,62 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     }
   }, [api, notify, onSaved]);
 
+  const persistViaWS = useCallback((source: RestaurantAd): Promise<RestaurantAd | null> => {
+    if (!sendAdSave) return persistAd(source);
+    const reqId = `ad-save-${Date.now()}-${++reqCounter.current}`;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("No se pudo guardar el anuncio (sin conexión con el servidor)")), 8000);
+      pendingSavesRef.current.set(reqId, { resolve, reject, timer });
+      sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: { name: source.name, active: source.active, content: source.content, ctas: source.ctas } });
+    });
+  }, [persistAd, sendAdSave]);
+
+  useEffect(() => {
+    if (!subscribeAdEvents) return;
+    return subscribeAdEvents((event) => {
+      const pending = event.reqId ? pendingSavesRef.current.get(event.reqId) : undefined;
+      if (event.type === "ad_saved" && pending) {
+        clearTimeout(pending.timer);
+        pendingSavesRef.current.delete(event.reqId!);
+        pending.resolve(event.ad as RestaurantAd);
+        setSaveState("saved");
+      }
+      if (event.type === "ad_save_failed" && pending) {
+        clearTimeout(pending.timer);
+        pendingSavesRef.current.delete(event.reqId!);
+        pending.reject(new Error(event.message || "No se pudo guardar el anuncio"));
+        setSaveState("error");
+      }
+    });
+  }, [subscribeAdEvents]);
+
+  useEffect(() => {
+    if (!ad || !sendAdSave) return;
+    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas });
+    if (baselineRef.current === null) { baselineRef.current = json; return; }
+    if (json === baselineRef.current) return;
+    const timer = setTimeout(() => {
+      setSaveState("saving");
+      void persistViaWS(ad).then((saved) => {
+        if (saved) {
+          setAd(saved);
+          baselineRef.current = JSON.stringify({ name: saved.name, active: saved.active, content: saved.content, ctas: saved.ctas });
+        }
+      }).catch((error) => notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio"));
+    }, autosaveDelayMs ?? 1000);
+    return () => clearTimeout(timer);
+  }, [ad, autosaveDelayMs, notify, persistViaWS, sendAdSave]);
+
   const save = useCallback(async () => {
     if (!ad) return;
     setBusy(true);
     try {
-      const saved = await persistAd(ad);
+      const saved = await persistViaWS(ad);
       if (saved) notify("success", "Anuncios", "Anuncio guardado");
     } finally {
       setBusy(false);
     }
-  }, [ad, notify, persistAd]);
+  }, [ad, notify, persistViaWS]);
 
   const removeAd = useCallback(async () => {
     if (!ad?.id) return;
@@ -535,14 +593,34 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
       className="bo-anunciosPreview bo-adModalPreview"
       data-testid="ad-preview"
       data-slot="ad-preview"
-      style={{ "--ad-primary": primaryColor } as React.CSSProperties}
-    >
+      data-preview-device={device}
+      style={{ "--ad-primary": primaryColor } as React.CSSProperties}    >
       <div className="bo-adModalBody" data-slot="ad-preview-body">
-        {image ? (
-          <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
-            <img src={image.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${image.id}`} />
-          </div>
-        ) : null}
+        {device === "mobile" ? (
+          <>
+            {visibleContent.map((item) => item.type === "image" ? (
+              <div className="bo-adModalImageCol" key={item.id} data-slot="ad-preview-image-col">
+                <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
+              </div>
+            ) : item.type === "subtitle" ? (
+              <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>
+            ) : item.type === "title" ? (
+              <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>
+            ) : (
+              <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>
+            ))}
+            {!visibleContent.length ? <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p> : null}
+            <div className="bo-adModalActions" data-slot="ad-preview-ctas">
+              {ad.ctas.map((cta) => <a key={cta.id} href={buildCTAURL(website, cta)} className="bo-adModalCta" style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties} rel="noopener noreferrer" data-slot={`ad-preview-cta-${cta.id}`}>{cta.text || "Más información"}</a>)}
+            </div>
+          </>
+        ) : (
+          <>
+            {image ? (
+              <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
+                <img src={image.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${image.id}`} />
+              </div>
+            ) : null}
 
         <div className="bo-adModalTextCol" data-slot="ad-preview-content">
           {visibleContent.filter((item) => item.type !== "image").map((item) => {
@@ -574,6 +652,8 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
             ))}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
