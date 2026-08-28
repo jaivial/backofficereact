@@ -217,7 +217,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   useEffect(() => {
     if (!ad || !sendAdSave) return;
-    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas });
+    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas, starts_at: ad.starts_at ?? null, ends_at: ad.ends_at ?? null });
     if (baselineRef.current === null) { baselineRef.current = json; return; }
     if (json === baselineRef.current) return;
     const timer = setTimeout(() => {
@@ -225,7 +225,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
       void persistViaWS(ad).then((saved) => {
         if (saved) {
           setAd(saved);
-          baselineRef.current = JSON.stringify({ name: saved.name, active: saved.active, content: saved.content, ctas: saved.ctas });
+          baselineRef.current = JSON.stringify({ name: saved.name, active: saved.active, content: saved.content, ctas: saved.ctas, starts_at: saved.starts_at ?? null, ends_at: saved.ends_at ?? null });
         }
       }).catch((error) => notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio"));
     }, autosaveDelayMs ?? 1000);
