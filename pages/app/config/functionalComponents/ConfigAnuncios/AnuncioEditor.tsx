@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, Reorder, useDragControls } from "motion/react";
 import {
+  Check,
+  CircleAlert,
   Eye,
   GripVertical,
   ImagePlus,
   Megaphone,
   Monitor,
   Plus,
-  Save,
   Settings2,
   Sparkles,
   Smartphone,
@@ -232,17 +233,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     return () => clearTimeout(timer);
   }, [ad, autosaveDelayMs, notify, persistViaWS, sendAdSave]);
 
-  const save = useCallback(async () => {
-    if (!ad) return;
-    setBusy(true);
-    try {
-      const saved = await persistViaWS(ad);
-      if (saved) notify("success", "Anuncios", "Anuncio guardado");
-    } finally {
-      setBusy(false);
-    }
-  }, [ad, notify, persistViaWS]);
-
   const removeAd = useCallback(async () => {
     if (!ad?.id) return;
     setBusy(true);
@@ -454,18 +444,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               <span className="bo-anunciosPreviewSwitchLabel">Preview</span>
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => void save()}
-            disabled={busy}
-            className="bo-anunciosIconBtn"
-            data-tone="primary"
-            aria-label="Guardar anuncio"
-            data-slot="ad-save"
-            data-testid="ad-save"
-          >
-            <Save size={16} aria-hidden="true" />
-          </button>
+          <SaveStatusBadge state={saveState} />
         </div>
       </div>
 
@@ -729,6 +708,57 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
 
 function AlignmentTabs({ value, onChange }: { value: RestaurantAdTextAlign; onChange: (value: RestaurantAdTextAlign) => void }) {
   return <div className="bo-anunciosAlignmentTabs" role="group" aria-label="Alineación del texto">{(["left", "center", "right"] as RestaurantAdTextAlign[]).map((align) => <button key={align} type="button" className={value === align ? "is-active" : ""} onClick={() => onChange(align)} aria-pressed={value === align}>{align === "left" ? "Izquierda" : align === "center" ? "Centro" : "Derecha"}</button>)}</div>;
+}
+
+function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "error" }) {
+  if (state === "idle") {
+    return (
+      <span
+        className="bo-anunciosSaveStatus"
+        data-state="idle"
+        data-testid="ad-save-status"
+        aria-live="polite"
+        data-slot="ad-save-status"
+      >
+        <span className="bo-anunciosSaveLabel">Guardado</span>
+      </span>
+    );
+  }
+  if (state === "saving") {
+    return (
+      <span
+        className="bo-anunciosSaveStatus"
+        data-state="saving"
+        data-testid="ad-save-status"
+        aria-live="polite"
+        aria-busy="true"
+        data-slot="ad-save-status"
+      >
+        <span className="bo-anunciosSaveSpinner" aria-hidden="true" />
+        <span className="bo-anunciosSaveLabel">Guardando...</span>
+      </span>
+    );
+  }
+  if (state === "error") {
+    return (
+      <span
+        className="bo-anunciosSaveStatus"
+        data-state="error"
+        data-testid="ad-save-status"
+        aria-live="assertive"
+        data-slot="ad-save-status"
+      >
+        <CircleAlert size={14} aria-hidden="true" />
+        <span className="bo-anunciosSaveLabel">Error</span>
+      </span>
+    );
+  }
+  return (
+    <span className="bo-anunciosSaveStatus" data-state="saved" data-testid="ad-save-status" aria-live="polite" data-slot="ad-save-status">
+      <Check size={14} aria-hidden="true" />
+      <span className="bo-anunciosSaveLabel">Guardado</span>
+    </span>
+  );
 }
 
 function DraggableCardRow({
