@@ -414,8 +414,10 @@
 
 
 /* Mobile (<769px) shows either the editor or preview, never both. */
-[data-slot="ads-editor-layout"].is-preview-active > [data-slot="ads-main-panel"] {
-  display: none;
+@media (max-width: 768px) {
+  [data-slot="ads-editor-layout"].is-preview-active > [data-slot="ads-main-panel"] {
+    display: none;
+  }
 }
 
 [data-slot="ads-editor-layout"].is-editor-active > [data-testid="ad-preview"] {
@@ -612,6 +614,13 @@
   .bo-adModalDesc { font-size: 14px; margin-bottom: 18px; }
   .bo-adModalCta { padding: 14px 20px; }
 }
+
+.bo-anunciosContentControl { display: grid; gap: 6px; width: 100%; }
+.bo-anunciosAlignmentTabs { display: inline-flex; width: fit-content; border: 1px solid var(--bo-border); border-radius: 999px; padding: 2px; gap: 2px; }
+.bo-anunciosAlignmentTabs button { border: 0; background: transparent; color: var(--bo-muted); border-radius: 999px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+.bo-anunciosAlignmentTabs button.is-active { background: var(--bo-surface-2); color: var(--bo-text); }
+.bo-anunciosDurationSection { display: grid; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--bo-border); }
+.bo-anunciosScheduleError { margin: 0; color: var(--bo-text-danger); font-size: 12px; }
 
 /* ── CTAs sub-section inside the merged main panel ────────────── */
 .bo-anunciosCtasSection {

@@ -21,6 +21,7 @@ import type {
   RestaurantAdContentElement,
   RestaurantAdContentType,
   RestaurantAdInput,
+  RestaurantAdTextAlign,
 } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Modal } from "../../../../../ui/overlays/Modal";
@@ -37,6 +38,8 @@ import {
   WEBSITE_ROUTE_OPTIONS,
 } from "./lib/adEditor";
 import { compressAdImage } from "./lib/image";
+import { DateRangePicker } from "../../../../../ui/inputs/DateRangePicker";
+import { formatISODate, parseISODate } from "../../../../../ui/lib/format";
 
 export type AdsAPI = {
   listAds: () => Promise<{ success: boolean; ads?: RestaurantAd[]; message?: string }>;
@@ -51,7 +54,7 @@ export type AdsAPI = {
 export type Notify = (kind: "success" | "error" | "info", title: string, message: string) => void;
 
 export type AdSaveRequest = { type: "ad_save"; reqId: string; adId: number; payload: unknown };
-export type AdEventListener = (event: { type: string; reqId?: string; adId?: number; code?: string; message?: string; ad?: unknown }) => void;
+export type AdEventListener = (event: { type: string; reqId?: string; adId?: number; code?: string; message?: string; ad?: unknown; conflict?: boolean; name?: string; starts_at?: string; ends_at?: string }) => void;
 
 type ImageStep = "choose" | "preparing" | "advisor" | "working";
 
@@ -92,15 +95,19 @@ type AnuncioEditorProps = {
   sendAdSave?: (message: AdSaveRequest) => void;
   subscribeAdEvents?: (listener: AdEventListener) => () => void;
   autosaveDelayMs?: number;
+  sendAdScheduleCheck?: (message: { type: "ad_schedule_check"; reqId: string; adId: number; payload: { starts_at: string; ends_at: string } }) => void;
 };
 
-export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, sendAdSave, subscribeAdEvents, autosaveDelayMs }: AnuncioEditorProps) {
+export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [scheduleError, setScheduleError] = useState("");
+  const scheduleCheckReqRef = useRef<string | null>(null);
+
   const [imageOpen, setImageOpen] = useState(false);
   const [imageStep, setImageStep] = useState<ImageStep>("choose");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -145,7 +152,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   const persistAd = useCallback(async (source: RestaurantAd): Promise<RestaurantAd | null> => {
     try {
-      const payload: RestaurantAdInput = { name: source.name, active: source.active, content: source.content, ctas: source.ctas };
+      const payload: RestaurantAdInput = { name: source.name, active: source.active, content: source.content, ctas: source.ctas, starts_at: source.starts_at ?? null, ends_at: source.ends_at ?? null };
       const result = source.id > 0
         ? await api.updateAd(source.id, payload)
         : await api.createAd(payload);
@@ -160,14 +167,28 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   }, [api, notify, onSaved]);
 
   const persistViaWS = useCallback((source: RestaurantAd): Promise<RestaurantAd | null> => {
+    // The shared WS can be mid-reconnect (backoff grows to 30s) or stale after a
+    // tab restore, so queuing an ad_save and waiting 8s surfaces a bogus
+    // "sin conexión con el servidor" error while the write never gets a chance.
+    // When the socket is not confirmed open, save over REST instead. If no
+    // wsStatusRef is provided (e.g. isolated component tests), keep the old
+    // WS-only path.
     if (!sendAdSave) return persistAd(source);
+    if (wsStatusRef && wsStatusRef.current !== "open") return persistAd(source);
     const reqId = `ad-save-${Date.now()}-${++reqCounter.current}`;
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("No se pudo guardar el anuncio (sin conexión con el servidor)")), 8000);
-      pendingSavesRef.current.set(reqId, { resolve, reject, timer });
-      sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: { name: source.name, active: source.active, content: source.content, ctas: source.ctas } });
+      let settled = false;
+      const finish = (ad: RestaurantAd | null) => { if (!settled) { settled = true; clearTimeout(timer); resolve(ad); } };
+      const fail = (error: Error) => { if (!settled) { settled = true; clearTimeout(timer); reject(error); } };
+      const timer = setTimeout(() => {
+        // WS did not confirm in time → fall back to REST so the save still lands.
+        pendingSavesRef.current.delete(reqId);
+        void persistAd(source).then(finish);
+      }, 8000);
+      pendingSavesRef.current.set(reqId, { resolve: finish, reject: fail, timer });
+      sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: { name: source.name, active: source.active, content: source.content, ctas: source.ctas, starts_at: source.starts_at ?? null, ends_at: source.ends_at ?? null } });
     });
-  }, [persistAd, sendAdSave]);
+  }, [persistAd, sendAdSave, wsStatusRef]);
 
   useEffect(() => {
     if (!subscribeAdEvents) return;
@@ -178,6 +199,12 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
         pendingSavesRef.current.delete(event.reqId!);
         pending.resolve(event.ad as RestaurantAd);
         setSaveState("saved");
+      }
+      if (event.type === "ad_schedule_conflict" && event.reqId === scheduleCheckReqRef.current) {
+        if (event.conflict) {
+          setScheduleError(`El anuncio ${event.name} esta programado para las fechas ${event.starts_at} a ${event.ends_at}, no puedes asignar estas fechas seleccionadas.`);
+          setAd((current) => current ? { ...current, starts_at: null, ends_at: null } : current);
+        }
       }
       if (event.type === "ad_save_failed" && pending) {
         clearTimeout(pending.timer);
@@ -232,6 +259,31 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   const updateContentValue = useCallback((id: string, value: string) =>
     setAd((current) => current ? { ...current, content: current.content.map((item) => item.id === id ? { ...item, value } : item) } : current),
+  []);
+  const blockedRanges = ad?.blocked_ranges?.filter((range) => range.id !== ad.id) ?? [];
+  const blockedDates = useMemo(() => {
+    const result = new Set<string>();
+    for (const range of blockedRanges) {
+      const from = parseISODate(range.starts_at); const to = parseISODate(range.ends_at);
+      if (!from || !to) continue;
+      const cursor = new Date(from);
+      while (cursor <= to) { result.add(formatISODate(cursor)); cursor.setUTCDate(cursor.getUTCDate() + 1); }
+    }
+    return result;
+  }, [blockedRanges]);
+  const blockedDateLabels = useMemo(() => {
+    const result = new Map<string, string>();
+    for (const range of blockedRanges) {
+      const from = parseISODate(range.starts_at); const to = parseISODate(range.ends_at);
+      if (!from || !to) continue;
+      const cursor = new Date(from);
+      while (cursor <= to) { result.set(formatISODate(cursor), `Reservado por ${range.name}`); cursor.setUTCDate(cursor.getUTCDate() + 1); }
+    }
+    return result;
+  }, [blockedRanges]);
+
+  const updateContentAlign = useCallback((id: string, align: RestaurantAdTextAlign) =>
+    setAd((current) => current ? { ...current, content: current.content.map((item) => item.id === id ? { ...item, align } : item) } : current),
   []);
 
   const addContent = useCallback((type: RestaurantAdContentType) => {
@@ -488,13 +540,34 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                     <span data-slot={`ad-content-${item.id}-change-text`}>{imageEnhancing ? "Mejorando con IA..." : item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
                   </button>
                 ) : item.type === "text" ? (
-                  <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
+                  <div className="bo-anunciosContentControl">
+                    <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
+                    <AlignmentTabs value={item.align || "left"} onChange={(align) => updateContentAlign(item.id, align)} />
+                  </div>
                 ) : (
-                  <input value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} className="bo-input" style={{ width: "100%" }} aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-input`} />
+                  <div className="bo-anunciosContentControl">
+                    <input value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} className="bo-input" style={{ width: "100%" }} aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-input`} />
+                    <AlignmentTabs value={item.align || "left"} onChange={(align) => updateContentAlign(item.id, align)} />
+                  </div>
                 )}
               </DraggableCardRow>
             ))}
           </Reorder.Group>
+
+          <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
+            <div className="bo-anunciosCtasTitle">Duración</div>
+            <div className="bo-anunciosCtasHint">El anuncio se mostrará durante este periodo. Déjalo vacío para mostrarlo siempre.</div>
+            <DateRangePicker from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
+              if (range.from && range.to && sendAdScheduleCheck) {
+                const reqId = `ad-schedule-${Date.now()}-${++reqCounter.current}`;
+                scheduleCheckReqRef.current = reqId;
+                sendAdScheduleCheck({ type: "ad_schedule_check", reqId, adId: ad.id, payload: { starts_at: range.from, ends_at: range.to } });
+              }
+              setScheduleError("");
+              setAd({ ...ad, starts_at: range.from || null, ends_at: range.to || null });
+            }} buttonLabel="Seleccionar fechas" />
+            {scheduleError ? <p className="bo-anunciosScheduleError" role="alert">{scheduleError}</p> : null}
+          </div>
 
           <div className="bo-anunciosCtasSection" data-slot="ads-cta-section">
             <div className="bo-anunciosCtasHead">
@@ -625,12 +698,12 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
         <div className="bo-adModalTextCol" data-slot="ad-preview-content">
           {visibleContent.filter((item) => item.type !== "image").map((item) => {
             if (item.type === "subtitle") {
-              return <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+              return <p key={item.id} className="bo-adModalSupertitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
             }
             if (item.type === "title") {
-              return <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
+              return <h2 key={item.id} className="bo-adModalTitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
             }
-            return <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
+            return <p key={item.id} className="bo-adModalDesc" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
           })}
 
           {!visibleContent.length ? (
@@ -657,6 +730,10 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
       </div>
     </div>
   );
+}
+
+function AlignmentTabs({ value, onChange }: { value: RestaurantAdTextAlign; onChange: (value: RestaurantAdTextAlign) => void }) {
+  return <div className="bo-anunciosAlignmentTabs" role="group" aria-label="Alineación del texto">{(["left", "center", "right"] as RestaurantAdTextAlign[]).map((align) => <button key={align} type="button" className={value === align ? "is-active" : ""} onClick={() => onChange(align)} aria-pressed={value === align}>{align === "left" ? "Izquierda" : align === "center" ? "Centro" : "Derecha"}</button>)}</div>;
 }
 
 function DraggableCardRow({

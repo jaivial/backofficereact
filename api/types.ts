@@ -2378,11 +2378,13 @@ export type POSCashDayCurrent = {
   unclosedPrevious: POSCashDay[];
 };
 
+export type RestaurantAdTextAlign = "left" | "center" | "right";
 export type RestaurantAdContentType = "title" | "subtitle" | "text" | "image";
 export type RestaurantAdContentElement = {
   id: string;
   type: RestaurantAdContentType;
   value: string;
+  align?: RestaurantAdTextAlign;
 };
 export type RestaurantAdCTA = {
   id: string;
@@ -2393,15 +2395,19 @@ export type RestaurantAdCTA = {
   custom_url: string;
 };
 export type RestaurantAdImageGenerationStatus = "idle" | "pending" | "ready" | "failed";
+export type RestaurantAdScheduleRange = { id: number; name: string; starts_at: string; ends_at: string };
 export type RestaurantAd = {
   id: number;
   name: string;
   active: boolean;
   content: RestaurantAdContentElement[];
   ctas: RestaurantAdCTA[];
+  starts_at?: string | null;
+  ends_at?: string | null;
+  blocked_ranges?: RestaurantAdScheduleRange[];
   image_generation_status?: RestaurantAdImageGenerationStatus;
   image_generation_started_at?: string;
   created_at?: string;
   updated_at?: string;
 };
-export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas">;
+export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at">;
