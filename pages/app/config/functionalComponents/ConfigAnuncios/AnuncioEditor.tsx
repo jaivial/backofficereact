@@ -102,7 +102,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(true);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [scheduleError, setScheduleError] = useState("");

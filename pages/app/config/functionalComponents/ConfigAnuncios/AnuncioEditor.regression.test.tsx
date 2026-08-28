@@ -350,6 +350,11 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={adWithImage} />);
     });
 
+    // Editor tab is the default; open the preview to exercise the switcher.
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-mode-preview"));
+    });
+
     expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeTruthy();
     expect(document.querySelector('[data-testid="ad-preview-device-mobile"]')).toBeTruthy();
     expect(document.querySelector('[data-testid="ad-preview-device-desktop"]')).toBeTruthy();
@@ -366,6 +371,9 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={adWithImage} />);
     });
 
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-mode-preview"));
+    });
     await act(async () => {
       await user.click(screen.getByTestId("ad-preview-device-mobile"));
     });
@@ -389,6 +397,7 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
     await act(async () => {
       fireEvent.click(screen.getByTestId("ad-mode-editor"));
     });
+    // The editor tab is already the default, so the preview stays closed.
     expect(document.querySelector('[data-testid="ad-preview"]')).toBeNull();
     expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeNull();
   });
@@ -412,6 +421,10 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
 
     await act(async () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={reordered} />);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-mode-preview"));
     });
 
     // Desktop: image column leads the body.
@@ -457,6 +470,10 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
     try {
       await act(async () => {
         render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={reordered} />);
+      });
+      // Open the (now default-closed) preview so the mobile DOM can hydrate.
+      await act(async () => {
+        fireEvent.click(screen.getByTestId("ad-mode-preview"));
       });
       await act(async () => {
         await Promise.resolve();
