@@ -517,6 +517,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                 item={item}
                 ordinal={ad.content.slice(0, index + 1).filter((entry) => entry.type === item.type).length}
                 onDelete={() => setAd(removeContentItem(ad, item.id))}
+                onAlignChange={(align) => updateContentAlign(item.id, align)}
                 dataSlot={`ad-content-${item.id}`}
               >
                 {item.type === "image" ? (
@@ -540,15 +541,9 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                     <span data-slot={`ad-content-${item.id}-change-text`}>{imageEnhancing ? "Mejorando con IA..." : item.value ? "Cambiar imagen" : "Seleccionar imagen"}</span>
                   </button>
                 ) : item.type === "text" ? (
-                  <div className="bo-anunciosContentControl">
-                    <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
-                    <AlignmentTabs value={item.align || "left"} onChange={(align) => updateContentAlign(item.id, align)} />
-                  </div>
+                  <textarea value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} rows={3} className="bo-textarea" aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-textarea`} />
                 ) : (
-                  <div className="bo-anunciosContentControl">
-                    <input value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} className="bo-input" style={{ width: "100%" }} aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-input`} />
-                    <AlignmentTabs value={item.align || "left"} onChange={(align) => updateContentAlign(item.id, align)} />
-                  </div>
+                  <input value={item.value} onChange={(event) => updateContentValue(item.id, event.target.value)} className="bo-input" style={{ width: "100%" }} aria-label={TYPE_LABEL[item.type]} data-slot={`ad-content-${item.id}-input`} />
                 )}
               </DraggableCardRow>
             ))}
@@ -741,12 +736,14 @@ function DraggableCardRow({
   ordinal,
   children,
   onDelete,
+  onAlignChange,
   dataSlot,
 }: {
   item: RestaurantAdContentElement;
   ordinal: number;
   children: React.ReactNode;
   onDelete?: () => void;
+  onAlignChange?: (align: RestaurantAdTextAlign) => void;
   dataSlot: string;
 }) {
   const label = `${TYPE_LABEL[item.type]} ${ordinal}`;
@@ -755,6 +752,9 @@ function DraggableCardRow({
     (event: React.PointerEvent<Element>) => dragControls.start(event),
     [dragControls],
   );
+  // Only text-like elements carry alignment; the image row shows the handle
+  // and trash with an empty middle column.
+  const showAlign = onAlignChange && item.type !== "image";
   return (
     <Reorder.Item
       value={item}
@@ -768,21 +768,26 @@ function DraggableCardRow({
       whileDrag={{ zIndex: 2 }}
       className="bo-anunciosRowCard"
     >
-      <button
-        type="button"
-        className="bo-anunciosDragHandle"
-        aria-label={`Mover ${label}`}
-        data-slot={`${dataSlot}-grip`}
-        onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
-      >
-        <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
-      </button>
       <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
         <span className="bo-anunciosRowTypeLabel" data-slot={`${dataSlot}-type-label`}>{TYPE_LABEL[item.type]}</span>
         {children}
       </div>
-      {onDelete ? (
-        <div className="bo-anunciosRowAction" data-slot={`${dataSlot}-action`}>
+      <div className="bo-anunciosRowBand" data-slot={`${dataSlot}-band`}>
+        <button
+          type="button"
+          className="bo-anunciosDragHandle"
+          aria-label={`Mover ${label}`}
+          data-slot={`${dataSlot}-grip`}
+          onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
+        >
+          <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
+        </button>
+        {showAlign ? (
+          <AlignmentTabs value={item.align || "left"} onChange={onAlignChange} />
+        ) : (
+          <span aria-hidden="true" data-slot={`${dataSlot}-band-spacer`} />
+        )}
+        {onDelete ? (
           <button
             type="button"
             onClick={onDelete}
@@ -793,8 +798,8 @@ function DraggableCardRow({
           >
             <Trash2 size={15} aria-hidden="true" />
           </button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </Reorder.Item>
   );
 }

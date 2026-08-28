@@ -88,14 +88,16 @@
   min-width: 0; /* prevent children from stretching the column out of the grid */
 }
 
-/* Type label sits on its own row above the control band so grip, input and
-   trash share one horizontal level and stay aligned regardless of label size. */
+/* Footer band under each content row: drag handle, the alignment switch and
+   the trash button share one horizontal level, with the grip and trash pinned
+   to the edges and the tabs (or spacer) filling the middle. */
 .bo-anunciosRowBand {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  margin-top: 4px;
 }
 
 .bo-anunciosRowCard.is-dragging {
