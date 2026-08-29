@@ -21,6 +21,7 @@ import { Panel } from "../../../../ui/shell/Panel";
 import { RoleIcon } from "../../../../ui/widgets/roles/RoleIcon";
 import type { MemberRoleInfo } from "./+data";
 import { formatElapsedHHMMSS, useMemberLive } from "./_shared/realtime";
+import { MemberVersionControl } from "./_shared/MemberVersionControl";
 
 function initials(member: Member | null): string {
   if (!member) return "MM";
@@ -233,6 +234,10 @@ export default function Page() {
 
   const actorImportance = session?.user?.roleImportance ?? 0;
   const memberRoleIconKey = memberRole ? data.roles.find((r) => r.slug === memberRole.slug)?.iconKey ?? null : null;
+  // A/B app version management: only root (importance >= 100) can assign
+  // versions to a member that has a backoffice user (boUserId).
+  const canChangeVersion = actorImportance >= 100 && !!member && member.boUserId != null;
+
   const canChangeRole = !!member && member.boUserId != null && !isSelfMember && !!memberRole && actorImportance > memberRole.importance;
   // Misma regla ACL que el backend: solo roles estrictamente inferiores y no
   // el propio miembro. Sin rol resuelto (invitado pendiente sin aceptar) el
@@ -372,6 +377,16 @@ export default function Page() {
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">DNI (opcional)</span>
                   <input id="dni" className="bo-input" data-testid="miembro-detail-dni-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
+                </label>
+                <label className="bo-field" data-slot="@memberId-field">
+                  <span className="bo-label" data-slot="@memberId-label">Version de app</span>
+                  <MemberVersionControl
+                    boUserId={member.boUserId}
+                    initialVersion={data.memberRole?.appVersion}
+                    memberName={memberName}
+                    canChange={canChangeVersion}
+                    onError={setError}
+                  />
                 </label>
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Rol</span>

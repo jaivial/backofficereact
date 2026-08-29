@@ -91,6 +91,8 @@ type RangeCalendarProps = {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onSelectDay: (iso: string) => void;
+  disabledDates?: Set<string>;
+  disabledDateLabels?: Map<string, string>;
   /** data-ui prefix so callers keep their existing hooks/selectors. */
   uiPrefix: string;
   /**
@@ -119,6 +121,8 @@ export function RangeCalendar({
   onPrevMonth,
   onNextMonth,
   onSelectDay,
+  disabledDates,
+  disabledDateLabels,
   uiPrefix,
   dragSelect = false,
 }: RangeCalendarProps) {
@@ -280,6 +284,7 @@ export function RangeCalendar({
         {grid.map((c, idx) => {
           if (!c.day || !c.iso) return <div key={idx} className="bo-calDay bo-calDay--empty" aria-hidden="true" data-ui={`${uiPrefix}-empty-cell`} />;
           const iso = c.iso;
+          const isBlocked = disabledDates?.has(iso) ?? false;
           const isStart = hasDraft && iso === fromISO;
           const isEnd = hasDraft && iso === toISO;
           const isInRange = hasDraft && iso > fromISO && iso < toISO;
@@ -288,6 +293,7 @@ export function RangeCalendar({
             isInRange ? "is-inRange" : "",
             isStart ? "is-rangeStart" : "",
             isEnd ? "is-rangeEnd" : "",
+            isBlocked ? "is-blocked" : "",
           ]
             .filter(Boolean)
             .join(" ");
@@ -299,9 +305,11 @@ export function RangeCalendar({
               ref={(el) => {
                 cellRefs.current[iso] = el;
               }}
-              onClick={() => handleClick(iso)}
+              onClick={() => { if (!isBlocked) handleClick(iso); }}
+              disabled={isBlocked}
               onPointerDown={dragSelect ? (e) => handlePointerDown(iso, e.clientX, e.clientY) : undefined}
               onPointerEnter={dragSelect ? () => handleDragHover(iso) : undefined}
+              aria-label={isBlocked && disabledDateLabels?.get(iso) ? `${iso}: ${disabledDateLabels.get(iso)}` : undefined}
               data-ui={`${uiPrefix}-day`}
               data-date={iso}
             >

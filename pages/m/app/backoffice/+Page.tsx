@@ -11,7 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { sessionAtom } from "../../../../state/atoms";
-import { sidebarItemsForRole } from "../../../../lib/rbac";
+import { sidebarItemsForRole } from "../../../../lib/navigation";
 import { iconForSidebarItemKey } from "../../../../ui/nav/sectionIcons";
 import type { DashboardMetrics } from "../../../../api/types";
 
@@ -94,6 +94,7 @@ export default function MobileHomePage() {
       session.user.role,
       session.user.sectionAccess,
       session.user.roleImportance,
+      session.user.appVersion,
     );
   }, [session]);
 
