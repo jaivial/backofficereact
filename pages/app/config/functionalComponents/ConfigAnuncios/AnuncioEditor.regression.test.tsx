@@ -350,6 +350,11 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={adWithImage} />);
     });
 
+    // Editor tab is the default; open the preview to exercise the switcher.
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-mode-preview"));
+    });
+
     expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeTruthy();
     expect(document.querySelector('[data-testid="ad-preview-device-mobile"]')).toBeTruthy();
     expect(document.querySelector('[data-testid="ad-preview-device-desktop"]')).toBeTruthy();
@@ -366,6 +371,9 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={adWithImage} />);
     });
 
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-mode-preview"));
+    });
     await act(async () => {
       await user.click(screen.getByTestId("ad-preview-device-mobile"));
     });
@@ -389,14 +397,15 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
     await act(async () => {
       fireEvent.click(screen.getByTestId("ad-mode-editor"));
     });
+    // The editor tab is already the default, so the preview stays closed.
     expect(document.querySelector('[data-testid="ad-preview"]')).toBeNull();
     expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeNull();
   });
 
-  // Moving the image row in the editor must change where it renders in the
-  // mobile preview: content order is respected (image interleaved), while the
-  // desktop layout keeps its image-column-first structure.
-  it("mobile preview renders the image in the editor order, desktop keeps image first", async () => {
+  // Moving the image row in the editor must change where it renders in both
+  // previews: content order is respected (image interleaved) on mobile and
+  // desktop alike.
+  it("preview renders the image in the editor order on mobile and desktop", async () => {
     const api = baseApi();
     const reordered: RestaurantAd = {
       id: 8,
@@ -414,17 +423,23 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
       render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={reordered} />);
     });
 
-    // Desktop: image column leads the body.
-    const bodyChildrenDesktop = Array.from(document.querySelector('[data-slot="ad-preview-body"]')!.children);
-    expect(bodyChildrenDesktop[0]?.getAttribute("data-slot")).toBe("ad-preview-image-col");
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("ad-mode-preview"));
+    });
+
+    // Desktop: flat body children follow the editor order title → image → text.
+    let body = document.querySelector('[data-slot="ad-preview-body"]')!;
+    let slots = Array.from(body.children).map((child) => child.getAttribute("data-slot"));
+    expect(slots.indexOf("ad-preview-image-col")).toBeGreaterThan(slots.indexOf("ad-preview-t1"));
+    expect(slots.indexOf("ad-preview-image-col")).toBeLessThan(slots.indexOf("ad-preview-x1"));
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("ad-preview-device-mobile"));
     });
 
-    // Mobile: flat body children follow the editor order title → image → text.
-    const body = document.querySelector('[data-slot="ad-preview-body"]')!;
-    const slots = Array.from(body.children).map((child) => child.getAttribute("data-slot"));
+    // Mobile: flat body children follow the same editor order.
+    body = document.querySelector('[data-slot="ad-preview-body"]')!;
+    slots = Array.from(body.children).map((child) => child.getAttribute("data-slot"));
     expect(slots.indexOf("ad-preview-image-col")).toBeGreaterThan(slots.indexOf("ad-preview-t1"));
     expect(slots.indexOf("ad-preview-image-col")).toBeLessThan(slots.indexOf("ad-preview-x1"));
     expect(document.querySelector('[data-testid="ad-preview"]')?.getAttribute("data-preview-device")).toBe("mobile");
@@ -457,6 +472,10 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
     try {
       await act(async () => {
         render(<AnuncioEditor api={api as never} website="https://villa.test" mode="edit" adId={8} initialAd={reordered} />);
+      });
+      // Open the (now default-closed) preview so the mobile DOM can hydrate.
+      await act(async () => {
+        fireEvent.click(screen.getByTestId("ad-mode-preview"));
       });
       await act(async () => {
         await Promise.resolve();

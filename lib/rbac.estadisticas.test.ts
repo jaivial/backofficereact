@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { hasSectionAccess, isPathAllowed, sidebarItemsForRole } from "./rbac";
+import { hasSectionAccess } from "./access-policy";
+import { isPathAllowed, sidebarItemsForRole } from "./navigation";
 
 describe("estadisticas access", () => {
   it("defaults statistics to root and admin only", () => {

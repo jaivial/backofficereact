@@ -1354,6 +1354,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify({ role }),
         });
       },
+      async setUserVersion(userId: number, appVersion: string): Promise<APISuccess<{ user: { id: number; appVersion: string } }> | APIError> {
+        return json(`/api/admin/users/${userId}/version`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ appVersion }),
+        });
+      },
     },
     fichaje: {
       async getLabourCost(params: { from: string; to: string }): Promise<APISuccess<LabourCostReport> | APIError> {
