@@ -1,4 +1,5 @@
 import { canAccessComida, hasSectionAccess } from "./access-policy";
+import { hasAppCapability } from "./app-version";
 import { normalizeRole, normalizeSectionAccess, ROLE_SECTION_ACCESS, type BOSection } from "./rbac";
 
 export type SidebarItemKey = BOSection;
@@ -81,6 +82,10 @@ export function firstAllowedPath(roleRaw: string | null | undefined, sectionAcce
 export function isPathAllowed(pathname: string, roleRaw: string | null | undefined, sectionAccessRaw?: string[] | null, roleImportanceRaw?: number | null, appVersionRaw?: unknown): boolean {
   if (pathname === "/app" || pathname === "/app/") return true;
   if (pathname === "/app/backoffice" || pathname.startsWith("/app/backoffice/")) return true;
+  if (pathname.startsWith("/app/config/anuncios")) {
+    return hasAppCapability(appVersionRaw, "ads")
+      && hasSectionAccess(roleRaw, "reservas", sectionAccessRaw, roleImportanceRaw, appVersionRaw);
+  }
   const section = sectionForPath(pathname);
   if (!section) return false;
   return section === "comida"

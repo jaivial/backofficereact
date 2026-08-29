@@ -8,7 +8,7 @@ export function hasSectionAccess(
   roleImportanceRaw?: number | null,
   appVersionRaw?: unknown,
 ): boolean {
-  const effectiveVersion = appVersionRaw ?? "0.2";
+  const effectiveVersion = appVersionRaw ?? "0.1";
   return sectionAllowedByAppVersion(section, effectiveVersion)
     && hasRoleSectionAccess(roleRaw, section, sectionAccessRaw, roleImportanceRaw);
 }
