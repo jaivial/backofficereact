@@ -3,10 +3,10 @@ import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, 
 import { navigate } from "vike/client/router";
 
 import { sidebarItemsForRole, type SidebarItemKey } from "../../lib/navigation";
+import { hasAppCapability } from "../../lib/app-version";
 import { cn } from "../shadcn/utils";
 import { NavLink } from "../nav/NavLink";
-
-const MOBILE_PRIMARY_ORDER: SidebarItemKey[] = ["reservas", "stock", "pos"];
+import { splitMobileNavigation } from "./mobileNavigation";
 
 function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
   switch (key) {
@@ -64,13 +64,20 @@ export function Sidebar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMoreRef = useRef<HTMLDivElement | null>(null);
   const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance, appVersion), [role, roleImportance, sectionAccess, appVersion]);
-  const mobilePrimary = useMemo(() => {
-    const map = new Map(items.map((item) => [item.key, item] as const));
-    return MOBILE_PRIMARY_ORDER.map((key) => map.get(key)).filter((item): item is (typeof items)[number] => Boolean(item));
-  }, [items]);
-  const mobilePrimaryKeys = useMemo(() => new Set(mobilePrimary.map((item) => item.key)), [mobilePrimary]);
-  const mobileOverflow = useMemo(() => items.filter((item) => !mobilePrimaryKeys.has(item.key)), [items, mobilePrimaryKeys]);
   const homeActive = pathname === "/app" || pathname === "/app/" || pathname === "/app/backoffice" || pathname.startsWith("/app/backoffice/");
+  const mobileItems = useMemo(() => [
+    { key: "home", href: "/app/backoffice", label: "Home" },
+    ...items,
+  ], [items]);
+  const mobileNavV001 = hasAppCapability(appVersion, "mobileNavOrder");
+  const { primary: mobilePrimary, overflow: mobileOverflow } = useMemo(() => {
+    if (mobileNavV001) return splitMobileNavigation(mobileItems, 4);
+    const legacyKeys = new Set(["home", "reservas", "stock", "pos"]);
+    return {
+      primary: mobileItems.filter((item) => legacyKeys.has(item.key)),
+      overflow: mobileItems.filter((item) => !legacyKeys.has(item.key)),
+    };
+  }, [mobileItems, mobileNavV001]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -123,14 +130,12 @@ export function Sidebar({
 
       <nav className="bo-nav bo-navMobile" aria-label="Navigation mobile" data-testid="sidebar-nav-mobile" data-slot="sidebar-nav-mobile">
         <div className="bo-navMobileMain" data-slot="sidebar-nav-main">
-          <NavLink href="/app/backoffice" active={homeActive} label="Home">
-            <Home size={iconProps.size} strokeWidth={iconProps.strokeWidth} />
-          </NavLink>
           {mobilePrimary.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isHome = item.key === "home";
+            const isActive = isHome ? homeActive : pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <NavLink key={`mobile-${item.key}`} href={item.href} active={isActive} label={item.label}>
-                {iconForItem(item.key, iconProps.size, iconProps.strokeWidth)}
+                {isHome ? <Home size={iconProps.size} strokeWidth={iconProps.strokeWidth} /> : iconForItem(item.key as SidebarItemKey, iconProps.size, iconProps.strokeWidth)}
               </NavLink>
             );
           })}
@@ -152,7 +157,7 @@ export function Sidebar({
                   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
                   return (
                     <NavLink key={`mobile-overflow-${item.key}`} href={item.href} active={isActive} label={item.label} onClick={() => setMobileMenuOpen(false)}>
-                      {iconForItem(item.key, iconProps.size, iconProps.strokeWidth)}
+                      {iconForItem(item.key as SidebarItemKey, iconProps.size, iconProps.strokeWidth)}
                     </NavLink>
                   );
                 })}
