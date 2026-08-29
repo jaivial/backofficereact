@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  firstAllowedPath,
-  hasSectionAccess,
-  isPathAllowed,
   normalizeAppVersion,
   sectionAllowedByAppVersion,
-  sidebarItemsForRole,
-} from "./rbac";
+} from "./app-version";
+import { hasSectionAccess } from "./access-policy";
+import { firstAllowedPath, isPathAllowed, sidebarItemsForRole } from "./navigation";
 
 describe("POS and stock navigation access (legacy explicit-sections coverage)", () => {
   it("keeps stock and POS visible for admin with legacy explicit sections", () => {

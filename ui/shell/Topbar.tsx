@@ -4,7 +4,7 @@ import { LogOut, Store } from "lucide-react";
 
 import { createClient } from "../../api/client";
 import type { BOSection } from "../../lib/rbac";
-import { hasSectionAccess } from "../../lib/rbac";
+import { hasSectionAccess } from "../../lib/access-policy";
 import { fichajeRealtimeAtom, sessionAtom } from "../../state/atoms";
 import { DropdownMenu } from "../inputs/DropdownMenu";
 import { Select } from "../inputs/Select";

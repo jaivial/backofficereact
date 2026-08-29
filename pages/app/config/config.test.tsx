@@ -149,6 +149,7 @@ describe("Config page — Anuncios tab A/B version gating", () => {
     mockPageContext.bo!.session = mockSession("0.1");
     render(<Page />);
     expect(screen.queryByTestId("mock-config-anuncios")).toBeNull();
+    expect(screen.getByTestId("mock-config-restaurante")).toBeTruthy();
   });
 
   it("renders the Anuncios editor for a v0.2 user with ?content=anuncios", () => {

@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone, Server } from "lucide-react";
 import { navigate } from "vike/client/router";
 
-import type { SidebarItemKey } from "../../lib/rbac";
-import { sidebarItemsForRole } from "../../lib/rbac";
+import { sidebarItemsForRole, type SidebarItemKey } from "../../lib/navigation";
 import { cn } from "../shadcn/utils";
 import { NavLink } from "../nav/NavLink";
 

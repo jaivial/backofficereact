@@ -38,7 +38,7 @@ import {
   sessionTokenFromCookie,
 } from "../lib/http/cookies";
 import { readSetCookies } from "../lib/http/readSetCookies";
-import { firstAllowedPath, isPathAllowed } from "../lib/rbac";
+import { firstAllowedPath, isPathAllowed } from "../lib/navigation";
 import { requestScheme } from "../lib/http/request-scheme";
 
 type BOUser = {

@@ -12,7 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { sessionAtom } from "../../state/atoms";
-import { sidebarItemsForRole } from "../../lib/rbac";
+import { sidebarItemsForRole } from "../../lib/navigation";
 import { cn } from "../shadcn/utils";
 
 type NavItem = {

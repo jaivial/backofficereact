@@ -7,7 +7,7 @@ import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Spa
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
-import { appVersionAtLeast, normalizeAppVersion } from "../../../lib/rbac";
+import { hasAppCapability } from "../../../lib/app-version";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -35,6 +35,14 @@ type PageData = {
 };
 
 type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "anuncios" | "ia" | "cdn";
+
+function resolveContentTab(raw: unknown, canAnuncios: boolean, isRoot: boolean): ContentTab {
+  const value = String(raw ?? "").trim() as ContentTab;
+  if (value === "anuncios") return canAnuncios ? value : "restaurante";
+  if (value === "ia" || value === "cdn") return isRoot ? value : "restaurante";
+  if (value === "contacto" || value === "booking" || value === "legal-pages" || value === "restaurante") return value;
+  return "restaurante";
+}
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -164,11 +172,20 @@ export default function Page() {
 
   const isRoot = (pageContext.bo?.session?.user?.role ?? "") === "root";
   const appVersion = session?.user?.appVersion;
-  // Anuncios is a v0.2-only module: hidden (tab and content) for v0.1 users.
-  const canAnuncios = appVersionAtLeast(normalizeAppVersion(appVersion), "0.2");
+  const canAnuncios = hasAppCapability(appVersion, "ads");
 
-  const contentTabFromQuery = pageContext.urlParsed.search.content as ContentTab | null | undefined;
-  const [contentTab, setContentTab] = useState<ContentTab>(contentTabFromQuery ?? "restaurante");
+  const contentTabFromQuery = pageContext.urlParsed.search.content;
+  const [contentTab, setContentTab] = useState<ContentTab>(() => resolveContentTab(contentTabFromQuery, canAnuncios, isRoot));
+
+  useEffect(() => {
+    const allowedTab = resolveContentTab(contentTab, canAnuncios, isRoot);
+    if (allowedTab !== contentTab) {
+      setContentTab(allowedTab);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", `${window.location.pathname}?content=${allowedTab}`);
+      }
+    }
+  }, [canAnuncios, contentTab, isRoot]);
 
   const contentTabs = useMemo<TabItem[]>(
     () => [

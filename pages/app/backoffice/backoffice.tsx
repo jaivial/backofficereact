@@ -1,8 +1,7 @@
 import React, { useMemo } from "react";
 import { useAtomValue } from "jotai";
 
-import type { SidebarItem } from "../../../lib/rbac";
-import { sidebarItemsForRole } from "../../../lib/rbac";
+import { sidebarItemsForRole, type SidebarItem } from "../../../lib/navigation";
 import { sessionAtom } from "../../../state/atoms";
 import { iconForSidebarItemKey } from "../../../ui/nav/sectionIcons";
 import type { OrbitItem } from "./types/index";

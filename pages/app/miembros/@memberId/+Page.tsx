@@ -6,7 +6,6 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../../api/client";
 import type { Member } from "../../../../api/types";
 import { sessionAtom } from "../../../../state/atoms";
-import { APP_VERSIONS, normalizeAppVersion } from "../../../../lib/rbac";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
@@ -22,6 +21,7 @@ import { Panel } from "../../../../ui/shell/Panel";
 import { RoleIcon } from "../../../../ui/widgets/roles/RoleIcon";
 import type { MemberRoleInfo } from "./+data";
 import { formatElapsedHHMMSS, useMemberLive } from "./_shared/realtime";
+import { MemberVersionControl } from "./_shared/MemberVersionControl";
 
 function initials(member: Member | null): string {
   if (!member) return "MM";
@@ -74,8 +74,6 @@ export default function Page() {
   const [phoneNumber, setPhoneNumber] = useState(initialPhone.national);
   const [memberRole, setMemberRole] = useState<MemberRoleInfo | null>(data.memberRole);
   const [roleSlug, setRoleSlug] = useState(data.memberRole?.slug ?? "");
-  const [memberAppVersion, setMemberAppVersion] = useState<string>(data.memberRole?.appVersion ?? "0.1");
-  const [versionBusy, setVersionBusy] = useState(false);
 
   const { liveEntry, tick } = useMemberLive(member?.id);
 
@@ -240,28 +238,6 @@ export default function Page() {
   // versions to a member that has a backoffice user (boUserId).
   const canChangeVersion = actorImportance >= 100 && !!member && member.boUserId != null;
 
-  const onChangeAppVersion = useCallback(
-    async (nextVersion: string) => {
-      if (!member || member.boUserId == null) return;
-      const v = normalizeAppVersion(nextVersion);
-      setVersionBusy(true);
-      setError(null);
-      try {
-        const res = await api.roles.setUserVersion(member.boUserId, v);
-        if (!res.success) {
-          setError(res.message || "No se pudo actualizar la version");
-          return;
-        }
-        setMemberAppVersion(res.user.appVersion);
-        pushToast({ kind: "success", title: "Version actualizada", message: `App v${res.user.appVersion} asignada a ${memberName || "este miembro"}.` });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "No se pudo actualizar la version");
-      } finally {
-        setVersionBusy(false);
-      }
-    },
-    [api.roles, member, memberName, pushToast],
-  );
   const canChangeRole = !!member && member.boUserId != null && !isSelfMember && !!memberRole && actorImportance > memberRole.importance;
   // Misma regla ACL que el backend: solo roles estrictamente inferiores y no
   // el propio miembro. Sin rol resuelto (invitado pendiente sin aceptar) el
@@ -404,23 +380,13 @@ export default function Page() {
                 </label>
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Version de app</span>
-                  {canChangeVersion ? (
-                    <Select
-                      value={normalizeAppVersion(memberAppVersion)}
-                      onChange={(v) => void onChangeAppVersion(v)}
-                      options={APP_VERSIONS.map((v) => ({
-                        value: v,
-                        label: `v${v}${v === "0.2" ? " (completa)" : " (basica)"}`,
-                      }))}
-                      ariaLabel="Seleccionar version de app"
-                      disabled={versionBusy}
-                      data-testid="miembro-detail-version-select"
-                    />
-                  ) : (
-                    <div className="bo-memberRoleReadonly" data-slot="@memberId-versionReadonly" data-testid="miembro-detail-version-readonly">
-                      <span className="bo-memberRoleReadonlyValue">{`v${normalizeAppVersion(memberAppVersion)}`}</span>
-                    </div>
-                  )}
+                  <MemberVersionControl
+                    boUserId={member.boUserId}
+                    initialVersion={data.memberRole?.appVersion}
+                    memberName={memberName}
+                    canChange={canChangeVersion}
+                    onError={setError}
+                  />
                 </label>
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Rol</span>

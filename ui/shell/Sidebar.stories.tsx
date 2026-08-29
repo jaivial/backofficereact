@@ -2,7 +2,7 @@ import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Sidebar } from "./Sidebar";
-import { sidebarItemsForRole } from "../../lib/rbac";
+import { sidebarItemsForRole } from "../../lib/navigation";
 
 const meta = {
   title: "ui/shell/Sidebar",

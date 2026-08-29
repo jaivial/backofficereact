@@ -3,8 +3,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "../../../state/atoms";
 
-import type { SidebarItem } from "../../../lib/rbac";
-import { sidebarItemsForRole } from "../../../lib/rbac";
+import { sidebarItemsForRole, type SidebarItem } from "../../../lib/navigation";
 import { iconForSidebarItemKey } from "../../../ui/nav/sectionIcons";
 import type { OrbitItem } from "./types/index";
 
