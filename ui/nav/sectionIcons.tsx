@@ -18,7 +18,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 
-import type { SidebarItemKey } from "../../lib/rbac";
+import type { SidebarItemKey } from "../../lib/navigation";
 
 export type BOIconOptions = {
   size?: number;

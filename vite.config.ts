@@ -69,6 +69,12 @@ export default defineConfig({
     dedupe: ["react", "react-dom", "three"],
   },
   server: {
+    watch: {
+      // The dev Docker bind mount contains local git worktrees. Vike scans
+      // the whole project for route/config files, so changes inside a nested
+      // worktree can invalidate the active SSR config and cause transient 500s.
+      ignored: ["**/.worktree/**", "**/.worktrees/**"],
+    },
     host: "0.0.0.0",
     port: 3001,
     allowedHosts: [

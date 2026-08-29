@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone, Server } from "lucide-react";
 import { navigate } from "vike/client/router";
 
-import type { SidebarItemKey } from "../../lib/rbac";
-import { sidebarItemsForRole } from "../../lib/rbac";
+import { sidebarItemsForRole, type SidebarItemKey } from "../../lib/navigation";
 import { cn } from "../shadcn/utils";
 import { NavLink } from "../nav/NavLink";
 
@@ -51,18 +50,20 @@ export function Sidebar({
   role,
   sectionAccess,
   roleImportance,
+  appVersion,
   className,
 }: {
   pathname: string;
   role: string;
   sectionAccess?: string[];
   roleImportance?: number;
+  appVersion?: string;
   className?: string;
 }) {
   const iconProps = { size: 18, strokeWidth: 1.8 } as const;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMoreRef = useRef<HTMLDivElement | null>(null);
-  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance), [role, roleImportance, sectionAccess]);
+  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance, appVersion), [role, roleImportance, sectionAccess, appVersion]);
   const mobilePrimary = useMemo(() => {
     const map = new Map(items.map((item) => [item.key, item] as const));
     return MOBILE_PRIMARY_ORDER.map((key) => map.get(key)).filter((item): item is (typeof items)[number] => Boolean(item));

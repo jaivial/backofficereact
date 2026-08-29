@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { iconForSidebarItemKey } from "./sectionIcons";
-import type { SidebarItemKey } from "../../lib/rbac";
+import type { SidebarItemKey } from "../../lib/navigation";
 
 const allKeys: SidebarItemKey[] = [
   "reservas",
