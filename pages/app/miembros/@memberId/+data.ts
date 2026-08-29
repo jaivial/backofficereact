@@ -8,6 +8,8 @@ export type MemberRoleInfo = {
   slug: string;
   label: string;
   importance: number;
+  /** A/B app version of the member's backoffice user ("0.1" | "0.2"). */
+  appVersion?: string;
 };
 
 export type Data = Awaited<ReturnType<typeof data>>;
@@ -61,7 +63,7 @@ export async function data(pageContext: PageContextServer) {
         const u = rolesRes.users.find((item) => item.id === boUserId);
         if (u && u.role) {
           const label = rolesRes.roles.find((r) => r.slug === u.role)?.label ?? u.role;
-          memberRole = { slug: u.role, label, importance: u.roleImportance };
+          memberRole = { slug: u.role, label, importance: u.roleImportance, appVersion: u.appVersion };
         }
       }
     }

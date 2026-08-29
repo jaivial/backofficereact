@@ -7,6 +7,7 @@ import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Spa
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
+import { hasAppCapability } from "../../../lib/app-version";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -34,6 +35,14 @@ type PageData = {
 };
 
 type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "anuncios" | "ia" | "cdn";
+
+function resolveContentTab(raw: unknown, canAnuncios: boolean, isRoot: boolean): ContentTab {
+  const value = String(raw ?? "").trim() as ContentTab;
+  if (value === "anuncios") return canAnuncios ? value : "restaurante";
+  if (value === "ia" || value === "cdn") return isRoot ? value : "restaurante";
+  if (value === "contacto" || value === "booking" || value === "legal-pages" || value === "restaurante") return value;
+  return "restaurante";
+}
 
 // ─── Hour/slot helpers (shared) ───────────────────────────────────────────────
 
@@ -162,9 +171,21 @@ export default function Page() {
   );
 
   const isRoot = (pageContext.bo?.session?.user?.role ?? "") === "root";
+  const appVersion = session?.user?.appVersion;
+  const canAnuncios = hasAppCapability(appVersion, "ads");
 
-  const contentTabFromQuery = pageContext.urlParsed.search.content as ContentTab | null | undefined;
-  const [contentTab, setContentTab] = useState<ContentTab>(contentTabFromQuery ?? "restaurante");
+  const contentTabFromQuery = pageContext.urlParsed.search.content;
+  const [contentTab, setContentTab] = useState<ContentTab>(() => resolveContentTab(contentTabFromQuery, canAnuncios, isRoot));
+
+  useEffect(() => {
+    const allowedTab = resolveContentTab(contentTab, canAnuncios, isRoot);
+    if (allowedTab !== contentTab) {
+      setContentTab(allowedTab);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", `${window.location.pathname}?content=${allowedTab}`);
+      }
+    }
+  }, [canAnuncios, contentTab, isRoot]);
 
   const contentTabs = useMemo<TabItem[]>(
     () => [
@@ -192,12 +213,14 @@ export default function Page() {
         href: "#legal-pages",
         icon: <Scale className="bo-ico" />,
       },
-      {
-        id: "anuncios",
-        label: "Anuncios",
-        href: "#anuncios",
-        icon: <Megaphone className="bo-ico" />,
-      },
+      ...(canAnuncios
+        ? [{
+            id: "anuncios",
+            label: "Anuncios",
+            href: "#anuncios",
+            icon: <Megaphone className="bo-ico" />,
+          } as TabItem]
+        : []),
       ...(isRoot
         ? [{
             id: "ia",
@@ -213,7 +236,7 @@ export default function Page() {
           } as TabItem]
         : []),
     ],
-    [isRoot],
+    [isRoot, canAnuncios],
   );
 
   useErrorToast(error);
@@ -363,7 +386,7 @@ export default function Page() {
           ) : contentTab === "legal-pages" ? (
             <ConfigLegalPages />
           ) : contentTab === "anuncios" ? (
-            <ConfigAnuncios website={restaurantInfo?.website ?? ""} />
+            canAnuncios ? <ConfigAnuncios website={restaurantInfo?.website ?? ""} /> : null
           ) : (
             <BookingManager />
           )}

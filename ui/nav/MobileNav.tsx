@@ -12,7 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { sessionAtom } from "../../state/atoms";
-import { sidebarItemsForRole } from "../../lib/rbac";
+import { sidebarItemsForRole } from "../../lib/navigation";
 import { cn } from "../shadcn/utils";
 
 type NavItem = {
@@ -69,6 +69,7 @@ export function MobileNav({ pathname, className }: MobileNavProps) {
       session.user.role,
       session.user.sectionAccess,
       session.user.roleImportance,
+      session.user.appVersion,
     );
     const allowedKeys = new Set(allowed.map((s) => s.key));
     return MOBILE_NAV_ITEMS.filter(

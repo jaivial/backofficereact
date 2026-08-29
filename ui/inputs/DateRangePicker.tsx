@@ -18,6 +18,8 @@ type DateRangePickerProps = {
   className?: string;
   popoverOffsetX?: number;
   disabled?: boolean;
+  disabledDates?: Set<string>;
+  disabledDateLabels?: Map<string, string>;
 };
 
 function portalEl(): HTMLElement | null {
@@ -59,6 +61,8 @@ export function DateRangePicker({
   className,
   popoverOffsetX = 0,
   disabled,
+  disabledDates,
+  disabledDateLabels,
 }: DateRangePickerProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -189,6 +193,8 @@ export function DateRangePicker({
             onPrevMonth={prevMonth}
             onNextMonth={nextMonth}
             onSelectDay={selectDay}
+            disabledDates={disabledDates}
+            disabledDateLabels={disabledDateLabels}
             uiPrefix="date-range-picker"
           />
           <div className="bo-dateRangeActions" data-ui="date-range-picker-actions">
