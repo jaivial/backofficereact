@@ -10,9 +10,9 @@ import type { OrbitItem } from "./types/index";
 export default function Page() {
   const session = useAtomValue(sessionAtom);
 
-  const { role, sectionAccess, roleImportance, name } = session?.user ?? {};
+  const { role, sectionAccess, roleImportance, appVersion, name } = session?.user ?? {};
 
-  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance), [role, roleImportance, sectionAccess]);
+  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance, appVersion), [role, roleImportance, sectionAccess, appVersion]);
 
   const orbitItems = useMemo<OrbitItem[]>(() => {
     return items.map((item, index) => {

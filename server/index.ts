@@ -49,6 +49,7 @@ type BOUser = {
   role: string;
   roleImportance: number;
   sectionAccess: string[];
+  appVersion?: string;
   mustChangePassword?: boolean;
 };
 
@@ -1257,8 +1258,8 @@ async function start() {
         return;
       }
 
-      if (session && req.path.startsWith("/app/") && !pageContextRequest && !isPathAllowed(req.path, session.user.role, session.user.sectionAccess, session.user.roleImportance)) {
-        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
+      if (session && req.path.startsWith("/app/") && !pageContextRequest && !isPathAllowed(req.path, session.user.role, session.user.sectionAccess, session.user.roleImportance, session.user.appVersion)) {
+        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance, session.user.appVersion));
         return;
       }
 
@@ -1288,8 +1289,8 @@ async function start() {
         ? req.path.replace("/m/app/", "/app/")
         : req.path;
 
-      if (session && req.path.startsWith("/m/app/") && !pageContextRequest && !isPathAllowed(rbacPath, session.user.role, session.user.sectionAccess, session.user.roleImportance)) {
-        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance));
+      if (session && req.path.startsWith("/m/app/") && !pageContextRequest && !isPathAllowed(rbacPath, session.user.role, session.user.sectionAccess, session.user.roleImportance, session.user.appVersion)) {
+        res.redirect(302, firstAllowedPath(session.user.role, session.user.sectionAccess, session.user.roleImportance, session.user.appVersion));
         return;
       }
 

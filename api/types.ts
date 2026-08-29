@@ -8,6 +8,8 @@ export type BOUser = {
   role: BORole;
   roleImportance: number;
   sectionAccess: BOSection[];
+  /** A/B app version ("0.1" | "0.2") assigned per user + restaurant. */
+  appVersion?: string;
   mustChangePassword?: boolean;
 };
 
@@ -914,6 +916,7 @@ export type RoleUserItem = {
   name: string;
   role: BORole;
   roleImportance: number;
+  appVersion?: string;
 };
 
 export type RoleCurrentUser = {

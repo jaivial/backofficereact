@@ -51,18 +51,20 @@ export function Sidebar({
   role,
   sectionAccess,
   roleImportance,
+  appVersion,
   className,
 }: {
   pathname: string;
   role: string;
   sectionAccess?: string[];
   roleImportance?: number;
+  appVersion?: string;
   className?: string;
 }) {
   const iconProps = { size: 18, strokeWidth: 1.8 } as const;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMoreRef = useRef<HTMLDivElement | null>(null);
-  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance), [role, roleImportance, sectionAccess]);
+  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance, appVersion), [role, roleImportance, sectionAccess, appVersion]);
   const mobilePrimary = useMemo(() => {
     const map = new Map(items.map((item) => [item.key, item] as const));
     return MOBILE_PRIMARY_ORDER.map((key) => map.get(key)).filter((item): item is (typeof items)[number] => Boolean(item));

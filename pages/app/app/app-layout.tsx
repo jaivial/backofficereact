@@ -40,6 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         role={session.user.role}
         sectionAccess={session.user.sectionAccess}
         roleImportance={session.user.roleImportance}
+        appVersion={session.user.appVersion}
       />
       <main className={`bo-main${isReservasTables ? " bo-main--immersive" : ""}`} data-ui="app-main">
         {isReservasTables ? null : <Topbar title={title} />}

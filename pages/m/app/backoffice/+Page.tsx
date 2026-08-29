@@ -94,6 +94,7 @@ export default function MobileHomePage() {
       session.user.role,
       session.user.sectionAccess,
       session.user.roleImportance,
+      session.user.appVersion,
     );
   }, [session]);
 

@@ -16,9 +16,10 @@ export default function Page() {
   const role = session?.user?.role ?? "admin";
   const sectionAccess = session?.user?.sectionAccess ?? [];
   const roleImportance = session?.user?.roleImportance ?? 100;
+  const appVersion = session?.user?.appVersion ?? "0.2";
   const name = session?.user?.name ?? "Admin";
 
-  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance), [role, roleImportance, sectionAccess]);
+  const items = useMemo(() => sidebarItemsForRole(role, sectionAccess, roleImportance, appVersion), [role, roleImportance, sectionAccess, appVersion]);
 
   const orbitItems = useMemo<OrbitItem[]>(() => {
     return items.map((item, index) => {

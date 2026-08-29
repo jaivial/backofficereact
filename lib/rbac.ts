@@ -1,6 +1,34 @@
 export type BORole = string;
 
+/** A/B app version assigned per user+restaurant (bo_user_restaurants.app_version). */
+export type AppVersion = "0.1" | "0.2";
+
+export const APP_VERSIONS: AppVersion[] = ["0.1", "0.2"];
+
 export type BOSection = "reservas" | "menus" | "comida" | "stock" | "pos" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estadisticas" | "estado_cuenta" | "website" | "site-builder" | "plataforma";
+
+/** Sections unlocked only from v0.2 (stock, TPV, plataforma, estadisticas). */
+const V02_ONLY_SECTIONS: BOSection[] = ["stock", "pos", "estadisticas", "plataforma"];
+
+export function normalizeAppVersion(raw: unknown): AppVersion {
+  const v = String(raw ?? "").trim();
+  return v === "0.2" ? "0.2" : "0.1";
+}
+
+/** Simple dotted numeric comparison: "0.1" < "0.2" < "1.0". */
+export function appVersionAtLeast(version: AppVersion, minimum: AppVersion): boolean {
+  const [aMajor, aMinor] = version.split(".").map((p) => Number(p));
+  const [bMajor, bMinor] = minimum.split(".").map((p) => Number(p));
+  if (!Number.isFinite(aMajor) || !Number.isFinite(aMinor) || !Number.isFinite(bMajor) || !Number.isFinite(bMinor)) return false;
+  if (aMajor !== bMajor) return aMajor > bMajor;
+  return aMinor >= bMinor;
+}
+
+/** Whether the section is unlocked by the user's app version (role ACL checked elsewhere). */
+export function sectionAllowedByAppVersion(section: BOSection, appVersionRaw: unknown): boolean {
+  if (!V02_ONLY_SECTIONS.includes(section)) return true;
+  return appVersionAtLeast(normalizeAppVersion(appVersionRaw), "0.2");
+}
 
 export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
   root: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder", "plataforma"],
@@ -112,8 +140,9 @@ function canAccessComida(
   roleRaw: string | null | undefined,
   sectionAccessRaw?: string[] | null,
   roleImportanceRaw?: number | null,
+  appVersionRaw?: unknown,
 ): boolean {
-  return hasSectionAccess(roleRaw, "menus", sectionAccessRaw, roleImportanceRaw) || hasSectionAccess(roleRaw, "comida", sectionAccessRaw, roleImportanceRaw);
+  return hasSectionAccess(roleRaw, "menus", sectionAccessRaw, roleImportanceRaw, appVersionRaw) || hasSectionAccess(roleRaw, "comida", sectionAccessRaw, roleImportanceRaw, appVersionRaw);
 }
 
 export function hasSectionAccess(
@@ -121,8 +150,11 @@ export function hasSectionAccess(
   section: BOSection,
   sectionAccessRaw?: string[] | null,
   roleImportanceRaw?: number | null,
+  appVersionRaw?: unknown,
 ): boolean {
   if (!sectionAllowedByImportance(section, roleImportanceRaw)) return false;
+  // A/B version gate: v0.1 users never get v0.2-only modules, even as root/admin.
+  if (!sectionAllowedByAppVersion(section, appVersionRaw ?? "0.2")) return false;
   const role = normalizeRole(roleRaw);
   if ((role === "root" || role === "admin") && (section === "stock" || section === "pos" || section === "estadisticas")) return true;
   const explicit = normalizeSectionAccess(sectionAccessRaw);
@@ -158,11 +190,12 @@ export function sectionForPath(pathname: string): BOSection | null {
   return null;
 }
 
-export function firstAllowedPath(roleRaw: string | null | undefined, sectionAccessRaw?: string[] | null, roleImportanceRaw?: number | null): string {
+export function firstAllowedPath(roleRaw: string | null | undefined, sectionAccessRaw?: string[] | null, roleImportanceRaw?: number | null, appVersionRaw?: unknown): string {
   const explicit = normalizeSectionAccess(sectionAccessRaw);
   const sections = explicit.length > 0 ? SECTION_PRIORITY.filter((s) => explicit.includes(s)) : ROLE_SECTION_ACCESS[normalizeRole(roleRaw)] ?? [];
   for (const section of sections) {
     if (!sectionAllowedByImportance(section, roleImportanceRaw)) continue;
+    if (!sectionAllowedByAppVersion(section, appVersionRaw ?? "0.2")) continue;
     const candidate = SECTION_HOME[section];
     if (candidate) return candidate;
   }
@@ -174,27 +207,29 @@ export function isPathAllowed(
   roleRaw: string | null | undefined,
   sectionAccessRaw?: string[] | null,
   roleImportanceRaw?: number | null,
+  appVersionRaw?: unknown,
 ): boolean {
   if (pathname === "/app" || pathname === "/app/") return true;
   if (pathname === "/app/backoffice" || pathname.startsWith("/app/backoffice/")) return true;
   const section = sectionForPath(pathname);
   if (!section) return false;
   if (section === "comida") {
-    return canAccessComida(roleRaw, sectionAccessRaw, roleImportanceRaw);
+    return canAccessComida(roleRaw, sectionAccessRaw, roleImportanceRaw, appVersionRaw);
   }
-  return hasSectionAccess(roleRaw, section, sectionAccessRaw, roleImportanceRaw);
+  return hasSectionAccess(roleRaw, section, sectionAccessRaw, roleImportanceRaw, appVersionRaw);
 }
 
 export function sidebarItemsForRole(
   roleRaw: string | null | undefined,
   sectionAccessRaw?: string[] | null,
   roleImportanceRaw?: number | null,
+  appVersionRaw?: unknown,
 ): SidebarItem[] {
   return SIDEBAR_ITEMS.filter((item) => {
     if (item.key === "comida") {
-      return canAccessComida(roleRaw, sectionAccessRaw, roleImportanceRaw);
+      return canAccessComida(roleRaw, sectionAccessRaw, roleImportanceRaw, appVersionRaw);
     }
-    return hasSectionAccess(roleRaw, item.key, sectionAccessRaw, roleImportanceRaw);
+    return hasSectionAccess(roleRaw, item.key, sectionAccessRaw, roleImportanceRaw, appVersionRaw);
   });
 }
 

@@ -89,6 +89,7 @@ export function Topbar({
       "reservas",
       session.user.sectionAccess,
       session.user.roleImportance,
+      session.user.appVersion,
     );
   }, [session]);
 

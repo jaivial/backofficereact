@@ -6,6 +6,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../../api/client";
 import type { Member } from "../../../../api/types";
 import { sessionAtom } from "../../../../state/atoms";
+import { APP_VERSIONS, normalizeAppVersion } from "../../../../lib/rbac";
 import type { Data } from "./+data";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../../ui/feedback/useToasts";
@@ -73,6 +74,8 @@ export default function Page() {
   const [phoneNumber, setPhoneNumber] = useState(initialPhone.national);
   const [memberRole, setMemberRole] = useState<MemberRoleInfo | null>(data.memberRole);
   const [roleSlug, setRoleSlug] = useState(data.memberRole?.slug ?? "");
+  const [memberAppVersion, setMemberAppVersion] = useState<string>(data.memberRole?.appVersion ?? "0.1");
+  const [versionBusy, setVersionBusy] = useState(false);
 
   const { liveEntry, tick } = useMemberLive(member?.id);
 
@@ -233,6 +236,32 @@ export default function Page() {
 
   const actorImportance = session?.user?.roleImportance ?? 0;
   const memberRoleIconKey = memberRole ? data.roles.find((r) => r.slug === memberRole.slug)?.iconKey ?? null : null;
+  // A/B app version management: only root (importance >= 100) can assign
+  // versions to a member that has a backoffice user (boUserId).
+  const canChangeVersion = actorImportance >= 100 && !!member && member.boUserId != null;
+
+  const onChangeAppVersion = useCallback(
+    async (nextVersion: string) => {
+      if (!member || member.boUserId == null) return;
+      const v = normalizeAppVersion(nextVersion);
+      setVersionBusy(true);
+      setError(null);
+      try {
+        const res = await api.roles.setUserVersion(member.boUserId, v);
+        if (!res.success) {
+          setError(res.message || "No se pudo actualizar la version");
+          return;
+        }
+        setMemberAppVersion(res.user.appVersion);
+        pushToast({ kind: "success", title: "Version actualizada", message: `App v${res.user.appVersion} asignada a ${memberName || "este miembro"}.` });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "No se pudo actualizar la version");
+      } finally {
+        setVersionBusy(false);
+      }
+    },
+    [api.roles, member, memberName, pushToast],
+  );
   const canChangeRole = !!member && member.boUserId != null && !isSelfMember && !!memberRole && actorImportance > memberRole.importance;
   // Misma regla ACL que el backend: solo roles estrictamente inferiores y no
   // el propio miembro. Sin rol resuelto (invitado pendiente sin aceptar) el
@@ -372,6 +401,26 @@ export default function Page() {
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">DNI (opcional)</span>
                   <input id="dni" className="bo-input" data-testid="miembro-detail-dni-input" value={dni} disabled={!editing || saving || avatarBusy} onChange={(e) => setDni(e.target.value)} />
+                </label>
+                <label className="bo-field" data-slot="@memberId-field">
+                  <span className="bo-label" data-slot="@memberId-label">Version de app</span>
+                  {canChangeVersion ? (
+                    <Select
+                      value={normalizeAppVersion(memberAppVersion)}
+                      onChange={(v) => void onChangeAppVersion(v)}
+                      options={APP_VERSIONS.map((v) => ({
+                        value: v,
+                        label: `v${v}${v === "0.2" ? " (completa)" : " (basica)"}`,
+                      }))}
+                      ariaLabel="Seleccionar version de app"
+                      disabled={versionBusy}
+                      data-testid="miembro-detail-version-select"
+                    />
+                  ) : (
+                    <div className="bo-memberRoleReadonly" data-slot="@memberId-versionReadonly" data-testid="miembro-detail-version-readonly">
+                      <span className="bo-memberRoleReadonlyValue">{`v${normalizeAppVersion(memberAppVersion)}`}</span>
+                    </div>
+                  )}
                 </label>
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Rol</span>
