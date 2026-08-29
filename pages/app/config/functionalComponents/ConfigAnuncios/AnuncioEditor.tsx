@@ -303,13 +303,16 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   const closeImage = useCallback(() => { setImageOpen(false); setImageStep("choose"); setImageFile(null); setImagePreviewURL(""); }, []);
   const chooseImage = useCallback(async (file: File) => {
+    console.log("[AD-DEBUG] chooseImage called", { name: file?.name, type: file?.type, size: file?.size });
     setImageStep("preparing");
     try {
       const compressed = await compressAdImage(file);
+      console.log("[AD-DEBUG] compressAdImage OK", { outName: compressed?.name, outSize: compressed?.size });
       const url = URL.createObjectURL(compressed);
       setImagePreviewURL((old) => { if (old) URL.revokeObjectURL(old); return url; });
       setImageFile(compressed); setImageStep("advisor");
     } catch (error) {
+      console.log("[AD-DEBUG] chooseImage FAILED", { name: error instanceof Error ? error.name : typeof error, message: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? (error.stack || "").split("\n").slice(0, 3).join("\n") : "" });
       notify("error", "Imagen", error instanceof Error ? error.message : "No se pudo preparar la imagen");
       setImageStep("choose");
     }
@@ -624,7 +627,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
         </div>
       </Popover>
 
-      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void chooseImage(file); }} data-testid="ad-image-file" />
+      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(event) => { const file = event.target.files?.[0]; console.log("[AD-DEBUG] raw file from picker", { name: file?.name, type: file?.type, size: file?.size }); event.target.value = ""; if (file) void chooseImage(file); }} data-testid="ad-image-file" />
       <ImageFlowModal open={imageOpen} step={imageStep} previewURL={imagePreviewURL} file={imageFile} onClose={closeImage} onGenerate={() => void generateImage()} onPick={() => fileRef.current?.click()} onRaw={() => void handleUploadedImage(false)} onEnhance={() => void handleUploadedImage(true)} />
     </section>
   );
@@ -632,7 +635,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
 function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; device: "mobile" | "desktop" }) {
   const visibleContent = ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim()));
-  const image = visibleContent.find((item) => item.type === "image");
   const primaryColor = ad.ctas.find((cta) => cta.color)?.color?.trim() || "#436754";
 
   return (
@@ -663,42 +665,36 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
           </>
         ) : (
           <>
-            {image ? (
-              <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
-                <img src={image.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${image.id}`} />
+            {visibleContent.map((item) => item.type === "image" ? (
+              <div className="bo-adModalImageCol" key={item.id} data-slot="ad-preview-image-col">
+                <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
               </div>
+            ) : item.type === "subtitle" ? (
+              <p key={item.id} className="bo-adModalSupertitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>
+            ) : item.type === "title" ? (
+              <h2 key={item.id} className="bo-adModalTitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</h2>
+            ) : (
+              <p key={item.id} className="bo-adModalDesc" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>
+            ))}
+
+            {!visibleContent.length ? (
+              <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
             ) : null}
 
-        <div className="bo-adModalTextCol" data-slot="ad-preview-content">
-          {visibleContent.filter((item) => item.type !== "image").map((item) => {
-            if (item.type === "subtitle") {
-              return <p key={item.id} className="bo-adModalSupertitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
-            }
-            if (item.type === "title") {
-              return <h2 key={item.id} className="bo-adModalTitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</h2>;
-            }
-            return <p key={item.id} className="bo-adModalDesc" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>;
-          })}
-
-          {!visibleContent.length ? (
-            <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
-          ) : null}
-
-          <div className="bo-adModalActions" data-slot="ad-preview-ctas">
-            {ad.ctas.map((cta) => (
-              <a
-                key={cta.id}
-                href={buildCTAURL(website, cta)}
-                className="bo-adModalCta"
-                style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
-                rel="noopener noreferrer"
-                data-slot={`ad-preview-cta-${cta.id}`}
-              >
-                {cta.text || "Más información"}
-              </a>
-            ))}
-          </div>
-        </div>
+            <div className="bo-adModalActions" data-slot="ad-preview-ctas">
+              {ad.ctas.map((cta) => (
+                <a
+                  key={cta.id}
+                  href={buildCTAURL(website, cta)}
+                  className="bo-adModalCta"
+                  style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
+                  rel="noopener noreferrer"
+                  data-slot={`ad-preview-cta-${cta.id}`}
+                >
+                  {cta.text || "Más información"}
+                </a>
+              ))}
+            </div>
           </>
         )}
       </div>

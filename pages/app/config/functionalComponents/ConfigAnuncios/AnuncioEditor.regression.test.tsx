@@ -402,10 +402,10 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
     expect(document.querySelector('[data-slot="ad-preview-device-switch"]')).toBeNull();
   });
 
-  // Moving the image row in the editor must change where it renders in the
-  // mobile preview: content order is respected (image interleaved), while the
-  // desktop layout keeps its image-column-first structure.
-  it("mobile preview renders the image in the editor order, desktop keeps image first", async () => {
+  // Moving the image row in the editor must change where it renders in both
+  // previews: content order is respected (image interleaved) on mobile and
+  // desktop alike.
+  it("preview renders the image in the editor order on mobile and desktop", async () => {
     const api = baseApi();
     const reordered: RestaurantAd = {
       id: 8,
@@ -427,17 +427,19 @@ describe("AnuncioEditor — preview device switcher (mobile/desktop)", () => {
       fireEvent.click(screen.getByTestId("ad-mode-preview"));
     });
 
-    // Desktop: image column leads the body.
-    const bodyChildrenDesktop = Array.from(document.querySelector('[data-slot="ad-preview-body"]')!.children);
-    expect(bodyChildrenDesktop[0]?.getAttribute("data-slot")).toBe("ad-preview-image-col");
+    // Desktop: flat body children follow the editor order title → image → text.
+    let body = document.querySelector('[data-slot="ad-preview-body"]')!;
+    let slots = Array.from(body.children).map((child) => child.getAttribute("data-slot"));
+    expect(slots.indexOf("ad-preview-image-col")).toBeGreaterThan(slots.indexOf("ad-preview-t1"));
+    expect(slots.indexOf("ad-preview-image-col")).toBeLessThan(slots.indexOf("ad-preview-x1"));
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("ad-preview-device-mobile"));
     });
 
-    // Mobile: flat body children follow the editor order title → image → text.
-    const body = document.querySelector('[data-slot="ad-preview-body"]')!;
-    const slots = Array.from(body.children).map((child) => child.getAttribute("data-slot"));
+    // Mobile: flat body children follow the same editor order.
+    body = document.querySelector('[data-slot="ad-preview-body"]')!;
+    slots = Array.from(body.children).map((child) => child.getAttribute("data-slot"));
     expect(slots.indexOf("ad-preview-image-col")).toBeGreaterThan(slots.indexOf("ad-preview-t1"));
     expect(slots.indexOf("ad-preview-image-col")).toBeLessThan(slots.indexOf("ad-preview-x1"));
     expect(document.querySelector('[data-testid="ad-preview"]')?.getAttribute("data-preview-device")).toBe("mobile");

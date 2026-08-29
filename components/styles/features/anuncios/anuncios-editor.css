@@ -738,34 +738,46 @@
    centred, rounded, breathing room, shrink-to-content width and fill
    available height. Overrides the 100%/aspect-ratio col rules above. */
 @media (min-width: 641px) {
-  /* Mobile preview on desktop: same 90vh cap as real phones. */
+  /* Mobile preview on desktop: same 80vh cap as real phones. The body is a
+     full-height flex column so the image can take a percentage share of the
+     available space alongside the text/CTA elements. */
   .bo-adModalPreview[data-preview-device="mobile"] {
-    max-height: 90dvh;
-    max-height: 90vh;
+    height: 80dvh;
+    height: 80vh;
   }
   .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalBody {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
     padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImageCol {
     margin-inline: auto;
     border-radius: 1rem;
     margin-block: 1rem;
-    /* Match the natural <=640px mobile preview exactly. */
     width: 95%;
     max-width: none;
-    height: -webkit-fill-available;
-    /* Match the natural <=640px image height treatment exactly. */
-    max-height: calc(90dvh - 100px);
-    max-height: calc(90vh - 100px);
+    flex: 0 1 55%;
+    min-height: 0;
+    height: auto;
+    max-height: none;
     aspect-ratio: auto;
     overflow: hidden;
   }
   .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImage {
     display: block;
     width: 100%;
-    height: -webkit-fill-available;
+    height: 100%;
     object-fit: cover;
     border-radius: 1rem;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalSupertitle,
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalTitle,
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalDesc {
+    flex-shrink: 1;
+    min-height: 0;
   }
 }
 
@@ -775,13 +787,24 @@
    treatment at width 95%. Higher specificity than the generic 640px block
    above so it always wins. */
 @media (max-width: 640px) {
-  /* Preview must never exceed 90% of the viewport height on phones. */
+  /* Preview must never exceed 80% of the viewport height on phones. Cap the
+     container (device switcher is hidden here, so it wraps just the card).
+     The body is a full-height flex column so the image takes a percentage
+     share of the available space alongside the text/CTA elements. */
+  .bo-anunciosPreviewCol {
+    height: 80dvh;
+    height: 80vh;
+  }
   .bo-adModalPreview {
-    max-height: 90dvh;
-    max-height: 90vh;
+    height: 80dvh;
+    height: 80vh;
   }
   .bo-adModalPreview .bo-adModalBody {
+    display: flex;
     flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
     padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .bo-adModalPreview .bo-adModalImageCol {
@@ -789,20 +812,25 @@
     border-radius: 1rem;
     margin-block: 1rem;
     width: 95%;
-    height: -webkit-fill-available;
-    /* Image stays ~100px shorter than the 90vh preview cap so the text
-       block keeps room inside the fold. */
-    max-height: calc(90dvh - 100px);
-    max-height: calc(90vh - 100px);
+    flex: 0 1 55%;
+    min-height: 0;
+    height: auto;
+    max-height: none;
     aspect-ratio: auto;
     overflow: hidden;
   }
   .bo-adModalPreview .bo-adModalImage {
     display: block;
     width: 100%;
-    height: -webkit-fill-available;
+    height: 100%;
     object-fit: cover;
     border-radius: 1rem;
+  }
+  .bo-adModalPreview .bo-adModalSupertitle,
+  .bo-adModalPreview .bo-adModalTitle,
+  .bo-adModalPreview .bo-adModalDesc {
+    flex-shrink: 1;
+    min-height: 0;
   }
 }
 
