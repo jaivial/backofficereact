@@ -88,14 +88,16 @@
   min-width: 0; /* prevent children from stretching the column out of the grid */
 }
 
-/* Type label sits on its own row above the control band so grip, input and
-   trash share one horizontal level and stay aligned regardless of label size. */
+/* Footer band under each content row: drag handle, the alignment switch and
+   the trash button share one horizontal level, with the grip and trash pinned
+   to the edges and the tabs (or spacer) filling the middle. */
 .bo-anunciosRowBand {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  margin-top: 4px;
 }
 
 .bo-anunciosRowCard.is-dragging {
@@ -190,13 +192,21 @@
   color: #fff;
 }
 
-/* ── Autosave status pill (replaces the old save button) ───────── */
+/* ── Autosave status badge (replaces the save button) ──────────── */
 .bo-anunciosSaveStatus {
   height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid var(--bo-border);
   background: var(--bo-surface-2);
   color: var(--bo-muted);
   cursor: default;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
   transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 .bo-anunciosSaveStatus[data-state="saving"] {
@@ -218,6 +228,24 @@
 .bo-anunciosSaveStatus:focus-visible {
   outline: 2px solid var(--bo-accent);
   outline-offset: 2px;
+}
+
+.bo-anunciosSaveSpinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--bo-accent-2) 35%, transparent);
+  border-top-color: var(--bo-accent-2);
+  animation: bo-anuncios-save-spin 0.7s linear infinite;
+  flex: 0 0 auto;
+}
+@keyframes bo-anuncios-save-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bo-anunciosSaveSpinner {
+    animation-duration: 1.4s;
+  }
 }
 
 /* ── Row action buttons (delete etc.) — dark theme style, icon-only ── */
@@ -414,8 +442,10 @@
 
 
 /* Mobile (<769px) shows either the editor or preview, never both. */
-[data-slot="ads-editor-layout"].is-preview-active > [data-slot="ads-main-panel"] {
-  display: none;
+@media (max-width: 768px) {
+  [data-slot="ads-editor-layout"].is-preview-active > [data-slot="ads-main-panel"] {
+    display: none;
+  }
 }
 
 [data-slot="ads-editor-layout"].is-editor-active > [data-testid="ad-preview"] {
@@ -613,6 +643,13 @@
   .bo-adModalCta { padding: 14px 20px; }
 }
 
+.bo-anunciosContentControl { display: grid; gap: 6px; width: 100%; }
+.bo-anunciosAlignmentTabs { display: inline-flex; width: fit-content; border: 1px solid var(--bo-border); border-radius: 999px; padding: 2px; gap: 2px; }
+.bo-anunciosAlignmentTabs button { border: 0; background: transparent; color: var(--bo-muted); border-radius: 999px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+.bo-anunciosAlignmentTabs button.is-active { background: var(--bo-surface-2); color: var(--bo-text); }
+.bo-anunciosDurationSection { display: grid; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--bo-border); }
+.bo-anunciosScheduleError { margin: 0; color: var(--bo-text-danger); font-size: 12px; }
+
 /* ── CTAs sub-section inside the merged main panel ────────────── */
 .bo-anunciosCtasSection {
   margin-top: 18px;
@@ -701,35 +738,46 @@
    centred, rounded, breathing room, shrink-to-content width and fill
    available height. Overrides the 100%/aspect-ratio col rules above. */
 @media (min-width: 641px) {
-  /* Mobile preview on desktop: same 90vh cap as real phones. */
+  /* Mobile preview on desktop: same 80vh cap as real phones. The body is a
+     full-height flex column so the image can take a percentage share of the
+     available space alongside the text/CTA elements. */
   .bo-adModalPreview[data-preview-device="mobile"] {
-    max-height: 90dvh;
-    max-height: 90vh;
+    height: 80dvh;
+    height: 80vh;
   }
   .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalBody {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
     padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImageCol {
     margin-inline: auto;
     border-radius: 1rem;
     margin-block: 1rem;
-    width: fit-content;
-    /* Cap at a phone-like width so fit-content keeps the centring, radius and
-       block margins visible even with large source images. */
-    max-width: min(100%, 420px);
-    height: -webkit-fill-available;
-    /* Image ~100px shorter than the 90vh preview cap (mirrors phones). */
-    max-height: calc(90dvh - 100px);
-    max-height: calc(90vh - 100px);
+    width: 95%;
+    max-width: none;
+    flex: 0 1 55%;
+    min-height: 0;
+    height: auto;
+    max-height: none;
     aspect-ratio: auto;
     overflow: hidden;
   }
   .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImage {
     display: block;
     width: 100%;
-    height: -webkit-fill-available;
+    height: 100%;
     object-fit: cover;
     border-radius: 1rem;
+  }
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalSupertitle,
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalTitle,
+  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalDesc {
+    flex-shrink: 1;
+    min-height: 0;
   }
 }
 
@@ -739,13 +787,24 @@
    treatment at width 95%. Higher specificity than the generic 640px block
    above so it always wins. */
 @media (max-width: 640px) {
-  /* Preview must never exceed 90% of the viewport height on phones. */
+  /* Preview must never exceed 80% of the viewport height on phones. Cap the
+     container (device switcher is hidden here, so it wraps just the card).
+     The body is a full-height flex column so the image takes a percentage
+     share of the available space alongside the text/CTA elements. */
+  .bo-anunciosPreviewCol {
+    height: 80dvh;
+    height: 80vh;
+  }
   .bo-adModalPreview {
-    max-height: 90dvh;
-    max-height: 90vh;
+    height: 80dvh;
+    height: 80vh;
   }
   .bo-adModalPreview .bo-adModalBody {
+    display: flex;
     flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
     padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .bo-adModalPreview .bo-adModalImageCol {
@@ -753,20 +812,25 @@
     border-radius: 1rem;
     margin-block: 1rem;
     width: 95%;
-    height: -webkit-fill-available;
-    /* Image stays ~100px shorter than the 90vh preview cap so the text
-       block keeps room inside the fold. */
-    max-height: calc(90dvh - 100px);
-    max-height: calc(90vh - 100px);
+    flex: 0 1 55%;
+    min-height: 0;
+    height: auto;
+    max-height: none;
     aspect-ratio: auto;
     overflow: hidden;
   }
   .bo-adModalPreview .bo-adModalImage {
     display: block;
     width: 100%;
-    height: -webkit-fill-available;
+    height: 100%;
     object-fit: cover;
     border-radius: 1rem;
+  }
+  .bo-adModalPreview .bo-adModalSupertitle,
+  .bo-adModalPreview .bo-adModalTitle,
+  .bo-adModalPreview .bo-adModalDesc {
+    flex-shrink: 1;
+    min-height: 0;
   }
 }
 

@@ -19,6 +19,7 @@ export type AdWSMessage = {
 };
 
 export type AdSaveMessage = { type: "ad_save"; reqId: string; adId: number; payload: unknown };
+export type AdScheduleCheckMessage = { type: "ad_schedule_check"; reqId: string; adId: number; payload: { starts_at: string; ends_at: string } };
 
 export const AD_IMAGE_INSUFFICIENT_CREDITS_MESSAGE =
   "Crédito insuficiente: contacta con el administrador para añadir fondos a WaveSpeed.";
@@ -52,6 +53,7 @@ export type AdsController = {
   wsStatusRef: React.MutableRefObject<"open" | "connecting" | "closed">;
   /** Sends an ad_save message over the shared WS; queued while reconnecting. */
   sendAdSave: (message: AdSaveMessage) => void;
+  sendAdScheduleCheck: (message: AdScheduleCheckMessage) => void;
   /** Subscribes to ad_* WS events; returns an unsubscribe fn. */
   subscribeAdEvents: (listener: (event: AdWSMessage) => void) => () => void;
 };
@@ -83,6 +85,11 @@ export function useAdsController(): AdsController {
     const pending = outboxRef.current;
     outboxRef.current = [];
     for (const message of pending) ws.send(JSON.stringify(message));
+  }, []);
+
+  const sendAdScheduleCheck = useCallback((message: AdScheduleCheckMessage) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(message));
   }, []);
 
   const sendAdSave = useCallback((message: AdSaveMessage) => {
@@ -142,7 +149,7 @@ export function useAdsController(): AdsController {
             notify("error", "Imagen", AD_IMAGE_INSUFFICIENT_CREDITS_MESSAGE);
           }
         }
-        if (msg.type === "ad_saved" || msg.type === "ad_save_failed" || msg.type === "ad_image_failed") {
+        if (msg.type === "ad_saved" || msg.type === "ad_save_failed" || msg.type === "ad_image_failed" || msg.type === "ad_schedule_conflict") {
           dispatch(msg);
         }
       };
@@ -167,5 +174,5 @@ export function useAdsController(): AdsController {
     };
   }, [dispatch, flushOutbox, notify]);
 
-  return { api, website, notify, wsFailureAtRef, wsStatusRef, sendAdSave, subscribeAdEvents };
+  return { api, website, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents };
 }

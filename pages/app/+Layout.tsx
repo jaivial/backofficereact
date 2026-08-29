@@ -30,6 +30,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (session) setSession(session);
   }, [session, setSession]);
 
+  // [AD-DEBUG] A/B app versioning: log the resolved session version so
+  // agent-browser (lightpanda) console captures can verify the gating.
+  useEffect(() => {
+    console.log("[AD-DEBUG] session appVersion:", session?.user?.appVersion ?? "(none)", "role:", session?.user?.role, "sections:", session?.user?.sectionAccess);
+  }, [session]);
+
   useEffect(() => {
     const current = session?.activeRestaurantId || null;
     if (!current) return;
@@ -55,6 +61,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           role={session.user.role}
           sectionAccess={session.user.sectionAccess}
           roleImportance={session.user.roleImportance}
+          appVersion={session.user.appVersion}
         />
       )}
       <main className={`bo-main${immersive ? " bo-main--immersive" : ""}${posFullscreen ? " bo-main--pos-fullscreen" : ""}${isPosPage ? " bo-main--pos" : ""}`} data-testid="app-layout-main">
