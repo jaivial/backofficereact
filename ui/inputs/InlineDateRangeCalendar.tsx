@@ -34,15 +34,14 @@ export function InlineDateRangeCalendar({ from, to, onChange, disabledDates, dis
   }, [from, to]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const chooseDay = useCallback((iso: string) => {
-    let next = draft;
-    if (!draft.from || draft.to) next = { from: iso, to: "" };
-    else next = sortedRange(draft.from, iso);
+    const completesRange = Boolean(draft.from && !draft.to);
+    const next = completesRange ? sortedRange(draft.from, iso) : { from: iso, to: "" };
     selectDay(iso);
-    onChange(next);
+    if (completesRange) onChange(next);
   }, [draft, onChange, selectDay]);
 
-  const days = useMemo(() => inclusiveDays(from, to), [from, to]);
-  const rangeLabel = from ? `${formatDate(from)}${to ? ` – ${formatDate(to)}` : ""}` : "Sin rango seleccionado";
+  const days = useMemo(() => inclusiveDays(draft.from, draft.to), [draft.from, draft.to]);
+  const rangeLabel = draft.from ? `${formatDate(draft.from)}${draft.to ? ` – ${formatDate(draft.to)}` : ""}` : "Sin rango seleccionado";
 
   return (
     <div className="bo-inlineDateRange" data-testid="inline-date-range-calendar" data-ui="inline-date-range-calendar">
@@ -61,7 +60,7 @@ export function InlineDateRangeCalendar({ from, to, onChange, disabledDates, dis
         disabledDateLabels={disabledDateLabels}
         uiPrefix="inline-date-range"
       />
-      {from ? (
+      {draft.from ? (
         <button type="button" className="bo-btn bo-btn--sm bo-btn--ghost" onClick={() => { clear(); onChange({ from: "", to: "" }); }}>
           Limpiar fechas
         </button>
