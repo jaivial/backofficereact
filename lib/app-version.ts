@@ -1,12 +1,13 @@
 import type { BOSection } from "./rbac";
 
 /** Supported A/B versions assignable per user+restaurant. */
-export const APP_VERSIONS = ["0.1", "0.2"] as const;
+export const APP_VERSIONS = ["0.0.1", "0.1", "0.2"] as const;
 export type AppVersion = (typeof APP_VERSIONS)[number];
 
-export type AppCapability = "stock" | "pos" | "estadisticas" | "plataforma" | "ads";
+export type AppCapability = "mobileNavOrder" | "stock" | "pos" | "estadisticas" | "plataforma" | "ads";
 
 const CAPABILITY_MIN_VERSION: Record<AppCapability, AppVersion> = {
+  mobileNavOrder: "0.0.1",
   stock: "0.2",
   pos: "0.2",
   estadisticas: "0.2",
@@ -34,19 +35,21 @@ export function normalizeAppVersion(raw: unknown): AppVersion {
 
 /** Numeric dotted comparison kept generic so adding 0.3 does not change the algorithm. */
 export function appVersionAtLeast(version: string, minimum: string): boolean {
-  const parse = (value: string): [number, number] | null => {
+  const parse = (value: string): number[] | null => {
     const parts = value.trim().split(".");
-    if (parts.length !== 2) return null;
-    const major = Number(parts[0]);
-    const minor = Number(parts[1]);
-    if (!Number.isInteger(major) || !Number.isInteger(minor) || major < 0 || minor < 0) return null;
-    return [major, minor];
+    if (parts.length < 2 || parts.length > 3) return null;
+    const parsed = parts.map(Number);
+    if (parsed.some((part) => !Number.isInteger(part) || part < 0)) return null;
+    while (parsed.length < 3) parsed.push(0);
+    return parsed;
   };
   const current = parse(version);
   const required = parse(minimum);
   if (!current || !required) return false;
-  if (current[0] !== required[0]) return current[0] > required[0];
-  return current[1] >= required[1];
+  for (let index = 0; index < 3; index += 1) {
+    if (current[index] !== required[index]) return current[index] > required[index];
+  }
+  return true;
 }
 
 export function hasAppCapability(appVersionRaw: unknown, capability: AppCapability): boolean {

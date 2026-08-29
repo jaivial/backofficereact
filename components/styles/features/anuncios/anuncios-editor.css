@@ -648,6 +648,9 @@
 .bo-anunciosAlignmentTabs button { border: 0; background: transparent; color: var(--bo-muted); border-radius: 999px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
 .bo-anunciosAlignmentTabs button.is-active { background: var(--bo-surface-2); color: var(--bo-text); }
 .bo-anunciosDurationSection { display: grid; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--bo-border); }
+.bo-inlineDateRange { display: grid; gap: 10px; width: min(100%, 420px); }
+.bo-inlineDateRangeSummary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; color: var(--bo-muted); font-size: 12px; }
+.bo-inlineDateRangeSummary strong { color: var(--bo-text); font-size: 13px; }
 .bo-anunciosScheduleError { margin: 0; color: var(--bo-text-danger); font-size: 12px; }
 
 /* ── CTAs sub-section inside the merged main panel ────────────── */
