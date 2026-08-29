@@ -14,9 +14,13 @@ describe("InlineDateRangeCalendar", () => {
     expect(screen.getByTestId("inline-date-range-days")).toHaveTextContent("3 días activos");
   });
 
-  it("emits a new range after selecting two dates", () => {
+  it("keeps the first click as a local draft and emits only after the range is complete", () => {
     const onChange = vi.fn();
-    render(<InlineDateRangeCalendar from="2026-08-10" to="" onChange={onChange} />);
+    render(<InlineDateRangeCalendar from="2026-08-10" to="2026-08-15" onChange={onChange} />);
+
+    fireEvent.click(document.querySelector('button[data-date="2026-08-10"]') as Element);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByTestId("inline-date-range-summary")).toHaveTextContent("10/08/2026");
 
     fireEvent.click(document.querySelector('button[data-date="2026-08-12"]') as Element);
 
