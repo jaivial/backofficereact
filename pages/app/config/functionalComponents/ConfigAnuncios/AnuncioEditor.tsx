@@ -39,7 +39,7 @@ import {
   WEBSITE_ROUTE_OPTIONS,
 } from "./lib/adEditor";
 import { compressAdImage } from "./lib/image";
-import { DateRangePicker } from "../../../../../ui/inputs/DateRangePicker";
+import { InlineDateRangeCalendar } from "../../../../../ui/inputs/InlineDateRangeCalendar";
 import { formatISODate, parseISODate } from "../../../../../ui/lib/format";
 
 export type AdsAPI = {
@@ -534,7 +534,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
             <div className="bo-anunciosCtasTitle">Duración</div>
             <div className="bo-anunciosCtasHint">El anuncio se mostrará durante este periodo. Déjalo vacío para mostrarlo siempre.</div>
-            <DateRangePicker from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
+            <InlineDateRangeCalendar from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
               if (range.from && range.to && sendAdScheduleCheck) {
                 const reqId = `ad-schedule-${Date.now()}-${++reqCounter.current}`;
                 scheduleCheckReqRef.current = reqId;
@@ -542,7 +542,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               }
               setScheduleError("");
               setAd({ ...ad, starts_at: range.from || null, ends_at: range.to || null });
-            }} buttonLabel="Seleccionar fechas" />
+            }} />
             {scheduleError ? <p className="bo-anunciosScheduleError" role="alert">{scheduleError}</p> : null}
           </div>
 
