@@ -143,6 +143,17 @@
   margin: 0 !important;
 }
 
+.bo-calDay.is-blocked {
+  background: rgba(220, 38, 38, 0.18);
+  border: 1px solid rgba(220, 38, 38, 0.34);
+  color: #b91c1c;
+  cursor: not-allowed;
+}
+
+.bo-calDay.is-blocked:hover {
+  background: rgba(220, 38, 38, 0.22);
+}
+
 .bo-calDay--empty {
   cursor: default;
 }
