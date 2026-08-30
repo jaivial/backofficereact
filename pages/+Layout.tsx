@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from "react";
-import { Provider as JotaiProvider, createStore, useSetAtom } from "jotai";
+import { Provider as JotaiProvider, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 
 function registerServiceWorker() {
@@ -29,25 +29,13 @@ function registerServiceWorker() {
 
 import "../components/bo.css";
 import "../ui/styles/shadcn.css";
-import type { BOSession } from "../api/types";
 import { ToastStack } from "../ui/feedback/ToastStack";
 import { FichajeRealtimeBridge } from "../ui/fichaje/FichajeRealtimeBridge";
 import { SessionExpiryGuard } from "../ui/session/SessionExpiryGuard";
 import { ThemeSync } from "../ui/theme/ThemeSync";
-import { sessionAtom, sessionMovingExpirationAtom, themeAtom, forkyHiddenAtom, type ThemeMode } from "../state/atoms";
+import { forkyHiddenAtom, type ThemeMode } from "../state/atoms";
+import { initStore } from "../state/initStore";
 import { readForkyHiddenFromStorage } from "../ui/forky/ForkyButton";
-
-export function initStore(theme: ThemeMode, session: BOSession | null, movingExpirationDate: string | null) {
-  const store = createStore();
-  store.set(themeAtom, theme);
-  store.set(sessionAtom, session);
-  store.set(sessionMovingExpirationAtom, movingExpirationDate);
-  // forkyHiddenAtom is left at its default (false) so SSR and the first
-  // client render produce identical markup. A dedicated ForkyVisibilitySync
-  // component reads localStorage in a useEffect and updates the atom after
-  // mount.
-  return store;
-}
 
 /**
  * Reads the persisted Forky visibility from localStorage and updates the
