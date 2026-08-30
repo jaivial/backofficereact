@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { initStore } from "../pages/+Layout";
+import { initStore } from "../state/initStore";
 import {
   forkyHiddenAtom,
   sessionAtom,
