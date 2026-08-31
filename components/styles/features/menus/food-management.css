@@ -327,6 +327,15 @@ body.is-navigating .bo-fadeout {
     display: flex;
     flex-direction: column;
   }
+
+  .bo-pager[data-ui="food-list-pager"] {
+    flex-direction: column;
+  }
+
+  .bo-foodPagerExtras[data-ui="food-list-pager-extras"] {
+    display: flex;
+    flex-direction: column-reverse;
+  }
 }
 
 .bo-foodFiltersExtras {
