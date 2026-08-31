@@ -16,13 +16,6 @@
   padding: 14px;
 }
 
-.bo-menuWizardTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
 .bo-saveTag {
   min-height: 24px;
   border-radius: 999px;
