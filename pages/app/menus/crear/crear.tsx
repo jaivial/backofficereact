@@ -304,10 +304,8 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         ]}
         className="bo-menuWizardBreadcrumbs"
       />
-      <div className="bo-menuWizardTop" data-slot="crear-menuWizardTop">
-        <div className={`bo-saveTag is-${saveState}`} data-slot="crear-div">
-          {saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}
-        </div>
+      <div className={`bo-saveTag is-${saveState}`} data-slot="crear-div">
+        {saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}
       </div>
 
       {step !== 3 || isDraft ? (
