@@ -171,6 +171,14 @@
   width: 100%;
 }
 
+/* Very narrow phones: slim side gutters so full-width widgets (month
+   calendar) get every available column pixel. Inline-only. */
+@media (max-width: 375px) {
+  main[data-testid="app-layout-main"] {
+    padding-inline: 10px;
+  }
+}
+
 .bo-topbar {
   display: flex;
   align-items: flex-start;
