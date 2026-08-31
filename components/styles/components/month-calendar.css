@@ -79,14 +79,44 @@
 /* When a calendar cell gets too short to hold both the day number and the
    occupancy sub-row without clipping, hide the sub-row and center the number.
    Uses the cell's own size (it is a size container) so this is independent of
-   viewport width. */
-@container (max-width: 30px) {
+   viewport width.
+   Threshold is the cell's CONTENT box (borders + padding excluded). On phones
+   <= ~400px the track is ~35-42px but padding+border leave ~24-29px, which is
+   what this query sees; 24px keeps the sub visible on Android-class widths
+   (360/375/393) and only hides it when both rows genuinely cannot stack
+   (~320px devices). */
+@container (max-width: 24px) {
   .bo-mcal--glass .bo-mcalCell .bo-mcalSub {
     display: none;
   }
 
   .bo-mcal--glass .bo-mcalCell {
     justify-content: center;
+  }
+}
+
+/* Just above the hide threshold the cell is still tiny (phones <= ~400px):
+   tighten both rows so number + sub stack without clipping. cqi units track
+   the cell content box, so type scales down with the cell exactly like the
+   reservas mobile overrides already do. */
+@container (max-width: 34px) {
+  .bo-mcal--glass .bo-mcalCell {
+    gap: 2px;
+  }
+
+  .bo-mcal--glass .bo-mcalCell .bo-mcalNum {
+    font-size: clamp(10px, 30cqi, 16px);
+    line-height: 1;
+  }
+
+  .bo-mcal--glass .bo-mcalCell .bo-mcalSub {
+    font-size: clamp(8px, 22cqi, 12px);
+    line-height: 1;
+  }
+
+  .bo-mcal--glass .bo-mcalCell .bo-mcalSub .bo-ico {
+    width: clamp(10px, 24cqi, 13px);
+    height: clamp(10px, 24cqi, 13px);
   }
 }
 
