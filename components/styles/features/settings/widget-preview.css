@@ -418,6 +418,13 @@
   padding: 1.5rem;
 }
 
+/* <=550px: drop the editor's side gutters so fields use the full width. */
+@media (max-width: 550px) {
+  .bo-bookingEditorBody--inline[data-slot="bookingEditor-div"] {
+    padding-inline: 0px;
+  }
+}
+
 .bo-bookingRow--schedule,
 .bo-bookingRow--contact,
 .bo-bookingRow--extras {
