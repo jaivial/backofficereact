@@ -441,11 +441,9 @@
   overscroll-behavior: auto;
 }
 
-/* <=550px: selects stretch to share the row instead of hugging content. */
-@media (max-width: 550px) {
-  .bo-selectWrapper[data-ui="select-wrapper"] {
-    flex: 1 0 auto;
-  }
+/* Selects stretch to share the row instead of hugging content. */
+.bo-selectWrapper[data-ui="select-wrapper"] {
+  flex: 1 0 auto;
 }
 
 .bo-bookingRow--schedule,
