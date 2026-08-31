@@ -418,6 +418,34 @@
   padding: 1.5rem;
 }
 
+/* <=550px: drop the editor's side gutters so fields use the full width. */
+@media (max-width: 550px) {
+  .bo-bookingEditorBody--inline[data-slot="bookingEditor-div"] {
+    padding-inline: 0px;
+  }
+}
+
+/* Inline add-reservation page: ScrollArea must NOT own scrolling here (same
+   fix as the edit/details modals). Its h-full + overflow-hidden viewport
+   traps touch scroll on mobile once the arroz/menus sections expand, killing
+   page scroll. Neutralize it so .bo-main is the only scroll container. */
+.bo-reservaAddPage .bo-scrollArea {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.bo-reservaAddPage .bo-scrollAreaViewport {
+  height: auto;
+  overflow: visible;
+  overscroll-behavior: auto;
+}
+
+/* Selects stretch to share the row instead of hugging content. */
+.bo-selectWrapper[data-ui="select-wrapper"] {
+  flex: 1 0 auto;
+}
+
 .bo-bookingRow--schedule,
 .bo-bookingRow--contact,
 .bo-bookingRow--extras {

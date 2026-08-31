@@ -16,13 +16,6 @@
   padding: 14px;
 }
 
-.bo-menuWizardTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
 .bo-saveTag {
   min-height: 24px;
   border-radius: 999px;
@@ -697,8 +690,17 @@
   padding: 1rem;
 }
 
+/* Very narrow phones: slim the editor panel side gutters (inline-only, so
+   the 1rem vertical rhythm stays). */
+@media (max-width: 375px) {
+  .bo-menuEditorHead[data-testid="menu-crear-editor-panel"] {
+    padding-inline: 5px;
+  }
+}
+
 .bo-menuWizardFinal [data-slot="crear-panelHead"] {
   padding-left: 5px;
+  padding-top: 0px;
 }
 
 /* Editor de menu: center the "Añadir subtitulo" button. */
@@ -1825,7 +1827,7 @@
   }
 
   .bo-editorPane.is-mobileActive {
-    margin-top: 2rem;
+    margin-top: 1rem;
   }
 
   .bo-previewFrame {

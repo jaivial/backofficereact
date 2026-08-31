@@ -122,17 +122,25 @@
 }
 
 .bo-timeList {
+  display: flex;
+  flex-direction: column;
   width: max-content;
-  max-width: min(320px, calc(100vw - 16px));
+  /* Fixed horizontal anchor: overrides the portal's inline left so every
+     time list opens aligned at 170px. Max-width reserves room right of the
+     anchor so narrow viewports never get horizontal overflow. */
+  left: 170px !important;
+  max-width: min(320px, calc(100vw - 170px - 8px));
   max-height: min(360px, calc(100vh - 140px));
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Time options are short (HH:MM); size each item to its content so the
-   dropdown hugs the value width instead of stretching to the trigger. */
+/* Time options are short (HH:MM); the list is a single column, so each
+   item stretches to the column width and hours scroll vertically. */
 .bo-timeList .bo-selectItem {
-  width: auto;
+  width: 100%;
+  flex: 0 0 auto;
 }
 
 .bo-selectItem {
