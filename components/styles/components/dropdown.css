@@ -126,9 +126,10 @@
   flex-direction: column;
   width: max-content;
   /* Fixed horizontal anchor: overrides the portal's inline left so every
-     time list opens aligned at 170px. */
+     time list opens aligned at 170px. Max-width reserves room right of the
+     anchor so narrow viewports never get horizontal overflow. */
   left: 170px !important;
-  max-width: min(320px, calc(100vw - 16px));
+  max-width: min(320px, calc(100vw - 170px - 8px));
   max-height: min(360px, calc(100vh - 140px));
   overflow-x: hidden;
   overflow-y: auto;
