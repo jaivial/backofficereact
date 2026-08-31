@@ -120,6 +120,14 @@
   }
 }
 
+/* Very narrow phones: reclaim horizontal padding so the 7 columns keep
+   usable width. Inline-only: vertical padding keeps the cell rhythm. */
+@media (max-width: 375px) {
+  .bo-mcal[data-testid="month-calendar"] {
+    padding-inline: 5px;
+  }
+}
+
 .bo-mcalCell:hover {
   transform: translateY(-1px);
   border-color: var(--bo-border-2);
