@@ -49,7 +49,7 @@
 .bo-tableMapClosedTop {
 	display: flex;
 	align-items: flex-start;
-	justify-content: space-between;
+	justify-content: center;
 	gap: var(--bo-space-2);
 }
 
