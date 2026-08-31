@@ -316,6 +316,19 @@ body.is-navigating .bo-fadeout {
   transition: background 0.15s ease;
 }
 
+/* Very narrow phones: full-bleed container and filter controls stacked
+   vertically instead of sharing the row. */
+@media (max-width: 375px) {
+  .bo-container[data-slot="@foodType-container"] {
+    padding: 0px;
+  }
+
+  .bo-foodFiltersHead[data-ui="food-filters-header"] {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .bo-foodFiltersExtras {
   display: flex;
   align-items: center;
