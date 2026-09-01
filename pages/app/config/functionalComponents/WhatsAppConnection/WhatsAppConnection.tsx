@@ -43,6 +43,14 @@ export function qrToSrc(qr: string): string {
   return value.startsWith("data:") ? value : `data:image/png;base64,${value}`;
 }
 
+// Providers have been seen to stringify a null pairing code (Go's "<nil>").
+// Only a plausible numeric code may drive the code-first pairing UX.
+export function sanitizePairCode(raw: string | null | undefined): string {
+  const clean = (raw ?? "").trim();
+  const digits = clean.replace(/[\s-]/g, "");
+  return /^\d{4,15}$/.test(digits) ? clean : "";
+}
+
 export function deriveState(
   res: Partial<WhatsAppConnectionResponse>,
 ): ConnState {
@@ -84,8 +92,11 @@ export function WhatsAppConnection() {
     (res: Partial<WhatsAppConnectionResponse>, realtime = false) => {
       if (realtime) realtimeVersion.current += 1;
       if (typeof res.entitled === "boolean") setEntitled(res.entitled);
-      setState(deriveState(res));
-      setConnection(res.connection ?? null);
+      const connection = res.connection
+        ? { ...res.connection, pair_code: sanitizePairCode(res.connection.pair_code) }
+        : res.connection;
+      setState(deriveState({ ...res, connection }));
+      setConnection(connection ?? null);
     },
     [],
   );
