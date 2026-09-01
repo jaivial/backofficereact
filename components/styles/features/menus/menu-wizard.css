@@ -643,6 +643,14 @@
     display: grid;
   }
 
+  .bo-menuWizardFinal.is-platosActive.is-previewOpen .bo-editorPane {
+    display: none;
+  }
+
+  .bo-menuWizardFinal.is-platosActive.is-previewHidden .bo-editorPane--platos {
+    display: grid;
+  }
+
   .bo-menuWizardFinal.is-previewHidden .bo-previewPane {
     display: none;
   }
