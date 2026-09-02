@@ -24,7 +24,14 @@ export type SheetListFilters = {
   q?: string;
   status?: "DRAFT" | "PUBLISHED" | "";
   categoryId?: number | null;
+  /** 1-based page. Omitted on legacy callers: the server then returns the first 100. */
+  page?: number;
+  /** Window size, capped by the server at 100. */
+  pageSize?: number;
 };
+
+/** Page preferences the list response carries so switchers hydrate on load. */
+export type SheetListPreferences = Record<string, string>;
 
 /**
  * Optional output-unit details for a freshly created sheet. Stock creation lets
@@ -131,11 +138,30 @@ export const sheetsApi = {
     if (applied.q) params.set("q", applied.q);
     if (applied.status) params.set("status", applied.status);
     if (applied.categoryId) params.set("categoryId", String(applied.categoryId));
+    if (applied.page) params.set("page", String(applied.page));
+    if (applied.pageSize) params.set("pageSize", String(applied.pageSize));
     const query = params.toString();
-    return request<{ sheets: SheetSummary[] }>(
+    return request<{
+      sheets: SheetSummary[];
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+      preferences?: SheetListPreferences;
+    }>(
       `/comida/technical-sheets${query ? `?${query}` : ""}`,
     );
   },
+  /**
+   * Persists one whitelisted page preference (key + "0"/"1") for the signed-in
+   * user and their active restaurant. The list response reads it back, so a
+   * reload — or another device — hydrates the same switch state.
+   */
+  setPreference: (key: string, value: "0" | "1") =>
+    request<{ success: boolean; preferences: SheetListPreferences }>("/me/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ key, value }),
+    }),
   create: (name: string, portions: number, outputUnit?: SheetOutputUnit) =>
     request<{ sheetId: number; outputItemId: number }>("/comida/technical-sheets", {
       method: "POST",
