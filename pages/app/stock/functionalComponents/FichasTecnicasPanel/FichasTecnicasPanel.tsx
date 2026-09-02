@@ -212,6 +212,8 @@ export function FichasTecnicasPanel() {
           onChange={(e) => {
             setCategoryId(e.target.value);
             setPage(1);
+            setTotal(0);
+            setTotalPages(1);
             setSelectedId(null);
           }}
           data-ui="fichas-filter-category"
@@ -230,6 +232,8 @@ export function FichasTecnicasPanel() {
             onClick={() => {
               setStatusFilter("");
               setPage(1);
+              setTotal(0);
+              setTotalPages(1);
               setSelectedId(null);
             }}
           >
@@ -242,6 +246,8 @@ export function FichasTecnicasPanel() {
             onClick={() => {
               setStatusFilter("DRAFT");
               setPage(1);
+              setTotal(0);
+              setTotalPages(1);
               setSelectedId(null);
             }}
           >
@@ -254,6 +260,8 @@ export function FichasTecnicasPanel() {
             onClick={() => {
               setStatusFilter("PUBLISHED");
               setPage(1);
+              setTotal(0);
+              setTotalPages(1);
               setSelectedId(null);
             }}
           >
@@ -270,6 +278,8 @@ export function FichasTecnicasPanel() {
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setPage(1);
+              setTotal(0);
+              setTotalPages(1);
               setSelectedId(null);
             }}
             data-ui="fichas-search-input"
