@@ -1,13 +1,17 @@
 import { useEffect, useRef } from "react";
 
-// Live image-job progress.
+// Live image-job progress shared by the editor and any list view that wants
+// to refresh in place when a job lands.
 //
 // The socket is a notification channel, not a data source: every message just
-// tells the editor to re-read the steps over REST. That keeps one code path for
-// hydration, so a dropped frame costs a moment of staleness rather than a step
-// card that disagrees with the database.
+// tells the caller to re-read its current view over REST. That keeps one code
+// path for hydration, so a dropped frame costs a moment of staleness rather
+// than a card or step that disagrees with the database. `enabled` gates the
+// connection so a tenant only ever holds one socket per surface, regardless
+// of how many components opt in.
 
-export function useSheetImageSocket(sheetId: number | null, onImageJob: () => void) {
+export function useSheetImageSocket(opts: { enabled: boolean }, onImageJob: () => void) {
+  const { enabled } = opts;
   // Held in a ref so a new callback identity does not tear down the socket.
   const handlerRef = useRef(onImageJob);
   useEffect(() => {
@@ -15,7 +19,7 @@ export function useSheetImageSocket(sheetId: number | null, onImageJob: () => vo
   }, [onImageJob]);
 
   useEffect(() => {
-    if (sheetId == null || typeof window === "undefined") return;
+    if (!enabled || typeof window === "undefined") return;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     let socket: WebSocket | null = null;
@@ -77,5 +81,5 @@ export function useSheetImageSocket(sheetId: number | null, onImageJob: () => vo
         }
       }
     };
-  }, [sheetId]);
+  }, [enabled]);
 }
