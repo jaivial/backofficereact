@@ -7,6 +7,8 @@ import { EmptyState } from "../../../../../ui/feedback/EmptyState";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { LoadingSpinner } from "../../../../../ui/feedback/LoadingSpinner";
 import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
+import { createClient } from "../../../../../api/client";
+import { useBooleanPreference } from "../../../../../ui/hooks/useBooleanPreference";
 import { TechnicalSheetEditor } from "../../../comida/_components/TechnicalSheet/TechnicalSheetEditor";
 import {
   sheetsApi,
@@ -14,7 +16,6 @@ import {
   type SheetSummary,
 } from "../../../comida/_components/TechnicalSheet/sheetsApi";
 import { useSheetImageSocket } from "../../../comida/_components/TechnicalSheet/useSheetImageSocket";
-import { createClient } from "../../../../../api/client";
 
 // "Fichas tecnicas" tab: a card per elaborated product (every plato/postre that
 // has a DRAFT/ACTIVE technical sheet). Clicking a card opens that sheet's editor
@@ -51,6 +52,8 @@ function useFichaQuery(): [number | null, (id: number | null) => void] {
 }
 
 export function FichasTecnicasPanel() {
+  const api = useMemo(() => createClient(), []);
+  const pageContext = usePageContext();
   const [sheets, setSheets] = useState<SheetSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -62,15 +65,15 @@ export function FichasTecnicasPanel() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Whether each card renders its picture. Optimistic default until the list
-  // response hydrates the stored preference once; after that the switcher is
-  // the user's and is persisted on toggle.
-  const [showImages, setShowImages] = useState(true);
-  const prefsHydrated = useRef(false);
-  // Snapshot of the last committed showImages value, so a failed persistence
-  // can revert to the literal pre-click value rather than the inverted state
-  // (which breaks if two .catch handlers queue back-to-back).
-  const lastShownRef = useRef(showImages);
+  // Show/hide the card picture. Hydrated from the SSR session so the first
+  // paint matches the stored preference; toggling goes through the central
+  // PUT /api/admin/me/preferences hook so other tabs and the session atom
+  // stay in sync.
+  const [showImages, toggleShowImages] = useBooleanPreference(
+    api,
+    "stockSheetsShowImages",
+    pageContext.bo?.session?.preferences?.stockSheetsShowImages !== "0",
+  );
 
   const [categoryFilters, setCategoryFilters] = useState<{id: number; name: string}[]>([]);
   const [categoryId, setCategoryId] = useState<string>("");
@@ -79,6 +82,7 @@ export function FichasTecnicasPanel() {
   // After the first successful list response, subsequent reloads render in
   // place (small "actualizando" hint next to the count) instead of blanking
   // the grid with a full spinner.
+  const firstListDone = useRef(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // WS-driven reloads bump reloadCount; listing reloadCount in the effect's deps
@@ -90,7 +94,11 @@ export function FichasTecnicasPanel() {
 
   useEffect(() => {
     let cancelled = false;
-    const isInitial = !prefsHydrated.current;
+    // Abort in-flight requests when a new keystroke or ws frame reschedules
+    // the fetch so bursts don't pile up parallel /comida/technical-sheets
+    // calls (each bringing back 24 image URLs).
+    const controller = new AbortController();
+    const isInitial = !firstListDone.current;
     if (isInitial) {
       setLoading(true);
       setError("");
@@ -103,20 +111,19 @@ export function FichasTecnicasPanel() {
         if (statusFilter) params.status = statusFilter;
         if (categoryId !== "") params.categoryId = Number(categoryId);
         if (searchQuery.trim()) params.q = searchQuery.trim();
-        const data = await sheetsApi.list(params);
+        const data = await sheetsApi.list(params, { signal: controller.signal });
         if (cancelled) return;
         setSheets(data.sheets || []);
         setTotal(data.total ?? (data.sheets || []).length);
         setTotalPages(Math.max(1, data.totalPages ?? 1));
-        if (!prefsHydrated.current) {
-          prefsHydrated.current = true;
-          // Absent preference means "never toggled": images stay on.
-          setShowImages(data.preferences?.stockSheetsShowImages !== "0");
-        }
       } catch (reason) {
+        // An aborted request is the normal case when a fresher fetch is
+        // pending; swallow it and let the next one update state.
+        if (reason instanceof DOMException && reason.name === "AbortError") return;
         if (!cancelled) setError(reason instanceof Error ? reason.message : "No se pudieron cargar las fichas tecnicas");
       } finally {
         if (!cancelled) {
+          firstListDone.current = true;
           if (isInitial) setLoading(false);
           else setRefreshing(false);
         }
@@ -125,6 +132,7 @@ export function FichasTecnicasPanel() {
     const timer = setTimeout(fetchPage, 250);
     return () => {
       cancelled = true;
+      controller.abort();
       clearTimeout(timer);
     };
   }, [categoryId, statusFilter, searchQuery, page, reloadCount]);
@@ -160,28 +168,6 @@ export function FichasTecnicasPanel() {
     setPage(1);
     setSelectedId(null);
   }, [categoryId, statusFilter, searchQuery, setSelectedId]);
-
-  const api = useMemo(() => createClient(), []);
-
-  const toggleShowImages = useCallback((next: boolean) => {
-    // Snapshot the committed value before the optimistic flip so a failed
-    // persistence reverts to the literal pre-click state even when two clicks
-    // queue .catch handlers back-to-back (the old `(current) => !next` form
-    // inverted each catch independently and could leave the toggle on a value
-    // nobody asked for).
-    const previous = lastShownRef.current;
-    setShowImages(next);
-    // PUT /api/admin/me/preferences has one client-side path; the
-    // sheets-scoped duplicate was removed to share this endpoint with the
-    // other preferences UIs in the backoffice.
-    void api.auth.setPreference("stockSheetsShowImages", next ? "1" : "0").catch(() => {
-      setShowImages(previous);
-      setError("No se pudo guardar la preferencia");
-    });
-  }, [api.auth]);
-  useEffect(() => {
-    lastShownRef.current = showImages;
-  }, [showImages]);
 
   const selectedSheet = useMemo(
     () => (selectedId == null ? null : sheets.find((sheet) => sheet.id === selectedId) ?? null),
@@ -287,7 +273,7 @@ export function FichasTecnicasPanel() {
             data-testid="fichas-show-images"
             aria-label="Mostrar imágenes"
           />
-          <span>Mostrar imágenes</span>
+          <span data-ui="fichas-images-label">Mostrar imágenes</span>
         </label>
       </div>
     );

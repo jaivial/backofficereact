@@ -131,7 +131,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const sheetsApi = {
-  list: (filters: SheetListFilters | string = "") => {
+  list: (filters: SheetListFilters | string = "", init?: RequestInit) => {
     // A bare string is still accepted so existing callers keep working.
     const applied: SheetListFilters = typeof filters === "string" ? { q: filters } : filters;
     const params = new URLSearchParams();
@@ -150,6 +150,7 @@ export const sheetsApi = {
       preferences?: SheetListPreferences;
     }>(
       `/comida/technical-sheets${query ? `?${query}` : ""}`,
+      init,
     );
   },
   create: (name: string, portions: number, outputUnit?: SheetOutputUnit) =>
