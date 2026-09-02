@@ -9,6 +9,7 @@ type FoodDishCardProps = {
   showMedia?: boolean;
   mediaLoading?: boolean;
   inactive?: boolean;
+  stockBadge?: { tone: "danger" | "yellow"; label: string };
   primaryMeta?: string;
   secondaryMeta?: string;
   priceLabel?: string;
@@ -33,6 +34,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
   showMedia = true,
   mediaLoading,
   inactive,
+  stockBadge,
   primaryMeta,
   secondaryMeta,
   priceLabel,
@@ -158,6 +160,7 @@ export const FoodDishCard = React.memo(function FoodDishCard({
           <div data-ui="dish-card-title-row" className="bo-foodMemberTitleRow">
             <h3 data-role="dish-card-title" className="bo-foodMemberTitle">{title}</h3>
             {inactive ? <span data-role="dish-card-inactive-badge" className="bo-badge bo-badge--danger">Inactivo</span> : null}
+            {stockBadge ? <span data-role="dish-card-stock-badge" className={`bo-badge bo-badge--${stockBadge.tone}`}>{stockBadge.label}</span> : null}
           </div>
         ) : null}
 
