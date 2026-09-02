@@ -44,11 +44,13 @@ export function qrToSrc(qr: string): string {
 }
 
 // Providers have been seen to stringify a null pairing code (Go's "<nil>").
-// Only a plausible numeric code may drive the code-first pairing UX.
+// WhatsApp pairing codes are 4-15 alphanumeric characters (presented as
+// XXXX-XXXX), so anything non-alphanumeric — "<nil>", URLs, payloads — is
+// rejected and must not drive the code-first pairing UX.
 export function sanitizePairCode(raw: string | null | undefined): string {
   const clean = (raw ?? "").trim();
-  const digits = clean.replace(/[\s-]/g, "");
-  return /^\d{4,15}$/.test(digits) ? clean : "";
+  const chars = clean.replace(/[\s-]/g, "");
+  return /^[A-Z0-9]{4,15}$/i.test(chars) ? clean : "";
 }
 
 export function deriveState(
