@@ -24,7 +24,14 @@ export type SheetListFilters = {
   q?: string;
   status?: "DRAFT" | "PUBLISHED" | "";
   categoryId?: number | null;
+  /** 1-based page. Omitted on legacy callers: the server then returns the first 100. */
+  page?: number;
+  /** Window size, capped by the server at 100. */
+  pageSize?: number;
 };
+
+/** Page preferences the list response carries so switchers hydrate on load. */
+export type SheetListPreferences = Record<string, string>;
 
 /**
  * Optional output-unit details for a freshly created sheet. Stock creation lets
@@ -124,16 +131,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const sheetsApi = {
-  list: (filters: SheetListFilters | string = "") => {
+  list: (filters: SheetListFilters | string = "", init?: RequestInit) => {
     // A bare string is still accepted so existing callers keep working.
     const applied: SheetListFilters = typeof filters === "string" ? { q: filters } : filters;
     const params = new URLSearchParams();
     if (applied.q) params.set("q", applied.q);
     if (applied.status) params.set("status", applied.status);
     if (applied.categoryId) params.set("categoryId", String(applied.categoryId));
+    if (applied.page) params.set("page", String(applied.page));
+    if (applied.pageSize) params.set("pageSize", String(applied.pageSize));
     const query = params.toString();
-    return request<{ sheets: SheetSummary[] }>(
+    return request<{
+      sheets: SheetSummary[];
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+      preferences?: SheetListPreferences;
+    }>(
       `/comida/technical-sheets${query ? `?${query}` : ""}`,
+      init,
     );
   },
   create: (name: string, portions: number, outputUnit?: SheetOutputUnit) =>

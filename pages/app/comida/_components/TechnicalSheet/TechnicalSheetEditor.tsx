@@ -70,7 +70,7 @@ export function TechnicalSheetEditor({
     void reload();
   }, [reload]);
 
-  useSheetImageSocket(sheetId, reload);
+  useSheetImageSocket({ enabled: sheetId != null }, reload);
 
   // Held in a ref so a new callback identity cannot re-fire the notification.
   const notifyAllergens = useRef(onAllergensChange);
