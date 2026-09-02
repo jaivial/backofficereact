@@ -763,9 +763,9 @@
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  border-radius: var(--bo-radius-md, 14px);
+  border-radius: var(--bo-radius-md);
   border: 1px solid var(--bo-border);
-  background: var(--bo-surface, rgba(255, 255, 255, 0.04));
+  background: var(--bo-surface);
   margin-bottom: 10px;
 }
 
@@ -798,7 +798,7 @@
   background: color-mix(in srgb, var(--bo-muted) 30%, transparent);
   position: relative;
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background var(--bo-transition-fast) ease;
 }
 
 .bo-fichasImagesToggle input::after {
@@ -809,8 +809,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--bo-text, #fff);
-  transition: transform 140ms ease;
+  background: var(--bo-text);
+  transition: transform var(--bo-transition-fast) ease;
 }
 
 .bo-fichasImagesToggle input:checked {

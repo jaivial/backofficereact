@@ -14,6 +14,7 @@ import {
   type SheetSummary,
 } from "../../../comida/_components/TechnicalSheet/sheetsApi";
 import { useSheetImageSocket } from "../../../comida/_components/TechnicalSheet/useSheetImageSocket";
+import { createClient } from "../../../../../api/client";
 
 // "Fichas tecnicas" tab: a card per elaborated product (every plato/postre that
 // has a DRAFT/ACTIVE technical sheet). Clicking a card opens that sheet's editor
@@ -75,42 +76,28 @@ export function FichasTecnicasPanel() {
   const [categoryId, setCategoryId] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<"" | "DRAFT" | "PUBLISHED">("");
   const [searchQuery, setSearchQuery] = useState("");
-  // Used as a soft badge alongside the count when the websocket refreshes the
-  // grid in place, so live updates do not blank the visible cards.
+  // After the first successful list response, subsequent reloads render in
+  // place (small "actualizando" hint next to the count) instead of blanking
+  // the grid with a full spinner.
   const [refreshing, setRefreshing] = useState(false);
-  // Bumped by user typing or by a debounced websocket refresh; the effect below
-  // runs the same fetch path either way, so a typing keystroke and a ws frame
-  // can never race into two concurrent list states.
-  const [reloadTick, setReloadTick] = useState(0);
-  const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Single fetch path: user-driven filter changes and ws-driven refreshes both
-  // bump `reloadTick` so the same effect runs, after the same cancelled-flag
-  // check. Typing keeps its 250ms debounce; an explicit refresh from the ws
-  // bypasses it so a burst of imageJob frames does not wait on the keyboard.
-  const scheduleReload = useCallback((delayMs = 250) => {
-    if (reloadTimer.current) clearTimeout(reloadTimer.current);
-    reloadTimer.current = setTimeout(() => {
-      reloadTimer.current = null;
-      setReloadTick((value) => value + 1);
-    }, delayMs);
-  }, []);
-  useEffect(() => () => {
-    if (reloadTimer.current) clearTimeout(reloadTimer.current);
-  }, []);
+  // WS-driven reloads bump reloadCount; listing reloadCount in the effect's deps
+  // routes ws frames through the same 250ms debounced fetch path as user-driven
+  // filter changes, so burst frames coalesce and the cancelled-flag race guard
+  // still applies between the two sources.
+  const [reloadCount, setReloadCount] = useState(0);
+  const triggerReload = useCallback(() => setReloadCount((value) => value + 1), []);
 
   useEffect(() => {
     let cancelled = false;
-    const isRefresh = reloadTick > 0;
+    const isInitial = !prefsHydrated.current;
+    if (isInitial) {
+      setLoading(true);
+      setError("");
+    } else {
+      setRefreshing(true);
+    }
     const fetchPage = async () => {
-      if (isRefresh) {
-        // Live updates render in place so the grid does not blank, and the
-        // count surface a small "actualizando" hint.
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-        setError("");
-      }
       try {
         const params: SheetListFilters = { page, pageSize: SHEETS_PAGE_SIZE };
         if (statusFilter) params.status = statusFilter;
@@ -130,21 +117,20 @@ export function FichasTecnicasPanel() {
         if (!cancelled) setError(reason instanceof Error ? reason.message : "No se pudieron cargar las fichas tecnicas");
       } finally {
         if (!cancelled) {
-          if (isRefresh) setRefreshing(false);
-          else setLoading(false);
+          if (isInitial) setLoading(false);
+          else setRefreshing(false);
         }
       }
     };
-    const timer = setTimeout(fetchPage, isRefresh ? 0 : 250);
+    const timer = setTimeout(fetchPage, 250);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [categoryId, statusFilter, searchQuery, page, reloadTick]);
+  }, [categoryId, statusFilter, searchQuery, page, reloadCount]);
 
   // One socket per tenant: only while the grid is visible. When the ficha
   // editor opens, its own useSheetImageSocket takes the same connection.
-  const triggerReload = useCallback(() => scheduleReload(0), [scheduleReload]);
   useSheetImageSocket({ enabled: selectedId == null }, triggerReload);
 
   // Fetch categories once
@@ -175,6 +161,8 @@ export function FichasTecnicasPanel() {
     setSelectedId(null);
   }, [categoryId, statusFilter, searchQuery, setSelectedId]);
 
+  const api = useMemo(() => createClient(), []);
+
   const toggleShowImages = useCallback((next: boolean) => {
     // Snapshot the committed value before the optimistic flip so a failed
     // persistence reverts to the literal pre-click state even when two clicks
@@ -183,11 +171,14 @@ export function FichasTecnicasPanel() {
     // nobody asked for).
     const previous = lastShownRef.current;
     setShowImages(next);
-    void sheetsApi.setPreference("stockSheetsShowImages", next ? "1" : "0").catch(() => {
+    // PUT /api/admin/me/preferences has one client-side path; the
+    // sheets-scoped duplicate was removed to share this endpoint with the
+    // other preferences UIs in the backoffice.
+    void api.auth.setPreference("stockSheetsShowImages", next ? "1" : "0").catch(() => {
       setShowImages(previous);
       setError("No se pudo guardar la preferencia");
     });
-  }, []);
+  }, [api.auth]);
   useEffect(() => {
     lastShownRef.current = showImages;
   }, [showImages]);

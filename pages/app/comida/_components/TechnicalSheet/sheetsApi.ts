@@ -152,16 +152,6 @@ export const sheetsApi = {
       `/comida/technical-sheets${query ? `?${query}` : ""}`,
     );
   },
-  /**
-   * Persists one whitelisted page preference (key + "0"/"1") for the signed-in
-   * user and their active restaurant. The list response reads it back, so a
-   * reload — or another device — hydrates the same switch state.
-   */
-  setPreference: (key: string, value: "0" | "1") =>
-    request<{ success: boolean; preferences: SheetListPreferences }>("/me/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ key, value }),
-    }),
   create: (name: string, portions: number, outputUnit?: SheetOutputUnit) =>
     request<{ sheetId: number; outputItemId: number }>("/comida/technical-sheets", {
       method: "POST",
