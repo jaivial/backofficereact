@@ -16,6 +16,7 @@ import { StockSettingsPanel } from "./functionalComponents/StockSettingsPanel/St
 import { StockItemModal } from "./functionalComponents/StockItemModal/StockItemModal";
 import { StockOperationsPanel } from "./functionalComponents/StockOperationsPanel/StockOperationsPanel";
 import { StockDocumentsPanel } from "./functionalComponents/StockDocumentsPanel/StockDocumentsPanel";
+import { StockExpiringPanel } from "./functionalComponents/StockExpiringPanel/StockExpiringPanel";
 import { PortionWastePanel } from "./functionalComponents/PortionWastePanel/PortionWastePanel";
 import { ProductionLabourPanel } from "./functionalComponents/ProductionLabourPanel/ProductionLabourPanel";
 
@@ -93,6 +94,7 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [quantities, setQuantities] = useState<Record<number, string>>({});
+  const [expiryDates, setExpiryDates] = useState<Record<number, string>>({});
   const [showItemForm, setShowItemForm] = useState(false);
   const [showWarehouses, setShowWarehouses] = useState(false);
   const [warehouseName, setWarehouseName] = useState("");
@@ -167,13 +169,14 @@ export default function Page() {
     try {
       const result = await request<{ quantityBase: number }>(`/items/${item.id}/movements`, {
         method: "POST",
-        body: JSON.stringify({ warehouseId: selectedWarehouseId, quantity, unitId: item.displayUnit.id, type: "ADJUSTMENT", direction: direction === "add" ? "ADD" : "SUBTRACT", idempotencyKey: crypto.randomUUID() }),
+        body: JSON.stringify({ warehouseId: selectedWarehouseId, quantity, unitId: item.displayUnit.id, type: "ADJUSTMENT", direction: direction === "add" ? "ADD" : "SUBTRACT", ...(direction === "add" && expiryDates[item.id] ? { expiresAt: expiryDates[item.id] } : {}), idempotencyKey: crypto.randomUUID() }),
       });
       setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, quantityBase: result.quantityBase } : entry));
+      if (direction === "add" && expiryDates[item.id]) setExpiryDates((current) => ({ ...current, [item.id]: "" }));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No se pudo ajustar el stock");
     }
-  }, [quantities, selectedWarehouseId]);
+  }, [expiryDates, quantities, selectedWarehouseId]);
 
   const createWarehouse = useCallback(async (event: React.FormEvent) => {
     event.preventDefault();
@@ -277,6 +280,8 @@ export default function Page() {
                   </div>
                 </div>
               ) : null}
+
+              <StockExpiringPanel />
 
               <section className="bo-stockSummary" aria-label="Resumen de stock" data-ui="stock-summary">
                 {summaryCards.map(([label, value]) => (
@@ -425,6 +430,8 @@ export default function Page() {
                           </Button>
                           <label className="sr-only" htmlFor={`stock-quantity-${item.id}`} data-ui="stock-quantity-label">Cantidad de {item.name}</label>
                           <input id={`stock-quantity-${item.id}`} className="bo-input bo-stockAdjustInput" inputMode="decimal" value={quantities[item.id] || "1"} onChange={(event) => setQuantities((current) => ({ ...current, [item.id]: event.target.value }))} data-testid={`stock-quantity-${item.id}`} />
+                          <label className="sr-only" htmlFor={`stock-expiry-${item.id}`} data-ui="stock-expiry-label">Caducidad de {item.name} (opcional, se aplica al sumar)</label>
+                          <input id={`stock-expiry-${item.id}`} className="bo-input bo-stockAdjustInput bo-stockAdjustExpiry" type="date" value={expiryDates[item.id] || ""} onChange={(event) => setExpiryDates((current) => ({ ...current, [item.id]: event.target.value }))} aria-label={`Caducidad de ${item.name} (opcional, se aplica al sumar)`} data-testid={`stock-expiry-${item.id}`} />
                           <Button variant="primary" className="bo-stockAdjustBtn" aria-label={`Sumar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "add"); }} data-testid={`stock-add-${item.id}`}>
                             <Plus size={16} aria-hidden="true" data-ui="stock-plus-icon" />
                           </Button>
