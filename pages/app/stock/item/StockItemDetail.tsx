@@ -39,7 +39,10 @@ export function StockItemDetail() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<TabId>("historial");
+  const [tab, setTab] = useState<TabId>(() => {
+    const value = pageContext.urlParsed?.search?.tab;
+    return value === "merma" || value === "objetivos" || value === "coste" || value === "ajustes" ? value : "historial";
+  });
 
   const load = useCallback(async () => {
     if (!Number.isFinite(id) || id <= 0) {
