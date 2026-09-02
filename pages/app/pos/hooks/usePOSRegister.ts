@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
-import type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+import type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
-export type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+export type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
 export const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
 
@@ -33,6 +33,7 @@ export function usePOSRegister(date?: string | null) {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [currentShift, setCurrentShift] = useState<ShiftSummary | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
+  const [productStock, setProductStock] = useState<Record<string, StockStatus>>({});
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [visit, setVisit] = useState<Visit | null>(null);
   const [lastPaidTicket, setLastPaidTicket] = useState<Ticket | null>(null);
@@ -64,7 +65,7 @@ export function usePOSRegister(date?: string | null) {
     setError("");
     try {
       const data = await request<Bootstrap>(date ? `/bootstrap?date=${encodeURIComponent(date)}` : "/bootstrap");
-      setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null);
+      setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {});
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [date]);
   useEffect(() => { void load(); }, [load]);
@@ -397,7 +398,7 @@ export function usePOSRegister(date?: string | null) {
   }, [card, cardReference, cash, load, paymentTotal, splitTickets, ticket, ticketTotal, tipCents]);
 
   return {
-    settings, setSettings, products, tables, visits, ticket, visit, lastPaidTicket,
+    settings, setSettings, products, tables, visits, ticket, visit, lastPaidTicket, productStock,
     splitTickets, splitTargetId, setSplitTargetId, selectedTable, setSelectedTable,
     covers, setCovers, reservations, reservationsLoading, reservationsLoaded, bookingId, query, setQuery,
     message, setMessage, error, setError, busy,
