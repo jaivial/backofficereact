@@ -10,5 +10,6 @@ export type Area = { id: number; name: string };
 export type Operator = { id: number; displayName: string; isActive?: boolean };
 export type ShiftSummary = { id: number; status: string; openedAt?: string; closedAt?: string | null };
 export type RestaurantProfile = { name: string; taxId?: string; address?: string; phone?: string; email?: string; logoUrl?: string };
-export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null };
+export type StockStatus = "ok" | "low" | "out";
+export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null; productStock?: Record<string, StockStatus> };
 export type Reservation = { id: number; customerName: string; reservationDate: string; reservationTime: string; partySize: number; status: string; visitId?: number | null; visitStatus?: string | null };
