@@ -23,7 +23,8 @@ type Warehouse = { id: number; name: string; code?: string; type: string; isDefa
 type Unit = { id: number; code: string; label: string; factorToBase: number };
 type StockItem = { id: number; name: string; sku?: string; categoryName?: string; kind: string; baseDimension: string; baseUnit: string; isTracked: boolean; deductionSource: string; quantityBase: number; parLevelBase: number; reorderPointBase: number; displayUnit: Unit };
 type StockItemOption = Pick<StockItem, "id" | "name" | "kind" | "isTracked" | "displayUnit">;
-type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number };
+type SummaryItem = { id: number; name: string; qty: number; par: number; reorderPoint: number };
+type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number; belowParItems?: SummaryItem[]; belowReorderItems?: SummaryItem[]; outOfStockItems?: SummaryItem[]; negativeItems?: SummaryItem[]; unresolvedAnomalies?: number };
 type Section = "inventory" | "sheets" | "operations" | "settings";
 
 const EMPTY_SUMMARY: Summary = { itemsTracked: 0, belowPar: 0, belowReorder: 0, outOfStock: 0, negative: 0, coveragePct: 0 };
@@ -112,7 +113,7 @@ export default function Page() {
       if (warehouseId) params.set("warehouseId", String(warehouseId));
       const [itemData, summaryData, warehouseData, optionData] = await Promise.all([
         request<{ items: StockItem[]; totalPages: number }>(`/items?${params}`),
-        request<Summary>("/summary"),
+        request<Summary>("/summary?details=1"),
         request<{ warehouses: Warehouse[] }>("/warehouses"),
         request<{ items: StockItemOption[] }>("/item-options"),
       ]);
@@ -186,6 +187,14 @@ export default function Page() {
     ["Artículos", summary.itemsTracked], ["Bajo objetivo", summary.belowPar], ["Bajo mínimo", summary.belowReorder], ["Agotados", summary.outOfStock],
   ], [summary]);
 
+  const stockAlert = useMemo<{ critical: boolean; title: string; items: SummaryItem[] } | null>(() => {
+    const critical = [...(summary.negativeItems || []), ...(summary.outOfStockItems || [])];
+    if (critical.length) return { critical: true, title: `Stock crítico: ${critical.length} artículos agotados o en negativo`, items: critical };
+    const low = summary.belowParItems || [];
+    if (low.length) return { critical: false, title: `Bajo objetivo: ${low.length} artículos por debajo del par`, items: low };
+    return null;
+  }, [summary]);
+
   return (
     <main className="bo-stockPage" data-ui="stock-page">
       <div className="bo-container" data-slot="stock-container">
@@ -217,6 +226,26 @@ export default function Page() {
         <div className="bo-stockStack" data-ui="stock-sections-content">
           {section === "inventory" ? (
             <>
+              {stockAlert ? (
+                <div
+                  className={`bo-alert bo-alert--glass ${stockAlert.critical ? "bo-alert--error" : "bo-alert--warning"}`}
+                  role={stockAlert.critical ? "alert" : "status"}
+                  data-ui="stock-banner"
+                  data-testid="stock-banner"
+                >
+                  <div className="bo-alertTitle" data-ui="stock-banner-title">{stockAlert.title}</div>
+                  <div className="bo-alertMsg bo-stockBannerList" data-ui="stock-banner-list">
+                    {stockAlert.items.slice(0, 6).map((item) => (
+                      <a key={item.id} href={`/app/stock/item?id=${item.id}&tab=historial`} data-testid={`stock-banner-item-${item.id}`}>{item.name}</a>
+                    ))}
+                    {stockAlert.items.length > 6 ? <span data-ui="stock-banner-more">y {stockAlert.items.length - 6} más</span> : null}
+                    {(summary.unresolvedAnomalies || 0) > 0 ? (
+                      <a href="/app/pos?section=stock" data-testid="stock-banner-anomalies">{summary.unresolvedAnomalies} anomalías de stock abiertas</a>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
               <section className="bo-stockSummary" aria-label="Resumen de stock" data-ui="stock-summary">
                 {summaryCards.map(([label, value]) => (
                   <article className="bo-card bo-stockSummaryCard" key={label} data-ui={`stock-summary-${label.toLowerCase().replaceAll(" ", "-")}`}>
