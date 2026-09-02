@@ -14,19 +14,24 @@ import { FormField } from "../../../ui/inputs/FormField";
 import { FichasTecnicasPanel } from "./functionalComponents/FichasTecnicasPanel/FichasTecnicasPanel";
 import { StockSettingsPanel } from "./functionalComponents/StockSettingsPanel/StockSettingsPanel";
 import { StockItemModal } from "./functionalComponents/StockItemModal/StockItemModal";
+import { StockOperationsPanel } from "./functionalComponents/StockOperationsPanel/StockOperationsPanel";
+import { StockDocumentsPanel } from "./functionalComponents/StockDocumentsPanel/StockDocumentsPanel";
+import { PortionWastePanel } from "./functionalComponents/PortionWastePanel/PortionWastePanel";
+import { ProductionLabourPanel } from "./functionalComponents/ProductionLabourPanel/ProductionLabourPanel";
 
 type Warehouse = { id: number; name: string; code?: string; type: string; isDefault: boolean; isActive: boolean; sortOrder: number; notes?: string };
 type Unit = { id: number; code: string; label: string; factorToBase: number };
 type StockItem = { id: number; name: string; sku?: string; categoryName?: string; kind: string; baseDimension: string; baseUnit: string; isTracked: boolean; deductionSource: string; quantityBase: number; parLevelBase: number; reorderPointBase: number; displayUnit: Unit };
 type StockItemOption = Pick<StockItem, "id" | "name" | "kind" | "isTracked" | "displayUnit">;
 type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number };
-type Section = "inventory" | "sheets" | "settings";
+type Section = "inventory" | "sheets" | "operations" | "settings";
 
 const EMPTY_SUMMARY: Summary = { itemsTracked: 0, belowPar: 0, belowReorder: 0, outOfStock: 0, negative: 0, coveragePct: 0 };
 
 const SECTION_TABS: { id: Section; label: string }[] = [
   { id: "inventory", label: "Existencias" },
   { id: "sheets", label: "Fichas tecnicas" },
+  { id: "operations", label: "Operaciones" },
   { id: "settings", label: "Configuración" },
 ];
 
@@ -60,7 +65,7 @@ function sourceLabel(deductionSource: string): string {
 function useUrlTabQuery(): [Section, (id: Section) => void] {
   const pageContext = usePageContext();
   const initial = (pageContext.urlParsed?.search?.tab || "") as string;
-  const validTabs: Section[] = ["inventory", "sheets", "settings"];
+  const validTabs: Section[] = ["inventory", "sheets", "operations", "settings"];
   const fallback: Section = validTabs.includes(initial as Section) ? (initial as Section) : "inventory";
   const [section, setSection] = useState<Section>(fallback);
 
@@ -386,6 +391,15 @@ export default function Page() {
 
           {section === "sheets" ? (
             <FichasTecnicasPanel />
+          ) : null}
+
+          {section === "operations" ? (
+            <div className="bo-stack" data-ui="stock-operations-content" data-testid="stock-operations-content">
+              <StockOperationsPanel items={itemOptions} warehouses={warehouses} onChanged={load} />
+              <StockDocumentsPanel items={itemOptions} warehouses={warehouses} />
+              <PortionWastePanel />
+              <ProductionLabourPanel />
+            </div>
           ) : null}
 
           {section === "settings" ? <StockSettingsPanel /> : null}
