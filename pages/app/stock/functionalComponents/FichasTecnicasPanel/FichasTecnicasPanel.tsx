@@ -13,7 +13,7 @@ import {
   type SheetListFilters,
   type SheetSummary,
 } from "../../../comida/_components/TechnicalSheet/sheetsApi";
-import { useSheetsListSocket } from "./useSheetsListSocket";
+import { useSheetImageSocket } from "../../../comida/_components/TechnicalSheet/useSheetImageSocket";
 
 // "Fichas tecnicas" tab: a card per elaborated product (every plato/postre that
 // has a DRAFT/ACTIVE technical sheet). Clicking a card opens that sheet's editor
@@ -66,25 +66,51 @@ export function FichasTecnicasPanel() {
   // the user's and is persisted on toggle.
   const [showImages, setShowImages] = useState(true);
   const prefsHydrated = useRef(false);
+  // Snapshot of the last committed showImages value, so a failed persistence
+  // can revert to the literal pre-click value rather than the inverted state
+  // (which breaks if two .catch handlers queue back-to-back).
+  const lastShownRef = useRef(showImages);
 
-  // Filters state
   const [categoryFilters, setCategoryFilters] = useState<{id: number; name: string}[]>([]);
   const [categoryId, setCategoryId] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<"" | "DRAFT" | "PUBLISHED">("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filtering, setFiltering] = useState(false);
+  // Used as a soft badge alongside the count when the websocket refreshes the
+  // grid in place, so live updates do not blank the visible cards.
+  const [refreshing, setRefreshing] = useState(false);
+  // Bumped by user typing or by a debounced websocket refresh; the effect below
+  // runs the same fetch path either way, so a typing keystroke and a ws frame
+  // can never race into two concurrent list states.
+  const [reloadTick, setReloadTick] = useState(0);
+  const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Re-read the current page on demand (websocket frames) without resubscribing.
-  const reloadRef = useRef<() => void>(() => {});
+  // Single fetch path: user-driven filter changes and ws-driven refreshes both
+  // bump `reloadTick` so the same effect runs, after the same cancelled-flag
+  // check. Typing keeps its 250ms debounce; an explicit refresh from the ws
+  // bypasses it so a burst of imageJob frames does not wait on the keyboard.
+  const scheduleReload = useCallback((delayMs = 250) => {
+    if (reloadTimer.current) clearTimeout(reloadTimer.current);
+    reloadTimer.current = setTimeout(() => {
+      reloadTimer.current = null;
+      setReloadTick((value) => value + 1);
+    }, delayMs);
+  }, []);
+  useEffect(() => () => {
+    if (reloadTimer.current) clearTimeout(reloadTimer.current);
+  }, []);
 
-  // Single fetch path: filters + page go through the same debounced request,
-  // so the pager, the filters and a websocket-triggered refresh can never race
-  // into two concurrent list states.
   useEffect(() => {
     let cancelled = false;
+    const isRefresh = reloadTick > 0;
     const fetchPage = async () => {
-      setLoading(true);
-      setError("");
+      if (isRefresh) {
+        // Live updates render in place so the grid does not blank, and the
+        // count surface a small "actualizando" hint.
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+        setError("");
+      }
       try {
         const params: SheetListFilters = { page, pageSize: SHEETS_PAGE_SIZE };
         if (statusFilter) params.status = statusFilter;
@@ -104,22 +130,22 @@ export function FichasTecnicasPanel() {
         if (!cancelled) setError(reason instanceof Error ? reason.message : "No se pudieron cargar las fichas tecnicas");
       } finally {
         if (!cancelled) {
-          setFiltering(false);
-          setLoading(false);
+          if (isRefresh) setRefreshing(false);
+          else setLoading(false);
         }
       }
     };
-    reloadRef.current = fetchPage;
-    const timer = setTimeout(fetchPage, 250);
+    const timer = setTimeout(fetchPage, isRefresh ? 0 : 250);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [categoryId, statusFilter, searchQuery, page]);
+  }, [categoryId, statusFilter, searchQuery, page, reloadTick]);
 
-  // Image jobs land on this grid too (the editor generates step and card
-  // images): any frame re-reads the current page over REST.
-  useSheetsListSocket(useCallback(() => reloadRef.current(), []));
+  // One socket per tenant: only while the grid is visible. When the ficha
+  // editor opens, its own useSheetImageSocket takes the same connection.
+  const triggerReload = useCallback(() => scheduleReload(0), [scheduleReload]);
+  useSheetImageSocket({ enabled: selectedId == null }, triggerReload);
 
   // Fetch categories once
   useEffect(() => {
@@ -136,20 +162,35 @@ export function FichasTecnicasPanel() {
   }, []);
 
   // New filters mean a different list: back to the first page and drop any
-  // open sheet so the grid is what the user sees.
+  // open sheet so the grid is what the user sees. The first render is a no-op
+  // — selectedId is already seeded from ?ficha=, and zeroing it on mount
+  // would strip the deep-link before the URL reflects it.
+  const firstFilterRender = useRef(true);
   useEffect(() => {
+    if (firstFilterRender.current) {
+      firstFilterRender.current = false;
+      return;
+    }
     setPage(1);
     setSelectedId(null);
   }, [categoryId, statusFilter, searchQuery, setSelectedId]);
 
   const toggleShowImages = useCallback((next: boolean) => {
+    // Snapshot the committed value before the optimistic flip so a failed
+    // persistence reverts to the literal pre-click state even when two clicks
+    // queue .catch handlers back-to-back (the old `(current) => !next` form
+    // inverted each catch independently and could leave the toggle on a value
+    // nobody asked for).
+    const previous = lastShownRef.current;
     setShowImages(next);
     void sheetsApi.setPreference("stockSheetsShowImages", next ? "1" : "0").catch(() => {
-      // Persisting failed: revert so the UI keeps telling the truth.
-      setShowImages((current) => !next);
+      setShowImages(previous);
       setError("No se pudo guardar la preferencia");
     });
   }, []);
+  useEffect(() => {
+    lastShownRef.current = showImages;
+  }, [showImages]);
 
   const selectedSheet = useMemo(
     () => (selectedId == null ? null : sheets.find((sheet) => sheet.id === selectedId) ?? null),
@@ -265,13 +306,15 @@ export function FichasTecnicasPanel() {
     <section className="bo-panel" aria-label="Fichas tecnicas" data-ui="fichas-tecnicas">
       <div className="bo-panelHead" data-ui="fichas-header">
         <h2 className="bo-panelTitle" data-ui="fichas-title">Fichas tecnicas</h2>
-        <span className="bo-stockMuted" data-ui="fichas-count">{total} fichas</span>
+        <span className="bo-stockMuted" data-ui="fichas-count">
+          {refreshing ? `${total} fichas · actualizando` : `${total} fichas`}
+        </span>
       </div>
       <div className="bo-panelBody" data-ui="fichas-body">
         {renderFiltersBar()}
 
         {error ? <InlineAlert kind="error" title={error} /> : null}
-        {(loading || filtering) ? (
+        {loading ? (
           <LoadingSpinner centered size="sm" label="Cargando fichas tecnicas…" />
         ) : sheets.length === 0 ? (
           <EmptyState
